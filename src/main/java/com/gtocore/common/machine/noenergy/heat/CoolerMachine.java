@@ -1,0 +1,94 @@
+package com.gtocore.common.machine.noenergy.heat;
+
+import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.data.IdleReason;
+
+import com.gtolib.api.machine.SimpleNoEnergyMachine;
+import com.gtolib.api.machine.heat.HeatHandler;
+import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.material.Fluids;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+
+public final class CoolerMachine extends SimpleNoEnergyMachine implements IHeatContainerMachine, IExplosionMachine, ICustomRecipeLogicHolder {
+
+    public static final int MaxTemperature = 750;
+
+    @Getter
+    @SaveToDisk
+    @SyncToClient
+    private final HeatHandler heatContainer;
+
+    public CoolerMachine(MetaMachineBlockEntity holder) {
+        super(holder, 0, i -> 8000);
+        heatContainer = new HeatHandler(holder, MaxTemperature, 2, 0.2, 0.01);
+        heatContainer.setSideIOCondition(s -> s != Direction.DOWN && s != Direction.UP);
+        heatContainer.addChangedListener(getRecipeLogic()::updateTickSubscription);
+    }
+
+    @Override
+    public boolean supportLockRecipe() {
+        return false;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        heatContainer.onLoad();
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        heatContainer.onUnLoad();
+    }
+
+    @Override
+    @NotNull
+    public GTRecipeType getRecipeType() {
+        return GTORecipeTypes.F1A1B;
+    }
+
+    @Override
+    public GTRecipe fullModifyRecipe(RecipeHandlerUnit unit, GTRecipeDefinition definition) {
+        return definition.toRuntime();
+    }
+
+    @Override
+    public void onWorking() {
+        super.onWorking();
+        if (getOffsetTimer() % 20 == 0) {
+            if (heatContainer.getCurrentHeat() < 8 || heatContainer.getTemperature() < 293) {
+                getRecipeLogic().markLastRecipeDirty();
+            } else {
+                heatContainer.removeHeatUnrestricted(8, false);
+            }
+        }
+    }
+
+    @Override
+    public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
+        if (heatContainer.getCurrentHeat() < 8 || heatContainer.getTemperature() < 293) {
+            setIdleReason(IdleReason.HEAT_SHORT, 8, heatContainer.getCurrentHeat());
+            return null;
+        }
+        if (unit.getFluidAmount(true, Fluids.WATER)[0] < 1000) {
+            setIdleReason(IdleReason.WATER_SHORT, 1000, unit.getFluidAmount(true, Fluids.WATER)[0]);
+            return null;
+        }
+        return getRecipeBuilder().duration(20).inputFluids(Fluids.WATER, 1000).outputFluids(Fluids.WATER, 990).build();
+    }
+}

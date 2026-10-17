@@ -1,0 +1,604 @@
+name: "Build and Sign"
+
+# 触发（官方仓 GregTech-Odyssey/GTOCore-Main）：
+# 1) push：commit message 含 -b / --build / -build
+# 2) pull_request_target opened：PR 由组织成员提起 → 自动构建一次（无需标记）
+# 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
+# 4) issue_comment：组织成员在 PR 下评论，且第一行精确为 /build → 构建 PR head
+#
+# 使用 pull_request_target：工作流文件始终取 base 分支，PR 无法篡改本文件。
+# 安全：只构建本仓分支（fork 来源的 PR 一律跳过），且仅组织成员（或写权限
+# collaborator）可触发。构建会用只读 deploy key 拉取私有 GTOLib 源码并现场加密，
+# 公开仓不再提交任何 GTOLib 预构建。
+on:
+  push:
+  pull_request_target:
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: build-sign-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 门禁：解析 ref、构建标记、组织成员；通过后才跑签名构建
+  gate:
+    if: >
+      github.repository == 'GregTech-Odyssey/GTOCore-Main' &&
+      (
+        (
+          github.event_name == 'push' &&
+          (
+            contains(github.event.head_commit.message, '--build') ||
+            contains(github.event.head_commit.message, '-build') ||
+            contains(github.event.head_commit.message, ' -b') ||
+            endsWith(github.event.head_commit.message, '-b') ||
+            startsWith(github.event.head_commit.message, '-b ')
+          )
+        ) ||
+        (
+          github.event_name == 'pull_request_target' &&
+          (github.event.action == 'opened' || github.event.action == 'synchronize')
+        ) ||
+        (
+          github.event_name == 'issue_comment' &&
+          github.event.issue.pull_request &&
+          startsWith(github.event.comment.body, '/build')
+        )
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      should_build: ${{ steps.resolve.outputs.should_build }}
+      checkout_repo: ${{ steps.resolve.outputs.checkout_repo }}
+      checkout_ref: ${{ steps.resolve.outputs.checkout_ref }}
+      reason: ${{ steps.resolve.outputs.reason }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+    steps:
+      - name: Resolve trigger, ref, membership
+        id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          # push
+          PUSH_SHA: ${{ github.sha }}
+          # pull_request_target / issue_comment
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || 0 }}
+          PR_USER: ${{ github.event.pull_request.user.login || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          # issue_comment
+          COMMENT_BODY: ${{ github.event.comment.body || '' }}
+          COMMENT_USER: ${{ github.event.comment.user.login || '' }}
+          IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || 'false' }}
+          HEAD_COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
+        run: |
+          set -euo pipefail
+          ORG="GregTech-Odyssey"
+          API="https://api.github.com"
+          HDR=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
+
+          has_build_marker() {
+            local msg="$1"
+            [[ "$msg" =~ (^|[[:space:]])(--build|-build|-b)($|[[:space:]]) ]]
+          }
+
+          has_pr_build_command() {
+            local first_line
+            IFS= read -r first_line <<< "$1"
+            first_line="${first_line%$'\r'}"
+            [[ "$first_line" == '/build' ]]
+          }
+
+          # 返回 0=成员/写权限；1=明确拒绝（bot）；2=非成员
+          check_org_member_or_writer() {
+            local user="$1"
+            if [[ "$user" == *'[bot]' ]]; then
+              echo "BOT: @${user}"
+              return 1
+            fi
+            local code
+            code=$(curl -sS -o /tmp/member_body.txt -w "%{http_code}" \
+              "${HDR[@]}" "${API}/orgs/${ORG}/members/${user}")
+            echo "Membership API HTTP $code for @${user}"
+            if [ "$code" = "204" ]; then
+              echo "OK: @${user} is a member of ${ORG}"
+              return 0
+            fi
+            local code2
+            code2=$(curl -sS -o /tmp/collab_body.txt -w "%{http_code}" \
+              "${HDR[@]}" "${API}/repos/${REPO}/collaborators/${user}/permission")
+            echo "Collaborator permission API HTTP $code2"
+            if [ "$code2" = "200" ]; then
+              local perm
+              perm=$(python3 -c "import json; print(json.load(open('/tmp/collab_body.txt')).get('permission',''))" 2>/dev/null || true)
+              echo "permission=$perm"
+              case "$perm" in
+                admin|maintain|write)
+                  if [ "$code" = "302" ] || [ "$code" = "404" ]; then
+                    echo "WARN: membership=$code but repo permission=$perm on official repo — allow"
+                    return 0
+                  fi
+                  ;;
+              esac
+            fi
+            echo "DENIED: @${user} is not an org member / write collaborator (membership=$code)"
+            return 2
+          }
+
+          # require_member=true 时非成员使 job 失败（红叉）；false 时仅 skip（外部开 PR 不刷红）
+          require_member_or_skip() {
+            local user="$1"
+            local soft="$2" # "soft" | "hard"
+            local rc=0
+            check_org_member_or_writer "$user" || rc=$?
+            if [ "$rc" -eq 0 ]; then
+              return 0
+            fi
+            if [ "$rc" -eq 1 ]; then
+              echo "::error::Bots cannot trigger signed builds."
+              exit 1
+            fi
+            if [ "$soft" = "soft" ]; then
+              skip "user @${user} is not an org member"
+            fi
+            echo "::error::Only members of ${ORG} may trigger this signed build. User @${user} denied."
+            exit 1
+          }
+
+          welcome_external_pr() {
+            local body
+            body=$(cat <<'MSG'
+          你好，感谢你对 GregTech Odyssey 的关注，也谢谢你花时间整理这份改动！
+
+          GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，代码改动目前统一由开发团队完成，因此这个 Pull Request 不会被合并。不过你的想法对我们很有价值：欢迎把它整理到 [Issue](https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues) 里，写清楚想解决的问题、期望的效果和你设想的实现思路，维护者会认真评估并在合适的版本中实现。
+
+          另外说明一下：源码公开是为了透明、便于查阅，完整构建依赖团队内部组件，公开环境无法直接编译运行；想体验最新内容，请使用整合包发布的版本。
+
+          ---
+
+          Hi, and thank you for your interest in GregTech Odyssey and for the time you put into this change!
+
+          Feature design, balancing, and release planning for GTOCore are coordinated by the development team, so code changes are currently made in-house and this pull request will not be merged. Your idea is still very welcome: please describe it in an [Issue](https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues), including the problem, the expected result, and how you would approach it, and the maintainers will review it for a future release.
+
+          The source is public for transparency; a full build relies on internal components and cannot be compiled from the public repository. To try the latest content, please use the modpack releases.
+          MSG
+            )
+            body=$(printf '%s\n' "$body" | sed 's/^          //')
+            curl -sS -f -X POST "${HDR[@]}" \
+              "${API}/repos/${REPO}/issues/${PR_NUMBER}/comments" \
+              -d "$(PYTHONIOENCODING=utf-8 python3 -c 'import json,sys; print(json.dumps({"body": sys.stdin.read()}))' <<<"$body")" \
+              > /dev/null && echo "Posted guidance comment on PR #${PR_NUMBER}" || echo "::warning::Failed to post guidance comment"
+          }
+
+          skip() {
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "checkout_repo=" >> "$GITHUB_OUTPUT"
+            echo "checkout_ref=" >> "$GITHUB_OUTPUT"
+            echo "reason=$1" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+            echo "SKIP: $1"
+            exit 0
+          }
+
+          echo "Event=$EVENT_NAME action=${EVENT_ACTION:-} actor=$ACTOR repo=$REPO"
+
+          CHECK_USER=""
+          CHECKOUT_REPO="$REPO"
+          CHECKOUT_REF=""
+          REASON=""
+          OUT_PR=""
+          # push / 评论 / 同步带标记：非成员应失败或 skip；opened 外部贡献 soft skip
+          MEMBER_MODE="hard"
+
+          case "$EVENT_NAME" in
+            push)
+              if ! has_build_marker "$HEAD_COMMIT_MSG"; then
+                skip "push without build marker"
+              fi
+              CHECK_USER="$ACTOR"
+              CHECKOUT_REPO="$REPO"
+              CHECKOUT_REF="$PUSH_SHA"
+              REASON="push with build marker"
+              MEMBER_MODE="hard"
+              # 若该 commit 关联打开中的 PR，也在 PR 下发状态评论
+              OUT_PR=$(curl -sS -f \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github.groot-preview+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "${API}/repos/${REPO}/commits/${PUSH_SHA}/pulls" \
+                | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['number'] if isinstance(d,list) and d else '')" \
+                2>/dev/null || true)
+              ;;
+
+            pull_request_target)
+              CHECKOUT_REPO="$PR_HEAD_REPO"
+              CHECKOUT_REF="$PR_HEAD_SHA"
+              OUT_PR="$PR_NUMBER"
+              echo "PR #${PR_NUMBER} author=@${PR_USER} head=${PR_HEAD_REPO}@${PR_HEAD_SHA}"
+
+              if [ "$EVENT_ACTION" = "opened" ]; then
+                # 开启时：仅组织成员提起 → 自动构建，无需标记；外部贡献 soft skip（不红叉）
+                CHECK_USER="$PR_USER"
+                REASON="PR opened by org member"
+                MEMBER_MODE="soft"
+              elif [ "$EVENT_ACTION" = "synchronize" ]; then
+                # 同步时：最新 head commit 必须带构建标记
+                # -f：HTTP 4xx/5xx 视为失败，便于回退到 base 仓 commits API
+                COMMIT_JSON=$(curl -sS -f "${HDR[@]}" \
+                  "${API}/repos/${PR_HEAD_REPO}/commits/${PR_HEAD_SHA}" \
+                  || curl -sS -f "${HDR[@]}" "${API}/repos/${REPO}/commits/${PR_HEAD_SHA}")
+                COMMIT_MSG=$(python3 -c "import json,sys; print(json.load(sys.stdin).get('commit',{}).get('message',''))" <<<"$COMMIT_JSON")
+                echo "Head commit message (first line): $(echo "$COMMIT_MSG" | head -n1)"
+                if ! has_build_marker "$COMMIT_MSG"; then
+                  skip "PR synchronize without build marker on head commit"
+                fi
+                # 同步带标记：校验推送者（actor）为组织成员；外部带标记 push soft skip
+                CHECK_USER="$ACTOR"
+                REASON="PR synchronize with build marker"
+                MEMBER_MODE="soft"
+              else
+                skip "unsupported pull_request_target action=${EVENT_ACTION}"
+              fi
+              ;;
+
+            issue_comment)
+              if [ "$IS_PR_COMMENT" != "true" ]; then
+                skip "comment is not on a pull request"
+              fi
+              if ! has_pr_build_command "$COMMENT_BODY"; then
+                skip "PR comment first line is not exactly /build"
+              fi
+              # 评论触发：评论者须为组织成员；非成员评论 /build soft skip
+              CHECK_USER="${COMMENT_USER:-$ACTOR}"
+              OUT_PR="$PR_NUMBER"
+              PR_JSON=$(curl -sS "${HDR[@]}" "${API}/repos/${REPO}/pulls/${PR_NUMBER}")
+              CHECKOUT_REPO=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['repo']['full_name'])" <<<"$PR_JSON")
+              CHECKOUT_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['sha'])" <<<"$PR_JSON")
+              HEAD_REF=$(python3 -c "import json,sys; print(json.load(sys.stdin)['head']['ref'])" <<<"$PR_JSON")
+              echo "PR #${PR_NUMBER} comment by @${CHECK_USER} → build ${CHECKOUT_REPO}@${CHECKOUT_REF} (${HEAD_REF})"
+              REASON="PR /build command by org member"
+              MEMBER_MODE="soft"
+              ;;
+
+            *)
+              skip "unsupported event ${EVENT_NAME}"
+              ;;
+          esac
+
+          if [ -z "$CHECKOUT_REF" ] || [ -z "$CHECKOUT_REPO" ]; then
+            echo "::error::Failed to resolve checkout ref/repo"
+            exit 1
+          fi
+
+          if [ "$CHECKOUT_REPO" != "$REPO" ]; then
+            if [ "$EVENT_NAME" = "pull_request_target" ] && [ "$EVENT_ACTION" = "opened" ]; then
+              rc=0
+              check_org_member_or_writer "$PR_USER" || rc=$?
+              if [ "$rc" -eq 2 ]; then
+                welcome_external_pr
+              fi
+            fi
+            skip "head repo ${CHECKOUT_REPO} is not ${REPO}"
+          fi
+
+          require_member_or_skip "$CHECK_USER" "$MEMBER_MODE"
+
+          # 规范化 pr_number（0 / 空视为无 PR）
+          if [ -z "${OUT_PR:-}" ] || [ "$OUT_PR" = "0" ]; then
+            OUT_PR=""
+          fi
+
+          {
+            echo "should_build=true"
+            echo "checkout_repo=${CHECKOUT_REPO}"
+            echo "checkout_ref=${CHECKOUT_REF}"
+            echo "reason=${REASON}"
+            echo "pr_number=${OUT_PR}"
+          } >> "$GITHUB_OUTPUT"
+          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF} pr=${OUT_PR:-none}"
+
+  build:
+    needs: gate
+    if: needs.gate.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      issues: write
+      pull-requests: write
+    steps:
+      # issue_comment 触发的 run 不会出现在 PR Checks 页，必须靠评论反馈
+      - name: Post PR status (building)
+        id: pr_status
+        if: needs.gate.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REASON: ${{ needs.gate.outputs.reason }}
+          REF: ${{ needs.gate.outputs.checkout_ref }}
+          REPO_HEAD: ${{ needs.gate.outputs.checkout_repo }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${REF:0:12}"
+          BODY=$(cat <<EOF
+          <!-- gto-build-sign-run:${{ github.run_id }} -->
+          ### 🔨 Build and Sign
+
+          **状态:** ⏳ 正在构建…
+
+          🔗 [打开本次构建](${RUN_URL})
+
+          | | |
+          |---|---|
+          | 触发 | ${REASON} |
+          | 代码 | \`${REPO_HEAD}@${SHORT_SHA}\` |
+          | Run | [\`${{ github.run_id }}\`](${RUN_URL}) |
+
+          > 构建成功后可在上述链接的 **Artifacts** 下载签名 jar。
+          EOF
+          )
+          # 去掉 heredoc 公共缩进，避免评论变成代码块缩进
+          BODY=$(printf '%s\n' "$BODY" | sed 's/^          //')
+          ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -f body="$BODY" --jq .id)
+          echo "comment_id=$ID" >> "$GITHUB_OUTPUT"
+          echo "Posted building status comment id=$ID on PR #${PR_NUMBER}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.gate.outputs.checkout_repo }}
+          ref: ${{ needs.gate.outputs.checkout_ref }}
+          persist-credentials: false
+          # 私有子模块由下一步用 deploy key 单独检出
+          submodules: false
+          fetch-depth: 1
+
+      - name: Resolve GTOLib pointer
+        id: gtolib
+        env:
+          HAS_KEY: ${{ secrets.GTOLIB_DEPLOY_KEY != '' }}
+        run: |
+          set -euo pipefail
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "::error::Missing secret GTOLIB_DEPLOY_KEY（GTOLib 仓库的只读 deploy key 私钥）"
+            exit 1
+          fi
+          SHA=$(git ls-tree HEAD GTOLib | awk '$2 == "commit" { print $3 }')
+          if [ -z "$SHA" ]; then
+            echo "::error::无法从主仓 tree 读出 GTOLib gitlink"
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "GTOLib gitlink = $SHA"
+
+      - name: Checkout GTOLib
+        uses: actions/checkout@v4
+        with:
+          repository: GregTech-Odyssey/GTOCore-GTOlib
+          ref: ${{ steps.gtolib.outputs.sha }}
+          path: GTOLib
+          ssh-key: ${{ secrets.GTOLIB_DEPLOY_KEY }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      # 与旧 GTOCore 及已成功签名 run 一致：CI 用 Java 21（模组 --release 21）。
+      # 本地开发可用 Java 25 跑 Gradle。密钥仅 secrets→env，不写进仓库/日志。
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # 默认只允许默认分支写缓存，而 main 已不构建，不放开每次都从空缓存开始
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Restore signing keystore
+        env:
+          GTO_CERTIFICATE: ${{ secrets.GTO_CERT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GTO_CERTIFICATE:-}" ]; then
+            echo "::error::Missing secret GTO_CERT (base64-encoded keystore.jks). Org secret must be available to GTOCore-Main."
+            exit 1
+          fi
+          echo "$GTO_CERTIFICATE" | base64 --decode > keystore.jks
+          test -s keystore.jks
+          ls -la keystore.jks
+
+      - name: Verify Seal runtime
+        run: |
+          set -euo pipefail
+          test -s libs/gto-seal-runtime-1.0.jar
+          # Seal 必须含 ITransformationService SPI，且不得打进 gtocore
+          jar tf libs/gto-seal-runtime-1.0.jar | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'
+          echo "OK: seal runtime has ITransformationService SPI"
+          test -f GTOLib/protect/proguard-release-rules.pro
+          test -s GTOLib/protect/gto-seal-packager.jar
+          echo "OK: GTOLib protect toolchain present"
+
+      - name: Build and sign
+        env:
+          GTO_STOREPASS: ${{ secrets.GTO_KEY }}
+          GTO_KEYPASS: ${{ secrets.GTO_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GTO_STOREPASS:-}" ]; then
+            echo "::error::Missing secret GTO_KEY (keystore password)."
+            exit 1
+          fi
+          chmod +x ./gradlew
+          # 发行：gtocore（无 Seal SPI）+ 独立 gto-seal-runtime，均签名（密码只经 env 注入 signJar）
+          ./gradlew spotlessApply build --no-daemon --stacktrace \
+            -Dorg.gradle.java.installations.auto-download=true
+
+      - name: Verify gtocore packaging
+        run: |
+          set -euo pipefail
+          GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
+          test -n "$GTO"
+          if jar tf "$GTO" | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'; then
+            echo "::error::gtocore still contains ITransformationService SPI"
+            exit 1
+          fi
+          echo "OK: no ITransformationService SPI in gtocore"
+          jar tf "$GTO" | grep -q 'gtolib.refmap.json' || { echo "::error::missing gtolib.refmap.json"; exit 1; }
+          jar tf "$GTO" | grep -q 'gtocore.refmap.json' || { echo "::error::missing gtocore.refmap.json"; exit 1; }
+          TMP=$(mktemp -d)
+          unzip -p "$GTO" gtolib.refmap.json > "$TMP/gtolib.refmap.json"
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); n=len(d.get("mappings") or {}); assert n>=10, n; print("OK: gtolib.refmap mappings=", n)' "$TMP/gtolib.refmap.json"
+          test -s build/libs/gto-seal-runtime-1.0.jar
+          jar tf build/libs/gto-seal-runtime-1.0.jar | grep -q 'META-INF/services/cpw.mods.modlauncher.api.ITransformationService'
+          echo "OK: gto-seal-runtime SPI present"
+          # ResourceLocationMixn 必须已 reobf 成 SRG（与 maven gtolib-forge 一致）
+          python3 -c "import zipfile,sys; d=zipfile.ZipFile(sys.argv[1]).read('com/gtolib/mixin/mc/ResourceLocationMixn.class').decode('latin-1'); assert 'f_135804_' in d and 'm_245413_' in d and 'assertValidNamespace' not in d; print('OK: ResourceLocationMixn SRG names present')" "$GTO"
+          # 发行包只能嵌入发行单轨：无 dev 轨字节码、无明文调试字节、内部类名确已改名
+          python3 - "$GTO" <<'PY'
+          import re, sys, zipfile
+          zf = zipfile.ZipFile(sys.argv[1])
+          names = zf.namelist()
+          dev = [n for n in names if n.endswith('.dev.bin')]
+          if dev:
+              sys.exit(f'::error::gtocore 含 dev 轨字节码 {len(dev)} 个（{dev[0]}）')
+          gl = [n for n in names if n.startswith('com/gtolib/') and n.endswith('.class')]
+          lvt = [n for n in gl if b'LocalVariableTable' in zf.read(n)]
+          if lvt:
+              sys.exit(f'::error::gtocore 内 gtolib 类含 LocalVariableTable（{len(lvt)} 个，{lvt[0]}），疑似明文字节')
+          renamed = [n for n in gl if re.search(r'[^ -~]', n)]
+          if not renamed:
+              sys.exit('::error::gtocore 内 gtolib 类名未经代码保护，嵌入的不是发行单轨')
+          print(f'OK: gtolib {len(gl)} class，改名 {len(renamed)}，无 dev.bin、无 LVT')
+          mf = zf.read('META-INF/MANIFEST.MF').decode('utf-8', 'replace')
+          if 'GTO-Core-Obfuscated: 1' not in mf:
+              sys.exit('::error::gtocore 自身类未经发行代码保护（缺 GTO-Core-Obfuscated）')
+          gc = [n for n in names if n.endswith('.class') and not n.startswith(('com/gtolib/', 'META-INF/'))]
+          gc_renamed = [n for n in gc if re.search(r'[^ -~]', n)]
+          gc_lvt = [n for n in gc if b'LocalVariableTable' in zf.read(n)]
+          if not gc_renamed or gc_lvt:
+              sys.exit(f'::error::gtocore 代码保护异常：改名 {len(gc_renamed)}，带 LVT {len(gc_lvt)}')
+          print(f'OK: gtocore {len(gc)} class，改名 {len(gc_renamed)}，无 LVT')
+          PY
+
+      - name: List outputs
+        run: |
+          ls -la build/libs/ || true
+          echo "--- 产物：gtocore（内容 mod）+ gto-seal-runtime（独立 ITransformationService）---"
+          ls -la build/libs/gtocore*.jar 2>/dev/null | grep -v sources | grep -v javadoc || true
+          ls -la build/libs/gto-seal-runtime*.jar 2>/dev/null || true
+          echo "Gate reason: ${{ needs.gate.outputs.reason }}"
+          echo "Built: ${{ needs.gate.outputs.checkout_repo }}@${{ needs.gate.outputs.checkout_ref }}"
+
+      # 代码保护映射只以加密形式归档（公开仓的 artifact 任何登录用户都能下载）
+      # 文件名与 artifact 名带构建编号（GTO-Build-Id），玩家日志/崩溃报告里的编号据此对回 mapping
+      - name: Encrypt release mappings
+        id: mapping_enc
+        env:
+          MAPPING_PASS: ${{ secrets.GTOLIB_MAPPING_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MAPPING_PASS:-}" ]; then
+            echo "::error::Missing secret GTOLIB_MAPPING_KEY（代码保护映射专用加密密钥，与签名密码分开）"
+            exit 1
+          fi
+          MAP=build/gtolib/gtolib-release-mapping.txt
+          CORE_MAP=build/gtocore-obf/gtocore-release-mapping.txt
+          test -s "$MAP"
+          test -s "$CORE_MAP"
+          GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
+          BUILD_ID=$(unzip -p "$GTO" META-INF/MANIFEST.MF | tr -d '\r' | sed -n 's/^GTO-Build-Id: //p')
+          test -n "$BUILD_ID" || { echo "::error::$GTO 的 MANIFEST 缺少 GTO-Build-Id"; exit 1; }
+          for f in "$MAP" "$CORE_MAP"; do
+            [ "$(head -n1 "$f")" = "# GTO-Build-Id: $BUILD_ID" ] || { echo "::error::$f 文件头的构建编号与 jar 不一致"; exit 1; }
+          done
+          mkdir -p build/mapping-enc
+          gzip -9 -c "$MAP" | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:MAPPING_PASS -out "build/mapping-enc/gtolib-release-mapping-$BUILD_ID.txt.gz.enc"
+          gzip -9 -c "$CORE_MAP" | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:MAPPING_PASS -out "build/mapping-enc/gtocore-release-mapping-$BUILD_ID.txt.gz.enc"
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+          echo "GTO-Build-Id: $BUILD_ID"
+          ls -la build/mapping-enc
+
+      - name: Upload encrypted mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtolib-mapping-encrypted-${{ steps.mapping_enc.outputs.build_id }}
+          path: |
+            build/mapping-enc/gtolib-release-mapping-${{ steps.mapping_enc.outputs.build_id }}.txt.gz.enc
+            build/mapping-enc/gtocore-release-mapping-${{ steps.mapping_enc.outputs.build_id }}.txt.gz.enc
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload gtocore
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtocore-build
+          path: |
+            build/libs/gtocore*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-javadoc.jar
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload seal runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: gto-seal-runtime
+          path: build/libs/gto-seal-runtime-1.0.jar
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Update PR status (final)
+        if: always() && steps.pr_status.outputs.comment_id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_ID: ${{ steps.pr_status.outputs.comment_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REASON: ${{ needs.gate.outputs.reason }}
+          REF: ${{ needs.gate.outputs.checkout_ref }}
+          REPO_HEAD: ${{ needs.gate.outputs.checkout_repo }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${REF:0:12}"
+          case "$JOB_STATUS" in
+            success)
+              STATUS_LINE="**状态:** ✅ 构建完成"
+              EXTRA=$'\n\n可在构建页面 **Artifacts** 下载 `gtocore-build` 与 `gto-seal-runtime`。\n\n请放入整合包测试你的功能。'
+              ;;
+            cancelled)
+              STATUS_LINE="**状态:** ⚠️ 构建已取消（可能被同 PR 的新构建取代）"
+              EXTRA=""
+              ;;
+            *)
+              STATUS_LINE="**状态:** ❌ 构建失败"
+              EXTRA=$'\n\n请打开构建链接查看失败日志。'
+              ;;
+          esac
+          BODY=$(cat <<EOF
+          <!-- gto-build-sign-run:${{ github.run_id }} -->
+          ### 🔨 Build and Sign
+
+          ${STATUS_LINE}
+
+          🔗 [打开本次构建](${RUN_URL})
+
+          | | |
+          |---|---|
+          | 触发 | ${REASON} |
+          | 代码 | \`${REPO_HEAD}@${SHORT_SHA}\` |
+          | Run | [\`${{ github.run_id }}\`](${RUN_URL}) |
+          ${EXTRA}
+          EOF
+          )
+          BODY=$(printf '%s\n' "$BODY" | sed 's/^          //')
+          gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY"
+          echo "Updated status comment id=${COMMENT_ID} → ${JOB_STATUS}"

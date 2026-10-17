@@ -1,0 +1,5 @@
+{
+  "parent": "forge:item/bucket",
+  "fluid": "gtocore:gelid_cryotheum",
+  "loader": "forge:fluid_container"
+}

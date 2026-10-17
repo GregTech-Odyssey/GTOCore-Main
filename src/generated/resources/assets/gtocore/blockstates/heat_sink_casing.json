@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gtocore:block/heat_sink_casing"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gtocore:block/uiv_super_wireless_energy_unit"
+    }
+  }
+}

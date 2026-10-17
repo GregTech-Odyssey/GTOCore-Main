@@ -1,0 +1,163 @@
+package com.gtocore.common.machine.mana;
+
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOItems;
+
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.utils.explosion.AreaExplosion;
+import com.gtolib.utils.explosion.ChunkExplosion;
+import com.gtolib.utils.explosion.CylinderExplosion;
+import com.gtolib.utils.explosion.SphereExplosion;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.common.data.GTBlocks;
+import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.uipro.elements.ConfirmButton;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+import com.gregtechceu.gtceu.uiwidgets.inventory.SlotGridView;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+
+import appeng.api.stacks.AEItemKey;
+import appeng.core.definitions.AEItems;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import static com.gtocore.common.item.CoordinateCardBehavior.getStoredCoordinates;
+
+@DataGeneratorScanned
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
+
+    @RegisterLanguage(cn = "爆炸物", en = "Explosives")
+    private static final String EXPLOSIVES = "gtocore.machine.area_destruction_tools.explosives";
+
+    @RegisterLanguage(cn = "引爆", en = "Detonate")
+    private static final String DETONATE = "gtocore.machine.area_destruction_tools.detonate";
+
+    @SaveToDisk
+    private final NotifiableInventory<AEItemKey> inventory;
+
+    private int model = 0;
+    private int explosiveYield = 0;
+    private BlockPos pos1;
+    private BlockPos pos2;
+
+    public AreaDestructionToolsMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+        inventory = NotifiableInventory.items(this, 9, IO.NONE, IO.BOTH);
+        inventory.addChangedListener(() -> {
+            Level level = getLevel();
+            if (level == null) return;
+            model = 0;
+            long explosiveEnergy = 0;
+            explosiveYield = 0;
+            pos1 = null;
+            pos2 = null;
+
+            var storage = inventory.storage;
+            for (int i = 0; i < storage.size(); i++) {
+                long count = storage.amountAt(i);
+                if (count <= 0) continue;
+                var key = storage.keyAt(i);
+                var item = key.getItem();
+                if (item == GTItems.SHAPE_MOLD_BALL.asItem()) model = 1;
+                else if (item == GTItems.SHAPE_MOLD_CYLINDER.asItem()) model = 2;
+                else if (item == GTItems.SHAPE_MOLD_BLOCK.asItem()) model = 3;
+                else if (item == AEItems.SINGULARITY.asItem()) model = 4;
+                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][2].asItem()) explosiveEnergy += 5000L * count;
+                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][1].asItem()) explosiveEnergy += 1000L * count;
+                else if (item == GTOItems.INDUSTRIAL_COMPONENTS[3][0].asItem()) explosiveEnergy += 200L * count;
+                else if (item == GTBlocks.INDUSTRIAL_TNT.asItem()) explosiveEnergy += 30L * count;
+                else if (item == GTOBlocks.NUKE_BOMB.asItem()) explosiveEnergy += 2048L * count;
+                else if (item == GTOBlocks.NAQUADRIA_CHARGE.asItem()) explosiveEnergy += 3200L * count;
+                else if (item == GTOBlocks.LEPTONIC_CHARGE.asItem()) explosiveEnergy += 2048000L * count;
+                else if (item == GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem()) explosiveEnergy += 32000000L * count;
+                else if (item == GTOItems.COORDINATE_CARD.asItem()) {
+                    if (pos1 == null) pos1 = getStoredCoordinates(Keys.displayStack(key));
+                    else pos2 = getStoredCoordinates(Keys.displayStack(key));
+                }
+            }
+
+            if (model == 1) explosiveYield = (int) Math.cbrt((double) explosiveEnergy / 4) * 10;
+            else if (model == 2) explosiveYield = (int) Math.sqrt((double) explosiveEnergy / level.getHeight()) * 18;
+            else if (model == 3) explosiveYield = (int) Math.sqrt((double) explosiveEnergy / level.getHeight()) * 16;
+            else if (model == 4) if (pos1 != null && pos2 != null) {
+                int volume = countBlocksInCube(pos1, pos2);
+                explosiveYield = explosiveEnergy > volume ? Math.max(1, volume / 200000) : -1;
+            }
+
+        });
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        inventory.notifyListeners();
+    }
+
+    @Override
+    public void onMachineRemoved() {
+        clearInventory(inventory.storage);
+    }
+
+    private void triggerExplosion() {
+        BlockPos pos = getPos();
+        Level level = getLevel();
+        if (level == null) return;
+
+        if (model == 0) return;
+        else if (model == 1) SphereExplosion.explosion(pos, level, explosiveYield, true, true, false);
+        else if (model == 2) CylinderExplosion.explosion(pos, level, explosiveYield, true, true, false);
+        else if (model == 3) ChunkExplosion.explosion(pos, level, explosiveYield, true, true, false);
+        else if (model == 4) if (explosiveYield > 0) AreaExplosion.explosion(pos, pos1, pos2, level, true, true, false);
+
+        inventory.storage.clear();
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        return MachineDisplay.page(this, this::addDisplayText, controls -> {
+            controls.addGrid(EXPLOSIVES, SlotGridView.items(inventory.storage));
+            var detonate = ConfirmButton.translatable(UISizes.BUTTON_WIDTH, DETONATE).setOnServerConfirm(() -> {
+                triggerExplosion();
+                onChanged();
+            });
+            controls.add(Form.controlRow("gtocore.machine.area_destruction_tools.detonate_instruction", detonate));
+        });
+    }
+
+    private void addDisplayText(List<Component> textList) {
+        textList.add(Component.translatable("gtocore.machine.area_destruction_tools.model." + model));
+        textList.add(Component.translatable("gtocore.machine.area_destruction_tools.explosive_yield", explosiveYield));
+    }
+
+    public int countBlocksInCube(BlockPos pos1, BlockPos pos2) {
+        int x1 = pos1.getX(), y1 = pos1.getY(), z1 = pos1.getZ();
+        int x2 = pos2.getX(), y2 = pos2.getY(), z2 = pos2.getZ();
+
+        int dx = Math.abs(x1 - x2) / 10;
+        int dy = Math.abs(y1 - y2) / 10;
+        int dz = Math.abs(z1 - z2) / 10;
+
+        return dx * dy * dz;
+    }
+}

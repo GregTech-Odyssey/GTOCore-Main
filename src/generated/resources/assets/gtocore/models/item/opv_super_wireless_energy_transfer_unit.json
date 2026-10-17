@@ -1,0 +1,68 @@
+{
+  "base": {
+    "parent": "gtocore:block/opv_super_wireless_energy_transfer_unit"
+  },
+  "gui_light": "side",
+  "loader": "forge:separate_transforms",
+  "perspectives": {
+    "gui": {
+      "children": {
+        "base": {
+          "parent": "gtocore:block/opv_super_wireless_energy_transfer_unit",
+          "transform": {
+            "origin": "center",
+            "rotation": [
+              -0.09904574,
+              0.89239913,
+              0.23911762,
+              -0.36964372
+            ],
+            "scale": [
+              0.625,
+              0.625,
+              0.625
+            ]
+          }
+        },
+        "super_boost": {
+          "elements": [
+            {
+              "faces": {
+                "south": {
+                  "texture": "#boost"
+                }
+              },
+              "from": [
+                0,
+                0,
+                17.6
+              ],
+              "shade": false,
+              "to": [
+                16,
+                16,
+                17.6
+              ]
+            }
+          ],
+          "textures": {
+            "boost": "gtocore:block/casings/wireless_energy_transfer_unit/super_boost",
+            "particle": "#boost"
+          }
+        }
+      },
+      "gui_light": "side",
+      "item_render_order": [
+        "base",
+        "super_boost"
+      ],
+      "loader": "forge:composite",
+      "textures": {
+        "particle": "gtocore:block/casings/wireless_energy_transfer_unit/opv"
+      }
+    }
+  },
+  "textures": {
+    "particle": "gtocore:block/casings/wireless_energy_transfer_unit/opv"
+  }
+}

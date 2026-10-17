@@ -1,0 +1,363 @@
+package com.gtocore.integration.emi;
+
+import com.gtocore.common.CommonProxy;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTORecipeTypes;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
+import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.Mods;
+import com.gtocore.integration.chisel.ChiselRecipe;
+import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
+import com.gtocore.integration.emi.electrochemistry.IonEmiStackSerializer;
+import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
+import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
+import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
+import com.gtocore.integration.emi.research.DataScanningEmiRecipe;
+import com.gtocore.integration.emi.research.ResearchTagEmiStack;
+import com.gtocore.integration.emi.research.ResearchTagEmiStackSerializer;
+import com.gtocore.integration.emi.research.TechNodeEmiStack;
+import com.gtocore.integration.emi.research.TechNodeEmiStackSerializer;
+import com.gtocore.integration.emi.research.TechTreeEmiRecipe;
+import com.gtocore.integration.emi.space.SatelliteEmiCategory;
+import com.gtocore.integration.misc.CalculatorOverlay;
+
+import com.gtolib.api.GTOApi;
+import com.gtolib.api.ae2.me2in1.ME2in1Helper;
+import com.gtolib.api.ae2.me2in1.Me2in1Menu;
+import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
+import com.gtolib.api.data.Dimension;
+import com.gtolib.api.emi.stack.EmiSearchTextStack;
+import com.gtolib.api.emi.stack.EmiSearchTextStackSerializer;
+import com.gtolib.api.emi.stack.EmiTagprefixStack;
+import com.gtolib.api.emi.stack.EmiTagprefixStackSerializer;
+import com.gtolib.gtm.recipe.editor.CraftAction;
+import com.gtolib.gtm.recipe.editor.GTEmiRecipeHandler;
+import com.gtolib.utils.GTOUtils;
+
+import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.GTCEuAPI;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeTierPreview;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gregtechceu.gtceu.common.data.GTFluids;
+import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.common.fluid.potion.PotionFluid;
+import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory;
+import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
+import com.gregtechceu.gtceu.integration.emi.orevein.GTOreVeinEmiCategory;
+import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
+import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.alchemy.PotionUtils;
+
+import appeng.core.AppEng;
+import appeng.integration.modules.emi.AppEngEmiPlugin;
+import appeng.integration.modules.emi.EmiEncodePatternHandler;
+import appeng.integration.modules.emi.EmiUseCraftingRecipeHandler;
+import appeng.integration.modules.emi.IStackInteractionScreen;
+import appeng.menu.me.items.PatternEncodingTermMenu;
+
+import com.arsmeteorites.arsmeteorites.ArsMeteorites;
+import com.arsmeteorites.arsmeteorites.emi.MeteoritesEmiPlugin;
+import com.glodblock.github.extendedae.container.ContainerExCraftingTerminal;
+import com.gto.datasynclib.util.ByteBufCodecExtends;
+import com.hollingsworth.arsnouveau.client.jei.JEIArsNouveauPlugin;
+import com.lowdragmc.lowdraglib.LDLib;
+import com.lowdragmc.lowdraglib.emi.EMIPlugin;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
+import de.mari_023.ae2wtlib.wct.WCTMenu;
+import de.mari_023.ae2wtlib.wet.WETMenu;
+import dev.emi.emi.VanillaPlugin;
+import dev.emi.emi.api.EmiDragDropHandler;
+import dev.emi.emi.api.EmiPlugin;
+import dev.emi.emi.api.EmiRegistry;
+import dev.emi.emi.api.stack.Comparison;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.EmiStackInteraction;
+import dev.emi.emi.jemi.JemiPlugin;
+import dev.emi.emi.registry.EmiPluginContainer;
+import dev.emi.emi.screen.EmiScreenManager;
+import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
+import dev.shadowsoffire.apotheosis.ench.compat.EnchJEIPlugin;
+import dev.shadowsoffire.apotheosis.potion.compat.PotionJEIPlugin;
+import dev.shadowsoffire.apotheosis.village.compat.VillageJEIPlugin;
+import io.github.lounode.extrabotany.api.ExtraBotanyAPI;
+import io.github.lounode.extrabotany.client.integration.emi.EmiExtrabotanyPlugin;
+import io.github.prismwork.emitrades.EMITradesPlugin;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import jeresources.jei.JEIConfig;
+import mezz.jei.api.IModPlugin;
+import mezz.jei.library.plugins.jei.JeiInternalPlugin;
+import mythicbotany.jei.MythicJei;
+import snownee.jade.compat.JEICompat;
+import umpaz.farmersrespite.integration.jei.JEIFRPlugin;
+import vazkii.botania.api.BotaniaAPI;
+import vazkii.botania.client.integration.emi.BotaniaEmiPlugin;
+import vectorwing.farmersdelight.FarmersDelight;
+
+import java.util.function.Consumer;
+
+public final class GTEMIPlugin implements EmiPlugin {
+
+    private static final ResourceLocation SCRY_RITUAL = new ResourceLocation("ars_nouveau", "scry_ritual");
+
+    public static void init() {
+        RecipeTierPreview.register(ManaTierPreview::of);
+        GTOApi.EMI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addEMIPlugin);
+        GTOApi.JEI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addJEIPlugin);
+        if (GTOConfig.INSTANCE.misc.enableEmiJeiExternalPlugins.length > 0) {
+            var emi = new ReferenceOpenHashSet<Class<? extends EmiPlugin>>();
+            var jei = new ReferenceOpenHashSet<Class<? extends IModPlugin>>();
+            for (var name : GTOConfig.INSTANCE.misc.enableEmiJeiExternalPlugins) {
+                try {
+                    var clazz = Class.forName(name);
+                    if (EmiPlugin.class.isAssignableFrom(clazz)) {
+                        emi.add(clazz.asSubclass(EmiPlugin.class));
+                    } else if (IModPlugin.class.isAssignableFrom(clazz)) {
+                        jei.add(clazz.asSubclass(IModPlugin.class));
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (!emi.isEmpty()) {
+                GTOApi.EMI_PLUGIN_EVENT.addListener(GTOConfig.class, c -> emi.forEach(clazz -> {
+                    try {
+                        c.accept(new EmiPluginContainer(clazz.getDeclaredConstructor().newInstance(), clazz.getName()));
+                    } catch (Throwable ignored) {}
+                }));
+            }
+            if (!jei.isEmpty()) {
+                GTOApi.JEI_PLUGIN_EVENT.addListener(GTOConfig.class, c -> jei.forEach(clazz -> {
+                    try {
+                        c.accept(clazz.getDeclaredConstructor().newInstance());
+                    } catch (Throwable ignored) {}
+                }));
+            }
+        }
+        GTOApi.EMI_HIDE_ITEM_EVENT.addListener(HiddenItems.class, HiddenItems::registerHiddenItems);
+        if (GTCEu.isClientSide()) {
+            GTOApi.EMI_ADD_STACK_EVENT.addListener(IonEmiStack.class, IonEmiStack::registerIonEmiStacks);
+            GTOApi.EMI_ADD_STACK_EVENT.addListener(TechNodeEmiStack.class, TechNodeEmiStack::registerTechNodeEmiStack);
+            GTOApi.EMI_ADD_STACK_EVENT.addListener(ResearchTagEmiStack.class, ResearchTagEmiStack::registerResearchTagEmiStack);
+        }
+    }
+
+    private static void addJEIPlugin(Consumer<IModPlugin> list) {
+        list.accept(new mezz.jei.library.plugins.vanilla.VanillaPlugin());
+        list.accept(new JeiInternalPlugin());
+        list.accept(new JemiPlugin());
+        list.accept(new EnchJEIPlugin());
+        list.accept(new AdventureJEIPlugin());
+        list.accept(new PotionJEIPlugin());
+        list.accept(new VillageJEIPlugin());
+        list.accept(new JEIConfig());
+        list.accept(new MythicJei());
+        list.accept(new JEIFRPlugin());
+        list.accept(new JEIArsNouveauPlugin());
+        list.accept(new JEICompat());
+        if (GTCEu.isModLoaded("ftbxmodcompat")) {
+            NotDevCompat.addPlugin(list);
+        }
+        if (GTCEu.isModLoaded("calculatoroverlay")) {
+            CalculatorOverlay.initJEI(list);
+        }
+    }
+
+    private static void addEMIPlugin(Consumer<EmiPluginContainer> list) {
+        list.accept(new EmiPluginContainer(new VanillaPlugin(), "emi"));
+        if (GTCEu.isProd()) {
+            list.accept(new EmiPluginContainer(new EMITradesPlugin(), "emitrades"));
+        }
+        if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
+            list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.emi.BackpackEmiPlugin(), "backpack"));
+        }
+        list.accept(new EmiPluginContainer(new BotaniaEmiPlugin(), BotaniaAPI.MODID));
+        list.accept(new EmiPluginContainer(new EmiExtrabotanyPlugin(), ExtraBotanyAPI.MODID));
+        list.accept(new EmiPluginContainer(new EMIPlugin(), LDLib.MOD_ID));
+        list.accept(new EmiPluginContainer(new GTEMIPlugin(), GTCEu.MOD_ID));
+        list.accept(new EmiPluginContainer(new MeteoritesEmiPlugin(), ArsMeteorites.MOD_ID));
+        list.accept(new EmiPluginContainer(new AppEngEmiPlugin(), AppEng.MOD_ID));
+        list.accept(new EmiPluginContainer(new vectorwing.farmersdelight.integration.emi.EMIPlugin(), FarmersDelight.MODID));
+        try {
+            list.accept(new EmiPluginContainer(new fzzyhmstrs.emi_loot.emi.EmiClientPlugin(), fzzyhmstrs.emi_loot.EMILoot.MOD_ID));
+        } catch (Throwable ignored) {
+
+        }
+    }
+
+    // 用于在 EMI 中注册维度数据的变体
+    private static void registerDimensionDataVariants(EmiRegistry registry) {
+        var previousDimensionData = EmiStack.of(GTOItems.DIMENSION_DATA.asItem());
+        for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
+            var dimensionData = EmiStack.of(GTOItems.DIMENSION_DATA.get().getDimensionData(layer));
+            registry.addEmiStackAfter(dimensionData, previousDimensionData);
+            previousDimensionData = dimensionData;
+        }
+    }
+
+    @Override
+    public void register(EmiRegistry registry) {
+        if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
+        registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
+
+        registry.addCategory(OreProcessingEmiCategory.CATEGORY);
+        registry.addCategory(GTOreVeinEmiCategory.CATEGORY);
+        registry.addCategory(GTBedrockFluidEmiCategory.CATEGORY);
+        registry.addCategory(NanitesIntegratedProcessingEmiCategory.ORE_EXTRACTION_MODULE);
+        registry.addCategory(NanitesIntegratedProcessingEmiCategory.BIOENGINEERING_MODULE);
+        registry.addCategory(NanitesIntegratedProcessingEmiCategory.POLYMER_TWISTING_MODULE);
+        GTRegistries.RECIPE_CATEGORIES.forEachKeyValue((id, category) -> {
+            if (category.getRecipeType() == GTORecipeTypes.NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES) return;
+            if (GTCEu.isDev() || category.isXEIVisible()) {
+                registry.addCategory(GTRecipeEMICategory.CATEGORIES.apply(category));
+            }
+        });
+        registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
+        registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
+        registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
+        registry.addRecipeHandler(Wireless.TYPE, ME2in1Helper.createEMIWireless());
+        registry.addRecipeHandler(CategoryMappingSubMenu.TYPE, new CategoryMappingSubMenu.EmiHandler());
+        registry.addRecipeHandler(PatternEncodingTermMenu.TYPE, new GTAe2PatternTerminalHandler<>());
+        registry.addRecipeHandler(WETMenu.TYPE, new GTAe2PatternTerminalHandler<>());
+        registry.addRecipeHandler(WCTMenu.TYPE, new EmiUseCraftingRecipeHandler<>(WCTMenu.class));
+        registry.addRecipeHandler(WETMenu.TYPE, new EmiEncodePatternHandler<>(WETMenu.class));
+        registry.addRecipeHandler(PatternEncodingTermMenu.TYPE, new EmiEncodePatternHandler<>(PatternEncodingTermMenu.class));
+        registry.addRecipeHandler(ContainerExCraftingTerminal.TYPE, new XModTransferHandlers.ExCraftingTransferHandler<>(ContainerExCraftingTerminal.class));
+        registry.addCategory(GTProgrammedCircuitCategory.CATEGORY);
+
+        OreProcessingEmiCategory.registerDisplays(registry);
+        GTOreVeinEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
+        GTBedrockFluidEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
+        GTProgrammedCircuitCategory.registerDisplays(registry);
+
+        PrimordialReconstructorDisassemblyEmiCategory.register(registry);
+        DataScanningEmiRecipe.register(registry);
+        TechTreeEmiRecipe.register(registry);
+        SatelliteEmiCategory.register(registry);
+
+        GTRecipeEMICategory.registerWorkStations(registry);
+        GTOreVeinEmiCategory.registerWorkStations(registry);
+        GTBedrockFluidEmiCategory.registerWorkStations(registry);
+        NanitesIntegratedProcessingEmiCategory.registerWorkstations(registry);
+        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.compareNbt());
+        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.compareNbt());
+        registerDimensionDataVariants(registry);
+
+        Comparison potionComparison = Comparison.compareData(stack -> PotionUtils.getPotion(stack.getNbt()));
+        PotionFluid potionFluid = GTFluids.POTION.get();
+        registry.setDefaultComparison(potionFluid.getSource(), potionComparison);
+        registry.setDefaultComparison(potionFluid.getFlowing(), potionComparison);
+
+        GTCEuAPI.materialManager.getRegisteredMaterials().stream().filter(m -> GTOUtils.isGeneration(TagPrefix.turbineBlade, m)).forEach(
+                m -> registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, m), Comparison.compareNbt()));
+
+        registry.addGenericDragDropHandler(new EmiDragDropHandler<>() {
+
+            @Override
+            public boolean dropStack(Screen screen, EmiIngredient stack, int x, int y) {
+                if (stack.isEmpty()) {
+                    return false;
+                }
+                if (stack.getEmiStacks().getFirst() instanceof EmiSearchTextStack searchTextStack) {
+                    for (var widget : screen.renderables) {
+                        if (widget instanceof EditBox editBox && editBox.isMouseOver(x, y)) {
+                            String text = searchTextStack.getText();
+                            editBox.setValue(text);
+                            return true;
+                        }
+                    }
+                }
+                if (EmiScreenManager.search.isMouseOver(x, y)) {
+                    stack.getEmiStacks().stream().findFirst().ifPresent(s -> EmiScreenManager.search.setValue(s.getName().getString()));
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void render(Screen screen, EmiIngredient dragged, GuiGraphics draw, int mouseX, int mouseY, float delta) {
+                EmiDragDropHandler.super.render(screen, dragged, draw, mouseX, mouseY, delta);
+
+                if (!dragged.isEmpty() &&
+                        dragged.getEmiStacks().getFirst() instanceof EmiSearchTextStack) {
+                    for (var widget : screen.renderables) {
+                        if (widget instanceof EditBox editBox) {
+                            var area = editBox.getRectangle();
+                            draw.fill(
+                                    area.left(),
+                                    area.top(),
+                                    area.right(),
+                                    area.bottom(),
+                                    0x8822BB33);
+                        }
+                    }
+                }
+                var area = EmiScreenManager.search.getRectangle();
+                draw.fill(
+                        area.left(),
+                        area.top(),
+                        area.right(),
+                        area.bottom(),
+                        0x8822BB33);
+            }
+        });
+
+        registry.addIngredientSerializer(EmiSearchTextStack.class, new EmiSearchTextStackSerializer());
+        registry.addIngredientSerializer(EmiTagprefixStack.class, new EmiTagprefixStackSerializer());
+        registry.addIngredientSerializer(ResearchTagEmiStack.class, new ResearchTagEmiStackSerializer());
+        registry.addIngredientSerializer(TechNodeEmiStack.class, new TechNodeEmiStackSerializer());
+        registry.addIngredientSerializer(IonEmiStack.class, new IonEmiStackSerializer());
+        registry.addIngredientSerializer(FrontLitEmiStack.class, new FrontLitEmiStack.Serializer());
+        registry.addGenericStackProvider((Screen screen, int x, int y) -> {
+            for (var widget : screen.renderables) {
+                if (widget instanceof EditBox editBox && !editBox.isFocused() && editBox.isMouseOver(x, y)) {
+                    String text = editBox.getValue();
+                    if (!text.isEmpty()) {
+                        return new EmiStackInteraction(new EmiSearchTextStack(text), null, screen instanceof IStackInteractionScreen);
+                    }
+                }
+            }
+            if (EmiScreenManager.search.isMouseOver(x, y)) {
+                String text = EmiScreenManager.search.getValue();
+                if (!text.isEmpty()) {
+                    return new EmiStackInteraction(new EmiSearchTextStack(text), null, screen instanceof IStackInteractionScreen);
+                }
+            }
+            return EmiStackInteraction.EMPTY;
+        });
+
+        registry.addCategory(AlfheimEntryRequirements.CATEGORY);
+        registry.addRecipe(new AlfheimEntryRequirements());
+
+        CraftAction.startReloadRegistration();
+        CraftAction.registerCanCraftOverride(
+                (recipe, context, simulate) -> {
+                    if (context.getScreenHandler().getModularUI().holder instanceof MEPatternBufferPartMachine patternBuffer) {
+                        if (simulate) {
+                            return true;
+                        }
+                        if (recipe.getId() != null) {
+                            // 写进当前打开着单槽配置弹出面板的那个样板槽；没打开时不写
+                            var window = MachineWindow.find(context.getScreenHandler().getModularUI());
+                            int currentSlot = window == null ? -1 : window.getPopupArgument(MEPatternBufferPartMachine.SLOT_CONFIG_POPUP);
+                            if (currentSlot < 0) return true;
+                            MEPatternBufferPartMachine.SET_ID_CHANNEL
+                                    .send(buf -> {
+                                        buf.writeBlockPos(patternBuffer.getPos());
+                                        buf.writeVarInt(currentSlot);
+                                        ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.encode(buf, recipe.getId());
+                                    });
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+    }
+}

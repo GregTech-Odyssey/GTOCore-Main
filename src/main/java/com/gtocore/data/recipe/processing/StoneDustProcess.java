@@ -1,0 +1,373 @@
+package com.gtocore.data.recipe.processing;
+
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
+
+import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+
+import static com.gregtechceu.gtceu.api.GTValues.*;
+import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.dust;
+import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gtocore.common.data.GTOMaterials.*;
+import static com.gtocore.common.data.GTORecipeTypes.*;
+import static com.gtocore.common.machine.mana.CelestialHandler.STELLARM;
+
+public final class StoneDustProcess {
+
+    public static void init() {
+        MIXER_RECIPES.recipeBuilder("dirty_hexafluorosilicic_acid_output")
+                .inputItems(dust, Stone, 24)
+                .inputFluids(HydrofluoricAcid, 6000)
+                .outputFluids(DirtyHexafluorosilicicAcid.getFluid(3000))
+                .duration(40).EUt(VA[LV])
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("stone_dust_residue_output")
+                .inputFluids(DirtyHexafluorosilicicAcid, 3000)
+                .outputFluids(DiluteHexafluorosilicicAcid.getFluid(3000))
+                .outputItems(dust, StoneDustResidue, 12)
+                .duration(40).EUt(VA[LV])
+                .save();
+
+        DISTILLATION_RECIPES.recipeBuilder("dilute_hexafluorosilicic_acid")
+                .inputFluids(DiluteHexafluorosilicicAcid, 3000)
+                .outputFluids(Water.getFluid(2000))
+                .outputFluids(FluorosilicicAcid.getFluid(1000))
+                .duration(160).EUt(VA[MV])
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("ammonium_fluoride_output")
+                .inputFluids(Water, 2000)
+                .inputFluids(Ammonia, 6000)
+                .inputFluids(FluorosilicicAcid, 1000)
+                .outputItems(dust, SiliconDioxide, 3)
+                .outputFluids(AmmoniumFluoride.getFluid(6000))
+                .duration(320).EUt(VA[HV])
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("ammonium_bifluoride_output")
+                .inputFluids(AmmoniumFluoride, 2000)
+                .outputItems(dust, AmmoniumBifluoride, 8)
+                .outputFluids(Ammonia.getFluid(1000))
+                .duration(340).EUt(VA[MV])
+                .save();
+
+        MIXER_RECIPES.recipeBuilder("ammonium_bifluoride_soluition_output")
+                .inputFluids(Water, 1000)
+                .inputItems(dust, AmmoniumBifluoride, 8)
+                .outputFluids(AmmoniumBifluorideSolution.getFluid(2000))
+                .duration(140).EUt(VA[LV])
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("ammonium_bifluoride_solution")
+                .inputFluids(AmmoniumBifluorideSolution, 2000)
+                .outputFluids(Ammonia.getFluid(1000))
+                .outputFluids(HydrofluoricAcid.getFluid(2000))
+                .outputFluids(Water.getFluid(1000))
+                .duration(260).EUt(VA[MV])
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("uncommon_residues_output")
+                .inputFluids(SodiumHydroxideSolution, 1000)
+                .inputItems(dust, StoneDustResidue, 24)
+                .outputItems(dust, UncommonResidues, 1)
+                .outputItems(dust, Magnetite, 1)
+                .outputFluids(SodiumHydroxideSolution.getFluid(925))
+                .outputFluids(RedMud.getFluid(75))
+                .duration(40).EUt(VA[MV])
+                .save();
+
+        MIXER_RECIPES.recipeBuilder("sodium_hydroxide_solution_output")
+                .circuitMeta(2)
+                .inputItems(dust, SodiumHydroxide, 3)
+                .inputFluids(Water, 1000)
+                .outputFluids(SodiumHydroxideSolution.getFluid(1000))
+                .duration(60).EUt(VA[LV])
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("partially_oxidized_residues_output")
+                .inputItems(dust, UncommonResidues, 1)
+                .inputFluids(DioxygenDifluoride, 1000)
+                .outputItems(dust, PartiallyOxidizedResidues, 1)
+                .duration(80).EUt(VA[MV])
+                .save();
+
+        MIXER_RECIPES.recipeBuilder("neutralised_red_mud_output")
+                .inputFluids(RedMud, 1000)
+                .inputFluids(HydrochloricAcid, 4000)
+                .outputFluids(NeutralisedRedMud.getFluid(2000))
+                .duration(100).EUt(VA[MV])
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("red_slurry_output")
+                .inputFluids(NeutralisedRedMud, 2000)
+                .outputFluids(RedSlurry.getFluid(500))
+                .outputFluids(FerricReeChloride.getFluid(500))
+                .outputFluids(Hydrogen.getFluid(4000))
+                .duration(100).EUt(VA[MV])
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("titanyl_sulfate_output")
+                .inputFluids(SulfuricAcid, 1000)
+                .inputFluids(RedSlurry, 2000)
+                .outputFluids(TitanylSulfate.getFluid(1000))
+                .outputFluids(Water.getFluid(2000))
+                .duration(160).EUt(VA[MV])
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("titanyl_sulfate")
+                .inputFluids(HydrochloricAcid, 4000)
+                .inputFluids(TitanylSulfate, 1000)
+                .outputFluids(TitaniumTetrachloride.getFluid(1000))
+                .outputFluids(SulfuricAcid.getFluid(1000))
+                .duration(160).EUt(960)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("ferric_ree_chloride")
+                .inputFluids(FerricReeChloride, 2000)
+                .outputFluids(RareEarthChlorides.getFluid(1000))
+                .outputFluids(Iron3Chloride.getFluid(1000))
+                .outputFluids(Water.getFluid(3000))
+                .duration(320).EUt(VA[HV])
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("dioxygen_difluoride_output")
+                .notConsumable(GTOItems.MICROFOCUS_X_RAY_TUBE)
+                .inputFluids(Oxygen, 2000)
+                .inputFluids(Fluorine, 2000)
+                .outputFluids(DioxygenDifluoride.getFluid(1000))
+                .duration(80).EUt(200)
+                .save();
+
+        DEHYDRATOR_RECIPES.recipeBuilder("oxidized_residues_output")
+                .inputFluids(OxidizedResidualSolution, 2000)
+                .outputItems(dust, OxidizedResidues, 1)
+                .outputItems(dust, HeavyOxidizedResidues, 1)
+                .duration(80).EUt(3000)
+                .save();
+
+        REACTION_FURNACE_RECIPES.recipeBuilder("metallic_residues_output")
+                .inputItems(dust, OxidizedResidues, 10)
+                .inputFluids(Hydrogen, 60000)
+                .outputItems(dust, MetallicResidues, 1)
+                .outputFluids(DiluteHydrofluoricAcid.getFluid(40000))
+                .duration(1600).EUt(VA[EV])
+                .blastFurnaceTemp(3500)
+                .save();
+
+        REACTION_FURNACE_RECIPES.recipeBuilder("heavy_metallic_residues_output")
+                .inputItems(dust, HeavyOxidizedResidues, 10)
+                .inputFluids(Hydrogen, 60000)
+                .outputItems(dust, HeavyMetallicResidues, 1)
+                .outputFluids(DiluteHydrofluoricAcid.getFluid(40000))
+                .duration(1600).EUt(VA[EV])
+                .blastFurnaceTemp(3500)
+                .save();
+
+        MIXER_RECIPES.recipeBuilder("ultraacidic_residue_solution_output")
+                .inputFluids(HeliumIIIHydride, 1000)
+                .inputItems(dust, CleanInertResidues, 1)
+                .outputFluids(UltraacidicResidueSolution.getFluid(1000))
+                .duration(160).EUt(VA[EV])
+                .save();
+
+        DISTILLATION_RECIPES.recipeBuilder("helium_iii_hydride_output")
+                .inputFluids(TritiumHydride, 10000)
+                .outputFluids(HeliumIIIHydride.getFluid(100))
+                .outputFluids(TritiumHydride.getFluid(9900))
+                .duration(800).EUt(200)
+                .save();
+
+        CHEMICAL_RECIPES.recipeBuilder("tritium_hydride_output")
+                .catalyst(GTOMaterials.PlatinumSDBResin)
+                .inputFluids(Hydrogen, 1000)
+                .inputFluids(Tritium, 1000)
+                .outputFluids(TritiumHydride.getFluid(1000))
+                .duration(160).EUt(VA[EV])
+                .save();
+        REACTION_FURNACE_RECIPES.builder("tritium_hydride_output_inverted")
+                .catalyst(GTOMaterials.PlatinumSDBResin)
+                .inputFluids(GTOMaterials.TritiumHydride, 1000)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 1000))
+                .outputFluids(GTMaterials.Tritium, 1000)
+                .blastFurnaceTemp(2100)
+                .duration(160).EUt(VA[EV])
+                .save();
+
+        LARGE_CHEMICAL_RECIPES.recipeBuilder("xenic_acid_output")
+                .inputFluids(Xenon, 1000)
+                .inputFluids(Oxygen.getFluid(FluidStorageKeys.LIQUID, 4000))
+                .inputFluids(UltraacidicResidueSolution, 2000)
+                .outputFluids(XenicAcid.getFluid(1000))
+                .outputFluids(DustyLiquidHeliumIII.getFluid(2000))
+                .duration(120).EUt(VA[EV])
+                .save();
+
+        ELECTROLYZER_RECIPES.recipeBuilder("ozone_output_1")
+                .inputFluids(XenicAcid, 2000)
+                .outputFluids(Xenon.getFluid(2000))
+                .outputFluids(Water.getFluid(1000))
+                .outputFluids(Ozone.getFluid(1000))
+                .outputFluids(HydrogenPeroxide.getFluid(1000))
+                .outputFluids(Oxygen.getFluid(2000))
+                .duration(120).EUt(VA[HV])
+                .save();
+
+        DISTILLATION_RECIPES.recipeBuilder("hydrofluoric_acid_output")
+                .inputFluids(DiluteHydrofluoricAcid, 2000)
+                .outputFluids(Water.getFluid(1000))
+                .outputFluids(HydrofluoricAcid.getFluid(1000))
+                .duration(80).EUt(200)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("metallic_residues_input")
+                .notConsumable(GTOItems.SEPARATION_ELECTROMAGNET)
+                .inputItems(dust, MetallicResidues, 10)
+                .outputItems(dust, DiamagneticResidues, 3)
+                .outputItems(dust, ParamagneticResidues, 3)
+                .outputItems(dust, FerromagneticResidues, 3)
+                .outputItems(dust, UncommonResidues, 1)
+                .duration(80).EUt(VA[IV])
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("heavy_metallic_residues_input")
+                .notConsumable(GTOItems.SEPARATION_ELECTROMAGNET)
+                .inputItems(dust, HeavyMetallicResidues, 10)
+                .outputItems(dust, HeavyDiamagneticResidues, 3)
+                .outputItems(dust, HeavyParamagneticResidues, 3)
+                .outputItems(dust, HeavyFerromagneticResidues, 3)
+                .outputItems(dust, ExoticHeavyResidues, 1)
+                .duration(80).EUt(VA[IV])
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("diamagnetic_residues_input")
+                .inputItems(dust, DiamagneticResidues, 6)
+                .chancedOutput(dust, Calcium, 1, 2500, 0)
+                .chancedOutput(dust, Zinc, 1, 2500, 0)
+                .chancedOutput(dust, Copper, 1, 2500, 0)
+                .chancedOutput(dust, Gallium, 1, 2500, 0)
+                .chancedOutput(dust, Beryllium, 1, 2500, 0)
+                .chancedOutput(dust, Tin, 1, 2500, 0)
+                .duration(100).EUt(3000)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("paramagnetic_residues_input")
+                .inputItems(dust, ParamagneticResidues, 6)
+                .chancedOutput(dust, Sodium, 1, 2500, 0)
+                .chancedOutput(dust, Potassium, 1, 2500, 0)
+                .chancedOutput(dust, Magnesium, 1, 2500, 0)
+                .chancedOutput(dust, Titanium, 1, 2500, 0)
+                .chancedOutput(dust, Vanadium, 1, 2500, 0)
+                .chancedOutput(dust, Manganese, 1, 2500, 0)
+                .duration(100).EUt(3000)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("ferromagnetic_residues_input")
+                .inputItems(dust, FerromagneticResidues, 6)
+                .chancedOutput(dust, Iron, 1, 2500, 0)
+                .chancedOutput(dust, Nickel, 1, 2500, 0)
+                .chancedOutput(dust, Cobalt, 1, 2500, 0)
+                .duration(100).EUt(3000)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("heavy_diamagnetic_residues_input")
+                .inputItems(dust, HeavyDiamagneticResidues, 6)
+                .chancedOutput(dust, Lead, 1, 2500, 0)
+                .chancedOutput(dust, Cadmium, 1, 2500, 0)
+                .chancedOutput(dust, Indium, 1, 2500, 0)
+                .chancedOutput(dust, Gold, 1, 2500, 0)
+                .chancedOutput(dust, Bismuth, 1, 2500, 0)
+                .outputFluids(Mercury.getFluid(36))
+                .duration(120).EUt(3000)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("heavy_paramagnetic_residues_input")
+                .inputItems(dust, HeavyParamagneticResidues, 6)
+                .chancedOutput(dust, Thorium, 1, 2500, 0)
+                .chancedOutput(dust, Uranium235, 1, 2500, 0)
+                .chancedOutput(dust, Tungsten, 1, 2500, 0)
+                .chancedOutput(dust, Hafnium, 1, 2500, 0)
+                .chancedOutput(dust, Tantalum, 1, 2500, 0)
+                .chancedOutput(dust, Thallium, 1, 2500, 0)
+                .duration(120).EUt(3000)
+                .save();
+
+        CENTRIFUGE_RECIPES.recipeBuilder("heavy_ferromagnetic_residues_input")
+                .inputItems(dust, HeavyFerromagneticResidues, 6)
+                .chancedOutput(dust, Dysprosium, 1, 2500, 0)
+                .duration(120).EUt(3000)
+                .save();
+
+        MIXER_RECIPES.recipeBuilder("exotic_heavy_residues_input")
+                .inputItems(dust, ExoticHeavyResidues, 16)
+                .inputItems(dust, SodiumHydroxide, 3)
+                .inputItems(GTOItems.PROTONATED_FULLERENE_SIEVING_MATRIX)
+                .inputFluids(Water, 2000)
+                .outputItems(GTOItems.SATURATED_FULLERENE_SIEVING_MATRIX)
+                .outputFluids(SodiumHydroxideSolution.getFluid(1000))
+                .duration(40).EUt(VA[UHV])
+                .save();
+
+        ARC_GENERATOR_RECIPES.recipeBuilder("nitrogen_pentoxide")
+                .circuitMeta(6)
+                .inputFluids(Oxygen, 6000)
+                .outputFluids(Ozone.getFluid(2000))
+                .duration(120).EUt(VA[HV])
+                .save();
+
+        MACERATOR_RECIPES.builder("saturn_ring_grunt")
+                .inputItems(GTOBlocks.SATURN_RING_STONE.asItem())
+                .outputItems(GTOBlocks.SATURN_RING_GRUNT.asItem(), 4)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.Cruptix, 1, 22)
+                .EUt(30)
+                .duration(200)
+                .save();
+        CHEMICAL_BATH_RECIPES.builder("asteroid_fragment_dust")
+                .inputItems(GTOBlocks.SATURN_RING_GRUNT.asItem())
+                .outputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment)
+                .inputFluids(GTMaterials.SulfuricAcid, 100)
+                .outputFluids(GTOMaterials.TitanylSulfate, 100)
+                .EUt(1920)
+                .duration(400)
+                .save();
+        ELECTROLYZER_RECIPES.builder("livingsteel_dust1")
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment, 37)
+                .outputItems(TagPrefix.dust, GTOMaterials.Livingsteel, 4)
+                .outputItems(TagPrefix.dust, GTMaterials.WroughtIron, 6)
+                .outputItems(TagPrefix.dust, GTMaterials.Neodymium, 2)
+                .outputItems(TagPrefix.dust, GTMaterials.Lead, 1)
+                .outputItems(TagPrefix.dust, GTMaterials.Stone, 16)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:oxygen", 7000))
+                .EUt(768)
+                .duration(2000)
+                .save();
+        SIFTER_RECIPES.builder("prasiolite_d1ust")
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment, 10)
+                .outputItems(TagPrefix.dust, GTOMaterials.Prasiolite, 4)
+                .outputItems(TagPrefix.dustImpure, GTMaterials.Iron, 4)
+                .outputItems(TagPrefix.dust, GTMaterials.IndiumPhosphide)
+                .outputItems(TagPrefix.dust, GTMaterials.Stone)
+                .EUt(1536)
+                .duration(520)
+                .save();
+        MANA_INFUSER_RECIPES.builder("gaia_core_or1e")
+                .notConsumable(TagPrefix.block, GTOMaterials.Livingrock)
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment, 4)
+                .outputItems(TagPrefix.ore, GTOMaterials.GaiaCore)
+                .circuitMeta(1)
+                .duration(50)
+                .MANAt(512)
+                .save();
+        CELESTIAL_CONDENSER_RECIPES.builder("cruptix_dust")
+                .inputItems(TagPrefix.dust, GTOMaterials.AsteroidFragment, 16)
+                .outputItems(TagPrefix.dust, GTOMaterials.Cruptix)
+                .addData(STELLARM, 4000)
+                .duration(256)
+                .save();
+    }
+}

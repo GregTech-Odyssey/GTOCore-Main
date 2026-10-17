@@ -1,0 +1,185 @@
+package com.gtocore.common.machine.electric;
+
+import com.gtocore.api.research.ExResearchManager;
+import com.gtocore.api.research.ResearchRequirements;
+import com.gtocore.api.research.recipe.ScanningRecipeExtion;
+import com.gtocore.api.research.scanning.DataScanningManager;
+import com.gtocore.common.item.DataCrystalItem;
+import com.gtocore.config.GTORules;
+import com.gtocore.data.IdleReason;
+
+import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.misc.PlanetManagement;
+import com.gtolib.api.recipe.RecipeBuilder;
+import com.gtolib.utils.RLUtils;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fluids.FluidStack;
+
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKeyTypes;
+
+import com.gto.datasynclib.util.holder.ObjHolder;
+import com.hepdd.gtmthings.utils.TeamUtil;
+import it.unimi.dsi.fastutil.ints.Int2IntFunction;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
+
+public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipeLogicHolder {
+
+    public ScannerMachine(MetaMachineBlockEntity holder, int tier, Int2IntFunction tankScalingFunction, Object... args) {
+        super(holder, tier, tankScalingFunction, args);
+    }
+
+    @Override
+    public boolean alwaysSearchRecipe() {
+        return true;
+    }
+
+    @Override
+    public @Nullable GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit u) {
+        var team = TeamUtil.getTeamUUID(getOwnerUUID());
+        RecipeData data = new RecipeData();
+        ObjHolder<GTRecipeDefinition> recipeObjectHolder = new ObjHolder<>();
+        data.dataCrystal = ItemStack.EMPTY;
+        data.item = ItemStack.EMPTY;
+        data.team = team;
+        data.machine = this;
+        u.forEachKey(AEKeyTypes.ITEMS, false, (key, amount) -> {
+            if (!(key instanceof AEItemKey itemKey)) return false;
+            var stack = itemKey.getReadOnlyStack();
+            var item = stack.getItem();
+            var isMold = item instanceof DataCrystalItem;
+            if (isMold && data.dataCrystal.isEmpty()) {
+                data.dataCrystal = stack;
+            } else if (!isMold && data.item.isEmpty()) {
+                data.item = stack;
+            }
+            if (data.found()) {
+                var recipe = data.buildRecipe();
+                if (recipe != null) {
+                    recipeObjectHolder.value = recipe;
+                    return true;
+                }
+            }
+            return false;
+        });
+        if (data.fluidStack.isEmpty()) {
+            u.forEachKey(AEKeyTypes.FLUIDS, false, (key, amount) -> {
+                if (data.fluidStack.isEmpty() && amount >= 1000 && key instanceof AEFluidKey fluidKey) {
+                    data.fluidStack = fluidKey.getReadOnlyStack();
+                }
+                if (data.found()) {
+                    var recipe = data.buildRecipe();
+                    if (recipe != null) {
+                        recipeObjectHolder.value = recipe;
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+        return recipeObjectHolder.value;
+    }
+
+    @Override
+    public void afterWorking() {
+        ObjHolder<AEItemKey> unlocked = new ObjHolder<>();
+        long[] unlockedAmount = new long[1];
+        forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
+            if (!(key instanceof AEItemKey itemKey)) return false;
+            CompoundTag tag = itemKey.getTag();
+            if (tag != null) {
+                String planet = tag.getString("planet");
+                if (!planet.isEmpty()) {
+                    UUID uuid = tag.getUUID("uuid");
+                    var dim = GTODimensions.getDimensionKey(RLUtils.parse(planet));
+                    if (PlanetManagement.isUnlocked(uuid, dim)) return false;
+                    PlanetManagement.unlock(uuid, dim);
+                    ExResearchManager.triggerPlanetaryResearch(uuid, dim);
+                    unlocked.value = itemKey;
+                    unlockedAmount[0] = amount;
+                    return true;
+                }
+            }
+            return false;
+        });
+        if (unlocked.value != null) inputItem(unlocked.value, unlockedAmount[0]);
+        super.afterWorking();
+    }
+
+    @Override
+    public boolean searchRecipe() {
+        return true;
+    }
+
+    private static final class RecipeData {
+
+        private final RecipeBuilder recipeBuilder = RecipeBuilder.ofRaw();
+        private UUID team;
+        private ScannerMachine machine;
+
+        private ItemStack dataCrystal = ItemStack.EMPTY;
+        private ItemStack item = ItemStack.EMPTY;
+        private FluidStack fluidStack = FluidStack.EMPTY;
+
+        private boolean fitsCrystal(ItemStack crystal, long bytes) {
+            long remaining = DataCrystalItem.getRemainingCapacity(crystal);
+            if (bytes <= remaining) return true;
+            IdleReason.DATA_CRYSTAL_CAPACITY.setReason(machine, DataCrystalItem.formatBytes(bytes), DataCrystalItem.formatBytes(remaining));
+            return false;
+        }
+
+        private boolean found() {
+            return !dataCrystal.isEmpty() && (!item.isEmpty() || !fluidStack.isEmpty()) && team != null;
+        }
+
+        private GTRecipeDefinition buildRecipe() {
+            var input = dataCrystal.copyWithCount(1);
+            var output = dataCrystal.copyWithCount(1);
+            boolean istem = !item.isEmpty();
+            if (istem) {
+                var c = DataScanningManager.scanData(item.getItem(), team, true);
+                if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEItemKey.of(item.getItem())).isEmpty()) {
+                    return null;
+                }
+                var bytesScanned = c.countBytes();
+                if (!fitsCrystal(input, bytesScanned)) return null;
+                DataCrystalItem.setTeamUUID(output, team);
+                return recipeBuilder.inputItems(input)
+                        .inputItems(item.copyWithCount(1))
+                        .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
+                        .addExtension(ScanningRecipeExtion.INSTANCE)
+                        .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEItemKey.of(item.getItem()), output, team))
+                        .build();
+            } else {
+                var c = DataScanningManager.scanData(fluidStack.getFluid(), team, true);
+                if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEFluidKey.of(fluidStack.getFluid())).isEmpty()) {
+                    return null;
+                }
+                var bytesScanned = c.countBytes();
+                if (!fitsCrystal(input, bytesScanned)) return null;
+                DataCrystalItem.setTeamUUID(output, team);
+                return recipeBuilder.inputItems(input)
+                        .inputFluids(fluidStack.getFluid(), 1000)
+                        .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
+                        .addExtension(ScanningRecipeExtion.INSTANCE)
+                        .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEFluidKey.of(fluidStack.getFluid()), output, team))
+                        .build();
+            }
+        }
+    }
+
+    public static long eut(long bytesScanned) {
+        return 8 * bytesScanned + 8;
+    }
+}

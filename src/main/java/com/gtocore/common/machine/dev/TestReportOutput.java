@@ -1,0 +1,65 @@
+package com.gtocore.common.machine.dev;
+
+import com.gtocore.api.report.*;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
+
+import net.minecraft.network.chat.Component;
+
+import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.lowdragmc.lowdraglib.gui.widget.*;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class TestReportOutput extends MetaMachine implements IFancyUIMachine {
+
+    public TestReportOutput(MetaMachineBlockEntity holder) {
+        super(holder);
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        return MachineDisplay.page(this, this::addDisplayText, this::handleDisplayClick);
+    }
+
+    private void addDisplayText(List<Component> textList) {
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [enchantment]"), "enchantment"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [affix_reporter]"), "affix_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [ore_reporter]"), "ore_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [export_all_loot_tables]"), "export_all_loot_tables"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [export_loot_tables]"), "export_loot_tables"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [material_reporter]"), "material_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [tag_reporter]"), "tag_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [entity_reporter]"), "entity_reporter"));
+        textList.add(ComponentPanelWidget.withButton(Component.literal(" [ItemIconReport]"), "ItemIconReport"));
+    }
+
+    private void handleDisplayClick(String componentData, ClickData clickData) {
+        if (!clickData.isRemote) {
+            switch (componentData) {
+                case "enchantment" -> EnchantmentStorage.getEnchantmentsReport();
+                case "affix_reporter" -> AffixReporter.getAffixReporter();
+                case "ore_reporter" -> OreReport.generateOreReport();
+                case "export_all_loot_tables" -> LootTableExporter.exportAllLootTables();
+                case "export_loot_tables" -> {
+                    List<String> LOOT_TABLES = Arrays.asList(
+                            "extrabotany:reward_bags/eins",
+                            "extrabotany:reward_bags/zwei",
+                            "extrabotany:reward_bags/drei",
+                            "extrabotany:reward_bags/vier",
+                            "extrabotany:reward_bags/nine_and_three_quarters",
+                            "extrabotany:reward_bags/pandoras_box");
+                    LootTableExporter.exportLootTables(LOOT_TABLES);
+                }
+                case "material_reporter" -> MaterialReport.generateReport();
+                case "tag_reporter" -> TagReport.generateReport();
+                case "entity_reporter" -> EntityReport.generateReport();
+                case "ItemIconReport" -> ItemIconReport.generateReport();
+            }
+        }
+    }
+}

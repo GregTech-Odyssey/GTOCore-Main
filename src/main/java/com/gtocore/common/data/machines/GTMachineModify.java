@@ -1,0 +1,293 @@
+package com.gtocore.common.data.machines;
+
+import com.gtocore.api.machine.part.GTOPartAbility;
+import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.api.pattern.StructureModuleKeys;
+import com.gtocore.common.data.GTOMachines;
+
+import com.gtolib.api.lang.GTOAttributes;
+import com.gtolib.api.recipe.GTORecipeModifiers;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
+import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
+import com.gregtechceu.gtceu.api.pattern.Predicates;
+import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
+import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.Tips;
+import com.gregtechceu.gtceu.common.data.GTBlocks;
+import com.gregtechceu.gtceu.common.data.GTMachines;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
+import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
+import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
+import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
+import com.gregtechceu.gtceu.common.machine.multiblock.electric.FusionReactorMachine;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+
+import appeng.api.stacks.AEItemKey;
+
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
+import static com.gregtechceu.gtceu.api.pattern.util.RelativeDirection.*;
+import static com.gregtechceu.gtceu.common.data.GTBlocks.*;
+import static com.gtocore.common.data.GTOMachines.PRIMITIVE_BLAST_FURNACE_HATCH;
+
+public final class GTMachineModify {
+
+    public static void init() {
+        modifyModifiersAndTooltips();
+        replaceStructures();
+    }
+
+    private static void modifyModifiersAndTooltips() {
+        GTMultiMachines.MULTI_SMELTER.setRecipeTypes(new GTRecipeType[] { GTRecipeTypes.FURNACE_RECIPES });
+        GTMultiMachines.MULTI_SMELTER.setTooltipBuilder((itemStack, components) -> components.add(Tips.stat(Component.translatable("gtceu.machine.available_recipe_map_1.tooltip", Component.translatable("gtceu.electric_furnace")))));
+        GTMultiMachines.MULTI_SMELTER.setRecipeModifier(GTORecipeModifiers.UPGRADE_MULTI_SMELTER_OVERCLOCK);
+        GTMultiMachines.LARGE_CHEMICAL_REACTOR.setRecipeModifier(RecipeModifier.NO_MODIFIER);
+        GTMultiMachines.ELECTRIC_BLAST_FURNACE.setRecipeModifier(GTORecipeModifiers.UPGRADE_EBF_OVERCLOCK);
+        GTMultiMachines.PYROLYSE_OVEN.setRecipeModifier(GTORecipeModifiers.UPGRADE_PYROLYSE_OVEN_OVERCLOCK);
+        GTMultiMachines.PYROLYSE_OVEN.setRecoveryItems(GTMachineModify::tinydustFromDustOutput);
+        GTMultiMachines.CRACKER.setRecipeModifier(GTORecipeModifiers.UPGRADE_CRACKER_OVERCLOCK);
+        GTMultiMachines.IMPLOSION_COMPRESSOR.setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+        GTMultiMachines.IMPLOSION_COMPRESSOR.setRecoveryItems((a, b) -> ChemicalHelper.get(TagPrefix.dustTiny, GTMaterials.Saltpeter));
+        GTMultiMachines.DISTILLATION_TOWER.setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+        GTMultiMachines.VACUUM_FREEZER.setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+        GTMultiMachines.ASSEMBLY_LINE.setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+        GTMultiMachines.ELECTRIC_BLAST_FURNACE.setAdditionalDisplay((m, l) -> {});
+
+        for (int tier : GTMachineUtils.ELECTRIC_TIERS) {
+            GTMachines.MACERATOR[tier].setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+            GTMachines.ROCK_CRUSHER[tier].setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+        }
+
+        for (int tier : GTMachineUtils.LOW_TIERS) {
+            GTMachines.AIR_SCRUBBER[tier].setTooltipBuilder((itemStack, components) -> {
+                components.add(Tips.stat(Component.translatable("gtocore.machine.air_scrubber.ash_chance",
+                        Component.literal(FormattingUtil.formatNumbers(getAirScrubberAshTransferChance(tier))).withStyle(ChatFormatting.WHITE))));
+                components.add(Tips.stat(Component.translatable("gtocore.machine.air_scrubber.range",
+                        Component.literal(FormattingUtil.formatNumbers(getAirScrubberRange(tier))).withStyle(ChatFormatting.WHITE))));
+            });
+            GTMachines.AIR_SCRUBBER[tier].setRecipeModifier(GTORecipeModifiers.UPGRADE_OVERCLOCK);
+        }
+
+        for (int tier : new int[] { GTValues.LuV, GTValues.ZPM, GTValues.UV }) {
+            GTMultiMachines.FUSION_REACTOR[tier].setTooltipBuilder((itemStack, components) -> {
+                components.add(Tips.energy(StatKind.ENERGY_CAPACITY, FusionReactorMachine.calculateEnergyStorageFactor(tier, 16), tier));
+                components.add(Tips.feature(Component.translatable("gtceu.multiblock.%s_fusion_reactor.description".formatted(GTValues.VN[tier].toLowerCase(Locale.ROOT)))));
+                components.addAll(List.of(GTOAttributes.perfectOverclock()));
+                components.add(Tips.stat(StatKind.RECIPE_TYPE, Component.translatable(GTRecipeTypes.FUSION_RECIPES.registryName.toLanguageKey()).withStyle(ChatFormatting.WHITE)));
+            });
+        }
+
+        GTResearchMachines.HIGH_PERFORMANCE_COMPUTING_ARRAY.setTooltipBuilder((itemStack, components) -> {
+            components.add(Tips.feature(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.0")));
+            components.add(Tips.feature(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.1")));
+            components.add(Tips.requirement(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.2")));
+            components.add(Tips.warning(Component.translatable("gtceu.machine.high_performance_computation_array.tooltip.3")));
+        });
+    }
+
+    private static void replaceStructures() {
+        GTMultiMachines.STEAM_GRINDER.setStructure(GTMachineModify::steamGrinder);
+        GTMultiMachines.STEAM_OVEN.setStructure(GTMachineModify::steamOven);
+        GTMultiMachines.PRIMITIVE_BLAST_FURNACE.setStructure(GTMachineModify::primitiveBlastFurnace);
+        GTMultiMachines.LARGE_BOILER_BRONZE.setStructure(GTMachineModify::largeBoilerBronze);
+        GTMultiMachines.DISTILLATION_TOWER.setStructure(GTMachineModify::distillationTower);
+        GTMultiMachines.ELECTRIC_BLAST_FURNACE.setStructure(GTMachineModify::electricBlastFurnace);
+    }
+
+    private static Structure steamGrinder(MultiblockMachineDefinition definition) {
+        return Structure
+                .root(Piece.start(LEFT, UP, FRONT)
+                        .aisle("XXX", "XXX", "XXX")
+                        .aisle("XXX", "X#X", "XXX")
+                        .aisle("XXX", "XSX", "XXX")
+                        .build())
+                .symbols(Symbols.create()
+                        .where('S', Predicates.controller(definition))
+                        .where('#', air())
+                        .wherePart('X', blocks(CASING_BRONZE_BRICKS.get())
+                                .or(abilities(PartAbility.STEAM_IMPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1))
+                                .or(abilities(PartAbility.STEAM_EXPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1))
+                                .or(abilities(PartAbility.STEAM).setExactLimit(1))
+                                .or(blocks(GTOMachines.STEAM_VENT_HATCH.get()).setExactLimit(1))))
+                .build();
+    }
+
+    private static Structure steamOven(MultiblockMachineDefinition definition) {
+        return Structure
+                .root(Piece.start(LEFT, UP, FRONT)
+                        .aisle("FFF", "XXX", " X ")
+                        .aisle("FFF", "X#X", " X ")
+                        .aisle("FFF", "XSX", " X ")
+                        .build())
+                .symbols(Symbols.create()
+                        .where('S', controller(definition))
+                        .where('#', air())
+                        .wherePart('X', blocks(CASING_BRONZE_BRICKS.get())
+                                .or(Predicates.abilities(PartAbility.STEAM_IMPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1))
+                                .or(Predicates.abilities(PartAbility.STEAM_EXPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1)))
+                        .where('F', blocks(FIREBOX_BRONZE.get())
+                                .or(Predicates.abilities(PartAbility.STEAM).setExactLimit(1))
+                                .or(blocks(GTOMachines.STEAM_VENT_HATCH.get()).setExactLimit(1))))
+                .build();
+    }
+
+    private static Structure primitiveBlastFurnace(MultiblockMachineDefinition definition) {
+        return Structure
+                .root(Piece.start(LEFT, UP, FRONT)
+                        .aisle("XXX", "XXX", "XXX", "XXX")
+                        .aisle("XXX", "X#X", "X#X", "X#X")
+                        .aisle("XXX", "XYX", "XXX", "XXX")
+                        .build())
+                .symbols(Symbols.create()
+                        .wherePart('X', blocks(CASING_PRIMITIVE_BRICKS.get()).or(blocks(PRIMITIVE_BLAST_FURNACE_HATCH.get()).setMaxGlobalLimited(5)))
+                        .where('#', air())
+                        .where('Y', controller(definition)))
+                .build();
+    }
+
+    private static Structure largeBoilerBronze(MultiblockMachineDefinition definition) {
+        return Structure
+                .root(Piece.start(LEFT, UP, FRONT)
+                        .aisle("XXX", "CCC", "CCC", "CCC")
+                        .aisle("XXX", "CPC", "CPC", "CCC")
+                        .aisle("XXX", "CSC", "CCC", "CCC")
+                        .build())
+                .symbols(Symbols.create()
+                        .where('S', Predicates.controller(definition))
+                        .where('P', blocks(CASING_BRONZE_PIPE.get()))
+                        .where('X', blocks(FIREBOX_BRONZE.get()).setMinGlobalLimited(5)
+                                .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setMinGlobalLimited(1).setPreviewCount(1))
+                                .or(Predicates.abilities(PartAbility.IMPORT_ITEMS).setMaxGlobalLimited(1).setPreviewCount(1)))
+                        .wherePart('C', blocks(CASING_BRONZE_BRICKS.get()).setMinGlobalLimited(20).or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setMinGlobalLimited(1).setPreviewCount(1))))
+                .build();
+    }
+
+    private static Structure distillationTower(MultiblockMachineDefinition definition) {
+        TraceabilityPredicate exportPredicate = GTOPredicates.abilityBlocks(PartAbility.EXPORT_FLUIDS_1X, GTAEMachines.FLUID_EXPORT_HATCH_ME.get()).setMaxLayerLimited(1, 1);
+        TraceabilityPredicate maint = autoAbilities(true, false, false).setMaxGlobalLimited(1);
+        var symbols = Symbols.create()
+                .where('S', Predicates.controller(definition))
+                .wherePart('Y', blocks(CASING_STAINLESS_CLEAN.get())
+                        .or(Predicates.abilities(PartAbility.EXPORT_ITEMS).setMaxGlobalLimited(1))
+                        .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1).setMaxGlobalLimited(2))
+                        .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setExactLimit(1))
+                        .or(maint))
+                .where('Z', blocks(CASING_STAINLESS_CLEAN.get())
+                        .or(exportPredicate)
+                        .or(maint))
+                .where('X', blocks(CASING_STAINLESS_CLEAN.get())
+                        .or(exportPredicate))
+                .where('#', Predicates.air());
+        var base = Piece.start(RIGHT, BACK, UP)
+                .aisle("YSY", "YYY", "YYY")
+                .aisle("ZZZ", "Z#Z", "ZZZ")
+                .portAfter(PortKey.OUT)
+                .build();
+        var layer = Piece.start(RIGHT, BACK, UP)
+                .aisle("XXX", "X#X", "XXX")
+                .portBefore(PortKey.IN)
+                .portAfter(PortKey.OUT)
+                .build();
+        var top = Piece.start(RIGHT, BACK, UP)
+                .aisle("XXX", "XXX", "XXX")
+                .portBefore(PortKey.IN)
+                .build();
+        return Structure.root(base)
+                .symbols(symbols)
+                .atPort(PortKey.OUT, Towers.layers(layer, top, StructureModuleKeys.DISTILLATION_TOWER_LAYERS, 0, 10))
+                .build();
+    }
+
+    private static Structure electricBlastFurnace(MultiblockMachineDefinition definition) {
+        return Structure
+                .root(Piece.start(LEFT, UP, FRONT)
+                        .aisle("XXX", "CCC", "CCC", "XXX")
+                        .aisle("XXX", "C#C", "C#C", "XMX")
+                        .aisle("XSX", "CCC", "CCC", "XXX")
+                        .port('S', StructureModuleKeys.EXT_OUT, BACK)
+                        .build())
+                .symbols(Symbols.create()
+                        .where('S', controller(definition))
+                        .wherePart('X', blocks(CASING_INVAR_HEATPROOF.get()).setMinGlobalLimited(9)
+                                .or(autoAbilities(definition.getRecipeTypes()))
+                                .or(autoAbilities(true, false, false)))
+                        .where('M', abilities(PartAbility.MUFFLER))
+                        .where('C', heatingCoils())
+                        .where('#', air())
+                        .where('a', blocks(GTBlocks.CASING_INVAR_HEATPROOF.get())
+                                .or(GTOPredicates.autoIOAbilities(definition.getRecipeTypes()))
+                                .or(abilities(PartAbility.INPUT_ENERGY).setMaxGlobalLimited(2))
+                                .or(abilities(GTOPartAbility.ACCELERATE_HATCH).setMaxGlobalLimited(1)))
+                        .where('b', GTOPredicates.frame(GTMaterials.StainlessSteel))
+                        .where('c', blocks(GTBlocks.CASING_INVAR_HEATPROOF.get()))
+                        .where('d', blocks(GTBlocks.CASING_STEEL_PIPE.get()))
+                        .where('@', any()))
+                .atPort(StructureModuleKeys.EXT_OUT, Slot.optional(Piece.start(LEFT, UP, FRONT)
+                        .aisle("aaaaa", " dbd ", " dbd ", " ccc ")
+                        .aisle("accca", "bd db", "bd db", "ccccc")
+                        .aisle("a   a", "     ", "     ", "c   c")
+                        .aisle("a @ a", "b   b", "b   b", "c   c")
+                        .aisle("a   a", "     ", "     ", "     ")
+                        .port('@', StructureModuleKeys.EXT_IN, FRONT)
+                        .build(), StructureModuleKeys.EXT_IN).count(StructureModuleKeys.ELECTRIC_BLAST_FURNACE_EXTENSION))
+                .build();
+    }
+
+    private static double getAirScrubberAshTransferChance(int tier) {
+        return 100.0 - 50.0 / tier;
+    }
+
+    private static int getAirScrubberRange(int tier) {
+        return 1 << (tier + 3);
+    }
+
+    private static ItemStack ash;
+
+    static ItemStack tinydustFromDustOutput(MetaMachine machine, @Nullable GTRecipe gtRecipe) {
+        final ItemStack ash;
+        if (GTMachineModify.ash == null) {
+            ash = ChemicalHelper.get(TagPrefix.dustTiny, GTMaterials.Ash);
+            GTMachineModify.ash = ash;
+        } else {
+            ash = GTMachineModify.ash;
+        }
+        if (machine.getLevel() == null) return ash;
+        if (gtRecipe != null && !gtRecipe.itemOutputs.isEmpty()) {
+            var outputs = gtRecipe.itemOutputs;
+            var pool = new ArrayList<ItemStack>(outputs.size());
+            for (int i = 0; i < outputs.size(); i++) {
+                if (!(outputs.ingredient(i).displayKey() instanceof AEItemKey key)) continue;
+                var item = key.getItem();
+                if (ChemicalHelper.getPrefix(item) != TagPrefix.dust) continue;
+                pool.add(ChemicalHelper.get(TagPrefix.dustTiny, ChemicalHelper.getMaterialStack(item).material()));
+            }
+            if (!pool.isEmpty()) {
+                return pool.get(GTValues.RNG.nextInt(pool.size())).copyWithCount(1);
+            }
+        }
+        return ash;
+    }
+}

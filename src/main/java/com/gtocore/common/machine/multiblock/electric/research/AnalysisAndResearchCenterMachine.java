@@ -1,0 +1,101 @@
+package com.gtocore.common.machine.multiblock.electric.research;
+
+import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
+
+import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.api.recipe.content.ContentList;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+
+import net.minecraft.network.chat.Component;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+public class AnalysisAndResearchCenterMachine extends ElectricMultiblockMachine {
+
+    private ResearchHolderMachine ResearchHolder;
+
+    public AnalysisAndResearchCenterMachine(MetaMachineBlockEntity holder) {
+        super(holder);
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        for (var part : getParts(ResearchHolderMachine.class)) {
+            if (part.getFrontFacing() != getFrontFacing()) {
+                onStructureInvalid();
+                return;
+            }
+            this.ResearchHolder = part;
+            addHandlerList(RecipeHandlerUnit.of(IO.IN, part.getAsHandler()));
+        }
+
+        // 必须有扫描部件
+        if (ResearchHolder == null) {
+            onStructureInvalid();
+        }
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        // 重置扫描部件状态
+        if (ResearchHolder != null) {
+            ResearchHolder.setLocked(false);
+            ResearchHolder = null;
+        }
+        super.onStructureInvalid();
+    }
+
+    @Override
+    public boolean regressWhenWaiting() {
+        return false;
+    }
+
+    @Override
+    public void addDisplayText(@NotNull List<Component> textList) {
+        MultiblockDisplayText.builder(textList, isFormed())
+                .setWorkingStatus(recipeLogic.isWorkingEnabled(), recipeLogic.isActive())
+                .setWorkingStatusKeys("gtceu.multiblock.idling", "gtceu.multiblock.work_paused",
+                        "gtocore.machine.analysis")
+                .addEnergyUsageLine(energyContainer)
+                .addEnergyTierLine(tier)
+                .addWorkingStatusLine()
+                .addProgressLineOnlyPercent(recipeLogic.getProgressPercent());
+    }
+
+    @Override
+    public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
+        // 1. 获取所有物品输出
+        var itemOutputs = recipe.itemOutputs;
+
+        // 3. 加权随机选择一个输出
+        int size = itemOutputs.size();
+        if (size > 0) {
+            int random = GTValues.RNG.nextInt(10000);
+            int cumulative = 0;
+            int selected = size - 1;
+            for (int i = 0; i < size; i++) {
+                int chance = itemOutputs.chance(i);
+                if (chance <= 0) continue;
+                cumulative += chance;
+                if (random <= cumulative) {
+                    selected = i;
+                    break;
+                }
+            }
+
+            // 3. 创建新的唯一输出列表
+            recipe.itemOutputs = new ContentList.Builder(1).add(itemOutputs.ingredient(selected), itemOutputs.amount(selected), ContentList.MAX_CHANCE, 0).build();
+        }
+
+        return super.getRealRecipe(unit, recipe);
+    }
+}

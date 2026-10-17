@@ -1,0 +1,9 @@
+{
+  "animation": {
+    "frametime": 2
+  },
+
+  "ldlib": {
+    "connection": "gtocore:block/casings/phase_space_stabilization_casing_ctm"
+  }
+}

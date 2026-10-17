@@ -1,0 +1,337 @@
+package com.gtocore.client;
+
+import com.gtocore.api.research.techtree.ui.TechTreeStyle;
+import com.gtocore.client.forge.DebugScreenInspector;
+import com.gtocore.client.forge.ForgeClientEvent;
+import com.gtocore.client.hud.AdAstraHUD;
+import com.gtocore.client.hud.IMoveableHUD;
+import com.gtocore.client.hud.ResearchPointsHUD;
+import com.gtocore.client.hud.WirelessEnergyHUD;
+import com.gtocore.client.hud.attribute.PlayerAttrHUD;
+import com.gtocore.client.model.ShaderItemModelLoader;
+import com.gtocore.client.overlay.GTORender;
+import com.gtocore.client.overlay.TesseractClientHandler;
+import com.gtocore.client.overlay.TravelTargetsClientHandler;
+import com.gtocore.client.renderer.GTORenderTypes;
+import com.gtocore.client.renderer.SolarGlobeGlowShader;
+import com.gtocore.client.renderer.item.MonitorItemDecorations;
+import com.gtocore.client.renderer.machine.MonitorRenderer;
+import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
+import com.gtocore.common.CommonProxy;
+import com.gtocore.common.data.GTOAEParts;
+import com.gtocore.common.data.GTOFluids;
+import com.gtocore.common.forge.ClientForge;
+import com.gtocore.common.machine.monitor.MonitorBlockItem;
+import com.gtocore.eio_travel.TravelEvents;
+import com.gtocore.eio_travel.client.TravelParticleHandler;
+import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
+import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
+import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
+import com.gtocore.integration.ae.PatternContentAccessTerminalScreen;
+import com.gtocore.integration.ae.wtlib.WFTMenu;
+import com.gtocore.integration.ae.wtlib.WRTMenu;
+import com.gtocore.integration.emi.WildcardRecipeTooltip;
+
+import com.gtolib.GTOCore;
+import com.gtolib.api.ae2.gui.GTOButtonAppearance;
+import com.gtolib.api.ae2.me2in1.Me2in1Menu;
+import com.gtolib.api.ae2.me2in1.Me2in1Screen;
+import com.gtolib.api.ae2.me2in1.Me2in1TerminalPart;
+import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
+import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubScreen;
+import com.gtolib.api.ae2.stacks.TagPrefixKey;
+import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
+import com.gtolib.api.client.YLayeredModelLoader;
+import com.gtolib.api.emi.stack.TagPrefixRenderer;
+
+import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.data.pack.GTDynamicResourcePack;
+import com.gregtechceu.gtceu.uiwidgets.icon.IdleReasonIcons;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
+
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.models.model.DelegatedModel;
+import net.minecraft.world.item.BlockItem;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
+import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import appeng.api.client.AEKeyRendering;
+import appeng.api.parts.PartModels;
+import appeng.api.util.AEColor;
+import appeng.client.gui.widgets.SettingToggleButton;
+import appeng.client.render.StaticItemColor;
+import appeng.init.client.InitScreens;
+
+import com.almostreliable.merequester.MERequester;
+import com.lowdragmc.shimmer.client.light.ColorPointLight;
+import com.lowdragmc.shimmer.client.light.LightManager;
+import com.lowdragmc.shimmer.event.ShimmerReloadEvent.ReloadType;
+import com.lowdragmc.shimmer.forge.event.ForgeShimmerReloadEvent;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
+import static com.gtocore.client.hud.IMoveableHUD.registerHUD;
+
+@OnlyIn(Dist.CLIENT)
+public final class ClientProxy extends CommonProxy {
+
+    public ClientProxy() {
+        super();
+        init();
+        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        eventBus.addListener(ClientProxy::clientSetup);
+        eventBus.addListener(ClientProxy::registerItemDeco);
+        eventBus.addListener(ClientProxy::registerGuiOverlays);
+        eventBus.addListener(ClientProxy::registerAdditionalModels);
+        eventBus.addListener(ClientProxy::registerGeometryLoaders);
+        eventBus.addListener(ClientProxy::registerMenuScreen);
+        eventBus.addListener(ClientProxy::registerItemColors);
+        eventBus.addListener(ClientProxy::registerShaders);
+        eventBus.addListener(ClientProxy::registerReloadListeners);
+        eventBus.addListener(WildcardRecipeTooltip::register);
+        registerAEModels();
+        AEKeyRendering.register(TagPrefixKeyType.TYPE, TagPrefixKey.class, new TagPrefixRenderer.AEKeyHandler());
+        if (GTCEu.Mods.isShimmerLoaded()) eventBus.addListener(ClientProxy::registerLights);
+        SettingToggleButton.deferAppearanceRegistration(GTOButtonAppearance::registerButtons);
+    }
+
+    private static void init() {
+        KeyBind.init();
+        // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
+        ForgeClientEvent.init();
+        GTORender.init();
+        DebugScreenInspector.init();
+        MonitorRenderer.RenderedCacheClearer.init();
+        CelestialSkyRenderer.init();
+        TravelTargetsClientHandler.init();
+        TesseractClientHandler.init();
+        TravelEvents.Client.init();
+        TravelParticleHandler.init();
+        IMoveableHUD.EventHandler.init();
+        ClientForge.init();
+        ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
+        GTDynamicResourcePack.EVENT.addListener(ClientProxy.class, () -> {
+            for (var tagPrefix : TagPrefix.values()) {
+                var iconType = tagPrefix.materialIconType();
+                if (iconType == null || (!tagPrefix.doGenerateItem() && !tagPrefix.doGenerateBlock())) continue;
+                if (tagPrefix.doGenerateBlock()) {
+                    GTDynamicResourcePack.addItemModel(GTOCore.id(tagPrefix.getLowerCaseName()), new DelegatedModel(GTCEu.id(String.format("block/material_sets/dull/%s", iconType))));
+                } else {
+                    GTDynamicResourcePack.addItemModel(GTOCore.id(tagPrefix.getLowerCaseName()), new DelegatedModel(GTCEu.id(String.format("item/material_sets/dull/%s", iconType))));
+                }
+            }
+        });
+    }
+
+    @SuppressWarnings("all")
+    private static void clientSetup(FMLClientSetupEvent event) {
+        ItemBlockRenderTypes.setRenderLayer(GTOFluids.GELID_CRYOTHEUM.get(), RenderType.translucent());
+        ItemBlockRenderTypes.setRenderLayer(GTOFluids.FLOWING_GELID_CRYOTHEUM.get(), RenderType.translucent());
+        registerIdleReasonIcons();
+    }
+
+    private static void registerIdleReasonIcons() {
+        IdleReasonIcons.register("gtocore.idle_reason.no_match", WidgetIcons.IDLE_NO_RECIPE);
+        IdleReasonIcons.register("gtocore.idle_reason.invalid_input", WidgetIcons.IDLE_NO_RECIPE);
+        IdleReasonIcons.register("gtocore.idle_reason.insufficient_energy_buffer", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.issue.charge", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.idle_reason.voltage_tier_not_satisfies", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.idle_reason.block_tier_not_satisfies", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.neutron_kinetic_energy_not_satisfies", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_no_workspace_multiblock", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_shield_no_laser", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_in_space", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_no_core", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_paused", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_not_running", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.space_station_preparing", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.felling_tool", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.grindball", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.set_circuit", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.no_ores", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.radiation", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.incorrect_direction_volta", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.idle_reason.heat_accumulation", WidgetIcons.IDLE_OVERHEAT);
+        IdleReasonIcons.register("gtocore.idle_reason.muffler_not_supported", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.idle_reason.obstructed_volta", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.idle_reason.lack_material", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.amount_not_enough", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.ordered.item", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.ordered.fluid", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.idle_reason.output_full", WidgetIcons.IDLE_OUTPUT_FULL);
+        IdleReasonIcons.register("gtocore.idle_reason.no_mana", WidgetIcons.IDLE_NO_MANA);
+        IdleReasonIcons.register("gtocore.idle_reason.no_crank", WidgetIcons.IDLE_NO_KINETIC);
+        IdleReasonIcons.register("gtocore.idle_reason.insufficient_temperature", WidgetIcons.IDLE_LOW_TEMPERATURE);
+        IdleReasonIcons.register("gtocore.issue.wireless_eu_short", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.issue.heat_short", WidgetIcons.IDLE_LOW_TEMPERATURE);
+        IdleReasonIcons.register("gtocore.issue.ice_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.blaze_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.water_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.distilled_water_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.hydrogen_reserve_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.helium_reserve_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.celestial_short", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.dimension_data_missing", WidgetIcons.IDLE_INPUT_SHORT);
+        IdleReasonIcons.register("gtocore.issue.machine_storage_empty", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.tissue_tier", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.medium_tier", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.processing_tier_mismatch", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.power_module_tier", WidgetIcons.IDLE_LOW_TIER);
+        IdleReasonIcons.register("gtocore.issue.circuit_engraving", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.nanites_not_connected", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.nanites_module_missing", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.magic_module_missing", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.plasma_wings_missing", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.space_elevator_not_connected", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.issue.rotor_mismatch", WidgetIcons.IDLE_NO_CAPABILITY);
+        IdleReasonIcons.register("gtocore.machine.dimensionally_transcendent_plasma_forge.coil", WidgetIcons.IDLE_CONDITION);
+        IdleReasonIcons.register("gtocore.issue.steam_vent_obstructed", WidgetIcons.STATUS_OBSTRUCTED);
+        IdleReasonIcons.register("gtocore.issue.mana_flow_too_weak", WidgetIcons.IDLE_NO_MANA);
+        IdleReasonIcons.register("gtocore.issue.harmony_grid_short", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.machine.space_drone_dock.drone_no_energy", WidgetIcons.IDLE_NO_POWER);
+        IdleReasonIcons.register("gtocore.issue.heat_full", WidgetIcons.STATUS_INFO);
+        IdleReasonIcons.register("gtocore.issue.dyson_sphere_complete", WidgetIcons.STATUS_INFO);
+    }
+
+    private static void registerLights(ForgeShimmerReloadEvent e) {
+        if (e.event.getReloadType() == ReloadType.COLORED_LIGHT) {
+            GTOCore.LOGGER.info("registering dynamic lights");
+            var lights = new Int2ObjectOpenHashMap<ColorPointLight.Template>();
+            for (var item : ForgeRegistries.ITEMS) {
+                if (item instanceof BlockItem blockItem) {
+                    var emission = blockItem.getBlock().defaultBlockState().getLightEmission();
+                    if (emission > 0) {
+                        var light = lights.computeIfAbsent(emission, k -> new ColorPointLight.Template(emission, 1, 1, 1, 1));
+                        LightManager.INSTANCE.registerItemLight(item, itemStack -> light);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void registerItemDeco(RegisterItemDecorationsEvent event) {
+        MonitorBlockItem.getItemList().forEach(item -> {
+            if (item != null) {
+                event.register(BuiltInRegistries.BLOCK.get(item), MonitorItemDecorations.DECORATOR);
+            }
+        });
+    }
+
+    private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
+        registerHUD(event, "wireless_energy_hud", WirelessEnergyHUD.INSTANCE);
+        registerHUD(event, "research_points_hud", ResearchPointsHUD.INSTANCE);
+        registerHUD(event, "adastra_hud", AdAstraHUD.gto$INSTANCE);
+        registerHUD(event, "client_property_hud", PlayerAttrHUD.INSTANCE);
+        event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
+    }
+
+    private static void registerMenuScreen(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            InitScreens.register(
+                    Me2in1Menu.TYPE,
+                    Me2in1Screen<Me2in1Menu>::new,
+                    "/screens/me2in1.json");
+            InitScreens.register(
+                    Wireless.TYPE,
+                    Wireless.Screen::new,
+                    "/screens/me2in1wireless.json");
+            InitScreens.register(
+                    CategoryMappingSubMenu.TYPE,
+                    CategoryMappingSubScreen::new,
+                    "/screens/categoru_mapping_config.json");
+            InitScreens.register(
+                    PatternContentAccessTerminalMenu.TYPE,
+                    PatternContentAccessTerminalScreen::new,
+                    "/screens/terminals/pattern_content_access_terminal.json");
+
+            InitScreens.register(
+                    WRTMenu.TYPE,
+                    WRTMenu.WRTScreen::new,
+                    "/screens/" + MERequester.TERMINAL_ID + ".json");
+            InitScreens.register(
+                    WFTMenu.TYPE,
+                    WFTMenu.WFTScreen::new,
+                    "/screens/terminals/facility_management_terminal.json");
+        });
+    }
+
+    private static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        event.register(new StaticItemColor(AEColor.TRANSPARENT), GTOAEParts.EXCHANGE_STORAGE_MONITOR.get(), GTOAEParts.ME_2IN1_TERMINAL.get(), GTOAEParts.Pattern_Content_Access_Terminal.get());
+    }
+
+    private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(TechTreeStyle.RELOAD_LISTENER);
+    }
+
+    private static void registerAdditionalModels(ModelEvent.RegisterAdditional evt) {
+        for (TagPrefix tagPrefix : TagPrefix.values()) {
+            if (tagPrefix.materialIconType() == null || (!tagPrefix.doGenerateItem() && !tagPrefix.doGenerateBlock())) continue;
+            evt.register(GTOCore.id("item/" + tagPrefix.getLowerCaseName()));
+        }
+    }
+
+    private static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+        event.register("y_layered", YLayeredModelLoader.INSTANCE);
+        event.register("custom_shader", ShaderItemModelLoader.INSTANCE);
+    }
+
+    private static void registerShaders(RegisterShadersEvent event) {
+        try {
+            event.registerShader(new net.minecraft.client.renderer.ShaderInstance(
+                    event.getResourceProvider(),
+                    GTORenderTypes.BLACK_HOLE_EVENT_HORIZON_SHADER_LOCATION,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR), GTORenderTypes::setBlackHoleEventHorizonShader);
+            event.registerShader(new net.minecraft.client.renderer.ShaderInstance(
+                    event.getResourceProvider(),
+                    GTORenderTypes.DIMENSIONALLY_TRANSCENDENT_OVERLAY_SHADER_LOCATION,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR), GTORenderTypes::setDimensionallyTranscendentOverlayShader);
+            event.registerShader(new net.minecraft.client.renderer.ShaderInstance(
+                    event.getResourceProvider(),
+                    GTORenderTypes.STELLAR_FORGE_VORTEX_SHADER_LOCATION,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_NORMAL), GTORenderTypes::setStellarForgeVortexShader);
+            event.registerShader(new net.minecraft.client.renderer.ShaderInstance(
+                    event.getResourceProvider(),
+                    GTORenderTypes.SOLAR_SURFACE_VORTEX_SHADER_LOCATION,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX), GTORenderTypes::setSolarSurfaceVortexShader);
+            registerCustomItemShader(event, GTORenderTypes.CRUPTIX);
+            registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_HEAT_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_REACTOR_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_REACTOR_RINGS_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.ITEM_RESONANCE_WAVE);
+            event.registerShader(new SolarGlobeGlowShader(event.getResourceProvider(), GTORenderTypes.SOLAR_GLOBE_GLOW_SHADER_LOCATION),
+                    shader -> GTORenderTypes.setShader(GTORenderTypes.SOLAR_GLOBE_GLOW_SHADER_LOCATION, shader));
+            event.registerShader(new net.minecraft.client.renderer.ShaderInstance(
+                    event.getResourceProvider(),
+                    GTORenderTypes.SOLAR_GLOBE_SHADER_LOCATION,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.NEW_ENTITY), shader -> GTORenderTypes.setShader(GTORenderTypes.SOLAR_GLOBE_SHADER_LOCATION, shader));
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to register client shaders", e);
+        }
+    }
+
+    private static void registerCustomItemShader(RegisterShadersEvent event, net.minecraft.resources.ResourceLocation shaderLocation) throws java.io.IOException {
+        event.registerShader(new net.minecraft.client.renderer.ShaderInstance(
+                event.getResourceProvider(),
+                shaderLocation,
+                com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX), shader -> GTORenderTypes.setShader(shaderLocation, shader));
+    }
+
+    private static void registerAEModels() {
+        PartModels.registerModels(Me2in1TerminalPart.MODELS);
+        PartModels.registerModels(PatternContentAccessTerminalPart.MODEL_OFF, PatternContentAccessTerminalPart.MODEL_ON);
+    }
+}

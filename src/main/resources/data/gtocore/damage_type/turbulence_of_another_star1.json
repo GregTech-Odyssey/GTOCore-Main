@@ -1,0 +1,6 @@
+{
+  "message_id": "gtocore.death.attack.turbulence_of_another_star",
+  "scaling": "always",
+  "exhaustion": 0.1,
+  "effects": "hurt"
+}

@@ -1,0 +1,239 @@
+package com.gtocore.data.lang;
+
+import com.gtocore.client.Tooltips;
+
+import com.gtolib.utils.RegistriesUtils;
+
+import com.gregtechceu.gtceu.api.GTValues;
+
+import static com.gtocore.data.lang.LangHandler.addCNEN;
+import static net.minecraft.ChatFormatting.GOLD;
+import static net.minecraft.ChatFormatting.RESET;
+
+final class ItemLang {
+
+    public static void init() {
+        addCNEN("item.gtceu.circuits", "电路", "Circuits");
+        for (int i = 0; i < 15; i++) {
+            addCNEN("tag.item.gtceu.circuits." + GTValues.VN[i].toLowerCase(), GTValues.VN[i] + "电路", GTValues.VN[i] + " Circuit");
+        }
+
+        Tooltips.TOOL_TIPS_MAP.forEach((i, s) -> {
+            for (int j = 0; j < s.length(); j++) {
+                addCNEN("gtocore.tooltip.item." + RegistriesUtils.getIdLocation(i).getPath() + "." + j, s.cns()[j], s.ens()[j]);
+            }
+        });
+
+        addCNEN("gtocore.item.deprecated", "该物品已弃用", "This item has been deprecated");
+
+        addCNEN("item.gtceu.long_rod_extruder_mold", "模头（长杆）", "Extruder Mold (Long Rod)");
+
+        addCNEN("tagprefix.living_rock", "活%s矿石", "Living %s Ore");
+        addCNEN("tagprefix.gloomslate", "幽暗%s矿石", "Gloomslate %s Ore");
+        addCNEN("tagprefix.sculk_stone", "幽匿%s矿石", "Sculk %s Ore");
+        addCNEN("tagprefix.ceres_stone", "谷神星%s矿石", "Ceres %s Ore");
+        addCNEN("tagprefix.contaminable_nanites", "污染的%s纳米蜂群", "Contaminable %s Nano Swarm");
+        addCNEN("tagprefix.enceladus_stone", "土卫二%s矿石", "Enceladus %s Ore");
+        addCNEN("tagprefix.ganymede_stone", "木卫三%s矿石", "Ganymede %s Ore");
+        addCNEN("tagprefix.glacio_stone", "霜原石%s矿石", "Glacio %s Ore");
+        addCNEN("tagprefix.io_stone", "木卫一%s矿石", "Io %s Ore");
+        addCNEN("tagprefix.mars_stone", "火星%s矿石", "Mars %s Ore");
+        addCNEN("tagprefix.mercury_stone", "水星%s矿石", "Mercury %s Ore");
+        addCNEN("tagprefix.milled", "碾磨%s", "Milled %s");
+        addCNEN("tagprefix.moon_stone", "月石%s矿石", "Moon %s Ore");
+        addCNEN("tagprefix.nanites", "%s纳米蜂群", "%s Nano Swarm");
+        addCNEN("tagprefix.pluto_stone", "冥王星%s矿石", "Pluto %s Ore");
+        addCNEN("tagprefix.titan_stone", "土卫六%s矿石", "Titan %s Ore");
+        addCNEN("tagprefix.venus_stone", "金星%s矿石", "Venus %s Ore");
+        addCNEN("tagprefix.curved_plate", "弯曲%s板", "Curved %s Plate");
+        addCNEN("tagprefix.motor_enclosure", "%s马达外壳", "%s Motor Enclosure");
+        addCNEN("tagprefix.pump_barrel", "%s泵筒", "%s Pump Barrel");
+        addCNEN("tagprefix.piston_housing", "%s活塞壳体", "%s Piston Housing");
+        addCNEN("tagprefix.emitter_base", "%s发射器基底", "%s Emitter Base");
+        addCNEN("tagprefix.sensor_casing", "%s传感器外壳", "%s Sensor Casing");
+        addCNEN("tagprefix.field_generator_casing", "%s力场发生器外壳", "%s Field Generator Casing");
+        addCNEN("tagprefix.rough_blank", "%s粗坯", "%s Rough Blank");
+        addCNEN("tagprefix.brick", "%s砖", "%s Brick");
+        addCNEN("tagprefix.flake", "%s薄片", "%s Flake");
+        addCNEN("tagprefix.catalyst", "%s催化剂", "%s Catalyst");
+        addCNEN("tagprefix.artificial_gem", "人造%s", "Artificial %s");
+        addCNEN("tagprefix.crystal_seed", "%s晶种", "%s Crystal Seed");
+        addCNEN("tagprefix.superconductor_base", "%s超导粗胚", "%s Superconductor Base");
+        addCNEN("tagprefix.coin", "%s币", "%s Coin");
+        addCNEN("tagprefix.particle_source", "%s粒子源", "%s Particle Source");
+        addCNEN("tagprefix.target_base", "%s靶基底", "%s Target Base");
+        addCNEN("tagprefix.beryllium_target", "%s-铍靶", "%s Beryllium Target");
+        addCNEN("tagprefix.stainless_steel_target", "%s-不锈钢靶", "%s Stainless Steel Target");
+        addCNEN("tagprefix.zirconium_carbide_target", "%s-碳化锆靶", "%s Zirconium Carbide Target");
+        addCNEN("tagprefix.breeder_rod", "%s增殖棒", "%s Breeder Rod");
+        addCNEN("tagprefix.excited_beryllium_target", "活化%s-铍靶", "Excited %s Beryllium Target");
+        addCNEN("tagprefix.excited_stainless_steel_target", "活化%s-不锈钢靶", "Excited %s Stainless Steel Target");
+        addCNEN("tagprefix.excited_zirconium_carbide_target", "活化%s-碳化锆靶", "Excited %s Zirconium Carbide Target");
+        addCNEN("tagprefix.depleted_breeder_rod", "枯竭%s增殖棒", "%s Depleted Breeder Rod");
+        addCNEN("tagprefix.ion_membrane", "%s离子交换膜", "%s Ion Exchange Membrane");
+        addCNEN("tagprefix.proton_membrane", "%s质子交换膜", "%s Proton Exchange Membrane");
+        addCNEN("tagprefix.cation_membrane", "%s阳离子交换膜", "%s Cation Exchange Membrane");
+        addCNEN("tagprefix.anion_membrane", "%s阴离子交换膜", "%s Anion Exchange Membrane");
+        addCNEN("gtocore.membrane_type.proton", "质子交换膜", "Proton Exchange Membrane");
+        addCNEN("gtocore.membrane_type.cation", "阳离子交换膜", "Cation Exchange Membrane");
+        addCNEN("gtocore.membrane_type.anion", "阴离子交换膜", "Anion Exchange Membrane");
+        addCNEN("gtocore.electrochemical.left", "左侧", "Left Side");
+        addCNEN("gtocore.electrochemical.right", "右侧", "Right Side");
+        addCNEN("gtocore.membrane.recipe.duration_multiplier", "应用到配方时的耗时倍率：%s", "Duration multiplier when applied to recipe: %s");
+        addCNEN("gtocore.membrane.recipe.energy_multiplier", "应用到配方时的能耗倍率：%s", "Energy multiplier when applied to recipe: %s");
+        addCNEN("gtocore.machine.fuelcell_parallel", "放电并行度：%s", "Discharge Parallelism: %s");
+        addCNEN("gtocore.recipe.half_reaction.ion", "生成%s", "Generates %s");
+        addCNEN("gtocore.recipe.half_reaction.required_ion", "需要%s完成反应", "Required %s to complete the reaction");
+        addCNEN("gtocore.recipe.half_reaction.generic_ion", "离子：%s × %s mol (%s)", "Ion: %s x %s mol (%s)");
+        addCNEN("gtocore.recipe.half_reaction.charge", "半反应总电荷：%s", "Half-reaction charge: %s");
+        addCNEN("gtocore.recipe.half_reaction.electrolyte_type", "电解体系：%s", "Electrolyte system: %s");
+        addCNEN("gtocore.electrolyte_type.water", "水系", "Aqueous");
+        addCNEN("gtocore.electrolyte_type.organic", "有机体系", "Organic");
+        addCNEN("gtocore.electrolyte_type.molten_salt", "熔盐体系", "Molten Salt");
+        addCNEN("gtocore.electrolyte_type.supercritical_fluid", "超临界流体体系", "Supercritical Fluid");
+        addCNEN("gtocore.electrolyte_type.ionic_liquid", "离子液体体系", "Ionic Liquid");
+        addCNEN("gtocore.gui.electrochemical.description", "两侧独立输入，中央半透膜传递离子；下方显示当前反应与运行状态。", "Independent inputs on each side; ions cross the central membrane. Current reaction and operating status are shown below.");
+        addCNEN("gtocore.gui.electrochemical.membrane", "半透膜", "Membrane");
+        addCNEN("gtocore.gui.electrochemical.missing_membrane", "未安装", "Not installed");
+        addCNEN("gtocore.gui.electrochemical.remaining", "剩余使用次数", "Uses remaining");
+        addCNEN("gtocore.gui.electrochemical.unused_membrane", "当前模式不使用膜", "Membrane not used in this mode");
+        addCNEN("tagprefix.mxene", "%s二维纳米层", "%s MXene");
+        addCNEN("tagprefix.mborene", "%s二维纳米层", "%s MBorene");
+        addCNEN("tagprefix.aluminium_contained_mxene_precursor", "MAXene%s二维纳米层前驱体", "A-Contained %s MXene Precursor");
+        addCNEN("tagprefix.carbon_fiber", "%s纤维", "%s Fiber");
+        addCNEN("tagprefix.connecting_rod", "%s连接杆", "%s Connecting Rod");
+        addCNEN("tagprefix.carbon_fibres", "%s纤维原丝", "%s Fiber Tow");
+        addCNEN("tagprefix.carbon_fiber_mesh", "%s纤维网", "%s Fiber Mesh");
+        addCNEN("tagprefix.nano", "纳米质%s", "Nano %s");
+        addCNEN("gtocore.any.liquid", "任何液体物质", "Any Liquid Material");
+        addCNEN("gtocore.any.gas", "任何气体物质", "Any Gas Material");
+        addCNEN("gtocore.any.gem", "任何宝石", "Any Gem");
+        addCNEN("gtocore.any.turbine_rotor_coated", "任何镀膜涡轮转子", "Any Coated Turbine Rotor");
+        addCNEN("gtocore.any.artificial_gem", "任何人造宝石", "Any Artificial Gem");
+        addCNEN("item.gtocore.astrium_dust", "晶质宇尘", "Astrium Dust");
+        addCNEN("fluid.gtocore.liquid_glacio_air", "液态霜原星空气", "Liquid Glacio Air");
+        addCNEN("fluid.gtocore.liquid_jupiter_air", "液态木星空气", "Liquid Jupiter Air");
+        addCNEN("fluid.gtocore.liquid_aether", "液态以太", "Liquid Aether");
+
+        addCNEN("metaitem.tool.tooltip.rotor.coating_durability", "镀层耐久：%s / %s", "Coating Durability: %s / %s");
+        addCNEN("metaitem.tool.tooltip.rotor.coating_efficiency", "镀层效率：%s%%", "Coating Efficiency: %s%%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating_power", "镀层产能：%s%%", "Coating Power: %s%%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating", "镀层材料：%s", "Coating Material: %s");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.ench.unbreaking", "耐久附魔减免耐久损耗：%s%%", "Durability Enchantment Reduction: %s%%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.ench.efficiency", "效率附魔加成：%s%%", "Efficiency Enchantment Bonus: %s%%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.0", "§6镀层机制：", "§6Coating Mechanism:");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.1", "§b镀层会提供一道吸收转子损耗的屏障，当转子A有镀层B，镀层B的耐久为§d4 * max(B/10, min(B-A, B/2))",
+                "§bThe coating provides a barrier that absorbs rotor wear. When rotor A has coating B, the durability of coating B is §d4 * max(B/10, min(B-A, B/2))");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.2", "§b每次转子损坏时95%概率优先消耗镀层耐久，镀层耐久耗尽后再消耗本体耐久",
+                "§bThere is a 95% chance of consuming the coating durability first when the rotor is damaged. After the coating durability is exhausted, the body durability is consumed");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.0.magic", "§d魔法§6镀层机制：", "§dMagical§6 Coating Mechanism:");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.1.magic", "§d魔法§b镀层将不再提供耐久度屏障，而是会提供魔法材料额外属性×30%的转子效率与涡轮产能",
+                "§dMagical§b Coating will no longer provide a durability barrier, but will provide rotor efficiency and turbine power generation of magical material bonus properties ×30%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.2.magic", "§b本体消耗耐久时，§d魔法§b镀层将同时损耗耐久，镀层耐久耗尽后转子效率与涡轮产能将回落至原始值。",
+                "When the body consumes durability, the §dmagical§b coating will also consume durability. After the coating durability is exhausted, the rotor efficiency and turbine power generation will fall back to the original value. ");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.3.magic", "当转子A有镀层B，镀层B的耐久为§d4 * max(B/10, min(B-A, B/2))",
+                "When rotor A has coating B, the durability of coating B is §d4 * max(B/10, min(B-A, B/2))");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.4.magic", "魔法镀层同时赋予转子可应用附魔的属性，但在镀层耐久耗尽后附魔属性将失效", "Magical coatings also give the rotor enchantable properties, but the enchantment properties will become invalid after the coating durability is exhausted");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.5.magic", "耐久附魔使转子有概率不再消耗镀层耐久，最高3级，公式与原版附魔一致", "Durability enchantment gives the rotor a chance to no longer consume coating durability, up to level 3, with the same formula as the original enchantment");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.6.magic", "效率附魔使转子效率额外提升每级10%（独立乘区），最高5级", "Efficiency enchantment increases rotor efficiency by an additional 10% per level (Independent Multiplication Area), up to level 5");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.7.magic", "经验修补附魔使转子试图消耗汁来修补本体与镀层耐久，每级在磨损时试图恢复10点耐久，但需要消耗10倍于常规经验修补的经验值（10点即1B经验汁）",
+                "Mending enchantment allows the rotor to attempt to consume juice to repair the body and coating durability, attempting to restore 10 durability points per level when worn, but requires 10 times the experience value of regular mending (10 points is 1B experience juice)");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.8.magic", "力量附魔使转子产能额外提升每级5%（独立乘区），最高5级", "Power enchantment increases rotor power generation by an additional 5% per level (Independent Multiplication Area), up to level 5");
+        addCNEN("gtocore.turbine_rotor.coated", "%s镀层", "%s Coated");
+        addCNEN("gtocore.tooltip.artificial_gem", "比自然的更好", "Better than nature");
+        addCNEN("gtocore.tooltip.unknown", "未知", "Unknown");
+
+        addCNEN("item.gtceu.tool.hv_vajra", "%s 基础金刚杵", "%s Basic Vajra");
+        addCNEN("item.gtceu.tool.ev_vajra", "%s 高级金刚杵", "%s Advanced Vajra");
+        addCNEN("item.gtceu.tool.iv_vajra", "%s 终极金刚杵", "%s Ultimate Vajra");
+        addCNEN("block.ad_astra.gto_flag", "GTO旗帜", "GTO Flag");
+
+        addCNEN("item.gtocore.tool.setting.vajra_speed", "挖掘速度", "Mining Speed");
+        addCNEN("item.gtocore.tool.setting.vajra_speed.detail", "限制挖掘速度上限，便于精确挖掘单个方块；速度越低每次使用耗电越少。矿工热忱开启时此项不生效", "Caps mining speed for precise single-block mining; lower speeds cost less energy per use. Ignored while Miner's Fervor is on");
+        addCNEN("item.gtocore.tool.setting.vajra_speed.full", "%s（不限制）", "%s (Uncapped)");
+        addCNEN("item.gtocore.tool.setting.miners_fervor", "矿工热忱", "Miner's Fervor");
+        addCNEN("item.gtocore.tool.setting.miners_fervor.detail", "开启后按矿工热忱 V 计算挖掘速度：不同硬度的方块挖掘耗时接近，挖坚硬方块明显更快", "When on, mining speed follows Miner's Fervor V: blocks of different hardness take about the same time, so hard blocks mine much faster");
+        addCNEN("gtocore.tooltip.item.kinetic_rotor.max", "最大风力: %s", "Max Wind Speed: %s");
+        addCNEN("gtocore.tooltip.item.kinetic_rotor.min", "最小风力: %s", "Min Wind Speed: %s");
+        addCNEN("gtocore.tooltip.item.virtual_item_provider", "为机器的虚拟电路槽提供物品", "Provide items for the machine's virtual circuit slot.");
+        addCNEN("gtocore.tooltip.item.catalyst.1", "§7位于非催化剂舱或总成时，配方过程将§c完全消耗催化剂§r", "§7When not in the catalyst hatch or pattern buffer, §cthe recipe process will completely consume the catalyst§r");
+        addCNEN("gtocore.tooltip.item.catalyst.2", "§7位于催化剂舱时，配方过程将消耗催化剂§b1点耐久/次§r", "§7When in the catalyst hatch, §bthe recipe process will consume 1 durability point per use§r");
+        addCNEN("gtocore.tooltip.item.catalyst.3", "§7位于催化剂总成时，配方过程§a不会消耗催化剂§r", "§7When in the catalyst pattern buffer, §athe recipe process will not consume the catalyst§r");
+
+        addCNEN("gtocore.tooltip.item.really_max_battery", "填满它就能通关GregTechCEu Modern", "Filling it up can allow you to complete GregTechCEu Modern");
+        addCNEN("gtocore.tooltip.item.transcendent_max_battery", "填满它就能通关GregTech Odyssey", "Filling it up can allow you to complete GregTech Odyssey");
+        addCNEN("gtocore.tooltip.item.extremely_max_battery", "有生之年将它填满", "Fill it up within your lifetime");
+        addCNEN("gtocore.tooltip.item.insanely_max_battery", "填满也就图一乐", "Filling it up is just for fun");
+        addCNEN("gtocore.tooltip.item.mega_max_battery", "填满电池 机械飞升", "Fill up the battery for mechanical ascension");
+        addCNEN("gtocore.tooltip.item.tier_circuit", "%s级电路", "%s Tier Circuit");
+        addCNEN("gtocore.tooltip.item.suprachronal_circuit", "运行在已知时空之外", "Running outside of known spacetime");
+        addCNEN("gtocore.tooltip.item.magneto_resonatic_circuit", "利用磁共振仪器产生的强大磁场来运行", "Utilize the powerful magnetic field generated by magnetic resonance instruments to operate");
+        addCNEN("gtocore.tooltip.item.universal_circuit", "一个通用的电路", "A universal circuit");
+        addCNEN("gtocore.tooltip.item.craft_step", "合成步骤：%s", "Craft Step: %s");
+        addCNEN("gtocore.tooltip.item.activate_by", "可由%s激活", "Can be activated by %s");
+        addCNEN("gtocore.tooltip.item.charge_bomb.disabled", "服务器配置已禁用爆弹的爆炸效果", "The explosive effect of the charge bomb has been disabled by server configuration");
+        addCNEN("gtocore.tooltip.item.muffler.disabled", "消声仓已被服务器配置禁用，无法产生灰烬", "The muffler has been disabled by server configuration and cannot produce ash");
+        addCNEN("gtocore.tooltip.item.muffler.enabled", "使用机器GUI左下方按钮以暂停/恢复灰烬回收功能", "Use the button at the bottom left of the machine GUI to pause/resume ash recovery function");
+        addCNEN("gtocore.tooltip.item.muffler_pipe.desc", "将消声仓仓口连接到消声仓排气口时，消声仓排气口将代理该消声仓排放废气", "When the muffler hatch is connected to the muffler exhaust port, the muffler exhaust port will proxy the discharge of waste gas from that muffler");
+
+        addCNEN("item.gtocore.structure_detect.tooltip.0", "潜行右键主方块以检测多方块结构", "Sneak right-click the main block to detect multiblock structure.");
+        addCNEN("item.gtocore.structure_detect.tooltip.1", "检测大型结构时可能会有延迟", "There may be lag when detecting large structures.");
+        addCNEN("item.gtocore.disc.data", "光盘数据：%s", "Disc data: %s");
+
+        addCNEN("item.gtocore.order.target", "订单目标", "Order target");
+        addCNEN("item.gtocore.order.no_target", "未设置订单目标", "No order target set");
+
+        addCNEN("item.gtocore.pattern.wildcard", "含通配符处理样板", "With Wildcard Processing Pattern");
+
+        addCNEN("item.gtocore.data_item.type.title", "§n%s配方数据：", "§n%s Recipes Data:");
+        addCNEN("gtocore.tooltip.item.empty_serial", "- §a编号：%s", "- §aNumber: %s");
+        addCNEN("gtocore.tooltip.item.scanning_data", "§n扫描数据：", "§nScan Data:");
+        addCNEN("gtocore.tooltip.item.scanned_things", "- %d× %s", "- %d× %s");
+        addCNEN("gtocore.tooltip.item.scanning_serial", "- §a扫描编号：%s", "- §aScan number: %s");
+        addCNEN("gtocore.tooltip.item.analyze_data", "§n研究数据：", "§nResearch data:");
+        addCNEN("gtocore.tooltip.item.analyze_things", "- %d", "- %d");
+        addCNEN("gtocore.tooltip.item.analyze_serial", "- §a研究编号：%s", "- §aResearch number: %s");
+        addCNEN("gtocore.data.empty", "空", "empty");
+
+        addCNEN("gtocore.behaviour.grass_harvest.description", GOLD + "极大" + RESET + "地提升小麦种子掉落概率", GOLD + "Greatly" + RESET + " increase the probability of wheat seed dropping");
+        addCNEN("gtocore.behaviour.grass_harvest.description2", "右键以收割", "Right click to harvest");
+
+        addCNEN("gtocore.tooltip.item.prospector.mana.2", "相当于 %s / %s 个魔力池", "Equivalent to %s / %s Mana Pools");
+
+        addCNEN("gtocore.tooltip.item.machine_coordinate_card.tooltip.1", "右键机器记录其坐标，右键空气清空记录。",
+                "Right-click a machine to record its coordinates, right-click air to clear the record");
+        addCNEN("gtocore.tooltip.item.machine_coordinate_card.tooltip.2", "记录信息：%s§b(%s§b, %s§b, %s§b)",
+                "Coordinate Info: %s§b(%s§b, %s§b, %s§b)");
+
+        addCNEN("tooltip.ad_astra.unknown_tag", "§c未知标签§r: %s", "§cUnknown tag§r: %s");
+        addCNEN("tooltip.ad_astra.unknown_ingredient", "§c未知物品§r", "§cUnknown item§r");
+        addCNEN("tag.item.gt.ingots", "锭", "Ingots");
+        addCNEN("item.gtocore.globe.earth", "地球仪的球体", "Earth Globe Sphere");
+
+        addCNEN("tooltip.item.pattern.uuid", "编码者：%s", "Encoded by: %s");
+
+        addCNEN("tooltip.item.reward_bag.increases", "附魔时运或效率以提升奖励与品质", "Enchant Fortune or Efficiency to increase rewards and quality");
+
+        addCNEN("item.slot_boost.name", "槽位强化器（当前：%s）", "Slot Booster (Current: %s)");
+        addCNEN("item.slot_boost.switch_hint", "已选择%s槽，当前数量：%d，需要经验%d点", "Selected %s Slot, Current Count: %d, Requires %d XP");
+        addCNEN("item.slot_boost.invalid_slot", "错误：%s槽未注册", "Error: %s Slot Not Registered");
+        addCNEN("item.slot_boost.xp_shortage", "经验不足！需要%d点，当前仅有%d点", "Insufficient XP! Requires %d, Currently Has %d");
+        addCNEN("item.slot_boost.success", "成功添加1个%s槽！当前共%d个", "Successfully Added 1 %s Slot! Now Has %d Total");
+        addCNEN("item.slot_boost.tooltip1", "右键点击：切换目标槽位", "Right Click: Switch Target Slot");
+        addCNEN("item.slot_boost.tooltip2", "Shift+右键：消耗经验扩展槽位（消耗=当前数量×2000）", "Shift+Right Click: Expand Slot with XP (Cost = Current Count × 2000)");
+        addCNEN("item.slot_boost.tooltip3", "当前目标：%s槽", "Current Target: %s Slot");
+
+        addCNEN("gtocore.cover.creative_power_amplifier.duration", "耗时乘数", "Duration Multiplier");
+        addCNEN("gtocore.cover.creative_power_amplifier.energy", "耗能乘数", "Energy Multiplier");
+        addCNEN("gtocore.cover.creative_power_amplifier.title", "创造模式功率增幅器", "Creative Power Amplifier");
+        addCNEN("gtocore.cover.creative_power_amplifier.tooltip", "安装后使用螺丝刀打开界面调整乘数", "Use a screwdriver after installation to configure multipliers");
+
+        addCNEN("gtocore.cover.advanced_wireless_transfer.status", "状态", "Status");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.target", "目标容器", "Target");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.position", "坐标", "Position");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.dimension", "维度", "Dimension");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.unbound", "未绑定", "Not bound");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.connected", "已连接", "Connected");
+        addCNEN("gtocore.cover.advanced_wireless_transfer.unavailable", "目标不可用", "Target unavailable");
+    }
+}
