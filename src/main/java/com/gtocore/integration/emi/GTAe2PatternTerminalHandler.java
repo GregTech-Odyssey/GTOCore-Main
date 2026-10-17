@@ -58,6 +58,10 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
 
     @Override
     public boolean supportsRecipe(EmiRecipe recipe) {
+        return supportsEncodingRecipe(recipe);
+    }
+
+    static boolean supportsEncodingRecipe(EmiRecipe recipe) {
         return recipe instanceof GTEMIRecipe gtRecipe && gtRecipe.supportsTransfer() || recipe instanceof MultiblockInfoEmiRecipe || recipe instanceof EmiCookingRecipe || isCrafting(recipe) || recipe instanceof BotaniaEmiRecipe;
     }
 
@@ -94,7 +98,7 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
         }
     }
 
-    private static void renderSlotOverlay(GuiGraphics guiGraphics, SlotWidget slot) {
+    static void renderSlotOverlay(GuiGraphics guiGraphics, SlotWidget slot) {
         var poseStack = guiGraphics.pose();
         poseStack.pushPose();
         poseStack.translate(0, 0, 400);
@@ -107,7 +111,7 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
         poseStack.popPose();
     }
 
-    private static List<Component> getCatalystTooltip(EmiRecipe emiRecipe) {
+    static List<Component> getCatalystTooltip(EmiRecipe emiRecipe) {
         if (emiRecipe instanceof MultiblockInfoEmiRecipe) return Collections.emptyList();
         return List.of(
                 Component.translatable("gtocore.ae.appeng.me2in1.emi.catalyst").withStyle(ChatFormatting.AQUA),
@@ -169,7 +173,7 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
         return recipe instanceof EmiStonecuttingRecipe;
     }
 
-    private static List<GenericStack> ofOutputs(EmiRecipe emiRecipe) {
+    static List<GenericStack> ofOutputs(EmiRecipe emiRecipe) {
         return emiRecipe.getOutputs()
                 .stream()
                 .flatMap(slot -> GTEmiEncodingHelper.intoGenericStack(slot).stream().limit(1))

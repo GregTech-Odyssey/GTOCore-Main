@@ -5,7 +5,11 @@ import com.gtocore.data.tag.Tags;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
+import com.gtolib.api.emi.stack.EmiTagPrefixUtils;
+import com.gtolib.api.emi.stack.EmiTagprefixStack;
+
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
+import com.gregtechceu.gtceu.integration.emi.recipe.GTEmiRecipe;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.world.item.BucketItem;
@@ -81,6 +85,9 @@ public class GTEmiEncodingHelper {
     }
 
     private static GenericStack fromEmiStackVirtualConvertible(EmiStack stack, long amount, boolean virtual) {
+        if (stack instanceof EmiTagprefixStack prefix) {
+            return new GenericStack(EmiTagPrefixUtils.toGenericStack(prefix).what(), amount);
+        }
         if (stack.getKey() instanceof Item) {
             if (virtual) {
                 return ofVirtual(stack, amount);
@@ -110,7 +117,7 @@ public class GTEmiEncodingHelper {
         }
         var list = new ArrayList<List<GenericStack>>();
         if (GTUtil.isShiftDown() || GTUtil.isCtrlDown()) {
-            (emiRecipe instanceof GTEMIRecipe gtRecipe ? gtRecipe.getEncodingCatalysts() : emiRecipe.getCatalysts())
+            (emiRecipe instanceof GTEmiRecipe gtRecipe ? gtRecipe.getEncodingCatalysts() : emiRecipe.getCatalysts())
                     .stream()
                     .map(s -> intoGenericStack(s, GTUtil.isCtrlDown()))
                     .forEach(list::add);
@@ -123,7 +130,7 @@ public class GTEmiEncodingHelper {
                 list.add(List.of(new GenericStack(AEItemKey.of(fluidProvider), 1)));
             }
         }
-        (emiRecipe instanceof GTEMIRecipe gtRecipe ? gtRecipe.getEncodingInputs() : emiRecipe.getInputs())
+        (emiRecipe instanceof GTEmiRecipe gtRecipe ? gtRecipe.getEncodingInputs() : emiRecipe.getInputs())
                 .stream()
                 .map(GTEmiEncodingHelper::intoGenericStack)
                 .forEach(list::add);

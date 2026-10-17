@@ -220,6 +220,7 @@ public final class GTEMIPlugin implements EmiPlugin {
             }
         });
         registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
+        registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTPatternEditorRecipeHandler());
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
         registry.addRecipeHandler(Wireless.TYPE, ME2in1Helper.createEMIWireless());

@@ -8,6 +8,7 @@ import com.gtolib.api.ae2.pattern.IParallelPatternDetails;
 import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.recipe.lookup.MapIngredient;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -46,7 +47,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.crafting.IPatternDetails;
-import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.*;
 import appeng.api.stacks.AEItemKey;
@@ -69,12 +69,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @DataGeneratorScanned
 public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachine {
 
-    private static final GenericStack[] EMPTY_EDITOR_STACKS = new GenericStack[0];
+    private static final GenericStack[] EMPTY_EDITOR_STACKS = AbstractRecipeInternalSlot.EMPTY_EDITOR_STACKS;
 
     private List<IPatternDetails> cachedPatterns;
     @Nullable
@@ -95,14 +94,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private ArrayList<ScannedMaterial> scannedMaterials = new ArrayList<>(0);
     private int materialBlacklistRevision;
     private final RecipeHandlerUnit sharedSearchHandlers;
+    // 兼容旧存档中的单槽草稿，加载后迁移到内部槽位。
     @SaveToDisk(defaultValue = "false")
     private boolean editingTemplate;
-    @SaveToDisk
+    @SaveToDisk(skipWhen = "skipLegacyEditorStacks")
     private GenericStack[] editorInputs = EMPTY_EDITOR_STACKS;
-    @SaveToDisk
+    @SaveToDisk(skipWhen = "skipLegacyEditorStacks")
     private GenericStack[] editorOutputs = EMPTY_EDITOR_STACKS;
-    private boolean editorComplete;
-    private boolean writingEditorTemplate;
 
     public MEWildcardPatternBufferPartMachine(@NotNull MetaMachineBlockEntity holder, @NotNull PatternBufferType type) {
         super(holder, type);
@@ -137,6 +135,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
 
     @Override
     public @Nullable IPatternDetails decodePattern(@NotNull ItemStack stack, int index) {
+        if (hasIncompleteEditorPattern(index)) return null;
         var pattern = MyPatternDetailsHelper.decodePattern(stack, holder, getGrid());
         if (pattern == null) return null;
         return IParallelPatternDetails.of(pattern, getLevel(), 1);
@@ -145,7 +144,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     @Override
     public void onLoad() {
         super.onLoad();
-        editorComplete = hasEditorStack(editorInputs) && hasEditorStack(editorOutputs);
+        migrateEditorTemplate();
         loadBlacklistData();
     }
 
@@ -156,102 +155,46 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     }
 
     @Override
+    public void setAvailableRecipeTypes(@NotNull GTRecipeType[] types) {
+        super.setAvailableRecipeTypes(types);
+        requestPatternUpdate();
+    }
+
+    @Override
+    public void setRecipeType(GTRecipeType type) {
+        if (recipeType == type) return;
+        super.setRecipeType(type);
+        requestPatternUpdate();
+    }
+
+    @Override
     public void onDetailsPostInit() {
         requestPatternUpdate();
     }
 
     @Override
     public void onPatternChange(int index) {
-        if (!isRemote() && !writingEditorTemplate) {
-            editingTemplate = false;
-            editorInputs = EMPTY_EDITOR_STACKS;
-            editorOutputs = EMPTY_EDITOR_STACKS;
-            editorComplete = false;
-        }
         super.onPatternChange(index);
         requestPatternUpdate();
     }
 
-    boolean hasEditablePattern() {
-        return getPatternInventory().getStackInSlot(0).getItem() instanceof ProcessingPatternItem;
-    }
-
-    private void ensureEditorTemplate() {
-        if (editingTemplate || isRemote() || !hasEditablePattern()) return;
-        var stack = getPatternInventory().getStackInSlot(0);
-        var pattern = ((ProcessingPatternItem) stack.getItem()).decode(stack, getLevel(), false);
-        editorInputs = pattern == null ? EMPTY_EDITOR_STACKS : pattern.getSparseInputs().clone();
-        editorOutputs = pattern == null ? EMPTY_EDITOR_STACKS : pattern.getSparseOutputs().clone();
-        editorComplete = hasEditorStack(editorInputs) && hasEditorStack(editorOutputs);
-        editingTemplate = true;
-        onChanged();
-    }
-
-    @Nullable
-    GenericStack getEditorStack(boolean output, int index) {
-        ensureEditorTemplate();
-        var stacks = output ? editorOutputs : editorInputs;
-        return index < stacks.length ? stacks[index] : null;
-    }
-
-    int getEditorState() {
-        if (!hasEditablePattern()) return 0;
-        ensureEditorTemplate();
-        return editorComplete ? 2 : 1;
-    }
-
-    void setEditorStack(boolean output, int index, @Nullable GenericStack value) {
-        if (!hasEditablePattern() || index < 0 || index >= (output ? AEProcessingPattern.MAX_OUTPUT_SLOTS : AEProcessingPattern.MAX_INPUT_SLOTS)) return;
-        if (value != null && (value.amount() <= 0 || value.amount() > getEditorAmountLimit(output, index, value.what()))) return;
-        ensureEditorTemplate();
-        var stacks = output ? editorOutputs : editorInputs;
-        var previous = index < stacks.length ? stacks[index] : null;
-        if (Objects.equals(previous, value)) return;
-        if (index >= stacks.length) stacks = Arrays.copyOf(stacks, index + 1);
-        stacks[index] = value;
-        if (output) editorOutputs = stacks;
-        else editorInputs = stacks;
-        editorComplete = hasEditorStack(editorInputs) && hasEditorStack(editorOutputs);
-        if (editorComplete) {
-            var encoded = PatternDetailsHelper.encodeProcessingPattern(compactEditorStacks(editorInputs), compactEditorStacks(editorOutputs));
-            var installed = getPatternInventory().getStackInSlot(0).copy();
-            installed.getOrCreateTag().merge(encoded.getOrCreateTag());
-            installed.getOrCreateTag().remove("recipe");
-            writingEditorTemplate = true;
-            getPatternInventory().setStackInSlot(0, installed);
-            onPatternChange(0);
-            writingEditorTemplate = false;
-        }
-        onChanged();
-        requestPatternUpdate();
+    @Override
+    protected void onEditorPatternChanged() {
         getAvailablePatterns();
     }
 
-    /** AE 会合并同 key 的槽位，数量之和不能溢出 long。 */
-    long getEditorAmountLimit(boolean output, int index, @Nullable AEKey key) {
-        if (key == null) return Long.MAX_VALUE;
-        ensureEditorTemplate();
-        var stacks = output ? editorOutputs : editorInputs;
-        long available = Long.MAX_VALUE;
-        for (int i = 0; i < stacks.length; i++) {
-            var stack = stacks[i];
-            if (i != index && stack != null && stack.what() == key) available -= stack.amount();
-        }
-        return Math.max(0, available);
+    /** 旧版把唯一槽位的草稿保存在机器上；迁移到公共的逐槽位存储。 */
+    private void migrateEditorTemplate() {
+        if (!editingTemplate) return;
+        getInternalInventory()[0].setEditorTemplate(editorInputs, editorOutputs);
+        editingTemplate = false;
+        editorInputs = EMPTY_EDITOR_STACKS;
+        editorOutputs = EMPTY_EDITOR_STACKS;
+        onChanged();
     }
 
-    private static boolean hasEditorStack(GenericStack[] stacks) {
-        for (var stack : stacks) if (stack != null) return true;
-        return false;
-    }
-
-    private static GenericStack[] compactEditorStacks(GenericStack[] stacks) {
-        int size = 0;
-        for (var stack : stacks) if (stack != null) size++;
-        var result = new GenericStack[size];
-        int index = 0;
-        for (var stack : stacks) if (stack != null) result[index++] = stack;
-        return result;
+    private boolean skipLegacyEditorStacks(GenericStack[] stacks) {
+        return !editingTemplate;
     }
 
     private void requestPatternUpdate() {
@@ -351,6 +294,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
      * 开销大约为1.5ms~2ms每次调用
      */
     private void rebuildCacheIfNeeded(List<IPatternDetails> patterns) {
+        if (!MapIngredient.isReady()) return;
         if (!dirty && cachedPatterns != null) return;
         dirty = false;
         resolvedRecipeType = null;
@@ -410,7 +354,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
 
     @Override
     public @NotNull List<@NotNull IPatternDetails> getAvailablePatterns() {
-        if (editingTemplate && !editorComplete) {
+        if (hasIncompleteEditorPattern(0)) {
             clearScannedPatterns();
             return Collections.emptyList();
         }
@@ -439,7 +383,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         editingTemplate = tag.getBoolean("editingTemplate");
         editorInputs = editingTemplate ? loadEditorStacks(tag.getList("editorInputs", 10), AEProcessingPattern.MAX_INPUT_SLOTS) : EMPTY_EDITOR_STACKS;
         editorOutputs = editingTemplate ? loadEditorStacks(tag.getList("editorOutputs", 10), AEProcessingPattern.MAX_OUTPUT_SLOTS) : EMPTY_EDITOR_STACKS;
-        editorComplete = hasEditorStack(editorInputs) && hasEditorStack(editorOutputs);
+        migrateEditorTemplate();
         patternPriority = tag.getInt("patternPriority");
         var materialNames = tag.getList("blacklistedMaterialNames", 8);
         blacklistedMaterialNames = new String[materialNames.size()];
@@ -458,15 +402,9 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     @Override
     public void saveToItem(@NotNull CompoundTag tag) {
         super.saveToItem(tag);
-        if (editingTemplate) {
-            tag.putBoolean("editingTemplate", true);
-            tag.put("editorInputs", saveEditorStacks(editorInputs));
-            tag.put("editorOutputs", saveEditorStacks(editorOutputs));
-        } else {
-            tag.remove("editingTemplate");
-            tag.remove("editorInputs");
-            tag.remove("editorOutputs");
-        }
+        tag.remove("editingTemplate");
+        tag.remove("editorInputs");
+        tag.remove("editorOutputs");
         tag.putInt("patternPriority", patternPriority);
         var materialNames = new ListTag();
         for (var name : blacklistedMaterialNames) materialNames.add(StringTag.valueOf(name));
@@ -479,12 +417,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
             fluidsTag.add(stack.writeToNBT(new CompoundTag()));
         }
         tag.put("blacklistedFluids", fluidsTag);
-    }
-
-    private static ListTag saveEditorStacks(GenericStack[] stacks) {
-        var tag = new ListTag();
-        for (var stack : stacks) tag.add(GenericStack.writeTag(stack));
-        return tag;
     }
 
     private static GenericStack[] loadEditorStacks(ListTag tag, int limit) {
@@ -761,13 +693,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                                     if (window != null) toggleToolPanel(window, MATERIALS_PANEL);
                                 }),
                         LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC),
-                MEPatternPartUI.labeledRow(inner, WildcardPatternEditor.TITLE,
+                MEPatternPartUI.labeledRow(inner, PatternEditor.TITLE,
                         Button.translatable(UISizes.BUTTON_WIDTH, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN)
                                 .setOnClientClick(() -> {
                                     var window = MachineWindow.of(root);
                                     if (window != null) toggleToolPanel(window, EDITOR_PANEL);
                                 }),
-                        WildcardPatternEditor.HINT));
+                        PatternEditor.HINT));
     }
 
     @Override
@@ -784,7 +716,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 }
                 if ((panels & EDITOR_PANEL) != 0) {
                     column.addChild(PopupHost.standalonePanel("wildcard.editor",
-                            Popup.of(() -> Component.translatable(WildcardPatternEditor.TITLE), content -> WildcardPatternEditor.build(this, content)).setContentWidth(width),
+                            Popup.of(() -> Component.translatable(PatternEditor.TITLE), content -> PatternEditor.build(this, 0, content)).setContentWidth(width),
                             () -> toggleToolPanel(window, EDITOR_PANEL)));
                 }
             }).setContentWidth(UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE);
