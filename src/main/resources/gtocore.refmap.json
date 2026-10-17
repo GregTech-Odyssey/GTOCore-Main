@@ -57,7 +57,11 @@
       "net.minecraft.nbt.NbtOps.NbtRecordBuilder": "net/minecraft/nbt/NbtOps$NbtRecordBuilder"
     },
     "com/gtolib/mixin/mc/LevelSettingMixin": {
-      "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;"
+      "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+      "withDataConfiguration": "Lnet/minecraft/world/level/LevelSettings;m_247275_(Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+      "withDifficulty": "Lnet/minecraft/world/level/LevelSettings;m_46918_(Lnet/minecraft/world/Difficulty;)Lnet/minecraft/world/level/LevelSettings;",
+      "copy": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+      "withGameType": "Lnet/minecraft/world/level/LevelSettings;m_46922_(Lnet/minecraft/world/level/GameType;)Lnet/minecraft/world/level/LevelSettings;"
     },
     "com/gtocore/mixin/mc/mob/AbstractSkeletonMixin": {
       "getArrow": "Lnet/minecraft/world/entity/monster/AbstractSkeleton;m_7932_(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;",
@@ -373,7 +377,9 @@
       "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;openFresh(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_232896_(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V"
     },
     "com/gtolib/mixin/mc/PrimaryLevelDataMixin": {
-      "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V"
+      "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V",
+      "Lnet/minecraft/world/level/LevelSettings;copy()Lnet/minecraft/world/level/LevelSettings;": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+      "<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V": "Lnet/minecraft/world/level/storage/PrimaryLevelData;<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V"
     },
     "com/gtocore/mixin/ae2/menu/PatternAccessTermMenuMixin": {
       "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z": "Lnet/minecraft/world/entity/player/Inventory;m_36054_(Lnet/minecraft/world/item/ItemStack;)Z"
@@ -486,7 +492,11 @@
         "net.minecraft.nbt.NbtOps.NbtRecordBuilder": "net/minecraft/nbt/NbtOps$NbtRecordBuilder"
       },
       "com/gtolib/mixin/mc/LevelSettingMixin": {
-        "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;"
+        "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+        "withDataConfiguration": "Lnet/minecraft/world/level/LevelSettings;m_247275_(Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+        "withDifficulty": "Lnet/minecraft/world/level/LevelSettings;m_46918_(Lnet/minecraft/world/Difficulty;)Lnet/minecraft/world/level/LevelSettings;",
+        "copy": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+        "withGameType": "Lnet/minecraft/world/level/LevelSettings;m_46922_(Lnet/minecraft/world/level/GameType;)Lnet/minecraft/world/level/LevelSettings;"
       },
       "com/gtocore/mixin/mc/mob/AbstractSkeletonMixin": {
         "getArrow": "Lnet/minecraft/world/entity/monster/AbstractSkeleton;m_7932_(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;",
@@ -802,7 +812,9 @@
         "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;openFresh(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_232896_(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V"
       },
       "com/gtolib/mixin/mc/PrimaryLevelDataMixin": {
-        "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V"
+        "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V",
+        "Lnet/minecraft/world/level/LevelSettings;copy()Lnet/minecraft/world/level/LevelSettings;": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+        "<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V": "Lnet/minecraft/world/level/storage/PrimaryLevelData;<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V"
       },
       "com/gtocore/mixin/ae2/menu/PatternAccessTermMenuMixin": {
         "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z": "Lnet/minecraft/world/entity/player/Inventory;m_36054_(Lnet/minecraft/world/item/ItemStack;)Z"
