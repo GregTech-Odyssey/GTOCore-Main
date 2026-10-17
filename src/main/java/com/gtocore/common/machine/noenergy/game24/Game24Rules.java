@@ -38,8 +38,8 @@ public final class Game24Rules {
      */
     public enum DrawRange {
 
-        ONE_TO_TEN(10, 10),
-        ONE_TO_THIRTEEN(13, 12);
+        ONE_TO_TEN(10, 2),
+        ONE_TO_THIRTEEN(13, 3);
 
         public static final DrawRange[] ALL = values();
 

@@ -64,8 +64,10 @@ public class JustGet10Machine extends AbstractRoundGameMachine<JustGet10Machine.
     private static final int SCORE_BONUS_MIN_VALUE = 10;
     private static final int SCORE_BONUS_BASE = 1000;
     private static final int SCORE_BONUS_PER_VALUE = 500;
-    /** 兑现基线：超过它的部分才折算游戏币，折算比例随档位变（见 {@link JustGet10Rules.BoardSize#pointsPerCoin()}）。 */
-    private static final int REDEMPTION_BASELINE = 1000;
+    /**
+     * 兑现门槛：一局积分超过它的部分才按档位比例折成游戏币，达不到就一枚不给。公开给工具提示复用，免得两处各写一个数。
+     */
+    public static final int REDEMPTION_BASELINE = 1000;
 
     /** 提起位图：一个 {@code long} 装 {@link Long#SIZE} 格，最大档 121 格两个字够用。 */
     private static final int SELECTION_WORDS = (JustGet10Rules.BoardSize.HUGE.cellCount() + Long.SIZE - 1) / Long.SIZE;

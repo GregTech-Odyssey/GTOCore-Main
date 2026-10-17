@@ -8,6 +8,7 @@ import com.gtocore.common.machine.noenergy.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game2048.Game2048Rules;
 import com.gtocore.common.machine.noenergy.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game24.Game24Rules;
+import com.gtocore.common.machine.noenergy.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.justGet10.JustGet10Rules;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotSymbol;
@@ -194,8 +195,9 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("档位与兑现", "Board size and payout"));
         t.feature(t.tr("「配置」页可换棋盘：小 5×5、中 7×7、大 9×9、特大 11×11；越大越好合，同一份积分越不值钱",
                 "The Config page switches the board: 5×5 / 7×7 / 9×9 / 11×11; bigger boards are easier to merge on and make the same score worth less"));
-        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 1000 的部分按档位每 %s / %s / %s / %s 分折 1 枚游戏币",
-                "A merge scores the merged number × group size; when the round ends or you restart, 1 Game Coin per %s / %s / %s / %s points above 1000, by board size",
+        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 %s 分的部分按档位每 %s / %s / %s / %s 分折 1 枚游戏币，达不到门槛不给",
+                "A merge scores the merged number × group size; when the round ends or you restart, the points above %s pay 1 Game Coin per %s / %s / %s / %s points by board size, and a round below the threshold pays nothing",
+                FormattingUtil.formatNumbers(JustGet10Machine.REDEMPTION_BASELINE),
                 JustGet10Rules.BoardSize.SMALL.pointsPerCoin(), JustGet10Rules.BoardSize.MEDIUM.pointsPerCoin(),
                 JustGet10Rules.BoardSize.LARGE.pointsPerCoin(), JustGet10Rules.BoardSize.HUGE.pointsPerCoin()));
     });
