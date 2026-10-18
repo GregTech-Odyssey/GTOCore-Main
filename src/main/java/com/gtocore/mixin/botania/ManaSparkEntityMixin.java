@@ -3,6 +3,8 @@ package com.gtocore.mixin.botania;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
+import appeng.hooks.ticking.TickHandler;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +27,7 @@ public abstract class ManaSparkEntityMixin extends SparkBaseEntity {
 
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lvazkii/botania/common/entity/ManaSparkEntity;getAttachedTile()Lvazkii/botania/api/mana/spark/SparkAttachable;", remap = false), cancellable = true)
     private void tick(CallbackInfo ci) {
-        if (this.firstTick || tickCount % 20 == 0) return;
+        if (this.firstTick || TickHandler.INSTANCE.tickCounter % 20 == 8) return;
         ci.cancel();
     }
 

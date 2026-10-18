@@ -22,7 +22,7 @@ public final class MarimorphosisBlockEntityMixin {
      */
     @Overwrite(remap = false)
     public int getDelay() {
-        return 2;
+        return 10;
     }
 
     /**

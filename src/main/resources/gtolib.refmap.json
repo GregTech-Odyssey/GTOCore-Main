@@ -431,6 +431,28 @@
       "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V": "Lnet/minecraft/network/Connection;m_243124_(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
       "channelRead0": "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
       "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/network/Connection;channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V"
+    },
+    "com/gtocore/mixin/botania/optimize/BergamuteBlockEntityMixin": {
+      "Lnet/minecraft/world/level/Level;hasNeighborSignal(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/world/level/Level;m_276867_(Lnet/minecraft/core/BlockPos;)Z"
+    },
+    "com/gtocore/mixin/botania/optimize/HopperhockBlockEntityMixin": {
+      "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;getLevel()Lnet/minecraft/world/level/Level;": "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;m_58904_()Lnet/minecraft/world/level/Level;"
+    },
+    "com/gtocore/mixin/mc/PistonMovingBlockEntityMixin": {
+      "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z": "Lnet/minecraft/world/level/Level;m_7731_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+      "tick": "Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;m_155915_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;)V"
+    },
+    "com/gtocore/mixin/mc/PistonBaseBlockMixin": {
+      "moveBlocks": "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;m_60181_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Z",
+      "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;newMovingBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;": "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;m_155881_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+    },
+    "com/gtolib/mixin/mc/PistonMovingBlockEntityMixin": {
+      "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z": "Lnet/minecraft/world/level/Level;m_7731_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+      "tick": "Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;m_155915_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;)V"
+    },
+    "com/gtolib/mixin/mc/PistonBaseBlockMixin": {
+      "moveBlocks": "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;m_60181_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Z",
+      "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;newMovingBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;": "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;m_155881_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;"
     }
   },
   "data": {
@@ -866,6 +888,28 @@
         "send(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V": "Lnet/minecraft/network/Connection;m_243124_(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketSendListener;)V",
         "channelRead0": "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
         "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/network/Connection;channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V"
+      },
+      "com/gtocore/mixin/botania/optimize/BergamuteBlockEntityMixin": {
+        "Lnet/minecraft/world/level/Level;hasNeighborSignal(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/world/level/Level;m_276867_(Lnet/minecraft/core/BlockPos;)Z"
+      },
+      "com/gtocore/mixin/botania/optimize/HopperhockBlockEntityMixin": {
+        "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;getLevel()Lnet/minecraft/world/level/Level;": "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;m_58904_()Lnet/minecraft/world/level/Level;"
+      },
+      "com/gtocore/mixin/mc/PistonMovingBlockEntityMixin": {
+        "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z": "Lnet/minecraft/world/level/Level;m_7731_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+        "tick": "Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;m_155915_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;)V"
+      },
+      "com/gtocore/mixin/mc/PistonBaseBlockMixin": {
+        "moveBlocks": "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;m_60181_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Z",
+        "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;newMovingBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;": "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;m_155881_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+      },
+      "com/gtolib/mixin/mc/PistonMovingBlockEntityMixin": {
+        "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z": "Lnet/minecraft/world/level/Level;m_7731_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
+        "tick": "Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;m_155915_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/piston/PistonMovingBlockEntity;)V"
+      },
+      "com/gtolib/mixin/mc/PistonBaseBlockMixin": {
+        "moveBlocks": "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;m_60181_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Z",
+        "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;newMovingBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;": "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;m_155881_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;"
       }
     }
   }
