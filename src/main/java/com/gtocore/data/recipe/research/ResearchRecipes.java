@@ -4,7 +4,7 @@ import com.gtocore.api.research.ResearchTag;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
-import com.gtocore.common.recipe.condition.BeamCondition;
+import com.gtocore.common.machine.multiblock.electric.research.LaserComputationTestingPlatformMachine;
 import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -84,8 +84,8 @@ public final class ResearchRecipes {
                 .EUt(1074000)
                 .duration(2400)
                 .vacuum(4)
-                .addCondition(new BeamCondition(6400, 749, 751))
-                .researchPoints(ResearchTag.OPTICS, 12)
+                .addCondition(LaserComputationTestingPlatformMachine.BEAM_CONDITION)
+                .researchPoints(ResearchTag.OPTICS, 2)
                 .save();
 
         var crystals = new ItemEntry[] {

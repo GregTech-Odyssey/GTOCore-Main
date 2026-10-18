@@ -50,7 +50,6 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.gtm.recipe.editor.RecipeEditorUIFactory;
-import com.gtolib.network.HeaderIndexManager;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -120,7 +119,6 @@ public class CommonProxy {
     }
 
     private static void init() {
-        HeaderIndexManager.init();
         IdleReason.init();
         GTOCodecs.init();
         GTOCreativeModeTabs.init();

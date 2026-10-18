@@ -288,6 +288,22 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         }
     }
 
+    /** 只接受当前扫描仍可运行的材料；整批修改只保存并通知一次。 */
+    void setMaterialsDisabled(List<Material> materials, boolean disabled) {
+        var selected = new ReferenceOpenHashSet<Material>(materials.size());
+        selected.addAll(materials);
+        boolean changed = false;
+        for (var entry : getScannedMaterials()) {
+            var material = entry.material();
+            if (!selected.contains(material)) continue;
+            changed |= disabled ? blacklistedMaterialSet.add(material) : blacklistedMaterialSet.remove(material);
+        }
+        if (!changed) return;
+        saveMaterialBlacklist();
+        materialBlacklistRevision++;
+        requestPatternUpdate();
+    }
+
     record ScannedMaterial(Material material, AEKey[] outputs, ResourceLocation[] recipes) {}
 
     /**
@@ -687,19 +703,24 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                         MEPatternPartUI.intField(0, this::getPatternPriority, this::setPatternPriority, Integer.MIN_VALUE),
                         LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC),
                 MEPatternPartUI.labeledRow(inner, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST,
-                        Button.translatable(UISizes.BUTTON_WIDTH, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN)
-                                .setOnClientClick(() -> {
-                                    var window = MachineWindow.of(root);
-                                    if (window != null) toggleToolPanel(window, MATERIALS_PANEL);
-                                }),
+                        toolPanelButton(root, MATERIALS_PANEL),
                         LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC),
                 MEPatternPartUI.labeledRow(inner, PatternEditor.TITLE,
-                        Button.translatable(UISizes.BUTTON_WIDTH, LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN)
-                                .setOnClientClick(() -> {
-                                    var window = MachineWindow.of(root);
-                                    if (window != null) toggleToolPanel(window, EDITOR_PANEL);
-                                }),
+                        toolPanelButton(root, EDITOR_PANEL),
                         PatternEditor.HINT));
+    }
+
+    private static Button toolPanelButton(UIElement root, int panel) {
+        String label = Component.translatable(LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN).getString();
+        String collapsed = label + " ▶";
+        String expanded = label + " ◀";
+        return Button.of(UISizes.BUTTON_WIDTH).bindClientText(() -> {
+            var window = MachineWindow.of(root);
+            return window != null && window.isPopupOpen(TOOLS_POPUP) && (window.getPopupArgument(TOOLS_POPUP) & panel) != 0 ? expanded : collapsed;
+        }).setOnClientClick(() -> {
+            var window = MachineWindow.of(root);
+            if (window != null) toggleToolPanel(window, panel);
+        });
     }
 
     @Override

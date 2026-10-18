@@ -75,7 +75,15 @@ public class ThermodynamicAnalysisPlatformMachine extends ElectricMultiblockMach
     public boolean handleRecipeOutput(GTRecipe recipe) {
         var abs = getAbsTempDifference();
         if (abs > 10 && dataHolder != null) {
-            dataHolder.addData(abs / 250d);
+            var basePoints = (abs / 250d);
+            var p = 1D;
+            if (lowTempInterface.getHeatContainer().getTemperature() < 50) {
+                p += 0.5;
+            }
+            if (highTempInterface.getHeatContainer().getTemperature() > 3500) {
+                p += 0.5;
+            }
+            dataHolder.addData((long) Math.ceil(basePoints * p));
         }
         return super.handleRecipeOutput(recipe);
     }

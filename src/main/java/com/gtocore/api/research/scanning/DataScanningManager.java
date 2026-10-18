@@ -34,7 +34,6 @@ import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.*;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -238,8 +237,9 @@ public class DataScanningManager {
             }
         });
         materialDataScanningMap.putAll(generatedMaterialPoints);
-        dataScanningEntries.sort(Comparator.comparing((DataScanningEntry entry) -> entry.key().getType().getId().toString())
-                .thenComparing(entry -> entry.key().getId().toString()));
+        // dataScanningEntries.sort(Comparator.comparing((DataScanningEntry entry) ->
+        // entry.key().getType().getId().toString())
+        // .thenComparing(entry -> entry.key().getId().toString()));
         rebuildDataScanningSources();
         regMap = null;
         materialRegMap = null;
