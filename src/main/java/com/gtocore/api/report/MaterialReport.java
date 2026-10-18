@@ -1,17 +1,14 @@
 package com.gtocore.api.report;
 
-import com.gtocore.api.data.material.GTOMaterialFlags;
+import com.gtocore.api.data.material.MaterialType;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.lang.LangAdaptor;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.language.RegisterEnumLang;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags;
-import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIconSet;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.FluidPipeProperties;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.ToolProperty;
@@ -54,7 +51,7 @@ public class MaterialReport {
             report.append("- 主颜色: ").append(entry.hexColor1).append("\n");
             report.append("- 次颜色: ").append(entry.hexColor2).append("\n");
             report.append("- 图标集: ").append(entry.iconSetName).append("\n");
-            report.append("- 基础类型: ").append(entry.baseType.cn).append(" / ").append(entry.baseType.en).append("\n");
+            report.append("- 基础类型: ").append(entry.materialType.getCn()).append(" / ").append(entry.materialType.getEn()).append("\n");
             report.append("- 质量: ").append(entry.mass).append("\n");
             // 添加其他属性...
 
@@ -67,7 +64,7 @@ public class MaterialReport {
             String enNameInCsv = entry.enName.contains(",") ? "\"" + entry.enName + "\"" : entry.enName;
             report_table.append(String.format("%s,%s,%s,%s,%s,%s,%s,%d,",
                     cnNameInCsv, enNameInCsv, entry.symbol, entry.hexColor1, entry.hexColor2,
-                    entry.iconSetName, entry.baseType.en, entry.mass));
+                    entry.iconSetName, entry.materialType.getEn(), entry.mass));
             report_table.append(entry.hasFluidPipe ? entry.fluidPipeThroughput : "").append(",");
             report_table.append(entry.hasItemPipe ? entry.itemPipePriority : "").append(",");
             report_table.append(entry.hasItemPipe ? entry.itemPipeTransferRate : "").append(",");
@@ -133,7 +130,7 @@ public class MaterialReport {
         public String hexColor1;
         public String hexColor2;
         public String iconSetName;
-        public BaseType baseType;
+        public MaterialType materialType;
         public long mass;
 
         // fluid pipe properties
@@ -186,7 +183,7 @@ public class MaterialReport {
             entry.hexColor1 = getHexColorString(material.getMaterialRGB());
             entry.hexColor2 = getHexColorString(material.getMaterialSecondaryRGB());
             entry.iconSetName = material.getMaterialIconSet().name;
-            entry.baseType = BaseType.inferFromMaterial(material);
+            entry.materialType = MaterialType.get(material);
             entry.mass = material.getMass();
 
             entry.hasFluidPipe = material.hasProperty(PropertyKey.FLUID_PIPE);
@@ -233,49 +230,5 @@ public class MaterialReport {
         boolean alpha = (color >> 24 & 255) != 0;
         int var10001 = alpha ? 8 : 6;
         return "#" + StringUtils.leftPad(var10000, var10001, '0');
-    }
-
-    @RegisterEnumLang(keyPrefix = "gtocore.material.base_type")
-    public enum BaseType {
-
-        METAL("金属", "Metal"),
-        GEM("宝石", "Gem"),
-        CHEMICAL("化学品", "Chemical"),
-        POLYMER("高分子材料", "Polymer"),
-        COMPOSITE("复合材料", "Composite"),
-        CERAMIC("陶瓷", "Ceramic"),
-        WOOD("木材", "Wood"),
-        MAGIC("魔法材料", "Magic"),
-        OTHER("其他", "Other");
-
-        @RegisterEnumLang.CnValue("name")
-        final String cn;
-        @RegisterEnumLang.EnValue("name")
-        final String en;
-
-        BaseType(String cn, String en) {
-            this.cn = cn;
-            this.en = en;
-        }
-
-        static BaseType inferFromMaterial(Material material) {
-            if (material.hasFlag(GTOMaterialFlags.COMPOSITE_MATERIAL))
-                return COMPOSITE;
-            if (material.hasFlag(GTOMaterialFlags.GENERATE_CERAMIC))
-                return CERAMIC;
-            if (material.hasFlag(MaterialFlags.MAGICAL))
-                return MAGIC;
-            if (material.hasProperty(PropertyKey.GEM))
-                return GEM;
-            if (material.hasProperty(PropertyKey.WOOD))
-                return WOOD;
-            if (material.hasProperty(PropertyKey.POLYMER))
-                return POLYMER;
-            if (material.hasProperty(PropertyKey.BLAST) ||
-                    material.hasProperty(PropertyKey.ALLOY_BLAST) ||
-                    material.getMaterialIconSet() == MaterialIconSet.METALLIC)
-                return METAL;
-            return CHEMICAL;
-        }
     }
 }

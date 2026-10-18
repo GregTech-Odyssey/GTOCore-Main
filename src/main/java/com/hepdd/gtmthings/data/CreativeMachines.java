@@ -22,6 +22,7 @@ import com.gto.registrate.providers.ProviderType;
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeEnergyHatchPartMachine;
+import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputAssemblyPartMachine;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputBusPartMachine;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputHatchPartMachine;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeLaserHatchPartMachine;
@@ -52,6 +53,16 @@ public class CreativeMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/item_bus.import")))
             .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")))
             .abilities(PartAbility.IMPORT_ITEMS)
+            .tier(MAX)
+            .register();
+
+    public static final MachineDefinition CREATIVE_INPUT_ASSEMBLY = GTMTHINGS_REGISTRATE.machine(
+            "creative_input_assembly", CreativeInputAssemblyPartMachine::new)
+            .rotationState(RotationState.ALL)
+            .overlayTieredHullRenderer("dual_hatch.import")
+            .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")),
+                    Tips.feature(Component.translatable("gtmthings.machine.creative_input_assembly.tooltip", CreativeInputAssemblyPartMachine.SLOT_COUNT)))
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.IMPORT_FLUIDS_9X, PartAbility.DUAL_INPUT)
             .tier(MAX)
             .register();
 
