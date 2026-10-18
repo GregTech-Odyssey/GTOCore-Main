@@ -5,6 +5,7 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
+import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
@@ -144,6 +145,8 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onEntityHurt);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onLivingAttack);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onLivingDamage);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, HeatInsulationArmorItem::onLivingAttack);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, HeatInsulationArmorItem::onLivingHurt);
         AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();

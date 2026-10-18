@@ -11,12 +11,11 @@ import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
 
-import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public final class BeamCondition extends RecipeCondition {
 
     private static final double TWO_PI = Math.PI * 2.0D;
-    private static final ThreadLocal<O2OOpenCacheHashMap<BeamAccessPartMachine.BeamKey, long[]>> INTENSITY_SAMPLES = ThreadLocal.withInitial(O2OOpenCacheHashMap::new);
 
     private final long minIntensity;
     private final int minWavelength;
@@ -60,13 +59,8 @@ public final class BeamCondition extends RecipeCondition {
     @Override
     public boolean testCondition(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         if (!(holder instanceof IMultiController controller)) return false;
-        return getMatchingIntensity(controller) >= minIntensity;
-    }
 
-    /** Returns the strongest matching beam, using the same recent samples as the recipe requirement. */
-    public long getMatchingIntensity(IMultiController controller) {
-        var samples = INTENSITY_SAMPLES.get();
-        samples.clear();
+        var samples = new Object2ObjectOpenHashMap<BeamAccessPartMachine.BeamKey, long[]>();
         for (var part : controller.getParts(BeamAccessPartMachine.class)) {
             part.collectRecentIntensitySamples(samples);
         }
@@ -74,16 +68,13 @@ public final class BeamCondition extends RecipeCondition {
         int minimumWavelength = Math.min(minWavelength, maxWavelength);
         int maximumWavelength = Math.max(minWavelength, maxWavelength);
         float requiredPolarization = normalizePolarizationDegrees(polarization);
-        long intensity = 0L;
-        for (var iterator = samples.object2ObjectEntrySet().fastIterator(); iterator.hasNext();) {
-            var entry = iterator.next();
+        for (var entry : samples.entrySet()) {
             var key = entry.getKey();
             if (key.waveLength() < minimumWavelength || key.waveLength() > maximumWavelength) continue;
             if (hasPolarization && Float.compare(key.polarization(), requiredPolarization) != 0) continue;
-            intensity = Math.max(intensity, average(entry.getValue()));
+            if (average(entry.getValue()) >= minIntensity) return true;
         }
-        samples.clear();
-        return intensity;
+        return false;
     }
 
     private static long average(long[] samples) {
