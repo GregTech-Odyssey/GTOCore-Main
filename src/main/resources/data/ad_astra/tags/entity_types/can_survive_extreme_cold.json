@@ -4,6 +4,14 @@
     "minecraft:endermite",
     "minecraft:shulker",
     "minecraft:phantom",
-    "minecraft:evoker"
+    "minecraft:evoker",
+    "deeperdarker:angler_fish",
+    "deeperdarker:sculk_centipede",
+    "deeperdarker:sculk_leech",
+    "deeperdarker:sculk_snapper",
+    "deeperdarker:shattered",
+    "deeperdarker:shriek_worm",
+    "deeperdarker:sludge",
+    "deeperdarker:stalker"
   ]
 }
