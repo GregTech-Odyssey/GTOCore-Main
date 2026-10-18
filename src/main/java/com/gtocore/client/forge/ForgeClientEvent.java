@@ -3,6 +3,7 @@ package com.gtocore.client.forge;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
+import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
 import com.gtocore.client.MaterialTypeTooltips;
@@ -103,6 +104,7 @@ public final class ForgeClientEvent {
     private static final String BLOCK_PREFIX = "block." + GTOCore.MOD_ID;
 
     public static void init() {
+        ClientWorldLeakFixes.init();
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTickEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onTooltipEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTick);
