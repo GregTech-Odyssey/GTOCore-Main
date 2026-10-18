@@ -15,6 +15,7 @@ import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOTarotArcanumTooltips;
 import com.gtocore.common.data.translation.MultiblockSlang;
 import com.gtocore.common.item.*;
+import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.armor.SpaceArmorComponentItem;
 import com.gtocore.common.item.armor.WardenArmorComponentItem;
 import com.gtocore.common.item.devtool.CreativeAllFluidCellItem;
@@ -1152,6 +1153,35 @@ public final class GTOItems {
             .properties(p -> p.rarity(Rarity.EPIC))
             .tag(Tags.Items.ARMORS_CHESTPLATES)
             .tag(CustomTags.PPE_ARMOR)
+            .register();
+
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_HELMET = item("heat_insulation_helmet", "隔热头盔",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.HELMET, p))
+            .lang("Heat Insulation Helmet")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_headpiece")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_HELMETS)
+            .register();
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_CHESTPLATE = item("heat_insulation_chestplate", "隔热胸甲",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.CHESTPLATE, p))
+            .lang("Heat Insulation Chestplate")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_chestpiece")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_CHESTPLATES)
+            .register();
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_LEGGINGS = item("heat_insulation_leggings", "隔热护腿",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.LEGGINGS, p))
+            .lang("Heat Insulation Leggings")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_leggings")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_LEGGINGS)
+            .register();
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_BOOTS = item("heat_insulation_boots", "隔热靴子",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.BOOTS, p))
+            .lang("Heat Insulation Boots")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_boots")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_BOOTS)
             .register();
 
     public static final ItemEntry<WardenArmorComponentItem> WARDEN_QUARKTECH_HELMET = item("warden_quarktech_helmet", "夸克高科™监守者升级套装头盔 (III-Warden)",

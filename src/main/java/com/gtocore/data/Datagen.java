@@ -3,6 +3,7 @@ package com.gtocore.data;
 import com.gtocore.data.blockstate.AdAstraCompatBlockStateProvider;
 import com.gtocore.data.lang.LangHandler;
 import com.gtocore.data.lootTables.AdAstraCompatLootTableProvider;
+import com.gtocore.data.tag.DamageTypeTagsProvider;
 import com.gtocore.data.tag.Tags;
 
 import com.gtolib.GTOCore;
@@ -42,7 +43,8 @@ public final class Datagen {
         DataGenerator generator = event.getGenerator();
         CompletableFuture<HolderLookup.Provider> future = event.getLookupProvider();
         if (event.includeServer()) {
-            generator.addProvider(true, new DatapackBuiltinEntriesProvider(generator.getPackOutput(), future, DAMAGE_TYPES_BUILDER, Set.of("minecraft", GTOCore.MOD_ID)));
+            var registries = generator.addProvider(true, new DatapackBuiltinEntriesProvider(generator.getPackOutput(), future, DAMAGE_TYPES_BUILDER, Set.of("minecraft", GTOCore.MOD_ID)));
+            generator.addProvider(true, new DamageTypeTagsProvider(generator.getPackOutput(), registries.getRegistryProvider(), event.getExistingFileHelper()));
             generator.addProvider(true, new AdAstraCompatLootTableProvider(generator.getPackOutput()));
         }
         if (event.includeClient()) {

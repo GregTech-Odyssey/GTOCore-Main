@@ -25,7 +25,7 @@ public final class GTODamageTypes {
 
     // keys
     private static final ResourceKey<DamageType> GENERIC = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("generic"));
-    private static final ResourceKey<DamageType> MACHINE_HEAT_WAVE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("machine_heat_wave"));
+    public static final ResourceKey<DamageType> MACHINE_HEAT_WAVE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("machine_heat_wave"));
     private static final ResourceKey<DamageType> BLAST_FURNACE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("blast_furnace"));
     private static final ResourceKey<DamageType> BLAZING_PLASMA = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("blazing_plasma"));
 
@@ -44,7 +44,7 @@ public final class GTODamageTypes {
     }
 
     public static DamageSource getMachineHeatWaveDamageSource(Entity entity, IHeatContainer machine) {
-        return new MachineHeatWaveDamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(MACHINE_HEAT_WAVE), entity, machine);
+        return new MachineHeatWaveDamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(MACHINE_HEAT_WAVE), machine);
     }
 
     public static DamageSource getBlastFurnaceDamageSource(Entity entity) {
@@ -74,8 +74,8 @@ public final class GTODamageTypes {
 
         private final IHeatContainer container;
 
-        private MachineHeatWaveDamageSource(Holder<DamageType> type, Entity entity, IHeatContainer container) {
-            super(type, entity);
+        private MachineHeatWaveDamageSource(Holder<DamageType> type, IHeatContainer container) {
+            super(type);
             this.container = container;
         }
 
