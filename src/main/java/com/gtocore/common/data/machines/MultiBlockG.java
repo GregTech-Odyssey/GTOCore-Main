@@ -289,6 +289,8 @@ public final class MultiBlockG {
             .allRotation()
             .tips(GTOMachineTooltips.TreeGrowthSimulatorTooltips)
             .recipeTypes(GTORecipeTypes.TREE_GROWTH_SIMULATOR_RECIPES)
+            // 本机覆写了 getRealRecipe 并会调 super，故升级与功率增幅器在这里注册才能生效
+            .recipeModifiers(GTORecipeModifiers.UPGRADE, GTORecipeModifiers.POWER_AMPLIFIER)
             .block(GTOBlocks.BRASS_REINFORCED_WOODEN_CASING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("tree_growth_simulator").build())

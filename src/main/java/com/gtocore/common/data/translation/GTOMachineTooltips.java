@@ -1140,7 +1140,12 @@ public final class GTOMachineTooltips {
     public static final TipSpec TreeGrowthSimulatorTooltips = GTOTips.of("tree_growth_simulator", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("需要安装伐木工具，仅支持GT工具", "Requires GT-compatible tree cutting tool"));
-        t.feature(t.tr("根据工具类型和品质决定产出和效率", "Output and efficiency determined by tool type and quality"));
+        t.feature(t.tr("工具材料的采掘速度决定运行速度，采掘等级越高越快", "Tool material harvest speed sets the running speed; higher harvest level is faster"));
+        t.feature(t.tr("电锯额外提升主产物产出", "A Chainsaw additionally boosts the main output"));
+        t.heading(t.tr("附魔加成", "Enchantment Bonuses"));
+        t.bonus(t.tr("时运：每级提升全部产物产出", "Fortune: each level boosts all outputs"));
+        t.bonus(t.tr("效率：每级加快运行速度", "Efficiency: each level speeds up the machine"));
+        t.bonus(t.tr("耐久：按原版规则减免工具磨损", "Unbreaking: reduces tool wear by vanilla rules"));
     });
 
     // 大型温室
