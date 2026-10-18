@@ -28,7 +28,11 @@ public enum Mods {
     FACTORY_BLOCKS("factory_blocks"),
     MYTHICBOTANY("mythicbotany"),
     MOUSETWEAKS("mousetweaks"),
-    AE2_TOGGLEABLE_VIEW_CELL("ae2_toggleable_view_cell");
+    AE2_TOGGLEABLE_VIEW_CELL("ae2_toggleable_view_cell"),
+    INVENTORY_ESSENTIALS("inventoryessentials"),
+    FTB_XMOD_COMPAT("ftbxmodcompat"),
+    RENDER_BLENDER("renderblender"),
+    EMI_TRADES("emitrades"),;
 
     @Getter
     private final boolean loaded;
