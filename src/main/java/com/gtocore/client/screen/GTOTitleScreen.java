@@ -48,6 +48,13 @@ public final class GTOTitleScreen extends TitleScreen {
 
     @Override
     protected void init() {
+        // Load menu textures while the loading overlay is still opaque, before its crossfade begins.
+        var textures = minecraft.getTextureManager();
+        textures.getTexture(BACKGROUND);
+        textures.getTexture(TITLE);
+        textures.getTexture(LOGO);
+        textures.getTexture(BUTTON);
+        textures.getTexture(BUTTON_HOVERED);
         // Keep the original callbacks, including demo mode and multiplayer restrictions/tooltips.
         super.init();
         Button[] menu = new Button[5];
@@ -137,6 +144,7 @@ public final class GTOTitleScreen extends TitleScreen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         graphics.blit(TITLE, titleX, titleY, titleWidth, titleHeight, 0, 0, 4042, 1488, 4042, 1488);
         for (net.minecraft.client.gui.components.Renderable renderable : renderables) {
             renderable.render(graphics, mouseX, mouseY, partialTick);
@@ -149,6 +157,9 @@ public final class GTOTitleScreen extends TitleScreen {
 
     @Override
     public void renderBackground(GuiGraphics graphics) {
+        // ForgeLoadingOverlay supplies its own fading shader alpha; only the overlay should crossfade.
+        graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.disableBlend();
         // Cover the window without stretching the 16:9 background.
         graphics.blit(BACKGROUND, (width - backgroundWidth) / 2, (height - backgroundHeight) / 2,
                 backgroundWidth, backgroundHeight, 0, 0, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT);
