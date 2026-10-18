@@ -292,6 +292,7 @@ public final class MultiBlockB {
                                     .setMinGlobalLimited(20)
                                     .or(autoAbilities(definition.getRecipeTypes()))
                                     .or(blocks(GTOMachines.MACHINE_ACCESS_LINK.get()).setMaxGlobalLimited(1, 0))
+                                    .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1))
                                     .or(abilities(MAINTENANCE).setExactLimit(1)))
                             .where('F', abilities(MUFFLER))
                             .where('a', blocks(GTBlocks.CASING_STEEL_SOLID.get())

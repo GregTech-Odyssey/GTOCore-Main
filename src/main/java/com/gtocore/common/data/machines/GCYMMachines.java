@@ -550,6 +550,7 @@ public final class GCYMMachines {
                             .where('S', controller(definition))
                             .wherePart('X', blocks(CASING_WATERTIGHT.get()).setMinGlobalLimited(30)
                                     .or(GTOPredicates.autoGCYMAbilities(definition.getRecipeTypes()))
+                                    .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1))
                                     .or(autoAbilities(true, false, true)))
                             .where('T', blocks(CASING_STEEL_PIPE.get()))
                             .where('#', any())

@@ -10,6 +10,8 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
 
+import static com.gregtechceu.gtceu.api.GTValues.ULV;
+import static com.gregtechceu.gtceu.api.GTValues.V;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Helium;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.NaturalGas;
@@ -20,6 +22,7 @@ import static com.gtocore.common.data.GTORecipeTypes.*;
 public class ExpertFluidProcessing {
 
     public static void init() {
+        fuel();
         CENTRIFUGE_RECIPES.builder("sand1")
                 .chancedOutput(Items.SAND, 3090, 100)
                 .inputFluids(LightOilWithSand, 1000)
@@ -446,5 +449,63 @@ public class ExpertFluidProcessing {
             c.chancedOutput(TagPrefix.dust, m, 1500, 500);
         }
         c.save();
+    }
+
+    private static void fuel() {
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_heavy_sand")
+                .inputFluids(HeavyOilWithSand, 3)
+                .inputFluids(Air, 12)
+                .duration(37)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_h6eavy_sand")
+                .inputFluids(HeavyOilSuspension, 3)
+                .inputFluids(Air, 12)
+                .duration(40)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_ligh1t_sand")
+                .inputFluids(LightOilWithSand, 3)
+                .inputFluids(Air, 8)
+                .duration(24)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_light_sand")
+                .inputFluids(LightOilWithSand, 3)
+                .inputFluids(Air, 8)
+                .duration(27)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_lig2ht_sand")
+                .inputFluids(ShaleOil, 3)
+                .inputFluids(Air, 14)
+                .duration(40)
+                .EUt(-V[ULV])
+                .save();
+
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_lig1ht4_sand")
+                .inputFluids(RetortedShaleOil, 3)
+                .inputFluids(Air, 14)
+                .duration(44)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_lig3ht4_sand")
+                .inputFluids(TightOilCrudeOil, 3)
+                .inputFluids(Air, 14)
+                .duration(30)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_light24_sand")
+                .inputFluids(ProcessedTightOilCrudeOil, 3)
+                .inputFluids(Air, 14)
+                .duration(33)
+                .EUt(-V[ULV])
+                .save();
+        GAS_TURBINE_FUELS.recipeBuilder("oil_l3ght_sa4nd")
+                .inputFluids(ShaleGas, 3)
+                .inputFluids(Air, 6)
+                .duration(12)
+                .EUt(-V[ULV])
+                .save();
     }
 }

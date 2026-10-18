@@ -7,67 +7,63 @@ import com.gtocore.integration.jech.PinYinUtils;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.common.data.GTItems;
+import com.gregtechceu.gtceu.uipro.ILocalUI;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.Binding;
+import com.gregtechceu.gtceu.uipro.data.RPC;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.data.UICodecs;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.Label;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.elements.VirtualList;
+import com.gregtechceu.gtceu.uipro.elements.ae.AEKeySlot;
+import com.gregtechceu.gtceu.uipro.render.FittedText;
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.render.UILayers;
+import com.gregtechceu.gtceu.uipro.render.UIText;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Unit;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEKey;
-import appeng.client.gui.me.common.StackSizeRenderer;
+import appeng.api.stacks.AEKeyIntMap;
 
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
+import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
-import com.lowdragmc.lowdraglib.gui.util.ClickData;
-import com.lowdragmc.lowdraglib.gui.util.DrawerHelper;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.utils.ColorUtils;
-import com.lowdragmc.lowdraglib.utils.Position;
-import com.lowdragmc.lowdraglib.utils.Size;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 import static com.gtolib.utils.AEChemicalHelper.getMaterial;
-import static java.lang.Math.abs;
-import static java.lang.Math.sin;
 
 @DataGeneratorScanned
 public class ScanningSelectionTab implements IFancyUIProvider {
-
-    private static final int PAGE_WIDTH = 184;
-    private static final int PAGE_HEIGHT = 152;
 
     @RegisterLanguage(cn = "扫描队列", en = "Scanning Queue")
     private static final String TAB_NAME = "gtocore.research.scanning_selection_tab.name";
@@ -83,6 +79,8 @@ public class ScanningSelectionTab implements IFancyUIProvider {
     private static final String DESELECT_TOOLTIP = "gtocore.research.scanning_selection_tab.deselect";
     @RegisterLanguage(cn = "已扫描", en = "Scanned")
     private static final String SCANNED_TOOLTIP = "gtocore.research.scanning_selection_tab.scanned";
+    @RegisterLanguage(cn = "未扫描", en = "Not scanned")
+    private static final String UNSCANNED_TOOLTIP = "gtocore.research.scanning_selection_tab.unscanned";
     @RegisterLanguage(cn = "不可扫描", en = "Unscannable")
     private static final String UNSCANNABLE_TOOLTIP = "gtocore.research.scanning_selection_tab.unscannable";
     @RegisterLanguage(cn = "清空选择", en = "Clear selection")
@@ -99,9 +97,9 @@ public class ScanningSelectionTab implements IFancyUIProvider {
     private static final String WORK_MODE_SCAN_UNLEARNED_ONLY = "gtocore.research.scanning_selection_tab.work_mode.scan_unlearned_only";
     @RegisterLanguage(cn = "检测并扫描未学习目标，若无目标时停止", en = "Detect and scan unlearned targets, stop when no targets are available")
     private static final String WORK_MODE_SCAN_UNLEARNED_ONCE = "gtocore.research.scanning_selection_tab.work_mode.scan_unlearned_once";
-    @RegisterLanguage(cn = "循环扫描左侧选择的目标", en = "Continuously scan the targets selected on the left")
+    @RegisterLanguage(cn = "循环扫描所选目标", en = "Continuously scan the selected targets")
     private static final String WORK_MODE_SCAN_SELECTED_ONLY = "gtocore.research.scanning_selection_tab.work_mode.scan_selected_only";
-    @RegisterLanguage(cn = "扫描一次左侧选择的目标后停止", en = "Scan the targets selected on the left once, then stop")
+    @RegisterLanguage(cn = "扫描一次所选目标后停止", en = "Scan the selected targets once, then stop")
     private static final String WORK_MODE_SCAN_SELECTED_ONCE = "gtocore.research.scanning_selection_tab.work_mode.scan_selected_once";
     @RegisterLanguage(cn = "属于材料<%s>的扫描目标", en = "Scan targets belonging to material <%s>")
     private static final String WORK_MODE_SCAN_MATERIAL = "gtocore.research.scanning_selection_tab.work_mode.scan_material";
@@ -120,8 +118,8 @@ public class ScanningSelectionTab implements IFancyUIProvider {
     }
 
     @Override
-    public Widget createMainPage(FancyMachineUIWidget fancyMachineUIWidget) {
-        return new ScanningSelectionWidget(holder, ownerId);
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        return new ScanningSelectionPage(holder, ownerId);
     }
 
     @Override
@@ -139,605 +137,329 @@ public class ScanningSelectionTab implements IFancyUIProvider {
         return Collections.singletonList(Component.translatable(TAB_NAME));
     }
 
-    private static final class ScanningSelectionWidget extends WidgetGroup {
+    private record ScanTarget(AEKey key, int flags) {
 
-        private static final int UPDATE_STATE = 100;
-        private static final int ACTION_TOGGLE = 111;
-        private static final int ACTION_SELECT_VISIBLE = 66;
-        private static final int SEARCH_FIELD_HEIGHT = 14;
-        private static final int ENTRY_PANEL_X = 4;
-        private static final int ENTRY_PANEL_Y = 22;
-        private static final int ENTRY_PANEL_WIDTH = 150;
-        private static final int ENTRY_PANEL_HEIGHT = 126;
-        private static final int ENTRY_COLUMNS = 8;
-        private static final int ENTRY_SIZE = 18;
-        private static final int ENTRY_CONTENT_X = 2;
-        private static final int ENTRY_CONTENT_Y = 4;
-        private static final int BUTTON_X = 160;
-        private static final int BUTTON_SIZE = 18;
-        private static final int MAX_KEY_PACKET_COUNT = 1 << 20;
+        private static final int SCANNED = 1;
+        private static final int UNSCANNABLE = 2;
+        private static final StreamCodec<FriendlyByteBuf, ScanTarget> CODEC = StreamCodec.of((buffer, target) -> {
+            AEKey.writeKey(buffer, target.key());
+            buffer.writeByte(target.flags());
+        }, buffer -> new ScanTarget(AEKey.readKey(buffer), buffer.readUnsignedByte()));
+
+        private boolean scanned() {
+            return (flags & SCANNED) != 0;
+        }
+
+        private boolean unscannable() {
+            return (flags & UNSCANNABLE) != 0;
+        }
+    }
+
+    private static final class ScanningSelectionPage extends UIElement {
+
+        private static final int MAX_TARGETS = 1 << 20;
+        private static final int REFRESH_TICKS = 20;
+        private static final StreamCodec<FriendlyByteBuf, List<ScanTarget>> TARGETS_CODEC = UICodecs.list(ScanTarget.CODEC, MAX_TARGETS);
+        private static final StreamCodec<FriendlyByteBuf, List<AEKey>> KEYS_CODEC = UICodecs.list(StreamCodec.of(AEKey::writeKey, AEKey::readKey), MAX_TARGETS);
 
         private final ScanningInfoProvider holder;
         private final UUID ownerId;
-        private final DraggableScrollableWidgetGroup entryPanel;
-        private final WidgetGroup entryContent;
-        private final Map<AEKey, AEKeyWidget> entryWidgetCache = new HashMap<>();
-        private final Set<AEKey> mountedEntryKeys = new ReferenceOpenHashSet<>();
-        private final EmptyEntryWidget emptyEntryWidget = new EmptyEntryWidget(
-                2, 2, ENTRY_PANEL_WIDTH - 12, ENTRY_PANEL_HEIGHT - 12, Component.empty());
-        private List<AEKey> filteredEntries = Collections.emptyList();
-        private boolean emptyEntryWidgetMounted;
-        private String searchText = "";
-        private SyncState currentState = SyncState.EMPTY;
-        private SyncState lastSentState = SyncState.EMPTY;
+        private final AEKeyIntMap<AEKey> targetStates = new AEKeyIntMap<>();
+        private ObjectArrayList<ScanTarget> targetSnapshot = new ObjectArrayList<>(0);
+        private ObjectArrayList<AEKey> selectionSnapshot = new ObjectArrayList<>(0);
+        private final Binding<ScanningInfoProvider.WorkMode> workMode;
+        private final RPC<List<AEKey>> confirm;
+        private final RPC<Unit> reload;
+        private final Content content;
+        private int refreshTicks;
 
-        private ScanningSelectionWidget(ScanningInfoProvider holder, UUID ownerId) {
-            super(0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+        private ScanningSelectionPage(ScanningInfoProvider holder, UUID ownerId) {
             this.holder = holder;
             this.ownerId = ownerId;
-            setBackground(GuiTextures.BACKGROUND_INVERSE);
-
-            TextFieldWidget searchField = new TextFieldWidget(
-                    ENTRY_PANEL_X, 4, ENTRY_PANEL_WIDTH, SEARCH_FIELD_HEIGHT,
-                    () -> searchText, this::setSearchText);
-            searchField.setBackground(GuiTextures.NUMBER_BACKGROUND);
-            searchField.setHoverTooltips(Component.translatable(SEARCH_TOOLTIP));
-            searchField.setMaxStringLength(64);
-            searchField.setClientSideWidget();
-            addWidget(searchField);
-
-            entryPanel = new DraggableScrollableWidgetGroup(
-                    ENTRY_PANEL_X, ENTRY_PANEL_Y, ENTRY_PANEL_WIDTH, ENTRY_PANEL_HEIGHT)
-                    .setBackground(GuiTextures.DISPLAY)
-                    .setYScrollBarWidth(2)
-                    .setYBarStyle(GuiTextures.BACKGROUND_INVERSE, GuiTextures.BUTTON);
-            entryContent = new WidgetGroup(
-                    ENTRY_CONTENT_X, ENTRY_CONTENT_Y, ENTRY_PANEL_WIDTH - 8, ENTRY_PANEL_HEIGHT - 8);
-            entryPanel.addWidget(entryContent);
-            entryPanel.getMoveCallbacks().add((xOffset, yOffset) -> refreshMountedEntryWidgets());
-            addWidget(entryPanel);
-
-            addWidget(createActionButton(ENTRY_PANEL_Y, CLEAR_TOOLTIP, click -> {
-                if (click.isRemote) {
-                    applyClientSelection(Collections.emptySet());
-                } else {
-                    setServerSelection(Collections.emptySet());
-                }
-            }, GuiTextures.CLIPBOARD_BUTTON.getSubTexture(0, 0.75, 1, 0.25)));
-            addWidget(createActionButton(ENTRY_PANEL_Y + 20, RELOAD_TOOLTIP, click -> {
-                if (!click.isRemote) {
-                    holder.reloadAvailableAEKeys();
-                    syncState();
-                }
-            }, GTOGuiTextures.REFRESH.copy().scale(16 / 20f)));
-            addWidget(createActionButton(ENTRY_PANEL_Y + 40, EXPORT_TOOLTIP, click -> {
-                if (!click.isRemote) {
-                    holder.exportSelectedAEKeys(Set.copyOf(currentState.selected()));
-                }
-            }, GuiTextures.BUTTON_CHECK));
-            addWidget(new WorkModeButton(
-                    BUTTON_X, ENTRY_PANEL_Y + 60, BUTTON_SIZE, BUTTON_SIZE, holder,
-                    click -> holder.setWorkMode(nextWorkMode(holder.getWorkMode()))));
-
-            rebuildEntryWidgets(0);
+            targetStates.defaultReturnValue(-1);
+            layout(l -> l.column());
+            addSyncValue(SyncValue.of(() -> targetSnapshot, TARGETS_CODEC, Collections.emptyList())
+                    .onChanged(this::applyTargets));
+            addSyncValue(SyncValue.of(this::selectionSnapshot, KEYS_CODEC, Collections.emptyList())
+                    .onChanged(this::applySelection));
+            workMode = addBinding(Binding.bindEnum(ScanningInfoProvider.WorkMode.class, holder::getWorkMode, holder::setWorkMode));
+            confirm = addRPC(KEYS_CODEC, (player, keys) -> confirmSelection(keys));
+            reload = addRPC(player -> {
+                holder.reloadAvailableAEKeys();
+                refreshTargets();
+            });
+            content = new Content();
+            addChild(content);
         }
 
-        private ButtonWidget createActionButton(int y, String tooltip,
-                                                Consumer<ClickData> action, IGuiTexture overlay) {
-            ButtonWidget button = new ButtonWidget(
-                    BUTTON_X, y, BUTTON_SIZE, BUTTON_SIZE,
-                    new GuiTextureGroup(GuiTextures.BUTTON, overlay), action);
-            button.setHoverTooltips(Component.translatable(tooltip));
-            return button;
+        private void applyTargets(List<ScanTarget> value) {
+            if (isRemote()) content.applyTargets(value);
         }
 
-        private static ScanningInfoProvider.WorkMode nextWorkMode(ScanningInfoProvider.WorkMode mode) {
-            ScanningInfoProvider.WorkMode[] modes = ScanningInfoProvider.WorkMode.values();
-            return modes[(mode.ordinal() + 1) % modes.length];
+        private void applySelection(List<AEKey> value) {
+            if (isRemote()) content.applySelection(value);
         }
 
         @Override
-        public void writeInitialData(FriendlyByteBuf buffer) {
-            SyncState state = buildState();
-            applyState(state);
-            lastSentState = state;
-            writeState(buffer, state);
-            super.writeInitialData(buffer);
-        }
-
-        @Override
-        public void readInitialData(FriendlyByteBuf buffer) {
-            applyState(readState(buffer));
-            super.readInitialData(buffer);
+        public void initWidget() {
+            if (!isRemote()) refreshTargets();
+            super.initWidget();
         }
 
         @Override
         public void detectAndSendChanges() {
+            if (++refreshTicks >= REFRESH_TICKS) {
+                refreshTicks = 0;
+                refreshTargets();
+            }
             super.detectAndSendChanges();
-            syncState();
         }
 
-        @Override
-        public void readUpdateInfo(int id, FriendlyByteBuf buffer) {
-            if (id == UPDATE_STATE) {
-                applyState(readState(buffer));
-                return;
+        private void refreshTargets() {
+            var available = holder.getAvailableAEKeys();
+            boolean changed = targetStates.size() != available.size();
+            var team = TeamUtil.getTeamUUID(ownerId);
+            for (var key : available) {
+                int flags = DataScanningManager.hasScanned(key, ownerId) ? ScanTarget.SCANNED : 0;
+                if (DataScanningManager.isUnscannable(key, team)) flags |= ScanTarget.UNSCANNABLE;
+                if (targetStates.put(key, flags) != flags) changed = true;
             }
-            super.readUpdateInfo(id, buffer);
+            if (!changed) return;
+            targetStates.keySet().removeIf(key -> !available.contains(key));
+            var snapshot = new ObjectArrayList<ScanTarget>(available.size());
+            for (var key : available) snapshot.add(new ScanTarget(key, targetStates.getInt(key)));
+            // SyncValue compares by equality: keep the previous list unchanged after publishing it.
+            targetSnapshot = snapshot;
         }
 
-        @Override
-        public void handleClientAction(int id, FriendlyByteBuf buffer) {
-            if (id == ACTION_SELECT_VISIBLE) {
-                var requested = readKeys(buffer, ReferenceOpenHashSet::new);
-                setServerSelection(requested);
-                return;
-            } else if (id == ACTION_TOGGLE) {
-                toggleServerSelection(AEKey.readKey(buffer));
-                return;
+        private ObjectArrayList<AEKey> selectionSnapshot() {
+            var selected = holder.getSelectedAEKeys();
+            if (selected.size() != selectionSnapshot.size() || !selected.containsAll(selectionSnapshot)) {
+                selectionSnapshot = new ObjectArrayList<>(selected);
             }
-            super.handleClientAction(id, buffer);
+            return selectionSnapshot;
         }
 
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            if (keyCode == GLFW.GLFW_KEY_A && isCtrlDown()) {
-                selectVisibleEntries();
+        private void confirmSelection(List<AEKey> requested) {
+            var available = holder.getAvailableAEKeys();
+            var selected = new ReferenceOpenHashSet<AEKey>(Math.min(requested.size(), available.size()));
+            var team = TeamUtil.getTeamUUID(ownerId);
+            for (var key : requested) {
+                if (available.contains(key) && !DataScanningManager.isUnscannable(key, team)) selected.add(key);
+            }
+            holder.exportSelectedAEKeys(selected);
+            refreshTargets();
+        }
+
+        /** Local controls read synchronized snapshots; all machine changes go through the page's RPCs. */
+        private final class Content extends UIElement implements ILocalUI {
+
+            private static final int COLUMNS = UISizes.SLOTS_PER_ROW - 1;
+            private static final int GRID_HEIGHT = 6 * UISizes.SLOT_SIZE;
+            private static final Comparator<ScanTarget> TARGET_ORDER = Comparator.comparing(ScanTarget::unscannable)
+                    .thenComparing(ScanTarget::scanned)
+                    .thenComparing(target -> getMaterial(target.key()).getName())
+                    .thenComparing(target -> target.key().getDisplayName().getString().toLowerCase(Locale.ROOT));
+
+            private final ReferenceLinkedOpenHashSet<AEKey> selected = new ReferenceLinkedOpenHashSet<>();
+            private AEKeyIntMap<AEKey> flags = new AEKeyIntMap<>();
+            private ObjectArrayList<ScanTarget> entries = new ObjectArrayList<>(0);
+            private final ObjectArrayList<ScanTarget> filtered = new ObjectArrayList<>(0);
+            private final VirtualList grid;
+            private final ScrollerView scroller;
+            private final Label empty;
+            private final Component noTargets = Component.translatable(EMPTY_ENTRIES);
+            private final Component noMatches = Component.translatable(FILTER_EMPTY_ENTRIES);
+            private String searchText = "";
+            private ScanningInfoProvider.WorkMode describedMode;
+            private Component modeDescription = Component.empty();
+
+            private Content() {
+                layout(l -> l.column());
+                var search = TextField.of(UISizes.CONTENT_WIDTH, () -> searchText, this::setSearchText)
+                        .setPlaceholder(Component.translatable(SEARCH_TOOLTIP)).setRightClickClear(true);
+                search.getInput().setMaxStringLength(64);
+                search.tooltips(SEARCH_TOOLTIP);
+                grid = new VirtualList(COLUMNS, UISizes.SLOT_SIZE, 0, filtered::size,
+                        index -> new TargetSlot(filtered.get(index)));
+                grid.getLayoutStyle().width(COLUMNS * UISizes.SLOT_SIZE);
+                empty = Label.of(UISizes.CONTENT_WIDTH - ScrollerView.SCROLL_BAR_SPACE,
+                        () -> entries.isEmpty() ? noTargets : noMatches)
+                        .bindClientColor(UITheme::textSecondary);
+                scroller = new ScrollerView("research.scanning.targets", UISizes.CONTENT_WIDTH, GRID_HEIGHT).fitPage();
+                scroller.addScrollViewChild(grid);
+                scroller.addScrollViewChild(empty);
+                var actions = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(
+                        Button.translatable(UISizes.BUTTON_WIDTH, CLEAR_TOOLTIP).setOnClientClick(selected::clear),
+                        Button.icon(GTOGuiTextures.REFRESH).tooltips(RELOAD_TOOLTIP).setOnClientClick(() -> reload.send(Unit.INSTANCE)),
+                        UIElement.flexSpacer(),
+                        Button.translatable(UISizes.BUTTON_WIDTH, EXPORT_TOOLTIP).setVariant(UITheme.ButtonVariant.CONFIRM)
+                                .setOnClientClick(() -> confirm.send(new ObjectArrayList<>(selected))));
+                var mode = Button.icon(UISizes.SLOT_SIZE, GTOGuiTextures.INTELLIGENT_SCANNER_1)
+                        .bindClientIcon(() -> getWorkModeTexture(workMode.getValue()))
+                        .tooltips(WORK_MODE_TOOLTIP)
+                        .setOnClientClick(() -> workMode.set(nextWorkMode(workMode.getValue())));
+                var description = TextLine.of(0, this::modeDescription).bindClientColor(UITheme::text)
+                        .layout(l -> l.flex(1));
+                addChild(Form.page().addChildren(search, scroller, actions,
+                        UIElement.centeredRow(UISizes.SLOT_SIZE).addChildren(mode, description)));
+                setClientSideWidget();
+            }
+
+            private Component modeDescription() {
+                var mode = workMode.getValue();
+                if (describedMode != mode) {
+                    describedMode = mode;
+                    modeDescription = Component.translatable(CURRENT_WORK_MODE_TOOLTIP, getWorkModeName(mode));
+                }
+                return modeDescription;
+            }
+
+            private void applyTargets(List<ScanTarget> value) {
+                entries = new ObjectArrayList<>(value);
+                entries.sort(TARGET_ORDER);
+                flags = new AEKeyIntMap<>(entries.size());
+                for (var target : entries) flags.put(target.key(), target.flags());
+                pruneSelection();
+                refreshFilter();
+            }
+
+            private void applySelection(List<AEKey> value) {
+                selected.clear();
+                selected.addAll(value);
+                pruneSelection();
+            }
+
+            private void pruneSelection() {
+                selected.removeIf(key -> !flags.containsKey(key) || (flags.getInt(key) & ScanTarget.UNSCANNABLE) != 0);
+            }
+
+            private void setSearchText(String value) {
+                if (searchText.equals(value)) return;
+                searchText = value;
+                refreshFilter();
+                scroller.setScrollYOffset(0);
+            }
+
+            private void refreshFilter() {
+                filtered.clear();
+                filtered.ensureCapacity(entries.size());
+                String query = searchText.trim().toLowerCase(Locale.ROOT);
+                for (var target : entries) {
+                    if (query.isEmpty() || PinYinUtils.match(target.key().getDisplayName().getString().toLowerCase(Locale.ROOT), query)) {
+                        filtered.add(target);
+                    }
+                }
+                grid.refresh();
+                empty.setDisplay(filtered.isEmpty());
+            }
+
+            @Override
+            @OnlyIn(Dist.CLIENT)
+            public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+                if (super.keyPressed(keyCode, scanCode, modifiers)) return true;
+                if (keyCode != GLFW.GLFW_KEY_A || !isCtrlDown()) return false;
+                selected.clear();
+                for (var target : filtered) {
+                    if (!target.unscannable()) selected.add(target.key());
+                }
+                playButtonClickSound();
                 return true;
             }
-            return super.keyPressed(keyCode, scanCode, modifiers);
-        }
 
-        @OnlyIn(Dist.CLIENT)
-        private void selectVisibleEntries() {
-            List<AEKey> selected = filteredEntries;
-            applyClientSelection(selected);
-            writeClientAction(ACTION_SELECT_VISIBLE, buffer -> writeKeys(buffer, selected));
-            playButtonClickSound();
-        }
+            private final class TargetSlot extends AEKeySlot {
 
-        private void syncState() {
-            if (isRemote()) {
-                return;
-            }
-            SyncState state = buildState();
-            if (state.equals(lastSentState)) {
-                return;
-            }
-            applyState(state);
-            lastSentState = state;
-            writeUpdateInfo(UPDATE_STATE, buffer -> writeState(buffer, state));
-        }
+                private final ScanTarget target;
+                private final Component scanStatus;
+                private final ObjectArrayList<Component> selectTooltips;
+                private final ObjectArrayList<Component> deselectTooltips;
+                private FittedText statusText;
 
-        private SyncState buildState() {
-            List<AEKey> entries = new ArrayList<>();
-            Set<AEKey> availableKeys = holder.getAvailableAEKeys();
-            if (availableKeys != null) {
-                ReferenceOpenHashSet<AEKey> uniqueKeys = new ReferenceOpenHashSet<>();
-                for (AEKey key : availableKeys) {
-                    if (key != null && uniqueKeys.add(key)) {
-                        entries.add(key);
+                private TargetSlot(ScanTarget target) {
+                    super(target::key, () -> 1);
+                    this.target = target;
+                    scanStatus = Component.translatable(target.scanned() ? SCANNED_TOOLTIP : UNSCANNED_TOOLTIP)
+                            .withStyle(target.scanned() ? ChatFormatting.GREEN : ChatFormatting.GRAY);
+                    setShowAmount(false);
+                    setSelected(() -> selected.contains(target.key()));
+                    clientDisabled(target::unscannable, UNSCANNABLE_TOOLTIP);
+                    selectTooltips = targetTooltips(false);
+                    deselectTooltips = targetTooltips(true);
+                    bindTooltips(() -> isSelected() ? deselectTooltips : selectTooltips);
+                }
+
+                private ObjectArrayList<Component> targetTooltips(boolean selected) {
+                    var lines = new ObjectArrayList<Component>(3);
+                    lines.add(scanStatus);
+                    if (!target.unscannable()) {
+                        lines.add(Component.translatable(selected ? DESELECT_TOOLTIP : SELECT_TOOLTIP).withStyle(ChatFormatting.GRAY));
                     }
-                }
-            }
-            entries.sort(Comparator
-                    .comparing(this::isUnscannable)
-                    .thenComparing(this::hasScanned)
-                    .thenComparing(entry -> getMaterial(entry).getName())
-                    .thenComparing(entry -> entry.getDisplayName().getString().toLowerCase(Locale.ROOT)));
-
-            ReferenceSet<AEKey> available = new ReferenceOpenHashSet<>(entries);
-            Set<AEKey> selected = holder.getSelectedAEKeys();
-            selected.retainAll(available);
-            return new SyncState(List.copyOf(entries), Set.copyOf(selected));
-        }
-
-        private void applyState(SyncState state) {
-            boolean entriesChanged = !currentState.entries().equals(state.entries());
-            currentState = state;
-            updateCachedWidgetEntries(state.entries());
-            if (entriesChanged) {
-                rebuildEntryWidgets(entryPanel == null ? 0 : entryPanel.getScrollYOffset());
-            } else if (isRemote()) {
-                filteredEntries = getFilteredEntries();
-            }
-        }
-
-        private void writeState(FriendlyByteBuf buffer, SyncState state) {
-            writeKeys(buffer, state.entries());
-            writeKeys(buffer, state.selected());
-        }
-
-        private SyncState readState(FriendlyByteBuf buffer) {
-            var entries = readKeys(buffer, ArrayList::new);
-            var selected = readKeys(buffer, ReferenceOpenHashSet::new);
-            return new SyncState(List.copyOf(entries), Set.copyOf(selected));
-        }
-
-        private static void writeKeys(FriendlyByteBuf buffer, Collection<AEKey> keys) {
-            buffer.writeVarInt(keys.size());
-            for (AEKey key : keys) {
-                AEKey.writeKey(buffer, key);
-            }
-        }
-
-        private static <C extends Collection<AEKey>> C readKeys(FriendlyByteBuf buffer, IntFunction<C> collectionFactory) {
-            int size = buffer.readVarInt();
-            if (size < 0 || size > Math.min(MAX_KEY_PACKET_COUNT, buffer.readableBytes())) {
-                buffer.skipBytes(buffer.readableBytes());
-                return collectionFactory.apply(0);
-            }
-            C collection = collectionFactory.apply(Math.min(size, 256));
-            for (int i = 0; i < size; i++) {
-                AEKey key = AEKey.readKey(buffer);
-                if (key != null) {
-                    collection.add(key);
-                }
-            }
-            return collection;
-        }
-
-        private void rebuildEntryWidgets(int scrollOffset) {
-            if (!isRemote()) return;
-            entryContent.clearAllWidgets();
-            mountedEntryKeys.clear();
-            emptyEntryWidgetMounted = false;
-            filteredEntries = getFilteredEntries();
-
-            int rows = (filteredEntries.size() + ENTRY_COLUMNS - 1) / ENTRY_COLUMNS;
-            int contentHeight = Math.max(ENTRY_PANEL_HEIGHT - 8, rows * ENTRY_SIZE);
-            entryContent.setSize(ENTRY_PANEL_WIDTH - 8, contentHeight);
-            int maxScrollOffset = Math.max(0, contentHeight + ENTRY_CONTENT_Y - ENTRY_PANEL_HEIGHT);
-            entryPanel.setScrollYOffset(Math.min(scrollOffset, maxScrollOffset));
-            refreshMountedEntryWidgets();
-        }
-
-        private List<AEKey> getFilteredEntries() {
-            if (!isRemote()) {
-                return currentState.entries();
-            }
-            String normalizedSearch = searchText.trim().toLowerCase(Locale.ROOT);
-            if (normalizedSearch.isEmpty()) {
-                return currentState.entries();
-            }
-            return currentState.entries().stream()
-                    .filter(entry -> PinYinUtils.match(entry.getDisplayName().getString().toLowerCase(Locale.ROOT), normalizedSearch))
-                    .toList();
-        }
-
-        private void refreshMountedEntryWidgets() {
-            if (!isRemote()) return;
-            if (filteredEntries.isEmpty()) {
-                clearMountedEntryWidgets();
-                emptyEntryWidget.setText(Component.translatable(
-                        currentState.entries().isEmpty() ? EMPTY_ENTRIES : FILTER_EMPTY_ENTRIES));
-                if (!emptyEntryWidgetMounted) {
-                    entryContent.addWidget(emptyEntryWidget);
-                    emptyEntryWidgetMounted = true;
-                }
-                return;
-            }
-
-            if (emptyEntryWidgetMounted) {
-                entryContent.removeWidget(emptyEntryWidget);
-                emptyEntryWidgetMounted = false;
-            }
-
-            // Keep the full content height for scrolling, but mount only rows intersecting the viewport.
-            int viewportTop = entryPanel.getScrollYOffset() - ENTRY_CONTENT_Y;
-            int viewportBottom = viewportTop + ENTRY_PANEL_HEIGHT;
-            int firstRow = Math.max(0, Math.floorDiv(viewportTop, ENTRY_SIZE));
-            int rowCount = (filteredEntries.size() + ENTRY_COLUMNS - 1) / ENTRY_COLUMNS;
-            int lastRowExclusive = Math.min(rowCount, Math.floorDiv(viewportBottom - 1, ENTRY_SIZE) + 1);
-            int firstIndex = Math.min(filteredEntries.size(), firstRow * ENTRY_COLUMNS);
-            int lastIndexExclusive = Math.min(filteredEntries.size(), lastRowExclusive * ENTRY_COLUMNS);
-
-            Set<AEKey> visibleKeys = new ReferenceOpenHashSet<>();
-            for (int i = firstIndex; i < lastIndexExclusive; i++) {
-                visibleKeys.add(filteredEntries.get(i));
-            }
-
-            var mountedIterator = mountedEntryKeys.iterator();
-            while (mountedIterator.hasNext()) {
-                AEKey key = mountedIterator.next();
-                if (!visibleKeys.contains(key)) {
-                    AEKeyWidget widget = entryWidgetCache.get(key);
-                    if (widget != null) {
-                        entryContent.removeWidget(widget);
+                    var material = getMaterial(target.key());
+                    if (material != NULL) {
+                        lines.add(Component.translatable(WORK_MODE_SCAN_MATERIAL, material.getLocalizedName()).withStyle(ChatFormatting.DARK_GRAY));
                     }
-                    mountedIterator.remove();
+                    return lines;
+                }
+
+                @Override
+                @OnlyIn(Dist.CLIENT)
+                protected void drawSlotMark(GuiGraphics graphics, int x, int y, boolean darkSlot) {
+                    var material = getMaterial(target.key());
+                    if (material != NULL) UIDraw.underline(graphics, x + 1, y + 1, SIZE - 2, material.getMaterialARGB());
+                }
+
+                @Override
+                @OnlyIn(Dist.CLIENT)
+                public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+                    super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                    if (statusText == null) statusText = new FittedText();
+                    String text = statusText.fit(scanStatus, Integer.MAX_VALUE);
+                    float scale = Math.min(0.5f, (float) (SIZE - 2) / statusText.width());
+                    int width = (int) Math.ceil(statusText.width() * scale);
+                    int height = (int) Math.ceil(UIText.GLYPH_HEIGHT * scale);
+                    var pose = graphics.pose();
+                    pose.pushPose();
+                    pose.translate(getPositionX() + SIZE - width - 1, getPositionY() + SIZE - height - 1, UILayers.ITEM_OVERLAY);
+                    UIDraw.fillRect(graphics, 0, 0, width, height, 0xDD101010);
+                    pose.scale(scale, scale, 1);
+                    UIText.drawLeft(graphics, text, 0, 0, target.scanned() ? 0xFF8FE58B : 0xFFCCCCCC);
+                    pose.popPose();
+                }
+
+                @Override
+                @OnlyIn(Dist.CLIENT)
+                public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                    if (button != 0 || !isMouseOverElement(mouseX, mouseY)) return false;
+                    if (!isDisabled()) {
+                        if (!selected.add(target.key())) selected.remove(target.key());
+                        playButtonClickSound();
+                    }
+                    return true;
                 }
             }
-
-            for (int i = firstIndex; i < lastIndexExclusive; i++) {
-                AEKey entry = filteredEntries.get(i);
-                AEKeyWidget widget = entryWidgetCache.computeIfAbsent(
-                        entry, key -> new AEKeyWidget(this, key, 0, 0));
-                widget.setEntry(entry);
-                widget.setSelfPosition((i % ENTRY_COLUMNS) * ENTRY_SIZE, (i / ENTRY_COLUMNS) * ENTRY_SIZE);
-                if (mountedEntryKeys.add(entry)) {
-                    entryContent.addWidget(widget);
-                }
-            }
-        }
-
-        private void clearMountedEntryWidgets() {
-            for (AEKey key : mountedEntryKeys) {
-                AEKeyWidget widget = entryWidgetCache.get(key);
-                if (widget != null) {
-                    entryContent.removeWidget(widget);
-                }
-            }
-            mountedEntryKeys.clear();
-        }
-
-        private void updateCachedWidgetEntries(Collection<AEKey> entries) {
-            for (AEKey entry : entries) {
-                AEKeyWidget widget = entryWidgetCache.get(entry);
-                if (widget != null) {
-                    widget.setEntry(entry);
-                }
-            }
-        }
-
-        private void setSearchText(String newText) {
-            String normalized = newText == null ? "" : newText;
-            if (!normalized.equals(searchText)) {
-                searchText = normalized;
-                rebuildEntryWidgets(0);
-            }
-        }
-
-        private void applyClientSelection(Collection<AEKey> s) {
-            var selected = new ReferenceLinkedOpenHashSet<>(s);
-            selected.removeIf(this::isUnscannable);
-            currentState = new SyncState(currentState.entries(), selected);
-        }
-
-        private void setServerSelection(Collection<AEKey> requested) {
-            Set<AEKey> available = new ReferenceOpenHashSet<>(currentState.entries());
-            Set<AEKey> selected = new ReferenceLinkedOpenHashSet<>(requested);
-            selected.retainAll(available);
-            selected.removeIf(this::isUnscannable);
-            currentState = new SyncState(currentState.entries(), selected);
-            syncState();
-        }
-
-        private void toggleClientSelection(AEKey key) {
-            if (isUnscannable(key)) return;
-            Set<AEKey> selected = new ReferenceLinkedOpenHashSet<>(currentState.selected());
-            if (!selected.add(key)) {
-                selected.remove(key);
-            }
-            applyClientSelection(selected);
-        }
-
-        private void toggleServerSelection(AEKey key) {
-            if (isUnscannable(key) ||
-                    currentState.entries().stream().noneMatch(entry -> entry == key)) {
-                return;
-            }
-            Set<AEKey> selected = new ReferenceLinkedOpenHashSet<>(currentState.selected());
-            if (!selected.add(key)) {
-                selected.remove(key);
-            }
-            currentState = new SyncState(currentState.entries(), Set.copyOf(selected));
-            syncState();
-        }
-
-        private boolean hasScanned(AEKey key) {
-            return DataScanningManager.hasScanned(key, ownerId);
-        }
-
-        private boolean isUnscannable(AEKey key) {
-            return DataScanningManager.isUnscannable(key, ownerId);
-        }
-
-        public void mouseClicked(AEKey entry) {
-            writeClientAction(ACTION_TOGGLE, buffer -> AEKey.writeKey(buffer, entry));
-            toggleClientSelection(entry);
-            playButtonClickSound();
         }
     }
 
-    private record SyncState(List<AEKey> entries, Set<AEKey> selected) {
-
-        private static final SyncState EMPTY = new SyncState(Collections.emptyList(), Collections.emptySet());
+    private static ScanningInfoProvider.WorkMode nextWorkMode(ScanningInfoProvider.WorkMode mode) {
+        var modes = ScanningInfoProvider.WorkMode.values();
+        return modes[(mode.ordinal() + 1) % modes.length];
     }
 
-    private static final class EmptyEntryWidget extends Widget {
-
-        private Component text;
-
-        private EmptyEntryWidget(int x, int y, int width, int height, Component text) {
-            super(x, y, width, height);
-            this.text = text;
-            setClientSideWidget();
-        }
-
-        private void setText(Component text) {
-            this.text = text;
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            Position pos = getPosition();
-            Size size = getSize();
-            graphics.drawWordWrap(
-                    Minecraft.getInstance().font, text,
-                    pos.x + 2, pos.y + size.height / 2 - Minecraft.getInstance().font.lineHeight,
-                    size.width - 4, 0xFFAAAAAA);
-        }
+    private static Component getWorkModeName(ScanningInfoProvider.WorkMode mode) {
+        return Component.translatable(switch (mode) {
+            case SCAN_UNLEARNED_ONLY -> WORK_MODE_SCAN_UNLEARNED_ONLY;
+            case SCAN_UNLEARNED_ONCE -> WORK_MODE_SCAN_UNLEARNED_ONCE;
+            case SCAN_SELECTED_ONLY -> WORK_MODE_SCAN_SELECTED_ONLY;
+            case SCAN_SELECTED_ONCE -> WORK_MODE_SCAN_SELECTED_ONCE;
+        });
     }
 
-    private static final class AEKeyWidget extends Widget {
-
-        private final ScanningSelectionWidget parentWidget;
-        private AEKey entry;
-
-        private AEKeyWidget(ScanningSelectionWidget parentWidget, AEKey entry, int x, int y) {
-            super(x, y, 18, 18);
-            this.parentWidget = parentWidget;
-            this.entry = entry;
-            setClientSideWidget();
-        }
-
-        private void setEntry(AEKey entry) {
-            this.entry = entry;
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            Position pos = getPosition();
-            Size size = getSize();
-            boolean selected = parentWidget.currentState.selected().contains(entry);
-            boolean isUnscannable = parentWidget.isUnscannable(entry);
-
-            GuiTextures.SLOT.draw(graphics, mouseX, mouseY, pos.x, pos.y, size.width, size.height);
-            if (isUnscannable) {
-                DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, size.width - 2, size.height - 2, 0x55101010);
-            } else if (selected) {
-                DrawerHelper.drawSolidRect(graphics, pos.x + 1, pos.y + 1, size.width - 2, size.height - 2, 0x5539C5BB);
-            }
-            AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, pos.x + 1, pos.y + 1, entry);
-
-            if (isUnscannable) {
-                StackSizeRenderer.renderSizeLabel(
-                        graphics, Minecraft.getInstance().font,
-                        pos.x + 1,
-                        pos.y + 17 - Minecraft.getInstance().font.lineHeight * 0.5f,
-                        Component.translatable(UNSCANNABLE_TOOLTIP), 0.5f, true, true);
-            } else if (parentWidget.hasScanned(entry)) {
-                StackSizeRenderer.renderSizeLabel(
-                        graphics, Minecraft.getInstance().font,
-                        pos.x + 1,
-                        pos.y + 17 - Minecraft.getInstance().font.lineHeight * 0.5f,
-                        Component.translatable(SCANNED_TOOLTIP), 0.5f, true, true);
-            }
-
-            var hasMatColor = getMaterial(entry) != NULL;
-            var matColor = getMaterial(entry).getMaterialRGB() | 0xFF000000;
-
-            int color;
-            if (selected) {
-                color = 0xFF39C5BB;
-            } else if (isMouseOverEntry(mouseX, mouseY)) {
-                color = 0xFFF3F3F3;
-            } else if (parentWidget.hasScanned(entry)) {
-                color = 0xFFC5BB39;
-            } else if (isUnscannable) {
-                color = 0xFF202020;
-            } else if (hasMatColor) {
-                color = matColor;
-            } else return;
-            if (hasMatColor) {
-                color = ColorUtils.blendColor(color, matColor, (float) abs(sin(System.currentTimeMillis() / 400.0)));
-            }
-            DrawerHelper.drawBorder(graphics, pos.x, pos.y, size.width, size.height, color, 1);
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            super.drawInForeground(graphics, mouseX, mouseY, partialTicks);
-            if (isMouseOverEntry(mouseX, mouseY)) {
-                gui.getModularUIGui().setHoverTooltip(buildTooltip(entry), ItemStack.EMPTY, null, null);
-            }
-        }
-
-        private List<Component> buildTooltip(AEKey entry) {
-            List<Component> tooltip = new ArrayList<>();
-            tooltip.add(entry.getDisplayName().copy().withStyle(ChatFormatting.WHITE));
-            if (parentWidget.hasScanned(entry)) {
-                tooltip.add(Component.translatable(SCANNED_TOOLTIP).withStyle(ChatFormatting.GOLD));
-            }
-            if (parentWidget.isUnscannable(entry)) {
-                tooltip.add(Component.translatable(UNSCANNABLE_TOOLTIP).withStyle(ChatFormatting.RED));
-            }
-            if (!parentWidget.isUnscannable(entry)) {
-                tooltip.add(Component.translatable(
-                        parentWidget.currentState.selected().contains(entry) ? DESELECT_TOOLTIP : SELECT_TOOLTIP)
-                        .withStyle(parentWidget.currentState.selected().contains(entry) ? ChatFormatting.AQUA : ChatFormatting.GRAY));
-            }
-            if (getMaterial(entry) != NULL) {
-                tooltip.add(Component.translatable(WORK_MODE_SCAN_MATERIAL, getMaterial(entry).getLocalizedName())
-                        .withStyle(ChatFormatting.DARK_GRAY));
-            }
-            return tooltip;
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (!isMouseOverEntry(mouseX, mouseY) || button != 0) {
-                return super.mouseClicked(mouseX, mouseY, button);
-            }
-            parentWidget.mouseClicked(entry);
-            return true;
-        }
-
-        @OnlyIn(Dist.CLIENT)
-        private boolean isMouseOverEntry(double mouseX, double mouseY) {
-            return Widget.isMouseOver(
-                    parentWidget.entryPanel.getPosition().x, parentWidget.entryPanel.getPosition().y,
-                    parentWidget.entryPanel.getSize().width, parentWidget.entryPanel.getSize().height,
-                    mouseX, mouseY) &&
-                    Widget.isMouseOver(
-                            getPosition().x, getPosition().y, getSize().width, getSize().height,
-                            mouseX, mouseY);
-        }
-    }
-
-    private static final class WorkModeButton extends ButtonWidget {
-
-        private final ScanningInfoProvider holder;
-
-        private WorkModeButton(int x, int y, int width, int height, ScanningInfoProvider holder,
-                               Consumer<ClickData> action) {
-            super(x, y, width, height,
-                    new GuiTextureGroup(GuiTextures.BUTTON, GuiTextures.BUTTON_POWER), action);
-            this.holder = holder;
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        protected void drawTooltipTexts(int mouseX, int mouseY) {
-            setHoverTooltips(
-                    Component.translatable(WORK_MODE_TOOLTIP),
-                    Component.translatable(CURRENT_WORK_MODE_TOOLTIP, getWorkModeName(holder.getWorkMode()))
-                            .withStyle(ChatFormatting.GRAY));
-            super.drawTooltipTexts(mouseX, mouseY);
-        }
-
-        @Override
-        @OnlyIn(Dist.CLIENT)
-        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            setButtonTexture(GuiTextures.BUTTON, getWorkModeTexture(holder.getWorkMode()).copy().scale(16 / 18f));
-            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-        }
-
-        private static Component getWorkModeName(ScanningInfoProvider.WorkMode mode) {
-            return Component.translatable(switch (mode) {
-                case SCAN_UNLEARNED_ONLY -> WORK_MODE_SCAN_UNLEARNED_ONLY;
-                case SCAN_UNLEARNED_ONCE -> WORK_MODE_SCAN_UNLEARNED_ONCE;
-                case SCAN_SELECTED_ONLY -> WORK_MODE_SCAN_SELECTED_ONLY;
-                case SCAN_SELECTED_ONCE -> WORK_MODE_SCAN_SELECTED_ONCE;
-            });
-        }
-
-        @OnlyIn(Dist.CLIENT)
-        private static IGuiTexture getWorkModeTexture(ScanningInfoProvider.WorkMode mode) {
-            return switch (mode) {
-                case SCAN_UNLEARNED_ONLY -> GTOGuiTextures.INTELLIGENT_SCANNER_1;
-                case SCAN_UNLEARNED_ONCE -> GTOGuiTextures.INTELLIGENT_SCANNER_2;
-                case SCAN_SELECTED_ONLY -> GTOGuiTextures.INTELLIGENT_SCANNER_3;
-                case SCAN_SELECTED_ONCE -> GTOGuiTextures.INTELLIGENT_SCANNER_4;
-            };
-        }
+    private static IGuiTexture getWorkModeTexture(ScanningInfoProvider.WorkMode mode) {
+        return switch (mode) {
+            case SCAN_UNLEARNED_ONLY -> GTOGuiTextures.INTELLIGENT_SCANNER_1;
+            case SCAN_UNLEARNED_ONCE -> GTOGuiTextures.INTELLIGENT_SCANNER_2;
+            case SCAN_SELECTED_ONLY -> GTOGuiTextures.INTELLIGENT_SCANNER_3;
+            case SCAN_SELECTED_ONCE -> GTOGuiTextures.INTELLIGENT_SCANNER_4;
+        };
     }
 }

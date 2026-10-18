@@ -34,7 +34,6 @@ import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -51,15 +50,12 @@ import static com.gtocore.api.research.scanning.DataScanningManager.hasScanned;
 public class IntelligentScanningManagementPlatformMachine extends ElectricMultiblockMachine implements ScanningInfoProvider, ICustomRecipeLogicHolder {
 
     @SaveToDisk(defaultValue = "SCAN_SELECTED_ONLY")
-    @SyncToClient
     @Getter
     private WorkMode workMode = WorkMode.SCAN_SELECTED_ONLY;
     @SaveToDisk
-    @SyncToClient
     @Getter
     private final ReferenceOpenHashSet<AEKey> selectedAEKeys = new ReferenceOpenHashSet<>();
     @SaveToDisk
-    @SyncToClient
     private final Queue<AEKey> scanQueue = new LinkedList<>();
 
     public IntelligentScanningManagementPlatformMachine(MetaMachineBlockEntity holder) {
