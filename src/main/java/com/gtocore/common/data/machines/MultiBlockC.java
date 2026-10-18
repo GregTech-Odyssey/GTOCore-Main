@@ -299,6 +299,7 @@ public final class MultiBlockC {
                             .where('B', blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get()))
                             .wherePart('b', blocks(GCYMBlocks.CASING_HIGH_TEMPERATURE_SMELTING.get())
                                     .or(GTOPredicates.autoThreadLaserAbilities(definition.getRecipeTypes()))
+                                    .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1))
                                     .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
                                     .or(abilities(MAINTENANCE)))
                             .where('C', blocks(GTBlocks.CASING_STAINLESS_CLEAN.get()))

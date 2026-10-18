@@ -59,7 +59,7 @@ public class CreativeMachines {
     public static final MachineDefinition CREATIVE_INPUT_ASSEMBLY = GTMTHINGS_REGISTRATE.machine(
             "creative_input_assembly", CreativeInputAssemblyPartMachine::new)
             .rotationState(RotationState.ALL)
-            .overlayTieredHullRenderer("dual_hatch.import")
+            .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/item_bus.import")))
             .tips(Tips.requirement(Component.translatable("gtmthings.creative_tooltip")),
                     Tips.feature(Component.translatable("gtmthings.machine.creative_input_assembly.tooltip", CreativeInputAssemblyPartMachine.SLOT_COUNT)))
             .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.IMPORT_FLUIDS_9X, PartAbility.DUAL_INPUT)
