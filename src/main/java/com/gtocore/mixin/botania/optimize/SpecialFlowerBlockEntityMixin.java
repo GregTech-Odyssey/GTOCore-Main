@@ -1,4 +1,4 @@
-package com.gtocore.mixin.botania;
+package com.gtocore.mixin.botania.optimize;
 
 import com.gtolib.api.blockentity.IObserved;
 

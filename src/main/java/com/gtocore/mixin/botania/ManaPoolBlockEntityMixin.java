@@ -37,7 +37,7 @@ public abstract class ManaPoolBlockEntityMixin extends BotaniaBlockEntity implem
             if (variant == ManaPoolBlock.Variant.DILUTED) {
                 manaCap = 10000;
             } else if (variant == ManaPoolBlock.Variant.FABULOUS) {
-                manaCap = 1_000_000_000;
+                manaCap = 1_000_000_00;
             } else {
                 manaCap = 1000000;
             }
