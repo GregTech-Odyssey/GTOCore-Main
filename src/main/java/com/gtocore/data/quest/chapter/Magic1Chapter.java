@@ -1944,7 +1944,7 @@ public final class Magic1Chapter {
 
     public static final Quest NORMAL_MANA_PIPE = CHAPTER.quest("normal_mana_pipe", q -> q
             .at(27.2, 1.88)
-            .desc(d -> d.line("它可以用来运输魔力或魔源，{但无法转换两者}", QuestStyle.YELLOW))
+            .desc(d -> d.line("它可以用来运输魔力或魔源，{并按 4 魔源 = 1 魔力互相换算}", QuestStyle.YELLOW))
             .task(Task.item(GTOBlocks.MANA_PIPES[0]))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
             .dependsOn(INFUSE_MAGIC_MATERIALS));

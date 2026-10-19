@@ -232,6 +232,7 @@ public final class GTMaterialExtend {
         Scandium.setProperty(FLUID, new FluidProperty(FluidStorageKeys.LIQUID, new FluidBuilder()));
         NaquadahEnriched.addFlags(GENERATE_FRAME);
         NickelZincFerrite.addFlags(GENERATE_FOIL);
+        Lead.addFlags(GENERATE_FOIL);
         Promethium.setProperty(FLUID, new FluidProperty(FluidStorageKeys.LIQUID, new FluidBuilder()));
         Promethium.setProperty(DUST, new DustProperty());
         Polonium.setProperty(INGOT, new IngotProperty());

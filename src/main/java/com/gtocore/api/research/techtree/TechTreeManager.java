@@ -4,14 +4,12 @@ import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.techtree.ui.TechTreeAutoLayout;
 import com.gtocore.api.research.techtree.ui.TechTreeLayout;
 
-import com.gtolib.GTOCore;
 import com.gtolib.api.lang.CNEN;
 import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.registry.GTRegistry;
 
 import net.minecraft.locale.Language;
 import net.minecraft.network.FriendlyByteBuf;
@@ -27,6 +25,7 @@ import appeng.api.stacks.AEKey;
 
 import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+import com.gto.datasynclib.datastream.codec.ValueCodec;
 import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -37,14 +36,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
-public final class TechTreeManager extends GTRegistry.Str<TechNode> implements StreamCodec<FriendlyByteBuf, TechTree> {
+public final class TechTreeManager extends Registry<String, TechNode> implements StreamCodec<FriendlyByteBuf, TechTree> {
 
     public static final Map<String, CNEN> NODE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
     public static final Map<String, CNEN> TREE_LANG = GTCEu.isDataGen() ? new O2OOpenCacheHashMap<>() : null;
-    public static final Registry<String, TechTreeManager> REGISTRY = new GTRegistry.Str<>(GTOCore.id("techtree_manager"));
+    public static final Registry<String, TechTreeManager> REGISTRY = new Registry<>("techtree_manager", ValueCodec.STRING, TechTreeManager::getId);
 
-    @Getter
-    private final String id;
     @Getter
     private final IGuiTexture icon;
     private @Nullable TechTreeLayout layout;
@@ -53,8 +50,7 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements S
                            String cn,
                            String en,
                            IGuiTexture icon) {
-        super(GTOCore.id(id));
-        this.id = Objects.requireNonNull(id, "id");
+        super(id, ValueCodec.STRING, t -> t.name);
         this.icon = Objects.requireNonNull(icon, "icon");
         if (TREE_LANG != null) {
             TREE_LANG.put("gtocore.techtree." + id, new CNEN(cn, en));
@@ -62,6 +58,10 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements S
             REGISTRY.register(id, this);
         }
         this.unfreeze();
+    }
+
+    public String getId() {
+        return name;
     }
 
     @Override
@@ -259,7 +259,7 @@ public final class TechTreeManager extends GTRegistry.Str<TechNode> implements S
     }
 
     public static MutableComponent getTreeName(TechTreeManager manager) {
-        return Component.translatable("gtocore.techtree." + manager.id);
+        return Component.translatable("gtocore.techtree." + manager.name);
     }
 
     public void triggerAllResearchUnlock(UUID team) {

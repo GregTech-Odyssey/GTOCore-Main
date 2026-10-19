@@ -8,14 +8,9 @@ import com.gtolib.utils.MathUtil;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
-import com.hollingsworth.arsnouveau.api.util.SourceUtil;
-import com.hollingsworth.arsnouveau.common.block.tile.SourceJarTile;
 import vazkii.botania.api.mana.ManaPool;
-import vazkii.botania.api.mana.ManaReceiver;
-import vazkii.botania.xplat.XplatAbstractions;
 
 public final class ManaExtractHatchPartMachine extends ManaHatchPartMachine {
     // 复用父类的 manaMonitor：同一个 entry 在同一个方块实体上只会有一个监控器，子类再声明一个也拿不到新的。
@@ -35,23 +30,22 @@ public final class ManaExtractHatchPartMachine extends ManaHatchPartMachine {
     @Override
     void tickUpdate() {
         if (isWorkingEnabled()) {
-            BlockPos frontPos = getPos().relative(getFrontFacing());
             Level level = getLevel();
-            if (!isFull()) {
-                ManaReceiver receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, frontPos, null);
+            if (level != null && !isFull()) {
+                var facing = getFrontFacing();
+                var receiver = this.findManaReceiver(facing, null);
                 if (receiver instanceof ManaPool || receiver instanceof IManaMachine) {
                     int change = MathUtil.saturatedCast(getManaContainer().addMana(receiver.getCurrentMana(), 20, false));
                     if (change <= 0) return;
                     receiver.receiveMana(-change);
                 }
-
-                if (level != null && level.getBlockEntity(frontPos) instanceof SourceJarTile jarTile) {
-                    long acceptable = getManaContainer().addMana(ManaUnification.sourceToMana(jarTile.getSource()), 20, true);
-                    int source = (int) ManaUnification.manaToSource(acceptable);
-                    if (source <= 0) return;
-                    getManaContainer().addMana(ManaUnification.sourceToMana(source), 20, false);
-                    SourceUtil.takeSource(frontPos, level, 0, source);
-                }
+                var jarTile = findSourceJar(facing);
+                if (jarTile == null) return;
+                long acceptable = getManaContainer().addMana(ManaUnification.sourceToMana(jarTile.getSource()), 20, true);
+                int source = (int) ManaUnification.manaToSource(acceptable);
+                if (source <= 0) return;
+                getManaContainer().addMana(ManaUnification.sourceToMana(source), 20, false);
+                jarTile.removeSource(source);
             }
         }
     }

@@ -16,13 +16,13 @@ import com.gtocore.common.machine.multiblock.electric.nano.NanitesIntegratedMach
 import com.gtocore.common.machine.multiblock.electric.nano.NanitesModuleMachine;
 import com.gtocore.common.machine.multiblock.electric.voidseries.AdvancedInfiniteDrillMachine;
 import com.gtocore.common.machine.multiblock.electric.voidseries.StarcoreMinerMachine;
-import com.gtocore.common.machine.multiblock.noenergy.LargeSteamStorageTank;
 import com.gtocore.common.machine.multiblock.noenergy.NeutronVortexMachine;
 import com.gtocore.common.machine.multiblock.noenergy.PrimitiveDistillationTowerMachine;
 import com.gtocore.common.machine.multiblock.noenergy.ThermalPowerPumpMachine;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamCracker;
 import com.gtocore.common.machine.multiblock.steam.LargeSteamMultiblockMachine;
 import com.gtocore.common.machine.multiblock.steam.SteamMultiblockMachine;
+import com.gtocore.common.machine.multiblock.storage.LargeSteamStorageTank;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
