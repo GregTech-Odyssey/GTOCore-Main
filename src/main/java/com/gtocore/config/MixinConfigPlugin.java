@@ -10,6 +10,12 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        if (mixinClassName.startsWith("com.gtocore.mixin.balm.")) {
+            return Mods.BALM.isLoaded();
+        }
+        if (mixinClassName.startsWith("com.gtocore.mixin.xaero.")) {
+            return Mods.XAERO_WORLDMAP.isLoaded();
+        }
         if (mixinClassName.startsWith("com.gtocore.mixin.emitrades.")) {
             return Mods.EMI_TRADES.isLoaded();
         }

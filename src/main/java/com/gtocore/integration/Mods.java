@@ -33,6 +33,8 @@ public enum Mods {
     FTB_XMOD_COMPAT("ftbxmodcompat"),
     RENDER_BLENDER("renderblender"),
     EMI_TRADES("emitrades"),
+    BALM("balm"),
+    XAERO_WORLDMAP("xaeroworldmap"),
     TOOLBELT("toolbelt");
 
     @Getter

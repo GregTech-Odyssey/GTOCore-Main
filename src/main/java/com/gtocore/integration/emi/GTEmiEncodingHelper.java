@@ -39,13 +39,13 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.ItemEmiStack;
 import dev.emi.emi.api.stack.TagEmiIngredient;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 public class GTEmiEncodingHelper {
 
@@ -159,12 +159,12 @@ public class GTEmiEncodingHelper {
                                                             List<List<GenericStack>> genericIngredients,
                                                             List<GenericStack> genericResults) {
         menu.setMode(EncodingMode.PROCESSING);
-        Map<AEKey, Integer> ingredientPriorities = EncodingHelper.getIngredientPriorities(menu, ENTRY_COMPARATOR);
+        var ingredientPriorities = EncodingHelper.getIngredientPriorities(menu, ENTRY_COMPARATOR);
         encodeIntoSlots(genericIngredients, ingredientPriorities, menu.getProcessingInputSlots());
         encodeIntoSlots(genericResults.stream().map(List::of).toList(), ingredientPriorities, menu.getProcessingOutputSlots());
     }
 
-    private static void encodeIntoSlots(List<List<GenericStack>> possibleStacksBySlot, Map<AEKey, Integer> ingredientPriorities, FakeSlot[] slots) {
+    private static void encodeIntoSlots(List<List<GenericStack>> possibleStacksBySlot, Reference2IntOpenHashMap<AEKey> ingredientPriorities, FakeSlot[] slots) {
         List<GenericStack> encoded = possibleStacksBySlot.stream()
                 .filter(stacks -> !stacks.isEmpty())
                 .map(stacks -> findBestIngredient(ingredientPriorities, stacks))
@@ -174,7 +174,7 @@ public class GTEmiEncodingHelper {
         }
     }
 
-    private static GenericStack findBestIngredient(Map<AEKey, Integer> ingredientPriorities, List<GenericStack> possibleIngredients) {
+    private static GenericStack findBestIngredient(Reference2IntOpenHashMap<AEKey> ingredientPriorities, List<GenericStack> possibleIngredients) {
         return possibleIngredients.stream()
                 .max(Comparator.comparingInt((GenericStack stack) -> ingredientPriorities.getOrDefault(stack.what(), Integer.MIN_VALUE)))
                 .orElseThrow();

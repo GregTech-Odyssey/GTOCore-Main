@@ -34,9 +34,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 import static com.gregtechceu.gtceu.api.GTValues.HV;
@@ -90,7 +90,7 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
 
     private static final int FUEL_AMOUNT = 16000;
     private static final int STEPPER_VALUE_WIDTH = UISizes.CONTENT_WIDTH - UISizes.BUTTON_WIDTH - UISizes.GAP - Stepper.widthFor(0);
-    private static final Map<Item, ItemStack> ROCKET_ICONS = new IdentityHashMap<>();
+    private static final Map<Item, ItemStack> ROCKET_ICONS = new Reference2ReferenceOpenHashMap<>();
 
     private boolean launch;
 
