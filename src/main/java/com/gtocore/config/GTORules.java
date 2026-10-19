@@ -138,8 +138,8 @@ public final class GTORules {
             .name("gtocore.rule.steam.solar_boiler_rate", "大型太阳能锅炉单集热管产率", "Large Solar Boiler Steam per Tube")
             .tooltip("gtocore.rule.steam.solar_boiler_rate.tooltip", "单集热管产率 : %s / t", "Steam production per tube : %s / t")
             .register();
-    public static final IntRule STEAM_TANK_CAPACITY = Rules.intRule("steam.storage_tank_capacity").group(STEAM)
-            .defaults(1296000000, 864000000, 648000000).range(1, Integer.MAX_VALUE)
+    public static final LongRule STEAM_TANK_CAPACITY = Rules.longRule("steam.storage_tank_capacity").group(STEAM)
+            .defaults(12960000000L, 8640000000L, 6480000000L).range(1, Integer.MAX_VALUE * 10L)
             .name("gtocore.rule.steam.storage_tank_capacity", "大型蒸汽储存罐容量", "Large Steam Storage Tank Capacity")
             .tooltip("gtocore.rule.steam.storage_tank_capacity.tooltip", "容量", "Capacity")
             .tooltipLine("gtocore.rule.steam.storage_tank_capacity.tooltip.0", "大型蒸汽储存罐的容量，单位为mB", "The capacity of the large steam storage tank in mB")

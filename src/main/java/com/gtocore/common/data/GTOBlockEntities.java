@@ -6,6 +6,7 @@ import com.gtocore.common.blockentity.HeatPipeBlockEntity;
 import com.gtocore.common.blockentity.ManaPipeBlockEntity;
 import com.gtocore.common.blockentity.MufflerPipeBlockEntity;
 import com.gtocore.common.blockentity.SourceJarBE;
+import com.gtocore.common.blockentity.SteamPipeBlockEntity;
 import com.gtocore.common.blockentity.UniversalPipeBlockEntity;
 import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
 import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlockEntity;
@@ -33,6 +34,11 @@ public class GTOBlockEntities {
     public static final BlockEntityEntry<MufflerPipeBlockEntity> MUFFLER_PIPE = GTO
             .blockEntity("muffler_pipe", MufflerPipeBlockEntity::new)
             .validBlocks(GTOBlocks.MUFFLER_PIPES)
+            .register();
+
+    public static final BlockEntityEntry<SteamPipeBlockEntity> STEAM_PIPE = GTO
+            .blockEntity("steam_pipe", SteamPipeBlockEntity::new)
+            .validBlocks(GTOBlocks.STEAM_PIPES)
             .register();
 
     public static final BlockEntityEntry<UniversalPipeBlockEntity> UNIVERSAL_PIPE = GTO

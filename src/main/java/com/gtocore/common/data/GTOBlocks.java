@@ -5,6 +5,7 @@ import com.gtocore.common.blockentity.SourceJarBE;
 import com.gtocore.common.item.HeatPipeBlockItem;
 import com.gtocore.common.item.ManaPipeBlockItem;
 import com.gtocore.common.item.MufflerPipeBlockItem;
+import com.gtocore.common.item.SteamPipeBlockItem;
 import com.gtocore.common.item.UniversalPipeBlockItem;
 import com.gtocore.common.item.WirelessEnergyUnitBlockItem;
 import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlock;
@@ -14,6 +15,7 @@ import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperFrameBlock;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
+import com.gtocore.common.pipe.steam.SteamPipeType;
 import com.gtocore.common.pipe.universal.UniversalPipeType;
 
 import com.gtolib.GTOCore;
@@ -88,6 +90,8 @@ public final class GTOBlocks {
     public static final BlockEntry<MufflerPipeBlock>[] MUFFLER_PIPES = (BlockEntry<MufflerPipeBlock>[]) new BlockEntry<?>[MufflerPipeType.values().length];
     @SuppressWarnings("unchecked")
     public static final BlockEntry<UniversalPipeBlock>[] UNIVERSAL_PIPES = (BlockEntry<UniversalPipeBlock>[]) new BlockEntry<?>[UniversalPipeType.values().length];
+    @SuppressWarnings("unchecked")
+    public static final BlockEntry<SteamPipeBlock>[] STEAM_PIPES = (BlockEntry<SteamPipeBlock>[]) new BlockEntry<?>[SteamPipeType.values().length];
 
     public static void init() {
         GTO.removeDefaultCreativeTab();
@@ -982,6 +986,19 @@ public final class GTOBlocks {
                     .register();
             MANA_PIPES[i] = entry;
         }
+
+        STEAM_PIPES[0] = block("steam_pipe", "蒸汽管道", (p) -> new SteamPipeBlock(p, SteamPipeType.STEAM))
+                .initialProperties(() -> Blocks.IRON_BLOCK)
+                .properties(p -> p.dynamicShape().noOcclusion().forceSolidOn())
+                .blockstate(NonNullBiConsumer.noop())
+                .defaultLoot()
+                .tag(CustomTags.MINEABLE_WITH_WRENCH)
+                .addLayer(() -> RenderType::cutoutMipped)
+                .color(() -> SteamPipeBlock::tintedColor)
+                .item(SteamPipeBlockItem::new)
+                .model(NonNullBiConsumer.noop())
+                .build()
+                .register();
 
         for (int i = 0; i < MufflerPipeType.values().length; ++i) {
             var type = MufflerPipeType.values()[i];

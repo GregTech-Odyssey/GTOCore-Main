@@ -8,6 +8,7 @@ import com.gtocore.common.cover.HeatInterfaceCover;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.generator.MagicEnergyMachine;
+import com.gtocore.common.machine.generator.ManaGeneratorMachine;
 import com.gtocore.common.machine.mana.*;
 import com.gtocore.common.machine.mana.part.*;
 import com.gtocore.config.GTORules;
@@ -23,6 +24,7 @@ import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
+import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.SimpleGeneratorMachineRenderer;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
@@ -72,6 +74,23 @@ public final class ManaMachine {
                     .tips(Tips.energy(StatKind.ENERGY_CAPACITY, V[tier] << 8, tier))
                     .register(),
             LV, MV);
+
+    public static final MachineDefinition[] MANA_GENERATOR = registerTieredManaMachines(
+            "mana_generator", tier -> "%s%s".formatted(MANACN[tier], "魔力发生器"),
+            ManaGeneratorMachine::new,
+            (tier, builder) -> builder
+                    .langValue(MANAN[tier] + " Mana Generator")
+                    .allRotation()
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.voltage_in", ElectricText.voltage(V[tier], tier))))
+                    .tips(Tips.stat(Component.translatable("gtceu.universal.tooltip.amperage_in", ElectricText.amps(1))))
+                    .tips(Tips.energy(StatKind.ENERGY_CAPACITY, V[tier] << 6, tier))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_output", Component.literal(FormattingUtil.formatNumbers(ManaGeneratorMachine.manaPerTick(tier)) + " /t").withStyle(ChatFormatting.WHITE))))
+                    .tips(Tips.stat(Component.translatable("gtocore.machine.mana_stored", Component.literal(FormattingUtil.formatNumbers(ManaGeneratorMachine.MANA_CAPACITY)).withStyle(ChatFormatting.WHITE))))
+                    .tip(TipRole.FEATURE, "按 1 EU : 4 魔力转换电能，每秒转换一次", "Converts energy into mana at 1 EU : 4 Mana, once per second")
+                    .tip(TipRole.FEATURE, "从正面输出魔力，可接入魔力管道、魔力池或魔源罐", "Outputs mana from the front face; works with mana pipes, mana pools and source jars")
+                    .workableManaTieredHullRenderer(tier, GTOCore.id("block/machines/mana_generator"))
+                    .register(),
+            ULV, LV, MV, HV);
 
     public static final MachineDefinition[] MANA_EXTRACT_HATCH = registerTieredManaMachines("mana_extract_hatch", tier -> "%s%s".formatted(MANACN[tier], "魔力抽取仓"),
             ManaExtractHatchPartMachine::new,
@@ -184,6 +203,16 @@ public final class ManaMachine {
             .tips(Tips.stat(Component.translatable(HeatInterfaceCover.COOLDOWN_RATE, 0.01)))
             .tips(Tips.stat(Component.translatable(HeatInterfaceCover.GENERATION_RATE, 1.6)))
             .renderer(() -> new ManaHeaterRenderer(MV))
+            .register();
+
+    public static final MachineDefinition SUPER_MANA_TANK = manaMachine("super_mana_tank", "超级魔力缸", SuperManaTankMachine::new)
+            .tier(LV)
+            .allRotation()
+            .tips(Tips.stat(Component.translatable("gtocore.machine.mana_stored", Component.literal("∞").withStyle(ChatFormatting.WHITE))))
+            .tip(TipRole.STAT, "内部最多存放 §f2^63-1§r 魔力", "Stores up to §f2^63-1§r mana")
+            .tip(TipRole.FEATURE, "每秒自动把存量输出给相邻的魔力接收方与魔源容器", "Automatically outputs to adjacent mana receivers and source containers once per second")
+            .tip(TipRole.FEATURE, "魔源按 §f4 魔源 = 1 魔力§r 折算，只输出整 4 的倍数", "Source converts at §f4 source = 1 mana§r; only whole multiples of 4 are output")
+            .workableManaTieredHullRenderer(LV, GTOCore.id("block/machines/mana_tank"))
             .register();
 
     public static final MachineDefinition AREA_DESTRUCTION_TOOLS = machine("area_destruction_tools", "区域破坏器", AreaDestructionToolsMachine::new)

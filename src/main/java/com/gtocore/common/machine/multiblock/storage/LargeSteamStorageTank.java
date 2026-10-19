@@ -1,13 +1,13 @@
-package com.gtocore.common.machine.multiblock.noenergy;
+package com.gtocore.common.machine.multiblock.storage;
 
 import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.fluids.PropertyFluidFilter;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.common.machine.multiblock.electric.MultiblockTankMachine;
+import com.gregtechceu.gtceu.common.machine.multiblock.primitive.MultiblockTankMachine;
 
-import net.minecraftforge.fluids.FluidStack;
+import appeng.api.stacks.AEFluidKey;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +24,7 @@ public class LargeSteamStorageTank extends MultiblockTankMachine {
         }
 
         @Override
-        public boolean test(@NotNull FluidStack stack) {
+        public boolean test(@NotNull AEFluidKey stack) {
             return stack.getFluid() == GTMaterials.Steam.getFluid();
         }
     }

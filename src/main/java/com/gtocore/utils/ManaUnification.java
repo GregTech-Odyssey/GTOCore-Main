@@ -1,17 +1,20 @@
 package com.gtocore.utils;
 
-/// 魔力与魔源的唯一换算：1 魔源 = 4 魔力；魔力折魔源向下取整，魔源折魔力饱和不溢出
+/// 魔力与魔源的唯一换算：4 魔源 = 1 魔力；魔源折魔力向下取整，魔力折魔源饱和不溢出
 public final class ManaUnification {
 
-    public static final int MANA_PER_SOURCE = 4;
+    /// 1 魔力折 4 魔源。
+    public static final int SOURCE_PER_MANA = 4;
+
+    private static final long MAX_SOURCE = Long.MAX_VALUE >> 2;
 
     private ManaUnification() {}
 
     public static long manaToSource(long mana) {
-        return mana / MANA_PER_SOURCE;
+        return mana > MAX_SOURCE ? Long.MAX_VALUE : mana << 2;
     }
 
     public static long sourceToMana(long source) {
-        return source > Long.MAX_VALUE / MANA_PER_SOURCE ? Long.MAX_VALUE : source * MANA_PER_SOURCE;
+        return source >> 2;
     }
 }

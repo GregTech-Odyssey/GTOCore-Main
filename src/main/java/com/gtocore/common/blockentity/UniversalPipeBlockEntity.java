@@ -23,6 +23,7 @@ import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 import appeng.api.storage.MEStorageHost;
 import appeng.capabilities.Capabilities;
+import appeng.me.storage.NetworkStorage;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -165,6 +166,7 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
             if (neighbour == null || neighbour instanceof PipeBlockEntity<?, ?>) continue;
             var source = UniversalStorages.getStorage(neighbour, facing.getOpposite());
             if (source == null) continue;
+            if (source instanceof NetworkStorage) continue;
             var target = handler(facing);
             if (target == null) continue;
             hasSource = true;

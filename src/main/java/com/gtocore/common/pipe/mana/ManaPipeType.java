@@ -14,11 +14,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 魔力管道的等级：按魔法金属分级，方块 id 与显示名都取材料名。
  * <p>
- * 顺序跟本包的魔法材料阶梯一致（魔力钢 → 泰拉钢 → 源质钢 → 精灵钢 → 盖亚钢），流量按池算：
- * 魔力钢 0.1 池/秒起步，每档翻倍（一池 = 1000000 魔力）。
+ * 顺序跟本包的魔法材料阶梯一致（原始青铜=ULV → 魔力钢 → 泰拉钢 → 源质钢 → 精灵钢 → 盖亚钢），流量按池算：
+ * 第一档 1 池/秒起步，每档翻倍（一池 = 1000000 魔力）。
  */
 public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringRepresentable {
 
+    ORIGINAL_BRONZE("原始青铜", GTOMaterials.OriginalBronze),
     MANASTEEL("魔力钢", GTOMaterials.Manasteel),
     TERRASTEEL("泰拉钢", GTOMaterials.Terrasteel),
     ELEMENTIUM("源质钢", GTOMaterials.Elementium),
@@ -29,8 +30,6 @@ public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringReprese
 
     /** 一池魔力。 */
     private static final long MANA_PER_POOL = 1_000_000;
-    /** 第一档的每秒流量：0.1 池。 */
-    private static final long BASE_MANA = MANA_PER_POOL / 10;
 
     public final String cnName;
     public final Material material;
@@ -40,7 +39,7 @@ public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringReprese
     ManaPipeType(String cnName, Material material) {
         this.cnName = cnName;
         this.material = material;
-        this.properties = new ManaPipeProperties(BASE_MANA << ordinal());
+        this.properties = new ManaPipeProperties(MANA_PER_POOL << ordinal());
     }
 
     @Override
@@ -50,7 +49,7 @@ public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringReprese
 
     /** 本档每秒过多少池，供工具提示显示。 */
     public double poolsPerSecond() {
-        return properties.manaPerSecond() / (double) MANA_PER_POOL;
+        return 1 << ordinal();
     }
 
     @Override

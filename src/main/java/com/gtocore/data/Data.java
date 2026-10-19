@@ -70,8 +70,6 @@ public final class Data {
     private static Throwable throwable;
 
     public static void init() {
-        BaseNodes.init();
-        QuestBookContents.init();
         if (GTCEu.isClientSide()) {
             GTOUtils.asyncExecute(Data::clientInit);
         } else {
@@ -83,6 +81,8 @@ public final class Data {
         long time = System.currentTimeMillis();
         GTRegistries.ORE_VEINS.unfreeze();
         GTRegistries.BEDROCK_ORE_DEFINITIONS.unfreeze();
+        BaseNodes.init();
+        QuestBookContents.init();
         GTOOres.init();
         MeteoriteRecipe.init();
 

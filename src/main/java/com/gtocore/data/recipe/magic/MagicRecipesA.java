@@ -1335,6 +1335,23 @@ public final class MagicRecipesA {
                     "EEE", "CDC", "CBC",
                     'B', ManaMachine.MANA_HULL[2].asItem(), 'C', RegistriesUtils.getItemStack("botania:livingrock_bricks"), 'D', RegistriesUtils.getItemStack("botania:mana_pool"), 'E', new MaterialEntry(plate, Manasteel));
 
+            VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("ulv_mana_generator"), ManaMachine.MANA_GENERATOR[GTValues.ULV].asItem(),
+                    "ABA", "CHC", "ABA",
+                    'A', new MaterialEntry(TagPrefix.plate, OriginalBronze), 'B', RegistriesUtils.getItemStack("botania:endoflame"), 'C', CustomTags.ULV_CIRCUITS, 'H', ManaMachine.MANA_HULL[GTValues.ULV].asItem());
+            VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("lv_mana_generator"), ManaMachine.MANA_GENERATOR[GTValues.LV].asItem(),
+                    "ABA", "CHC", "ABA",
+                    'A', new MaterialEntry(TagPrefix.plate, Manasteel), 'B', RegistriesUtils.getItemStack("botania:endoflame"), 'C', CustomTags.LV_CIRCUITS, 'H', ManaMachine.MANA_HULL[GTValues.LV].asItem());
+            VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("mv_mana_generator"), ManaMachine.MANA_GENERATOR[GTValues.MV].asItem(),
+                    "ABA", "CHC", "ABA",
+                    'A', new MaterialEntry(TagPrefix.plate, Terrasteel), 'B', RegistriesUtils.getItemStack("botania:endoflame"), 'C', CustomTags.MV_CIRCUITS, 'H', ManaMachine.MANA_HULL[GTValues.MV].asItem());
+            VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("hv_mana_generator"), ManaMachine.MANA_GENERATOR[GTValues.HV].asItem(),
+                    "ABA", "CHC", "ABA",
+                    'A', new MaterialEntry(TagPrefix.plate, Elementium), 'B', RegistriesUtils.getItemStack("botania:endoflame"), 'C', CustomTags.HV_CIRCUITS, 'H', ManaMachine.MANA_HULL[GTValues.HV].asItem());
+
+            VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("super_mana_tank"), ManaMachine.SUPER_MANA_TANK.asItem(),
+                    "ABA", "CHC", "ABA",
+                    'A', new MaterialEntry(TagPrefix.plate, Manasteel), 'B', RegistriesUtils.getItemStack("botania:mana_pool"), 'C', CustomTags.LV_CIRCUITS, 'H', ManaMachine.MANA_HULL[GTValues.LV].asItem());
+
             VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("lv_primitive_magic_energy"), ManaMachine.PRIMITIVE_MAGIC_ENERGY[GTValues.LV].asItem(),
                     "ABA", "BCB", "DBD",
                     'A', new MaterialEntry(TagPrefix.lens, GTOMaterials.ManaGlass), 'B', RegistriesUtils.getItemStack("botania:rune_mana"), 'C', GTOMachines.THERMAL_GENERATOR[GTValues.LV].asItem(), 'D', RegistriesUtils.getItemStack("botania:lens_bounce"));
