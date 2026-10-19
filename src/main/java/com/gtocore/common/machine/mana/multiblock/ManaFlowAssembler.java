@@ -198,8 +198,9 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
     @Override
     protected @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (maxRate == 0) {
-            IdleReason.MANA_FLOW_TOO_WEAK.setReason(this, (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200, 0);
+        if (recipe.eut != 0 || maxRate == 0) {
+            if (recipe.eut != 0) IdleReason.NOT_APPLICABLE.setReason(this);
+            else IdleReason.MANA_FLOW_TOO_WEAK.setReason(this, (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200, 0);
             return null;
         }
         int duration = Math.toIntExact(recipe.duration * MANATRecipeExtension.getMANAt(recipe) / maxRate);

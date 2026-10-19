@@ -431,6 +431,7 @@ public final class GTOMachineTooltipsA {
         t.requirement(t.tr("只有前9个掉落物会被作为输入进行处理", "Only the first 9 dropped items will be processed as input"));
         t.feature(t.tr("机器总是会以可使用的最大魔力强度运行,且配方时间固定为10秒", "The machine will always operate at the maximum mana strength available, and the recipe time is fixed at 10 seconds"));
         t.requirement(t.tr("且以此魔力强度计算配方时长(总魔力消耗量/魔力强度)，超过10秒的配方无法运行", "And the recipe time is calculated based on this mana strength (total mana consumption / mana strength), recipes that exceed 10 seconds cannot run"));
+        t.unsupported(t.tr("无法运行电力配方", "Cannot run recipes that require EU"));
     });
 
     public static final TipSpec magneticFluidGeneratorTooltips = GTOTips.of("magnetic_fluid_generator", t -> {
