@@ -7,14 +7,13 @@ import com.gtocore.api.electrochemistry.MembraneType;
 import com.gtolib.api.machine.part.ItemPartMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
@@ -99,8 +98,9 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
         int rows = (slots + columns - 1) / columns;
         var group = new WidgetGroup(0, 0, columns * 18 + 16, rows * 18 + 16);
         for (int slot = 0; slot < slots; slot++) {
-            group.addWidget(new SlotWidget(inventory.storage, slot, 8 + slot % columns * 18, 8 + slot / columns * 18, true, true)
-                    .setBackground(GuiTextures.SLOT));
+            var membraneSlot = ItemSlot.of(inventory.storage, slot).disabled(() -> locked, null);
+            membraneSlot.setSelfPosition(8 + slot % columns * 18, 8 + slot / columns * 18);
+            group.addWidget(membraneSlot);
         }
         return group;
     }

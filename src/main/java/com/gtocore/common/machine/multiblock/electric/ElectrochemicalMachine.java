@@ -235,7 +235,10 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     }
 
     private void collectHalfRecipes(GTRecipeType type, RecipeHandlerUnit unit, ArrayList<GTRecipeDefinition> candidates, boolean firstSide) {
-        unit.findRecipe(type, (u, recipe) -> {
+        var map = unit.getSearchMap(type);
+        if (map.isEmpty()) return;
+        // Pairing needs all matching halves, not a pattern slot's single cached recipe.
+        type.search(unit, map, (u, recipe) -> {
             if (!acceptHalf(recipe.data.getData(HalfReactionRecipeExtension.INSTANCE))) return false;
             if (firstSide) leftCandidateFound = true;
             if (!checkTier(recipe) || !checkConditions(u, recipe)) {
