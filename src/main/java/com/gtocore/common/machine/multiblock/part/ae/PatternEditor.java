@@ -82,6 +82,8 @@ public final class PatternEditor extends UIElement {
     private static final int SIDE_COLUMNS = 3;
     private static final int PAGE_SLOTS = SIDE_COLUMNS * SIDE_COLUMNS;
     private static final int SIDE_WIDTH = SIDE_COLUMNS * UISizes.SLOT_SIZE;
+    private static final int ARROW_WIDTH = 24;
+    static final int CONTENT_WIDTH = 2 * SIDE_WIDTH + ARROW_WIDTH + 2 * UISizes.GAP;
 
     private final MEPatternPartMachine<?> machine;
     private final int patternIndex;
@@ -110,7 +112,7 @@ public final class PatternEditor extends UIElement {
                 AEProcessingPattern.MAX_INPUT_SLOTS + AEProcessingPattern.MAX_OUTPUT_SLOTS - 1));
         var inputs = side(false);
         var outputs = side(true);
-        var arrow = TextLine.constant(24, Component.literal("→")).setTextAlign(Horizontal.CENTER);
+        var arrow = TextLine.constant(ARROW_WIDTH, Component.literal("→")).setTextAlign(Horizontal.CENTER);
         addChild(UIElement.centeredRow(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP).alignSelf(AlignItems.CENTER))
                 .addChildren(inputs, arrow, outputs));
         addChild(TextLine.of(LayoutStyle.AUTO, this::selectedName));

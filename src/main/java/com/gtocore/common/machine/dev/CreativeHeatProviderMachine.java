@@ -5,31 +5,28 @@ import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.api.machine.feature.IUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CreativeHeatProviderMachine extends MetaMachine implements IUIMachine, IHeatContainerMachine {
+public class CreativeHeatProviderMachine extends MetaMachine implements IFancyUIMachine, IHeatContainerMachine {
 
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private long confHeat;
     private final CreativeHeatContainer heatContainer = new CreativeHeatContainer();
     @Nullable
@@ -57,15 +54,18 @@ public class CreativeHeatProviderMachine extends MetaMachine implements IUIMachi
     }
 
     @Override
-    public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(140, 95, this, entityPlayer)
-                .background(GuiTextures.BACKGROUND)
-                .widget(new LabelWidget(7, 7, "K"))
-                .widget(new TextFieldWidget(9, 20, 122, 16, () -> String.valueOf(confHeat), value -> {
-                    confHeat = Long.parseLong(value);
+    public Widget createUIWidget() {
+        return Form.page().addChild(NumberSettingPage.create(
+                Component.translatable("gtceu.multiblock.large_boiler.temperature.label").append(" (K)"),
+                () -> confHeat, value -> {
+                    confHeat = value;
                     markAsDirty();
-                    requestSync();
-                }).setNumbersOnly(0, Long.MAX_VALUE));
+                }, () -> 0, () -> Long.MAX_VALUE));
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
     }
 
     @Override

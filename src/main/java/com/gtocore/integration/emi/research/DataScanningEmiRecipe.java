@@ -8,9 +8,12 @@ import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.client.renderer.RenderUtil;
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.machine.electric.ScannerMachine;
 
 import com.gtolib.GTOCore;
+import com.gtolib.utils.AEChemicalHelper;
 
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayouts;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTMachines;
@@ -40,9 +43,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.stacks.AEKey;
 
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.emi.ModularEmiRecipe;
 import com.lowdragmc.lowdraglib.emi.ModularForegroundRenderWidget;
 import com.lowdragmc.lowdraglib.emi.ModularWrapperWidget;
+import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
+import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
+import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.jei.ModularWrapper;
@@ -50,15 +57,20 @@ import com.lowdragmc.lowdraglib.utils.Size;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
+import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.ListEmiIngredient;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.WidgetHolder;
+import dev.emi.emi.screen.tooltip.EmiTextTooltipWrapper;
+import dev.emi.emi.screen.tooltip.IngredientTooltipComponent;
 import dev.vfyjxf.taffy.style.AlignContent;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,9 +78,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
+import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 import static com.gtocore.integration.emi.research.EmiResearchHelper.*;
 
 public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Paged {
@@ -107,17 +119,34 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         }
     };
 
-    private final AEKey key;
-    private final EmiStack input;
+    private final ResourceLocation id;
+    private final ObjectArrayList<AEKey> inputKeys;
+    private final EmiIngredient input;
+    private final @Nullable IGuiTexture materialIcon;
+    private final List<ClientTooltipComponent> inputTooltip;
     private final List<EmiStack> researchOutputs;
     private final @Nullable TechNode eurekaNode;
     private final @Nullable TechNodeEmiStack eurekaOutput;
     private final List<EmiStack> outputs;
     private final EmiPageSizes sizes = new EmiPageSizes(this::measure);
 
-    private DataScanningEmiRecipe(AEKey key, EmiStack input, List<EmiStack> researchOutputs, @Nullable TechNode eurekaNode) {
-        this.key = key;
-        this.input = input;
+    private DataScanningEmiRecipe(ObjectArrayList<AEKey> inputKeys, ObjectArrayList<EmiStack> stacks, Material material,
+                                  List<EmiStack> researchOutputs, @Nullable TechNode eurekaNode) {
+        this.id = recipeId(inputKeys.getFirst(), eurekaNode);
+        this.inputKeys = inputKeys;
+        this.input = stacks.size() == 1 && material == NULL ? stacks.getFirst() : new ListEmiIngredient(stacks, 1);
+        if (material == NULL) {
+            this.materialIcon = null;
+        } else {
+            this.materialIcon = new GuiTextureGroup(
+                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot.png").setColor(material.getMaterialARGB()),
+                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_secondary.png").setColor(material.getLayerARGB(1)),
+                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_overlay.png"));
+        }
+        this.inputTooltip = input instanceof ListEmiIngredient ? List.of(
+                material == NULL ? new EmiTextTooltipWrapper(input, Component.translatable("tooltip.emi.accepts").getVisualOrderText()) :
+                        ClientTooltipComponent.create(material.getLocalizedName().getVisualOrderText()),
+                new IngredientTooltipComponent(stacks)) : Collections.emptyList();
         this.researchOutputs = researchOutputs;
         this.eurekaNode = eurekaNode;
         this.eurekaOutput = eurekaNode == null ? null : new TechNodeEmiStack(eurekaNode);
@@ -146,21 +175,19 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
 
     private static void registerRecipes(Consumer<EmiRecipe> recipeConsumer) {
         List<DataScanningManager.DataScanningEntry> scanningEntries = DataScanningManager.getDataScanningEntries();
-        Reference2ObjectMap<AEKey, ResearchPoints> pointsByKey = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
+        var pointsByKey = new Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints>(scanningEntries.size(), ResearchRequirements.AE_KEY_STRATEGY);
+        var normalizedPoints = new Reference2ObjectOpenHashMap<ResearchPoints, ResearchPoints>(scanningEntries.size());
         for (var entry : scanningEntries) {
-            pointsByKey.put(entry.key(), entry.points());
+            pointsByKey.put(entry.key(), normalizedPoints.computeIfAbsent(entry.points(), DataScanningEmiRecipe::positivePoints));
         }
 
-        Set<AEKey> eurekaKeys = new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY);
-        for (var entry : ResearchRequirements.getEurekaRequirementEntries()) {
+        var eurekaEntries = ResearchRequirements.getEurekaRequirementEntries();
+        var groups = new O2OOpenCacheHashMap<ScanningResult, ObjectArrayList<AEKey>>(scanningEntries.size() + eurekaEntries.size());
+        var eurekaKeys = new ObjectOpenCustomHashSet<AEKey>(eurekaEntries.size(), ResearchRequirements.AE_KEY_STRATEGY);
+        for (var entry : eurekaEntries) {
             eurekaKeys.add(entry.key());
-            var input = EmiResearchHelper.toEmiStack(entry.key());
-            if (input == null) {
-                continue;
-            }
-            List<EmiStack> researchOutputs = createResearchOutputs(pointsByKey.get(entry.key()));
             for (var node : entry.nodes()) {
-                recipeConsumer.accept(new DataScanningEmiRecipe(entry.key(), input, researchOutputs, node));
+                addScanningInput(groups, entry.key(), pointsByKey.get(entry.key()), node);
             }
         }
 
@@ -168,16 +195,53 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             if (eurekaKeys.contains(entry.key())) {
                 continue;
             }
-            var input = EmiResearchHelper.toEmiStack(entry.key());
-            if (input == null) {
-                continue;
+            addScanningInput(groups, entry.key(), pointsByKey.get(entry.key()), null);
+        }
+
+        groups.forEach((result, keys) -> {
+            var researchOutputs = createResearchOutputs(result.points());
+            if (researchOutputs.isEmpty() && result.eurekaNode() == null) {
+                return;
             }
-            List<EmiStack> researchOutputs = createResearchOutputs(entry.points());
-            if (!researchOutputs.isEmpty()) {
-                recipeConsumer.accept(new DataScanningEmiRecipe(entry.key(), input, researchOutputs, null));
+            keys.sort(Comparator.comparing((AEKey key) -> key.getType().getId().toString())
+                    .thenComparing(key -> key.getId().toString()));
+            var inputKeys = new ObjectArrayList<AEKey>(keys.size());
+            var stacks = new ObjectArrayList<EmiStack>(keys.size());
+            for (var key : keys) {
+                var stack = EmiResearchHelper.toEmiStack(key);
+                if (stack != null) {
+                    inputKeys.add(key);
+                    stacks.add(stack);
+                }
+            }
+            if (!stacks.isEmpty()) {
+                recipeConsumer.accept(new DataScanningEmiRecipe(inputKeys, stacks, result.material(), researchOutputs, result.eurekaNode()));
+            }
+        });
+    }
+
+    private static ResearchPoints positivePoints(ResearchPoints points) {
+        for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+            if (it.next().getLongValue() <= 0L) {
+                var positive = new ResearchPoints(points.size());
+                for (var positiveIt = points.reference2LongEntrySet().fastIterator(); positiveIt.hasNext();) {
+                    var entry = positiveIt.next();
+                    if (entry.getLongValue() > 0L) positive.put(entry.getKey(), entry.getLongValue());
+                }
+                return positive;
             }
         }
+        return points;
     }
+
+    private static void addScanningInput(O2OOpenCacheHashMap<ScanningResult, ObjectArrayList<AEKey>> groups, AEKey key,
+                                         @Nullable ResearchPoints points, @Nullable TechNode eurekaNode) {
+        // Materials share scan history across their forms, but not across different materials.
+        var result = new ScanningResult(points == null || points.isEmpty() ? null : points, AEChemicalHelper.getMaterial(key), eurekaNode);
+        groups.computeIfAbsent(result, ignored -> new ObjectArrayList<>()).add(key);
+    }
+
+    private record ScanningResult(@Nullable ResearchPoints points, Material material, @Nullable TechNode eurekaNode) {}
 
     private static List<EmiStack> createResearchOutputs(@Nullable ResearchPoints points) {
         if (points == null) {
@@ -197,6 +261,10 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
 
     @Override
     public @NotNull ResourceLocation getId() {
+        return id;
+    }
+
+    private static ResourceLocation recipeId(AEKey key, @Nullable TechNode eurekaNode) {
         ResourceLocation typeId = key.getType().getId();
         ResourceLocation keyId = key.getId();
         String path = "data_scanning/" + typeId.getNamespace() + "/" + typeId.getPath() + "/" + keyId.getNamespace() + "/" + keyId.getPath();
@@ -255,6 +323,27 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         slots.add(new SlotWidget(input, origin.x + CENTER_SLOT_X, origin.y + CENTER_SLOT_Y) {
 
             @Override
+            public void drawStack(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+                if (materialIcon == null) {
+                    input.getEmiStacks().get(currentInputIndex()).render(draw, x + 1, y + 1, delta);
+                } else {
+                    materialIcon.draw(draw, mouseX, mouseY, x + 1, y + 1, 16, 16);
+                }
+                if (input instanceof ListEmiIngredient) {
+                    EmiRender.renderIngredientIcon(input, draw, x + 1, y + 1);
+                }
+            }
+
+            @Override
+            public List<ClientTooltipComponent> getTooltip(int mouseX, int mouseY) {
+                if (inputTooltip.isEmpty()) return super.getTooltip(mouseX, mouseY);
+                var tooltip = new ArrayList<>(inputTooltip);
+                if (materialIcon == null) tooltip.addAll(input.getEmiStacks().get(currentInputIndex()).getTooltip());
+                addSlotTooltip(tooltip);
+                return tooltip;
+            }
+
+            @Override
             public void drawOverlay(GuiGraphics draw, int mouseX, int mouseY, float delta) {
                 super.drawOverlay(draw, mouseX, mouseY, delta);
                 if (hasScanned()) {
@@ -291,7 +380,20 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
 
     private boolean hasScanned() {
         var player = Minecraft.getInstance().player;
-        return player != null && TeamResearchSavedData.getOrCreateContext(player).hasScanned(key);
+        return player != null && TeamResearchSavedData.getOrCreateContext(player).hasScanned(inputKeys.get(currentInputIndex()));
+    }
+
+    private int currentInputIndex() {
+        // Keep the state in step with ListEmiIngredient's one-second rotation.
+        return materialIcon == null ? (int) (System.currentTimeMillis() / 1000 % inputKeys.size()) : 0;
+    }
+
+    private long scanEUt(float weight) {
+        long bytes = 0;
+        for (var output : researchOutputs) {
+            bytes += (long) (output.getAmount() * weight) * ((ResearchTagEmiStack) output).tag.getBytePerPoint();
+        }
+        return ScannerMachine.eut(bytes);
     }
 
     private static String repeatYield() {
@@ -396,16 +498,18 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         }
 
         private Widget createPanel() {
-            long eut = EmiResearchHelper.getScannerEUt(key);
-            int tier = GTUtil.getTierByVoltage(eut);
+            long eut = scanEUt(1);
+            long repeatEUt = scanEUt(DataScanningManager.getRepeatedScanPenalty());
             var power = ElectricText.power(eut);
-            var amperage = ElectricText.flowOf(eut, tier);
+            var repeatPower = ElectricText.power(repeatEUt);
+            var amperage = ElectricText.flowOf(eut, GTUtil.getTierByVoltage(eut));
+            var repeatAmperage = ElectricText.flowOf(repeatEUt, GTUtil.getTierByVoltage(repeatEUt));
             var scanned = Component.translatable(SCAN_STATE_REPEAT, repeatYield());
             var notScanned = Component.translatable(SCAN_STATE_NEW);
             var panel = new RecipeSpecPanel();
             panel.layout(l -> l.flexGrow(1));
-            panel.value(Component.translatable(SCAN_POWER), () -> power);
-            panel.value(Component.translatable(AMPERAGE), () -> amperage);
+            panel.value(Component.translatable(SCAN_POWER), () -> hasScanned() ? repeatPower : power);
+            panel.value(Component.translatable(AMPERAGE), () -> hasScanned() ? repeatAmperage : amperage);
             panel.value(Component.translatable(SCAN_STATE), () -> hasScanned() ? scanned : notScanned);
             if (eurekaNode != null && eurekaOutput != null) {
                 panel.divider();

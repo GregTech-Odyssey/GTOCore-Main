@@ -29,13 +29,13 @@ import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
-import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.uipro.window.PopupHost;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -43,7 +43,10 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.crafting.IPatternDetails;
@@ -59,6 +62,8 @@ import com.gto.recipesearch.IntLongMap;
 import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
@@ -678,6 +683,47 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private static final int EDITOR_PANEL = 2;
 
     @Override
+    public ModularUI createUI(Player entityPlayer) {
+        return new ModularUI(UISizes.WINDOW_WIDTH, UISizes.WINDOW_WIDTH, this, entityPlayer).widget(new WildcardWindow(this));
+    }
+
+    /** 仅此机器将主窗口和展开的侧栏作为一个整体居中，沿用外壳的布局动画与面板滚动。 */
+    private static final class WildcardWindow extends MachineWindow {
+
+        @Nullable
+        private PopupHost sidebar;
+
+        private WildcardWindow(MEWildcardPatternBufferPartMachine machine) {
+            super(machine);
+        }
+
+        @Override
+        public void onContentResized(Widget root) {
+            if (root instanceof PopupHost host) sidebar = host;
+            super.onContentResized(root);
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        protected void setWindowBasePosition(int x, int y) {
+            if (sidebar == null || sidebar.getSizeWidth() == 0 || !isPopupOpen(TOOLS_POPUP)) {
+                super.setWindowBasePosition(x, y);
+                return;
+            }
+            int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+            int top = (screenHeight - getGui().getHeight()) / 2 + y;
+            // 与外壳即将应用的侧栏纵向偏移一致，按包含顶部标签的实际外接矩形居中。
+            int sidebarY = Math.max(UISizes.SCREEN_MARGIN - top,
+                    Math.min(0, screenHeight - UISizes.SCREEN_MARGIN - top - sidebar.getSizeHeight()));
+            int tabsHeight = getSideTabsWidget().getSubTabs().isEmpty() ? 0 : UISizes.PAGE_TAB_HEIGHT + UISizes.PAGE_TAB_RAISE;
+            int groupTop = Math.min(-tabsHeight, sidebarY);
+            int groupBottom = Math.max(getSizeHeight(), sidebarY + sidebar.getSizeHeight());
+            getGui().setSize(getSizeWidth() + UISizes.POPUP_GAP + sidebar.getSizeWidth(), groupBottom - groupTop);
+            super.setWindowBasePosition(0, -groupTop);
+        }
+    }
+
+    @Override
     protected void buildGridHeader(@NotNull UIElement page) {
         var status = new StatusPanel(page.getContentWidth());
         status.addLine(LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS, () -> Component.translatable(LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS_VALUE, scannedPatterns))
@@ -729,7 +775,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         window.registerPopup(TOOLS_POPUP, panels -> {
             if (panels < 1 || panels > (MATERIALS_PANEL | EDITOR_PANEL)) return null;
             return Popup.of(() -> Component.translatable(LANG_WILDCARD_TOOLS), column -> {
-                int width = UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
+                int width = PatternEditor.CONTENT_WIDTH;
                 if ((panels & MATERIALS_PANEL) != 0) {
                     column.addChild(PopupHost.standalonePanel("wildcard.materials",
                             Popup.of(() -> Component.translatable(LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST), content -> WildcardMaterialGrid.build(this, content)).setContentWidth(width),
@@ -740,7 +786,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                             Popup.of(() -> Component.translatable(PatternEditor.TITLE), content -> PatternEditor.build(this, 0, content)).setContentWidth(width),
                             () -> toggleToolPanel(window, EDITOR_PANEL)));
                 }
-            }).setContentWidth(UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE);
+            }).setContentWidth(PatternEditor.CONTENT_WIDTH + 2 * UISizes.POPUP_PADDING);
         });
     }
 

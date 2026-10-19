@@ -3,16 +3,19 @@ package com.gtocore.common.machine.multiblock.part;
 import com.gtocore.api.machine.part.IRadiationHatch;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
 public class CreativeRadiationHatch extends MultiblockPartMachine implements IRadiationHatch {
@@ -25,15 +28,20 @@ public class CreativeRadiationHatch extends MultiblockPartMachine implements IRa
         super(holder);
     }
 
-    public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(140, 95, this, entityPlayer)
-                .background(GuiTextures.BACKGROUND)
-                .widget(new LabelWidget(7, 7, "gtocore.recipe.radioactivity"))
-                .widget(new TextFieldWidget(9, 20, 122, 16, () -> String.valueOf(radioactivity), value -> {
-                    radioactivity = Integer.parseInt(value);
+    @Override
+    public Widget createUIWidget() {
+        return Form.page().addChild(UIElement.section().addChildren(
+                TextLine.constant(LayoutStyle.AUTO, Component.translatable("gtocore.machine.radioactivity_trait.dose").append(" (Sv)"))
+                        .bindClientColor(UITheme::panelText),
+                NumberField.ofInt(LayoutStyle.AUTO, () -> radioactivity, value -> {
+                    radioactivity = value;
+                    markAsDirty();
                     getControllers().forEach(IMultiController::requestCheck);
-                })
-                        .setNumbersOnly(0, Long.MAX_VALUE))
-                .widget(new LabelWidget(7, 42, "gtceu.creative.computation.average"));
+                }, 0, Integer.MAX_VALUE)));
+    }
+
+    @Override
+    public boolean hasPlayerInventory() {
+        return false;
     }
 }

@@ -68,6 +68,10 @@ import java.util.function.BooleanSupplier;
 @DataGeneratorScanned
 final class WildcardMaterialGrid extends UIElement {
 
+    private static final int COLUMNS = 6;
+    private static final int GRID_WIDTH = COLUMNS * UISizes.SLOT_SIZE;
+    private static final int VIEW_WIDTH = GRID_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
+
     @RegisterLanguage(cn = "搜索材料名称或注册名", en = "Search material name or registry ID")
     private static final String SEARCH = "gtocore.ae.wildcard_materials.search";
     @RegisterLanguage(cn = "拖入材料物品、流体或机器；右键/中键清空", en = "Drop a material item, fluid or machine; right/middle click to clear")
@@ -204,9 +208,9 @@ final class WildcardMaterialGrid extends UIElement {
             filterLabels[0] = filterLabel + " ▼";
             filterLabels[1] = filterLabel + " ▲";
             for (int i = 0; i < SORTS.length; i++) sortLabels[i] = Component.translatable(SORTS[i]).getString();
-            emptyLabel = UIText.fit(Component.translatable(EMPTY).getString(), UISizes.SLOT_ROW_WIDTH);
+            emptyLabel = UIText.fit(Component.translatable(EMPTY).getString(), GRID_WIDTH);
         }
-        layout(l -> l.size(UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE));
+        layout(l -> l.size(GRID_WIDTH, UISizes.SLOT_SIZE));
         addSyncValue(SyncValue.of(machine::getScannedMaterials, MATERIALS, new ArrayList<>(0)).onChanged(this::collectEntries));
         disabled = addSyncValue(SyncValue.of(this::disabledFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
         matches = addSyncValue(SyncValue.of(this::matchingFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
@@ -280,7 +284,7 @@ final class WildcardMaterialGrid extends UIElement {
         field.setClientSideWidget();
         column.addChild(UIElement.centeredRow(UISizes.SLOT_SIZE).addChildren(field, new SearchSlot(grid)));
         var filterOptions = UIElement.section();
-        var checklist = new ScrollerView("ae.wildcard_material_filters", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE,
+        var checklist = new ScrollerView("ae.wildcard_material_filters", VIEW_WIDTH,
                 ScrollerView.heightFor(6, Button.HEIGHT, UISizes.GAP), UISizes.GAP).setResizable(false);
         checklist.addScrollViewChild(new FilterOption(Component.translatable(ALL),
                 () -> grid.showEnabled && grid.showDisabled && grid.materialTypes.size() == BASE_TYPES.length, () -> {
@@ -325,7 +329,7 @@ final class WildcardMaterialGrid extends UIElement {
         });
         reverse.tooltips(REVERSE);
         column.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(filter, sort, reverse, grid.pageSelectionButton, dropdown));
-        var scroller = new ScrollerView("ae.wildcard_materials", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, 4 * UISizes.SLOT_SIZE)
+        var scroller = new ScrollerView("ae.wildcard_materials", VIEW_WIDTH, 4 * UISizes.SLOT_SIZE)
                 .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
         scroller.addScrollViewChild(grid);
         column.addChild(scroller);
@@ -423,7 +427,7 @@ final class WildcardMaterialGrid extends UIElement {
             if (result == 0) result = entries.get(a).id.compareTo(entries.get(b).id);
             return reversed ? -Integer.signum(result) : result;
         });
-        layout(l -> l.height(Math.max(1, (visible.size() + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW) * UISizes.SLOT_SIZE));
+        layout(l -> l.height(Math.max(1, (visible.size() + COLUMNS - 1) / COLUMNS) * UISizes.SLOT_SIZE));
     }
 
     private int entryAt(double mouseX, double mouseY) {
@@ -433,8 +437,8 @@ final class WildcardMaterialGrid extends UIElement {
         }
         int column = (int) (mouseX - getPositionX()) / UISizes.SLOT_SIZE;
         int row = (int) (mouseY - getPositionY()) / UISizes.SLOT_SIZE;
-        if (column >= UISizes.SLOTS_PER_ROW) return -1;
-        int index = row * UISizes.SLOTS_PER_ROW + column;
+        if (column >= COLUMNS) return -1;
+        int index = row * COLUMNS + column;
         return index < visible.size() ? visible.getInt(index) : -1;
     }
 
@@ -457,10 +461,10 @@ final class WildcardMaterialGrid extends UIElement {
         }
         int hovered = entryAt(mouseX, mouseY);
         int firstRow = top <= y0 ? 0 : (top - y0) / UISizes.SLOT_SIZE;
-        int from = Math.min(visible.size(), firstRow * UISizes.SLOTS_PER_ROW);
+        int from = Math.min(visible.size(), firstRow * COLUMNS);
         for (int k = from; k < visible.size(); k++) {
-            int x = x0 + k % UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
-            int y = y0 + k / UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
+            int x = x0 + k % COLUMNS * UISizes.SLOT_SIZE;
+            int y = y0 + k / COLUMNS * UISizes.SLOT_SIZE;
             if (y >= bottom) break;
             int index = visible.getInt(k);
             UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
@@ -580,7 +584,7 @@ final class WildcardMaterialGrid extends UIElement {
             header = Button.of(LayoutStyle.AUTO).bindClientText(() -> grid.filterLabels[1])
                     .setOnClientClick(() -> setDisplay(false));
             layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(0).top(0).column()
-                    .width(UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE).gapAll(UISizes.GAP));
+                    .width(VIEW_WIDTH).gapAll(UISizes.GAP));
             addChildren(UIElement.row(Button.HEIGHT).addChild(header), options);
             setDisplay(false);
         }
