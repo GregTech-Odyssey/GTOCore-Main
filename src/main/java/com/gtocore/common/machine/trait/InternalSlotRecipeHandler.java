@@ -69,6 +69,9 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         public @Nullable GTRecipeType effectiveRecipeType(GTRecipeType machineType) {
+            if (slot.isEmpty()) return null;
+            var cachedRecipe = getCachedRecipe();
+            if (cachedRecipe != null && isCachedRecipeAvailable(cachedRecipe)) return cachedRecipe.recipeType;
             return getEffectiveRecipeType(machineType);
         }
 
