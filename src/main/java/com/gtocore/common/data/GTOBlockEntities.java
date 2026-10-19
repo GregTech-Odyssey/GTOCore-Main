@@ -1,5 +1,7 @@
 package com.gtocore.common.data;
 
+import com.gtocore.client.renderer.HappyWaterGodStatueRenderer;
+import com.gtocore.common.block.HappyWaterGodStatue;
 import com.gtocore.common.blockentity.HeatPipeBlockEntity;
 import com.gtocore.common.blockentity.ManaPipeBlockEntity;
 import com.gtocore.common.blockentity.MufflerPipeBlockEntity;
@@ -64,5 +66,10 @@ public class GTOBlockEntities {
     public static final BlockEntityEntry<MinesweeperControlBlockEntity> MINESWEEPER_CONTROL = GTO
             .blockEntity("minesweeper_control", MinesweeperControlBlockEntity::new)
             .validBlocks(GTOBlocks.MINESWEEPER_CONTROL)
+            .register();
+
+    public static final BlockEntityEntry<HappyWaterGodStatue.Entity> HAPPY_WATER_GOD_STATUE = GTO.<HappyWaterGodStatue.Entity>blockEntity("happy_water_god_statue", HappyWaterGodStatue.Entity::new)
+            .validBlocks(GTOBlocks.HAPPY_WATER_GOD_STATUE)
+            .renderer(() -> HappyWaterGodStatueRenderer::new)
             .register();
 }

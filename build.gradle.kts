@@ -344,6 +344,13 @@ dependencies {
     modImplementation("curse.maven:pipez-443900:6945379")
     modImplementation("curse.maven:jumbo-furnace-390880:4685578")
     modImplementation("curse.maven:easy-villagers-400514:6831415")
+    modImplementation("curse.maven:ae2-import-export-card-982512:5551629")
+    modImplementation("curse.maven:ae2-toogleable-view-cell-1141472:8054118")
+    modImplementation("curse.maven:ae2-network-analyser-961856:5107131")
+    modImplementation("curse.maven:explorers-compass-491794:7892927")
+    modImplementation("curse.maven:natures-compass-252848:7892948")
+    modImplementation("curse.maven:foodvariations-1109288:8832188")
+    modImplementation("curse.maven:spice-of-life-carrot-edition-277616:4888575")
 
     // Ars Nouveau
     modCompileOnly("com.hollingsworth.ars_nouveau:ars_nouveau-$minecraft_version:4.12.6.256")
@@ -356,16 +363,19 @@ dependencies {
     // 只在运行时需要（无源码引用）
     modRuntimeOnly("curse.maven:cloth-config-348521:5729105")
     modRuntimeOnly("curse.maven:more-red-387638:4691333")
-    modRuntimeOnly("curse.maven:torchmaster-254268:5849456")
+    runtimeMod("curse.maven:torchmaster-254268:5849456")
+    modRuntimeOnly("curse.maven:xtones-reworked-694231:5907303")
 
     // 客户端与服务端
-    sidedMod("curse.maven:ftb-quests-forge-289412:8078538")
+    modCompileOnly("curse.maven:ftb-quests-forge-289412:8078538")
+    modCompileOnly("curse.maven:ftb-xmod-compat-889915:6402486")
     sidedMod("curse.maven:ftb-teams-forge-404468:7499810")
-    sidedMod("curse.maven:ftb-xmod-compat-889915:6402486")
     sidedMod("curse.maven:sophisticated-backpacks-422301:9083935")
     sidedMod("curse.maven:sophisticated-core-618298:9112479")
     sidedMod("curse.maven:sophisticated-storage-619320:9083978")
     sidedMod("curse.maven:tool-belt-260262:5929061")
+    sidedMod("curse.maven:immersive-aircraft-666014:8865821")
+    sidedMod("curse.maven:factory-blocks-640001:6267781")
     listOf("curse.maven:spark-361579:4738952", "curse.maven:modern-ui-352491:5977000").forEach {
         "modClientRuntimeOnly"(it)
         "modServerRuntimeOnly"(it)
@@ -382,7 +392,6 @@ dependencies {
     clientMod("curse.maven:embeddium-908741:5681725")
     clientMod("curse.maven:moremorelang-1444917:8673054")
     "modClientRuntimeOnly"("curse.maven:fzzy-config-1005914:7085017")
-    "modClientRuntimeOnly"("curse.maven:ae2-network-analyser-961856:5107131")
     "modClientRuntimeOnly"("curse.maven:imblocker-483760:6922546")
 
     // 只编译（含 gtolib mixin 目标）
@@ -396,7 +405,7 @@ dependencies {
     modCompileOnly("curse.maven:Shimmer-forge-627824:5685940")
     modCompileOnly("curse.maven:chisel-reborn-551763:6266130")
     modCompileOnly("curse.maven:biomes-o-plenty-220318:6028852")
-    modCompileOnly("curse.maven:oh-the-biomes-weve-gone-1070751:6337823")
+    modCompileOnly("curse.maven:oh-the-biomes-weve-gone-1070751:8255932")
     modCompileOnly("curse.maven:emi-trades-villager-trading-emi-plugin-735523:4901194")
     modCompileOnly("curse.maven:athena-841890:5176879")
     modCompileOnly("curse.maven:inventory-essentials-368825:6977231")

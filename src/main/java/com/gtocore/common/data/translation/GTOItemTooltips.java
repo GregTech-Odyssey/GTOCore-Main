@@ -7,9 +7,11 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.Mods;
 import com.gtocore.integration.ae.AccelerationRates;
 
 import com.gtolib.api.item.IItem;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
@@ -166,6 +168,12 @@ public final class GTOItemTooltips {
         setTips(AEBlocks.CONDENSER.asItem(), GTOTips.of("matter_condenser", t -> t.lore(t.tr("近年垃圾回收商引起的一次事故让大家把目光投向了这台物质聚合器。", "A recent incident involving a waste recycler has turned people's attention to this Matter Condenser."))));
 
         setTips(EPPItemAndBlock.PATTERN_MODIFIER.asItem(), PatternModifierTooltips);
+
+        var toolSwapper = GTOTips.of("tool_swapper_upgrade", t -> t.warning(t.tr("已禁用：存在卡服问题", "Disabled: causes server hangs")));
+        if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
+            setTips(RegistriesUtils.getItem("sophisticatedbackpacks:tool_swapper_upgrade"), toolSwapper);
+            setTips(RegistriesUtils.getItem("sophisticatedbackpacks:advanced_tool_swapper_upgrade"), toolSwapper);
+        }
 
         for (Item item : List.of(EPPItemAndBlock.TAG_STORAGE_BUS.asItem(), EPPItemAndBlock.MOD_STORAGE_BUS.asItem(), EPPItemAndBlock.PRECISE_STORAGE_BUS)) {
             setTips(item, GTOTips.of("pattern_modifier", t -> {

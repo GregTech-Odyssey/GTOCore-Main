@@ -1,6 +1,6 @@
 package com.gtocore.mixin.ae2.blockentity;
 
-import com.gtocore.integration.ae.SuperSpeedCard;
+import com.gtocore.integration.ae.SpeedCards;
 
 import appeng.blockentity.storage.IOPortBlockEntity;
 
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class IOPortBlockEntityMixin {
 
     @Inject(method = "getOperationsPerTick", at = @At("HEAD"), cancellable = true, remap = false)
-    private void gtocore$superSpeedCard(CallbackInfoReturnable<Long> cir) {
-        cir.setReturnValue(SuperSpeedCard.ioPortOperations(((IOPortBlockEntity) (Object) this).getUpgrades()));
+    private void gtocore$tieredSpeedCards(CallbackInfoReturnable<Long> cir) {
+        cir.setReturnValue(SpeedCards.ioPortOperations(((IOPortBlockEntity) (Object) this).getUpgrades()));
     }
 }

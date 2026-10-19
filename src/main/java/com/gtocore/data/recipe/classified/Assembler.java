@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.*;
+import com.gtocore.integration.ae.TieredInterfaces;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -4099,7 +4100,7 @@ final class Assembler {
 
         ASSEMBLER_RECIPES.builder("me_storage_access_hatch")
                 .inputItems(GTMachines.HULL[HV])
-                .inputItems("expatternprovider:oversize_interface")
+                .inputItems(TieredInterfaces.block(1).asItem())
                 .inputItems("ae2:storage_bus", 4)
                 .inputItems(GTItems.SENSOR_HV, 4)
                 .outputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH.asItem())

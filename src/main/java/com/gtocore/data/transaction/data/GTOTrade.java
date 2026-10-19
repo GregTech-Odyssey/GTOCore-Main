@@ -8,10 +8,10 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.data.transaction.data.trade.*;
 import com.gtocore.data.transaction.manager.TradeData;
 import com.gtocore.data.transaction.manager.TradeEntry;
-import com.gtocore.integration.Mods;
-import com.gtocore.integration.ftbquests.QuestTradeIntegration;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.quest.Quest;
+import com.gtolib.quest.QuestServer;
 import com.gtolib.utils.WalletUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -35,6 +35,7 @@ import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.gtocore.data.transaction.TradingStationTool.addMultipliedItems;
 import static com.gtocore.data.transaction.data.TradeLang.TECH_OPERATOR_COIN;
@@ -111,30 +112,21 @@ public final class GTOTrade {
     }
 
     /**
-     * 构建需要完成指定 FTB Quests 任务才能购买的物品交易。
-     *
      * @param unlockCondition 交易站自身的解锁标签
      * @param stack           购买后获得的物品
      * @param currency        支付货币种类
      * @param amount          每次购买所需货币数量
-     * @param questId         作为购买前置的 FTB Quests 任务 ID
      * @param descriptions    商品的额外说明
      * @return 带任务完成条件的交易条目
      */
-    public static TradeEntry questGatedItemTrading(String unlockCondition, ItemStack stack, String currency, int amount, long questId, Component... descriptions) {
-        String questIdText = String.format("%016X", questId);
+    public static TradeEntry questGatedItemTrading(String unlockCondition, ItemStack stack, String currency, int amount, Supplier<Quest> quest, Component... descriptions) {
         TradeEntry.Builder builder = new TradeEntry.Builder()
                 .texture(new StackTexture(stack))
                 .unlockCondition(unlockCondition)
                 .condition(
-                        (data, entry) -> Mods.FTBQUESTS.isLoaded() && QuestTradeIntegration.hasCompletedQuest(data, questId) ? Integer.MAX_VALUE : 0,
-                        remaining -> {
-                            boolean completed = remaining > 0;
-                            // 服务端只同步任务 ID；客户端再用本地 FTB Quests 数据解析标题与语言。
-                            Component questIdComponent = Component.translatable("gtocore.trade.quest_id", questIdText);
-                            return Component.translatable("gtocore.trade.condition.quest", questIdComponent,
-                                    Component.translatable(completed ? "gtocore.trade.condition.met" : "gtocore.trade.condition.unmet"));
-                        })
+                        (data, entry) -> data.uuid() != null && QuestServer.isCompleted(data.uuid(), quest.get()) ? Integer.MAX_VALUE : 0,
+                        remaining -> Component.translatable("gtocore.trade.condition.quest", quest.get().title(),
+                                Component.translatable(remaining > 0 ? "gtocore.trade.condition.met" : "gtocore.trade.condition.unmet")))
                 .inputCurrency(currency, amount)
                 .outputItem(stack);
         for (Component description : descriptions) builder.addDescription(description);

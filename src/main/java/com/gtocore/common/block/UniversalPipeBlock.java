@@ -100,6 +100,6 @@ public class UniversalPipeBlock extends PipeBlock<UniversalPipeType, UniversalPi
     /** 只连具体存储：整网聚合的 NetworkStorage 不算接口，所以对着 AE 线缆不会接上。 */
     @Override
     public boolean canPipeConnectToBlock(PipeBlockEntity<UniversalPipeType, UniversalPipeProperties> selfTile, Direction side, @Nullable BlockEntity tile) {
-        return UniversalStorages.getStorage(tile, side.getOpposite()) != null;
+        return UniversalStorages.hasStorage(tile, side.getOpposite());
     }
 }

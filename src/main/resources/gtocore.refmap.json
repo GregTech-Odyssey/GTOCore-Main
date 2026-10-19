@@ -453,6 +453,18 @@
     "com/gtolib/mixin/mc/PistonBaseBlockMixin": {
       "moveBlocks": "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;m_60181_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Z",
       "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;newMovingBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;": "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;m_155881_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+    },
+    "com/gtocore/mixin/mc/ItemAccessor": {
+      "descriptionId": "f_41379_:Ljava/lang/String;"
+    },
+    "com/gtocore/mixin/mc/BlockAccessor": {
+      "descriptionId": "f_49787_:Ljava/lang/String;"
+    },
+    "com/gtocore/mixin/mc/MappedRegistryAccessor": {
+      "unregisteredIntrusiveHolders": "f_244282_:Ljava/util/Map;"
+    },
+    "com/gtocore/mixin/mc/BlockEntityMixin": {
+      "loadStatic": "Lnet/minecraft/world/level/block/entity/BlockEntity;m_155241_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;"
     }
   },
   "data": {
@@ -910,6 +922,18 @@
       "com/gtolib/mixin/mc/PistonBaseBlockMixin": {
         "moveBlocks": "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;m_60181_(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Z",
         "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;newMovingBlockEntity(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;": "Lnet/minecraft/world/level/block/piston/MovingPistonBlock;m_155881_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;ZZ)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+      },
+      "com/gtocore/mixin/mc/ItemAccessor": {
+        "descriptionId": "f_41379_:Ljava/lang/String;"
+      },
+      "com/gtocore/mixin/mc/BlockAccessor": {
+        "descriptionId": "f_49787_:Ljava/lang/String;"
+      },
+      "com/gtocore/mixin/mc/MappedRegistryAccessor": {
+        "unregisteredIntrusiveHolders": "f_244282_:Ljava/util/Map;"
+      },
+      "com/gtocore/mixin/mc/BlockEntityMixin": {
+        "loadStatic": "Lnet/minecraft/world/level/block/entity/BlockEntity;m_155241_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;"
       }
     }
   }

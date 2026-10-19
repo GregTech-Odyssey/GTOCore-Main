@@ -328,11 +328,6 @@ public final class GTOMachineTooltips {
         t.control(t.tr("通入红石脉冲以清除残余辐射", "Input a redstone pulse to clear residual radiation"));
     });
 
-    public static final TipSpec ModularConfigurationMaintenanceHatchTooltips = GTOTips.of("modular_configuration_maintenance_hatch", t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("插入不同的可配置维护仓以启用不同的功能", "Insert different configuration maintenance hatches to enable different functions."));
-    });
-
     public static final TipSpec TempInterfaceTooltips = GTOTips.of("temp_vacuum_interface", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("与此部件连接可以为多方块机器传导热量", "Conduct heat for multiblock machines through connections with this part"));

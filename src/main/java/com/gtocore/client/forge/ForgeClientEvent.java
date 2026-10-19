@@ -30,6 +30,10 @@ import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.rule.RuleManager;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
+import com.gtolib.quest.client.ClientQuestData;
+import com.gtolib.quest.client.QuestBookOpener;
+import com.gtolib.quest.client.book.QuestBookScreen;
+import com.gtolib.quest.client.book.QuestBookSession;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -180,6 +184,7 @@ public final class ForgeClientEvent {
         FXManager.tickFXs();
         Minecraft mc = Minecraft.getInstance();
         updateHudScreen(mc);
+        QuestBookOpener.tick();
         if (mc.player instanceof IEnhancedPlayer) {
             boolean isShiftDown = Screen.hasShiftDown();
             if (isShiftDown != lastShiftState) {
@@ -309,6 +314,9 @@ public final class ForgeClientEvent {
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
         RuleManager.leaveRemoteWorld();
+        ClientQuestData.clear();
+        QuestBookScreen.releaseCaches();
+        QuestBookSession.clear();
     }
 
     /**

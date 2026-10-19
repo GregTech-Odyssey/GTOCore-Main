@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
+import java.util.function.ObjLongConsumer;
 
 import static com.gtolib.api.GTOValues.CELL_UUID;
 
@@ -279,6 +280,22 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
      * @reason .
      */
     @Overwrite(remap = false)
+    public long getChangeVersion() {
+        return gtolib$getCellStorage().cache.getVersion();
+    }
+
+    @Override
+    public boolean drainChanges(Object reader, ObjLongConsumer<AEKey> changed) {
+        var data = gtolib$getCellStorage();
+        var map = gtolib$getCellStoredMap();
+        return data.cache.drainChanges(reader, key -> changed.accept(key, map == null ? 0 : map.getAmount(key)));
+    }
+
+    /**
+     * @author .
+     * @reason .
+     */
+    @Overwrite(remap = false)
     public void getAvailableStacks(KeyCounter out) {
         var data = gtolib$getCellStorage();
         if (data == CellDataStorage.EMPTY) return;
@@ -323,7 +340,7 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
             amount = map.insert(what, amount, maxItemsPerType);
-            data.setDirty();
+            data.markDirty(what);
             saveChanges();
         } else if (maxItemsPerType < gtolib$totalAmount) {
             amount = Math.min(amount, maxItemsPerType - map.getAmount(what));
@@ -341,7 +358,7 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
         if (mode == Actionable.MODULATE) {
             var extract = map.extract(what, amount);
             if (extract > 0) {
-                gtolib$getCellStorage().setDirty();
+                gtolib$getCellStorage().markDirty(what);
                 this.saveChanges();
             }
             return extract;

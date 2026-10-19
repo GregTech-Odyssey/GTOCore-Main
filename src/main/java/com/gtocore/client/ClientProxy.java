@@ -13,7 +13,9 @@ import com.gtocore.client.overlay.GTORender;
 import com.gtocore.client.overlay.TesseractClientHandler;
 import com.gtocore.client.overlay.TravelTargetsClientHandler;
 import com.gtocore.client.renderer.GTORenderTypes;
+import com.gtocore.client.renderer.HappyWaterGodStatueRenderer;
 import com.gtocore.client.renderer.SolarGlobeGlowShader;
+import com.gtocore.client.renderer.entity.FrostCoatLayer;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
@@ -28,6 +30,7 @@ import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
 import com.gtocore.integration.ae.PatternContentAccessTerminalScreen;
+import com.gtocore.integration.ae.TieredInterfaces;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
@@ -44,6 +47,8 @@ import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
+import com.gtolib.quest.client.QuestPinnedHud;
+import com.gtolib.quest.client.book.QuestBookStyle;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -58,6 +63,7 @@ import net.minecraft.data.models.model.DelegatedModel;
 import net.minecraft.world.item.BlockItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
@@ -102,6 +108,7 @@ public final class ClientProxy extends CommonProxy {
         eventBus.addListener(ClientProxy::registerShaders);
         eventBus.addListener(ClientProxy::registerReloadListeners);
         eventBus.addListener(WildcardRecipeTooltip::register);
+        eventBus.addListener((EntityRenderersEvent.AddLayers event) -> FrostCoatLayer.addLayers(event));
         registerAEModels();
         AEKeyRendering.register(TagPrefixKeyType.TYPE, TagPrefixKey.class, new TagPrefixRenderer.AEKeyHandler());
         if (GTCEu.Mods.isShimmerLoaded()) eventBus.addListener(ClientProxy::registerLights);
@@ -116,6 +123,7 @@ public final class ClientProxy extends CommonProxy {
         DebugScreenInspector.init();
         MonitorRenderer.RenderedCacheClearer.init();
         CelestialSkyRenderer.init();
+        HappyWaterGodStatueRenderer.Late.init();
         TravelTargetsClientHandler.init();
         TesseractClientHandler.init();
         TravelEvents.Client.init();
@@ -236,6 +244,7 @@ public final class ClientProxy extends CommonProxy {
         registerHUD(event, "research_points_hud", ResearchPointsHUD.INSTANCE);
         registerHUD(event, "adastra_hud", AdAstraHUD.gto$INSTANCE);
         registerHUD(event, "client_property_hud", PlayerAttrHUD.INSTANCE);
+        registerHUD(event, "quest_pinned_hud", QuestPinnedHud.INSTANCE);
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
     }
 
@@ -253,6 +262,10 @@ public final class ClientProxy extends CommonProxy {
                     CategoryMappingSubMenu.TYPE,
                     CategoryMappingSubScreen::new,
                     "/screens/categoru_mapping_config.json");
+            InitScreens.register(
+                    TieredInterfaces.MENU,
+                    TieredInterfaces.Screen::new,
+                    "/screens/gtocore_tiered_interface.json");
             InitScreens.register(
                     PatternContentAccessTerminalMenu.TYPE,
                     PatternContentAccessTerminalScreen::new,
@@ -275,6 +288,7 @@ public final class ClientProxy extends CommonProxy {
 
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(TechTreeStyle.RELOAD_LISTENER);
+        event.registerReloadListener(QuestBookStyle.RELOAD_LISTENER);
     }
 
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional evt) {
