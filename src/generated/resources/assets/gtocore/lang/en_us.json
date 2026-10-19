@@ -2946,6 +2946,8 @@
   "gtocore.happy_water_god_statue.recap.time": "Day %s · %sh %sm %ss",
   "gtocore.happy_water_god_statue.recap.tree": "Chopped the first tree",
   "gtocore.happy_water_god_statue.recap.unlock": "Completed on unlock",
+  "gtocore.happy_water_god_statue.sponsor": "GregTech Odyssey is completely free. We're glad you've seen this message, and we'd love some support from anyone who can spare it: %s\n%s",
+  "gtocore.happy_water_god_statue.sponsor_hover": "Click to open the sponsor page",
   "gtocore.happy_water_god_statue.warning": "Photosensitive Seizure Warning",
   "gtocore.happy_water_god_statue.warning_detail": "Intense flashing and rapidly changing lights ahead",
   "gtocore.happy_water_god_statue.warning_hint": "If you feel unwell, cover your eyes with your hand",

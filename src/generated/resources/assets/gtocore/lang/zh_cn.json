@@ -3074,6 +3074,8 @@
   "gtocore.happy_water_god_statue.recap.time": "第 %s 天 · %s 小时 %s 分 %s 秒",
   "gtocore.happy_water_god_statue.recap.tree": "砍下第一棵树",
   "gtocore.happy_water_god_statue.recap.unlock": "前置完成后自动完成",
+  "gtocore.happy_water_god_statue.sponsor": "格雷科技：新征程整合包完全免费，很开心你能看到此信息，我们很开心有实力的富哥支持一手 %s\n%s",
+  "gtocore.happy_water_god_statue.sponsor_hover": "点击打开赞助页面",
   "gtocore.happy_water_god_statue.warning": "光敏性癫痫警告",
   "gtocore.happy_water_god_statue.warning_detail": "即将出现强烈闪光与快速变换的光效",
   "gtocore.happy_water_god_statue.warning_hint": "若感受到不适，请用手遮挡眼睛",
