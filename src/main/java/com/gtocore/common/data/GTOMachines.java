@@ -91,7 +91,6 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.PARALLEL_HATCH;
 import static com.gregtechceu.gtceu.api.recipe.handler.IO.IN;
 import static com.gtocore.api.machine.part.GTOPartAbility.HEAT_CONDUCTION;
-import static com.gtocore.common.machine.multiblock.part.maintenance.ACMHatchPartMachine.LANG_PLACEMENT_TOOLTIP;
 import static com.gtocore.utils.register.MachineRegisterUtils.*;
 
 public final class GTOMachines {
@@ -669,21 +668,22 @@ public final class GTOMachines {
             .renderer(() -> new MaintenanceHatchPartRenderer(10, GTOCore.id("block/machine/part/maintenance.law_cleaning")))
             .register();
 
-    public static final MachineDefinition AUTO_CONFIGURATION_MAINTENANCE_HATCH = machine("auto_configuration_maintenance_hatch", "可配置自动维护仓", ACMHatchPartMachine::new)
+    public static final MachineDefinition AUTO_CONFIGURATION_MAINTENANCE_HATCH = machine("auto_configuration_maintenance_hatch", "负荷调节自动维护仓", ACMHatchPartMachine::new)
+            .langValue("Load Regulating Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(ACMHatchPartMachine.tips())
             .notAllowSharedTooltips()
             .renderer(() -> new MaintenanceHatchPartRenderer(5, GTCEu.id("block/machine/part/maintenance.full_auto")))
             .register();
 
-    public static final MachineDefinition MODULAR_CONFIGURATION_MAINTENANCE_HATCH = machine("modular_configuration_maintenance_hatch", "模块化可配置维护仓", ModularHatchPartMachine::new)
+    public static final MachineDefinition MODULAR_CONFIGURATION_MAINTENANCE_HATCH = machine("modular_configuration_maintenance_hatch", "环境控制自动维护仓", ModularHatchPartMachine::new)
+            .langValue("Environment Control Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
-            .tips(GTOMachineTooltips.ModularConfigurationMaintenanceHatchTooltips)
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(ModularHatchPartMachine.tips())
             .notAllowSharedTooltips()
             .renderer(() -> new MaintenanceHatchPartRenderer(6, GTCEu.id("block/machine/part/maintenance.full_auto")))
             .register();
@@ -728,52 +728,33 @@ public final class GTOMachines {
             .renderer(() -> new OverlayTieredMachineRenderer(UEV, GTCEu.id("block/machine/part/optical_data_hatch")))
             .register();
 
-    public static final MachineDefinition CLEANING_CONFIGURATION_MAINTENANCE_HATCH = machine("cleaning_configuration_maintenance_hatch", "超净可配置维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.DUMMY_CLEANROOM))
+    public static final MachineDefinition CLEANING_CONFIGURATION_MAINTENANCE_HATCH = machine("cleaning_configuration_maintenance_hatch", "超净负荷调节自动维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.DUMMY_CLEANROOM))
+            .langValue("Cleanroom Load Regulating Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .notAllowSharedTooltips()
-            .tips(Tips.feature(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0")),
-                    Tips.heading(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1")))
-            .tooltipBuilder((stack, tooltips) -> {
-                for (int tier = 1; tier <= CMHatchPartMachine.DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
-                    tooltips.add(Tips.feature(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier))));
-                }
-            })
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(CCMHatchPartMachine.tips(CMHatchPartMachine.DUMMY_CLEANROOM))
             .renderer(() -> new MaintenanceHatchPartRenderer(5, GTCEu.id("block/machine/part/maintenance.cleaning")))
             .register();
 
-    public static final MachineDefinition STERILE_CONFIGURATION_CLEANING_MAINTENANCE_HATCH = machine("sterile_configuration_cleaning_maintenance_hatch", "无菌可配置维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.STERILE_DUMMY_CLEANROOM))
+    public static final MachineDefinition STERILE_CONFIGURATION_CLEANING_MAINTENANCE_HATCH = machine("sterile_configuration_cleaning_maintenance_hatch", "无菌负荷调节自动维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.STERILE_DUMMY_CLEANROOM))
+            .langValue("Sterile Load Regulating Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .notAllowSharedTooltips()
-            .tips(
-                    Tips.feature(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0")),
-                    Tips.heading(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1")))
-            .tooltipBuilder((stack, tooltips) -> {
-                for (int tier = 1; tier <= CMHatchPartMachine.STERILE_DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
-                    tooltips.add(Tips.feature(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier))));
-                }
-            })
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(CCMHatchPartMachine.tips(CMHatchPartMachine.STERILE_DUMMY_CLEANROOM))
             .renderer(() -> new MaintenanceHatchPartRenderer(9, GTOCore.id("block/machine/part/maintenance.sterile_cleaning")))
             .register();
 
-    public static final MachineDefinition LAW_CONFIGURATION_CLEANING_MAINTENANCE_HATCH = machine("law_configuration_cleaning_maintenance_hatch", "绝对洁净可配置维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.LAW_DUMMY_CLEANROOM))
+    public static final MachineDefinition LAW_CONFIGURATION_CLEANING_MAINTENANCE_HATCH = machine("law_configuration_cleaning_maintenance_hatch", "绝对洁净负荷调节自动维护仓", holder -> new CCMHatchPartMachine(holder, CMHatchPartMachine.LAW_DUMMY_CLEANROOM))
+            .langValue("Absolute Clean Load Regulating Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
             .notAllowSharedTooltips()
-            .tips(Tips.feature(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.0")),
-                    Tips.heading(Component.translatable("gtceu.machine.maintenance_hatch_cleanroom_auto.tooltip.1")))
-            .tooltipBuilder((stack, tooltips) -> {
-                for (int tier = 1; tier <= CMHatchPartMachine.LAW_DUMMY_CLEANROOM.getCleanroomTier(); tier++) {
-                    tooltips.add(Tips.feature(Component.literal("  ").append(ICleanroomProvider.getCleanroomTooltip(tier))));
-                }
-            })
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(CCMHatchPartMachine.tips(CMHatchPartMachine.LAW_DUMMY_CLEANROOM))
             .renderer(() -> new MaintenanceHatchPartRenderer(12, GTOCore.id("block/machine/part/maintenance.law_cleaning")))
             .register();
 
@@ -785,12 +766,12 @@ public final class GTOMachines {
             .renderer(() -> new MaintenanceHatchPartRenderer(8, GTCEu.id("block/machine/part/maintenance.full_auto")))
             .register();
 
-    public static final MachineDefinition GRAVITY_CONFIGURATION_HATCH = machine("gravity_configuration_hatch", "可配置重力维护仓", CGCHatchPartMachine::new)
-            .langValue("Gravity Configuration Maintenance Hatch")
+    public static final MachineDefinition GRAVITY_CONFIGURATION_HATCH = machine("gravity_configuration_hatch", "重力负荷调节自动维护仓", CGCHatchPartMachine::new)
+            .langValue("Gravity Load Regulating Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(CGCHatchPartMachine.tips())
             .notAllowSharedTooltips()
             .renderer(() -> new MaintenanceHatchPartRenderer(10, GTCEu.id("block/machine/part/maintenance.full_auto")))
             .register();
@@ -804,13 +785,12 @@ public final class GTOMachines {
             .renderer(() -> new MaintenanceHatchPartRenderer(4, GTCEu.id("block/machine/part/maintenance.full_auto")))
             .register();
 
-    public static final MachineDefinition VACUUM_CONFIGURATION_HATCH = machine("vacuum_configuration_hatch", "可配置真空维护仓", CVCHatchPartMachine::new)
-            .langValue("Vacuum Configuration Maintenance Hatch")
+    public static final MachineDefinition VACUUM_CONFIGURATION_HATCH = machine("vacuum_configuration_hatch", "真空负荷调节自动维护仓", CVCHatchPartMachine::new)
+            .langValue("Vacuum Load Regulating Auto Maintenance Hatch")
             .allRotation()
             .abilities(PartAbility.MAINTENANCE)
             .ruleTooltips(GTORules.CONFIGURABLE_MAINTENANCE_MAX, GTORules.CONFIGURABLE_MAINTENANCE_MIN)
-            .tips(Tips.stat(Component.translatable("gtocore.recipe.vacuum.tier", 4)))
-            .tips(Tips.control(Component.translatable(LANG_PLACEMENT_TOOLTIP)))
+            .tips(CVCHatchPartMachine.tips())
             .notAllowSharedTooltips()
             .renderer(() -> new MaintenanceHatchPartRenderer(6,
                     GTCEu.id("block/machine/part/maintenance.full_auto")))

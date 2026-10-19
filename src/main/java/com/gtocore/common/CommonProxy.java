@@ -36,8 +36,6 @@ import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.construction_wand.ConstructionWandRegistrar;
 import com.gtocore.integration.emi.GTEMIPlugin;
-import com.gtocore.integration.ftbquests.GTOQuestTypes;
-import com.gtocore.integration.ftbquests.PendingItemRewardDelivery;
 import com.gtocore.integration.ftbu.AreaShape;
 import com.gtocore.utils.AdvMathExpParser;
 
@@ -50,6 +48,7 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.gtm.recipe.editor.RecipeEditorUIFactory;
+import com.gtolib.quest.QuestNetwork;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -132,10 +131,6 @@ public class CommonProxy {
         StarMapCommand.init();
         TesseractTargetMarker.init();
         TravelEvents.init();
-        PendingItemRewardDelivery.Events.init();
-        if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
-            GTOQuestTypes.init();
-        }
     }
 
     private static void modConstruct(FMLConstructModEvent event) {
@@ -179,6 +174,7 @@ public class CommonProxy {
             GTMaterialBlocks.FLUID_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setTips(tips));
         } else {}
         Message.init();
+        QuestNetwork.init();
         TeamResearchSavedData.init();
         TechTreeSavedData.init();
         GTOItemTooltips.initLanguage();

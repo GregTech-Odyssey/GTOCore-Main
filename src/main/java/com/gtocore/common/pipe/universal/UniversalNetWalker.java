@@ -59,7 +59,7 @@ public final class UniversalNetWalker extends PipeNetWalker<UniversalPipeBlockEn
     protected void checkNeighbour(UniversalPipeBlockEntity pipeTile, BlockPos pipePos, Direction faceToNeighbour,
                                   @Nullable BlockEntity neighbourTile) {
         if (pipePos.equals(sourcePipe) && faceToNeighbour == facingToHandler) return;
-        if (UniversalStorages.getStorage(neighbourTile, faceToNeighbour.getOpposite()) != null) {
+        if (UniversalStorages.hasStorage(neighbourTile, faceToNeighbour.getOpposite())) {
             routes.add(new UniversalRoutePath(pipeTile, faceToNeighbour, getWalkedBlocks()));
         }
     }

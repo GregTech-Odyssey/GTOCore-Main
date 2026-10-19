@@ -46,6 +46,11 @@ public class HiddenItems {
             deprecate(RegistriesUtils.getItem("mythicbotany:elementium_ore"));
         }
 
+        if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
+            hide(RegistriesUtils.getItem("sophisticatedbackpacks:tool_swapper_upgrade"));
+            hide(RegistriesUtils.getItem("sophisticatedbackpacks:advanced_tool_swapper_upgrade"));
+        }
+
         if (Mods.BIOMESWEVEGONE.isLoaded()) {
             for (String woodName : BYGWoodTypes.WOOD_NAMES) {
                 deprecate(RegistriesUtils.getItem("biomeswevegone:" + woodName + "_bookshelf"));

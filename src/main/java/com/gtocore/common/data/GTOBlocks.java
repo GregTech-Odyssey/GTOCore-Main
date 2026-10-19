@@ -905,6 +905,47 @@ public final class GTOBlocks {
             .simpleItem()
             .register();
 
+    public static final BlockEntry<HappyWaterGodStatue> HAPPY_WATER_GOD_STATUE = block("happy_water_god_statue", "无限快乐水之神雕像", HappyWaterGodStatue::new)
+            .initialProperties(() -> net.minecraft.world.level.block.Blocks.QUARTZ_BLOCK)
+            .properties(p -> p.noOcclusion().strength(5, 1200).lightLevel(HappyWaterGodStatue::light))
+            .blockstate((ctx, prov) -> {
+                var top = prov.models().getBuilder("happy_water_god_statue_top").texture("particle", prov.mcLoc("block/quartz_pillar"));
+                var base = prov.models().getBuilder("happy_water_god_statue")
+                        .parent(prov.models().getExistingFile(prov.mcLoc("block/block")))
+                        .texture("particle", prov.mcLoc("block/quartz_pillar"))
+                        .texture("stone", prov.mcLoc("block/polished_blackstone"))
+                        .texture("gold", prov.mcLoc("block/gold_block"))
+                        .texture("pillar", prov.mcLoc("block/quartz_pillar"))
+                        .texture("cap", prov.mcLoc("block/quartz_pillar_top"))
+                        .element().from(0, 0, 0).to(16, 2, 16).allFaces((d, f) -> f.texture("#stone")).end()
+                        .element().from(1, 2, 1).to(15, 3, 15).allFaces((d, f) -> f.texture("#gold")).end()
+                        .element().from(2.5F, 3, 2.5F).to(13.5F, 6, 13.5F).allFaces((d, f) -> f.texture(d.getAxis().isVertical() ? "#cap" : "#pillar")).end()
+                        .element().from(1.5F, 6, 1.5F).to(14.5F, 7, 14.5F).allFaces((d, f) -> f.texture("#gold")).end()
+                        .element().from(1, 7, 1).to(15, 8, 15).allFaces((d, f) -> f.texture("#stone")).end();
+                prov.getVariantBuilder(ctx.get()).forAllStates(st -> ConfiguredModel.builder()
+                        .modelFile(st.getValue(HappyWaterGodStatue.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER ? top : base)
+                        .rotationY(((int) st.getValue(HappyWaterGodStatue.FACING).toYRot() + 180) % 360)
+                        .build());
+            })
+            .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+            .item(HappyWaterGodStatue.StatueItem::new)
+            .properties(p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC))
+            .model((ctx, prov) -> prov.getBuilder(ctx.getName())
+                    .parent(new net.minecraftforge.client.model.generators.ModelFile.UncheckedModelFile("builtin/entity"))
+                    .guiLight(net.minecraft.client.renderer.block.model.BlockModel.GuiLight.SIDE)
+                    .texture("particle", prov.mcLoc("block/quartz_pillar"))
+                    .transforms()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.GUI).rotation(30, 225, 0).scale(0.625F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.GROUND).translation(0, 3, 0).scale(0.25F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.FIXED).scale(0.5F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND).rotation(75, 45, 0).translation(0, 2.5F, 0).scale(0.375F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND).rotation(75, 45, 0).translation(0, 2.5F, 0).scale(0.375F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_RIGHT_HAND).rotation(0, 45, 0).scale(0.4F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_LEFT_HAND).rotation(0, 225, 0).scale(0.4F).end()
+                    .end())
+            .build()
+            .register();
+
     private static void registerPipeBlocks() {
         for (int i = 0; i < HeatPipeType.values().length; ++i) {
             var type = HeatPipeType.values()[i];

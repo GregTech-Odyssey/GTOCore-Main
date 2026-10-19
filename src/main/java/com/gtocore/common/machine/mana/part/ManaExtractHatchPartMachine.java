@@ -46,10 +46,11 @@ public final class ManaExtractHatchPartMachine extends ManaHatchPartMachine {
                 }
 
                 if (level != null && level.getBlockEntity(frontPos) instanceof SourceJarTile jarTile) {
-                    int sourceAmount = jarTile.getSource();
-                    int change = Math.toIntExact(getManaContainer().addMana(ManaUnification.sourceToMana(sourceAmount), 20, false) * 4);
-                    if (change <= 0) return;
-                    SourceUtil.takeSource(frontPos, level, 0, change);
+                    long acceptable = getManaContainer().addMana(ManaUnification.sourceToMana(jarTile.getSource()), 20, true);
+                    int source = (int) ManaUnification.manaToSource(acceptable);
+                    if (source <= 0) return;
+                    getManaContainer().addMana(ManaUnification.sourceToMana(source), 20, false);
+                    SourceUtil.takeSource(frontPos, level, 0, source);
                 }
             }
         }

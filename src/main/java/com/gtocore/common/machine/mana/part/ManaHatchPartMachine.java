@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.mana.part;
 
 import com.gtocore.common.data.GTOTickTimeMonitors;
+import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.ManaDistributorMachine;
@@ -105,13 +106,12 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
                     if (!jarTile.canAcceptSource()) return;
                     int availableSpace = jarTile.getMaxSource() - jarTile.getSource();
                     if (availableSpace > 0) {
-                        int sourceToAdd = Math.min((int) (manaContainer.getCurrentMana() * 4), availableSpace);
-                        if (sourceToAdd > 0) {
-                            long removedMana = manaContainer.removeMana((sourceToAdd + 3) / 4, 20, false);
-                            if (removedMana > 0) {
-                                jarTile.addSource((int) (removedMana * 4));
-                                manaContainer.notifyListeners();
-                            }
+                        long removable = manaContainer.removeMana(ManaUnification.sourceToMana(availableSpace), 20, true);
+                        int source = (int) ManaUnification.manaToSource(removable);
+                        if (source > 0) {
+                            manaContainer.removeMana(ManaUnification.sourceToMana(source), 20, false);
+                            jarTile.addSource(source);
+                            manaContainer.notifyListeners();
                         }
                     }
                     break;

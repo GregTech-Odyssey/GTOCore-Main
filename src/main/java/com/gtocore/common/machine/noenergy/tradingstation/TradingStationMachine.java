@@ -1,12 +1,10 @@
 package com.gtocore.common.machine.noenergy.tradingstation;
 
-import com.gtocore.client.QuestTradeClientIntegration;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.data.transaction.manager.TradeData;
 import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
 import com.gtocore.data.transaction.manager.UnlockManager;
-import com.gtocore.integration.Mods;
 
 import com.gtolib.utils.WalletUtils;
 
@@ -807,13 +805,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             button.disabled(this::locked, null);
             addChild(button);
             addSyncValue(SyncValue.of(this::tooltipLines, TOOLTIP_LINES_CODEC, Collections.emptyList())
-                    .onChanged(lines -> {
-                        List<Component> displayLines = lines;
-                        if (TradingStationMachine.this.isRemote() && Mods.FTBQUESTS.isLoaded()) {
-                            displayLines = QuestTradeClientIntegration.resolveQuestTitles(lines);
-                        }
-                        button.setHoverTooltips(displayLines.toArray(Component[]::new));
-                    }));
+                    .onChanged(lines -> button.setHoverTooltips(lines.toArray(Component[]::new))));
         }
 
         /**

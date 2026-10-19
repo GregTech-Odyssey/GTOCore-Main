@@ -20,15 +20,18 @@ import com.gtocore.common.item.armor.SpaceArmorComponentItem;
 import com.gtocore.common.item.armor.WardenArmorComponentItem;
 import com.gtocore.common.item.devtool.CreativeAllFluidCellItem;
 import com.gtocore.common.item.misc.GrassHarvesterBehaviour;
+import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.lootTables.RewardBagLoot;
-import com.gtocore.integration.ae.SuperSpeedCard;
+import com.gtocore.integration.ae.SpeedCards;
+import com.gtocore.integration.ae.TieredInterfaces;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.quest.QuestBookItem;
 import com.gtolib.utils.StringUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;
 
@@ -89,7 +92,8 @@ public final class GTOItems {
     public static void init() {
         GTOOrganItems.init();
         GTOAEParts.init();
-        SuperSpeedCard.init();
+        SpeedCards.init();
+        TieredInterfaces.init();
         ComponentSlang.init();
         MultiblockSlang.init();
         GTOMachineStories.init();
@@ -419,6 +423,11 @@ public final class GTOItems {
             .model(NonNullBiConsumer.noop())
             .register();
 
+    public static final ItemEntry<QuestBookItem> QUEST_BOOK = item("quest_book", "任务书", QuestBookItem::new)
+            .lang("Quest Book")
+            .properties(p -> p.stacksTo(1))
+            .register();
+
     public static final ItemEntry<Item> GRINDBALL_SOAPSTONE = item("grindball_soapstone", "皂石研磨球")
             .properties(p -> p.stacksTo(1).defaultDurability(50))
             .register();
@@ -509,7 +518,8 @@ public final class GTOItems {
 
     public static final ItemEntry<Item>[] UNIVERSAL_CIRCUIT = registerCircuits("universal_circuit", "通用电路", GTValues.tiersBetween(GTValues.ULV, GTValues.MAX), tier -> Component.translatable("gtocore.tooltip.item.tier_circuit", GTValues.VN[tier]).withStyle(ChatFormatting.AQUA));
 
-    public static final ItemEntry<ComponentItem>[] MYSTERIOUS_BOOST_DRINK = registerMysteriousBoostDrink();
+    public static final ItemEntry<ComponentItem>[] MYSTERIOUS_BOOST_DRINK = OverseerCoke.register(false);
+    public static final ItemEntry<ComponentItem>[] LARGE_MYSTERIOUS_BOOST_DRINK = OverseerCoke.register(true);
 
     public static final ItemEntry<Item> NEUTRON_COIN = item("neutron_coin", "中子素币").model(NonNullBiConsumer.noop()).register();
 
@@ -809,6 +819,7 @@ public final class GTOItems {
     public static final ItemEntry<Item> WYVERN_CORE = register("wyvern_core", "双足飞龙核心");
     public static final ItemEntry<Item> AWAKENED_CORE = register("awakened_core", "觉醒核心");
     public static final ItemEntry<Item> CHAOTIC_CORE = register("chaotic_core", "混沌核心");
+    public static final ItemEntry<Item> HAPPY_WATER_GOD_CORE = register("happy_water_god_core", "无限快乐水之神核心");
     public static final ItemEntry<Item> WYVERN_ENERGY_CORE = register("wyvern_energy_core", "双足飞龙能量核心");
     public static final ItemEntry<Item> DRACONIC_ENERGY_CORE = register("draconic_energy_core", "神龙能量核心");
     public static final ItemEntry<Item> CHAOTIC_ENERGY_CORE = register("chaotic_energy_core", "混沌能量核心");

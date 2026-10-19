@@ -7,6 +7,7 @@ import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.common.data.machines.MultiBlockH;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
+import com.gtocore.integration.ae.TieredInterfaces;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -227,7 +228,7 @@ final class AssemblerA {
 
         ASSEMBLER_RECIPES.builder("me_big_storage_access_hatch")
                 .inputItems(GTAEMachines.ME_STORAGE_ACCESS_HATCH.asItem())
-                .inputItems("expatternprovider:oversize_interface", 16)
+                .inputItems(TieredInterfaces.block(1).asItem(), 16)
                 .inputItems(AEItems.CAPACITY_CARD.asItem(), 32)
                 .inputItems(AEItems.SPEED_CARD.asItem(), 32)
                 .inputItems(GTItems.FIELD_GENERATOR_IV)
@@ -249,7 +250,7 @@ final class AssemblerA {
 
         ASSEMBLER_RECIPES.builder("crafting_cpu_interface")
                 .inputItems(GTMachines.HULL[GTValues.HV].asItem())
-                .inputItems("expatternprovider:oversize_interface")
+                .inputItems(TieredInterfaces.block(1).asItem())
                 .inputItems("ae2:storage_bus", 4)
                 .inputItems(GTItems.EMITTER_HV, 4)
                 .outputItems(GTAEMachines.CRAFTING_CPU_INTERFACE.asItem())

@@ -1,0 +1,6 @@
+{
+  "parent": "gtceu:block/overlay/front_color_ring",
+  "textures": {
+    "overlay": "gtocore:block/overlay/machine/quest_ae_detector"
+  }
+}

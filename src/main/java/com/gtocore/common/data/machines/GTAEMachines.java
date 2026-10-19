@@ -11,6 +11,7 @@ import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.impl.part.CraftingInterfacePartMachine;
+import com.gtolib.quest.QuestAeDetectorMachine;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
@@ -43,6 +44,15 @@ public final class GTAEMachines {
             .allRotation()
             .tips(GTOMachineTooltipsA.virtualIngredientProviderTooltips)
             .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
+
+    public static final MachineDefinition QUEST_AE_DETECTOR = machine("quest_ae_detector", "ME任务检测器", QuestAeDetectorMachine::new)
+            .langValue("ME Quest Detector")
+            .tier(LV)
+            .allRotation()
+            .tips(QuestAeDetectorMachine.tips())
+            .notAllowSharedTooltips()
+            .renderer(() -> new OverlayTieredMachineRenderer(LV, GTOCore.id("block/machine/part/quest_ae_detector")))
             .register();
 
     public static final MachineDefinition CRAFTING_CPU_INTERFACE = machine("crafting_cpu_interface", "合成CPU接口", CraftingInterfacePartMachine::new)

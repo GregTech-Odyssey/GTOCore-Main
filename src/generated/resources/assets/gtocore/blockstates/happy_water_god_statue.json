@@ -1,0 +1,124 @@
+{
+  "variants": {
+    "disco=false,facing=east,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 90
+    },
+    "disco=false,facing=east,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 90
+    },
+    "disco=false,facing=east,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 90
+    },
+    "disco=false,facing=east,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 90
+    },
+    "disco=false,facing=north,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue"
+    },
+    "disco=false,facing=north,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue"
+    },
+    "disco=false,facing=north,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top"
+    },
+    "disco=false,facing=north,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top"
+    },
+    "disco=false,facing=south,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 180
+    },
+    "disco=false,facing=south,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 180
+    },
+    "disco=false,facing=south,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 180
+    },
+    "disco=false,facing=south,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 180
+    },
+    "disco=false,facing=west,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 270
+    },
+    "disco=false,facing=west,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 270
+    },
+    "disco=false,facing=west,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 270
+    },
+    "disco=false,facing=west,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 270
+    },
+    "disco=true,facing=east,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 90
+    },
+    "disco=true,facing=east,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 90
+    },
+    "disco=true,facing=east,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 90
+    },
+    "disco=true,facing=east,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 90
+    },
+    "disco=true,facing=north,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue"
+    },
+    "disco=true,facing=north,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue"
+    },
+    "disco=true,facing=north,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top"
+    },
+    "disco=true,facing=north,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top"
+    },
+    "disco=true,facing=south,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 180
+    },
+    "disco=true,facing=south,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 180
+    },
+    "disco=true,facing=south,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 180
+    },
+    "disco=true,facing=south,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 180
+    },
+    "disco=true,facing=west,half=lower,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 270
+    },
+    "disco=true,facing=west,half=lower,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue",
+      "y": 270
+    },
+    "disco=true,facing=west,half=upper,lit=false": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 270
+    },
+    "disco=true,facing=west,half=upper,lit=true": {
+      "model": "gtocore:block/happy_water_god_statue_top",
+      "y": 270
+    }
+  }
+}

@@ -32,7 +32,8 @@ public enum Mods {
     INVENTORY_ESSENTIALS("inventoryessentials"),
     FTB_XMOD_COMPAT("ftbxmodcompat"),
     RENDER_BLENDER("renderblender"),
-    EMI_TRADES("emitrades"),;
+    EMI_TRADES("emitrades"),
+    TOOLBELT("toolbelt");
 
     @Getter
     private final boolean loaded;

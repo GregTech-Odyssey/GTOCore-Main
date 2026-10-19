@@ -3,6 +3,9 @@ package com.gtocore.data.transaction.data.trade;
 import com.gtocore.api.gui.StackTexture;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.quest.chapter.HvChapter;
+import com.gtocore.data.quest.chapter.LvChapter;
+import com.gtocore.data.quest.chapter.UlvChapter;
 import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
 import com.gtocore.integration.Mods;
@@ -41,10 +44,6 @@ import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
 import static com.gtocore.utils.PlayerHeadUtils.itemStackAddNbtString;
 
 public final class WelfareGroup {
-
-    private static final long LV_ASSEMBLER_QUEST = 0x33B01E889EE7E990L;
-    private static final long MOON_QUEST = 0x310210D2AD9515E3L;
-    private static final long LV_CIRCUIT_QUEST = 0x0FBE7318DFBA700EL;
 
     /**
      * 员工福利兑换中心
@@ -148,10 +147,10 @@ public final class WelfareGroup {
 
         }
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_TANK[LV].asStack(), TECH_OPERATOR_COIN, 24, LV_ASSEMBLER_QUEST));
+                questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_TANK[LV].asStack(), TECH_OPERATOR_COIN, 24, () -> LvChapter.ASSEMBLE_EVERYTHING));
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_CHEST[LV].asStack(), TECH_OPERATOR_COIN, 16, LV_CIRCUIT_QUEST));
+                questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_CHEST[LV].asStack(), TECH_OPERATOR_COIN, 16, () -> UlvChapter.BASIC_ELECTRONIC_CIRCUIT));
 
         {
             ItemStack stack = itemStackAddNbtString(Objects.requireNonNull(GTMaterialItems.TOOL_ITEMS.get(DamascusSteel, GTToolType.MINING_HAMMER)).asStack(),
@@ -222,7 +221,7 @@ public final class WelfareGroup {
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                 questGatedItemTrading(UNLOCK_BASE, RegistriesUtils.getItemStack("ad_astra:large_gas_tank", 1,
-                        "{BotariumData:{StoredFluids:[{Amount:3000L,Fluid:\"ad_astra:oxygen\"}]}}"), TECH_OPERATOR_COIN, 64, MOON_QUEST));
+                        "{BotariumData:{StoredFluids:[{Amount:3000L,Fluid:\"ad_astra:oxygen\"}]}}"), TECH_OPERATOR_COIN, 64, () -> HvChapter.HEAD_TO_THE_MOON));
 
         for (String ore : List.of("iron", "copper", "tin", "coal")) {
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
