@@ -146,11 +146,11 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
             }
             var fluids = getRecipeLogic().getVeinFluids();
             if (!fluids.isEmpty()) {
-                fluids.forEach((fluid, produced) -> {
+                for (var fluid : fluids.keySet()) {
                     Component fluidInfo = fluid.getFluidType().getDescription().copy().withStyle(ChatFormatting.GREEN);
-                    Component amountInfo = Component.literal(FormattingUtil.formatNumbers(produced * getRate()) + " mB/s").withStyle(ChatFormatting.BLUE);
+                    Component amountInfo = Component.literal(FormattingUtil.formatNumbers(getRecipeLogic().getOutputPerSecond(fluid)) + " mB/s").withStyle(ChatFormatting.BLUE);
                     textList.add(Component.translatable("gtocore.machine.advanced_infinite_driller.drilled_fluid", fluidInfo, amountInfo));
-                });
+                }
             } else {
                 Component noFluid = Component.translatable("gtceu.multiblock.fluid_rig.no_fluid_in_area").withStyle(ChatFormatting.RED);
                 textList.add(Component.translatable("gtceu.multiblock.fluid_rig.drilled_fluid", noFluid).withStyle(ChatFormatting.GRAY));

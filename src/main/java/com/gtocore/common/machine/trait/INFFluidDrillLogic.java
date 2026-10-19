@@ -6,28 +6,24 @@ import com.gtolib.api.machine.impl.DrillingControlCenterMachine;
 import com.gtolib.api.machine.trait.IFluidDrillLogic;
 import com.gtolib.api.recipe.RecipeBuilder;
 
-import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.BedrockFluidVeinSavedData;
-import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.FluidVeinWorldEntry;
-import com.gregtechceu.gtceu.api.machine.trait.VeinDrillLogic;
+import com.gregtechceu.gtceu.api.data.worldgen.bedrock.BedrockVeinEntry;
+import com.gregtechceu.gtceu.api.data.worldgen.bedrock.BedrockVeinKind;
+import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.BedrockFluidDefinition;
+import com.gregtechceu.gtceu.api.machine.trait.BedrockVeinDrillLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
+import com.gregtechceu.gtceu.common.machine.trait.FluidDrillLogic;
+import com.gregtechceu.gtceu.uiwidgets.recipe.RecipeIOList;
 
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 
-import org.jetbrains.annotations.Nullable;
+import java.util.List;
 
-public final class INFFluidDrillLogic extends VeinDrillLogic implements IFluidDrillLogic {
+public final class INFFluidDrillLogic extends BedrockVeinDrillLogic<BedrockFluidDefinition> implements IFluidDrillLogic {
 
-    public static final int MAX_PROGRESS = 20;
     private DrillingControlCenterMachine cache;
-    @Nullable
-    private Fluid veinFluid;
-    private static final int parallel = 1;
 
     public INFFluidDrillLogic(INFFluidDrillMachine machine) {
-        super(machine);
+        super(machine, BedrockVeinKind.FLUID);
     }
 
     @Override
@@ -36,52 +32,34 @@ public final class INFFluidDrillLogic extends VeinDrillLogic implements IFluidDr
     }
 
     @Override
-    protected boolean resolveVein(ServerLevel serverLevel) {
-        if (veinFluid == null) {
-            veinFluid = BedrockFluidVeinSavedData.getOrCreate(serverLevel).getFluidInChunk(getChunkX(), getChunkZ());
-        }
-        return veinFluid != null;
+    protected boolean canDrill() {
+        return true;
     }
 
-    @Nullable
     @Override
-    protected GTRecipe buildDrillRecipe() {
-        if (getMachine().getLevel() instanceof ServerLevel serverLevel && veinFluid != null) {
-            var data = BedrockFluidVeinSavedData.getOrCreate(serverLevel);
-            return RecipeBuilder.ofRaw().outputFluids(new FluidStack(veinFluid, getFluidToProduce(data.getFluidVeinWorldEntry(getChunkX(), getChunkZ())))).duration(MAX_PROGRESS).EUt((long) (GTValues.VA[getMachine().getEnergyTier()] * Math.pow(parallel, 1.2))).buildRawRecipe();
-        }
-        return null;
+    protected int rigMultiplier() {
+        return getMachine().getBasis();
     }
 
-    public int getFluidToProduce() {
-        if (getMachine().getLevel() instanceof ServerLevel serverLevel && veinFluid != null) {
-            var data = BedrockFluidVeinSavedData.getOrCreate(serverLevel);
-            return getFluidToProduce(data.getFluidVeinWorldEntry(getChunkX(), getChunkZ()));
-        }
-        return 0;
+    @Override
+    protected int produced(BedrockVeinEntry<BedrockFluidDefinition> entry) {
+        int produced = super.produced(entry);
+        DrillingControlCenterMachine machine = getNetMachine();
+        return machine == null ? produced : (int) (produced * machine.getMultiplier());
     }
 
-    private int getFluidToProduce(FluidVeinWorldEntry entry) {
-        var definition = entry.getDefinition();
-        if (definition != null) {
-            int depletedYield = definition.getDepletedYield();
-            int regularYield = entry.getFluidYield();
-            int remainingOperations = entry.getOperationsRemaining();
-            int produced = Math.max(depletedYield, regularYield * remainingOperations / BedrockFluidVeinSavedData.MAXIMUM_VEIN_OPERATIONS);
-            produced *= getMachine().getBasis();
-            if (isOverclocked()) {
-                produced = produced * 3 / 2;
-            }
-            DrillingControlCenterMachine machine = getNetMachine();
-            if (machine != null) produced = (int) (produced * machine.getMultiplier());
-            return produced;
-        }
-        return 0;
+    @Override
+    protected GTRecipe buildDrillRecipe(BedrockFluidDefinition vein, int amount) {
+        return RecipeBuilder.ofRaw().outputFluids(new FluidStack(vein.fluid(), amount)).duration(MAX_PROGRESS).EUt(drillEUt()).buildRawRecipe();
     }
 
-    private boolean isOverclocked() {
-        return getMachine().getEnergyTier() > getMachine().getTier();
+    @Override
+    protected void addExpectedOutputs(List<RecipeIOList.Entry> outputs, BedrockFluidDefinition vein, int produced) {
+        FluidDrillLogic.expectedOutputs(outputs, vein, produced);
     }
+
+    @Override
+    protected void onDrillFinish() {}
 
     @Override
     public DrillingControlCenterMachine getNetMachineCache() {
@@ -97,10 +75,5 @@ public final class INFFluidDrillLogic extends VeinDrillLogic implements IFluidDr
     public void onMachineUnLoad() {
         super.onMachineUnLoad();
         this.cache = null;
-    }
-
-    @Nullable
-    public Fluid getVeinFluid() {
-        return this.veinFluid;
     }
 }

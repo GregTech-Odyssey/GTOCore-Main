@@ -9,7 +9,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
-import net.minecraft.world.level.Level;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 
 import org.jetbrains.annotations.Nullable;
@@ -25,20 +25,26 @@ public final class BedrockDrillingRigMachine extends ElectricMultiblockMachine {
         return true;
     }
 
+    private BlockPos bedrockPos() {
+        return getPos().offset(0, -9, 0);
+    }
+
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, @Nullable GTRecipeDefinition recipe) {
-        Level level = getLevel();
-        boolean value = false;
-        if (level != null) {
-            value = level.getBlockState(getPos().offset(0, -9, 0)).getBlock() == Blocks.BEDROCK;
-            if (value && GTValues.RNG.nextInt(10) == 1) {
-                level.setBlockAndUpdate(getPos().offset(0, -9, 0), Blocks.AIR.defaultBlockState());
-            }
-        }
-        if (!value) {
+        var level = getLevel();
+        if (level == null || !level.getBlockState(bedrockPos()).is(Blocks.BEDROCK)) {
             IdleReason.NO_BEDROCK.setReason(this);
             return false;
         }
         return super.checkConditions(unit, recipe);
+    }
+
+    @Override
+    public void afterWorking() {
+        super.afterWorking();
+        var level = getLevel();
+        if (level != null && GTValues.RNG.nextInt(10) == 0 && level.getBlockState(bedrockPos()).is(Blocks.BEDROCK)) {
+            level.setBlockAndUpdate(bedrockPos(), Blocks.AIR.defaultBlockState());
+        }
     }
 }
