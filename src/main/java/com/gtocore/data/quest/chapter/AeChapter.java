@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.common.data.machines.OptionalMachine;
+import com.gtocore.data.quest.QuestExternalRefs;
 import com.gtocore.data.quest.QuestTextures;
 import com.gtocore.integration.ae.TieredInterfaces;
 
@@ -968,17 +969,19 @@ public final class AeChapter {
             .requireCount(2)
             .hideDependentLines());
 
-    public static final Quest ME_SIMPLE_PATTERN_BUFFER_EASY = CHAPTER.quest("me_simple_pattern_buffer_easy", q -> q
-            .at(-5, -0.5)
-            .title("ME简单样板总成{（简单）}", GREEN)
-            .subtitle("超前期的样板总成")
-            .desc(d -> d
-                    .line("只在简单模式可用！")
-                    .line()
-                    .line("放入样板并连接ME网络以自动发配合成原料，继承了普通样板总成的所有优化特性"))
-            .task(Task.item(OptionalMachine.ME_SIMPLE_PATTERN_BUFFER))
-            .dependsOn(THE_FIRST_PIECE_OF_THE_AUTO, UtilChapter.Q_056EC4E6, NO_AE_TWEAKS_EASY, LvChapter.LIQUEFACTION_FURNACE)
-            .optional().hideUntilDepsVisible());
+    public static final Quest ME_SIMPLE_PATTERN_BUFFER_EASY = CHAPTER.quest("me_simple_pattern_buffer_easy", q -> {
+        q.at(-5, -0.5)
+                .title("ME简单样板总成{（简单）}", GREEN)
+                .subtitle("超前期的样板总成")
+                .desc(d -> d
+                        .line("只在简单模式可用！")
+                        .line()
+                        .line("放入样板并连接ME网络以自动发配合成原料，继承了普通样板总成的所有优化特性"))
+                .task(Task.item(QuestExternalRefs.optional(() -> OptionalMachine.ME_SIMPLE_PATTERN_BUFFER != null, () -> OptionalMachine.ME_SIMPLE_PATTERN_BUFFER)))
+                .dependsOn(THE_FIRST_PIECE_OF_THE_AUTO, UtilChapter.Q_056EC4E6, NO_AE_TWEAKS_EASY, LvChapter.LIQUEFACTION_FURNACE)
+                .optional().hideUntilDepsVisible();
+        if (OptionalMachine.ME_SIMPLE_PATTERN_BUFFER == null) q.invisible();
+    });
 
     public static final Quest EX_INTERFACE = CHAPTER.quest("ex_interface", q -> q
             .at(-13, 7.5)
