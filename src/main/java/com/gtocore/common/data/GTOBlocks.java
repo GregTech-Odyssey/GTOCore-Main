@@ -890,7 +890,7 @@ public final class GTOBlocks {
             .register();
 
     public static BlockEntry<MinesweeperCoreBlock> MINESWEEPER_CORE = block("minesweeper_core", "扫雷核心方块", MinesweeperCoreBlock::new)
-            .properties(p -> p.mapColor(MapColor.STONE).strength(1.5f).sound(SoundType.STONE))
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.5f).sound(SoundType.STONE).noLootTable())
             .blockstate(NonNullBiConsumer.noop())
             .tag(BlockTags.MINEABLE_WITH_PICKAXE)
             .simpleItem()
@@ -904,7 +904,7 @@ public final class GTOBlocks {
             .blockstate(NonNullBiConsumer.noop())
             .register();
     public static BlockEntry<MinesweeperControlBlock> MINESWEEPER_CONTROL = block("minesweeper_control", "扫雷控制方块", MinesweeperControlBlock::new)
-            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE))
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE).noLootTable())
             .blockstate(NonNullBiConsumer.noop())
             .simpleItem()
             .register();

@@ -34,11 +34,6 @@ public final class MinesweeperRules {
     /** 数字格就是 1~8 本身。 */
     public static final int NUMBER_MIN = 1;
 
-    /** 奖励：找到的雷到这个比例才开始给币。 */
-    public static final int REWARD_MIN_PERCENT = 60;
-    /** 奖励：没找全时最多拿到满额的百分之多少。 */
-    public static final int REWARD_PARTIAL_CAP_PERCENT = 60;
-
     /** 八向邻居的个数：配合 {@link #neighbour} 用。 */
     public static final int DIRECTIONS = 8;
 
@@ -234,15 +229,12 @@ public final class MinesweeperRules {
     }
 
     /**
-     * 本局能兑现多少币：找到的比例低于 {@link #REWARD_MIN_PERCENT}% 不给；60%~100% 之间线性给到满额的
-     * {@link #REWARD_PARTIAL_CAP_PERCENT}%；全找到（或整局通关）给满额。整数运算，不引入浮点误差。
+     * 本局能兑现多少币：只有<b>全部完成</b>才给满额——雷全部找到，或者整局通关（所有非雷格翻开）。
+     * 没走完的一律不给，所以中途重开、提前收摊都拿不到币。
      */
     public static long payout(long maxReward, int foundMines, int mineCount, boolean won) {
         if (mineCount <= 0) return 0;
-        if (won || foundMines >= mineCount) return maxReward;
-        if (foundMines * 100 < mineCount * REWARD_MIN_PERCENT) return 0;
-        // 比例 r = 找到 / 雷数，则 满额 × 60% × (r - 60%) / 40% 展开成整数：满额 × 3 × (5 × 找到 - 3 × 雷数) / (10 × 雷数)
-        return maxReward * 3 * (foundMines * 5L - mineCount * 3L) / (mineCount * 10L);
+        return won || foundMines >= mineCount ? maxReward : 0;
     }
 
     // ==================== 内部实现 ====================

@@ -36,6 +36,10 @@ public class MinesweeperCoreBlockEntity extends BlockEntity {
     private static final String KEY_CELLS = "cells";
     private static final String KEY_SETTLED = "settled";
 
+    /** 踩雷时每颗雷的爆炸威力：踩中的那颗大一点，其余小一点（全盘一起炸，压小免得卡顿）。 */
+    private static final float DEATH_EXPLOSION_POWER = 3.0F;
+    private static final float MINE_EXPLOSION_POWER = 1.5F;
+
     /** 「还没开局」用空数组而不是 null。 */
     private static final boolean[] NO_MINES = new boolean[0];
     private static final int[] NO_CELLS = new int[0];
@@ -68,7 +72,7 @@ public class MinesweeperCoreBlockEntity extends BlockEntity {
                 getBlockState().getValue(MinesweeperCoreBlock.UNFOLDED);
     }
 
-    /** 这一面盘现在能兑现多少币。 */
+    /** 这一面盘现在能兑现多少币（只有全部完成才非 0）。 */
     public long payout() {
         return MinesweeperRules.payout(rules.difficulty().maxReward(), rules.foundMines(mines, cells), rules.mineCount(),
                 rules.isWon(mines, cells));
@@ -131,8 +135,8 @@ public class MinesweeperCoreBlockEntity extends BlockEntity {
         MinesweeperCoreBlock.send(player, net.minecraft.network.chat.Component.translatable(MinesweeperCoreBlock.MSG_RESTARTED));
     }
 
-    /** 收掉盘面（显示方块全拆掉），留着核心方块本身。 */
-    public void cleanup() {
+    /** 只把盘面方块拆掉，不碰核心方块自己的方块状态（拆除核心方块时也必须走这个，否则会把核心方块写回去）。 */
+    public void removeLayout() {
         if (!(getLevel() instanceof ServerLevel serverLevel) || mines.length == 0) return;
         BlockPos core = getBlockPos();
         int width = rules.difficulty().width();
@@ -147,6 +151,11 @@ public class MinesweeperCoreBlockEntity extends BlockEntity {
                 }
             }
         }
+    }
+
+    /** 收掉盘面并把方块状态标回「未铺开」；核心方块本身留着。 */
+    public void cleanup() {
+        removeLayout();
         setUnfolded(false);
     }
 
@@ -160,10 +169,10 @@ public class MinesweeperCoreBlockEntity extends BlockEntity {
     public void close(@Nullable ServerPlayer player) {
         Level level = getLevel();
         BlockPos core = getBlockPos();
-        cleanup();
+        removeLayout();
         if (level instanceof ServerLevel serverLevel) {
-            Block.popResource(serverLevel, core, new ItemStack(GTOBlocks.MINESWEEPER_CORE.get()));
             serverLevel.removeBlock(core, false);
+            Block.popResource(serverLevel, core, new ItemStack(GTOBlocks.MINESWEEPER_CORE.get()));
         }
         MinesweeperCoreBlock.send(player, Component.translatable(MinesweeperCoreBlock.MSG_CLOSED));
     }
@@ -241,15 +250,18 @@ public class MinesweeperCoreBlockEntity extends BlockEntity {
         save();
     }
 
-    /** 踩雷的动静：不破坏方块，只是炸一下。 */
+    /**
+     * 踩雷的动静：<b>所有雷</b>一起炸（踩中的那颗威力大些），每处都有爆炸声、对生物造成伤害与击退，
+     * 但不破坏方块（{@link Level.ExplosionInteraction#NONE} 只影响实体、不动方块）。
+     */
     private void explode() {
         if (!(getLevel() instanceof ServerLevel serverLevel)) return;
-        for (int cell = 0; cell < cells.length; cell++) {
-            if (cells[cell] != MinesweeperRules.DEATH_BOMB) continue;
+        for (int cell = 0; cell < mines.length; cell++) {
+            if (!mines[cell]) continue;
             BlockPos pos = displayPos(cell);
-            serverLevel.explode(null, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 3.0F,
+            float power = cells[cell] == MinesweeperRules.DEATH_BOMB ? DEATH_EXPLOSION_POWER : MINE_EXPLOSION_POWER;
+            serverLevel.explode(null, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, power,
                     Level.ExplosionInteraction.NONE);
-            return;
         }
     }
 

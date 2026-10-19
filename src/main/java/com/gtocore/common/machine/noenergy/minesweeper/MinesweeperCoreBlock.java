@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.minesweeper;
 
 import com.gtocore.common.data.GTOBlockEntities;
+import com.gtocore.common.data.GTOBlocks;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -59,12 +60,15 @@ public class MinesweeperCoreBlock extends Block implements EntityBlock {
     static final String DIFFICULTY_HARD = "gtocore.machine.minesweeper.difficulty.hard";
     @RegisterLanguage(cn = "专家 30×64", en = "Expert 30×64")
     static final String DIFFICULTY_EXPERT = "gtocore.machine.minesweeper.difficulty.expert";
-    @RegisterLanguage(cn = "右键翻开，潜行右键插旗；踩雷或把非雷格全翻开后这一局结束", en = "Right-click to open, sneak-right-click to flag; the board ends when you hit a mine or open every safe cell")
-    static final String TOOLTIP_PLAY = "gtocore.machine.minesweeper.tooltip.play";
-    @RegisterLanguage(cn = "按插对的旗占雷数的比例给币：六成起步，没找全最高拿六成，全找到给满额", en = "Pays by the share of mines you flagged: starts at 60%, caps at 60% of full until you find them all, full payout when you do")
+    @RegisterLanguage(cn = "右击核心方块顶面正中展开棋盘；展开前点顶面左右调整难度",
+                      en = "Right-click the top centre of the core to unfold the board; before unfolding, click the left or right side of the top to adjust the difficulty")
+    static final String TOOLTIP_PLACE = "gtocore.machine.minesweeper.tooltip.place";
+    @RegisterLanguage(cn = "右击方块翻开，潜行右击插旗；旗子最多插到雷数",
+                      en = "Right-click a block to open it, sneak-right-click to flag it; you can flag at most as many cells as there are mines")
+    static final String TOOLTIP_CELL = "gtocore.machine.minesweeper.tooltip.cell";
+    @RegisterLanguage(cn = "通关给奖励：初级 12 / 中级 40 / 高级 120 / 专家 400 币",
+                      en = "Reward on clear: Beginner 12 / Intermediate 40 / Advanced 120 / Expert 400 coins")
     static final String TOOLTIP_PAYOUT = "gtocore.machine.minesweeper.tooltip.payout";
-    @RegisterLanguage(cn = "顶面中心：没铺盘就铺，铺了就重开；顶面左右角：铺盘前切难度", en = "Top centre: place the board, or restart once placed; top corners: switch difficulty before placing")
-    static final String TOOLTIP_DIFFICULTY = "gtocore.machine.minesweeper.tooltip.difficulty";
     /** 难度名字，下标与 {@link MinesweeperRules.Difficulty} 的序数一一对应。 */
     static final String[] DIFFICULTY_NAMES = { DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARD, DIFFICULTY_EXPERT };
     @RegisterLanguage(cn = "%s 雷 · 全找到 %s 币", en = "%s mines · %s coins if all found")
@@ -134,11 +138,22 @@ public class MinesweeperCoreBlock extends Block implements EntityBlock {
         return InteractionResult.SUCCESS;
     }
 
+    /** 玩家手工挖掉核心方块：盘面照旧收干净，并且明确掉一个核心方块（本方块不走战利品表）。 */
+    @Override
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide() && !player.isCreative() &&
+                level.getBlockEntity(pos) instanceof MinesweeperCoreBlockEntity core) {
+            core.removeLayout();
+            Block.popResource(level, pos, new ItemStack(GTOBlocks.MINESWEEPER_CORE.get()));
+        }
+        super.playerWillDestroy(level, pos, state, player);
+    }
+
     /** 核心方块被拆掉时把盘面收干净，免得留一地显示方块。 */
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof MinesweeperCoreBlockEntity core) {
-            core.cleanup();
+            core.removeLayout();
         }
         super.onRemove(state, level, pos, newState, isMoving);
     }
@@ -147,9 +162,9 @@ public class MinesweeperCoreBlock extends Block implements EntityBlock {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Tips.stat(Component.translatable(TOOLTIP_PLAY)));
-        tooltip.add(Tips.stat(Component.translatable(TOOLTIP_PAYOUT)));
-        tooltip.add(Tips.stat(Component.translatable(TOOLTIP_DIFFICULTY)));
+        tooltip.add(Tips.feature(Component.translatable(TOOLTIP_PLACE)));
+        tooltip.add(Tips.feature(Component.translatable(TOOLTIP_CELL)));
+        tooltip.add(Tips.feature(Component.translatable(TOOLTIP_PAYOUT)));
     }
 
     static void send(@Nullable ServerPlayer player, Component message) {
