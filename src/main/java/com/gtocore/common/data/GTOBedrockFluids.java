@@ -522,11 +522,11 @@ public final class GTOBedrockFluids {
     }
 
     public static void addVoid(BedrockFluidDefinition definition) {
-        ResourceKey<Level> dimension = definition.dimensionFilter.iterator().next();
-        if (dimension != VOID || dimension != FLAT || dimension != CREATE) {
-            List<FluidStack> fluidStacks = ALL_BEDROCK_FLUID.computeIfAbsent(dimension, k -> new ArrayList<>());
-            fluidStacks.add(new FluidStack(definition.getStoredFluid().get(), Math.max(1, definition.getMaximumYield() * definition.getWeight())));
-            ALL_BEDROCK_FLUID.put(dimension, fluidStacks);
+        var dimensions = definition.dimensionFilter();
+        if (dimensions == null) return;
+        for (var dimension : dimensions) {
+            if (dimension == VOID || dimension == FLAT || dimension == CREATE) continue;
+            ALL_BEDROCK_FLUID.computeIfAbsent(dimension, k -> new ArrayList<>()).add(new FluidStack(definition.fluid(), Math.max(1, definition.maximumYield() * definition.weight())));
         }
     }
 

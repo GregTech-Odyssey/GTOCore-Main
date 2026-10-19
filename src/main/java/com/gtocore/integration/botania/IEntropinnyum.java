@@ -27,14 +27,11 @@ public interface IEntropinnyum {
                 .filter(f -> f.getMana() == 0)
                 .findFirst();
         if (firstEntropinnyum.isPresent()) {
-            IEntropinnyum entropinnyum = (IEntropinnyum) firstEntropinnyum.get();
-            entropinnyum.gto$fillExceededMaxMana(amount);
+            firstEntropinnyum.get().fillExceedingMaxMana(amount);
             level.playSound(null, center, BotaniaSounds.entropinnyumHappy, SoundSource.BLOCKS);
             level.removeBlock(center, false);
             return true;
         }
         return false;
     }
-
-    void gto$fillExceededMaxMana(int amount);
 }

@@ -84,7 +84,7 @@ public final class ClientWorldLeakFixes {
      * 只在真正退出世界（回标题 / 断线）时清理这两类引用：
      * <ul>
      * <li>Xaero 的 MapProcessor 在换维度、重生时还要继续用，不能跟着 LevelEvent.Unload 清；</li>
-     * <li>Balm 的 ModelBakery 只在资源重载时才会重新赋值，提前清掉会让 getModelBakery() 失效。</li>
+     * <li>Balm 的 ModelBakery 只断开资源重载后残留的旧实例。</li>
      * </ul>
      */
     private static void releaseLogoutOnlyReferences() {
@@ -97,17 +97,16 @@ public final class ClientWorldLeakFixes {
     }
 
     /**
-     * Balm 的静态 {@code ForgeBalmModels.modelBakery} 和 Forge 的 {@code ModelManager.modelBakery}
-     * 指向同一个 ModelBakery（约 70 MB，含 ModelBakery$LoadedJson）；只断一边等于没断。
+     * Forge 的 {@code ModelManager.modelBakery} 在运行时仍被 GTM/LDLib 按需烘焙使用，不能清；
+     * Balm 的静态引用若与当前实例相同则不占额外内存，只有指向旧实例时才断开。
      */
     private static void clearBalmModelBakery() {
         if (!BALM_CLEAR_ENABLED) return;
         ModelBakery bakery = ForgeBalmModelsAccessor.gtocore$getModelBakery();
-        ForgeBalmModelsAccessor.gtocore$setModelBakery(null);
         if (bakery == null) return;
         var manager = Minecraft.getInstance().getModelManager();
-        if (manager != null && ((ModelManagerAccessor) manager).gtocore$getModelBakery() == bakery) {
-            ((ModelManagerAccessor) manager).gtocore$setModelBakery(null);
+        if (manager != null && ((ModelManagerAccessor) manager).gtocore$getModelBakery() != bakery) {
+            ForgeBalmModelsAccessor.gtocore$setModelBakery(null);
         }
     }
 

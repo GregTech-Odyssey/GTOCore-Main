@@ -74,6 +74,6 @@ public final class RunicAltarRecipeBuilder {
         if (output == null) {
             throw new IllegalStateException("No output specified for runic altar recipe");
         }
-        GTRecipes.RECIPE_MAP.put(id, isHeadRecipe ? new HeadRecipe(id, output, mana, ingredients.toArray(new Ingredient[] {})) : new RunicAltarRecipe(id, output, mana, ingredients.toArray(new Ingredient[] {})));
+        GTRecipes.RECIPE_MAP.put(id, isHeadRecipe ? new HeadRecipe(id, output, mana, false, ingredients.toArray(new Ingredient[] {})) : new RunicAltarRecipe(id, output, mana, false, ingredients.toArray(new Ingredient[] {})));
     }
 }

@@ -47,6 +47,7 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.fluid.potion.PotionFluid;
 import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
+import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockOreEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTOreVeinEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
@@ -209,6 +210,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addCategory(OreProcessingEmiCategory.CATEGORY);
         registry.addCategory(GTOreVeinEmiCategory.CATEGORY);
         registry.addCategory(GTBedrockFluidEmiCategory.CATEGORY);
+        registry.addCategory(GTBedrockOreEmiCategory.CATEGORY);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.ORE_EXTRACTION_MODULE);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.BIOENGINEERING_MODULE);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.POLYMER_TWISTING_MODULE);
@@ -235,6 +237,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         OreProcessingEmiCategory.registerDisplays(registry);
         GTOreVeinEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
         GTBedrockFluidEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
+        GTBedrockOreEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
         GTProgrammedCircuitCategory.registerDisplays(registry);
 
         PrimordialReconstructorDisassemblyEmiCategory.register(registry);
@@ -245,6 +248,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTRecipeEMICategory.registerWorkStations(registry);
         GTOreVeinEmiCategory.registerWorkStations(registry);
         GTBedrockFluidEmiCategory.registerWorkStations(registry);
+        GTBedrockOreEmiCategory.registerWorkStations(registry);
         NanitesIntegratedProcessingEmiCategory.registerWorkstations(registry);
         registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.compareNbt());
         registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.compareNbt());

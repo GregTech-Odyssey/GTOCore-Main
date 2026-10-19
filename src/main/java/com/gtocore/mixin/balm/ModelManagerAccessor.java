@@ -11,7 +11,4 @@ public interface ModelManagerAccessor {
 
     @Accessor("modelBakery")
     ModelBakery gtocore$getModelBakery();
-
-    @Accessor("modelBakery")
-    void gtocore$setModelBakery(ModelBakery bakery);
 }

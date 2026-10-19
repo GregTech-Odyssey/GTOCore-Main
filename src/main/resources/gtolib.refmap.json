@@ -465,6 +465,9 @@
     },
     "com/gtocore/mixin/mc/BlockEntityMixin": {
       "loadStatic": "Lnet/minecraft/world/level/block/entity/BlockEntity;m_155241_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+    },
+    "com/gtolib/mixin/mc/entity/FoodDataAccessor": {
+      "saturationLevel": "f_38697_:F"
     }
   },
   "data": {
@@ -934,6 +937,9 @@
       },
       "com/gtocore/mixin/mc/BlockEntityMixin": {
         "loadStatic": "Lnet/minecraft/world/level/block/entity/BlockEntity;m_155241_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+      },
+      "com/gtolib/mixin/mc/entity/FoodDataAccessor": {
+        "saturationLevel": "f_38697_:F"
       }
     }
   }

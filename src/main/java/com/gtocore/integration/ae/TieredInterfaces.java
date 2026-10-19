@@ -298,6 +298,12 @@ public final class TieredInterfaces {
 
     @Deprecated(since = "0.6.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    public static boolean isLegacyId(ResourceLocation id) {
+        return LEGACY_NAMESPACE.equals(id.getNamespace()) && (LEGACY_BLOCK.equals(id.getPath()) || LEGACY_PART.equals(id.getPath()));
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
     public static boolean isLegacy(Object machine) {
         return machine == EPPItemAndBlock.OVERSIZE_INTERFACE || machine == EPPItemAndBlock.OVERSIZE_INTERFACE_PART;
     }

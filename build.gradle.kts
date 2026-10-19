@@ -39,6 +39,7 @@ val parchment_mappings_version = prop("parchment_mappings_version")
 val mixinextras_version = prop("mixinextras_version")
 val taffy_version = prop("taffy_version")
 val ae2_version = prop("ae2_version")
+val botania_version = prop("botania_version")
 val gtceu_version = prop("gtceu_version")
 val datasynclib_version = prop("datasynclib_version")
 val recipeSearch_version = prop("recipeSearch_version")
@@ -216,7 +217,6 @@ repositories {
     maven("https://mvnrepository.com/artifact/com.hollingsworth.ars_nouveau")
     maven("https://maven.bawnorton.com/releases")
     maven("https://maven.enjarai.dev/mirrors")
-    maven("https://maven.blamejared.com/vazkii/botania/Botania/")
     maven("https://maven.twelveiterations.com/repository/maven-public/") { content { includeGroup("net.blay09.mods") } }
     maven("https://neoforged.forgecdn.net/releases")
     maven("https://neoforged.forgecdn.net/mojang-meta")
@@ -310,7 +310,7 @@ dependencies {
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
-    modImplementation("vazkii.botania:Botania:$minecraft_version-455-FORGE")
+    "vazkii.botania:Botania-forge-1.20.1:$botania_version".let { modImplementation(it); jarJar(it) }
     modImplementation("vazkii.patchouli:Patchouli:$minecraft_version-84.1-FORGE")
     modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
     modImplementation("curse.maven:event-wrapper-1256971:7182179")
