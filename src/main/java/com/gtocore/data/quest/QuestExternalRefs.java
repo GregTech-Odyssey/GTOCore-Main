@@ -48,6 +48,7 @@ import umpaz.farmersrespite.common.registry.FRItems;
 import vazkii.patchouli.common.item.PatchouliItems;
 import vectorwing.farmersdelight.common.registry.ModItems;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public final class QuestExternalRefs {
@@ -115,16 +116,20 @@ public final class QuestExternalRefs {
     }
 
     private static OptionalItem optional(Mods mod, Supplier<? extends ItemLike> item) {
+        return optional(mod::isLoaded, item);
+    }
+
+    public static OptionalItem optional(BooleanSupplier available, Supplier<? extends ItemLike> item) {
         return new OptionalItem() {
 
             @Override
             public boolean available() {
-                return mod.isLoaded();
+                return available.getAsBoolean();
             }
 
             @Override
             public Item asItem() {
-                return mod.isLoaded() ? item.get().asItem() : Items.AIR;
+                return available.getAsBoolean() ? item.get().asItem() : Items.AIR;
             }
         };
     }
