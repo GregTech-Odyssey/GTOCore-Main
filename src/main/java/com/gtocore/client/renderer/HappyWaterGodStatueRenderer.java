@@ -3,6 +3,8 @@ package com.gtocore.client.renderer;
 import com.gtocore.common.block.HappyWaterGodStatue;
 import com.gtocore.common.data.GTOBlocks;
 
+import com.gtolib.GTOCore;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -85,6 +87,8 @@ public final class HappyWaterGodStatueRenderer implements BlockEntityRenderer<Ha
     private static final Vector3f[] BEAM_DIRS = sphere(64);
     private static final Component NAMEPLATE = Component.translatable(HappyWaterGodStatue.NAMEPLATE);
     private static final Map<String, Skin> SKINS = new ConcurrentHashMap<>();
+    private static final Map<String, Boolean> BUNDLED_SKINS = Map.of("suriedxinxin", true, "powsdssag", true, "hophenby", true, "alcox233", true,
+            "maple197", true, "bnw_neurs", true, "qwerty54188", true, "ratonhagaton", false);
     private static final Component WARNING = Component.translatable(HappyWaterGodStatue.WARNING).withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
     private static final Component WARNING_DETAIL = Component.translatable(HappyWaterGodStatue.WARNING_DETAIL).withStyle(ChatFormatting.RED);
     private static final Component WARNING_HINT = Component.translatable(HappyWaterGodStatue.WARNING_HINT);
@@ -971,7 +975,11 @@ public final class HappyWaterGodStatueRenderer implements BlockEntityRenderer<Ha
     private static Skin skin(String name) {
         return SKINS.computeIfAbsent(name.toLowerCase(Locale.ROOT), key -> {
             Skin skin = new Skin(name);
-            if (!name.equals(HappyWaterGodStatue.OFFLINE_HELPER)) fetch(name, skin);
+            Boolean bundledSlim = BUNDLED_SKINS.get(key);
+            if (bundledSlim != null) {
+                skin.slim = bundledSlim;
+                skin.texture = GTOCore.id("textures/entity/happy_water_god/" + key + ".png");
+            } else if (!name.equals(HappyWaterGodStatue.OFFLINE_HELPER)) fetch(name, skin);
             return skin;
         });
     }
