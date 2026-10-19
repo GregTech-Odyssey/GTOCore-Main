@@ -21,10 +21,8 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
 import dev.emi.emi.api.stack.EmiStack;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class XModTransferHandlers {
 
@@ -126,7 +124,7 @@ public class XModTransferHandlers {
                     CRAFTING_GRID_HEIGHT, ingredients, ItemStack.EMPTY);
         }
 
-        private Result handlerRecipe(Recipe<?> recipe, CraftingMode mode, Map<Integer, Ingredient> slotToIngredientMap, T menu, int recipeSize, boolean doTransfer, boolean craftMissing) {
+        private Result handlerRecipe(Recipe<?> recipe, CraftingMode mode, Int2ObjectOpenHashMap<Ingredient> slotToIngredientMap, T menu, int recipeSize, boolean doTransfer, boolean craftMissing) {
             var missingSlots = menu.findMissingIngredients(slotToIngredientMap);
             if (missingSlots.missingSlots().size() == slotToIngredientMap.size()) {
                 return new Result.PartiallyCraftable(missingSlots);
@@ -147,16 +145,16 @@ public class XModTransferHandlers {
             EPPNetworkHandler.INSTANCE.sendToServer(new CGenericPacket("set_mode", mode.ordinal()));
         }
 
-        private static Map<Integer, Ingredient> getGuiSlotToIngredientMapPlain(Recipe<?> recipe) {
+        private static Int2ObjectOpenHashMap<Ingredient> getGuiSlotToIngredientMapPlain(Recipe<?> recipe) {
             var inputs = CraftingRecipeUtil.getIngredients(recipe);
-            Map<Integer, Ingredient> ingredientMap = new HashMap<>(inputs.size());
+            var ingredientMap = new Int2ObjectOpenHashMap<Ingredient>(inputs.size());
             for (int i = 0; i < inputs.size(); i++) {
                 ingredientMap.put(i, inputs.get(i));
             }
             return ingredientMap;
         }
 
-        private static Map<Integer, Ingredient> getGuiSlotToIngredientMap(Recipe<?> recipe) {
+        private static Int2ObjectOpenHashMap<Ingredient> getGuiSlotToIngredientMap(Recipe<?> recipe) {
             return EmiUseCraftingRecipeHandler.getGuiSlotToIngredientMap(recipe);
         }
     }

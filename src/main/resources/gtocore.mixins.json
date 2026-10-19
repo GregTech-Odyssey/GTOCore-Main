@@ -29,6 +29,8 @@
     "ae2.screen.PatternProviderScreenMixin",
     "ae2.search.RepoSearchMixin",
     "appbot.ManaRendererMixin",
+    "balm.ForgeBalmModelsAccessor",
+    "balm.ModelManagerAccessor",
     "emi.EmiApiMixin",
     "emi.EmiFavoriteMixin",
     "emi.EmiScreenManagerMixin",
@@ -55,7 +57,9 @@
     "mousetweaks.GuiContainerHandlerMixin",
     "renderblender.WrappedItemModelMixin",
     "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",
-    "sodium.SodiumWorldRendererMixin"
+    "sodium.SodiumWorldRendererMixin",
+    "xaero.MapProcessorMixin",
+    "xaero.WorldDataHandlerMixin"
   ],
   "mixins": [
     "adastra.GasTankItemMixin",

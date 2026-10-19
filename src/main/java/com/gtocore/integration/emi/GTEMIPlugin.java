@@ -79,13 +79,12 @@ import dev.emi.emi.VanillaPlugin;
 import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
+import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.jemi.JemiPlugin;
-import dev.emi.emi.recipe.EmiShapedRecipe;
-import dev.emi.emi.recipe.EmiShapelessRecipe;
 import dev.emi.emi.registry.EmiPluginContainer;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
@@ -338,14 +337,12 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addRecipe(new AlfheimEntryRequirements());
 
         CraftAction.startReloadRegistration();
-        // 合成站收得下工作台的形状/无序配方：EMI 里对着它点 + ，把配方摆到站里的 3x3 上并记进历史
-        CraftAction.registerSupportsRecipe(
-                recipe -> recipe instanceof EmiShapedRecipe || recipe instanceof EmiShapelessRecipe);
+        CraftAction.registerSupportsRecipe(recipe -> recipe instanceof EmiCraftingRecipe);
         CraftAction.registerCanCraftOverride(
                 (recipe, context, simulate) -> {
                     if (!(context.getScreenHandler().getModularUI().holder instanceof CraftingStationMachine machine)) return false;
                     if (recipe.getId() == null) return false;
-                    if (!(recipe instanceof EmiShapedRecipe) && !(recipe instanceof EmiShapelessRecipe)) return false;
+                    if (!(recipe instanceof EmiCraftingRecipe)) return false;
                     if (simulate) return true;
                     machine.requestImport(recipe.getId());
                     return true;
