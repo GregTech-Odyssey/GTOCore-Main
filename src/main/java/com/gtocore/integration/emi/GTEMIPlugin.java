@@ -11,8 +11,6 @@ import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStackSerializer;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
-import com.gtocore.integration.emi.planner.ProductionPlannerGraphUI;
-import com.gtocore.integration.emi.planner.ProductionPlannerUI;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
 import com.gtocore.integration.emi.research.DataScanningEmiRecipe;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
@@ -43,7 +41,6 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.api.item.IGTTool;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeTierPreview;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTFluids;
@@ -91,10 +88,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.jemi.JemiPlugin;
 import dev.emi.emi.registry.EmiPluginContainer;
-import dev.emi.emi.runtime.EmiCraftingToolCompat;
 import dev.emi.emi.screen.EmiScreenManager;
-import dev.emi.emi.screen.ProductionPlannerGraphScreen;
-import dev.emi.emi.screen.ProductionPlannerScreen;
 import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
 import dev.shadowsoffire.apotheosis.ench.compat.EnchJEIPlugin;
 import dev.shadowsoffire.apotheosis.potion.compat.PotionJEIPlugin;
@@ -212,15 +206,6 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
-        ProductionPlannerScreen.setScreenFactory(ProductionPlannerUI::create);
-        ProductionPlannerGraphScreen.setScreenFactory(ProductionPlannerGraphUI::create);
-        EmiCraftingToolCompat.setGtToolSupport(item -> item instanceof IGTTool,
-                stack -> {
-                    if (!stack.isDamageableItem()) return Long.MAX_VALUE;
-                    var tool = (IGTTool) stack.getItem();
-                    int damage = tool.getToolStats().damagePerCraft();
-                    return damage > 0 ? Math.max(0L, (long) stack.getMaxDamage() - stack.getDamageValue()) / damage : 0L;
-                });
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
         registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
 
