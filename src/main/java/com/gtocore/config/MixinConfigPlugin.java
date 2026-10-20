@@ -16,9 +16,6 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtocore.mixin.xaero.")) {
             return Mods.XAERO_WORLDMAP.isLoaded();
         }
-        if (mixinClassName.startsWith("com.gtocore.mixin.emitrades.")) {
-            return Mods.EMI_TRADES.isLoaded();
-        }
         if (mixinClassName.startsWith("com.gtocore.mixin.inventoryessentials.")) {
             return Mods.INVENTORY_ESSENTIALS.isLoaded();
         }

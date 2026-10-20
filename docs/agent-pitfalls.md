@@ -1,6 +1,6 @@
 # Agent 常见坑与协作约定
 
-本文记录在 gtocore-main 里实际踩过的坑与对应的处理办法，以及若干与用户协作时定下的约定。命中「提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、多方块 UI」这类任务时先读本文。Gradle 命令仍须遵守根目录 [AGENTS.md](../AGENTS.md) 的 JDK 21 前置要求。
+本文记录在 gtocore-main 里实际踩过的坑与对应的处理办法，以及若干与用户协作时定下的约定。命中「提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性、多方块 UI」这类任务时先读本文。Gradle 命令仍须遵守根目录 [AGENTS.md](../AGENTS.md) 的 JDK 21 前置要求。
 
 ## 数据生成（runData）
 
@@ -31,6 +31,21 @@
 - `@RegisterLanguage` 只对**带 `@DataGeneratorScanned` / `@Scanned` 的类**生效；嵌套类里的语言常量要**单独**给那个嵌套类加注解，否则键不会生成。
 - 注解值是编译期常量：把 `public static final int` 拼进文案里没问题。
 - 改了文案（Kotlin 工具提示或注解）都要重跑 `runData`，键会跟着内容变哈希。
+
+## 启动与依赖兼容性
+
+### LeanObject 必须禁用 AEKey 功能
+
+当前 GTO AE fork 已内置 AE key 规范化，与 LeanObject 的旧 AEKey Mixin 冲突。运行实例的 `config/leanobject.toml` 必须设置：
+
+```toml
+[features.aeKey]
+enabled = false
+```
+
+- 常规开发实例分别检查 `run/client/config/leanobject.toml`、`run/server/config/leanobject.toml` 和 `run/data/config/leanobject.toml`。
+- 新建实例、重建配置或使用 benchmark / GameTest 等隔离运行目录时，启动前也要检查对应实例的配置；不能假设默认配置已经禁用。
+- 未禁用时，可能因 LeanObject 的 `AEItemKeyMixin` 找不到 `equals` 覆写目标而启动崩溃。先检查上述配置；这是 LeanObject 与当前 AE fork 的配置兼容性问题，不能记成 EMI 烘焙失败。
 
 ## Git 与提交
 

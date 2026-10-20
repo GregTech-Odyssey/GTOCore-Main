@@ -35,11 +35,13 @@ import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.gtm.recipe.editor.CraftAction;
 import com.gtolib.gtm.recipe.editor.GTEmiRecipeHandler;
 import com.gtolib.utils.GTOUtils;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.item.IGTTool;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeTierPreview;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTFluids;
@@ -87,6 +89,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.jemi.JemiPlugin;
 import dev.emi.emi.registry.EmiPluginContainer;
+import dev.emi.emi.runtime.EmiCraftingToolCompat;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
 import dev.shadowsoffire.apotheosis.ench.compat.EnchJEIPlugin;
@@ -110,7 +113,7 @@ import java.util.function.Consumer;
 
 public final class GTEMIPlugin implements EmiPlugin {
 
-    private static final ResourceLocation SCRY_RITUAL = new ResourceLocation("ars_nouveau", "scry_ritual");
+    private static final ResourceLocation SCRY_RITUAL = RLUtils.ars("scry_ritual");
 
     public static void init() {
         RecipeTierPreview.register(ManaTierPreview::of);
@@ -172,9 +175,7 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     private static void addEMIPlugin(Consumer<EmiPluginContainer> list) {
         list.accept(new EmiPluginContainer(new VanillaPlugin(), "emi"));
-        if (GTCEu.isProd()) {
-            list.accept(new EmiPluginContainer(new EMITradesPlugin(), "emitrades"));
-        }
+        list.accept(new EmiPluginContainer(new EMITradesPlugin(), "emitrades"));
         if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
             list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.emi.BackpackEmiPlugin(), "backpack"));
         }
@@ -204,6 +205,13 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
+        EmiCraftingToolCompat.setGtToolSupport(item -> item instanceof IGTTool,
+                stack -> {
+                    if (!stack.isDamageableItem()) return Long.MAX_VALUE;
+                    var tool = (IGTTool) stack.getItem();
+                    int damage = tool.getToolStats().damagePerCraft();
+                    return damage > 0 ? Math.max(0L, (long) stack.getMaxDamage() - stack.getDamageValue()) / damage : 0L;
+                });
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
         registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
 

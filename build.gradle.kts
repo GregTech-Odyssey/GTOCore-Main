@@ -4,6 +4,7 @@ import org.gradle.plugins.ide.eclipse.model.SourceFolder
 import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.zip.ZipFile
 
 plugins {
     idea
@@ -49,7 +50,6 @@ val resourcefulconfig_version = prop("resourcefulconfig_version")
 val botarium_version = prop("botarium_version")
 val ad_astra_version = prop("ad_astra_version")
 val jei_version = prop("jei_version")
-val emi_version = prop("emi_version")
 val curiosVersion = prop("curiosVersion")
 
 version = mod_version
@@ -179,6 +179,12 @@ legacyForge {
 // 每个 run source set 一个重映射依赖桶（modClientRuntimeOnly / modDataRuntimeOnly / modServerRuntimeOnly / modGametestRuntimeOnly）
 (runNames + "gametest").forEach { obfuscation.createRemappingConfiguration(configurations.getByName("${it}RuntimeOnly")) }
 
+// AE fork already ships EMI and EMI Trades; integrations must not pull in another copy.
+configurations.configureEach {
+    exclude(group = "dev.emi", module = "emi-forge")
+    exclude(group = "curse.maven", module = "emi-trades-villager-trading-emi-plugin-735523")
+}
+
 // ---------- 仓库 ----------
 
 repositories {
@@ -306,7 +312,6 @@ dependencies {
     modCompileOnly("mezz.jei:jei-$minecraft_version-forge-api:$jei_version") { isTransitive = false }
     modCompileOnly("mezz.jei:jei-$minecraft_version-common-api:$jei_version") { isTransitive = false }
     modImplementation("mezz.jei:jei-$minecraft_version-forge:$jei_version") { isTransitive = false }
-    modImplementation("dev.emi:emi-forge:$emi_version")
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
@@ -406,7 +411,6 @@ dependencies {
     modCompileOnly("curse.maven:chisel-reborn-551763:6266130")
     modCompileOnly("curse.maven:biomes-o-plenty-220318:6028852")
     modCompileOnly("curse.maven:oh-the-biomes-weve-gone-1070751:8255932")
-    modCompileOnly("curse.maven:emi-trades-villager-trading-emi-plugin-735523:4901194")
     modCompileOnly("curse.maven:athena-841890:5176879")
     modCompileOnly("curse.maven:inventory-essentials-368825:6977231")
     modCompileOnly("curse.maven:balm-531761:6978679")

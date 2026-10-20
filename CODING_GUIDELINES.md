@@ -33,7 +33,7 @@
    - 循环体内的 `break` / `continue` / `return` 直接可用；在同一循环体内多次调用 `it.next()` 需注意每个 `next()` 才推进一次。
 6. **原始容器迭代问题**：如 `IntSet`、原始 `Map` 的 `keyset()` / `values()` 返回的原始容器，用 `for (Type e : set) {}` 增强 for 会调用包装方法，迭代时依然会装箱、分配对象。**应手动使用迭代器或 forEach**，杜绝隐式装箱与分配。
 7. **优先用 EnumMap / EnumSet 处理枚举键。** 本仓大量逻辑围绕枚举状态/类型分发；凡 `Map<Enum,...>` / `Set<Enum>` 一律用 `EnumMap` / `EnumSet`，它们是按序号的数组实现，速度与内存均优于任何哈希容器，且迭代不产生装箱。
-8. **慎用 `Optional`、`stream()`、`.boxed()` 在热路径中。** 热路径（render、tick、机器逻辑高频调用处）**禁止**出现流式链（`stream().map(...).filter(...)`）、`Optional` 链式调用与 `.boxed()`——它们会产生中间对象与装箱。优先用显式 for/while 循环与直接判空。仅在冷路径（配置解析、数据一次性整理）可酌情使用。
+8. **慎用 `Optional`、`stream()`、`.boxed()` 在热路径中。** 热路径（render、tick、机器逻辑高频调用处，以及配方加载/重载中逐配方、逐原料、逐标签反复执行的局部操作）**禁止**出现流式链（`stream().map(...).filter(...)`）、`Optional` 链式调用与 `.boxed()`——它们会产生中间对象与装箱。优先用显式 for/while 循环与直接判空。仅在冷路径（配置解析、数据一次性整理）可酌情使用。
 9. **`hashCode()` 要与 `equals()` 成对且缓存。** 未重写 `equals` 只当 `Map` key/`Set` 元素时，直接用引用语义容器（见术语「引用容器」），别依赖默认 `Object.hashCode()` 走哈希容器形同虚空。自定义哈希对象的 `hashCode()` 若较贵，应在构造后缓存到字段，避免每次寻址重算。
 10. **热路径避免在循环内分配对象。** 高频迭代内禁止 `new`、字符串拼接（用 `StringBuilder`）、创建临时集合。可复用而不复用的局部 `ArrayList`、临时 `Map` 一律提为可复用实例或改用池化/`ThreadLocal`，减少 GC 压力。
 11. **不熟悉/不确定容器行为时，先查 FastCollection 与 fastutil 是否已有更优替代**，再决定用 JDK 原生容器；凡是本仓已确立用法的（如 `AEKeyMap`、OpenCache 系列），跟随既有先例，不要另造轮子。
