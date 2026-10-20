@@ -1,5 +1,6 @@
 package com.gtocore.integration.emi;
 
+import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.biomeswevegone.BYGWoodTypes;
 
@@ -31,6 +32,7 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
         deprecate(RegistriesUtils.getItem("guideme:guide"));
         deprecate(RegistriesUtils.getItem("ars_nouveau:ritual_flight"));
+        deprecate(GTOBlocks.LAURERIL_JAR.asItem());
 
         if (Mods.EFFORTLESS.isLoaded()) {
             deprecate(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));

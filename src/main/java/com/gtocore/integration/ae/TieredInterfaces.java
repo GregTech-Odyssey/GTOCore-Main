@@ -92,7 +92,7 @@ import java.util.Locale;
 import static com.gtolib.api.registries.GTORegistration.GTO;
 
 /**
- * ME 接口分级：(I) 即 AE 接口，(II)~(V) 为 36 槽方块与面板，可堆叠倍率从 4096 起每级 ×64；
+ * ME接口分级：(I) 即 AE 接口，(II)~(V) 为 36 槽方块与面板，可堆叠倍率从 4096 起每级 ×64；
  * 高级接口潜行右键低级接口原地替换并保留配置与存储，ME 超大接口读档时迁为 (II)。
  */
 @DataGeneratorScanned
@@ -107,15 +107,15 @@ public final class TieredInterfaces {
     public static final String SLOTS_KEY = "gtocore.me_interface.slots";
     @RegisterLanguage(cn = "每槽可存放 %s 倍堆叠：物品最多 %s 个，流体最多 %s B", en = "Each slot holds %sx a stack: up to %s items or %s B of fluid")
     public static final String CAPACITY = "gtocore.me_interface.capacity";
-    @RegisterLanguage(cn = "潜行右键同形态的低级 ME 接口或扩展接口可直接替换，保留其配置与存储", en = "Sneak right-click a lower-tier ME Interface or Extended Interface of the same form to replace it, keeping its config and storage")
+    @RegisterLanguage(cn = "潜行右键同形态的低级 ME接口或扩展接口可直接替换，保留其配置与存储", en = "Sneak right-click a lower-tier ME Interface or Extended Interface of the same form to replace it, keeping its config and storage")
     public static final String UPGRADE = "gtocore.me_interface.upgrade";
-    @RegisterLanguage(cn = "已停用，请使用 ME 接口(II)~(V)", en = "Discontinued, please use ME Interface (II)-(V)")
+    @RegisterLanguage(cn = "已停用，请使用 ME接口(II)~(V)", en = "Discontinued, please use ME Interface (II)-(V)")
     public static final String DISCONTINUED = "gtocore.me_interface.discontinued";
-    @RegisterLanguage(cn = "ME 接口(II~V)", en = "ME Interface (II-V)")
+    @RegisterLanguage(cn = "ME接口(II~V)", en = "ME Interface (II-V)")
     public static final String GROUP = "gtocore.me_interface.group";
-    @RegisterLanguage(cn = "ME 接口(I)", en = "ME Interface (I)")
+    @RegisterLanguage(cn = "ME接口(I)", en = "ME Interface (I)")
     public static final String NAME_I_BLOCK = "block.gtocore.me_interface_i";
-    @RegisterLanguage(cn = "ME 接口(I)", en = "ME Interface (I)")
+    @RegisterLanguage(cn = "ME接口(I)", en = "ME Interface (I)")
     public static final String NAME_I_PART = "item.gtocore.cable_me_interface_i";
 
     private static final BlockEntry<InterfaceBlock>[] BLOCKS = new BlockEntry[TIERS];
@@ -141,7 +141,7 @@ public final class TieredInterfaces {
     private static void register(int tier) {
         var roman = SpeedCards.roman(tier);
         var id = "me_interface_" + suffix(tier);
-        var block = BlockRegisterUtils.block(id, "ME 接口(" + roman + ")", p -> new InterfaceBlock(tier))
+        var block = BlockRegisterUtils.block(id, "ME接口(" + roman + ")", p -> new InterfaceBlock(tier))
                 .lang("ME Interface (" + roman + ")")
                 .tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .item((b, p) -> new InterfaceBlockItem(b, p, tier))
@@ -150,7 +150,7 @@ public final class TieredInterfaces {
         BLOCKS[tier] = block;
         TYPES[tier] = GTO.blockEntity(id, InterfaceEntity::new).validBlocks(block).register();
         var partId = "cable_me_interface_" + suffix(tier);
-        PARTS[tier] = ItemRegisterUtils.item(partId, "ME 接口(" + roman + ")", p -> new InterfacePartItem(p, tier))
+        PARTS[tier] = ItemRegisterUtils.item(partId, "ME接口(" + roman + ")", p -> new InterfacePartItem(p, tier))
                 .lang("ME Interface (" + roman + ")")
                 .model((ctx, prov) -> prov.getBuilder(ctx.getName())
                         .parent(new ModelFile.UncheckedModelFile(AppEng.makeId("item/cable_interface")))

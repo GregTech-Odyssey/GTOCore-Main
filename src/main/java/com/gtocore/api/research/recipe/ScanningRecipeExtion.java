@@ -5,7 +5,9 @@ import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.common.item.DataCrystalItem;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.recipe.extension.IPowerLossRefund;
 
+import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.extension.RecipeExtension;
@@ -27,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 @DataGeneratorScanned
-public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.AEKeyDataCrystal> {
+public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.AEKeyDataCrystal> implements IPowerLossRefund {
 
     /** AEKeyDataCrystal 的网络+持久化编解码器（composite 组合，注册在 GTOCodecs.init()）。 */
     public static final DataSyncCodec<AEKeyDataCrystal> AEKEYDATACRYSTAL_CODEC = CombinedCodec.composite(
@@ -65,6 +67,12 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
             holder.output(key, dataCrystal.getCount());
         }
         return true;
+    }
+
+    @Override
+    public void refundOnPowerLoss(IRecipeLogicMachine machine, GTRecipe recipe) {
+        var aeKeyDataCrystal = recipe.data.getData(INSTANCE);
+        if (aeKeyDataCrystal != null) IPowerLossRefund.giveBack(machine, aeKeyDataCrystal.dataCystal().copy());
     }
 
     @Override

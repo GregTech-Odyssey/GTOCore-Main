@@ -84,6 +84,16 @@ final class AssemblerA {
                 .EUt(7)
                 .save();
 
+        ASSEMBLER_RECIPES.builder("advanced_machine_controller_cover")
+                .inputItems(GTItems.COVER_MACHINE_CONTROLLER)
+                .inputItems(CustomTags.LV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Steel, 2)
+                .circuitMeta(19)
+                .outputItems(GTItems.COVER_ADVANCED_MACHINE_CONTROLLER.asItem())
+                .duration(200)
+                .EUt(30)
+                .save();
+
         ASSEMBLER_RECIPES.builder("control_hatch")
                 .inputItems(GTMachines.HULL[GTValues.MV].asItem())
                 .inputItems(GTItems.COVER_MACHINE_CONTROLLER)

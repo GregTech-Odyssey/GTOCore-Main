@@ -20,6 +20,7 @@ import com.gtocore.client.renderer.item.MonitorItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.common.CommonProxy;
+import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
@@ -105,6 +106,7 @@ public final class ClientProxy extends CommonProxy {
         eventBus.addListener(ClientProxy::registerGeometryLoaders);
         eventBus.addListener(ClientProxy::registerMenuScreen);
         eventBus.addListener(ClientProxy::registerItemColors);
+        eventBus.addListener(LaurerilManaPools.Client::registerBlockColors);
         eventBus.addListener(ClientProxy::registerShaders);
         eventBus.addListener(ClientProxy::registerReloadListeners);
         eventBus.addListener(WildcardRecipeTooltip::register);

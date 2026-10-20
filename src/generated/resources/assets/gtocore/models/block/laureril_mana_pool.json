@@ -1,0 +1,9 @@
+{
+  "parent": "botania:block/shapes/mana_pool",
+  "textures": {
+    "bottom": "gtocore:block/laureril_mana_pool_bottom",
+    "inside": "gtocore:block/laureril_mana_pool_inside",
+    "side": "gtocore:block/laureril_mana_pool_side",
+    "top": "gtocore:block/laureril_mana_pool_top"
+  }
+}

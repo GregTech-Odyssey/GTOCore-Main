@@ -77,9 +77,15 @@ public class GTEmiEncodingHelper {
 
     private static @NotNull List<GenericStack> intoGenericStack(@NotNull EmiIngredient ingredient, boolean virtual) {
         if (ingredient.isEmpty() || ingredient instanceof IonEmiStack) return Collections.emptyList();
+        boolean circuits = ingredient instanceof TagEmiIngredient tag && Tags.CIRCUITS_ARRAY.containsKey(tag.key);
+        if (!circuits) {
+            var preferred = EmiTagPreference.get(ingredient);
+            if (preferred != null) {
+                return Collections.singletonList(fromEmiStackVirtualConvertible(preferred, ingredient.getAmount(), virtual));
+            }
+        }
         var stacks = ingredient.getEmiStacks();
         var result = new ObjectArrayList<GenericStack>(stacks.size());
-        boolean circuits = ingredient instanceof TagEmiIngredient tag && Tags.CIRCUITS_ARRAY.containsKey(tag.key);
         for (var stack : stacks) {
             if (circuits && (!(stack instanceof ItemEmiStack item) || !ItemMap.UNIVERSAL_CIRCUITS.contains(item.getKey()))) continue;
             result.add(fromEmiStackVirtualConvertible(stack, ingredient.getAmount(), virtual));

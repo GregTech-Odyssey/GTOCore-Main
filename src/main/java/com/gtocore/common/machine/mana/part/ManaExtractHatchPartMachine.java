@@ -41,11 +41,11 @@ public final class ManaExtractHatchPartMachine extends ManaHatchPartMachine {
                 }
                 var jarTile = findSourceJar(facing);
                 if (jarTile == null) return;
-                long acceptable = getManaContainer().addMana(ManaUnification.sourceToMana(jarTile.getSource()), 20, true);
-                int source = (int) ManaUnification.manaToSource(acceptable);
+                long acceptable = getManaContainer().addMana(ManaUnification.sourceToMana(jarTile.getSourceLong()), 20, true);
+                long source = ManaUnification.manaToSource(acceptable);
                 if (source <= 0) return;
                 getManaContainer().addMana(ManaUnification.sourceToMana(source), 20, false);
-                jarTile.removeSource(source);
+                jarTile.removeSourceLong(source);
             }
         }
     }

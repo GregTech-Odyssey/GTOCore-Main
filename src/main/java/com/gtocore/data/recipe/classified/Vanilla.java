@@ -1144,11 +1144,16 @@ final class Vanilla {
                 "ABA",
                 'A', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Invar), 'B', Items.COMPARATOR, 'C', Items.REPEATER, 'D', GTBlocks.MACHINE_CASING_LV.asItem());
 
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("laureril_source_jar"), GTOBlocks.LAURERIL_JAR.asItem(),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("laureril_mana_pool"), GTOBlocks.LAURERIL_MANA_POOL.asItem(),
+                "AAA",
                 "ABA",
-                "C C",
+                "AAA",
+                'A', new MaterialEntry(TagPrefix.plate, GTOMaterials.Laureril), 'B', RegistriesUtils.getItemStack("botania:mana_pool"));
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_laureril_mana_pool"), GTOBlocks.LARGE_LAURERIL_MANA_POOL.asItem(),
+                "AAA",
                 "ABA",
-                'A', RegistriesUtils.getItem("ars_nouveau:archwood_planks"), 'B', new MaterialEntry(TagPrefix.plateDouble, GTOMaterials.Laureril), 'C', new MaterialEntry(TagPrefix.block, GTOMaterials.BifrostPerm));
+                "AAA",
+                'A', new MaterialEntry(TagPrefix.plateDouble, GTOMaterials.Laureril), 'B', RegistriesUtils.getItemStack("botania:large_mana_pool"));
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("heat_insulation_helmet"), GTOItems.HEAT_INSULATION_HELMET.asItem(),
                 "ABA",
                 "CDC",

@@ -161,14 +161,13 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     /** 输出魔源只送 4 的整数倍，这样扣掉的魔力与送出的魔源严格等价。 */
     private void outputSource(ISourceTile sourceTile) {
         if (sourceTile == this || !sourceTile.canAcceptSource()) return;
-        long space = sourceTile.getMaxSource() - sourceTile.getSource();
+        long space = sourceTile.getMaxSourceLong() - sourceTile.getSourceLong();
         if (space <= 0) return;
         long source = Math.min(space, ManaUnification.manaToSource(manaContainer.getCurrentMana()));
         source -= source % ManaUnification.SOURCE_PER_MANA;
         if (source <= 0) return;
-        int amount = MathUtil.saturatedCast(source);
-        sourceTile.addSource(amount);
-        manaContainer.removeManaUnrestricted(ManaUnification.sourceToMana(amount), false);
+        sourceTile.addSourceLong(source);
+        manaContainer.removeManaUnrestricted(ManaUnification.sourceToMana(source), false);
     }
 
     private static int getMaxMana(ManaReceiver receiver) {
@@ -188,13 +187,23 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     }
 
     @Override
+    public long getTransferRateLong() {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
     public boolean canAcceptSource() {
         return manaContainer.getCurrentMana() < MAX_MANA;
     }
 
     @Override
     public int getSource() {
-        return MathUtil.saturatedCast(ManaUnification.manaToSource(manaContainer.getCurrentMana()));
+        return ISourceTile.clampToInt(getSourceLong());
+    }
+
+    @Override
+    public long getSourceLong() {
+        return ManaUnification.manaToSource(manaContainer.getCurrentMana());
     }
 
     @Override
@@ -203,28 +212,48 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     }
 
     @Override
+    public long getMaxSourceLong() {
+        return ManaUnification.manaToSource(MAX_MANA);
+    }
+
+    @Override
     public void setMaxSource(int maxSource) {}
 
     @Override
     public int setSource(int source) {
+        return ISourceTile.clampToInt(setSourceLong(source));
+    }
+
+    @Override
+    public long setSourceLong(long source) {
         manaContainer.setCurrentMana(ManaUnification.sourceToMana(source));
-        return getSource();
+        return getSourceLong();
     }
 
     @Override
     public int addSource(int source) {
+        return ISourceTile.clampToInt(addSourceLong(source));
+    }
+
+    @Override
+    public long addSourceLong(long source) {
         if (source > 0) manaContainer.addManaUnrestricted(ManaUnification.sourceToMana(source), false);
-        return getSource();
+        return getSourceLong();
+    }
+
+    @Override
+    public int removeSource(int amount) {
+        return ISourceTile.clampToInt(removeSourceLong(amount));
     }
 
     /** 向上取整扣魔力：手出去的魔源绝不会比扣掉的魔力更值钱，不会被套利。 */
     @Override
-    public int removeSource(int amount) {
+    public long removeSourceLong(long amount) {
         if (amount > 0) {
-            long mana = (amount + ManaUnification.SOURCE_PER_MANA - 1L) / ManaUnification.SOURCE_PER_MANA;
+            long mana = amount / ManaUnification.SOURCE_PER_MANA + (amount % ManaUnification.SOURCE_PER_MANA == 0 ? 0 : 1);
             manaContainer.removeManaUnrestricted(mana, false);
         }
-        return getSource();
+        return getSourceLong();
     }
 
     //////////////////////////////////////

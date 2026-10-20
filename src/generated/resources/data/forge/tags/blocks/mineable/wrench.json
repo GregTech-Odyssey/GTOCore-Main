@@ -400,6 +400,8 @@
     "gtocore:phase_stabilization_casing",
     "gtocore:frequency_division_phase_locking_casing",
     "gtocore:laureril_source_jar",
+    "gtocore:standard_laureril_source_jar",
+    "gtocore:large_laureril_source_jar",
     "gtocore:normal_heat_pipe",
     "gtocore:original_bronze_mana_pipe",
     "gtocore:manasteel_mana_pipe",

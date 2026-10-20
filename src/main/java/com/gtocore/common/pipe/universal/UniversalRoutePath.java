@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 
 import appeng.api.storage.MEStorage;
+import appeng.api.storage.StorageAccess;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +41,6 @@ public final class UniversalRoutePath implements IRoutePath<MEStorage> {
 
     @Override
     public @Nullable MEStorage getHandler(Level world) {
-        return UniversalStorages.getStorage(targetPipe.getNeighborBlockEntity(targetFacing), targetFacing.getOpposite());
+        return UniversalStorages.getStorage(targetPipe.getNeighborBlockEntity(targetFacing), targetFacing.getOpposite(), StorageAccess.INSERT);
     }
 }

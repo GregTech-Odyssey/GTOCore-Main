@@ -40,6 +40,27 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
+modId = "gtoutils"
+mandatory = true
+versionRange = "[26.10.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "ars_nouveau"
+mandatory = true
+versionRange = "[4.12.12,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "botania"
+mandatory = true
+versionRange = "[457.2610.9,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "ad_astra"
 mandatory = true
 versionRange = "[1,)"

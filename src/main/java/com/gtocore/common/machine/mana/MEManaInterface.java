@@ -32,15 +32,15 @@ import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
 
-import appbot.ae2.ManaKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
+import com.hollingsworth.arsnouveau.common.compat.ae2.SourceKey;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import gripe._90.arseng.me.key.SourceKey;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
+import vazkii.botania.forge.integration.ae2.ManaKey;
 
 import java.math.BigInteger;
 import java.util.UUID;

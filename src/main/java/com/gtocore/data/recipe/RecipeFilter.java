@@ -286,6 +286,7 @@ public final class RecipeFilter {
         filters.add(RLUtils.ars("wixie_hat"));
         filters.add(RLUtils.ars("agronomic_sourcelink"));
         filters.add(RLUtils.ars("source_jar"));
+        filters.add(RLUtils.ars("large_source_jar"));
         filters.add(RLUtils.ars("relay"));
         filters.add(RLUtils.ars("scribes_table"));
         filters.add(RLUtils.ars("volcanic_sourcelink"));
@@ -457,7 +458,7 @@ public final class RecipeFilter {
         filters.add(RLUtils.fromNamespaceAndPath("effortlessbuilding", "golden_randomizer_bag"));
         filters.add(RLUtils.fromNamespaceAndPath("effortlessbuilding", "diamond_randomizer_bag"));
 
-        filters.add(RLUtils.fromNamespaceAndPath("arseng", "me_source_jar"));
+        filters.add(RLUtils.fromNamespaceAndPath("ars_nouveau", "ae2/me_source_jar"));
         // 去除简单模式下的原版末影珍珠配方
         filters.add(RLUtils.mc("ender_eye"));
 

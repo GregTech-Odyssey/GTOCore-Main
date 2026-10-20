@@ -154,6 +154,9 @@ public final class LangHandler {
         addCNEN("selectWorld.gto_difficulty.current", "与当前游戏难度匹配", "Matches current game difficulty");
         addCNEN("selectWorld.gto_difficulty.not_current", "与当前游戏难度不匹配", "Does not match current game difficulty");
         addCNEN("message.gtocore.custom_recipe.mismatch", "服务器的自定义配方脚本(hash=%s)启用情况与当前客户端不符，无法加入游戏！请确保双方的自定义配方脚本启用情况一致。", "The server's custom recipe script (hash=%s) enabled status does not match the current client and cannot join the game! Please ensure that both parties have the same custom recipe script enabled status.");
+        addCNEN("message.gtocore.ftbq_editmode", "请勿直接编辑已经json格式化的聊天组件任务！", "Please do not directly edit the chat component task that has been formatted in JSON!");
+        addCNEN("message.gtocore.ftbq_editmode.1", "如需编辑，请从github上下载原始任务文件，并放入config/ftbquests/下进行编辑。", "If you need to edit, please download the original task file from GitHub and place it in config/ftbquests/ for editing.");
+        addCNEN("message.gtocore.ftbq_editmode.2", "欢迎向我们提交任何pull request或issue！", "Welcome to submit any pull request or issue to us!");
 
         addCNEN("selectWorld.gto_difficulty.tooltip.easy", "简单模式：游戏流程的各环节（资源获取，制作，自动化等）均有大量简化，游戏难度低。", "Easy Mode: All aspects of the game process (resource acquisition, crafting, automation, etc.) are greatly simplified, making the game easier. ");
         addCNEN("selectWorld.gto_difficulty.tooltip.normal", "普通模式：标准的GTO体验，机制玩法均为默认设定。", "Normal Mode: Standard GTO experience, with all mechanics and gameplay set to default. ");
@@ -329,6 +332,17 @@ public final class LangHandler {
         addCNEN("gtocore.gui.encoding_desc", "§o[Shift + 左击] 将样板存入背包/清空所有已编码样板", "§o[Shift + Click] insert encoding pattern into player inventory / clear all encoded patterns");
 
         addCNEN("gtocore.xaero_waypoint_set", "矿脉", "Ore Vein");
+
+        addCNEN("ftbquests.task.gtocore.technode", "科技节点", "Tech Node");
+        addCNEN("ftbquests.task.gtocore.technode.structure", "设置科技节点", "Set Tech Node");
+        addCNEN("ftbquests.task.gtocore.gtodifficulty", "GTO难度", "GTO Difficulty");
+        addCNEN("ftbquests.task.gtocore.gtodifficulty.difficulty", "难度设置（0=通用，1=简单，2=普通，3=专家）", "Difficulty Setting (0=Generic, 1=Easy, 2=Normal, 3=Expert)");
+        addCNEN("ftbquests.task.gtocore.mod", "模组加载", "Mod Loaded");
+        addCNEN("ftbquests.task.gtocore.mod.modid", "模组ID", "Mod ID");
+        addCNEN("ftbquests.task.gtocore.scheduled", "定时任务", "Scheduled Task");
+        addCNEN("ftbquests.task.gtocore.scheduled.intervalInSeconds", "时间（以秒为单位）", "Time (in seconds)");
+        addCNEN("ftbquests.task.gtocore.scheduled.isInGame", "游戏内时间（设为false则为现实时间）", "In-game time (set to false for real time)");
+        addCNEN("ftbquests.task.gtocore.scheduled.refreshInFixedTime", "以固定时间刷新（例如当时间设为180，即每个3分钟时间间隔仅判定一次完成）", "Refresh in fixed time (for example, when the time is set to 180, it is only judged once every fixed 3-minute time interval)");
 
         addCNEN("affix.apotheosis:ftbu", "连锁", "Chainbound");
         addCNEN("affix.apotheosis:ftbu.suffix", "矿脉爆破", "the Veinseeker");

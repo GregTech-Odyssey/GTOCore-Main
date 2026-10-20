@@ -133,13 +133,13 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
         if (mana < 1) return;
         var jarTile = findSourceJar(facing);
         if (jarTile == null) return;
-        int space = jarTile.canAcceptSource() ? jarTile.getMaxSource() - jarTile.getSource() : 0;
+        long space = jarTile.canAcceptSource() ? jarTile.getMaxSourceLong() - jarTile.getSourceLong() : 0;
         if (space > 0) {
             long available = manaContainer.removeMana(ManaUnification.sourceToMana(space), 20, true);
-            int source = (int) ManaUnification.manaToSource(available);
+            long source = ManaUnification.manaToSource(available);
             if (source > 0) {
                 manaContainer.removeMana(ManaUnification.sourceToMana(source), 20, false);
-                jarTile.addSource(source);
+                jarTile.addSourceLong(source);
             }
         }
     }

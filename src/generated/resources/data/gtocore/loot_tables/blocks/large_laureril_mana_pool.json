@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "conditions": [
+            {
+              "block": "gtocore:large_laureril_mana_pool",
+              "condition": "minecraft:block_state_property",
+              "properties": {
+                "core": "true"
+              }
+            }
+          ],
+          "name": "gtocore:large_laureril_mana_pool"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "gtocore:blocks/large_laureril_mana_pool"
+}
