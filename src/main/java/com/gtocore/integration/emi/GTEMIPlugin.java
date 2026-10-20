@@ -11,6 +11,8 @@ import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStackSerializer;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
+import com.gtocore.integration.emi.planner.ProductionPlannerGraphUI;
+import com.gtocore.integration.emi.planner.ProductionPlannerUI;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
 import com.gtocore.integration.emi.research.DataScanningEmiRecipe;
 import com.gtocore.integration.emi.research.ResearchTagEmiStack;
@@ -91,6 +93,8 @@ import dev.emi.emi.jemi.JemiPlugin;
 import dev.emi.emi.registry.EmiPluginContainer;
 import dev.emi.emi.runtime.EmiCraftingToolCompat;
 import dev.emi.emi.screen.EmiScreenManager;
+import dev.emi.emi.screen.ProductionPlannerGraphScreen;
+import dev.emi.emi.screen.ProductionPlannerScreen;
 import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
 import dev.shadowsoffire.apotheosis.ench.compat.EnchJEIPlugin;
 import dev.shadowsoffire.apotheosis.potion.compat.PotionJEIPlugin;
@@ -205,6 +209,8 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
+        ProductionPlannerScreen.setScreenFactory(ProductionPlannerUI::create);
+        ProductionPlannerGraphScreen.setScreenFactory(ProductionPlannerGraphUI::create);
         EmiCraftingToolCompat.setGtToolSupport(item -> item instanceof IGTTool,
                 stack -> {
                     if (!stack.isDamageableItem()) return Long.MAX_VALUE;
