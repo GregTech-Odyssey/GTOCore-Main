@@ -15,7 +15,7 @@ GTOCore is the unified core mod for GregTech Odyssey. It targets Minecraft 1.20.
 
 This repository publishes the GTOCore source code and resources so that anyone can read, understand, and review the implementation.
 
-Public code under `com.gtocore` is distributed under the repository [LICENSE](LICENSE). gtolib remains a closed-source component.
+Licensing of this repository is governed by the [GregTech Odyssey license statement](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license). gtolib remains a closed-source component.
 
 ## gtolib Closed-Source Statement
 
@@ -60,4 +60,4 @@ The source is public for transparency, so that it can be read and reviewed. A fu
 
 ## License
 
-Public code under `com.gtocore` is distributed under the repository [LICENSE](LICENSE).
+See the [GregTech Odyssey license statement](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license).
