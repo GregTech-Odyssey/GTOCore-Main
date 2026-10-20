@@ -34,8 +34,9 @@ import java.util.UUID;
 /**
  * Thanks to the developers of
  * <a href="https://github.com/castcrafter/travel_anchors">https://github.com/castcrafter/travel_anchors</a> for
- * allowing us to use their code with our license.
- * For their agreements look at doc/license/castcrafter/travel-anchors/license.md in the repo root
+ * allowing Ender IO to use their code under Ender IO's license.
+ * For their agreements see the Ender IO repository:
+ * https://github.com/Team-EnderIO/EnderIO/blob/1.20.1/doc/license/castcrafter/travel-anchors/license.md
  */
 
 public class TravelHandler {

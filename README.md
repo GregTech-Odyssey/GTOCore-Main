@@ -14,7 +14,7 @@ GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和
 
 本仓库公开 GTOCore 的源码与资源，方便大家阅读、了解和审阅实现。
 
-`com.gtocore` 范围内的公开代码依据本仓库 [LICENSE](LICENSE) 发布；gtolib 仍为闭源组件。
+本仓库内容的许可以 [GregTech Odyssey 许可证说明](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README_zh.md#许可证) 为准；gtolib 仍为闭源组件。
 
 ## gtolib 闭源声明
 
@@ -59,4 +59,4 @@ GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，因此
 
 ## 许可证
 
-`com.gtocore` 范围内的公开代码依据本仓库 [LICENSE](LICENSE) 发布。
+见 [GregTech Odyssey 许可证说明](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README_zh.md#许可证)。

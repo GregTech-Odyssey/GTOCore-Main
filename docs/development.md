@@ -84,4 +84,4 @@ Pull Request 请包含：
 
 维护者可能会要求调整实现、补充验证或缩小改动范围。请不要提交来源不明或许可证不兼容的代码与资源。
 
-提交即表示同意按本仓库 [LICENSE](../LICENSE) 发布相应内容。
+提交即表示同意按 [GregTech Odyssey 许可证说明](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README_zh.md#许可证) 发布相应内容。
