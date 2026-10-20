@@ -37,8 +37,6 @@
     "emi.RecipeScreenAccessor",
     "emi.RecipeScreenMixin",
     "emi.RecipeTabMixin",
-    "emitrades.EntityEmiStackMixin",
-    "emitrades.VillagerTradeMixin",
     "ftbu.FTBUltimineClientAccessor",
     "ftbxmodcompat.FTBQuestsJEIIntegrationMixin",
     "gtm.renderer.TagPrefixItemRendererMixin",
