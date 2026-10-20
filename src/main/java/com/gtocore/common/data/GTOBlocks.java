@@ -1,7 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.common.block.*;
-import com.gtocore.common.blockentity.SourceJarBE;
+import com.gtocore.common.block.LaurerilSourceJars;
 import com.gtocore.common.item.HeatPipeBlockItem;
 import com.gtocore.common.item.ManaPipeBlockItem;
 import com.gtocore.common.item.MufflerPipeBlockItem;
@@ -27,38 +27,21 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
-import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.common.data.GTModels;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.DynamicLoot;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
-import net.minecraft.world.level.storage.loot.functions.SetContainerContents;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.client.model.generators.loaders.CompositeModelBuilder;
@@ -67,16 +50,15 @@ import net.minecraftforge.common.util.TransformationHelper;
 
 import com.gto.registrate.util.entry.BlockEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+import com.hollingsworth.arsnouveau.common.block.LargeSourceJar;
 import com.hollingsworth.arsnouveau.common.block.SourceJar;
+import vazkii.botania.common.block.mana.LargeManaPoolBlock;
+import vazkii.botania.common.block.mana.ManaPoolBlock;
 
-import java.util.List;
 import java.util.Locale;
-
-import javax.annotation.Nullable;
 
 import static com.gtocore.common.block.BlockMap.*;
 import static com.gtocore.common.block.GlowingBlock.createStarStone;
-import static com.gtocore.common.data.GTOBlockEntities.SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY;
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static com.gtolib.utils.register.BlockRegisterUtils.*;
 
@@ -847,47 +829,12 @@ public final class GTOBlocks {
                             .end()),
             () -> RenderType::cutoutMipped);
 
-    public static final BlockEntry<Block> LAURERIL_JAR = block("laureril_source_jar", "秘金魔源罐", p -> (Block) new SourceJar(p, "laureril_source_jar") {
+    public static final BlockEntry<SourceJar> LAURERIL_JAR = LaurerilSourceJars.registerLegacy();
+    public static final BlockEntry<SourceJar> STANDARD_LAURERIL_JAR = LaurerilSourceJars.registerStandard();
+    public static final BlockEntry<LargeSourceJar> LARGE_LAURERIL_JAR = LaurerilSourceJars.registerLarge();
 
-        @Override
-        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-            return new SourceJarBE(pos, state);
-        }
-
-        @Override
-        public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-            if (stack.getTag() == null)
-                return;
-            int mana = stack.getTag().getCompound("BlockEntityTag").getInt("source");
-            tooltip.add(Tips.stat(Component.translatable("ars_nouveau.source_jar.fullness", FormattingUtil.formatNumber2Places((mana * 100) / 1e7))));
-        }
-    })
-            .properties(props -> props
-                    .sound(SoundType.STONE)
-                    .strength(50, 2000)
-                    .requiresCorrectToolForDrops()
-                    .mapColor(MapColor.COLOR_BLACK)
-                    .instrument(NoteBlockInstrument.BASEDRUM))
-            .blockstate((ctx, prov) -> {
-                prov.getVariantBuilder(ctx.get()).forAllStates((state) -> {
-                    int fill = Math.min(state.getValue(SourceJar.fill) * 10, 100);
-                    return ConfiguredModel.builder().modelFile(prov.models().singleTexture("laureril_source_jar" + fill, RLUtils.ars("block/source_jar/source_jar" + fill), "2", GTOCore.id("block/laureril_source_jar"))).build();
-                });
-                prov.models().singleTexture("laureril_source_jar", RLUtils.ars("block/source_jar/source_jar0"), "2", GTOCore.id("block/laureril_source_jar"));
-            })
-            .tag(CustomTags.MINEABLE_WITH_WRENCH)
-            .tag(BlockTags.MINEABLE_WITH_PICKAXE)
-            .loot((ctx, prov) -> {
-                ctx.add(prov, LootTable.lootTable().withPool(LootPool.lootPool()
-                        .add(LootItem.lootTableItem(prov.asItem())
-                                .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                        .copy("source", "BlockEntityTag.source"))
-                                .apply(SetContainerContents.setContents(SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY.get()).withEntry(DynamicLoot.dynamicEntry(RLUtils.mc("contents")))))));
-            })
-            .item()
-            .build()
-            .register();
+    public static final BlockEntry<ManaPoolBlock> LAURERIL_MANA_POOL = LaurerilManaPools.registerPool();
+    public static final BlockEntry<LargeManaPoolBlock> LARGE_LAURERIL_MANA_POOL = LaurerilManaPools.registerLarge();
 
     public static BlockEntry<MinesweeperCoreBlock> MINESWEEPER_CORE = block("minesweeper_core", "扫雷核心方块", MinesweeperCoreBlock::new)
             .properties(p -> p.mapColor(MapColor.STONE).strength(1.5f).sound(SoundType.STONE).noLootTable())

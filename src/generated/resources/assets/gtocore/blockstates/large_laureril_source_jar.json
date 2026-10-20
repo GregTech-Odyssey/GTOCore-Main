@@ -1,0 +1,166 @@
+{
+  "variants": {
+    "joined=false,part_x=0,part_y=0,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=0,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=0,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=1,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=1,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=1,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=2,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=2,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=0,part_y=2,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=1,part_y=0,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=1,part_y=0,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/bottom"
+    },
+    "joined=false,part_x=1,part_y=0,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=1,part_y=1,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=1,part_y=1,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/mid"
+    },
+    "joined=false,part_x=1,part_y=1,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=1,part_y=2,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=1,part_y=2,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/top"
+    },
+    "joined=false,part_x=1,part_y=2,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=0,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=0,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=0,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=1,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=1,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=1,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=2,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=2,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=false,part_x=2,part_y=2,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=0,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=0,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=0,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=1,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=1,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=1,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=2,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=2,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=0,part_y=2,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=1,part_y=0,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=1,part_y=0,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/seam"
+    },
+    "joined=true,part_x=1,part_y=0,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=1,part_y=1,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=1,part_y=1,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/mid"
+    },
+    "joined=true,part_x=1,part_y=1,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=1,part_y=2,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=1,part_y=2,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/mid"
+    },
+    "joined=true,part_x=1,part_y=2,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=0,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=0,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=0,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=1,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=1,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=1,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=2,part_z=0": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=2,part_z=1": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    },
+    "joined=true,part_x=2,part_y=2,part_z=2": {
+      "model": "gtocore:block/large_laureril_source_jar/empty"
+    }
+  }
+}

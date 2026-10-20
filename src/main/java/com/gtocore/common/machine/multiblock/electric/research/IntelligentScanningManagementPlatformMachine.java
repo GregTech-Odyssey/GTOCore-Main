@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
@@ -275,6 +276,19 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
         if ((workMode == WorkMode.SCAN_UNLEARNED_ONCE || workMode == WorkMode.SCAN_SELECTED_ONCE) && scanQueue.isEmpty()) {
             getRecipeLogic().setSuspendAfterFinish(true);
         }
+    }
+
+    @Override
+    public void regressRecipe(RecipeLogic recipeLogic) {
+        var recipe = recipeLogic.getLastRecipe();
+        if (GTORules.POWER_LOSS_SHUTDOWN.get() && recipe != null && (workMode == WorkMode.SCAN_UNLEARNED_ONCE || workMode == WorkMode.SCAN_SELECTED_ONCE)) {
+            var data = recipe.data.getData(ScanningRecipeExtion.INSTANCE);
+            if (data != null) {
+                for (var entry : data.aeKeys()) scanQueue.offer(entry.getKey());
+                recipeLogic.setSuspendAfterFinish(false);
+            }
+        }
+        super.regressRecipe(recipeLogic);
     }
 
     private static long eut(long bytesScanned) {

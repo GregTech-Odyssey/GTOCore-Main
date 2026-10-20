@@ -172,6 +172,9 @@ public final class GTEMIPlugin implements EmiPlugin {
         list.accept(new JEIFRPlugin());
         list.accept(new JEIArsNouveauPlugin());
         list.accept(new JEICompat());
+        if (GTCEu.isModLoaded("ftbxmodcompat")) {
+            NotDevCompat.addPlugin(list);
+        }
         if (GTCEu.isModLoaded("calculatoroverlay")) {
             CalculatorOverlay.initJEI(list);
         }

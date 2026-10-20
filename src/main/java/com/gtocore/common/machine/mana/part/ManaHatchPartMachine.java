@@ -96,13 +96,13 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
             var jarTile = findSourceJar(facing);
             if (jarTile == null) return;
             if (!jarTile.canAcceptSource()) return;
-            int availableSpace = jarTile.getMaxSource() - jarTile.getSource();
+            long availableSpace = jarTile.getMaxSourceLong() - jarTile.getSourceLong();
             if (availableSpace > 0) {
                 long removable = manaContainer.removeMana(ManaUnification.sourceToMana(availableSpace), 20, true);
-                int source = (int) ManaUnification.manaToSource(removable);
+                long source = ManaUnification.manaToSource(removable);
                 if (source > 0) {
                     manaContainer.removeMana(ManaUnification.sourceToMana(source), 20, false);
-                    jarTile.addSource(source);
+                    jarTile.addSourceLong(source);
                     manaContainer.notifyListeners();
                 }
             }

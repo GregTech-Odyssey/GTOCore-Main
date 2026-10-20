@@ -101,13 +101,13 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
                 }
             } else if (be instanceof ISourceTile sourceTile) {
                 hasHandler = true;
-                var sourceInTile = sourceTile.getSource();
-                var sourceMissing = getMaxSource() - getSource();
+                var sourceInTile = sourceTile.getSourceLong();
+                var sourceMissing = getMaxSourceLong() - getSourceLong();
                 if (sourceInTile > 0 && sourceMissing > 0) {
-                    int sourceToRemove = (int) Math.min(Math.min(sourceInTile, sourceMissing), ManaUnification.manaToSource(availableMana()));
+                    long sourceToRemove = Math.min(Math.min(sourceInTile, sourceMissing), ManaUnification.manaToSource(availableMana()));
                     if (sourceToRemove > 0) {
-                        sourceTile.removeSource(sourceToRemove);
-                        addSource(sourceToRemove);
+                        sourceTile.removeSourceLong(sourceToRemove);
+                        addSourceLong(sourceToRemove);
                     }
                 }
             }
@@ -164,7 +164,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
-            mana += ManaUnification.sourceToMana(handler.getSource());
+            mana += ManaUnification.sourceToMana(handler.getSourceLong());
         }
         return MathUtil.saturatedCast(mana);
     }
@@ -197,7 +197,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         var delivered = mana - routeMana(net.getNetData(longPos, worldPosition), mana);
         var undelivered = mana - delivered;
         if (undelivered > 0) {
-            var source = (int) ManaUnification.manaToSource(undelivered);
+            var source = ManaUnification.manaToSource(undelivered);
             if (source > 0) {
                 var deliveredSource = source - routeSource(net.getSourceNetData(longPos, worldPosition), source);
                 delivered += MathUtil.saturatedCast(ManaUnification.sourceToMana(deliveredSource));
@@ -236,7 +236,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
-            mana += ManaUnification.sourceToMana(handler.getMaxSource());
+            mana += ManaUnification.sourceToMana(handler.getMaxSourceLong());
         }
         return MathUtil.saturatedCast(mana);
     }
@@ -249,8 +249,13 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     }
 
     @Override
+    public long getTransferRateLong() {
+        return ManaUnification.manaToSource(getNodeData().manaPerSecond());
+    }
+
+    @Override
     public int getTransferRate() {
-        return MathUtil.saturatedCast(ManaUnification.manaToSource(getNodeData().manaPerSecond()));
+        return ISourceTile.clampToInt(getTransferRateLong());
     }
 
     @Override
@@ -272,6 +277,11 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
 
     @Override
     public int getSource() {
+        return ISourceTile.clampToInt(getSourceLong());
+    }
+
+    @Override
+    public long getSourceLong() {
         var net = getManaPipeNet();
         if (net == null) return 0;
         long source = 0;
@@ -279,13 +289,18 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
-            source += handler.getSource();
+            source += handler.getSourceLong();
         }
-        return MathUtil.saturatedCast(source);
+        return source;
     }
 
     @Override
     public int getMaxSource() {
+        return ISourceTile.clampToInt(getMaxSourceLong());
+    }
+
+    @Override
+    public long getMaxSourceLong() {
         var net = getManaPipeNet();
         if (net == null) return 0;
         long source = 0;
@@ -293,7 +308,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
-            source += handler.getMaxSource();
+            source += handler.getMaxSourceLong();
         }
         for (var path : net.getNetData(longPos, worldPosition)) {
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
@@ -301,7 +316,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (handler == null) continue;
             source += ManaUnification.manaToSource(Math.max(0, getMaxMana(handler) - handler.getCurrentMana()));
         }
-        return MathUtil.saturatedCast(source);
+        return source;
     }
 
     @Override
@@ -309,35 +324,50 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
 
     @Override
     public int setSource(int source) {
-        var current = getSource();
-        if (source > current) addSource(source - current);
-        return getSource();
+        return ISourceTile.clampToInt(setSourceLong(source));
+    }
+
+    @Override
+    public long setSourceLong(long source) {
+        var current = getSourceLong();
+        if (source > current) addSourceLong(source - current);
+        return getSourceLong();
     }
 
     @Override
     public int addSource(int source) {
-        if (source <= 0) return getSource();
+        return ISourceTile.clampToInt(addSourceLong(source));
+    }
+
+    @Override
+    public long addSourceLong(long source) {
+        if (source <= 0) return getSourceLong();
         var net = getManaPipeNet();
-        if (net == null) return getSource();
+        if (net == null) return getSourceLong();
         long affordable = ManaUnification.manaToSource(availableMana());
-        if (affordable <= 0) return getSource();
-        if (source > affordable) source = (int) affordable;
+        if (affordable <= 0) return getSourceLong();
+        if (source > affordable) source = affordable;
         var delivered = source - routeSource(net.getSourceNetData(longPos, worldPosition), source);
         var undelivered = source - delivered;
         if (undelivered > 0) {
             var mana = MathUtil.saturatedCast(ManaUnification.sourceToMana(undelivered));
             if (mana > 0) {
                 var deliveredMana = mana - routeMana(net.getNetData(longPos, worldPosition), mana);
-                delivered += (int) ManaUnification.manaToSource(deliveredMana);
+                delivered += ManaUnification.manaToSource(deliveredMana);
             }
         }
         addTransferredMana(ManaUnification.sourceToMana(delivered));
-        return getSource();
+        return getSourceLong();
     }
 
     @Override
     public int removeSource(int amount) {
-        if (amount <= 0) return getSource();
+        return ISourceTile.clampToInt(removeSourceLong(amount));
+    }
+
+    @Override
+    public long removeSourceLong(long amount) {
+        if (amount <= 0) return getSourceLong();
         var net = getManaPipeNet();
         if (net == null) return 0;
         var left = amount;
@@ -346,13 +376,13 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
-            var take = Math.min(left, handler.getSource());
+            var take = Math.min(left, handler.getSourceLong());
             if (take > 0) {
-                handler.removeSource(take);
+                handler.removeSourceLong(take);
                 left -= take;
             }
         }
-        return getSource();
+        return getSourceLong();
     }
 
     private int routeMana(LoopIterator<ManaRoutePath> routes, int mana) {
@@ -370,14 +400,14 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         return Math.max(0, mana);
     }
 
-    private int routeSource(LoopIterator<SourceRoutePath> routes, int source) {
+    private long routeSource(LoopIterator<SourceRoutePath> routes, long source) {
         for (var path : routes) {
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing())) continue;
             var handler = path.getHandler(level);
             if (handler == null || !canAcceptSource(handler)) continue;
-            var canReceive = Math.min(source, handler.getMaxSource() - handler.getSource());
+            var canReceive = Math.min(source, handler.getMaxSourceLong() - handler.getSourceLong());
             if (canReceive > 0) {
-                handler.addSource(canReceive);
+                handler.addSourceLong(canReceive);
                 source -= canReceive;
                 if (source <= 0) return 0;
             }
@@ -390,7 +420,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     }
 
     private static boolean canAcceptSource(ISourceTile sourceTile) {
-        return sourceTile.canAcceptSource() && sourceTile.getSource() < sourceTile.getMaxSource();
+        return sourceTile.canAcceptSource() && sourceTile.getSourceLong() < sourceTile.getMaxSourceLong();
     }
 
     private void updateTransferredState() {

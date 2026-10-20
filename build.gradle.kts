@@ -41,8 +41,10 @@ val mixinextras_version = prop("mixinextras_version")
 val taffy_version = prop("taffy_version")
 val ae2_version = prop("ae2_version")
 val botania_version = prop("botania_version")
+val ars_nouveau_version = prop("ars_nouveau_version")
 val gtceu_version = prop("gtceu_version")
 val datasynclib_version = prop("datasynclib_version")
+val gtoutils_version = prop("gtoutils_version")
 val recipeSearch_version = prop("recipeSearch_version")
 val architectury_version = prop("architectury_version")
 val resourcefullib_version = prop("resourcefullib_version")
@@ -281,6 +283,7 @@ dependencies {
 
     // 全局运行范围
     modImplementation("com.gto:datasynclib-forge-1.20.1:$datasynclib_version")
+    modImplementation("com.gto:gtoutils-forge-1.20.1:$gtoutils_version")
     modImplementation("curse.maven:fast-recipe-search-1406509:8737025")
     modCompileOnly("com.gto.recipesearch:RecipeSearch:$recipeSearch_version")
     implementation("com.gto.fastcollection:FastCollection:26.8.7")
@@ -292,8 +295,6 @@ dependencies {
     // Applied Energistics 2
     modImplementation("org.appliedenergistics:guideme:20.1.13")
     modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
-    modImplementation("curse.maven:applied-botanics-addon-610632:7024180")
-    modImplementation("curse.maven:ars-energistique-905641:5504444")
     modImplementation("curse.maven:ex-pattern-provider-892005:8918777")
     modImplementation("curse.maven:merequester-688367:5689932")
     modImplementation("curse.maven:ae2-toggleable-view-cell-1141472:8054118")
@@ -315,7 +316,7 @@ dependencies {
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
-    "vazkii.botania:Botania-forge-1.20.1:$botania_version".let { modImplementation(it); jarJar(it) }
+    modImplementation("vazkii.botania:Botania-forge-1.20.1:$botania_version")
     modImplementation("vazkii.patchouli:Patchouli:$minecraft_version-84.1-FORGE")
     modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
     modImplementation("curse.maven:event-wrapper-1256971:7182179")
@@ -358,8 +359,8 @@ dependencies {
     modImplementation("curse.maven:spice-of-life-carrot-edition-277616:4888575")
 
     // Ars Nouveau
-    modCompileOnly("com.hollingsworth.ars_nouveau:ars_nouveau-$minecraft_version:4.12.6.256")
-    modRuntimeOnly("curse.maven:ars-nouveau-401955:5894609")
+    modImplementation("com.hollingsworth.ars_nouveau:ars_nouveau-1.20.1-forge-1.20.1:$ars_nouveau_version")
+    modRuntimeOnly("curse.maven:geckolib-388172:8285794")
     modImplementation("curse.maven:ars-meteorites-1278083:7125271")
 
     runtimeMod("curse.maven:open-parties-and-claims-636608:8690609")
@@ -372,8 +373,8 @@ dependencies {
     modRuntimeOnly("curse.maven:xtones-reworked-694231:5907303")
 
     // 客户端与服务端
-    modCompileOnly("curse.maven:ftb-quests-forge-289412:8078538")
-    modCompileOnly("curse.maven:ftb-xmod-compat-889915:6402486")
+    sidedMod("curse.maven:ftb-quests-forge-289412:8078538")
+    sidedMod("curse.maven:ftb-xmod-compat-889915:6402486")
     sidedMod("curse.maven:ftb-teams-forge-404468:7499810")
     sidedMod("curse.maven:sophisticated-backpacks-422301:9083935")
     sidedMod("curse.maven:sophisticated-core-618298:9112479")

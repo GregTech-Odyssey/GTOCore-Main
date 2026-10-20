@@ -43,7 +43,6 @@ import earth.terrarium.adastra.common.registry.ModBlocks;
 import java.util.List;
 
 import static com.direwolf20.buildinggadgets2.setup.Registration.TemplateManager;
-import static vazkii.botania.common.block.BotaniaBlocks.fabulousPool;
 
 public final class GTOItemTooltips {
 
@@ -225,11 +224,8 @@ public final class GTOItemTooltips {
             }));
         }
 
-        setTips(fabulousPool.asItem(), GTOTips.of("fabulous_pool", t -> {
-            t.feature(t.tr("能存一千普通池子的魔力", "Can hold the mana of one thousand regular pools"));
-            t.edition();
-        }));
-        setTips(GTOBlocks.LAURERIL_JAR.asItem(), GTOTips.of("laureril_jar", t -> t.feature(t.tr("能存一千普通罐子的魔源", "Can hold the source of one thousand regular jars"))));
+        setTips(GTOBlocks.STANDARD_LAURERIL_JAR.asItem(), GTOTips.of("standard_laureril_jar", t -> t.feature(t.tr("容量是魔源罐的 8 倍", "Holds 8 times as much source as a Source Jar"))));
+        setTips(GTOBlocks.LARGE_LAURERIL_JAR.asItem(), GTOTips.of("large_laureril_jar", t -> t.feature(t.tr("容量是大型魔源罐的 8 倍", "Holds 8 times as much source as a Large Source Jar"))));
 
         for (Item item : List.of(AEItems.CERTUS_QUARTZ_KNIFE.asItem(), AEItems.NETHER_QUARTZ_KNIFE.asItem())) {
             setTips(item, GTOTips.of(t -> {

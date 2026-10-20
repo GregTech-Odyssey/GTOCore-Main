@@ -137,7 +137,7 @@ public final class TechTreeAutoLayout {
 
     /** 按数据等级分块、块内按深度分列；返回各列的节点（按名称排好的初始顺序）与各块的列范围。 */
     private static TierColumns buildTierColumns(List<TechNode> topoOrder, Reference2IntOpenHashMap<TechNode> depths) {
-        Int2ObjectLinkedOpenHashMap<List<TechNode>> nodesByTier = new Int2ObjectLinkedOpenHashMap<>();
+        Int2ObjectRBTreeMap<List<TechNode>> nodesByTier = new Int2ObjectRBTreeMap<>();
         for (var node : topoOrder) nodesByTier.computeIfAbsent(node.getTier(), ignored -> new ArrayList<>()).add(node);
 
         List<List<TechNode>> nodesByColumn = new ArrayList<>();
@@ -145,19 +145,13 @@ public final class TechTreeAutoLayout {
         IntArrayList tierStarts = new IntArrayList(nodesByTier.size());
         IntArrayList tierEnds = new IntArrayList(nodesByTier.size());
         int columnOffset = 0;
-        for (var it = nodesByTier.int2ObjectEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
-            IntLinkedOpenHashSet tierDepths = new IntLinkedOpenHashSet();
-            for (var node : entry.getValue()) tierDepths.add(depths.getInt(node));
-            Int2IntOpenHashMap localColumns = new Int2IntOpenHashMap();
-            int localColumn = 0;
-            for (var iter = tierDepths.iterator(); iter.hasNext();) {
-                var depth = iter.nextIndex();
-                localColumns.put(depth, localColumn++);
-                nodesByColumn.add(new ArrayList<>());
-            }
-            for (var node : entry.getValue()) nodesByColumn.get(columnOffset + localColumns.get(depths.getInt(node))).add(node);
-            int endColumn = columnOffset + tierDepths.size() - 1;
+        for (var entry : nodesByTier.int2ObjectEntrySet()) {
+            var tierNodes = entry.getValue();
+            int maxDepth = 0;
+            for (var node : tierNodes) maxDepth = Math.max(maxDepth, depths.getInt(node));
+            for (int depth = 0; depth <= maxDepth; depth++) nodesByColumn.add(new ArrayList<>());
+            for (var node : tierNodes) nodesByColumn.get(columnOffset + depths.getInt(node)).add(node);
+            int endColumn = columnOffset + maxDepth;
             for (int column = columnOffset; column <= endColumn; column++) nodesByColumn.get(column).sort(NAME_ORDER);
             tiers.add(entry.getIntKey());
             tierStarts.add(columnOffset);

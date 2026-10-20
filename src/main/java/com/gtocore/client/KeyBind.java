@@ -14,12 +14,9 @@ public final class KeyBind {
             KeyConflictContext.GUI, KeyModifier.CONTROL, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_I, "key.keybinding.gtocore");
     public static final KeyMapping movableHudToggle = new KeyMapping("key.gtocore.movable_hud_toggle",
             InputConstants.KEY_Z, "key.keybinding.gtocore");
-    public static final KeyMapping openQuestBook = new KeyMapping("key.gtocore.open_quest_book",
-            InputConstants.KEY_GRAVE, "key.keybinding.gtocore");
 
     public static void init() {
         KeyMappingRegistry.register(debugInspectKey);
         KeyMappingRegistry.register(movableHudToggle);
-        KeyMappingRegistry.register(openQuestBook);
     }
 }
