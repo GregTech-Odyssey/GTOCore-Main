@@ -14,10 +14,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
+import com.suried.gtoutils.spatial.BlockIndex;
+import com.suried.gtoutils.spatial.BlockRange;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -27,6 +31,7 @@ public class TravelSavedData extends SavedData {
     private static final TravelSavedData CLIENT_INSTANCE = new TravelSavedData();
     public static final String TARGETS = "targets";
     private final Map<BlockPos, ITravelTarget> travelTargets = new HashMap<>();
+    private final BlockIndex<ITravelTarget> targetIndex = new BlockIndex<>();
 
     public TravelSavedData() {}
 
@@ -44,24 +49,33 @@ public class TravelSavedData extends SavedData {
 
     public void loadNBT(CompoundTag nbt) {
         this.travelTargets.clear();
+        this.targetIndex.clear();
         ListTag targets = nbt.getList(TARGETS, Tag.TAG_COMPOUND);
         targets.stream().map(anchorData -> (CompoundTag) anchorData)
                 .map(TravelRegistry::deserialize)
                 .flatMap(Optional::stream)
-                .forEach(target -> travelTargets.put(target.getPos(), target));
+                .forEach(this::putTarget);
     }
 
     public Optional<ITravelTarget> getTravelTarget(BlockPos pos) {
         return Optional.ofNullable(travelTargets.get(pos));
     }
 
-    public Collection<ITravelTarget> getTravelTargets() {
-        return travelTargets.values();
+    public Stream<ITravelTarget> getTravelTargetsInItemRange(BlockPos center) {
+        return getTravelTargetsWithin(center, BlockRange.sphere(TravelHandler.maxTargetRange())).stream()
+                .filter(target -> center.distSqr(target.getPos()) < (long) target.getItem2BlockRange() * target.getItem2BlockRange());
     }
 
-    public Stream<ITravelTarget> getTravelTargetsInItemRange(BlockPos center) {
-        return travelTargets.entrySet().stream().filter(entry -> center.distSqr(entry.getKey()) < entry.getValue().getItem2BlockRange() * entry.getValue().getItem2BlockRange())
-                .map(Map.Entry::getValue);
+    public List<ITravelTarget> getTravelTargetsWithin(BlockPos center, BlockRange range) {
+        if (targetIndex.isEmpty()) return Collections.emptyList();
+        List<ITravelTarget> found = new ArrayList<>();
+        targetIndex.query(center, range, null, found);
+        return found;
+    }
+
+    private void putTarget(ITravelTarget target) {
+        travelTargets.put(target.getPos(), target);
+        targetIndex.put(target.getPos(), target);
     }
 
     public void addTravelTarget(Level level, ITravelTarget target) {
@@ -69,7 +83,7 @@ public class TravelSavedData extends SavedData {
             TravelNetworks.onServerTravelAdded(serverLevel, target);
         }
         if (TravelRegistry.isRegistered(target)) {
-            travelTargets.put(target.getPos(), target);
+            putTarget(target);
         } else {
             GTOCore.LOGGER.warn("Tried to add a not registered TravelTarget to the TravelSavedData with name {}", target);
         }
@@ -80,6 +94,7 @@ public class TravelSavedData extends SavedData {
             TravelNetworks.onServerTravelRemoved(serverLevel, pos);
         }
         travelTargets.remove(pos);
+        targetIndex.remove(pos);
     }
 
     @Override

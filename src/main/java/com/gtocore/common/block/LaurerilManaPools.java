@@ -6,11 +6,19 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
 
+import com.gregtechceu.gtceu.utils.FormattingUtil;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -42,6 +50,8 @@ import vazkii.botania.common.block.mana.ManaPoolBlock;
 import vazkii.botania.common.item.block.LargeManaPoolItem;
 import vazkii.botania.common.item.material.MysticalPetalItem;
 import vazkii.botania.common.lib.BotaniaTags;
+
+import java.util.List;
 
 import static com.gtolib.utils.register.BlockRegisterUtils.block;
 
@@ -149,6 +159,19 @@ public final class LaurerilManaPools {
         }
     }
 
+    private static final class LargeItem extends LargeManaPoolItem {
+
+        private LargeItem(Block block, Item.Properties props) {
+            super(block, props);
+        }
+
+        @Override
+        public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+            tooltip.add(Component.translatable("gtocore.large_laureril_mana_pool.capacity", FormattingUtil.formatNumbers(LARGE_UNIT_CAPACITY)).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("botaniamisc.largePool1").withStyle(ChatFormatting.GRAY));
+        }
+    }
+
     private static ModelFile child(BlockModelProvider models, String name, String parent, String... textures) {
         var builder = models.getBuilder("block/" + name).parent(new ModelFile.UncheckedModelFile(RLUtils.bot("block/" + parent)));
         for (int i = 0; i < textures.length; i += 2) {
@@ -189,8 +212,8 @@ public final class LaurerilManaPools {
                         builder.part().modelFile(rim).rotationY(i * 90).addModel().condition(sides[i], false).end();
                     }
                     for (int i = 0; i < 4; i++) {
-                        builder.part().modelFile(post).rotationY(i * 90).addModel()
-                                .condition(sides[i], true).condition(sides[(i + 1) % 4], true).condition(corners[i], false).end();
+                        builder.part().modelFile(post).rotationY(i * 90).addModel().useOr()
+                                .condition(sides[i], false).condition(sides[(i + 1) % 4], false).condition(corners[i], false).end();
                     }
                 })
                 .tag(BlockTags.MINEABLE_WITH_PICKAXE)
@@ -200,7 +223,7 @@ public final class LaurerilManaPools {
                         .add(LootItem.lootTableItem(prov.asItem())
                                 .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(prov)
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(LargeManaPoolBlock.CORE, true)))))))
-                .item(LargeManaPoolItem::new)
+                .item(LargeItem::new)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTOCore.id("block/" + LARGE_ID)))
                 .build()
                 .register();

@@ -408,6 +408,12 @@ public final class TieredInterfaces {
         }
 
         @Override
+        public void exposedStorageChanged() {
+            var host = getHost();
+            if (host != null) host.partStorageChanged();
+        }
+
+        @Override
         public IPartModel getStaticModels() {
             if (isActive() && isPowered()) return TIER_MODELS[tier][2];
             return isPowered() ? TIER_MODELS[tier][1] : TIER_MODELS[tier][0];

@@ -451,6 +451,8 @@ public final class RecipeFilter {
         filters.add(RLUtils.fromNamespaceAndPath("easy_villagers", "iron_farm"));
         filters.add(RLUtils.fromNamespaceAndPath("easy_villagers", "farmer"));
         filters.add(RLUtils.fromNamespaceAndPath("extrabotany", "feather_of_jingwei"));
+        filters.add(RLUtils.fromNamespaceAndPath("extrabotany", "mana_reader"));
+        filters.add(RLUtils.fromNamespaceAndPath("extrabotany", "dynamic/wand_of_the_forest_extension"));
         filters.add(RLUtils.fromNamespaceAndPath("apotheosis", "sigil_of_withdrawal"));
         filters.add(RLUtils.fromNamespaceAndPath("apotheosis", "salvaging_table"));
 

@@ -33,6 +33,7 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("guideme:guide"));
         deprecate(RegistriesUtils.getItem("ars_nouveau:ritual_flight"));
         deprecate(GTOBlocks.LAURERIL_JAR.asItem());
+        deprecate(RegistriesUtils.getItem("extrabotany:mana_reader"));
 
         if (Mods.EFFORTLESS.isLoaded()) {
             deprecate(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));

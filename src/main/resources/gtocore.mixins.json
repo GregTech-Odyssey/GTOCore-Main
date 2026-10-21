@@ -38,6 +38,7 @@
     "emi.RecipeScreenAccessor",
     "emi.RecipeScreenMixin",
     "emi.RecipeTabMixin",
+    "extrabotany.HUDMixin",
     "ftbu.FTBUltimineClientAccessor",
     "ftbxmodcompat.FTBQuestsJEIIntegrationMixin",
     "ftbxmodcompat.WrappedQuestCacheMixin",

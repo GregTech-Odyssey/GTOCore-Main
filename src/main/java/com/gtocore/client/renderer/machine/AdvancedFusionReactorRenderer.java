@@ -5,12 +5,6 @@ import com.gtocore.common.machine.multiblock.electric.AdvancedFusionReactorMachi
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.client.renderer.machine.WorkableCasingMachineRenderer;
-import com.gregtechceu.gtceu.renderpro.EffectClock;
-import com.gregtechceu.gtceu.renderpro.EffectPalette;
-import com.gregtechceu.gtceu.renderpro.ParticleRing;
-import com.gregtechceu.gtceu.renderpro.RenderProFrame;
-import com.gregtechceu.gtceu.renderpro.RingShape;
-import com.gregtechceu.gtceu.renderpro.RingStyle;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +14,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.suried.gtorenders.effect.EffectClock;
+import com.suried.gtorenders.effect.EffectPalette;
+import com.suried.gtorenders.effect.ParticleRing;
+import com.suried.gtorenders.effect.RenderProFrame;
+import com.suried.gtorenders.effect.RingShape;
+import com.suried.gtorenders.effect.RingStyle;
 
 public final class AdvancedFusionReactorRenderer extends WorkableCasingMachineRenderer {
 

@@ -121,6 +121,7 @@ public class CommonProxy {
     }
 
     private static void init() {
+        GTOBlockEntityIndexes.init();
         IdleReason.init();
         GTOCodecs.init();
         GTOCreativeModeTabs.init();
