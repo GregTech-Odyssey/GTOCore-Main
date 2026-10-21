@@ -121,9 +121,13 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
+        var registered = problems.keySet().toArray(new MetaMachine[0]);
         problems.clear();
+        for (var machine : registered) {
+            if (machine instanceof IIWirelessInteractor<?> interactor) interactor.removeNetMachineCache();
+        }
         core = null;
-        IIWirelessInteractor.removeFromNet(this);
+        IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
     @Override
@@ -131,7 +135,7 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
         super.onUnload();
         problems.clear();
         core = null;
-        IIWirelessInteractor.removeFromNet(this);
+        IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
     public boolean inRange(BlockPos pos) {

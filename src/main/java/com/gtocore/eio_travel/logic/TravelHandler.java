@@ -25,6 +25,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
+import com.suried.gtoutils.spatial.BlockRange;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
@@ -43,6 +44,10 @@ public class TravelHandler {
 
     public static final int MIN_TELEPORTATION_DISTANCE_SQUARED = 25;
     private static final double MAX_AIM_ANGLE = Math.toRadians(15);
+
+    public static int maxTargetRange() {
+        return Math.max(GTOConfig.INSTANCE.travelConfig.itemRange, GTOConfig.INSTANCE.travelConfig.blockRange);
+    }
 
     public static boolean canTeleport(Player player) {
         return canItemTeleport(player) || canBlockTeleport(player);
@@ -309,7 +314,7 @@ public class TravelHandler {
 
         return TravelSavedData
                 .getTravelData(player.level())
-                .getTravelTargets()
+                .getTravelTargetsWithin(anchorPos, BlockRange.box(0, anchorRange + 1, 0))
                 .stream()
                 .filter(target -> target.getPos().getX() == anchorX && target.getPos().getZ() == anchorZ)
                 .filter(target -> target.getPos().getY() > lowerY && target.getPos().getY() < upperY)

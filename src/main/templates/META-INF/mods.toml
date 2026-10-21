@@ -47,6 +47,13 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
+modId = "gtorenders"
+mandatory = true
+versionRange = "[26.10.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "ars_nouveau"
 mandatory = true
 versionRange = "[4.12.12,)"

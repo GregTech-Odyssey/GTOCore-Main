@@ -45,9 +45,17 @@
         "model": "gtocore:block/large_laureril_mana_pool_post"
       },
       "when": {
-        "east": "true",
-        "north": "true",
-        "north_east": "false"
+        "OR": [
+          {
+            "north": "false"
+          },
+          {
+            "east": "false"
+          },
+          {
+            "north_east": "false"
+          }
+        ]
       }
     },
     {
@@ -56,9 +64,17 @@
         "y": 90
       },
       "when": {
-        "east": "true",
-        "south": "true",
-        "south_east": "false"
+        "OR": [
+          {
+            "east": "false"
+          },
+          {
+            "south": "false"
+          },
+          {
+            "south_east": "false"
+          }
+        ]
       }
     },
     {
@@ -67,9 +83,17 @@
         "y": 180
       },
       "when": {
-        "south": "true",
-        "south_west": "false",
-        "west": "true"
+        "OR": [
+          {
+            "south": "false"
+          },
+          {
+            "west": "false"
+          },
+          {
+            "south_west": "false"
+          }
+        ]
       }
     },
     {
@@ -78,9 +102,17 @@
         "y": 270
       },
       "when": {
-        "north": "true",
-        "north_west": "false",
-        "west": "true"
+        "OR": [
+          {
+            "west": "false"
+          },
+          {
+            "north": "false"
+          },
+          {
+            "north_west": "false"
+          }
+        ]
       }
     }
   ]

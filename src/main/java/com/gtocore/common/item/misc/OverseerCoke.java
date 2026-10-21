@@ -1,5 +1,6 @@
 package com.gtocore.common.item.misc;
 
+import com.gtocore.common.data.GTOBlockEntityIndexes;
 import com.gtocore.common.data.GTOEffects;
 
 import com.gtolib.api.GTOValues;
@@ -10,9 +11,9 @@ import com.gtolib.utils.ColorUtils;
 import com.gtolib.utils.TintableModelUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.FoodStats;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -30,6 +31,10 @@ import net.minecraft.world.food.FoodProperties;
 
 import com.gto.registrate.Registrate;
 import com.gto.registrate.util.entry.ItemEntry;
+import com.suried.gtoutils.spatial.BlockRange;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.gregtechceu.gtceu.common.data.GTItems.attach;
 import static com.gtolib.utils.register.ItemRegisterUtils.item;
@@ -115,8 +120,11 @@ public final class OverseerCoke {
     private static void boost(ServerLevel level, BlockPos center, int radius, MobEffectInstance effect) {
         int tier = effect.getAmplifier();
         int spent = 0;
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
-            if (!(MetaMachine.getMachine(level, pos) instanceof WorkableTieredMachine machine)) continue;
+        List<MetaMachineBlockEntity> machines = new ArrayList<>();
+        GTOBlockEntityIndexes.TIERED_WORKABLE_MACHINES.query(level, center, BlockRange.box(radius), null, machines);
+        for (MetaMachineBlockEntity be : machines) {
+            BlockPos pos = be.getBlockPos();
+            WorkableTieredMachine machine = (WorkableTieredMachine) be.getMetaMachine();
             RecipeLogic logic = machine.getRecipeLogic();
             if (!logic.isWorking()) continue;
             GTRecipe recipe = logic.getLastRecipe();

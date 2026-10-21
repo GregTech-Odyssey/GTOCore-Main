@@ -1,14 +1,19 @@
 package com.gtocore.integration.botania;
 
+import com.gtocore.common.data.GTOBlockEntityIndexes;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 
+import com.suried.gtoutils.spatial.BlockOrder;
+import com.suried.gtoutils.spatial.BlockRange;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
+import vazkii.botania.common.block.flower.generating.EntropinnyumBlockEntity;
 import vazkii.botania.common.handler.BotaniaSounds;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 public interface IEntropinnyum {
 
@@ -20,18 +25,20 @@ public interface IEntropinnyum {
         if (level.isClientSide) {
             return false;
         }
-        var firstEntropinnyum = BlockPos.betweenClosedStream(new AABB(center).inflate(RANGE))
-                .map(pos -> level.getBlockEntity(pos, BotaniaFlowerBlocks.ENTROPINNYUM))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .filter(f -> f.getMana() == 0)
-                .findFirst();
-        if (firstEntropinnyum.isPresent()) {
-            firstEntropinnyum.get().fillExceedingMaxMana(amount);
+        List<EntropinnyumBlockEntity> flowers = new ArrayList<>();
+        GTOBlockEntityIndexes.ENTROPINNYUMS.query(level, center, BlockRange.box(RANGE + 1), f -> f.getType() == BotaniaFlowerBlocks.ENTROPINNYUM && f.getMana() == 0 && inScanBox(center, f.getBlockPos()), flowers);
+        if (!flowers.isEmpty()) {
+            BlockOrder.sortBetweenClosed(flowers, EntropinnyumBlockEntity::getBlockPos);
+            flowers.get(0).fillExceedingMaxMana(amount);
             level.playSound(null, center, BotaniaSounds.entropinnyumHappy, SoundSource.BLOCKS);
             level.removeBlock(center, false);
             return true;
         }
         return false;
+    }
+
+    private static boolean inScanBox(BlockPos center, BlockPos pos) {
+        int dx = pos.getX() - center.getX(), dy = pos.getY() - center.getY(), dz = pos.getZ() - center.getZ();
+        return dx >= -RANGE && dx <= RANGE + 1 && dy >= -RANGE && dy <= RANGE + 1 && dz >= -RANGE && dz <= RANGE + 1;
     }
 }
