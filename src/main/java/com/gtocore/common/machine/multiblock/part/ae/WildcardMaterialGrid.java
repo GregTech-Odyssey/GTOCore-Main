@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.api.data.material.MaterialType;
+import com.gtocore.api.gui.AlphaBlendTextureGroup;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
 import com.gtocore.integration.jech.PinYinUtils;
 
@@ -50,7 +51,6 @@ import appeng.hooks.IUnique;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.ByteBufCodecExtends;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -557,10 +557,10 @@ final class WildcardMaterialGrid extends UIElement {
             materialType = MaterialType.get(material);
             int rgb = material.getMaterialRGB();
             hue = java.awt.Color.RGBtoHSB(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, null)[0];
-            icon = new GuiTextureGroup(
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot.png").setColor(material.getMaterialARGB()),
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_secondary.png").setColor(material.getLayerARGB(1)),
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_overlay.png"));
+            icon = new AlphaBlendTextureGroup(
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal.png").setColor(material.getMaterialARGB()),
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal1.png").setColor(material.getLayerARGB(1)),
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal2.png"));
             var registryName = Component.literal(id).withStyle(ChatFormatting.DARK_GRAY);
             var enabled = Component.translatable(ENABLED).withStyle(ChatFormatting.GREEN);
             var disabled = Component.translatable(DISABLED).withStyle(ChatFormatting.RED);
