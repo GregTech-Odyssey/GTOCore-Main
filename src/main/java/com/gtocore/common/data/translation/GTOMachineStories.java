@@ -305,7 +305,7 @@ public final class GTOMachineStories {
     // 等离子冷凝器
     public static final TipSpec PlasmaCondenserTooltips = GTOTips.of("plasma_condenser", t -> {
         t.lore(t.tr("GTO工程师在等离子体控制方面取得重大突破，解决了长期存在的稳定性难题", "GTO engineers made a major breakthrough in plasma control solving long-standing stability issues"));
-        t.lore(t.tr("通过生成极端低温场，成功将高温等离子体冷凝为可操控液态", "Generating extreme cryogenic fields successfully condensing high-temperature plasma into manageable liquid"));
+        t.lore(t.tr("通过生成极端低温场，成功将高温等离子体冷凝为可操控的液态", "Generating extreme cryogenic fields successfully condensing high-temperature plasma into manageable liquid"));
         t.lore(t.tr("这项技术不仅确保了操作安全，还实现了等离子体的高效回收利用", "This technology not only ensures operational safety but also enables efficient recovery of plasma"));
     });
 
@@ -390,7 +390,7 @@ public final class GTOMachineStories {
     public static final TipSpec IsaMillTooltips = GTOTips.of("isa_mill", t -> {
         t.lore(t.tr("这款艾萨1672N号研磨机，虽然有着绿皮外表，但其实完全不环保", "This Isa 1672N grinder, despite its green appearance, is actually not eco-friendly at all"));
         t.lore(t.tr("排风扇总有一些奇怪的气味，也没有几个员工想要触碰那乱成一团的产物", "The exhaust fan always emits strange odors, and few employees want to touch the messy output"));
-        t.lore(t.tr("通过滚珠暴力湿法碾碎一切矿石，但不得不承认它效率高的出奇", "It violently crushes all ores through wet ball milling, but its efficiency is surprisingly high"));
+        t.lore(t.tr("通过滚珠暴力湿法碾碎一切矿石，但不得不承认它效率高得出奇", "It violently crushes all ores through wet ball milling, but its efficiency is surprisingly high"));
         t.lore(t.tr("实验室的科学家们只能捏着鼻子承认：有时候暴力确实能解决问题", "Lab scientists have to admit while holding their noses: sometimes brute force does solve problems"));
     });
 
@@ -404,7 +404,7 @@ public final class GTOMachineStories {
 
     // 中子活化器
     public static final TipSpec NeutronActivatorTooltips = GTOTips.of("neutron_activator", t -> {
-        t.lore(t.tr("有员工观察到特定动能的中子能可以激活原子核", "Employee observed neutrons at specific kinetic energy can activate atomic nuclei"));
+        t.lore(t.tr("有员工观察到特定动能的中子可以激活原子核", "Employee observed neutrons at specific kinetic energy can activate atomic nuclei"));
         t.lore(t.tr("通过精密控制中子流速度，可以使普通材料产生罕见的核反应转化", "Precise neutron velocity control enables rare nuclear reactions in common materials"));
         t.lore(t.tr("董事长听说后，亲自批准研发", "Chairman personally approved after hearing"));
         t.lore(t.tr("如今它已经能以接近光速处理核配方，成为材料活化领域的关键技术", "Now processes nuclear recipes at near-light speed becoming key technology in material activation"));
@@ -518,7 +518,7 @@ public final class GTOMachineStories {
     // 臭氧净化装置
     public static final TipSpec OzonationPurificationUnitTooltips = GTOTips.of("ozonation_purification_unit", t -> {
 
-        t.lore(t.tr("净化水的第二步是偶氮化，这涉及到注入大量的小分子", "The second step of water purification is azonation, which involves injecting a large amount of small molecules"));
+        t.lore(t.tr("净化水的第二步是臭氧化，这涉及到注入大量的小分子", "The second step of water purification is ozonation, which involves injecting a large amount of small molecules"));
         t.lore(t.tr("高反应性臭氧气体的气泡进入水中。这可以去除微量元素污染物，如", "The bubbles of highly reactive ozone gas enter the water. This can remove trace element contaminants such as"));
         t.lore(t.tr("硫、铁和锰，产生不溶的氧化物化合物，然后被过滤掉", "Sulfur, Iron, and Manganese, producing insoluble oxidized compounds, which are then filtered out."));
     });

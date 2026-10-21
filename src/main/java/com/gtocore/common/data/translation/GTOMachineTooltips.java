@@ -285,8 +285,8 @@ public final class GTOMachineTooltips {
         t.supported(t.tr("在夜晚可以凝聚 - 胧华", "Can condense Lunara during nighttime"));
         t.supported(t.tr("在末地可以凝聚 - 虚湮", "Can condense Voidflux in the End"));
         t.penalty(t.tr("在虚空和超平坦可以以较慢的速度凝聚 - 曦煌/胧华", "Can condense Solaris/Lunara at a slower rate in the Void or Superflat"));
-        t.bonus(t.tr("在亚尔夫海姆可以更快的凝聚 - 曦煌/胧华", "Can condense Solaris/Lunara faster in Alfheim"));
-        t.bonus(t.tr("在幽冥可以更快的凝聚 - 虚湮", "Can condense Voidflux faster in the Otherside"));
+        t.bonus(t.tr("在亚尔夫海姆可以更快地凝聚 - 曦煌/胧华", "Can condense Solaris/Lunara faster in Alfheim"));
+        t.bonus(t.tr("在幽冥可以更快地凝聚 - 虚湮", "Can condense Voidflux faster in the Otherside"));
         t.supported(t.tr("在太空可以凝聚 - 星髓", "Can condense Stellarm in the Space"));
         t.requirement(t.tr("运行配方时需要消耗这些能量", "Consumes this energy when processing recipes"));
     });
@@ -301,8 +301,8 @@ public final class GTOMachineTooltips {
         t.supported(t.tr("在夜晚可以凝聚 - 胧华", "Can condense Lunara during nighttime"));
         t.supported(t.tr("在末地可以凝聚 - 虚湮", "Can condense Voidflux in the End"));
         t.penalty(t.tr("在虚空和超平坦可以以较慢的速度凝聚 - 曦煌/胧华", "Can condense Solaris/Lunara at a slower rate in the Void or Superflat"));
-        t.bonus(t.tr("在亚尔夫海姆可以更快的凝聚 - 曦煌/胧华", "Can condense Solaris/Lunara faster in Alfheim"));
-        t.bonus(t.tr("在幽冥可以更快的凝聚 - 虚湮", "Can condense Voidflux faster in the Otherside"));
+        t.bonus(t.tr("在亚尔夫海姆可以更快地凝聚 - 曦煌/胧华", "Can condense Solaris/Lunara faster in Alfheim"));
+        t.bonus(t.tr("在幽冥可以更快地凝聚 - 虚湮", "Can condense Voidflux faster in the Otherside"));
         t.supported(t.tr("在太空可以凝聚 - 星髓", "Can condense Stellarm in the Space"));
         t.requirement(t.tr("运行配方时需要消耗这些能量", "Consumes this energy when processing recipes"));
     });
@@ -609,7 +609,7 @@ public final class GTOMachineTooltips {
         t.line(TipRole.SUMMARY, t.tr("代理多个流体或物品存储器", "Proxy (a or multi) (fluid or item or both)storage"));
         t.control(t.tr("使用§b坐标信息卡§r绑定方块", "Use the §bCoordinate Card§r to bind a storage block"));
         t.feature(t.tr("绑定某方块后，对此机器进行物品或流体操作视同对被绑定的方块操作", "Bind a storage to this machine to operate it as if it were the bound storage"));
-        t.feature(t.tr("若绑定多个方块，则依序对他们操作", "Operate them in order if bind multiple storages"));
+        t.feature(t.tr("若绑定多个方块，则依序对它们操作", "Operate them in order if bind multiple storages"));
         t.rightClick(t.tr("右键点击以打开界面", "Right click to open the interface"));
         t.feature(t.tr("对装配线自动化很好用", "Good for assembly line automation"));
     });
@@ -1300,13 +1300,13 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec AdvancedInfiniteDrillerTooltips = GTOTips.of("advanced_infinite_driller", t -> {
-        t.lore(t.tr("利用维度技术和坚不可摧的钻头无情的抽取星球的每一分血液", "Using dimensional technology and indestructible drills, they relentlessly extract every drop of blood from the planet."));
+        t.lore(t.tr("利用维度技术和坚不可摧的钻头无情地抽取星球的每一分血液", "Using dimensional technology and indestructible drills, they relentlessly extract every drop of blood from the planet."));
         t.heading(t.tr("启动与温控", "Startup & Thermal Control"));
         t.requirement(t.tr("需要升温启动，可通入液态烈焰或液态炽骨立方", "Requires heating to start, input Liquid Blaze or Liquid Blazecube"));
         t.formula(t.tr("升温材料消耗公式(单位：mB): 温度^1.3", "Heating material consumption formula(unit: mB): Temperature^1.3"));
         t.statText(t.tr("升温速度：(每5tick) 液态烈焰：1K / 每次输入，液态炽骨立方：1000K / 每次输入", "Heating speed: (every 5 ticks) Liquid Blaze: 1K / per input, Liquid Blazecube: 1000K / per input"));
         t.bonus(t.tr("随着温度提升，效率也会提升", "Higher temperature will give higher efficiency"));
-        t.warning(t.tr("当温度超过临界值，钻头将会融毁", "If the machine overheats, drill head will melt"));
+        t.warning(t.tr("当温度超过临界值，钻头将会熔毁", "If the machine overheats, drill head will melt"));
         t.formula(t.tr("产热公式: 温度 / 2000", "Heat generation formula: Temperature / 2000"));
         t.heading(t.tr("冷却系统", "Cooling System"));
         t.statText(t.tr("冷却固定消耗(每5tick): 20B", "Fixed cooling consumption(every 5 ticks): 20B"));
@@ -1601,7 +1601,7 @@ public final class GTOMachineTooltips {
         t.feature(ComponentSlang.PurifyLevel(6));
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("在操作过程中，需要更换透镜仓内的透镜", "During operation, you need replace the Lens in the lens chamber."));
-        t.feature(t.tr("当当前透镜需要更换时，多方块结构将通过透镜指示仓输出信号", "When the current Lens needs to be replaced, the multi-block structure will output a signal through the Lens indicator chamber."));
+        t.feature(t.tr("当前透镜需要更换时，多方块结构将通过透镜指示仓输出信号", "When the current Lens needs to be replaced, the multi-block structure will output a signal through the Lens indicator chamber."));
         t.feature(t.tr("透镜更换请求将在6到12秒的随机间隔内出现", "Lens replacement requests will occur at random intervals between 6 and 12 seconds."));
         t.requirement(t.tr("需要在信号输出后的4秒内更换透镜", "The lens must be replaced within 4 seconds of the signal output."));
         t.feature(t.tr("透镜顺序依次为红/橙/棕/黄/绿/青/蓝/紫/品红/粉", "The lens order is Red/Orange/Brown/Yellow/Green/Cyan/Blue/Purple/Magenta/Pink."));
@@ -1732,7 +1732,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("中子通量越高，堆升温速率越大", "The higher the neutron flux, the faster the pile heats up"));
         t.feature(t.tr("输入石墨粉可吸收中子通量", "Inputting Graphite Dust can absorb neutron flux"));
         t.feature(t.tr("输入冷却剂可降低温度", "Inputting coolant can lower the temperature"));
-        t.warning(t.tr("温度超过2098K时配方失败，输出(一点可怜的)核废料，燃料组件方块全部融毁", "If the temperature exceeds 2098K, the recipe fails, outputs waste, and all fuel component blocks melt."));
+        t.warning(t.tr("温度超过2098K时配方失败，输出(一点可怜的)核废料，燃料组件方块全部熔毁", "If the temperature exceeds 2098K, the recipe fails, outputs waste, and all fuel component blocks melt."));
         t.heading(t.tr("配方相关", "Recipe Related"));
         t.requirement(t.tr("输入：增殖棒与对应元素粉，不同配方需不同中子通量", "Input: Breeding Rods and corresponding Element Dust, different recipes require different neutron flux"));
         t.feature(t.tr("输出：枯竭增殖棒", "Output: Depleted Breeding Rods"));
