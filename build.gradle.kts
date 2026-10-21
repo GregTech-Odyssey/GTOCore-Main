@@ -636,14 +636,21 @@ publishing {
 gtoPublish {
     publishMaven = true
     publishGithub = false
-    publishCurseforge = false
     mavenRepoName = "gtodysseyRepository"
     mavenRepoUrl = "releases" // 可选 releases / private
     minecraftVersion = "1.20.1"
     modLoader = "Forge"
     githubRepo = "owner/repo-name" // 启用 GitHub 发布时必填
-    curseforgeProjectId = "123456" // 启用 CurseForge 时必填
+    curseforgeProjectId = "1756992"
     curseforgeJavaVersion = "Java 21" // 运行时最低 Java（GTCEu 等依赖要求 21+）
+    curseforgeEnvironment = "both"
+    curseforgeRelations.putAll(
+        mapOf(
+            "botania-gto-edition" to "required",
+            "data-sync-lib" to "required",
+            "ad-astra" to "required",
+        ),
+    )
 }
 
 // ---------- IDE ----------
