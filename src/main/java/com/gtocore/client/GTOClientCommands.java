@@ -1,5 +1,6 @@
 package com.gtocore.client;
 
+import com.gtocore.client.guide.ItemGuides;
 import com.gtocore.client.screen.MessageListScreen;
 import com.gtocore.utils.NotificationUtils;
 
@@ -52,6 +53,10 @@ public final class GTOClientCommands {
                         .then(notifyTypeCommand("error", NotificationUtils.Type.ERROR)))
                 .then(Commands.literal("message").executes((ctx) -> {
                     Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(new MessageListScreen()));
+                    return 1;
+                }))
+                .then(Commands.literal("guides").executes((ctx) -> {
+                    ItemGuides.openSettings();
                     return 1;
                 }))
                 .then(Commands.literal("rules").executes((ctx) -> {

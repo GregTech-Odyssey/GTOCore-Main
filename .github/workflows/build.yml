@@ -1,7 +1,8 @@
 name: "Build and Sign"
 
 # 触发（官方仓 GregTech-Odyssey/GTOCore-Main）：
-# 1) push：commit message 含 -b / --build / -build；含 -p 时构建并发布到 Maven 与 CurseForge（仅发布者账号生效，其他账号的 -p 一律忽略）
+# 1) push：commit message 含 -b / --build / -build；含 -p 时构建并只发布到 Maven；含 -cf 时构建并发布到 Maven 与 CurseForge
+#    （-p / -cf 仅发布者账号生效，其他账号的一律忽略）
 # 2) pull_request_target opened：PR 由组织成员提起 → 自动构建一次（无需标记）
 # 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
 # 4) issue_comment：组织成员在 PR 下评论，且第一行精确为 /build → 构建 PR head
@@ -37,7 +38,10 @@ jobs:
             startsWith(github.event.head_commit.message, '-b ') ||
             contains(github.event.head_commit.message, ' -p') ||
             endsWith(github.event.head_commit.message, '-p') ||
-            startsWith(github.event.head_commit.message, '-p ')
+            startsWith(github.event.head_commit.message, '-p ') ||
+            contains(github.event.head_commit.message, ' -cf') ||
+            endsWith(github.event.head_commit.message, '-cf') ||
+            startsWith(github.event.head_commit.message, '-cf ')
           )
         ) ||
         (
@@ -61,6 +65,7 @@ jobs:
       reason: ${{ steps.resolve.outputs.reason }}
       pr_number: ${{ steps.resolve.outputs.pr_number }}
       publish: ${{ steps.resolve.outputs.publish }}
+      publish_cf: ${{ steps.resolve.outputs.publish_cf }}
     steps:
       - name: Resolve trigger, ref, membership
         id: resolve
@@ -86,7 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           ORG="GregTech-Odyssey"
-          # 只有这个账号（xinxinsuried，按不可变的用户 ID 判断）推送的 -p 才会发布
+          # 只有这个账号（xinxinsuried，按不可变的用户 ID 判断）推送的 -p / -cf 才会发布
           PUBLISHER_ID="76897393"
           API="https://api.github.com"
           HDR=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
@@ -99,6 +104,11 @@ jobs:
           has_publish_marker() {
             local msg="$1"
             [[ "$msg" =~ (^|[[:space:]])-p($|[[:space:]]) ]]
+          }
+
+          has_curseforge_marker() {
+            local msg="$1"
+            [[ "$msg" =~ (^|[[:space:]])-cf($|[[:space:]]) ]]
           }
 
           has_pr_build_command() {
@@ -196,6 +206,7 @@ jobs:
             echo "reason=$1" >> "$GITHUB_OUTPUT"
             echo "pr_number=" >> "$GITHUB_OUTPUT"
             echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "publish_cf=false" >> "$GITHUB_OUTPUT"
             echo "SKIP: $1"
             exit 0
           }
@@ -210,12 +221,16 @@ jobs:
           # push / 评论 / 同步带标记：非成员应失败或 skip；opened 外部贡献 soft skip
           MEMBER_MODE="hard"
           PUBLISH="false"
+          PUBLISH_CF="false"
 
           case "$EVENT_NAME" in
             push)
-              if has_publish_marker "$HEAD_COMMIT_MSG"; then
+              if has_publish_marker "$HEAD_COMMIT_MSG" || has_curseforge_marker "$HEAD_COMMIT_MSG"; then
                 if [ "$ACTOR_ID" = "$PUBLISHER_ID" ]; then
                   PUBLISH="true"
+                  if has_curseforge_marker "$HEAD_COMMIT_MSG"; then
+                    PUBLISH_CF="true"
+                  fi
                 else
                   echo "Publish marker from @${ACTOR} ignored (not the publisher account)"
                 fi
@@ -227,7 +242,9 @@ jobs:
               CHECKOUT_REPO="$REPO"
               CHECKOUT_REF="$PUSH_SHA"
               REASON="push with build marker"
-              if [ "$PUBLISH" = "true" ]; then
+              if [ "$PUBLISH_CF" = "true" ]; then
+                REASON="push with CurseForge publish marker"
+              elif [ "$PUBLISH" = "true" ]; then
                 REASON="push with publish marker"
               fi
               MEMBER_MODE="hard"
@@ -326,8 +343,9 @@ jobs:
             echo "reason=${REASON}"
             echo "pr_number=${OUT_PR}"
             echo "publish=${PUBLISH}"
+            echo "publish_cf=${PUBLISH_CF}"
           } >> "$GITHUB_OUTPUT"
-          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF} pr=${OUT_PR:-none} publish=${PUBLISH}"
+          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF} pr=${OUT_PR:-none} publish=${PUBLISH} publish_cf=${PUBLISH_CF}"
 
   build:
     needs: gate
@@ -589,9 +607,14 @@ jobs:
           ORG_GRADLE_PROJECT_gtodysseyRepositoryUsername: ${{ secrets.GTODYSSEY_MAVEN_USERNAME }}
           ORG_GRADLE_PROJECT_gtodysseyRepositoryPassword: ${{ secrets.GTODYSSEY_MAVEN_PASSWORD }}
           ORG_GRADLE_PROJECT_gtoCurseforgeToken: ${{ secrets.CURSEFORGE_TOKEN }}
+          PUBLISH_CF: ${{ needs.gate.outputs.publish_cf }}
         run: |
           set -euo pipefail
-          for v in ORG_GRADLE_PROJECT_gtodysseyRepositoryUsername ORG_GRADLE_PROJECT_gtodysseyRepositoryPassword ORG_GRADLE_PROJECT_gtoCurseforgeToken; do
+          REQUIRED="ORG_GRADLE_PROJECT_gtodysseyRepositoryUsername ORG_GRADLE_PROJECT_gtodysseyRepositoryPassword"
+          if [ "$PUBLISH_CF" = "true" ]; then
+            REQUIRED="$REQUIRED ORG_GRADLE_PROJECT_gtoCurseforgeToken"
+          fi
+          for v in $REQUIRED; do
             if [ -z "${!v:-}" ]; then
               echo "::error::Missing secret for ${v#ORG_GRADLE_PROJECT_} (org secrets GTODYSSEY_MAVEN_USERNAME / GTODYSSEY_MAVEN_PASSWORD / CURSEFORGE_TOKEN)"
               exit 1
@@ -599,7 +622,7 @@ jobs:
           done
           GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
           BEFORE=$(sha256sum "$GTO" | cut -d' ' -f1)
-          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=true             -x jar -x reobfJar -x sourcesJar -x signJar --no-daemon --stacktrace
+          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=${PUBLISH_CF}             -x jar -x reobfJar -x sourcesJar -x signJar --no-daemon --stacktrace
           AFTER=$(sha256sum "$GTO" | cut -d' ' -f1)
           [ "$BEFORE" = "$AFTER" ] || { echo "::error::$GTO 在发布过程中被改写"; exit 1; }
           NAME=$(basename "$GTO")
@@ -611,12 +634,22 @@ jobs:
           echo "OK: Maven ${VER} = verified jar (${BEFORE})"
 
       - name: Publish to CurseForge
-        if: needs.gate.outputs.publish == 'true'
+        if: needs.gate.outputs.publish_cf == 'true'
         env:
           ORG_GRADLE_PROJECT_gtoCurseforgeToken: ${{ secrets.CURSEFORGE_TOKEN }}
         run: |
           set -euo pipefail
           ./gradlew gtoPublishCurseforge -PgtoPublishCurseforge=true --no-daemon --stacktrace
+          cat build/gtoPublish/curseforge.json
+
+      # 整合包按这个文件里的项目 ID、文件 ID 和 SHA-1 引用本次上传的 CurseForge 文件（审核通过前接口查不到）
+      - name: Upload CurseForge result
+        if: needs.gate.outputs.publish_cf == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtocore-curseforge
+          path: build/gtoPublish/curseforge.json
+          if-no-files-found: error
 
       - name: Update PR status (final)
         if: always() && steps.pr_status.outputs.comment_id != ''

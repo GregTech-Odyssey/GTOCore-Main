@@ -279,10 +279,10 @@ dependencies {
 
     // jarJar 内嵌依赖
     "org.apache.commons:commons-math3:3.6.1".let { implementation(it); jarJar(it) }
-    "appeng:appliedenergistics2-forge-1.20.1:$ae2_version".let { modImplementation(it); jarJar(it) }
-    "com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$gtceu_version".let { modImplementation(it); jarJar(it) }
 
     // 全局运行范围
+    modImplementation("appeng:appliedenergistics2-forge-1.20.1:$ae2_version")
+    modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$gtceu_version")
     modImplementation("com.gto:datasynclib-forge-1.20.1:$datasynclib_version")
     modImplementation("com.gto:gtoutils-forge-1.20.1:$gtoutils_version")
     modImplementation("com.gto:gtorenders-forge-1.20.1:$gtorenders_version")
@@ -646,7 +646,13 @@ gtoPublish {
     curseforgeEnvironment = "both"
     curseforgeRelations.putAll(
         mapOf(
+            "gregtech-modern-gto-edition" to "required",
+            "applied-energistics-2-gto-edition" to "required",
+            "ars-nouveau-gto-edition" to "required",
             "botania-gto-edition" to "required",
+            "gtoutils" to "required",
+            "gtorender" to "required",
+            "gto-seal-runtime" to "required",
             "data-sync-lib" to "required",
             "ad-astra" to "required",
         ),

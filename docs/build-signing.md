@@ -10,7 +10,8 @@
 | PR `opened` | 提起人为组织成员，按 PR head 自动构建一次 | 不需要 |
 | PR `synchronize` | head commit 含构建标记，且推送者为组织成员 | 需要 |
 | PR 评论 | 组织成员评论的第一行精确为 `/build` | `/build` |
-| `push` 发布 | commit message 含单独成词的 `-p`，且推送者是发布者账号；构建验证通过后把签名 jar 发布到 Maven 与 CurseForge（不发 GitHub）。其他账号的 `-p` 一律忽略，只按有无构建标记决定是否构建 | `-p` |
+| `push` 发布 | commit message 含单独成词的 `-p`，且推送者是发布者账号；构建验证通过后把签名 jar 只发布到 Maven（不发 CurseForge 与 GitHub）。其他账号的 `-p` 一律忽略，只按有无构建标记决定是否构建 | `-p` |
+| `push` 发布到 CurseForge | commit message 含单独成词的 `-cf`，且推送者是发布者账号；构建验证通过后把签名 jar 发布到 Maven 与 CurseForge，并把 CurseForge 返回的文件 ID 等信息作为产物 `gtocore-curseforge`（`curseforge.json`）上传。只在打 CurseForge 版整合包时使用。其他账号的 `-cf` 一律忽略 | `-cf` |
 
 只有组织成员或本仓 write 级 collaborator 能触发签名构建；bot 与外部人员会被拒绝。只构建本仓分支，fork 来源的 PR 一律跳过。
 
