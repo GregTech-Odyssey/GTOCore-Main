@@ -10,6 +10,7 @@
 | PR `opened` | 提起人为组织成员，按 PR head 自动构建一次 | 不需要 |
 | PR `synchronize` | head commit 含构建标记，且推送者为组织成员 | 需要 |
 | PR 评论 | 组织成员评论的第一行精确为 `/build` | `/build` |
+| `push` 发布 | commit message 含单独成词的 `-p`，且推送者是发布者账号；构建验证通过后把签名 jar 发布到 Maven 与 CurseForge（不发 GitHub）。其他账号的 `-p` 一律忽略，只按有无构建标记决定是否构建 | `-p` |
 
 只有组织成员或本仓 write 级 collaborator 能触发签名构建；bot 与外部人员会被拒绝。只构建本仓分支，fork 来源的 PR 一律跳过。
 
@@ -21,6 +22,12 @@
 - 构建编号（`GTO-Build-Id`）、映射的下载与解密、代码保护报错栈对回源码名：见 GTOLib 仓 [`docs/release-obfuscation.md`](../GTOLib/docs/release-obfuscation.md) 与 [`docs/deobfuscate-stacktrace.md`](../GTOLib/docs/deobfuscate-stacktrace.md)。
 - 构建开始时，bot 会在 PR 下发送“正在构建”评论与 Actions 链接；完成、失败或取消后原地更新同一条评论。
 - `issue_comment` 触发的 run 不会出现在 PR Checks 页，应查看 bot 评论或 Actions 页面。
+
+## 发布
+
+- 发布用组织密钥 `GTODYSSEY_MAVEN_USERNAME`、`GTODYSSEY_MAVEN_PASSWORD`、`CURSEFORGE_TOKEN`，缺一个就失败。
+- 发布步骤排除打包任务，只上传 `build/libs` 里已验证的 jar，不重新编译或重做代码保护；上传后会下载 Maven 上的 jar 比对哈希，一致才继续传 CurseForge。
+- 版本号已存在时 `gtoValidate` 会拦下，每次发布前先改 `mod_version`。
 
 ## 安全与排查
 
