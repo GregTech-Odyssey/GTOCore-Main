@@ -183,7 +183,7 @@ public final class GTOMachineTooltips {
 
     // 合成十 - 玩法与计分说明
     public static final TipSpec JustGet10MachineTooltips = GTOTips.of("just_get_10", t -> {
-        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成十", "Just Get 10")));
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成UHV", "Just Get UHV")));
         t.heading(t.tr("5×5~11×11 盘面，提起整组后合并", "5×5 to 11×11 board; lift a group, then merge it"));
 
         t.heading(t.tr("玩法", "How to play"));
@@ -204,7 +204,7 @@ public final class GTOMachineTooltips {
 
     // 2048 - 玩法与计分说明
     public static final TipSpec Game2048MachineTooltips = GTOTips.of("game_2048", t -> {
-        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("2048", "2048")));
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("电路2048", "Circuit 2048")));
         t.heading(t.tr("4×4~8×8 盘面，键盘推格合并", "4×4 to 8×8 board; push and merge with the keyboard"));
 
         t.heading(t.tr("玩法", "How to play"));
