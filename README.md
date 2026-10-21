@@ -57,6 +57,18 @@ GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，因此
 
 源码公开是为了透明，便于大家查阅与审阅。完整构建依赖团队内部的组件，公开环境无法直接编译或运行，也无需自行搭建开发环境进行测试；如果想体验最新内容，请使用整合包发布的正式版本或测试版本。
 
+#### 构建与发布标记（维护者）
+
+推送到本仓库时，在 commit message 里写单独成词的标记来触发签名构建：
+
+| 标记 | 作用 | 谁可以用 |
+|---|---|---|
+| `-b` | 只构建签名 jar，不发布 | 组织成员 |
+| `-p` | 构建并只发布到 Maven，用于 dev 版整合包 | 发布者账号 |
+| `-cf` | 构建并发布到 Maven 与 CurseForge，用于 CurseForge 版整合包 | 发布者账号 |
+
+其他账号写的 `-p`、`-cf` 会被忽略。完整规则见 [签名构建说明](docs/build-signing.md)。
+
 ## 许可证
 
 见 [GregTech Odyssey 许可证说明](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README_zh.md#许可证)。

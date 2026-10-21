@@ -58,6 +58,18 @@ Feature design, balancing, and release planning for GTOCore need to be coordinat
 
 The source is public for transparency, so that it can be read and reviewed. A full build relies on internal team components, so it cannot be compiled or run from the public repository, and there is no need to set up a development environment to test it yourself. To try the latest content, please use the official or test releases of the modpack.
 
+#### Build and Publish Markers (Maintainers)
+
+When pushing to this repository, put one of these markers in the commit message as a separate word to trigger a signed build:
+
+| Marker | Effect | Who can use it |
+|---|---|---|
+| `-b` | Build the signed jar only, publish nothing | Organization members |
+| `-p` | Build and publish to Maven only, for dev modpack builds | Publisher account |
+| `-cf` | Build and publish to Maven and CurseForge, for CurseForge modpack releases | Publisher account |
+
+`-p` and `-cf` from any other account are ignored. Full rules: [build signing](docs/build-signing.md).
+
 ## License
 
 See the [GregTech Odyssey license statement](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license).

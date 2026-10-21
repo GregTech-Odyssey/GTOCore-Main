@@ -3,6 +3,7 @@ package com.gtocore.client;
 import com.gtocore.api.research.techtree.ui.TechTreeStyle;
 import com.gtocore.client.forge.DebugScreenInspector;
 import com.gtocore.client.forge.ForgeClientEvent;
+import com.gtocore.client.guide.ItemGuides;
 import com.gtocore.client.hud.AdAstraHUD;
 import com.gtocore.client.hud.IMoveableHUD;
 import com.gtocore.client.hud.ResearchPointsHUD;
@@ -99,6 +100,7 @@ public final class ClientProxy extends CommonProxy {
         super();
         init();
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ItemGuides.init(eventBus);
         eventBus.addListener(ClientProxy::clientSetup);
         eventBus.addListener(ClientProxy::registerItemDeco);
         eventBus.addListener(ClientProxy::registerGuiOverlays);
