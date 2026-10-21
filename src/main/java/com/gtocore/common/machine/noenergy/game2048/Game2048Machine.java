@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.noenergy.game2048;
 
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.noenergy.game.AbstractRoundGameMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -11,14 +12,13 @@ import com.gregtechceu.gtceu.uipro.data.RPC;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -64,16 +64,17 @@ public class Game2048Machine extends AbstractRoundGameMachine<Game2048Machine.Bo
     /** 「没有盘面」用空数组而不是 null；首次打开界面时会立刻换成新发的一局。 */
     private static final int[] NO_BOARD = new int[0];
 
-    /** 数字材质：下标是 2 的指数，{@code TILE_TEXTURES[exponent]} 画的是 {@code 1 << exponent}。 */
-    private static final IGuiTexture[] TILE_TEXTURES = new IGuiTexture[17];
+    /**
+     * 数字用通用电路显示：数组下标就是电路档位（{@code UNIVERSAL_CIRCUIT} 从最低到最高共 15 档），
+     * 格子越大用越高电压等级的电路，每格始终只有 1 个。
+     */
+    private static final ItemStack[] TILE_STACKS = new ItemStack[GTOItems.UNIVERSAL_CIRCUIT.length];
 
     static {
-        String path = "gtocore:textures/gui/game/game_2048/game_2048_display_";
-        for (int exponent = 1; exponent < TILE_TEXTURES.length; exponent++) {
-            TILE_TEXTURES[exponent] = new ResourceTexture(path + (1 << exponent) + ".png");
+        for (int tier = 0; tier < TILE_STACKS.length; tier++) {
+            TILE_STACKS[tier] = new ItemStack(GTOItems.UNIVERSAL_CIRCUIT[tier].get());
         }
     }
-
     /** 按当前档位建的规则实例；读档与换档位时重建（临时容器跟着盘面尺寸分配）。 */
     private Game2048Rules rules;
 
@@ -146,6 +147,11 @@ public class Game2048Machine extends AbstractRoundGameMachine<Game2048Machine.Bo
     protected int cellSizeMax() {
         return CELL_SIZE_MAX;
     }
+
+    /** 图例里每个电路的固定边长：15 档 × 10px = 150，正好排进 156 宽的盘面区。 */
+    private static final float LEGEND_ICON_SIZE = 10.4f;
+    /** 盘面区顶部那条图例的高度：一排电压等级图标 + 底部 1px 分隔线。 */
+    private static final int LEGEND_HEIGHT = 15;
 
     /** 盘面是同一个自绘控件按档位画格子，控件树不随档位变。 */
     @Override
@@ -239,10 +245,31 @@ public class Game2048Machine extends AbstractRoundGameMachine<Game2048Machine.Bo
         private final int frameSize;
 
         private BoardInput() {
-            frameSize = cellSize(Game2048Rules.BoardSize.LARGE.size()) * Game2048Rules.BoardSize.LARGE.size();
-            layout(style -> style.size(frameSize, frameSize));
+            int frame = 0;
+            for (var preset : Game2048Rules.BoardSize.ALL)
+                frame = Math.max(frame, cellSize(preset.size()) * preset.size());
+            frameSize = frame;
+            layout(style -> style.size(frameSize, LEGEND_HEIGHT + frameSize));
             registerView(this, BoardSnapshot.EMPTY, BoardSnapshot.CODEC);
             move = addRPC(ByteBufCodecs.VAR_INT, (player, direction) -> moveOnServer(direction));
+        }
+
+        /** 顶部图例：全部电压等级的电路按固定尺寸横排（不随窗口或档位变），底部一条横线跟盘面分开。 */
+        @OnlyIn(Dist.CLIENT)
+        private void drawLegend(GuiGraphics graphics, int left, int top, int width) {
+            int count = TILE_STACKS.length;
+            float step = Math.max(LEGEND_ICON_SIZE, (float) width / count);
+            float offsetY = (LEGEND_HEIGHT - 1 - LEGEND_ICON_SIZE) / 2;
+            for (int tier = 0; tier < count; tier++) {
+                var pose = graphics.pose();
+                pose.pushPose();
+                pose.translate(left + tier * step + (step - LEGEND_ICON_SIZE) / 2, top + offsetY, 0);
+                float scale = LEGEND_ICON_SIZE / 16.0F;
+                pose.scale(scale, scale, 1.0F);
+                graphics.renderItem(TILE_STACKS[tier], 0, 0);
+                pose.popPose();
+            }
+            graphics.fill(left, top + LEGEND_HEIGHT - 1, left + width, top + LEGEND_HEIGHT, 0xFF6A7280);
         }
 
         @Override
@@ -257,19 +284,28 @@ public class Game2048Machine extends AbstractRoundGameMachine<Game2048Machine.Bo
         @OnlyIn(Dist.CLIENT)
         public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            var size = currentSize();
-            int cell = cellSize(size.size());
-            int board = cell * size.size();
-            int left = getPositionX() + (frameSize - board) / 2;
-            int top = getPositionY() + (frameSize - board) / 2;
             int[] current = view().board();
-            for (int row = 0; row < size.size(); row++) {
-                for (int col = 0; col < size.size(); col++) {
-                    int index = row * size.size() + col;
+            int side = current.length > 0 ? (int) Math.round(Math.sqrt(current.length)) : currentSize().size();
+            int cell = frameSize / side;
+            int board = cell * side;
+            int left = getPositionX() + (frameSize - board) / 2;
+            int legendTop = getPositionY();
+            drawLegend(graphics, getPositionX(), legendTop, frameSize);
+            int top = legendTop + LEGEND_HEIGHT + (frameSize - board) / 2;
+            for (int row = 0; row < side; row++) {
+                for (int col = 0; col < side; col++) {
+                    int index = row * side + col;
                     int value = index < current.length ? current[index] : Game2048Rules.EMPTY;
                     if (value < Game2048Rules.VALUE_MIN || value > Game2048Rules.VALUE_MAX) continue;
-                    TILE_TEXTURES[Integer.numberOfTrailingZeros(value)].draw(graphics, mouseX, mouseY,
-                            left + col * cell, top + row * cell, cell, cell);
+                    int exponent = Integer.numberOfTrailingZeros(value);
+                    var stack = TILE_STACKS[Math.min(exponent - 1, TILE_STACKS.length - 1)];
+                    var pose = graphics.pose();
+                    pose.pushPose();
+                    pose.translate(left + col * cell, top + row * cell, 0);
+                    float scale = cell / 16.0F;
+                    pose.scale(scale, scale, 1.0F);
+                    graphics.renderItem(stack, 0, 0);
+                    pose.popPose();
                 }
             }
         }

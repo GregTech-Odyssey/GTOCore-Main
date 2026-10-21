@@ -1237,8 +1237,8 @@ public final class GTOMachines {
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
 
-    public static final MachineDefinition JUST_GET_10 = machine("just_get_10_game_machine", "合成十游戏机", JustGet10Machine::new)
-            .langValue("Just Get 10 Game Machine")
+    public static final MachineDefinition JUST_GET_10 = machine("just_get_10_game_machine", "合成UHV游戏机", JustGet10Machine::new)
+            .langValue("Just Get UHV Game Machine")
             .tips(GTOMachineTooltips.JustGet10MachineTooltips)
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/just_get_10"))
@@ -1246,8 +1246,8 @@ public final class GTOMachines {
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
 
-    public static final MachineDefinition GAME_2048 = machine("game_2048_machine", "2048游戏机", Game2048Machine::new)
-            .langValue("2048 Game Machine")
+    public static final MachineDefinition GAME_2048 = machine("game_2048_machine", "电路2048游戏机", Game2048Machine::new)
+            .langValue("Circuit 2048 Game Machine")
             .tips(GTOMachineTooltips.Game2048MachineTooltips)
             .nonYAxisRotation()
             .modelRenderer(() -> GTOCore.id("block/machine/game_2048"))
