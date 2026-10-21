@@ -1,5 +1,6 @@
 package com.gtocore.integration.emi.research;
 
+import com.gtocore.api.gui.AlphaBlendTextureGroup;
 import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
@@ -47,7 +48,6 @@ import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.lowdragmc.lowdraglib.emi.ModularEmiRecipe;
 import com.lowdragmc.lowdraglib.emi.ModularForegroundRenderWidget;
 import com.lowdragmc.lowdraglib.emi.ModularWrapperWidget;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
@@ -138,10 +138,10 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         if (material == NULL) {
             this.materialIcon = null;
         } else {
-            this.materialIcon = new GuiTextureGroup(
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot.png").setColor(material.getMaterialARGB()),
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_secondary.png").setColor(material.getLayerARGB(1)),
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_overlay.png"));
+            this.materialIcon = new AlphaBlendTextureGroup(
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal.png").setColor(material.getMaterialARGB()),
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal1.png").setColor(material.getLayerARGB(1)),
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal2.png"));
         }
         this.inputTooltip = input instanceof ListEmiIngredient ? List.of(
                 material == NULL ? new EmiTextTooltipWrapper(input, Component.translatable("tooltip.emi.accepts").getVisualOrderText()) :

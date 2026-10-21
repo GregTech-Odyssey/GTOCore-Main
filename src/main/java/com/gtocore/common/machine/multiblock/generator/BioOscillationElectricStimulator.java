@@ -44,10 +44,12 @@ public class BioOscillationElectricStimulator extends ElectricMultiblockMachine 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
         if (controller != null && controller.getTissue() != null) {
+            var eut = BioOscillationGenerator.TISSUE_MATERIALS_TIER.get(controller.getTissue()).energyConsumption() * stimulationLevel / 1000 / 200;
+            if (eut == 0) eut = 1;
             currentStimulation = stimulationLevel;
             return RecipeBuilder.ofRaw()
                     .duration(GTORules.BIO_STIMULATION_DURATION.get())
-                    .EUt(BioOscillationGenerator.TISSUE_MATERIALS_TIER.get(controller.getTissue()).energyConsumption() * stimulationLevel / 1000 / 200)
+                    .EUt(eut)
                     .build();
         } else {
             return null;

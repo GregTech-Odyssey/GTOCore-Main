@@ -70,34 +70,34 @@ public final class Sophisticated {
                     .duration(200)
                     .save();
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_1_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_1_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier"),
+                    Items.LEATHER.asItem(),
                     GTMachines.SUPER_CHEST[GTValues.MV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_2_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_2_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier"),
+                    Items.LEATHER.asItem(),
                     GTMachines.SUPER_CHEST[GTValues.HV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_3_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_3_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier"),
+                    Items.LEATHER.asItem(),
                     GTMachines.SUPER_CHEST[GTValues.EV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_4_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier"),
+                    Items.LEATHER.asItem(),
                     GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1_to_tier_2_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1_to_tier_2_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1"),
+                    Items.LEATHER.asItem(),
                     GTMachines.SUPER_CHEST[GTValues.HV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1_to_tier_3_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1_to_tier_3_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1"),
+                    Items.LEATHER.asItem(),
                     GTMachines.SUPER_CHEST[GTValues.EV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1_to_tier_4_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1"),
+                    Items.LEATHER.asItem(),
                     GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_2_to_tier_3_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_2_to_tier_3_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_2"),
+                    Items.LEATHER.asItem(),
                     GTMachines.SUPER_CHEST[GTValues.EV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_2_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_2_to_tier_4_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_2"),
+                    Items.LEATHER.asItem(),
                     GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_3_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_3_to_tier_4_conversion"),
-                    RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_3"),
+                    Items.LEATHER.asItem(),
                     GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("backpack"), RegistriesUtils.getItemStack("sophisticatedbackpacks:backpack"),
                     "ABA",

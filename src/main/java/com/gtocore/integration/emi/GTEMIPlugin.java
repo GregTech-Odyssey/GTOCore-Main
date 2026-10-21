@@ -1,10 +1,12 @@
 package com.gtocore.integration.emi;
 
+import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.chisel.ChiselRecipe;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
@@ -58,7 +60,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.level.material.Fluid;
 
 import appeng.core.AppEng;
 import appeng.integration.modules.emi.AppEngEmiPlugin;
@@ -206,6 +211,14 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
+        if (!GTORules.FLUID_TIER.isExpert()) {
+            registry.removeEmiStacks(stack -> switch (stack.getKey()) {
+                case BucketItem bucket -> ChemicalHelper.getMaterial(bucket.getFluid()).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                case Item item -> ChemicalHelper.getMaterialEntry(item).material().hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                case Fluid fluid -> ChemicalHelper.getMaterial(fluid).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                default -> false;
+            });
+        }
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
         registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
 
