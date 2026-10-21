@@ -8,6 +8,8 @@ import com.gtocore.common.machine.mana.CelestialHandler;
 import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.GTOValues;
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.ClientUtil;
 import com.gtolib.utils.RegistriesUtils;
 
@@ -37,7 +39,11 @@ import java.util.List;
 
 import static com.gtocore.common.machine.mana.CelestialHandler.*;
 
+@DataGeneratorScanned
 public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
+
+    @RegisterLanguage(cn = "每次消耗 2^(超频等级*4+10) 点魔力，使凝聚效率乘以 2^(超频等级*5)", en = "Consumes 2^(overclockingLevel * 4 + 10) mana points each time, boosts condensation efficiency by 2^(overclockingLevel * 5)")
+    private static final String OC_TOOLTIP = "gtocore.machine.cosmic_celestial_spire_of_convergence.oc";
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
@@ -130,7 +136,7 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
         if (isFormed()) {
             textList.add(Component.translatable("gtocore.machine.oc_amount", accelerate)
                     .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            Component.translatable("gtocore.machine.steam_parallel_machine.oc")))));
+                            Component.translatable(OC_TOOLTIP)))));
         }
 
         if (this.solaris > 0)
@@ -155,7 +161,7 @@ public class CosmicCelestialSpireOfConvergence extends ManaMultiblockMachine {
     @Override
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
-        controls.addInt("gtocore.machine.steam_parallel_machine.oc_amount", () -> accelerate, value -> accelerate = (short) value, 0, 4, "gtocore.machine.steam_parallel_machine.oc")
+        controls.addInt("gtocore.machine.steam_parallel_machine.oc_amount", () -> accelerate, value -> accelerate = (short) value, 0, 4, OC_TOOLTIP)
                 .disabled(() -> !isFormed(), MultiblockPage.STATE_UNFORMED);
     }
 

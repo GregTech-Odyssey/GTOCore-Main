@@ -5757,6 +5757,7 @@
   "gtocore.machine.configurable_storage_access_hatch.output_limit_tooltip": "Limits extraction by the output table: the least of each key to keep (0 = no floor)",
   "gtocore.machine.configurable_storage_access_hatch.output_switch_tooltip": "Switch: the output table is ignored while off",
   "gtocore.machine.conversion_rate": "Conversion Rate: %s mb/EU",
+  "gtocore.machine.cosmic_celestial_spire_of_convergence.oc": "Consumes 2^(overclockingLevel * 4 + 10) mana points each time, boosts condensation efficiency by 2^(overclockingLevel * 5)",
   "gtocore.machine.crafting_station.amount": "Craft Times",
   "gtocore.machine.crafting_station.batch": "Batch Craft",
   "gtocore.machine.crafting_station.buffer": "Output Buffer",
