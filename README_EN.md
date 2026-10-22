@@ -68,6 +68,8 @@ When pushing to this repository, put one of these markers in the commit message 
 | `-p` | Build and publish to Maven only, for dev modpack builds | Publisher account |
 | `-cf` | Build and publish to Maven and CurseForge, for CurseForge modpack releases | Publisher account |
 
+Without a new commit, you can also run Build and Sign manually from the Actions page and pick a branch and mode (build / publish / publish-cf; the last two match `-p` and `-cf`).
+
 `-p` and `-cf` from any other account are ignored. Full rules: [build signing](docs/build-signing.md).
 
 ## License

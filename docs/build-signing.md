@@ -12,6 +12,7 @@
 | PR 评论 | 组织成员评论的第一行精确为 `/build` | `/build` |
 | `push` 发布 | commit message 含单独成词的 `-p`，且推送者是发布者账号；构建验证通过后把签名 jar 只发布到 Maven（不发 CurseForge 与 GitHub）。其他账号的 `-p` 一律忽略，只按有无构建标记决定是否构建 | `-p` |
 | `push` 发布到 CurseForge | commit message 含单独成词的 `-cf`，且推送者是发布者账号；构建验证通过后把签名 jar 发布到 Maven 与 CurseForge，并把 CurseForge 返回的文件 ID 等信息作为产物 `gtocore-curseforge`（`curseforge.json`）上传。只在打 CurseForge 版整合包时使用。其他账号的 `-cf` 一律忽略 | `-cf` |
+| 手动运行 | 在 Actions 页的 Build and Sign 点 Run workflow，选分支和模式，构建该分支的最新提交，不需要新提交。`build` 只构建（组织成员）；`publish` 同 `-p`、`publish-cf` 同 `-cf`，只有发布者账号能选，其他账号选了直接失败。命令行：`gh workflow run build.yml -R GregTech-Odyssey/GTOCore-Main --ref 0.6.0 -f mode=publish` | 无 |
 
 只有组织成员或本仓 write 级 collaborator 能触发签名构建；bot 与外部人员会被拒绝。只构建本仓分支，fork 来源的 PR 一律跳过。
 
@@ -29,6 +30,8 @@
 - 发布用组织密钥 `GTODYSSEY_MAVEN_USERNAME`、`GTODYSSEY_MAVEN_PASSWORD`、`CURSEFORGE_TOKEN`，缺一个就失败。
 - 发布步骤排除打包任务，只上传 `build/libs` 里已验证的 jar，不重新编译或重做代码保护；上传后会下载 Maven 上的 jar 比对哈希，一致才继续传 CurseForge。
 - 版本号已存在时 `gtoValidate` 会拦下，每次发布前先改 `mod_version`。
+
+- 代码格式化（spotless）的 Eclipse 格式化器从 Eclipse 的 p2 站点下载。站点停服时 `spotlessApply` 失败只出一条警告，构建照常继续（2026-10-22 Eclipse 下载站与归档站临时停服时出现过）。
 
 ## 安全与排查
 
