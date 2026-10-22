@@ -118,7 +118,7 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
     @Override
     public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
         super.beforeWorking(unit, recipe);
-        if (isGenerator()) reserveMembraneUses(recipe.parallels);
+        if (isGenerator()) consumeMembraneUses(recipe.parallels);
     }
 
     @Override

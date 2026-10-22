@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.api.data.material.MaterialType;
+import com.gtocore.api.gui.AlphaBlendTextureGroup;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
 import com.gtocore.integration.jech.PinYinUtils;
 
@@ -20,11 +22,14 @@ import com.gregtechceu.gtceu.uipro.data.UICodecs;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.elements.ae.PhantomAEKeySlot;
+import com.gregtechceu.gtceu.uipro.render.FittedText;
 import com.gregtechceu.gtceu.uipro.render.UIDraw;
 import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.uipro.window.PageOverlay;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -46,10 +51,10 @@ import appeng.hooks.IUnique;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.ByteBufCodecExtends;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import dev.vfyjxf.taffy.style.TaffyPosition;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import org.jetbrains.annotations.NotNull;
@@ -57,10 +62,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.Collator;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 /** 一个控件绘制材料网格；服务端扫描与校验，搜索文字和显示顺序只影响本端。 */
 @DataGeneratorScanned
 final class WildcardMaterialGrid extends UIElement {
+
+    private static final int COLUMNS = 6;
+    private static final int GRID_WIDTH = COLUMNS * UISizes.SLOT_SIZE;
+    private static final int VIEW_WIDTH = GRID_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
 
     @RegisterLanguage(cn = "搜索材料名称或注册名", en = "Search material name or registry ID")
     private static final String SEARCH = "gtocore.ae.wildcard_materials.search";
@@ -70,16 +80,30 @@ final class WildcardMaterialGrid extends UIElement {
     private static final String SLOT_SEARCH_DETAIL = "gtocore.ae.wildcard_materials.slot_search.detail";
     @RegisterLanguage(cn = "全部材料", en = "All materials")
     private static final String ALL = "gtocore.ae.wildcard_materials.all";
-    @RegisterLanguage(cn = "仅已启用", en = "Enabled only")
+    @RegisterLanguage(cn = "已启用材料", en = "Enabled materials")
     private static final String ENABLED_ONLY = "gtocore.ae.wildcard_materials.enabled_only";
-    @RegisterLanguage(cn = "仅已禁用", en = "Disabled only")
+    @RegisterLanguage(cn = "已禁用材料", en = "Disabled materials")
     private static final String DISABLED_ONLY = "gtocore.ae.wildcard_materials.disabled_only";
+    @RegisterLanguage(cn = "筛选材料", en = "Filters")
+    private static final String FILTER = "gtocore.ae.wildcard_materials.filter";
+    @RegisterLanguage(cn = "材料状态", en = "Material state")
+    private static final String MATERIAL_STATE = "gtocore.ae.wildcard_materials.material_state";
+    @RegisterLanguage(cn = "材料类型", en = "Material type")
+    private static final String MATERIAL_TYPE = "gtocore.ae.wildcard_materials.material_type";
     @RegisterLanguage(cn = "按字母表", en = "Alphabetical")
     private static final String ALPHABETICAL = "gtocore.ae.wildcard_materials.alphabetical";
     @RegisterLanguage(cn = "按颜色色相", en = "Color hue")
     private static final String HUE = "gtocore.ae.wildcard_materials.hue";
     @RegisterLanguage(cn = "已启用优先", en = "Enabled first")
     private static final String ENABLED_FIRST = "gtocore.ae.wildcard_materials.enabled_first";
+    @RegisterLanguage(cn = "按材料类型", en = "Material type")
+    private static final String BASE_TYPE = "gtocore.ae.wildcard_materials.base_type";
+    @RegisterLanguage(cn = "勾选本页全部", en = "Blacklist all on this page")
+    private static final String SELECT_PAGE = "gtocore.ae.wildcard_materials.select_page";
+    @RegisterLanguage(cn = "清除本页全部", en = "Clear blacklist on this page")
+    private static final String CLEAR_PAGE = "gtocore.ae.wildcard_materials.clear_page";
+    @RegisterLanguage(cn = "仅修改当前搜索、搜索槽和筛选条件下的全部材料（含滚动区域外的结果）。", en = "Applies to all materials matching the current search, search slot and filters, including results outside the scroll viewport.")
+    private static final String PAGE_SELECTION_HINT = "gtocore.ae.wildcard_materials.page_selection_hint";
     @RegisterLanguage(cn = "反转排序方向", en = "Reverse sort direction")
     private static final String REVERSE = "gtocore.ae.wildcard_materials.reverse";
     @RegisterLanguage(cn = "没有匹配的可运行材料", en = "No matching runnable materials")
@@ -97,8 +121,8 @@ final class WildcardMaterialGrid extends UIElement {
     @RegisterLanguage(cn = "当前样板配方的预览不可用", en = "The current pattern recipe preview is unavailable")
     private static final String NO_PREVIEW = "gtocore.ae.wildcard_materials.no_preview";
 
-    private static final String[] FILTERS = { ALL, ENABLED_ONLY, DISABLED_ONLY };
-    private static final String[] SORTS = { ALPHABETICAL, HUE, ENABLED_FIRST };
+    private static final String[] SORTS = { ALPHABETICAL, HUE, ENABLED_FIRST, BASE_TYPE };
+    private static final MaterialType[] BASE_TYPES = MaterialType.values();
     private static final AEKey[] NO_OUTPUTS = new AEKey[0];
     private static final ResourceLocation[] NO_RECIPES = new ResourceLocation[0];
     private static final PatternPreview EMPTY_PREVIEW = new PatternPreview(null, NO_RECIPES);
@@ -131,12 +155,16 @@ final class WildcardMaterialGrid extends UIElement {
 
     private record PatternPreview(@Nullable Material material, ResourceLocation[] recipes) {}
 
+    private record PageSelection(List<Material> materials, boolean disabled) {}
+
     private final MEWildcardPatternBufferPartMachine machine;
     private final boolean remote;
     private final SyncValue<BitSet> disabled;
     private final SyncValue<BitSet> matches;
     private final RPC<Material> toggle;
+    private final RPC<PageSelection> selectPage;
     private final RPC<Material> requestPreview;
+    private final Button pageSelectionButton;
 
     // 服务端快照只在扫描结果、黑名单或搜索槽变化时重算。
     private ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial> flagMaterials;
@@ -156,11 +184,16 @@ final class WildcardMaterialGrid extends UIElement {
     // 客户端只为条目缓存名称、图标、提示，不给每个材料建立独立控件。
     private final ArrayList<Entry> entries = new ArrayList<>();
     private final IntArrayList visible = new IntArrayList();
-    private final String[] filterLabels = FILTERS.clone();
+    private final EnumSet<MaterialType> materialTypes = EnumSet.allOf(MaterialType.class);
+    private final String[] filterLabels = new String[2];
+    private final Component[] pageSelectionTooltips = { Component.translatable(SELECT_PAGE), Component.translatable(CLEAR_PAGE) };
+    private final Component pageSelectionHint = Component.translatable(PAGE_SELECTION_HINT);
     private final String[] sortLabels = SORTS.clone();
     private String emptyLabel = "";
     private String search = "";
-    private int filter;
+    private boolean showEnabled = true;
+    private boolean showDisabled = true;
+    private boolean allVisibleDisabled;
     private byte sort;
     private boolean reversed;
     private Collator alphabetical;
@@ -171,20 +204,30 @@ final class WildcardMaterialGrid extends UIElement {
         this.machine = machine;
         remote = machine.isRemote();
         if (remote) {
-            for (int i = 0; i < FILTERS.length; i++) filterLabels[i] = Component.translatable(FILTERS[i]).getString();
+            String filterLabel = Component.translatable(FILTER).getString();
+            filterLabels[0] = filterLabel + " ▼";
+            filterLabels[1] = filterLabel + " ▲";
             for (int i = 0; i < SORTS.length; i++) sortLabels[i] = Component.translatable(SORTS[i]).getString();
-            emptyLabel = UIText.fit(Component.translatable(EMPTY).getString(), UISizes.SLOT_ROW_WIDTH);
+            emptyLabel = UIText.fit(Component.translatable(EMPTY).getString(), GRID_WIDTH);
         }
-        layout(l -> l.size(UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE));
+        layout(l -> l.size(GRID_WIDTH, UISizes.SLOT_SIZE));
         addSyncValue(SyncValue.of(machine::getScannedMaterials, MATERIALS, new ArrayList<>(0)).onChanged(this::collectEntries));
         disabled = addSyncValue(SyncValue.of(this::disabledFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
         matches = addSyncValue(SyncValue.of(this::matchingFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
         toggle = addRPC(GTCEuAPI.materialManager.streamCodec(), (player, material) -> machine.toggleMaterial(material))
                 .validate(Objects::nonNull);
+        selectPage = addRPC(StreamCodec.composite(
+                UICodecs.list(GTCEuAPI.materialManager.streamCodec(), GTCEuAPI.materialManager.getRegisteredMaterials().size()), PageSelection::materials,
+                ByteBufCodecs.BOOL, PageSelection::disabled, PageSelection::new),
+                (player, selection) -> machine.setMaterialsDisabled(selection.materials(), selection.disabled()));
         requestPreview = addRPC(GTCEuAPI.materialManager.streamCodec(), (player, material) -> previewMaterial = material)
                 .validate(Objects::nonNull)
                 .onRejected(() -> lastPreviewRequest = null);
         addSyncValue(SyncValue.of(this::currentPreview, PREVIEW, EMPTY_PREVIEW).onChanged(this::receivePreview));
+        pageSelectionButton = Button.glyph("✓").bindClientText(() -> allVisibleDisabled ? "×" : "✓")
+                .setOnClientClick(this::selectVisible)
+                .clientDisabled(visible::isEmpty);
+        pageSelectionButton.setHoverTooltips(pageSelectionTooltips[0], pageSelectionHint);
     }
 
     /** 只同步 Shift 悬停的材料；扫描结果或请求变化时才重建预览。 */
@@ -240,12 +283,40 @@ final class WildcardMaterialGrid extends UIElement {
         field.getInput().setMaxStringLength(64);
         field.setClientSideWidget();
         column.addChild(UIElement.centeredRow(UISizes.SLOT_SIZE).addChildren(field, new SearchSlot(grid)));
-        var filter = Button.of(LayoutStyle.AUTO).layout(l -> l.flex(1))
-                .bindClientText(() -> grid.filterLabels[grid.filter])
-                .setOnClientClick(() -> {
-                    grid.filter = (grid.filter + 1) % FILTERS.length;
+        var filterOptions = UIElement.section();
+        var checklist = new ScrollerView("ae.wildcard_material_filters", VIEW_WIDTH,
+                ScrollerView.heightFor(6, Button.HEIGHT, UISizes.GAP), UISizes.GAP).setResizable(false);
+        checklist.addScrollViewChild(new FilterOption(Component.translatable(ALL),
+                () -> grid.showEnabled && grid.showDisabled && grid.materialTypes.size() == BASE_TYPES.length, () -> {
+                    boolean selectAll = !grid.showEnabled || !grid.showDisabled || grid.materialTypes.size() != BASE_TYPES.length;
+                    grid.showEnabled = selectAll;
+                    grid.showDisabled = selectAll;
+                    grid.materialTypes.clear();
+                    if (selectAll) Collections.addAll(grid.materialTypes, BASE_TYPES);
                     grid.refilter();
-                });
+                }));
+        checklist.addScrollViewChild(TextLine.translatable(LayoutStyle.AUTO, MATERIAL_STATE));
+        checklist.addScrollViewChild(new FilterOption(Component.translatable(ENABLED_ONLY), () -> grid.showEnabled, () -> {
+            grid.showEnabled = !grid.showEnabled;
+            grid.refilter();
+        }));
+        checklist.addScrollViewChild(new FilterOption(Component.translatable(DISABLED_ONLY), () -> grid.showDisabled, () -> {
+            grid.showDisabled = !grid.showDisabled;
+            grid.refilter();
+        }));
+        checklist.addScrollViewChild(TextLine.translatable(LayoutStyle.AUTO, MATERIAL_TYPE));
+        for (var type : BASE_TYPES) {
+            checklist.addScrollViewChild(new FilterOption(Component.translatable("gtocore.material.base_type.name." + type.name()),
+                    () -> grid.materialTypes.contains(type), () -> {
+                        if (!grid.materialTypes.remove(type)) grid.materialTypes.add(type);
+                        grid.refilter();
+                    }));
+        }
+        filterOptions.addChild(checklist);
+        var dropdown = new FilterDropdown(grid, filterOptions);
+        var filter = Button.of(LayoutStyle.AUTO).layout(l -> l.flex(1))
+                .bindClientText(() -> grid.filterLabels[0]);
+        filter.setOnClientClick(() -> dropdown.open(filter));
         var sort = Button.of(LayoutStyle.AUTO).layout(l -> l.flex(1))
                 .bindClientText(() -> grid.sortLabels[grid.sort])
                 .setOnClientClick(() -> {
@@ -257,11 +328,18 @@ final class WildcardMaterialGrid extends UIElement {
             grid.refilter();
         });
         reverse.tooltips(REVERSE);
-        column.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(filter, sort, reverse));
-        var scroller = new ScrollerView("ae.wildcard_materials", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, 4 * UISizes.SLOT_SIZE)
+        column.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(filter, sort, reverse, grid.pageSelectionButton, dropdown));
+        var scroller = new ScrollerView("ae.wildcard_materials", VIEW_WIDTH, 4 * UISizes.SLOT_SIZE)
                 .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
         scroller.addScrollViewChild(grid);
         column.addChild(scroller);
+    }
+
+    private void selectVisible() {
+        if (visible.isEmpty()) return;
+        var materials = new ArrayList<Material>(visible.size());
+        for (int i = 0; i < visible.size(); i++) materials.add(entries.get(visible.getInt(i)).material);
+        selectPage.send(new PageSelection(materials, !allVisibleDisabled));
     }
 
     private BitSet disabledFlags() {
@@ -326,24 +404,30 @@ final class WildcardMaterialGrid extends UIElement {
         visible.ensureCapacity(entries.size());
         var flags = disabled.getValue();
         var matching = matches.getValue();
+        allVisibleDisabled = true;
         String query = search.strip().toLowerCase(Locale.ROOT);
         for (int i = 0; i < entries.size(); i++) {
-            if (!matching.get(i) || filter == 1 && flags.get(i) || filter == 2 && !flags.get(i)) continue;
+            if (!matching.get(i) || (flags.get(i) ? !showDisabled : !showEnabled)) continue;
             var entry = entries.get(i);
+            if (!materialTypes.contains(entry.materialType)) continue;
             if (!query.isEmpty() && !PinYinUtils.match(entry.name, query) && !entry.id.contains(query)) continue;
             visible.add(i);
+            if (!flags.get(i)) allVisibleDisabled = false;
         }
+        if (visible.isEmpty()) allVisibleDisabled = false;
+        pageSelectionButton.setHoverTooltips(pageSelectionTooltips[allVisibleDisabled ? 1 : 0], pageSelectionHint);
         IntArrays.stableSort(visible.elements(), 0, visible.size(), (a, b) -> {
             int result = switch (sort) {
                 case 1 -> Float.compare(entries.get(a).hue, entries.get(b).hue);
                 case 2 -> Boolean.compare(flags.get(a), flags.get(b));
+                case 3 -> Integer.compare(entries.get(a).materialType.ordinal(), entries.get(b).materialType.ordinal());
                 default -> 0;
             };
             if (result == 0) result = alphabetical.compare(entries.get(a).name, entries.get(b).name);
             if (result == 0) result = entries.get(a).id.compareTo(entries.get(b).id);
             return reversed ? -Integer.signum(result) : result;
         });
-        layout(l -> l.height(Math.max(1, (visible.size() + UISizes.SLOTS_PER_ROW - 1) / UISizes.SLOTS_PER_ROW) * UISizes.SLOT_SIZE));
+        layout(l -> l.height(Math.max(1, (visible.size() + COLUMNS - 1) / COLUMNS) * UISizes.SLOT_SIZE));
     }
 
     private int entryAt(double mouseX, double mouseY) {
@@ -353,8 +437,8 @@ final class WildcardMaterialGrid extends UIElement {
         }
         int column = (int) (mouseX - getPositionX()) / UISizes.SLOT_SIZE;
         int row = (int) (mouseY - getPositionY()) / UISizes.SLOT_SIZE;
-        if (column >= UISizes.SLOTS_PER_ROW) return -1;
-        int index = row * UISizes.SLOTS_PER_ROW + column;
+        if (column >= COLUMNS) return -1;
+        int index = row * COLUMNS + column;
         return index < visible.size() ? visible.getInt(index) : -1;
     }
 
@@ -377,10 +461,10 @@ final class WildcardMaterialGrid extends UIElement {
         }
         int hovered = entryAt(mouseX, mouseY);
         int firstRow = top <= y0 ? 0 : (top - y0) / UISizes.SLOT_SIZE;
-        int from = Math.min(visible.size(), firstRow * UISizes.SLOTS_PER_ROW);
+        int from = Math.min(visible.size(), firstRow * COLUMNS);
         for (int k = from; k < visible.size(); k++) {
-            int x = x0 + k % UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
-            int y = y0 + k / UISizes.SLOTS_PER_ROW * UISizes.SLOT_SIZE;
+            int x = x0 + k % COLUMNS * UISizes.SLOT_SIZE;
+            int y = y0 + k / COLUMNS * UISizes.SLOT_SIZE;
             if (y >= bottom) break;
             int index = visible.getInt(k);
             UITheme.ITEM_SLOT.draw(graphics, mouseX, mouseY, x, y, UISizes.SLOT_SIZE, UISizes.SLOT_SIZE);
@@ -450,6 +534,7 @@ final class WildcardMaterialGrid extends UIElement {
         final Material material;
         final String name;
         final String id;
+        final MaterialType materialType;
         final float hue;
         final IGuiTexture icon;
         final List<Component> enabledTooltip;
@@ -469,12 +554,13 @@ final class WildcardMaterialGrid extends UIElement {
             displayName = localized;
             name = localized.getString().toLowerCase(Locale.ROOT);
             id = material.getResourceLocation().toString();
+            materialType = MaterialType.get(material);
             int rgb = material.getMaterialRGB();
             hue = java.awt.Color.RGBtoHSB(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, null)[0];
-            icon = new GuiTextureGroup(
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot.png").setColor(material.getMaterialARGB()),
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_secondary.png").setColor(material.getLayerARGB(1)),
-                    new ResourceTexture("gtceu:textures/item/material_sets/dull/ingot_overlay.png"));
+            icon = new AlphaBlendTextureGroup(
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal.png").setColor(material.getMaterialARGB()),
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal1.png").setColor(material.getLayerARGB(1)),
+                    new ResourceTexture("gtocore:textures/item/material_sets/dull/universal2.png"));
             var registryName = Component.literal(id).withStyle(ChatFormatting.DARK_GRAY);
             var enabled = Component.translatable(ENABLED).withStyle(ChatFormatting.GREEN);
             var disabled = Component.translatable(DISABLED).withStyle(ChatFormatting.RED);
@@ -484,6 +570,75 @@ final class WildcardMaterialGrid extends UIElement {
             disabledTooltip = List.of(localized, registryName, disabled, hint);
             previewEnabledTooltip = List.of(localized, registryName, enabled, loading);
             previewDisabledTooltip = List.of(localized, registryName, disabled, loading);
+        }
+    }
+
+    /** 下拉列表由窗口浮层接管绘制和鼠标；标题也在浮层内，单击标题或外部都可收起。 */
+    private static final class FilterDropdown extends PageOverlay {
+
+        private final Button header;
+        private final UIElement options;
+
+        FilterDropdown(WildcardMaterialGrid grid, UIElement options) {
+            this.options = options;
+            header = Button.of(LayoutStyle.AUTO).bindClientText(() -> grid.filterLabels[1])
+                    .setOnClientClick(() -> setDisplay(false));
+            layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(0).top(0).column()
+                    .width(VIEW_WIDTH).gapAll(UISizes.GAP));
+            addChildren(UIElement.row(Button.HEIGHT).addChild(header), options);
+            setDisplay(false);
+        }
+
+        void open(Button anchor) {
+            header.layout(l -> l.width(anchor.getSizeWidth()));
+            setDisplay(true);
+        }
+
+        @Override
+        public boolean isMouseOverElement(double mouseX, double mouseY) {
+            return header.isMouseOverElement(mouseX, mouseY) || options.isMouseOverElement(mouseX, mouseY);
+        }
+
+        @Override
+        protected void onOutsideClick() {
+            setDisplay(false);
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        protected void drawOverlayBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            // 标题按钮与选项区块各自绘制背景。
+        }
+    }
+
+    /** 筛选仅在本端生效；复用按钮外观和多选标记，不为筛选项建立服务端绑定。 */
+    private static final class FilterOption extends Button {
+
+        private final Component label;
+        private final BooleanSupplier checked;
+        @Nullable
+        private FittedText fitted;
+
+        FilterOption(Component label, BooleanSupplier checked, Runnable toggle) {
+            super(LayoutStyle.AUTO, Button.HEIGHT, null, null);
+            this.label = label;
+            this.checked = checked;
+            bindClientVariant(() -> checked.getAsBoolean() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT);
+            setOnClientClick(toggle);
+            tooltips(label);
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+            int x = getPositionX(), y = getPositionY(), faceHeight = getSizeHeight() - UISizes.BUTTON_LIP_HEIGHT;
+            int padding = UISizes.TEXT_PADDING;
+            UIDraw.optionMark(graphics, x + padding, y + (faceHeight - UISizes.OPTION_MARK_SIZE) / 2, true, checked.getAsBoolean());
+            int textX = x + 2 * padding + UISizes.OPTION_MARK_SIZE;
+            if (fitted == null) fitted = new FittedText();
+            UIText.drawLeft(graphics, fitted.fit(label, x + getSizeWidth() - padding - textX), textX,
+                    UIText.centerY(y, faceHeight), getTextColor(isMouseOverElement(mouseX, mouseY), true));
         }
     }
 

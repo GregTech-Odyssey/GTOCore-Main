@@ -7,13 +7,13 @@ import com.gtocore.api.electrochemistry.MembraneType;
 import com.gtolib.api.machine.part.ItemPartMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
@@ -67,6 +67,13 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
             }
 
             @Override
+            public void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                // Cross-recipe searches can select another membrane before deferred listeners run.
+                rebuildMembraneMap();
+            }
+
+            @Override
             public void readBuffer(LogicalSide side, FriendlyByteBuf data) {
                 super.readBuffer(side, data);
                 rebuildMembraneMap();
@@ -91,8 +98,9 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
         int rows = (slots + columns - 1) / columns;
         var group = new WidgetGroup(0, 0, columns * 18 + 16, rows * 18 + 16);
         for (int slot = 0; slot < slots; slot++) {
-            group.addWidget(new SlotWidget(inventory.storage, slot, 8 + slot % columns * 18, 8 + slot / columns * 18, true, true)
-                    .setBackground(GuiTextures.SLOT));
+            var membraneSlot = ItemSlot.of(inventory.storage, slot).disabled(() -> locked, null);
+            membraneSlot.setSelfPosition(8 + slot % columns * 18, 8 + slot / columns * 18);
+            group.addWidget(membraneSlot);
         }
         return group;
     }
@@ -120,8 +128,8 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
     }
 
     public ItemStack membrane(MembraneType type) {
-        var slot = membranesByType.getInt(type);
-        return inventory.storage.getStackInSlot(slot);
+        int slot = membranesByType.getInt(type) - 1;
+        return slot < 0 ? ItemStack.EMPTY : inventory.storage.getStackInSlot(slot);
     }
 
     @Override
@@ -142,17 +150,19 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
             var type = IonMembrane.typeOf(inventory.storage.getStackInSlot(slot));
             if (type == null) continue;
             if (firstMembraneSlot < 0) firstMembraneSlot = slot;
-            var previous = membranesByType.getInt(type);
-            if ((remainingUses(previous) <= 0 && remainingUses(slot) > 0)) {
-                membranesByType.put(type, slot);
+            int previous = membranesByType.getInt(type) - 1;
+            if (previous < 0 || (remainingUses(previous) <= 0 && remainingUses(slot) > 0)) {
+                // Enum2IntMap reserves zero for absent keys.
+                membranesByType.put(type, slot + 1);
             }
         }
     }
 
     public boolean selectMembrane(MembraneType type) {
-        var slot = membranesByType.getInt(type);
+        int slot = membranesByType.getInt(type) - 1;
+        if (slot < 0 || remainingUses(slot) <= 0) return false;
         selectSlot(slot);
-        return remainingUses(slot) > 0;
+        return true;
     }
 
     private void selectSlot(int slot) {
@@ -169,8 +179,8 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
 
     public boolean hasAvailableUses() {
         for (var type : MEMBRANE_TYPES) {
-            var slot = membranesByType.getInt(type);
-            if (remainingUses(slot) > 0) return true;
+            int slot = membranesByType.getInt(type) - 1;
+            if (slot >= 0 && remainingUses(slot) > 0) return true;
         }
         return false;
     }
@@ -199,7 +209,8 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
     }
 
     public long parallelLimit(long durability) {
-        return durability;
+        if (durability <= 0) return 0;
+        return durability > ParallelLogic.MAX_PARALLEL / durability ? ParallelLogic.MAX_PARALLEL : durability * durability;
     }
 
     public boolean permits(IonDefinition ion) {
@@ -208,8 +219,15 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
 
     public void consumeReservedUses() {
         for (int slot = 0; slot < reservedDamage.length; slot++) {
-            if (reservedDamage[slot] > 0) damageSlot(slot, reservedDamage[slot]);
+            long amount = reservedDamage[slot];
+            if (amount <= 0) continue;
+            reservedDamage[slot] = 0;
+            damageSlot(slot, amount);
         }
+    }
+
+    public void consumeUses(long amount) {
+        damageSlot(activeSlot(), amount);
     }
 
     private void damageSlot(int slot, long amount) {
@@ -225,7 +243,6 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
 
     @Override
     protected void onMachineChanged() {
-        rebuildMembraneMap();
         for (var controller : getControllers()) {
             if (controller instanceof IRecipeLogicMachine machine) {
                 machine.getRecipeLogic().markLastRecipeDirty();

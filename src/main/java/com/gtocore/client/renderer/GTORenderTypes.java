@@ -146,6 +146,41 @@ public final class GTORenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
+    public static final RenderType FROST_COAT = frostCoat("");
+    public static final RenderType FROST_GLINT_A = frostGlint("_a");
+    public static final RenderType FROST_GLINT_B = frostGlint("_b");
+    public static final RenderType FROST_COAT_ENDERMAN = frostCoat("_enderman");
+    public static final RenderType FROST_GLINT_ENDERMAN_A = frostGlint("_enderman_a");
+    public static final RenderType FROST_GLINT_ENDERMAN_B = frostGlint("_enderman_b");
+
+    private static RenderType frostCoat(String variant) {
+        return RenderType.create("gtocore_frost_coat" + variant,
+                DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                        .setTextureState(new TextureStateShard(GTOCore.id("textures/entity/frost_coat" + variant + ".png"), false, false))
+                        .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                        .setCullState(NO_CULL)
+                        .setLightmapState(LIGHTMAP)
+                        .setOverlayState(OVERLAY)
+                        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .createCompositeState(true));
+    }
+
+    private static RenderType frostGlint(String variant) {
+        return RenderType.create("gtocore_frost_glint" + variant,
+                DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(RENDERTYPE_EYES_SHADER)
+                        .setTextureState(new TextureStateShard(GTOCore.id("textures/entity/frost_glint" + variant + ".png"), false, false))
+                        .setTransparencyState(ADDITIVE_TRANSPARENCY)
+                        .setCullState(NO_CULL)
+                        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .createCompositeState(false));
+    }
+
     private GTORenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
                            boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
         super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);

@@ -1,8 +1,10 @@
 package com.gtocore.data.recipe.classified;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
+import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.MultiBlockD;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -14,6 +16,7 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import static com.gtocore.common.data.GTORecipeTypes.SUPRACHRONAL_ASSEMBLY_LINE_RECIPES;
 import static com.gtocore.data.techtree.BaseNodes.Create;
 import static com.gtocore.data.techtree.BaseNodes.SuprachronalCircuits;
+import static com.gtocore.data.techtree.BaseNodes.SuprachronalDrone;
 import static com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLinemax;
 
 final class SuprachronalAssemblyLine {
@@ -44,6 +47,60 @@ final class SuprachronalAssemblyLine {
                 .EUt(32212254720L)
                 .duration(8000)
                 .researchStation(b -> b.researchStack(GTOItems.MEGA_MAX_BATTERY.asItem())
+                        .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
+                        .CWUt(16384)
+                        .EUt(2013265920))
+                .researchNode(Create)
+                .save();
+
+        SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("happy_water_god_core")
+                .inputItems(GTOItems.MAX_ROBOT_ARM, 32)
+                .inputItems(GTOItems.MAX_CONVEYOR_MODULE, 32)
+                .inputItems(GTOItems.MAX_EMITTER, 32)
+                .inputItems(GTOItems.MAX_SENSOR, 32)
+                .inputItems(GTOItems.MAX_FIELD_GENERATOR, 16)
+                .inputItems(GTOItems.CHAOTIC_CORE, 16)
+                .inputItems(GTOItems.DRACONIC_ENERGY_CORE, 16)
+                .inputItems(GTOItems.SPACETIME_CATALYST, 16)
+                .inputItems(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT, 16)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.BlackDwarfMatter, 16)
+                .inputItems(GTOItems.DYSON_SWARM_MODULE, 4096)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.TranscendentMetal, 1367)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Hypogen, 256)
+                .inputItems(TagPrefix.ingot, GTOMaterials.SpaceTime, 1111)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 460800)
+                .inputFluids(GTOMaterials.Rhugnor, 320000)
+                .outputItems(GTOItems.HAPPY_WATER_GOD_CORE)
+                .EUt(8053063680L)
+                .duration(19200)
+                .researchNode(SuprachronalDrone)
+                .save();
+
+        SUPRACHRONAL_ASSEMBLY_LINE_RECIPES.recipeBuilder("happy_water_god_statue")
+                .inputItems(GTOItems.HAPPY_WATER_GOD_CORE)
+                .inputItems(GTOItems.CREATE_ULTIMATE_BATTERY, 2)
+                .inputItems(GTOItems.SUPRACHRONAL_MAINFRAME_COMPLEX, 4)
+                .inputItems(MultiBlockD.EYE_OF_HARMONY.asItem())
+                .inputItems(GTOItems.MAX_FIELD_GENERATOR, 16)
+                .inputItems(CustomTags.MAX_CIRCUITS, 64)
+                .inputItems(GTOItems.MEGA_MAX_BATTERY, 8)
+                .inputItems(GTOItems.TIME_DILATION_CONTAINMENT_UNIT, 64)
+                .inputItems(GTOItems.FM_WAFER, 64)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Eternity, 64)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.ChaosInfinityAlloy, 64)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.TranscendentMetal, 128)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.Infinity, 128)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.CosmicNeutronium, 256)
+                .inputItems(TagPrefix.plate, GTOMaterials.MagnetohydrodynamicallyConstrainedStarMatter, 64)
+                .inputItems(TagPrefix.ingot, GTOMaterials.SpaceTime, 256)
+                .inputFluids(GTOMaterials.SpacetimeContinuum, 1000000)
+                .inputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 1000000)
+                .inputFluids(GTOMaterials.Eternity, 144000)
+                .inputFluids(GTOMaterials.Infinity, 144000)
+                .outputItems(GTOBlocks.HAPPY_WATER_GOD_STATUE.asItem())
+                .EUt(32212254720L)
+                .duration(12000)
+                .researchStation(b -> b.researchStack(GTOItems.CREATE_ULTIMATE_BATTERY.asItem())
                         .dataStack(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT.asItem())
                         .CWUt(16384)
                         .EUt(2013265920))

@@ -1,0 +1,7 @@
+{
+  "parent": "ars_nouveau:block/large_source_jar/item",
+  "textures": {
+    "jar": "gtocore:block/large_laureril_source_jar",
+    "particle": "gtocore:block/large_laureril_source_jar"
+  }
+}

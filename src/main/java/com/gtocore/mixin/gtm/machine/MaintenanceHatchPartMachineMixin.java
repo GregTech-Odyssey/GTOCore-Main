@@ -38,6 +38,8 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
     @Shadow(remap = false)
     protected int timeActive;
     @Unique
+    private static final float gto$FAILURE_ONSET = 0.7F;
+    @Unique
     private IDroneControlCenterMachine gtolib$cache;
     @Unique
     private PulseMachineMaintenancePedestal gto$manaCenter;
@@ -79,12 +81,17 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
         if (parts == null || parts.length == 0) return;
         var pa = parts.length;
         timeActive = MathUtil.saturatedCast((long) (timeActive + (duration * getTimeMultiplier() * GTORules.MAINTENANCE_WEAR.get() * pa)));
-        var value = ((float) timeActive / MINIMUM_MAINTENANCE_TIME) - 0.7;
+        var value = ((float) timeActive / MINIMUM_MAINTENANCE_TIME) - gto$FAILURE_ONSET;
         if (GTValues.RNG.nextFloat() <= value && GTORules.MAINTENANCE_FAILURES.get()) {
             timeActive = 0;
             causeRandomMaintenanceProblems();
             maintenanceMachine.setTaped(false);
         }
+    }
+
+    @Override
+    public float getFailureOnset() {
+        return gto$FAILURE_ONSET;
     }
 
     @Inject(method = "fixMaintenanceProblems", at = @At("HEAD"), remap = false)

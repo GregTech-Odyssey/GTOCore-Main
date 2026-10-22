@@ -3,6 +3,8 @@
   "block.gtmthings.creative_laser_hatch": "§rCreative Laser Target Hatch",
   "block.gtmthings.creative_fluid_input_hatch": "Creative Input Hatch",
   "block.gtmthings.creative_item_input_bus": "Creative Input Bus",
+  "block.gtmthings.creative_input_assembly": "Creative Input Assembly",
+  "gtmthings.machine.creative_input_assembly.tooltip": "%s shared item and fluid ghost slots with infinite supply and a configurable circuit.",
   "block.gtmthings.wireless_energy_monitor": "Wireless Energy Monitor",
   "block.gtmthings.wireless_energy_interface": "Wireless Energy Interface",
   "block.gtmthings.lv_digital_miner": "Digital Miner",

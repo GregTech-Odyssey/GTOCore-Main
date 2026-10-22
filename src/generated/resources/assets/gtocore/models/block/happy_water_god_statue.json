@@ -1,0 +1,172 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "texture": "#stone"
+        },
+        "east": {
+          "texture": "#stone"
+        },
+        "north": {
+          "texture": "#stone"
+        },
+        "south": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#gold"
+        },
+        "east": {
+          "texture": "#gold"
+        },
+        "north": {
+          "texture": "#gold"
+        },
+        "south": {
+          "texture": "#gold"
+        },
+        "up": {
+          "texture": "#gold"
+        },
+        "west": {
+          "texture": "#gold"
+        }
+      },
+      "from": [
+        1,
+        2,
+        1
+      ],
+      "to": [
+        15,
+        3,
+        15
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#cap"
+        },
+        "east": {
+          "texture": "#pillar"
+        },
+        "north": {
+          "texture": "#pillar"
+        },
+        "south": {
+          "texture": "#pillar"
+        },
+        "up": {
+          "texture": "#cap"
+        },
+        "west": {
+          "texture": "#pillar"
+        }
+      },
+      "from": [
+        2.5,
+        3,
+        2.5
+      ],
+      "to": [
+        13.5,
+        6,
+        13.5
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#gold"
+        },
+        "east": {
+          "texture": "#gold"
+        },
+        "north": {
+          "texture": "#gold"
+        },
+        "south": {
+          "texture": "#gold"
+        },
+        "up": {
+          "texture": "#gold"
+        },
+        "west": {
+          "texture": "#gold"
+        }
+      },
+      "from": [
+        1.5,
+        6,
+        1.5
+      ],
+      "to": [
+        14.5,
+        7,
+        14.5
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#stone"
+        },
+        "east": {
+          "texture": "#stone"
+        },
+        "north": {
+          "texture": "#stone"
+        },
+        "south": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        }
+      },
+      "from": [
+        1,
+        7,
+        1
+      ],
+      "to": [
+        15,
+        8,
+        15
+      ]
+    }
+  ],
+  "textures": {
+    "cap": "minecraft:block/quartz_pillar_top",
+    "gold": "minecraft:block/gold_block",
+    "particle": "minecraft:block/quartz_pillar",
+    "pillar": "minecraft:block/quartz_pillar",
+    "stone": "minecraft:block/polished_blackstone"
+  }
+}

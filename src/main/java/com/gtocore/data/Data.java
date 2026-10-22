@@ -3,6 +3,7 @@ package com.gtocore.data;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.data.*;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.quest.QuestBookContents;
 import com.gtocore.data.recipe.*;
 import com.gtocore.data.recipe.ae2.AE2;
 import com.gtocore.data.recipe.ae2.Ae2wtlibRecipes;
@@ -69,7 +70,6 @@ public final class Data {
     private static Throwable throwable;
 
     public static void init() {
-        BaseNodes.init();
         if (GTCEu.isClientSide()) {
             GTOUtils.asyncExecute(Data::clientInit);
         } else {
@@ -81,6 +81,8 @@ public final class Data {
         long time = System.currentTimeMillis();
         GTRegistries.ORE_VEINS.unfreeze();
         GTRegistries.BEDROCK_ORE_DEFINITIONS.unfreeze();
+        BaseNodes.init();
+        QuestBookContents.init();
         GTOOres.init();
         MeteoriteRecipe.init();
 

@@ -35,6 +35,7 @@ import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.hooks.IPushResultsHandler;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
+import com.gtocore.integration.botania.BotaniaFlowerTicking;
 import com.gtocore.integration.construction_wand.ConstructionWandRegistrar;
 import com.gtocore.integration.emi.GTEMIPlugin;
 import com.gtocore.integration.ftbquests.GTOQuestTypes;
@@ -51,7 +52,7 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.gtm.recipe.editor.RecipeEditorUIFactory;
-import com.gtolib.network.HeaderIndexManager;
+import com.gtolib.quest.QuestNetwork;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -121,7 +122,7 @@ public class CommonProxy {
     }
 
     private static void init() {
-        HeaderIndexManager.init();
+        GTOBlockEntityIndexes.init();
         IdleReason.init();
         GTOCodecs.init();
         GTOCreativeModeTabs.init();
@@ -176,6 +177,7 @@ public class CommonProxy {
         TravelRegistry.addTravelEntry(PatternTravelTarget.SERIALIZED_NAME, PatternTravelTarget::loadClientTarget, () -> TravelAnchorRenderers::getRenderer);
 
         AreaShape.register();
+        BotaniaFlowerTicking.init();
 
         if (GTCEu.isClientSide()) {
             TipSpec tips = TipSpec.builder().lines(l -> l.plain(Component.translatable(GTOTagPrefix.PIPE_TOOLTIP))).build();
@@ -183,6 +185,7 @@ public class CommonProxy {
             GTMaterialBlocks.FLUID_PIPE_BLOCKS.values().forEach(e -> ((IItem) e.get().asItem()).gtolib$setTips(tips));
         } else {}
         Message.init();
+        QuestNetwork.init();
         TeamResearchSavedData.init();
         TechTreeSavedData.init();
         GTOItemTooltips.initLanguage();

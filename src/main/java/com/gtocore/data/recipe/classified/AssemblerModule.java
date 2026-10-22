@@ -462,8 +462,8 @@ final class AssemblerModule {
                 .save();
 
         ASSEMBLER_MODULE_RECIPES.recipeBuilder("obsidian_matrix")
-                .inputItems(GTOItems.SUPRACAUSAL_PRINTED_CIRCUIT_BOARD, 8)
-                .inputItems(GTOItems.SUPRACAUSAL_PROCESSING_CORE, 16)
+                .inputItems(GTOItems.COSMIC_PRINTED_CIRCUIT_BOARD, 8)
+                .inputItems(GTOItems.COSMIC_PROCESSING_CORE, 32)
                 .inputItems(GTOItems.DARK_MATTER)
                 .inputItems(GTOItems.PROTO_MATTER)
                 .inputItems(GTOItems.HUI_CIRCUIT_5)

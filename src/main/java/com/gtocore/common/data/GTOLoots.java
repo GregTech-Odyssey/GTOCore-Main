@@ -43,6 +43,7 @@ public final class GTOLoots {
 
     private static void removal(Set<ResourceLocation> filters) {
         filters.add(RLUtils.fromNamespaceAndPath("expatternprovider", "blocks/ex_emc_interface"));
+        filters.add(RLUtils.fromNamespaceAndPath("expatternprovider", "blocks/oversize_interface"));
         filters.add(RLUtils.fromNamespaceAndPath("farmersrespite", "blocks/kettle"));
     }
 

@@ -80,9 +80,13 @@ public final class MiscRecipe {
                     .circuitMeta(18)
                     .outputItems(GTOBlocks.MANA_PIPES[i].asItem())
                     .duration(200)
-                    .EUt(120)
+                    .EUt(8)
                     .save();
         }
+
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("steam_pipe"), GTOBlocks.STEAM_PIPES[0].asStack(),
+                "ZFZ", "FPF", "ZFZ",
+                'F', new MaterialEntry(TagPrefix.foil, GTMaterials.Lead), 'P', new MaterialEntry(TagPrefix.pipeNormalFluid, GTMaterials.Steel), 'Z', new MaterialEntry(TagPrefix.foil, GTMaterials.Zinc));
 
         int i = 0;
         for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {

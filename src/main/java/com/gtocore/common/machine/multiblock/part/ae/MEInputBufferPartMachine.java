@@ -191,6 +191,11 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
     }
 
     @Override
+    protected boolean supportsPatternEditor() {
+        return true;
+    }
+
+    @Override
     protected void buildSlotConfig(@NotNull UIElement column, int index) {
         MEInputBufferPartMachineUI.buildSlotConfig(column, this, index);
     }
@@ -502,14 +507,10 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
             }
             var newPattern = machine.getInternalPatternInventory().getStackInSlot(index);
             var details = machine.decodePattern(newPattern, index);
+            // 编辑样板可减少输入项，先清掉旧配置，避免尾部继续请求已移除的原料。
+            clearConfig();
             if (details == null) {
                 reportingKey = null;
-                for (var slot : exportOnlyItemList.getInventory()) {
-                    slot.setConfig(null);
-                }
-                for (var slot : exportOnlyFluidList.getInventory()) {
-                    slot.setConfig(null);
-                }
                 return;
             }
             if (details instanceof AEProcessingPattern aeProcessingPattern) {

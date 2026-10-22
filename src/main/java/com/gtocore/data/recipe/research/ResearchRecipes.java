@@ -84,8 +84,7 @@ public final class ResearchRecipes {
                 .EUt(1074000)
                 .duration(2400)
                 .vacuum(4)
-                .addCondition(new BeamCondition(6400, 749, 751))
-                .researchPoints(ResearchTag.OPTICS, 12)
+                .addCondition(new BeamCondition(64, 749, 751))
                 .save();
 
         var crystals = new ItemEntry[] {

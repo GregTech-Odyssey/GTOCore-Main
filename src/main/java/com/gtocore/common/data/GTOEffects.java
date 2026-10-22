@@ -17,6 +17,8 @@ public final class GTOEffects {
 
     public static final RegistryObject<GTOMysteriousBoostEffect> MYSTERIOUS_BOOST = MOB_EFFECTS.register("mysterious_boost",
             () -> new GTOMysteriousBoostEffect(MobEffectCategory.BENEFICIAL, 0xFF00FF));
+    public static final RegistryObject<GTOMysteriousBoostEffect> LARGE_MYSTERIOUS_BOOST = MOB_EFFECTS.register("large_mysterious_boost",
+            () -> new GTOMysteriousBoostEffect(MobEffectCategory.BENEFICIAL, 0xFF7F00));
 
     public static void init(IEventBus modBus) {
         MOB_EFFECTS.register(modBus);

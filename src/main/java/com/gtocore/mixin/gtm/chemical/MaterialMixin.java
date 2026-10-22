@@ -1,5 +1,6 @@
 package com.gtocore.mixin.gtm.chemical;
 
+import com.gtocore.api.data.material.MaterialType;
 import com.gtocore.client.renderer.item.MaterialsColorMap;
 
 import com.gtolib.api.data.chemical.material.GTOMaterial;
@@ -36,6 +37,24 @@ public abstract class MaterialMixin implements GTOMaterial {
 
     @Unique
     private boolean gtolib$glow;
+
+    @Unique
+    private volatile MaterialType gtocore$materialType;
+
+    @Override
+    public MaterialType gtocore$getBaseType() {
+        MaterialType materialType = gtocore$materialType;
+        if (materialType == null) {
+            materialType = MaterialType.classify((Material) (Object) this);
+            gtocore$materialType = materialType;
+        }
+        return materialType;
+    }
+
+    @Override
+    public void gtocore$setBaseType(MaterialType materialType) {
+        gtocore$materialType = materialType;
+    }
 
     @Override
     public Rarity gtolib$rarity() {

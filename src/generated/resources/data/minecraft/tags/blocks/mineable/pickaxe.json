@@ -377,6 +377,16 @@
     "gtocore:phase_stabilization_casing",
     "gtocore:frequency_division_phase_locking_casing",
     "gtocore:laureril_source_jar",
-    "gtocore:reactor_core"
+    "gtocore:standard_laureril_source_jar",
+    "gtocore:large_laureril_source_jar",
+    "gtocore:laureril_mana_pool",
+    "gtocore:large_laureril_mana_pool",
+    "gtocore:minesweeper_core",
+    "gtocore:happy_water_god_statue",
+    "gtocore:reactor_core",
+    "gtocore:me_interface_ii",
+    "gtocore:me_interface_iii",
+    "gtocore:me_interface_iv",
+    "gtocore:me_interface_v"
   ]
 }

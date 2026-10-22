@@ -16,6 +16,8 @@ import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProvider;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProviderIndex;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
@@ -58,7 +60,13 @@ import java.util.UUID;
  */
 @DataGeneratorScanned
 public final class MEDiskBoxMachine extends MetaMachine
-                                    implements IGridConnectedMachine, MEStorage, IStorageProvider, IStorageMultiblock, IFancyUIMachine, IDropSaveMachine {
+                                    implements IGridConnectedMachine, MEStorage, MEStorageProvider, IStorageProvider, IStorageMultiblock, IFancyUIMachine, IDropSaveMachine {
+
+    /** 自己就是存储本体，直接交给索引。 */
+    @Override
+    public MEStorage getStorageCap(net.minecraft.core.Direction side) {
+        return this;
+    }
 
     @RegisterLanguage(cn = "存储组件", en = "Storage Component")
     private static final String SLOT_LABEL = "gtocore.machine.me_disk_box.slot";
@@ -134,10 +142,13 @@ public final class MEDiskBoxMachine extends MetaMachine
         super.onLoad();
         tickSubs.initialize(getLevel());
         refreshCapacity();
+        // 注册进世界级八叉树索引：合成站之类的设备按范围直接查，不用扫方块
+        MEStorageProviderIndex.add(getLevel(), this);
     }
 
     @Override
     public void onUnload() {
+        MEStorageProviderIndex.remove(getLevel(), this);
         tickSubs.unsubscribe();
         super.onUnload();
     }

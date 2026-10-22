@@ -1,5 +1,6 @@
 package com.gtocore.common.data.machines;
 
+import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMaterials;
@@ -204,6 +205,7 @@ public final class MultiBlockF {
                             .where('P', blocks(GTBlocks.CASING_GRATE.get()))
                             .wherePart('Q', blocks(GTOBlocks.MOLECULAR_CASING.get())
                                     .or(GTOPredicates.autoThreadLaserAbilities(definition.getRecipeTypes()))
+                                    .or(abilities(GTOPartAbility.CATALYST_HATCH).setMaxGlobalLimited(1))
                                     .or(abilities(MAINTENANCE).setExactLimit(1)))
                             .where('R', controller(definition)))
                     .build())

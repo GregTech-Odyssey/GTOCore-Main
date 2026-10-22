@@ -96,7 +96,7 @@ public final class BotaniaRecipes {
         {
             ManaInfusionRecipe("pulsating", Ingredient.of(ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, PulsatingAlloy)), new ItemStack(ChemicalHelper.getItem(wireGtSingle, PulsatingAlloy)), 400, null, null);
             ManaInfusionRecipe("conductivee", Ingredient.of(ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, ConductiveAlloy)), new ItemStack(ChemicalHelper.getItem(wireGtSingle, ConductiveAlloy)), 1600, null, null);
-            ManaInfusionRecipe("energeticalloy", Ingredient.of(ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, EnergeticAlloy)), new ItemStack(ChemicalHelper.getItem(wireGtSingle, EnergeticAlloy)), 6000, null, null);
+            ManaInfusionRecipe("energeticalloy", Ingredient.of(ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, EnergeticAlloy)), new ItemStack(ChemicalHelper.getItem(wireGtSingle, EnergeticAlloy)), 6400, null, null);
             ManaInfusionRecipe("vibrantalloy", Ingredient.of(ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, VibrantAlloy)), new ItemStack(ChemicalHelper.getItem(wireGtSingle, VibrantAlloy)), 25600, null, null);
             ManaInfusionRecipe("endsteel", Ingredient.of(ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, EndSteel)), new ItemStack(ChemicalHelper.getItem(wireGtSingle, EndSteel)), 102400, null, null);
 

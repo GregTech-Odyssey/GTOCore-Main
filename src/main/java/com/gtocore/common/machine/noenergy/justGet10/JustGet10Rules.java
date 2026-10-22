@@ -30,10 +30,10 @@ public final class JustGet10Rules {
      */
     public enum BoardSize {
 
-        SMALL(5, 20),
-        MEDIUM(7, 40),
-        LARGE(9, 80),
-        HUGE(11, 160);
+        SMALL(5, 100),
+        MEDIUM(7, 200),
+        LARGE(9, 400),
+        HUGE(11, 800);
 
         public static final BoardSize[] ALL = values();
 

@@ -240,7 +240,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
                     blockPos.getX() + 3,
                     blockPos.getY() + 6,
                     blockPos.getZ() + 3).deflate(0.1)))
-                entity.kill();
+                entity.discard();
         }
         super.onWorking();
     }

@@ -3,8 +3,10 @@ package com.gtocore.client.forge;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
+import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.KeyBind;
+import com.gtocore.client.MaterialTypeTooltips;
 import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
 import com.gtocore.client.hud.HUDScreen;
@@ -28,10 +30,14 @@ import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.rule.RuleManager;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
+import com.gtolib.quest.client.ClientQuestData;
+import com.gtolib.quest.client.book.QuestBookScreen;
+import com.gtolib.quest.client.book.QuestBookSession;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
@@ -101,6 +107,7 @@ public final class ForgeClientEvent {
     private static final String BLOCK_PREFIX = "block." + GTOCore.MOD_ID;
 
     public static void init() {
+        ClientWorldLeakFixes.init();
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTickEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onTooltipEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTick);
@@ -145,6 +152,10 @@ public final class ForgeClientEvent {
             }
         }
         Item item = stack.getItem();
+        var materialEntry = ChemicalHelper.getMaterialEntry(item);
+        if (!materialEntry.isEmpty()) {
+            event.getToolTip().add(MaterialTypeTooltips.of(materialEntry.material()));
+        }
         var tips = ((IItem) item).gtolib$getTips();
         if (tips != null) event.getToolTip().addAll(1, tips.get());
         var lang = Tooltips.TOOL_TIPS_MAP.get(item);
@@ -301,6 +312,9 @@ public final class ForgeClientEvent {
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
         RuleManager.leaveRemoteWorld();
+        ClientQuestData.clear();
+        QuestBookScreen.releaseCaches();
+        QuestBookSession.clear();
     }
 
     /**

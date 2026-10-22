@@ -4,6 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
+import com.gtocore.integration.ae.TieredInterfaces;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RegistriesUtils;
@@ -33,13 +34,13 @@ public class SuperFactoryManager {
                 "ABA",
                 "CDC",
                 "AEA",
-                'A', new MaterialEntry(GTOTagPrefix.frameGt, GTMaterials.Ultimet), 'B', RegistriesUtils.getItemStack("expatternprovider:oversize_interface"), 'C', CustomTags.IV_CIRCUITS, 'D', new ItemStack(AEBlocks.CRAFTING_STORAGE_4K.asItem()), 'E', RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"));
+                'A', new MaterialEntry(GTOTagPrefix.frameGt, GTMaterials.Ultimet), 'B', new ItemStack(TieredInterfaces.block(1)), 'C', CustomTags.IV_CIRCUITS, 'D', new ItemStack(AEBlocks.CRAFTING_STORAGE_4K.asItem()), 'E', RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"));
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("cable"), RegistriesUtils.getItemStack("sfm:cable"),
                 "ABA",
                 "CDC",
                 "AEA",
-                'A', new MaterialEntry(GTOTagPrefix.plateDouble, GTMaterials.Titanium), 'B', GTItems.ROBOT_ARM_HV.asStack(), 'C', RegistriesUtils.getItemStack("expatternprovider:oversize_interface"), 'D', GTBlocks.CASING_POLYTETRAFLUOROETHYLENE_PIPE.asStack(), 'E', GTItems.FLUID_REGULATOR_HV.asStack());
+                'A', new MaterialEntry(GTOTagPrefix.plateDouble, GTMaterials.Titanium), 'B', GTItems.ROBOT_ARM_HV.asStack(), 'C', new ItemStack(TieredInterfaces.block(1)), 'D', GTBlocks.CASING_POLYTETRAFLUOROETHYLENE_PIPE.asStack(), 'E', GTItems.FLUID_REGULATOR_HV.asStack());
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("labelgun"), RegistriesUtils.getItemStack("sfm:labelgun"),
                 " AB",

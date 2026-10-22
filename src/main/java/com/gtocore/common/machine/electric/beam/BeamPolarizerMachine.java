@@ -2,8 +2,9 @@ package com.gtocore.common.machine.electric.beam;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 
-import com.gtolib.api.beam.BeamNode;
-import com.gtolib.api.beam.BeamPassContext;
+import com.gtolib.api.beam.BeamBatch;
+import com.gtolib.api.beam.BeamRay;
+import com.gtolib.api.beam.BeamRoutes;
 import com.gtolib.api.beam.IBeamOperator;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 
@@ -29,11 +30,17 @@ public class BeamPolarizerMachine extends SimpleNoEnergyMachine implements IBeam
     }
 
     @Override
-    public BeamNode operate(BeamPassContext context, BeamNode lastNode, Vec3 exactPos) {
-        var properties = lastNode.propertiesSnapshot().copy();
-        properties.polarization = BeamMachineUtils.normalizeAngle(properties.polarization + polarizationAngleRad);
-        properties.intensity = (long) (properties.intensity * context.decay());
-        return new BeamNode(exactPos.x, exactPos.y, exactPos.z, properties);
+    public void route(BeamRay incoming, Vec3 hit, BeamRoutes outputs) {
+        outputs.straight(incoming, hit);
+    }
+
+    @Override
+    public void evaluate(BeamBatch batch) {
+        for (int i = 0; i < batch.size(); i++) {
+            var pass = batch.pass(i);
+            pass.forward(0, 1);
+            pass.output(0).rotate(polarizationAngleRad);
+        }
     }
 
     @Override

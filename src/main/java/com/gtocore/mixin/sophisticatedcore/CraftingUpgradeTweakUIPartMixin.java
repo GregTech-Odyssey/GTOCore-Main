@@ -1,0 +1,52 @@
+package com.gtocore.mixin.sophisticatedcore;
+
+import com.gtocore.client.ClientWorldLeakFixes;
+import com.gtocore.client.CraftingUIReferenceHolder;
+
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
+import net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks.CraftingUpgradeTweakUIPart;
+
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
+
+@Mixin(value = CraftingUpgradeTweakUIPart.class, remap = false)
+public abstract class CraftingUpgradeTweakUIPartMixin implements CraftingUIReferenceHolder {
+
+    @Shadow
+    private StorageScreenBase<?> storageScreen;
+    @Shadow
+    @Final
+    private List<Button> buttons;
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void gtocore$trackCraftingUI(CallbackInfo ci) {
+        ClientWorldLeakFixes.trackCraftingUI(this);
+    }
+
+    @Inject(method = "setStorageScreen", at = @At("HEAD"))
+    private void gtocore$releasePreviousButtons(StorageScreenBase<?> screen, CallbackInfo ci) {
+        if (storageScreen != screen) buttons.clear();
+    }
+
+    @Unique
+    @Override
+    public void gtocore$releaseScreen(Screen screen) {
+        if (storageScreen == screen) gtocore$releaseClientReferences();
+    }
+
+    @Unique
+    @Override
+    public void gtocore$releaseClientReferences() {
+        buttons.clear();
+        storageScreen = null;
+    }
+}

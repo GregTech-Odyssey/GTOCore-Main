@@ -5,6 +5,8 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
+import com.gtocore.common.item.armor.HeatInsulationArmorItem;
+import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
@@ -13,6 +15,8 @@ import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.integration.Mods;
+import com.gtocore.integration.ae.SpeedCards;
+import com.gtocore.integration.ae.TieredInterfaces;
 import com.gtocore.integration.ae.wireless.WirelessEvents;
 import com.gtocore.integration.ae.wireless.WirelessNetworks;
 import com.gtocore.integration.ae.wireless.WirelessSync;
@@ -30,6 +34,7 @@ import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.OrganEffects;
 import com.gtolib.api.player.attribute.PlayerAttributes;
+import com.gtolib.quest.QuestServer;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.ServerUtils;
@@ -38,7 +43,6 @@ import com.gtolib.utils.register.BlockRegisterUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
-import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
@@ -46,9 +50,6 @@ import com.gregtechceu.gtceu.api.item.tool.GTToolItem;
 import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
-import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
-import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.TaskHandler;
@@ -57,7 +58,6 @@ import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
@@ -117,7 +117,6 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @DataGeneratorScanned
@@ -146,10 +145,13 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onEntityHurt);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onLivingAttack);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ForgeCommonEvent::onLivingDamage);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, HeatInsulationArmorItem::onLivingAttack);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, HeatInsulationArmorItem::onLivingHurt);
         AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();
         MEPatternBufferConnectionHandler.init();
+        QuestServer.init();
     }
 
     public static void onDropsEvent(LivingDropsEvent e) {
@@ -186,27 +188,7 @@ public final class ForgeCommonEvent {
 
     public static void onLivingJumpEvent(LivingEvent.LivingJumpEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.level() instanceof ServerLevel serverLevel) {
-            Optional.ofNullable(player.getEffect(GTOEffects.MYSTERIOUS_BOOST.get())).ifPresent(effect -> {
-                if (MetaMachine.getMachine(serverLevel, player.getOnPos()) instanceof WorkableTieredMachine machine && machine.getRecipeLogic().isWorking()) {
-                    RecipeLogic recipeLogic = machine.getRecipeLogic();
-                    int currentProgress = recipeLogic.getProgress();
-                    int maxProgress = recipeLogic.getMaxProgress();
-                    Optional.ofNullable(recipeLogic.getLastRecipe()).ifPresent(recipe -> {
-                        int recipeEUtTier = RecipeHelper.getRecipeEUtTier(recipe);
-                        if (effect.getAmplifier() >= recipeEUtTier) {
-                            int progress = Math.min(currentProgress + Math.min((int) (((double) 1 / GTValues.RNG.nextInt(6, 10)) * maxProgress), 20 * 30), maxProgress - 1);
-                            effect.duration -= progress - currentProgress;
-                            recipeLogic.setProgress(progress);
-                            serverLevel.sendParticles(ParticleTypes.FIREWORK, machine.getPos().getX(), machine.getPos().getY() + 6, machine.getPos().getZ(),
-                                    3,
-                                    0.3,
-                                    0.2,
-                                    0.3,
-                                    0.02);
-                        }
-                    });
-                }
-            });
+            OverseerCoke.onJump(player, serverLevel);
         }
     }
 
@@ -533,6 +515,8 @@ public final class ForgeCommonEvent {
 
     public static void remapIds(MissingMappingsEvent event) {
         ElectrochemistryMigration.remap(event);
+        SpeedCards.remap(event);
+        TieredInterfaces.remap(event);
         event.getMappings(Registries.BLOCK, GTOCore.MOD_ID).forEach(mapping -> {
             if (mapping.getKey().equals(GTOCore.id("abs_rad_casing"))) {
                 mapping.remap(GTOBlocks.ABS_RED_CASING.get());

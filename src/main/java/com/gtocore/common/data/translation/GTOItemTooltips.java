@@ -7,9 +7,11 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.Mods;
 import com.gtocore.integration.ae.AccelerationRates;
 
 import com.gtolib.api.item.IItem;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
@@ -41,7 +43,6 @@ import earth.terrarium.adastra.common.registry.ModBlocks;
 import java.util.List;
 
 import static com.direwolf20.buildinggadgets2.setup.Registration.TemplateManager;
-import static vazkii.botania.common.block.BotaniaBlocks.fabulousPool;
 
 public final class GTOItemTooltips {
 
@@ -167,6 +168,12 @@ public final class GTOItemTooltips {
 
         setTips(EPPItemAndBlock.PATTERN_MODIFIER.asItem(), PatternModifierTooltips);
 
+        var toolSwapper = GTOTips.of("tool_swapper_upgrade", t -> t.warning(t.tr("已禁用：存在卡服问题", "Disabled: causes server hangs")));
+        if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
+            setTips(RegistriesUtils.getItem("sophisticatedbackpacks:tool_swapper_upgrade"), toolSwapper);
+            setTips(RegistriesUtils.getItem("sophisticatedbackpacks:advanced_tool_swapper_upgrade"), toolSwapper);
+        }
+
         for (Item item : List.of(EPPItemAndBlock.TAG_STORAGE_BUS.asItem(), EPPItemAndBlock.MOD_STORAGE_BUS.asItem(), EPPItemAndBlock.PRECISE_STORAGE_BUS)) {
             setTips(item, GTOTips.of("pattern_modifier", t -> {
                 t.heading(t.tr("与存储设备进行交互", "Interact with storage devices"));
@@ -217,11 +224,8 @@ public final class GTOItemTooltips {
             }));
         }
 
-        setTips(fabulousPool.asItem(), GTOTips.of("fabulous_pool", t -> {
-            t.feature(t.tr("能存一千普通池子的魔力", "Can hold the mana of one thousand regular pools"));
-            t.edition();
-        }));
-        setTips(GTOBlocks.LAURERIL_JAR.asItem(), GTOTips.of("laureril_jar", t -> t.feature(t.tr("能存一千普通罐子的魔源", "Can hold the source of one thousand regular jars"))));
+        setTips(GTOBlocks.STANDARD_LAURERIL_JAR.asItem(), GTOTips.of("standard_laureril_jar", t -> t.feature(t.tr("容量是魔源罐的 8 倍", "Holds 8 times as much source as a Source Jar"))));
+        setTips(GTOBlocks.LARGE_LAURERIL_JAR.asItem(), GTOTips.of("large_laureril_jar", t -> t.feature(t.tr("容量是大型魔源罐的 8 倍", "Holds 8 times as much source as a Large Source Jar"))));
 
         for (Item item : List.of(AEItems.CERTUS_QUARTZ_KNIFE.asItem(), AEItems.NETHER_QUARTZ_KNIFE.asItem())) {
             setTips(item, GTOTips.of(t -> {

@@ -80,7 +80,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     }
 
     private void requestStorageUpdate() {
-        tickSubscription = subscribeServerTick(tickSubscription, storageMonitor);
+        tickSubscription = subscribeServerTick(tickSubscription, storageMonitor, 20);
     }
 
     /** 仅在接入网络时读取一次库存，后续由 watcher 增量维护。 */
