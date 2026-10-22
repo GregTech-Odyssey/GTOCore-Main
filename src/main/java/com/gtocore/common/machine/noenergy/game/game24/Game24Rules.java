@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.game24;
+package com.gtocore.common.machine.noenergy.game.game24;
 
 import net.minecraft.util.RandomSource;
 

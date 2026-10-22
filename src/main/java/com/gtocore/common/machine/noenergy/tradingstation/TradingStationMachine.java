@@ -165,10 +165,10 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         cardHandler.setFilter(k -> k instanceof AEItemKey i && i.getItem() == GTOItems.GREG_MEMBERSHIP_CARD.asItem());
         cardHandler.setOnChanged(() -> initializationInformation(cardStack()));
 
-        inputItem = NotifiableInventory.items(this, 32 * tier, IO.IN, IO.BOTH);
-        outputItem = NotifiableInventory.items(this, 32 * tier, IO.OUT, IO.OUT);
-        inputFluid = NotifiableInventory.fluids(this, tier * 4, 1000 * (8000 << tier), IO.IN, IO.BOTH);
-        outputFluid = NotifiableInventory.fluids(this, tier * 4, 1000 * (8000 << tier), IO.OUT, IO.OUT);
+        inputItem = NotifiableInventory.items(this, 32 * tier, IO.IN, IO.NONE);
+        outputItem = NotifiableInventory.items(this, 32 * tier, IO.OUT, IO.NONE);
+        inputFluid = NotifiableInventory.fluids(this, tier * 4, 1000 * (8000 << tier), IO.IN, IO.NONE);
+        outputFluid = NotifiableInventory.fluids(this, tier * 4, 1000 * (8000 << tier), IO.OUT, IO.NONE);
     }
 
     @Override

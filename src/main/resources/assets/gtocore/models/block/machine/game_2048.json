@@ -7,11 +7,11 @@
     "1": "block/copper_block",
     "2": "block/redstone_lamp_on",
     "3": "block/deepslate_tiles",
-    "4": "gtocore:block/machines/just_get_10/side",
-    "6": "gtocore:block/machines/just_get_10/face",
-    "7": "gtocore:block/machines/just_get_10/marquee",
-    "9": "gtocore:block/machines/just_get_10/coin_slot",
-    "16": "gtocore:block/machines/game_2048/game_2048",
+    "4": "gtocore:block/machines/game/side",
+    "6": "gtocore:block/machines/game/face",
+    "7": "gtocore:block/machines/game/marquee",
+    "9": "gtocore:block/machines/game/coin_slot",
+    "16": "gtocore:block/machines/game/game_2048",
     "particle": "block/iron_block"
   },
   "elements": [

@@ -1,12 +1,12 @@
-package com.gtocore.common.machine.noenergy.game2048;
+package com.gtocore.common.machine.noenergy.game.game2048;
 
 import net.minecraft.util.RandomSource;
 
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 「2048」的盘面规则：{@link BoardSize#size()}×{@link BoardSize#size()} 方格，每格是 {@link #EMPTY}（0）或 2 的幂，
- * 按行优先存进 {@code size * size} 长的 {@code int[]}（第 0 行在最上面）。
+ * 「2048」的盘面规则：{@link #SIZE}×{@link #SIZE} 方格，每格是 {@link #EMPTY}（0）或 2 的幂，按行优先存进
+ * {@link #CELL_COUNT} 长的 {@code int[]}（第 0 行在最上面）。
  *
  * <p>
  * 一次移动把整盘数字朝该方向推到底，相邻同值两两合并（同一回合里每个数字只参与一次合并）；只要有格子挪动或合并，
@@ -14,8 +14,7 @@ import org.jetbrains.annotations.Nullable;
  * 机器也就不改任何状态。
  *
  * <p>
- * 盘面尺寸是实例状态：机器按当前 {@link BoardSize} 建一份规则，换档位就重建，临时容器（旋转/合并中转盘面）跟着尺寸分配。
- * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用。
+ * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用（机器持有一份）。
  */
 public final class Game2048Rules {
 
@@ -25,49 +24,18 @@ public final class Game2048Rules {
     public static final int VALUE_MIN = 2;
     public static final int VALUE_MAX = 65536;
 
+    /** 盘面边长（固定 4×4）。 */
+    public static final int SIZE = 4;
+    /** 一盘多少格。 */
+    public static final int CELL_COUNT = SIZE * SIZE;
+    /**
+     * 兑现比例：超过兑现基线后每多少分折 1 枚游戏币。盘面固定 4×4，「同样分数能刷得更高」的档位差别已经没有了，
+     * 只留小盘的那个比例。
+     */
+    public static final int POINTS_PER_COIN = 200;
+
     /** 新格出现 {@link #VALUE_MIN} 两倍数字的概率，其余出 {@link #VALUE_MIN}。 */
     private static final double SPAWN_DOUBLE_CHANCE = 0.1;
-
-    /**
-     * 棋盘档位：格子越多越好合（同样分数能刷得更高），所以兑现比例随档位放宽——{@link #pointsPerCoin()} 是「超过
-     * 兑现基线后每多少分折 1 枚游戏币」，越大越不值钱。
-     */
-    public enum BoardSize {
-
-        SMALL(4, 200),
-        MEDIUM(6, 500),
-        LARGE(8, 1200);
-
-        public static final BoardSize[] ALL = values();
-
-        private final int size;
-        private final int pointsPerCoin;
-
-        BoardSize(int size, int pointsPerCoin) {
-            this.size = size;
-            this.pointsPerCoin = pointsPerCoin;
-        }
-
-        /** 盘面边长。 */
-        public int size() {
-            return size;
-        }
-
-        /** 一盘多少格。 */
-        public int cellCount() {
-            return size * size;
-        }
-
-        /** 兑现比例：超过基线后每多少分折 1 枚游戏币。 */
-        public int pointsPerCoin() {
-            return pointsPerCoin;
-        }
-
-        /** 按序数取档位，越界返回 {@code null}（存档与网络来的值一律校验）。 */
-        public static @Nullable BoardSize of(int ordinal) {
-            return ordinal >= 0 && ordinal < ALL.length ? ALL[ordinal] : null;
-        }
-    }
 
     /** 移动方向；{@link #rotations()} 是左旋几次后该方向就变成「往左推」，与合并逻辑一致。 */
     public enum Direction {
@@ -78,7 +46,7 @@ public final class Game2048Rules {
         DOWN;
 
         private static final Direction[] ALL = values();
-        /** 一次 90°，四个方向就是四次旋转；旋回的次数必须按 4 取模（按 {@code size} 取模会在 6 这类尺寸上多转 180°）。 */
+        /** 一次 90°，四个方向就是四次旋转；旋回的次数必须按 4 取模。 */
         private static final int ROTATIONS = 4;
 
         int rotations() {
@@ -100,61 +68,45 @@ public final class Game2048Rules {
      */
     public record Move(int[] board, int gained, boolean gameOver) {}
 
-    private final BoardSize boardSize;
-    private final int size;
-    private final int cellCount;
-
     /** 左旋后的工作盘面，合并就地写回这里。 */
-    private final int[] working;
+    private final int[] working = new int[CELL_COUNT];
     /** 单次 90° 左旋的中转盘面。 */
-    private final int[] rotated;
-    /** 一行去掉空格后的数字，最多 {@link #size} 个。 */
-    private final int[] filtered;
+    private final int[] rotated = new int[CELL_COUNT];
+    /** 一行去掉空格后的数字，最多 {@link #SIZE} 个。 */
+    private final int[] filtered = new int[SIZE];
     /** 一行合并后的结果。 */
-    private final int[] line;
+    private final int[] line = new int[SIZE];
 
-    private Game2048Rules(BoardSize boardSize) {
-        this.boardSize = boardSize;
-        this.size = boardSize.size();
-        this.cellCount = boardSize.cellCount();
-        this.working = new int[cellCount];
-        this.rotated = new int[cellCount];
-        this.filtered = new int[size];
-        this.line = new int[size];
-    }
+    private Game2048Rules() {}
 
-    /** 机器按当前档位持有一份实例，临时容器跟着它复用；换档位时重建。 */
-    public static Game2048Rules create(BoardSize boardSize) {
-        return new Game2048Rules(boardSize);
-    }
-
-    public BoardSize boardSize() {
-        return boardSize;
+    /** 机器持有一份实例，临时容器跟着它复用。 */
+    public static Game2048Rules create() {
+        return new Game2048Rules();
     }
 
     public int size() {
-        return size;
+        return SIZE;
     }
 
     public int cellCount() {
-        return cellCount;
+        return CELL_COUNT;
     }
 
     /** 开局：空盘上先补两个随机数字。 */
     public int[] createBoard(RandomSource random) {
-        int[] board = new int[cellCount];
+        int[] board = new int[CELL_COUNT];
         spawn(board, random);
         spawn(board, random);
         return board;
     }
 
     /**
-     * 存档里的盘面：长度不对（旧档或换过档位）时重建成空盘，非法数字（既不是 {@link #EMPTY}、也不是
+     * 存档里的盘面：长度不对（旧档）时重建成空盘，非法数字（既不是 {@link #EMPTY}、也不是
      * {@link #VALUE_MIN}~{@link #VALUE_MAX} 的 2 的幂）当空格。空盘由机器当成「还没开这一局」，不是可玩的局面。
      */
     public int[] normalizeBoard(int @Nullable [] board) {
-        if (board == null || board.length != cellCount) return new int[cellCount];
-        for (int cell = 0; cell < cellCount; cell++) {
+        if (board == null || board.length != CELL_COUNT) return new int[CELL_COUNT];
+        for (int cell = 0; cell < CELL_COUNT; cell++) {
             if (!isTileValue(board[cell])) board[cell] = EMPTY;
         }
         return board;
@@ -183,10 +135,10 @@ public final class Game2048Rules {
         rotateInto(board, direction.rotations());
         boolean moved = false;
         int gained = 0;
-        for (int row = 0; row < size; row++) {
-            int base = row * size;
+        for (int row = 0; row < SIZE; row++) {
+            int base = row * SIZE;
             int count = 0;
-            for (int col = 0; col < size; col++) {
+            for (int col = 0; col < SIZE; col++) {
                 int value = working[base + col];
                 if (value != EMPTY) filtered[count++] = value;
             }
@@ -201,8 +153,8 @@ public final class Game2048Rules {
                     line[index++] = filtered[i];
                 }
             }
-            while (index < size) line[index++] = EMPTY;
-            for (int col = 0; col < size; col++) {
+            while (index < SIZE) line[index++] = EMPTY;
+            for (int col = 0; col < SIZE; col++) {
                 if (working[base + col] != line[col]) moved = true;
                 working[base + col] = line[col];
             }
@@ -216,14 +168,14 @@ public final class Game2048Rules {
 
     /** 把 {@code board} 左旋 {@code times} 次写进 {@link #working}；{@code board} 就是它自己时只做旋转。 */
     private void rotateInto(int[] board, int times) {
-        if (board != working) System.arraycopy(board, 0, working, 0, cellCount);
+        if (board != working) System.arraycopy(board, 0, working, 0, CELL_COUNT);
         for (int pass = 0; pass < times; pass++) {
-            for (int row = 0; row < size; row++) {
-                for (int col = 0; col < size; col++) {
-                    rotated[(size - 1 - col) * size + row] = working[row * size + col];
+            for (int row = 0; row < SIZE; row++) {
+                for (int col = 0; col < SIZE; col++) {
+                    rotated[(SIZE - 1 - col) * SIZE + row] = working[row * SIZE + col];
                 }
             }
-            System.arraycopy(rotated, 0, working, 0, cellCount);
+            System.arraycopy(rotated, 0, working, 0, CELL_COUNT);
         }
     }
 
@@ -247,13 +199,13 @@ public final class Game2048Rules {
 
     /** 盘面没有空格、也没有相邻同数字：这一局到此为止。 */
     public boolean isGameOver(int[] board) {
-        for (int row = 0; row < size; row++) {
-            for (int col = 0; col < size; col++) {
-                int cell = row * size + col;
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                int cell = row * SIZE + col;
                 int value = board[cell];
                 if (value == EMPTY) return false;
-                if (col + 1 < size && board[cell + 1] == value) return false;
-                if (row + 1 < size && board[cell + size] == value) return false;
+                if (col + 1 < SIZE && board[cell + 1] == value) return false;
+                if (row + 1 < SIZE && board[cell + SIZE] == value) return false;
             }
         }
         return true;
