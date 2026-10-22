@@ -13,4 +13,8 @@ public class NotDevCompat {
     public static void addPlugin(Consumer<IModPlugin> list) {
         list.accept(questPlugin.get());
     }
+
+    public static void clearRuntime() {
+        FTBQuestsJEIIntegration.runtime = null;
+    }
 }

@@ -9,10 +9,10 @@ import net.minecraft.world.level.Level;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyLongMap;
 
-import appbot.ae2.ManaKey;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.mana.ManaPool;
+import vazkii.botania.forge.integration.ae2.ManaKey;
 
 import java.util.Optional;
 import java.util.function.LongSupplier;
@@ -82,8 +82,30 @@ public final class AEManaKeyHandler implements ManaPool {
 
     @Override
     public int getMaxMana() {
+        return MathUtil.saturatedCast(getMaxManaLong());
+    }
+
+    @Override
+    public long getMaxManaLong() {
         if (storageSupplier == null) return 0;
-        return MathUtil.saturatedCast(Math.max(0, (capacity - storageSupplier.getAsLong()) * 62));
+        long free = Math.max(0, capacity - storageSupplier.getAsLong());
+        return free > Long.MAX_VALUE / 62 ? Long.MAX_VALUE : free * 62;
+    }
+
+    @Override
+    public long getCurrentManaLong() {
+        return map == null ? 0 : map.getAmount(ManaKey.KEY);
+    }
+
+    @Override
+    public void receiveManaLong(long mana) {
+        if (map == null || mana == 0) return;
+        if (mana > 0) {
+            map.insert(ManaKey.KEY, mana);
+        } else {
+            map.extract(ManaKey.KEY, -mana);
+        }
+        onChange.run();
     }
 
     @Override

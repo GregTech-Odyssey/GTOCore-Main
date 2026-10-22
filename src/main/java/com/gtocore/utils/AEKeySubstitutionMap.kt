@@ -1,6 +1,7 @@
 package com.gtocore.utils
 
 import appeng.api.stacks.AEKey
+import appeng.api.stacks.AEKeyObjectMap
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap
 
 import java.util.concurrent.ConcurrentHashMap
@@ -14,7 +15,7 @@ class AEKeySubstitutionMap(priorityGroups: List<List<AEKey>>) {
     private val keyToPriorityGroup: Map<AEKey, List<AEKey>>
 
     init {
-        val mapBuilder = Reference2ReferenceOpenHashMap<AEKey, List<AEKey>>()
+        val mapBuilder = AEKeyObjectMap<AEKey, List<AEKey>>()
         priorityGroups.forEach { group ->
             if (group.isNotEmpty()) {
                 group.forEach { key ->

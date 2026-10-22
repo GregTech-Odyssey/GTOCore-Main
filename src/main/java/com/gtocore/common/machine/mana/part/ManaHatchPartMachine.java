@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.mana.part;
 
 import com.gtocore.common.data.GTOTickTimeMonitors;
+import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.ManaDistributorMachine;
@@ -16,21 +17,15 @@ import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMac
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.hollingsworth.arsnouveau.api.source.ISpecialSourceProvider;
-import com.hollingsworth.arsnouveau.api.util.SourceUtil;
-import com.hollingsworth.arsnouveau.common.block.tile.SourceJarTile;
 import org.jetbrains.annotations.NotNull;
 import vazkii.botania.api.mana.ManaCollector;
 import vazkii.botania.api.mana.ManaPool;
-import vazkii.botania.api.mana.ManaReceiver;
-import vazkii.botania.xplat.XplatAbstractions;
 
 public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements IManaMachine {
 
@@ -81,11 +76,10 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
 
     void tickUpdate() {
         if (isWorkingEnabled()) {
-            BlockPos frontPos = getPos().relative(getFrontFacing());
             Level level = getLevel();
             if (level == null) return;
-
-            ManaReceiver receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, frontPos, null);
+            var facing = getFrontFacing();
+            var receiver = this.findManaReceiver(facing, null);
             if (receiver != null && !receiver.isFull()) {
                 int mana = MathUtil.saturatedCast(manaContainer.getCurrentMana());
                 if (receiver instanceof ManaCollector collector) {
@@ -99,22 +93,17 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
                     manaContainer.notifyListeners();
                 }
             }
-
-            for (ISpecialSourceProvider provider : SourceUtil.canGiveSource(frontPos, level, 0)) {
-                if (provider.getSource() instanceof SourceJarTile jarTile) {
-                    if (!jarTile.canAcceptSource()) return;
-                    int availableSpace = jarTile.getMaxSource() - jarTile.getSource();
-                    if (availableSpace > 0) {
-                        int sourceToAdd = Math.min((int) (manaContainer.getCurrentMana() * 4), availableSpace);
-                        if (sourceToAdd > 0) {
-                            long removedMana = manaContainer.removeMana((sourceToAdd + 3) / 4, 20, false);
-                            if (removedMana > 0) {
-                                jarTile.addSource((int) (removedMana * 4));
-                                manaContainer.notifyListeners();
-                            }
-                        }
-                    }
-                    break;
+            var jarTile = findSourceJar(facing);
+            if (jarTile == null) return;
+            if (!jarTile.canAcceptSource()) return;
+            long availableSpace = jarTile.getMaxSourceLong() - jarTile.getSourceLong();
+            if (availableSpace > 0) {
+                long removable = manaContainer.removeMana(ManaUnification.sourceToMana(availableSpace), 20, true);
+                long source = ManaUnification.manaToSource(removable);
+                if (source > 0) {
+                    manaContainer.removeMana(ManaUnification.sourceToMana(source), 20, false);
+                    jarTile.addSourceLong(source);
+                    manaContainer.notifyListeners();
                 }
             }
         }

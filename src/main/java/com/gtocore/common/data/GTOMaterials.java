@@ -440,6 +440,8 @@ public final class GTOMaterials {
     public static Material NickelTetracarbonyl;
     // 氢饱和四羰基镍
     public static Material HydrogenSaturatedNickelTetracarbonyl;
+    // 聚丙烯酸
+    public static Material PolyacrylicAcid;
 
     // 小行星碎渣
     public static Material AsteroidFragment;

@@ -20,6 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.suried.gtoutils.spatial.BlockRange;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -49,7 +50,7 @@ public class TravelTargetsClientHandler {
         Player activeTeammate = TravelHandler.getTeleportTeammateTarget(player, anchorTarget);
         @Nullable
         ITravelTarget activeTarget = activeTeammate == null ? anchorTarget : null;
-        var targets = TravelUtils.filterTargets(player, data.getTravelTargets().stream()).toList();
+        var targets = TravelUtils.filterTargets(player, data.getTravelTargetsWithin(player.blockPosition(), BlockRange.sphere(TravelHandler.maxTargetRange() + 2)).stream()).toList();
         for (ITravelTarget target : targets) {
             double range = itemTeleport ? target.getItem2BlockRange() : target.getBlock2BlockRange();
             double distanceSquared = target.getPos().distToCenterSqr(player.position());

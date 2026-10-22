@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,30 +22,36 @@ import java.util.List;
 
 public final class ManaNetWalker extends PipeNetWalker<ManaPipeBlockEntity, ManaPipeProperties, ManaPipeNet> {
 
+    public record Routes(ManaRoutePath[] mana, SourceRoutePath[] source) {}
+
     @Nullable
-    public static List<ManaRoutePath> createNetData(ManaPipeNet pipeNet, BlockPos sourcePipe) {
+    public static Routes createNetData(ManaPipeNet pipeNet, BlockPos sourcePipe) {
         try {
-            var walker = new ManaNetWalker(pipeNet, sourcePipe, 1, new ArrayList<>());
+            var walker = new ManaNetWalker(pipeNet, sourcePipe, 1, new ArrayList<>(), new ArrayList<>());
             walker.traversePipeNet();
-            return walker.routes;
+            return new Routes(walker.manaRoutes.toArray(new ManaRoutePath[0]),
+                    walker.sourceRoutes.toArray(new SourceRoutePath[0]));
         } catch (Exception e) {
             GTOCore.LOGGER.error("error while create net data for pipe net", e);
         }
         return null;
     }
 
-    private final List<ManaRoutePath> routes;
+    private final List<ManaRoutePath> manaRoutes;
+    private final List<SourceRoutePath> sourceRoutes;
     private ManaPipeBlockEntity[] pipes = {};
 
-    public ManaNetWalker(ManaPipeNet pipeNet, BlockPos sourcePipe, int walkedBlocks, List<ManaRoutePath> routes) {
+    private ManaNetWalker(ManaPipeNet pipeNet, BlockPos sourcePipe, int walkedBlocks,
+                          List<ManaRoutePath> manaRoutes, List<SourceRoutePath> sourceRoutes) {
         super(pipeNet, sourcePipe, walkedBlocks);
-        this.routes = routes;
+        this.manaRoutes = manaRoutes;
+        this.sourceRoutes = sourceRoutes;
     }
 
     @NotNull
     @Override
     protected ManaNetWalker createSubWalker(ManaPipeNet pipeNet, Direction facingToNextPos, BlockPos nextPos, int walkedBlocks) {
-        var walker = new ManaNetWalker(pipeNet, nextPos, walkedBlocks, routes);
+        var walker = new ManaNetWalker(pipeNet, nextPos, walkedBlocks, manaRoutes, sourceRoutes);
         walker.pipes = pipes;
         return walker;
     }
@@ -59,9 +66,13 @@ public final class ManaNetWalker extends PipeNetWalker<ManaPipeBlockEntity, Mana
                                   @Nullable BlockEntity neighbourTile) {
         // assert that the last added pipe is the current pipe
         if (pipeTile != pipes[pipes.length - 1]) throw new IllegalStateException("The current pipe is not the last added pipe. Something went seriously wrong!");
+        if (neighbourTile == null) return;
         var opposite = faceToNeighbour.getOpposite();
         if (GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, neighbourTile, opposite) != null) {
-            routes.add(new ManaRoutePath(pipeTile, faceToNeighbour, getWalkedBlocks()));
+            manaRoutes.add(new ManaRoutePath(pipeTile, faceToNeighbour, getWalkedBlocks()));
+        }
+        if (neighbourTile instanceof ISourceTile) {
+            sourceRoutes.add(new SourceRoutePath(pipeTile, faceToNeighbour, getWalkedBlocks()));
         }
     }
 

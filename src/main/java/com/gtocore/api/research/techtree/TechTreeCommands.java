@@ -26,10 +26,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +136,7 @@ public final class TechTreeCommands {
         Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "player");
         TechTreeManager manager = getManager(context);
         TechTreeLayout layout = manager.getLayout();
-        Map<TechNode, Integer> nodeOrder = createNodeOrder(layout);
+        var nodeOrder = createNodeOrder(layout);
         int totalUnlocked = 0;
         for (var target : collectTargets(players)) {
             TechTree tree = TechTreeSavedData.findTree(target.teamUUID(), manager);
@@ -195,8 +195,8 @@ public final class TechTreeCommands {
         return result;
     }
 
-    private static Map<TechNode, Integer> createNodeOrder(TechTreeLayout layout) {
-        Map<TechNode, Integer> order = new IdentityHashMap<>();
+    private static Reference2IntOpenHashMap<TechNode> createNodeOrder(TechTreeLayout layout) {
+        Reference2IntOpenHashMap<TechNode> order = new Reference2IntOpenHashMap<>();
         int index = 0;
         for (TechNode node : layout.orderedNodes()) {
             order.put(node, index++);

@@ -2,6 +2,7 @@ package com.gtocore.common.pipe.mana;
 
 import com.gtocore.common.blockentity.ManaPipeBlockEntity;
 
+import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.pipenet.IRoutePath;
 
 import net.minecraft.core.BlockPos;
@@ -39,7 +40,7 @@ public final class ManaRoutePath implements IRoutePath<ManaReceiver> {
     public ManaReceiver getHandler(Level world) {
         var blockEntity = targetPipe.getNeighborBlockEntity(targetFacing);
         if (blockEntity == null) return null;
-        return blockEntity.getCapability(BotaniaForgeCapabilities.MANA_RECEIVER, targetFacing.getOpposite()).orElse(null);
+        return GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, blockEntity, targetFacing.getOpposite());
     }
 
     public @NotNull Direction getTargetFacing() {

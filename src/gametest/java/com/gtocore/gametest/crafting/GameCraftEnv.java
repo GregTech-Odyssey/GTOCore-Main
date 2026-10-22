@@ -1,5 +1,7 @@
 package com.gtocore.gametest.crafting;
 
+import appeng.api.stacks.AEKeyObjectMap;
+import appeng.api.stacks.AEKeySet;
 import com.gtolib.ae2.crafting2.logic.MainLogic;
 import com.gtolib.ae2.crafting2.utils.DisplayLevel;
 
@@ -34,9 +36,9 @@ import java.util.TreeMap;
 final class GameCraftEnv {
 
     final ObjectArrayList<IPatternDetails> patterns = new ObjectArrayList<>();
-    final Reference2ObjectOpenHashMap<AEKey, ObjectArrayList<IPatternDetails>> producers = new Reference2ObjectOpenHashMap<>();
+    final AEKeyObjectMap<AEKey, ObjectArrayList<IPatternDetails>> producers = new AEKeyObjectMap<>();
     final KeyCounter stock = new KeyCounter();
-    final ReferenceOpenHashSet<AEKey> emittable = new ReferenceOpenHashSet<>();
+    final AEKeySet<AEKey> emittable = new AEKeySet<>();
     private final IGrid grid;
 
     GameCraftEnv(ServerLevel level) {

@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
+import com.gtocore.integration.ae.TieredInterfaces;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -662,7 +663,7 @@ final class AssemblyLine {
                 .inputItems(CustomTags.LuV_CIRCUITS, 4)
                 .inputItems(GTOItems.CELL_COMPONENT_1M)
                 .inputItems("expatternprovider:ex_pattern_provider", 3)
-                .inputItems("expatternprovider:ex_interface", 3)
+                .inputItems(TieredInterfaces.block(1).asItem(), 3)
                 .inputItems(AEItems.SPEED_CARD.asItem(), 4)
                 .inputItems(AEItems.CAPACITY_CARD.asItem(), 2)
                 .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
@@ -703,7 +704,7 @@ final class AssemblyLine {
                 .inputItems(CustomTags.UHV_CIRCUITS, 16)
                 .inputItems(GTOItems.CELL_COMPONENT_4M)
                 .inputItems("expatternprovider:ex_pattern_provider", 3)
-                .inputItems("expatternprovider:ex_interface", 3)
+                .inputItems(TieredInterfaces.block(1).asItem(), 3)
                 .inputItems(AEItems.SPEED_CARD.asItem(), 4)
                 .inputItems(AEItems.CAPACITY_CARD.asItem(), 2)
                 .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
@@ -723,7 +724,7 @@ final class AssemblyLine {
                 .inputItems(GTAEMachines.ME_PATTERN_BUFFER, 1)
                 .inputItems(GTOItems.CELL_COMPONENT_16M, 4)
                 .inputItems("expatternprovider:ex_pattern_provider", 4)
-                .inputItems("expatternprovider:ex_interface", 4)
+                .inputItems(TieredInterfaces.block(1).asItem(), 4)
                 .inputItems(AEItems.SPEED_CARD.asItem(), 6)
                 .inputItems(AEItems.CAPACITY_CARD.asItem(), 4)
                 .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
@@ -741,7 +742,7 @@ final class AssemblyLine {
                 .inputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER, 4)
                 .inputItems(GTOItems.CELL_COMPONENT_256M, 16)
                 .inputItems("expatternprovider:ex_pattern_provider", 16)
-                .inputItems("expatternprovider:ex_interface", 16)
+                .inputItems(TieredInterfaces.block(1).asItem(), 16)
                 .inputItems(AEItems.SPEED_CARD.asItem(), 6)
                 .inputItems(AEItems.CAPACITY_CARD.asItem(), 4)
                 .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
@@ -1331,6 +1332,28 @@ final class AssemblyLine {
                         .CWUt(4096)
                         .EUt(125829120))
                 .researchNode(AnnihilationGenerator)
+                .save();
+
+        ASSEMBLY_LINE_RECIPES.recipeBuilder("neutron_compressor")
+                .inputItems(GTOBlocks.DIMENSIONALLY_TRANSCENDENT_CASING.asItem(), 16)
+                .inputItems(GTOBlocks.SPACETIME_COMPRESSION_FIELD_GENERATOR.asItem(), 4)
+                .inputItems(GTOBlocks.RESTRAINT_DEVICE.asItem(), 4)
+                .inputItems(GTItems.FIELD_GENERATOR_OpV, 8)
+                .inputItems(GTItems.ELECTRIC_PISTON_OpV, 16)
+                .inputItems(GTItems.ROBOT_ARM_OpV, 8)
+                .inputItems(CustomTags.OpV_CIRCUITS, 16)
+                .inputItems(GTOTagPrefix.NANITES, GTOMaterials.CosmicNeutronium, 8)
+                .inputItems(TagPrefix.rod, GTOMaterials.Infinity, 16)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.CosmicNeutronium, 32)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 23040)
+                .inputFluids(GTOMaterials.CosmicNeutronium, 9216)
+                .inputFluids(GTOMaterials.Infinity, 4608)
+                .outputItems(MultiBlockC.NEUTRON_COMPRESSOR.asItem())
+                .EUt(503316480)
+                .duration(2400)
+                .researchStation(b -> b.researchStack(MultiBlockD.HYPERDIMENSIONAL_PLASMA_FUSION_CORE.asItem())
+                        .CWUt(2048)
+                        .EUt(503316480))
                 .save();
 
         ASSEMBLY_LINE_RECIPES.recipeBuilder("eye_of_harmony")

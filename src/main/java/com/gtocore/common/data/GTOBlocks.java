@@ -1,15 +1,21 @@
 package com.gtocore.common.data;
 
 import com.gtocore.common.block.*;
-import com.gtocore.common.blockentity.SourceJarBE;
+import com.gtocore.common.block.LaurerilSourceJars;
 import com.gtocore.common.item.HeatPipeBlockItem;
 import com.gtocore.common.item.ManaPipeBlockItem;
 import com.gtocore.common.item.MufflerPipeBlockItem;
+import com.gtocore.common.item.SteamPipeBlockItem;
 import com.gtocore.common.item.UniversalPipeBlockItem;
 import com.gtocore.common.item.WirelessEnergyUnitBlockItem;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlock;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperCoreBlock;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperDisplayBlock;
+import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperFrameBlock;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
+import com.gtocore.common.pipe.steam.SteamPipeType;
 import com.gtocore.common.pipe.universal.UniversalPipeType;
 
 import com.gtolib.GTOCore;
@@ -21,38 +27,21 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.block.ActiveBlock;
 import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
-import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.common.data.GTModels;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
-import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.DynamicLoot;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
-import net.minecraft.world.level.storage.loot.functions.SetContainerContents;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.client.model.generators.loaders.CompositeModelBuilder;
@@ -61,16 +50,15 @@ import net.minecraftforge.common.util.TransformationHelper;
 
 import com.gto.registrate.util.entry.BlockEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+import com.hollingsworth.arsnouveau.common.block.LargeSourceJar;
 import com.hollingsworth.arsnouveau.common.block.SourceJar;
+import vazkii.botania.common.block.mana.LargeManaPoolBlock;
+import vazkii.botania.common.block.mana.ManaPoolBlock;
 
-import java.util.List;
 import java.util.Locale;
-
-import javax.annotation.Nullable;
 
 import static com.gtocore.common.block.BlockMap.*;
 import static com.gtocore.common.block.GlowingBlock.createStarStone;
-import static com.gtocore.common.data.GTOBlockEntities.SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY;
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static com.gtolib.utils.register.BlockRegisterUtils.*;
 
@@ -84,6 +72,8 @@ public final class GTOBlocks {
     public static final BlockEntry<MufflerPipeBlock>[] MUFFLER_PIPES = (BlockEntry<MufflerPipeBlock>[]) new BlockEntry<?>[MufflerPipeType.values().length];
     @SuppressWarnings("unchecked")
     public static final BlockEntry<UniversalPipeBlock>[] UNIVERSAL_PIPES = (BlockEntry<UniversalPipeBlock>[]) new BlockEntry<?>[UniversalPipeType.values().length];
+    @SuppressWarnings("unchecked")
+    public static final BlockEntry<SteamPipeBlock>[] STEAM_PIPES = (BlockEntry<SteamPipeBlock>[]) new BlockEntry<?>[SteamPipeType.values().length];
 
     public static void init() {
         GTO.removeDefaultCreativeTab();
@@ -839,45 +829,71 @@ public final class GTOBlocks {
                             .end()),
             () -> RenderType::cutoutMipped);
 
-    public static final BlockEntry<Block> LAURERIL_JAR = block("laureril_source_jar", "秘金魔源罐", p -> (Block) new SourceJar(p, "laureril_source_jar") {
+    public static final BlockEntry<SourceJar> LAURERIL_JAR = LaurerilSourceJars.registerLegacy();
+    public static final BlockEntry<SourceJar> STANDARD_LAURERIL_JAR = LaurerilSourceJars.registerStandard();
+    public static final BlockEntry<LargeSourceJar> LARGE_LAURERIL_JAR = LaurerilSourceJars.registerLarge();
 
-        @Override
-        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-            return new SourceJarBE(pos, state);
-        }
+    public static final BlockEntry<ManaPoolBlock> LAURERIL_MANA_POOL = LaurerilManaPools.registerPool();
+    public static final BlockEntry<LargeManaPoolBlock> LARGE_LAURERIL_MANA_POOL = LaurerilManaPools.registerLarge();
 
-        @Override
-        public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-            if (stack.getTag() == null)
-                return;
-            int mana = stack.getTag().getCompound("BlockEntityTag").getInt("source");
-            tooltip.add(Tips.stat(Component.translatable("ars_nouveau.source_jar.fullness", FormattingUtil.formatNumber2Places((mana * 100) / 1e7))));
-        }
-    })
-            .properties(props -> props
-                    .sound(SoundType.STONE)
-                    .strength(50, 2000)
-                    .requiresCorrectToolForDrops()
-                    .mapColor(MapColor.COLOR_BLACK)
-                    .instrument(NoteBlockInstrument.BASEDRUM))
-            .blockstate((ctx, prov) -> {
-                prov.getVariantBuilder(ctx.get()).forAllStates((state) -> {
-                    int fill = Math.min(state.getValue(SourceJar.fill) * 10, 100);
-                    return ConfiguredModel.builder().modelFile(prov.models().singleTexture("laureril_source_jar" + fill, RLUtils.ars("block/source_jar/source_jar" + fill), "2", GTOCore.id("block/laureril_source_jar"))).build();
-                });
-                prov.models().singleTexture("laureril_source_jar", RLUtils.ars("block/source_jar/source_jar0"), "2", GTOCore.id("block/laureril_source_jar"));
-            })
-            .tag(CustomTags.MINEABLE_WITH_WRENCH)
+    public static BlockEntry<MinesweeperCoreBlock> MINESWEEPER_CORE = block("minesweeper_core", "扫雷核心方块", MinesweeperCoreBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.5f).sound(SoundType.STONE).noLootTable())
+            .blockstate(NonNullBiConsumer.noop())
             .tag(BlockTags.MINEABLE_WITH_PICKAXE)
-            .loot((ctx, prov) -> {
-                ctx.add(prov, LootTable.lootTable().withPool(LootPool.lootPool()
-                        .add(LootItem.lootTableItem(prov.asItem())
-                                .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                        .copy("source", "BlockEntityTag.source"))
-                                .apply(SetContainerContents.setContents(SOURCE_JAR_BE_BLOCK_ENTITY_ENTRY.get()).withEntry(DynamicLoot.dynamicEntry(RLUtils.mc("contents")))))));
+            .simpleItem()
+            .register();
+    public static BlockEntry<MinesweeperDisplayBlock> MINESWEEPER_DISPLAY = block("minesweeper_display", "扫雷显示方块", MinesweeperDisplayBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(0.8f).sound(SoundType.STONE))
+            .blockstate(NonNullBiConsumer.noop())
+            .register();
+    public static BlockEntry<MinesweeperFrameBlock> MINESWEEPER_FRAME = block("minesweeper_frame", "扫雷边框方块", MinesweeperFrameBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE))
+            .blockstate(NonNullBiConsumer.noop())
+            .register();
+    public static BlockEntry<MinesweeperControlBlock> MINESWEEPER_CONTROL = block("minesweeper_control", "扫雷控制方块", MinesweeperControlBlock::new)
+            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE).noLootTable())
+            .blockstate(NonNullBiConsumer.noop())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<HappyWaterGodStatue> HAPPY_WATER_GOD_STATUE = block("happy_water_god_statue", "无限快乐水之神雕像", HappyWaterGodStatue::new)
+            .initialProperties(() -> net.minecraft.world.level.block.Blocks.QUARTZ_BLOCK)
+            .properties(p -> p.noOcclusion().strength(5, 1200).lightLevel(HappyWaterGodStatue::light))
+            .blockstate((ctx, prov) -> {
+                var top = prov.models().getBuilder("happy_water_god_statue_top").texture("particle", prov.mcLoc("block/quartz_pillar"));
+                var base = prov.models().getBuilder("happy_water_god_statue")
+                        .parent(prov.models().getExistingFile(prov.mcLoc("block/block")))
+                        .texture("particle", prov.mcLoc("block/quartz_pillar"))
+                        .texture("stone", prov.mcLoc("block/polished_blackstone"))
+                        .texture("gold", prov.mcLoc("block/gold_block"))
+                        .texture("pillar", prov.mcLoc("block/quartz_pillar"))
+                        .texture("cap", prov.mcLoc("block/quartz_pillar_top"))
+                        .element().from(0, 0, 0).to(16, 2, 16).allFaces((d, f) -> f.texture("#stone")).end()
+                        .element().from(1, 2, 1).to(15, 3, 15).allFaces((d, f) -> f.texture("#gold")).end()
+                        .element().from(2.5F, 3, 2.5F).to(13.5F, 6, 13.5F).allFaces((d, f) -> f.texture(d.getAxis().isVertical() ? "#cap" : "#pillar")).end()
+                        .element().from(1.5F, 6, 1.5F).to(14.5F, 7, 14.5F).allFaces((d, f) -> f.texture("#gold")).end()
+                        .element().from(1, 7, 1).to(15, 8, 15).allFaces((d, f) -> f.texture("#stone")).end();
+                prov.getVariantBuilder(ctx.get()).forAllStates(st -> ConfiguredModel.builder()
+                        .modelFile(st.getValue(HappyWaterGodStatue.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER ? top : base)
+                        .rotationY(((int) st.getValue(HappyWaterGodStatue.FACING).toYRot() + 180) % 360)
+                        .build());
             })
-            .item()
+            .tag(BlockTags.MINEABLE_WITH_PICKAXE)
+            .item(HappyWaterGodStatue.StatueItem::new)
+            .properties(p -> p.stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC))
+            .model((ctx, prov) -> prov.getBuilder(ctx.getName())
+                    .parent(new net.minecraftforge.client.model.generators.ModelFile.UncheckedModelFile("builtin/entity"))
+                    .guiLight(net.minecraft.client.renderer.block.model.BlockModel.GuiLight.SIDE)
+                    .texture("particle", prov.mcLoc("block/quartz_pillar"))
+                    .transforms()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.GUI).rotation(30, 225, 0).scale(0.625F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.GROUND).translation(0, 3, 0).scale(0.25F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.FIXED).scale(0.5F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND).rotation(75, 45, 0).translation(0, 2.5F, 0).scale(0.375F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND).rotation(75, 45, 0).translation(0, 2.5F, 0).scale(0.375F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_RIGHT_HAND).rotation(0, 45, 0).scale(0.4F).end()
+                    .transform(net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_LEFT_HAND).rotation(0, 225, 0).scale(0.4F).end()
+                    .end())
             .build()
             .register();
 
@@ -917,6 +933,19 @@ public final class GTOBlocks {
                     .register();
             MANA_PIPES[i] = entry;
         }
+
+        STEAM_PIPES[0] = block("steam_pipe", "蒸汽管道", (p) -> new SteamPipeBlock(p, SteamPipeType.STEAM))
+                .initialProperties(() -> Blocks.IRON_BLOCK)
+                .properties(p -> p.dynamicShape().noOcclusion().forceSolidOn())
+                .blockstate(NonNullBiConsumer.noop())
+                .defaultLoot()
+                .tag(CustomTags.MINEABLE_WITH_WRENCH)
+                .addLayer(() -> RenderType::cutoutMipped)
+                .color(() -> SteamPipeBlock::tintedColor)
+                .item(SteamPipeBlockItem::new)
+                .model(NonNullBiConsumer.noop())
+                .build()
+                .register();
 
         for (int i = 0; i < MufflerPipeType.values().length; ++i) {
             var type = MufflerPipeType.values()[i];

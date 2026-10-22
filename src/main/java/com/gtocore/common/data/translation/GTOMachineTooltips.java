@@ -8,6 +8,7 @@ import com.gtocore.common.machine.noenergy.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game2048.Game2048Rules;
 import com.gtocore.common.machine.noenergy.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game24.Game24Rules;
+import com.gtocore.common.machine.noenergy.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.justGet10.JustGet10Rules;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotSymbol;
@@ -182,7 +183,7 @@ public final class GTOMachineTooltips {
 
     // 合成十 - 玩法与计分说明
     public static final TipSpec JustGet10MachineTooltips = GTOTips.of("just_get_10", t -> {
-        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成十", "Just Get 10")));
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成UHV", "Just Get UHV")));
         t.heading(t.tr("5×5~11×11 盘面，提起整组后合并", "5×5 to 11×11 board; lift a group, then merge it"));
 
         t.heading(t.tr("玩法", "How to play"));
@@ -194,15 +195,16 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("档位与兑现", "Board size and payout"));
         t.feature(t.tr("「配置」页可换棋盘：小 5×5、中 7×7、大 9×9、特大 11×11；越大越好合，同一份积分越不值钱",
                 "The Config page switches the board: 5×5 / 7×7 / 9×9 / 11×11; bigger boards are easier to merge on and make the same score worth less"));
-        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 1000 的部分按档位每 %s / %s / %s / %s 分折 1 枚游戏币",
-                "A merge scores the merged number × group size; when the round ends or you restart, 1 Game Coin per %s / %s / %s / %s points above 1000, by board size",
+        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 %s 分的部分按档位每 %s / %s / %s / %s 分折 1 枚游戏币，达不到门槛不给",
+                "A merge scores the merged number × group size; when the round ends or you restart, the points above %s pay 1 Game Coin per %s / %s / %s / %s points by board size, and a round below the threshold pays nothing",
+                FormattingUtil.formatNumbers(JustGet10Machine.REDEMPTION_BASELINE),
                 JustGet10Rules.BoardSize.SMALL.pointsPerCoin(), JustGet10Rules.BoardSize.MEDIUM.pointsPerCoin(),
                 JustGet10Rules.BoardSize.LARGE.pointsPerCoin(), JustGet10Rules.BoardSize.HUGE.pointsPerCoin()));
     });
 
     // 2048 - 玩法与计分说明
     public static final TipSpec Game2048MachineTooltips = GTOTips.of("game_2048", t -> {
-        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("2048", "2048")));
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("电路2048", "Circuit 2048")));
         t.heading(t.tr("4×4~8×8 盘面，键盘推格合并", "4×4 to 8×8 board; push and merge with the keyboard"));
 
         t.heading(t.tr("玩法", "How to play"));
@@ -324,11 +326,6 @@ public final class GTOMachineTooltips {
         t.formula(t.tr("初始辐射=(配方辐射-抑制量)x(1+放射材料数量/64)", "Initial radiation = (Recipe radiation - inhibition) * (1 + count of radiation materials / 64)"));
         t.feature(t.tr("当仓中没有放射性材料时辐射随时间逐渐衰减", "When there are no radiation materials in the barn, the radioactivity gradually decreases over time"));
         t.control(t.tr("通入红石脉冲以清除残余辐射", "Input a redstone pulse to clear residual radiation"));
-    });
-
-    public static final TipSpec ModularConfigurationMaintenanceHatchTooltips = GTOTips.of("modular_configuration_maintenance_hatch", t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("插入不同的可配置维护仓以启用不同的功能", "Insert different configuration maintenance hatches to enable different functions."));
     });
 
     public static final TipSpec TempInterfaceTooltips = GTOTips.of("temp_vacuum_interface", t -> {
@@ -1138,7 +1135,12 @@ public final class GTOMachineTooltips {
     public static final TipSpec TreeGrowthSimulatorTooltips = GTOTips.of("tree_growth_simulator", t -> {
         t.heading(ComponentSlang.RunningRequirements);
         t.requirement(t.tr("需要安装伐木工具，仅支持GT工具", "Requires GT-compatible tree cutting tool"));
-        t.feature(t.tr("根据工具类型和品质决定产出和效率", "Output and efficiency determined by tool type and quality"));
+        t.feature(t.tr("工具材料的采掘速度决定运行速度，采掘等级越高越快", "Tool material harvest speed sets the running speed; higher harvest level is faster"));
+        t.feature(t.tr("电锯额外提升主产物产出", "A Chainsaw additionally boosts the main output"));
+        t.heading(t.tr("附魔加成", "Enchantment Bonuses"));
+        t.bonus(t.tr("时运：每级提升全部产物产出", "Fortune: each level boosts all outputs"));
+        t.bonus(t.tr("效率：每级加快运行速度", "Efficiency: each level speeds up the machine"));
+        t.bonus(t.tr("耐久：按原版规则减免工具磨损", "Unbreaking: reduces tool wear by vanilla rules"));
     });
 
     // 大型温室

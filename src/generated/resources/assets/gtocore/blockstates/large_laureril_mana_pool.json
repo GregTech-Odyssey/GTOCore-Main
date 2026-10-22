@@ -1,0 +1,119 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_floor"
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_rim"
+      },
+      "when": {
+        "north": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_rim",
+        "y": 90
+      },
+      "when": {
+        "east": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_rim",
+        "y": 180
+      },
+      "when": {
+        "south": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_rim",
+        "y": 270
+      },
+      "when": {
+        "west": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_post"
+      },
+      "when": {
+        "OR": [
+          {
+            "north": "false"
+          },
+          {
+            "east": "false"
+          },
+          {
+            "north_east": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_post",
+        "y": 90
+      },
+      "when": {
+        "OR": [
+          {
+            "east": "false"
+          },
+          {
+            "south": "false"
+          },
+          {
+            "south_east": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_post",
+        "y": 180
+      },
+      "when": {
+        "OR": [
+          {
+            "south": "false"
+          },
+          {
+            "west": "false"
+          },
+          {
+            "south_west": "false"
+          }
+        ]
+      }
+    },
+    {
+      "apply": {
+        "model": "gtocore:block/large_laureril_mana_pool_post",
+        "y": 270
+      },
+      "when": {
+        "OR": [
+          {
+            "west": "false"
+          },
+          {
+            "north": "false"
+          },
+          {
+            "north_west": "false"
+          }
+        ]
+      }
+    }
+  ]
+}

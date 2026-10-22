@@ -11,7 +11,6 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 
 import static com.gtocore.api.research.ResearchTag.BIOLOGY;
 import static com.gtocore.api.research.ResearchTag.ENERGY;
-import static com.gtocore.api.research.ResearchTag.EXOTIC;
 import static com.gtocore.api.research.ResearchTag.INTERSTELLAR_ENGINEERING;
 import static com.gtocore.data.techtree.MachinesNode.DysonSphereSeriesCasing;
 
@@ -187,7 +186,6 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(8192 * 20 * 7200L)
                             .addMaterialNeeded(ENERGY, 16384)
-                            .addMaterialNeeded(EXOTIC, 10)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:annihilation_constrainer"), 0.7F)
                             .build())
             .tier(5)

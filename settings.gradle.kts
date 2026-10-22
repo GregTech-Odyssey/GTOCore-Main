@@ -17,7 +17,7 @@ dependencyResolutionManagement {
             version("jetbrains-annotations", "26.0.2")
             version("kotlin", "2.3.20")
             version("kotlin-plugin", "2.3.20")
-            version("gtopublishgradleplugin", "1.0.25")
+            version("gtopublishgradleplugin", "1.0.27")
 
             plugin("modDevGradleLegacy", "net.neoforged.moddev.legacyforge").versionRef("modDevGradleLegacy")
             plugin("lombok", "io.freefair.lombok").versionRef("lombok")

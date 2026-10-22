@@ -34,9 +34,9 @@ public final class Game2048Rules {
      */
     public enum BoardSize {
 
-        SMALL(4, 20),
-        MEDIUM(6, 60),
-        LARGE(8, 180);
+        SMALL(4, 200),
+        MEDIUM(6, 500),
+        LARGE(8, 1200);
 
         public static final BoardSize[] ALL = values();
 
@@ -78,6 +78,8 @@ public final class Game2048Rules {
         DOWN;
 
         private static final Direction[] ALL = values();
+        /** 一次 90°，四个方向就是四次旋转；旋回的次数必须按 4 取模（按 {@code size} 取模会在 6 这类尺寸上多转 180°）。 */
+        private static final int ROTATIONS = 4;
 
         int rotations() {
             return ordinal();
@@ -206,7 +208,7 @@ public final class Game2048Rules {
             }
         }
         if (!moved) return null;
-        rotateInto(working, (size - direction.rotations()) % size);
+        rotateInto(working, (Direction.ROTATIONS - direction.rotations()) % Direction.ROTATIONS);
         int[] result = working.clone();
         spawn(result, random);
         return new Move(result, gained, isGameOver(result));

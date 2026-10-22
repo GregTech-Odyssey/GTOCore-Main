@@ -4,6 +4,8 @@ import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 import com.gtocore.utils.ManaUnification;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.feature.IWirelessManaContainerHolder;
 import com.gtolib.api.wireless.WirelessManaContainer;
 
@@ -30,19 +32,20 @@ import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
 
-import appbot.ae2.ManaKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
+import com.hollingsworth.arsnouveau.common.compat.ae2.SourceKey;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import gripe._90.arseng.me.key.SourceKey;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
+import vazkii.botania.forge.integration.ae2.ManaKey;
 
 import java.math.BigInteger;
 import java.util.UUID;
 
+@DataGeneratorScanned
 public final class MEManaInterface extends MetaMachine implements
                                    IGridConnectedMachine,
                                    MEStorage,
@@ -50,6 +53,9 @@ public final class MEManaInterface extends MetaMachine implements
                                    IWirelessManaContainerHolder,
                                    IStorageProvider,
                                    IFancyUIMachine {
+
+    @RegisterLanguage(cn = "魔力", en = "Mana")
+    public static final String BOTANIA_MANA = "gtocore.machine.me_mana_interface.botania_mana";
 
     @Getter
     @Setter
@@ -83,7 +89,7 @@ public final class MEManaInterface extends MetaMachine implements
     @Override
     public Component getDescription() {
         return Component.translatable("ars_nouveau.category.source").append("&").append(Component
-                .translatable("ftbquests.task.ftbquests.botania_mana"));
+                .translatable(BOTANIA_MANA));
     }
 
     @Override
@@ -93,43 +99,44 @@ public final class MEManaInterface extends MetaMachine implements
 
     @Override
     public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return what == ManaKey.KEY || what == SourceKey.KEY;
+        return isManaKey(what);
     }
 
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
-        if ((what != ManaKey.KEY && what != SourceKey.KEY) || getWirelessManaContainer() == null) {
+        var container = getWirelessManaContainer();
+        if (!isManaKey(what) || container == null || amount <= 0) {
             return 0;
         }
-        var converted = convert(what, amount);
         if (mode == Actionable.MODULATE) {
-            getWirelessManaContainer().setStorage(getWirelessManaContainer().getStorage().add(BigInteger.valueOf(converted)));
+            container.setStorage(container.getStorage().add(BigInteger.valueOf(toMana(what, amount))));
         }
         return amount;
     }
 
     @Override
     public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
-        if ((what != ManaKey.KEY && what != SourceKey.KEY) || getWirelessManaContainer() == null) {
+        var container = getWirelessManaContainer();
+        if (!isManaKey(what) || container == null || amount <= 0) {
             return 0;
         }
-        var converted = convert(what, amount);
-        long stored = BigIntegerUtils.getLongValue(getWirelessManaContainer().getStorage());
-        long toExtract = Math.min(stored, converted);
-        if (mode == Actionable.MODULATE) {
-            getWirelessManaContainer().setStorage(getWirelessManaContainer().getStorage().subtract(BigInteger.valueOf(toExtract)));
+        long extracted = Math.min(amount, fromMana(what, BigIntegerUtils.getLongValue(container.getStorage())));
+        if (extracted > 0 && mode == Actionable.MODULATE) {
+            container.setStorage(container.getStorage().subtract(BigInteger.valueOf(toMana(what, extracted))));
         }
-        return toExtract;
+        return Math.max(extracted, 0);
     }
 
-    private long convert(AEKey what, long amount) {
-        if (what == ManaKey.KEY) {
-            return amount;
-        } else if (what == SourceKey.KEY) {
-            return ManaUnification.sourceToMana(amount);
-        } else {
-            return 0;
-        }
+    private static boolean isManaKey(AEKey what) {
+        return what == ManaKey.KEY || what == SourceKey.KEY;
+    }
+
+    private static long toMana(AEKey what, long amount) {
+        return what == SourceKey.KEY ? ManaUnification.sourceToMana(amount) : amount;
+    }
+
+    private static long fromMana(AEKey what, long mana) {
+        return what == SourceKey.KEY ? ManaUnification.manaToSource(mana) : mana;
     }
 
     @Override
@@ -141,7 +148,7 @@ public final class MEManaInterface extends MetaMachine implements
         if (stored > 0) {
             toAdd.add(ManaKey.KEY, stored);
         }
-        long storedSource = ManaUnification.manaToSource(stored);
+        long storedSource = fromMana(SourceKey.KEY, stored);
         if (storedSource > 0) {
             toAdd.add(SourceKey.KEY, storedSource);
         }

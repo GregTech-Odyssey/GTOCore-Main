@@ -47,7 +47,6 @@ import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemInstance;
 import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemItem;
 import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemRegistry;
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMaps;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
@@ -452,14 +451,15 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         boolean changed;
         do {
             changed = false;
-            Map<Enchantment, Int2IntMap> enchantmentLevelCounts = new IdentityHashMap<>();
+            var enchantmentLevelCounts = new Reference2ReferenceOpenHashMap<Enchantment, Int2IntOpenHashMap>();
             for (EnchantmentLevel enchantment : enchantments) {
-                Int2IntMap levelCounts = enchantmentLevelCounts.computeIfAbsent(enchantment.enchantment(), k -> new Int2IntOpenHashMap());
+                var levelCounts = enchantmentLevelCounts.computeIfAbsent(enchantment.enchantment(), k -> new Int2IntOpenHashMap());
                 levelCounts.put(enchantment.level(), levelCounts.getOrDefault(enchantment.level(), 0) + 1);
             }
 
             enchantments.clear();
-            for (Map.Entry<Enchantment, Int2IntMap> enchantEntry : enchantmentLevelCounts.entrySet()) {
+            for (var iter = enchantmentLevelCounts.reference2ReferenceEntrySet().fastIterator(); iter.hasNext();) {
+                var enchantEntry = iter.next();
                 Enchantment enchantment = enchantEntry.getKey();
                 for (var it = Int2IntMaps.fastIterator(enchantEntry.getValue()); it.hasNext();) {
                     var levelEntry = it.next();
@@ -487,7 +487,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
         while (!remainingEnchantments.isEmpty()) {
             ItemStack outputBook = new ItemStack(Items.ENCHANTED_BOOK);
             Map<Enchantment, Integer> bookEnchantments = new LinkedHashMap<>();
-            Set<Enchantment> addedEnchantments = Collections.newSetFromMap(new IdentityHashMap<>());
+            Set<Enchantment> addedEnchantments = new ReferenceOpenHashSet<>();
             Iterator<EnchantmentLevel> iterator = remainingEnchantments.iterator();
             while (iterator.hasNext()) {
                 EnchantmentLevel enchantment = iterator.next();
@@ -567,7 +567,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
             DynamicHolder<LootRarity> upgradedRarity = RarityRegistry.next(rarity);
             if (!upgradedRarity.isBound() || upgradedRarity.get() == rarity.get()) continue;
 
-            gemSynthesisRecipeBuilder.inputItems(createGemStack(gem, rarity, pairCount * 2));
+            gemSynthesisRecipeBuilder.inputItems(createGemStack(gem, rarity, pairCount << 1));
             gemSynthesisRecipeBuilder.inputItems(rarity.get().getMaterial(), pairCount * 3);
             gemSynthesisRecipeBuilder.inputItems(Adventure.Items.GEM_DUST.get(), pairCount * getUpgradeDustCost(rarity));
             gemSynthesisRecipeBuilder.outputItems(createGemStack(gem, upgradedRarity, 1), pairCount);
@@ -922,7 +922,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
     }
 
     private static int getUpgradeDustCost(DynamicHolder<LootRarity> rarity) {
-        return rarity.isBound() ? Math.max(1, rarity.get().ordinal() * 2 + 1) : 1;
+        return rarity.isBound() ? Math.max(1, (rarity.get().ordinal() << 1) + 1) : 1;
     }
 
     private static ItemStack createGemStack(DynamicHolder<Gem> gem, DynamicHolder<LootRarity> rarity, int count) {

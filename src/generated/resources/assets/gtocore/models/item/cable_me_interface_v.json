@@ -1,0 +1,9 @@
+{
+  "parent": "ae2:item/cable_interface",
+  "textures": {
+    "back": "gtocore:part/me_interface_v_back",
+    "front": "gtocore:part/me_interface_v",
+    "particle": "gtocore:part/me_interface_v_back",
+    "sides": "gtocore:part/me_interface_v_sides"
+  }
+}

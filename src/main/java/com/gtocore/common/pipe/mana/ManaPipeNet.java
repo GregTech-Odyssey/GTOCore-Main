@@ -13,7 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 public final class ManaPipeNet extends PipeNet<ManaPipeProperties> {
 
-    private final Long2ObjectOpenHashMap<LoopIterator<ManaRoutePath>> netData = new Long2ObjectOpenHashMap<>();
+    private final Long2ObjectOpenHashMap<LoopIterator<ManaRoutePath>> manaNetData = new Long2ObjectOpenHashMap<>();
+    private final Long2ObjectOpenHashMap<LoopIterator<SourceRoutePath>> sourceNetData = new Long2ObjectOpenHashMap<>();
 
     public ManaPipeNet(LevelPipeNet<ManaPipeProperties, ? extends PipeNet<ManaPipeProperties>> world) {
         super(world);
@@ -21,31 +22,47 @@ public final class ManaPipeNet extends PipeNet<ManaPipeProperties> {
 
     @NotNull
     public LoopIterator<ManaRoutePath> getNetData(long pipePos, BlockPos pos) {
-        var path = netData.get(pipePos);
-        if (path != null) return path;
-        var paths = ManaNetWalker.createNetData(this, pos);
-        if (paths == null) return LoopIterator.EMPTY;
-        path = new LoopIterator<>(paths.toArray(new ManaRoutePath[0]));
-        netData.put(pipePos, path);
-        return path;
+        var data = manaNetData.get(pipePos);
+        if (data != null) return data;
+        var routes = ManaNetWalker.createNetData(this, pos);
+        if (routes == null) return LoopIterator.empty();
+        data = new LoopIterator<>(routes.mana());
+        manaNetData.put(pipePos, data);
+        sourceNetData.put(pipePos, new LoopIterator<>(routes.source()));
+        return data;
+    }
+
+    @NotNull
+    public LoopIterator<SourceRoutePath> getSourceNetData(long pipePos, BlockPos pos) {
+        var data = sourceNetData.get(pipePos);
+        if (data == null) {
+            getNetData(pipePos, pos);
+            data = sourceNetData.get(pipePos);
+        }
+        return data == null ? LoopIterator.empty() : data;
     }
 
     @Override
     public void onNeighbourUpdate(BlockPos fromPos) {
-        netData.clear();
+        clearNetData();
     }
 
     @Override
     public void onPipeConnectionsUpdate() {
-        netData.clear();
+        clearNetData();
     }
 
     @Override
     protected void transferNodeData(Long2ObjectOpenHashMap<Node<ManaPipeProperties>> transferredNodes,
                                     PipeNet<ManaPipeProperties> parentNet) {
         super.transferNodeData(transferredNodes, parentNet);
-        netData.clear();
-        ((ManaPipeNet) parentNet).netData.clear();
+        clearNetData();
+        ((ManaPipeNet) parentNet).clearNetData();
+    }
+
+    private void clearNetData() {
+        manaNetData.clear();
+        sourceNetData.clear();
     }
 
     @Override

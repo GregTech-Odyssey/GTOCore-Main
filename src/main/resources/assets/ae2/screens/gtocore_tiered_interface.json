@@ -1,0 +1,4 @@
+{
+  "$schema": "schema.json",
+  "includes": ["ex_interface.json"]
+}

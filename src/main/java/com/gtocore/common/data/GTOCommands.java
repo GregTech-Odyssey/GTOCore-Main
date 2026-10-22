@@ -13,6 +13,7 @@ import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.rule.RuleManager;
+import com.gtolib.quest.QuestCommands;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -126,6 +127,7 @@ public final class GTOCommands {
                 .then(ResarchTagCommands.registerScan());
         if (!FMLEnvironment.production) root.then(GridDemoCommand.create());
         dispatcher.register(root);
+        QuestCommands.register(dispatcher);
     }
 
     private static int toggleVoidWorldTime(com.mojang.brigadier.context.CommandContext<CommandSourceStack> ctx) {

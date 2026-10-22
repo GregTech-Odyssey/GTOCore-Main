@@ -130,6 +130,25 @@ public final class MembraneMaterialRecipes {
                 .outputFluids(HydrofluoricAcid, 2000)
                 .circuitMeta(5)
                 .duration(200).EUt(VA[HV]).save();
+
+        CHEMICAL_RECIPES.builder("ethyl_acrylate2")
+                .inputFluids(GTOMaterials.AcrylicAcid, 1000)
+                .inputFluids(GTMaterials.Methanol, 1000)
+                .inputFluids(GTMaterials.SulfuricAcid, 1000)
+                .outputFluids(GTOMaterials.MethylAcrylate, 1000)
+                .outputFluids(GTMaterials.DilutedSulfuricAcid, 1000)
+                .EUt(120L)
+                .duration(600)
+                .save();
+
+        CHEMICAL_RECIPES.builder("peroxyacetic_acid")
+                .inputFluids(GTMaterials.AceticAnhydride, 1000)
+                .inputFluids(GTMaterials.HydrogenPeroxide, 1000)
+                .outputFluids(GTOMaterials.PeroxyaceticAcid, 1000)
+                .outputFluids(GTMaterials.AceticAcid, 1000)
+                .EUt(120L)
+                .duration(600)
+                .save();
     }
 
     private static void polymers() {
@@ -203,6 +222,16 @@ public final class MembraneMaterialRecipes {
                 .outputItems(dust, BPDCNiPPYHydrogel, 4)
                 .outputFluids(Dioxane14, 1000)
                 .duration(600).EUt(VA[IV]).save();
+
+        POLYMERIZATION_REACTOR_RECIPES.builder("polyacrylic_acid_dust")
+                .outputItems(TagPrefix.dust, GTOMaterials.PolyacrylicAcid, 16)
+                .inputFluids(GTOMaterials.MethylAcrylate, 4000)
+                .inputFluids(GTMaterials.AceticAcid, 4000)
+                .inputFluids(GTMaterials.TitaniumTetrachloride, 100)
+                .outputFluids(GTMaterials.MethylAcetate, 4000)
+                .EUt(300L)
+                .duration(200)
+                .save();
     }
 
     private static void nafion() {
@@ -297,7 +326,7 @@ public final class MembraneMaterialRecipes {
     private static void membrane() {
         ASSEMBLER_RECIPES.builder("sdbhic_resin_ion_membrane")
                 .inputItems(TagPrefix.foil, GTOMaterials.SDBHICResin, 16)
-                .catalyst(GTOMaterials.RhodiumRheniumNaquadahCatalyst)
+                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.RhodiumRheniumNaquadahCatalyst)
                 .inputItems(Items.SPONGE)
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.SDBHICResin)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -306,7 +335,7 @@ public final class MembraneMaterialRecipes {
                 .save();
         ASSEMBLER_RECIPES.builder("polypyrrole_ion_membrane")
                 .inputItems(TagPrefix.foil, GTOMaterials.Polypyrrole, 16)
-                .catalyst(GTOMaterials.RhodiumRheniumNaquadahCatalyst)
+                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.RhodiumRheniumNaquadahCatalyst)
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.Polypyrrole)
                 .inputItems(Items.SPONGE)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -315,7 +344,7 @@ public final class MembraneMaterialRecipes {
                 .save();
         ASSEMBLER_RECIPES.builder("polyvinylidene_fluoride_ion_membrane")
                 .inputItems(TagPrefix.foil, GTOMaterials.PolyvinylideneFluoride, 16)
-                .inputItems(GTOTagPrefix.CATALYST, Silver, 4)
+                .inputItems(GTOTagPrefix.CATALYST, Silver)
                 .inputItems(Items.SPONGE)
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.PolyvinylideneFluoride)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -325,7 +354,7 @@ public final class MembraneMaterialRecipes {
 
         ASSEMBLER_RECIPES.builder("polytetrafluoroethylene_ion_membrane")
                 .inputItems(TagPrefix.foil, GTMaterials.Polytetrafluoroethylene, 16)
-                .catalyst(Nickel)
+                .inputItems(GTOTagPrefix.CATALYST, Nickel)
                 .inputItems(Items.SPONGE.asItem())
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTMaterials.Polytetrafluoroethylene)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -334,7 +363,7 @@ public final class MembraneMaterialRecipes {
                 .save();
         ASSEMBLER_RECIPES.builder("graphene_ion_membrane")
                 .inputItems(TagPrefix.foil, GTMaterials.Graphene, 16)
-                .inputItems(GTOTagPrefix.CATALYST, Platinum, 4)
+                .inputItems(GTOTagPrefix.CATALYST, Platinum)
                 .inputItems(Items.SPONGE.asItem())
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTMaterials.Graphene)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -343,7 +372,7 @@ public final class MembraneMaterialRecipes {
                 .save();
         ASSEMBLER_RECIPES.builder("polous_polyolefin_sulfonate_ion_membrane")
                 .inputItems(TagPrefix.foil, GTOMaterials.PolousPolyolefinSulfonate, 16)
-                .catalyst(GTOMaterials.TitaniumDioxideNanotubes)
+                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.TitaniumDioxideNanotubes)
                 .inputItems(Items.SPONGE.asItem())
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.PolousPolyolefinSulfonate)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -352,7 +381,7 @@ public final class MembraneMaterialRecipes {
                 .save();
         ASSEMBLER_RECIPES.builder("perfluorosulfonic_acid_polytetrafluoroethylene_copolymer_ion_membrane")
                 .inputItems(TagPrefix.foil, GTOMaterials.PerfluorosulfonicAcidPolytetrafluoroethyleneCopolymer, 16)
-                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.RhodiumRheniumNaquadahCatalyst, 4)
+                .inputItems(GTOTagPrefix.CATALYST, GTOMaterials.RhodiumRheniumNaquadahCatalyst)
                 .inputItems(Items.SPONGE.asItem())
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.PerfluorosulfonicAcidPolytetrafluoroethyleneCopolymer)
                 .inputFluids(GTMaterials.Polycaprolactam, 144)
@@ -464,6 +493,16 @@ public final class MembraneMaterialRecipes {
                 .inputItems(GTOItems.NAFION)
                 .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.MetallochaperoneBiomaterial)
                 .inputFluids(GTOMaterials.Polyimide, 144)
+                .EUt(8168L)
+                .duration(600)
+                .save();
+
+        ASSEMBLER_RECIPES.builder("polyacrylic_acid_ion_membrane")
+                .inputItems(TagPrefix.foil, GTOMaterials.PolyacrylicAcid, 16)
+                .inputItems(GTOTagPrefix.CATALYST, Palladium)
+                .inputItems(Items.SPONGE)
+                .outputItems(GTOTagPrefix.ION_MEMBRANE, GTOMaterials.PolyacrylicAcid)
+                .inputFluids(GTMaterials.Polycaprolactam, 144)
                 .EUt(8168L)
                 .duration(600)
                 .save();

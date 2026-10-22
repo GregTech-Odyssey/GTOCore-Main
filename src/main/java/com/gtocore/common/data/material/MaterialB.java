@@ -5841,5 +5841,11 @@ public final class MaterialB {
                 .color(0x8ad6c6)
                 .iconSet(DULL)
                 .buildAndRegister().setFormula("H2Ni(CO)4");
+        PolyacrylicAcid = material("polyacrylic_acid", "聚丙烯酸")
+                .polymer().dust()
+                .color(143, 25, 82)
+                .iconSet(DULL)
+                .flags(GENERATE_ION_MEMBRANE, GENERATE_FOIL, GENERATE_PLATE)
+                .buildAndRegister().setFormula("(C3H4O2)n");
     }
 }

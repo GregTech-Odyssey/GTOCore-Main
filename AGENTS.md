@@ -10,12 +10,15 @@
 |---|---|
 | 创建、修改或审查 Java/Kotlin 代码 | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节 |
 | 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
+| 修改 GTORules 的世界创建、读取或持久化流程 | [世界规则只读约定](docs/world-rules.md)；规则仅在创建世界时确定，已有世界禁止补写、迁移回写或修复改写 |
 | 定位或修复 GTM/AE2 行为、考虑在主仓增加 Mixin 或调整这两个依赖 | [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md) |
+| 修改 EMI 实现、AE/EMI 转换或 EMI 依赖 | [EMI 与 AE 的职责边界](docs/emi-integration.md) |
+| EMI 启动兼容性、配方/搜索性能基准或大规模目录回归 | [EMI benchmark](docs/emi-benchmark.md) |
 | 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖 | [本地 GTM 联调](docs/local-gtm.md) |
 | 操作 `GTOLib/`、`GTOSeal/`、GTOLib 构建缓存（`build/gtolib/`）、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与构建](docs/gtolib.md) |
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
 | 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
-| 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
+| 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 | 修改天气类型、天体天气行为、天气指令或天气预报 | [星系天气](docs/galaxy-weather.md) |
 | 修改动态维度生命周期、同步、兼容适配、实例元数据或天气存盘结构 | [动态维度系统](docs/dimensions.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
@@ -36,6 +39,14 @@ GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，
 - 由注册表、配方、标签派生的缓存或索引，或考虑数据包重载：读取“数据包与重载”。
 - 注册 Forge / mod 事件总线监听（新写处理器、`@SubscribeEvent`、`EventBusSubscriber`、`addListener`），或需要给已有处理器补接线入口：读取“事件注册”。`com.gtocore` 包（`mixin` 除外）已禁用 `@SubscribeEvent`，发行构建会直接失败。
 - 改动跨越多个领域或无法判断适用范围时，读取全文。优先跟随仓库已有实现和容器类型，不另造平行模式。
+
+## 依赖源码与性能（硬性）
+
+- **只以本仓 fork 的实际源码为准**：GTM 读 `../GregTech-Modern`，AE2 读 GTO 的 AE fork（`ae2_version` 指向的 `appeng:appliedenergistics2-forge-1.20.1:*`，本地解 jar/`javap` 或用仓库里的调用点）。不要读上游 AE/GT 官方源码，不要凭记忆或"看起来是这么回事"写实现；方法是否存在、签名与语义以实际字节码/源码为准（见 [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md)）。
+- **性能优先，不写自造遍历**：能在既有容器/API 上一次查到的，不写 `for` 全扫。典型例：模糊匹配用 GTO AE fork 在 `KeyCounter` 上的 `findFuzzyValue`（只要数量）/ `findFuzzyKey`（要具体 key）/ `containsFuzzy`（先判定再决定是否分配），语义与 `IExpandedStorageService#fuzzyExtract`、`crafting2` 取料一致；精确命中优先，未命中再走模糊。掉耐久物品（GT 工具、桶、流体容器）必须按"同类物品"匹配，`AEKey` 是引用类型，普通物品按引用比较。
+- **热路径零无谓分配**：先精确查 `get`/`contains`，需要集合时用仓库既有类型（`AEKeyLongMap`/`KeyCounter`/`ObjectArrayList`/`ReferenceOpenHashSet`），不要 streams、`Optional`、临时 `List` 装箱。
+- **DataSyncLib 持久化/同步**：自定义类型字段用 `@SaveToDisk` 时**不加 `final`**（final 会走 `@Access` 工厂，定义建不起来），编解码必须在 `GTOCodecs.init()` 里注册（早于机器注册）；机器字段不要拿 `@SyncToClient` 当界面同步用，界面走 uipro 的 `SyncValue`/`RPC`，可变的列表类数据要给"内容变了就换新快照实例"的 getter（`SyncValue` 用 `Objects.equals` 判变化）。
+- **uipro 界面**：尺寸按 `UISizes` 常量给死（例如 3×3 槽位所在行高必须是 `3 * SLOT_SIZE`，否则会压到下一行）；主页面用 `Form.page()` + `column/row/centeredRow` 竖排，不要给主页面套没必要的 `ScrollerView`；列表页用 `ScrollerView` + `VirtualList`/`AEStackGrid`。
 
 ## 构建与验证
 

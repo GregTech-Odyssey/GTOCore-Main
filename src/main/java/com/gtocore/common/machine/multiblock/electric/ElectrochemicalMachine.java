@@ -59,8 +59,11 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     private Object[] failureArguments;
     private Component recipeFailure;
     private boolean leftCandidateFound;
+    // Reservations from saves written before membrane durability was charged at recipe start.
     @SaveToDisk(defaultValue = "0")
     private long pendingMembraneDamage;
+    @SaveToDisk(defaultValue = "false")
+    private boolean membraneInUse;
 
     public ElectrochemicalMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -95,9 +98,15 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
         super.onPartScan(part);
         if (part instanceof SemipermeableMembraneHatch hatch) {
             membraneHatch = hatch;
-            // Older saves only recorded the controller's total reservation.
-            if (pendingMembraneDamage > 0 && !hatch.hasReservedUses() && !hatch.membrane().isEmpty()) hatch.reserveUses(pendingMembraneDamage);
-            hatch.setLocked(pendingMembraneDamage > 0);
+            if (pendingMembraneDamage > 0) {
+                // Older saves may only contain the controller's total reservation.
+                if (!hatch.hasReservedUses() && !hatch.membrane().isEmpty()) hatch.reserveUses(pendingMembraneDamage);
+                hatch.consumeReservedUses();
+                pendingMembraneDamage = 0;
+                membraneInUse = true;
+                onChanged();
+            }
+            hatch.setLocked(membraneInUse);
         }
     }
 
@@ -135,6 +144,7 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     public void onStructureInvalid() {
         if (membraneHatch != null) membraneHatch.setLocked(false);
         pendingMembraneDamage = 0;
+        membraneInUse = false;
         super.onStructureInvalid();
         membraneHatch = null;
         left = RecipeHandlerUnit.NO_DATA;
@@ -225,7 +235,10 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     }
 
     private void collectHalfRecipes(GTRecipeType type, RecipeHandlerUnit unit, ArrayList<GTRecipeDefinition> candidates, boolean firstSide) {
-        unit.findRecipe(type, (u, recipe) -> {
+        var map = unit.getSearchMap(type);
+        if (map.isEmpty()) return;
+        // Pairing needs all matching halves, not a pattern slot's single cached recipe.
+        type.search(unit, map, (u, recipe) -> {
             if (!acceptHalf(recipe.data.getData(HalfReactionRecipeExtension.INSTANCE))) return false;
             if (firstSide) leftCandidateFound = true;
             if (!checkTier(recipe) || !checkConditions(u, recipe)) {
@@ -419,15 +432,15 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
     public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
         super.beforeWorking(unit, recipe);
         if (recipe.data.getData(PairedReactionRecipeExtension.INSTANCE) != null) {
-            reserveMembraneUses(membraneHatch.durabilityCost(recipe.parallels, false));
+            consumeMembraneUses(membraneHatch.durabilityCost(recipe.parallels, false));
         }
     }
 
-    protected void reserveMembraneUses(long amount) {
-        pendingMembraneDamage += amount;
-        membraneHatch.reserveUses(amount);
-        onChanged();
+    protected void consumeMembraneUses(long amount) {
+        membraneInUse = true;
         membraneHatch.setLocked(true);
+        membraneHatch.consumeUses(amount);
+        onChanged();
     }
 
     public long membraneUsesRemaining() {
@@ -436,11 +449,10 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
 
     @Override
     public void afterWorking() {
-        if (pendingMembraneDamage > 0 && membraneHatch != null) {
-            membraneHatch.consumeReservedUses();
-            pendingMembraneDamage = 0;
+        if (membraneInUse) {
+            membraneInUse = false;
             onChanged();
-            membraneHatch.setLocked(false);
+            if (membraneHatch != null) membraneHatch.setLocked(false);
         }
         super.afterWorking();
     }

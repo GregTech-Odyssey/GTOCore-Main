@@ -11,11 +11,7 @@ import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
 
-import java.util.HashMap;
-
 public final class BeamCondition extends RecipeCondition {
-
-    private static final double TWO_PI = Math.PI * 2.0D;
 
     private final long minIntensity;
     private final int minWavelength;
@@ -60,38 +56,14 @@ public final class BeamCondition extends RecipeCondition {
     public boolean testCondition(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
         if (!(holder instanceof IMultiController controller)) return false;
 
-        var samples = new HashMap<BeamAccessPartMachine.BeamKey, long[]>();
-        for (var part : controller.getParts(BeamAccessPartMachine.class)) {
-            part.collectRecentIntensitySamples(samples);
-        }
-
         int minimumWavelength = Math.min(minWavelength, maxWavelength);
         int maximumWavelength = Math.max(minWavelength, maxWavelength);
-        float requiredPolarization = normalizePolarizationDegrees(polarization);
-        for (var entry : samples.entrySet()) {
-            var key = entry.getKey();
-            if (key.waveLength() < minimumWavelength || key.waveLength() > maximumWavelength) continue;
-            if (hasPolarization && Float.compare(key.polarization(), requiredPolarization) != 0) continue;
-            if (average(entry.getValue()) >= minIntensity) return true;
+        double angle = hasPolarization ? Math.toRadians(polarization) : Double.NaN;
+        double power = 0;
+        for (var part : controller.getParts(BeamAccessPartMachine.class)) {
+            power += part.averageReceivedPower(minimumWavelength, maximumWavelength, angle);
+            if (power >= minIntensity) return true;
         }
         return false;
-    }
-
-    private static long average(long[] samples) {
-        long quotient = 0L;
-        long remainder = 0L;
-        for (long sample : samples) {
-            quotient += sample / BeamAccessPartMachine.AVERAGE_WINDOW_TICKS;
-            remainder += sample % BeamAccessPartMachine.AVERAGE_WINDOW_TICKS;
-        }
-        return quotient + remainder / BeamAccessPartMachine.AVERAGE_WINDOW_TICKS;
-    }
-
-    private static float normalizePolarizationDegrees(double degrees) {
-        if (!Double.isFinite(degrees)) return 0.0F;
-        double radians = Math.toRadians(degrees) % TWO_PI;
-        if (radians > Math.PI) radians -= TWO_PI;
-        if (radians < -Math.PI) radians += TWO_PI;
-        return radians == 0.0D ? 0.0F : (float) radians;
     }
 }

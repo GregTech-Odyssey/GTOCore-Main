@@ -74,7 +74,7 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
 
     public long getAmpHours() {
         if (superUnit) return 0;
-        long base = baseAmperage(tier) / 2;
+        long base = tier >= GTValues.LV && tier <= GTValues.HV ? 4 : baseAmperage(tier) / 2;
         if (GTORules.WIRELESS_ENERGY_TIER.isEasy()) return base * 16;
         if (GTORules.WIRELESS_ENERGY_TIER.isExpert()) return base * 3 / 4;
         return base;

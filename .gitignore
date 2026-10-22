@@ -48,3 +48,4 @@ libs/gtonativelib*.jar
 /docs/local_repo_settings.md
 /logs/
 /config/
+/outputs/

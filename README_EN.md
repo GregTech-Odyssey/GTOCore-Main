@@ -15,7 +15,7 @@ GTOCore is the unified core mod for GregTech Odyssey. It targets Minecraft 1.20.
 
 This repository publishes the GTOCore source code and resources so that anyone can read, understand, and review the implementation.
 
-Public code under `com.gtocore` is distributed under the repository [LICENSE](LICENSE). gtolib remains a closed-source component.
+Licensing of this repository is governed by the [GregTech Odyssey license statement](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license). gtolib remains a closed-source component.
 
 ## gtolib Closed-Source Statement
 
@@ -58,6 +58,20 @@ Feature design, balancing, and release planning for GTOCore need to be coordinat
 
 The source is public for transparency, so that it can be read and reviewed. A full build relies on internal team components, so it cannot be compiled or run from the public repository, and there is no need to set up a development environment to test it yourself. To try the latest content, please use the official or test releases of the modpack.
 
+#### Build and Publish Markers (Maintainers)
+
+When pushing to this repository, put one of these markers in the commit message as a separate word to trigger a signed build:
+
+| Marker | Effect | Who can use it |
+|---|---|---|
+| `-b` | Build the signed jar only, publish nothing | Organization members |
+| `-p` | Build and publish to Maven only, for dev modpack builds | Publisher account |
+| `-cf` | Build and publish to Maven and CurseForge, for CurseForge modpack releases | Publisher account |
+
+Without a new commit, you can also run Build and Sign manually from the Actions page and pick a branch and mode (build / publish / publish-cf; the last two match `-p` and `-cf`).
+
+`-p` and `-cf` from any other account are ignored. Full rules: [build signing](docs/build-signing.md).
+
 ## License
 
-Public code under `com.gtocore` is distributed under the repository [LICENSE](LICENSE).
+See the [GregTech Odyssey license statement](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license).

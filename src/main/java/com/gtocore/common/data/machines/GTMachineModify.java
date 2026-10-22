@@ -4,6 +4,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.api.pattern.StructureModuleKeys;
 import com.gtocore.common.data.GTOMachines;
+import com.gtocore.common.machine.multiblock.steam.LargeBoilerFuel;
 
 import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.recipe.GTORecipeModifiers;
@@ -61,6 +62,7 @@ public final class GTMachineModify {
     }
 
     private static void modifyModifiersAndTooltips() {
+        LargeBoilerFuel.init();
         GTMultiMachines.MULTI_SMELTER.setRecipeTypes(new GTRecipeType[] { GTRecipeTypes.FURNACE_RECIPES });
         GTMultiMachines.MULTI_SMELTER.setTooltipBuilder((itemStack, components) -> components.add(Tips.stat(Component.translatable("gtceu.machine.available_recipe_map_1.tooltip", Component.translatable("gtceu.electric_furnace")))));
         GTMultiMachines.MULTI_SMELTER.setRecipeModifier(GTORecipeModifiers.UPGRADE_MULTI_SMELTER_OVERCLOCK);

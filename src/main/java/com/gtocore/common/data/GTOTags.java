@@ -1,5 +1,7 @@
 package com.gtocore.common.data;
 
+import com.gtocore.integration.ae.TieredInterfaces;
+
 import com.gtolib.GTOCore;
 import com.gtolib.patch.FastJsonOps;
 import com.gtolib.utils.RLUtils;
@@ -29,6 +31,7 @@ public class GTOTags {
     private boolean cache;
 
     private TagEntry convert(ResourceLocation id, TagEntry tagEntry) {
+        if (TieredInterfaces.isLegacyId(tagEntry.getId())) return null;
         if (cache) return tagEntry;
         if (tagEntry.getId().equals(RED_ALLOY_INGOT)) {
             cache = true;

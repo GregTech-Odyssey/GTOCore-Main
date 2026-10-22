@@ -1,0 +1,10 @@
+Required Notice: Copyright GregTech Odyssey (https://github.com/GregTech-Odyssey)
+
+GTOCore code: PolyForm Noncommercial License 1.0.0 (noncommercial use only)
+https://polyformproject.org/licenses/noncommercial/1.0.0
+
+License statement for GTOCore and the GregTech Odyssey modpack:
+https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license
+
+Full license texts:
+https://github.com/GregTech-Odyssey/GTOCore-Main/tree/0.6.0/licenses

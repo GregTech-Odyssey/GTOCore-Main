@@ -53,6 +53,10 @@ public abstract class AbstractRoundGameMachine<VIEW> extends AbstractGameMachine
     /** 局面阶段；只有服务端看它，界面按盘面自己判断能不能动。 */
     @SaveToDisk
     private int gameStatus = Status.IDLE.ordinal();
+    /**
+     * 本局是否已经结过账。不存盘：读档时按局面阶段还原（已结束的那一局在结束时就结过账了）。
+     */
+    private boolean settled;
     /** 棋盘档位（子类自己那个 BoardSize 枚举的序数）。 */
     @SaveToDisk
     @SyncToClient(scheduleUpdate = true)
@@ -106,6 +110,8 @@ public abstract class AbstractRoundGameMachine<VIEW> extends AbstractGameMachine
     protected final void sanitizeState() {
         if (gameStatus < 0 || gameStatus >= Status.values().length) setIdle();
         if (!isValidBoardSize(boardSize)) boardSize = 0;
+        // 已结束的那一局在结束时就已经兑现过，读档后不能再结一次账
+        settled = isGameOver();
         sanitizeRound();
     }
 
@@ -151,16 +157,20 @@ public abstract class AbstractRoundGameMachine<VIEW> extends AbstractGameMachine
         gameStatus = Status.IDLE.ordinal();
     }
 
-    /** 玩不动了：记下结束并把这局积分兑现掉。 */
+    /** 玩不动了：把这局积分兑现掉，再记下结束。先结账后改状态，任何顺序都不会漏给或重复给。 */
     protected final void endRound() {
-        gameStatus = Status.GAME_OVER.ordinal();
         cashOut();
+        gameStatus = Status.GAME_OVER.ordinal();
     }
 
-    /** 同一局只兑现一次：已经结束的那一局在 {@link #endRound()} 里结过了。 */
+    /**
+     * 把本局积分折成游戏币入余额；同一局只结一次账（{@link #settled} 一置位，结束、重新开始、换档位、拆机器都不会
+     * 再给第二次）。分数没超过兑现基线时同样算结过账，只是这次给 0 枚。
+     */
     @Override
     protected void cashOut() {
-        if (isGameOver()) return;
+        if (settled) return;
+        settled = true;
         long reward = (score - redemptionBaseline()) / pointsPerCoin();
         if (reward > 0) addBalance(reward);
     }
@@ -172,10 +182,11 @@ public abstract class AbstractRoundGameMachine<VIEW> extends AbstractGameMachine
         setIdle();
     }
 
-    /** 服务端：开新一局（清零本局成绩并进入进行中）。 */
+    /** 服务端：开新一局（清零本局成绩并进入进行中），并重新打开「可以结账」的开关。 */
     protected final void startRound() {
         dealBoard();
         resetScore();
+        settled = false;
         setPlaying();
     }
 

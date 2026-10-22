@@ -57,7 +57,11 @@
       "net.minecraft.nbt.NbtOps.NbtRecordBuilder": "net/minecraft/nbt/NbtOps$NbtRecordBuilder"
     },
     "com/gtolib/mixin/mc/LevelSettingMixin": {
-      "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;"
+      "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+      "withDataConfiguration": "Lnet/minecraft/world/level/LevelSettings;m_247275_(Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+      "withDifficulty": "Lnet/minecraft/world/level/LevelSettings;m_46918_(Lnet/minecraft/world/Difficulty;)Lnet/minecraft/world/level/LevelSettings;",
+      "copy": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+      "withGameType": "Lnet/minecraft/world/level/LevelSettings;m_46922_(Lnet/minecraft/world/level/GameType;)Lnet/minecraft/world/level/LevelSettings;"
     },
     "com/gtocore/mixin/mc/mob/AbstractSkeletonMixin": {
       "getArrow": "Lnet/minecraft/world/entity/monster/AbstractSkeleton;m_7932_(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;",
@@ -376,7 +380,9 @@
       "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;openFresh(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_232896_(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V"
     },
     "com/gtolib/mixin/mc/PrimaryLevelDataMixin": {
-      "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V"
+      "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V",
+      "Lnet/minecraft/world/level/LevelSettings;copy()Lnet/minecraft/world/level/LevelSettings;": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+      "<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V": "Lnet/minecraft/world/level/storage/PrimaryLevelData;<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V"
     },
     "com/gtocore/mixin/ae2/menu/PatternAccessTermMenuMixin": {
       "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z": "Lnet/minecraft/world/entity/player/Inventory;m_36054_(Lnet/minecraft/world/item/ItemStack;)Z"
@@ -484,6 +490,27 @@
     },
     "com/gtolib/mixin/mc/world/DimensionTicketAccessor": {
       "timedOut": "m_9434_(J)Z"
+    },
+    "com/gtocore/mixin/botania/optimize/BergamuteBlockEntityMixin": {
+      "Lnet/minecraft/world/level/Level;hasNeighborSignal(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/world/level/Level;m_276867_(Lnet/minecraft/core/BlockPos;)Z"
+    },
+    "com/gtocore/mixin/botania/optimize/HopperhockBlockEntityMixin": {
+      "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;getLevel()Lnet/minecraft/world/level/Level;": "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;m_58904_()Lnet/minecraft/world/level/Level;"
+    },
+    "com/gtocore/mixin/mc/ItemAccessor": {
+      "descriptionId": "f_41379_:Ljava/lang/String;"
+    },
+    "com/gtocore/mixin/mc/BlockAccessor": {
+      "descriptionId": "f_49787_:Ljava/lang/String;"
+    },
+    "com/gtocore/mixin/mc/MappedRegistryAccessor": {
+      "unregisteredIntrusiveHolders": "f_244282_:Ljava/util/Map;"
+    },
+    "com/gtocore/mixin/mc/BlockEntityMixin": {
+      "loadStatic": "Lnet/minecraft/world/level/block/entity/BlockEntity;m_155241_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+    },
+    "com/gtolib/mixin/mc/entity/FoodDataAccessor": {
+      "saturationLevel": "f_38697_:F"
     }
   },
   "data": {
@@ -545,7 +572,11 @@
         "net.minecraft.nbt.NbtOps.NbtRecordBuilder": "net/minecraft/nbt/NbtOps$NbtRecordBuilder"
       },
       "com/gtolib/mixin/mc/LevelSettingMixin": {
-        "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;"
+        "parse": "Lnet/minecraft/world/level/LevelSettings;m_46924_(Lcom/mojang/serialization/Dynamic;Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+        "withDataConfiguration": "Lnet/minecraft/world/level/LevelSettings;m_247275_(Lnet/minecraft/world/level/WorldDataConfiguration;)Lnet/minecraft/world/level/LevelSettings;",
+        "withDifficulty": "Lnet/minecraft/world/level/LevelSettings;m_46918_(Lnet/minecraft/world/Difficulty;)Lnet/minecraft/world/level/LevelSettings;",
+        "copy": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+        "withGameType": "Lnet/minecraft/world/level/LevelSettings;m_46922_(Lnet/minecraft/world/level/GameType;)Lnet/minecraft/world/level/LevelSettings;"
       },
       "com/gtocore/mixin/mc/mob/AbstractSkeletonMixin": {
         "getArrow": "Lnet/minecraft/world/entity/monster/AbstractSkeleton;m_7932_(Lnet/minecraft/world/item/ItemStack;F)Lnet/minecraft/world/entity/projectile/AbstractArrow;",
@@ -864,7 +895,9 @@
         "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;openFresh(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V": "Lnet/minecraft/client/gui/screens/worldselection/CreateWorldScreen;m_232896_(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/screens/Screen;)V"
       },
       "com/gtolib/mixin/mc/PrimaryLevelDataMixin": {
-        "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V"
+        "setTagData": "Lnet/minecraft/world/level/storage/PrimaryLevelData;m_78545_(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/nbt/CompoundTag;)V",
+        "Lnet/minecraft/world/level/LevelSettings;copy()Lnet/minecraft/world/level/LevelSettings;": "Lnet/minecraft/world/level/LevelSettings;m_46935_()Lnet/minecraft/world/level/LevelSettings;",
+        "<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V": "Lnet/minecraft/world/level/storage/PrimaryLevelData;<init>(Lnet/minecraft/world/level/LevelSettings;Lnet/minecraft/world/level/levelgen/WorldOptions;Lnet/minecraft/world/level/storage/PrimaryLevelData$SpecialWorldProperty;Lcom/mojang/serialization/Lifecycle;)V"
       },
       "com/gtocore/mixin/ae2/menu/PatternAccessTermMenuMixin": {
         "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z": "Lnet/minecraft/world/entity/player/Inventory;m_36054_(Lnet/minecraft/world/item/ItemStack;)Z"
@@ -972,6 +1005,27 @@
       },
       "com/gtolib/mixin/mc/world/DimensionTicketAccessor": {
         "timedOut": "m_9434_(J)Z"
+      },
+      "com/gtocore/mixin/botania/optimize/BergamuteBlockEntityMixin": {
+        "Lnet/minecraft/world/level/Level;hasNeighborSignal(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/world/level/Level;m_276867_(Lnet/minecraft/core/BlockPos;)Z"
+      },
+      "com/gtocore/mixin/botania/optimize/HopperhockBlockEntityMixin": {
+        "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;getLevel()Lnet/minecraft/world/level/Level;": "Lvazkii/botania/common/block/flower/functional/HopperhockBlockEntity;m_58904_()Lnet/minecraft/world/level/Level;"
+      },
+      "com/gtocore/mixin/mc/ItemAccessor": {
+        "descriptionId": "f_41379_:Ljava/lang/String;"
+      },
+      "com/gtocore/mixin/mc/BlockAccessor": {
+        "descriptionId": "f_49787_:Ljava/lang/String;"
+      },
+      "com/gtocore/mixin/mc/MappedRegistryAccessor": {
+        "unregisteredIntrusiveHolders": "f_244282_:Ljava/util/Map;"
+      },
+      "com/gtocore/mixin/mc/BlockEntityMixin": {
+        "loadStatic": "Lnet/minecraft/world/level/block/entity/BlockEntity;m_155241_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;"
+      },
+      "com/gtolib/mixin/mc/entity/FoodDataAccessor": {
+        "saturationLevel": "f_38697_:F"
       }
     }
   }

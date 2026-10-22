@@ -1,0 +1,23 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "gtocore:gui/material_type.png",
+      "ascent": 8,
+      "height": 10,
+      "chars": [
+        "\uE000",
+        "\uE001",
+        "\uE002",
+        "\uE003",
+        "\uE004",
+        "\uE005",
+        "\uE006",
+        "\uE007",
+        "\uE008",
+        "\uE009",
+        "\uE00A"
+      ]
+    }
+  ]
+}

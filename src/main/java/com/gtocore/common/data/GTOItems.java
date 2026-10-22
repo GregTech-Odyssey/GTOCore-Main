@@ -15,19 +15,23 @@ import com.gtocore.common.data.translation.GTOMachineStories;
 import com.gtocore.common.data.translation.GTOTarotArcanumTooltips;
 import com.gtocore.common.data.translation.MultiblockSlang;
 import com.gtocore.common.item.*;
+import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.armor.SpaceArmorComponentItem;
 import com.gtocore.common.item.armor.WardenArmorComponentItem;
 import com.gtocore.common.item.devtool.CreativeAllFluidCellItem;
 import com.gtocore.common.item.misc.GrassHarvesterBehaviour;
+import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.lootTables.RewardBagLoot;
-import com.gtocore.integration.ae.SuperSpeedCard;
+import com.gtocore.integration.ae.SpeedCards;
+import com.gtocore.integration.ae.TieredInterfaces;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.quest.QuestBookItem;
 import com.gtolib.utils.StringUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;
 
@@ -88,7 +92,8 @@ public final class GTOItems {
     public static void init() {
         GTOOrganItems.init();
         GTOAEParts.init();
-        SuperSpeedCard.init();
+        SpeedCards.init();
+        TieredInterfaces.init();
         ComponentSlang.init();
         MultiblockSlang.init();
         GTOMachineStories.init();
@@ -418,6 +423,11 @@ public final class GTOItems {
             .model(NonNullBiConsumer.noop())
             .register();
 
+    public static final ItemEntry<QuestBookItem> QUEST_BOOK = item("quest_book", "任务书", QuestBookItem::new)
+            .lang("Quest Book")
+            .properties(p -> p.stacksTo(1))
+            .register();
+
     public static final ItemEntry<Item> GRINDBALL_SOAPSTONE = item("grindball_soapstone", "皂石研磨球")
             .properties(p -> p.stacksTo(1).defaultDurability(50))
             .register();
@@ -513,7 +523,8 @@ public final class GTOItems {
 
     public static final ItemEntry<Item>[] UNIVERSAL_CIRCUIT = registerCircuits("universal_circuit", "通用电路", GTValues.tiersBetween(GTValues.ULV, GTValues.MAX), tier -> Component.translatable("gtocore.tooltip.item.tier_circuit", GTValues.VN[tier]).withStyle(ChatFormatting.AQUA));
 
-    public static final ItemEntry<ComponentItem>[] MYSTERIOUS_BOOST_DRINK = registerMysteriousBoostDrink();
+    public static final ItemEntry<ComponentItem>[] MYSTERIOUS_BOOST_DRINK = OverseerCoke.register(false);
+    public static final ItemEntry<ComponentItem>[] LARGE_MYSTERIOUS_BOOST_DRINK = OverseerCoke.register(true);
 
     public static final ItemEntry<Item> NEUTRON_COIN = item("neutron_coin", "中子素币").model(NonNullBiConsumer.noop()).register();
 
@@ -813,6 +824,7 @@ public final class GTOItems {
     public static final ItemEntry<Item> WYVERN_CORE = register("wyvern_core", "双足飞龙核心");
     public static final ItemEntry<Item> AWAKENED_CORE = register("awakened_core", "觉醒核心");
     public static final ItemEntry<Item> CHAOTIC_CORE = register("chaotic_core", "混沌核心");
+    public static final ItemEntry<Item> HAPPY_WATER_GOD_CORE = register("happy_water_god_core", "无限快乐水之神核心");
     public static final ItemEntry<Item> WYVERN_ENERGY_CORE = register("wyvern_energy_core", "双足飞龙能量核心");
     public static final ItemEntry<Item> DRACONIC_ENERGY_CORE = register("draconic_energy_core", "神龙能量核心");
     public static final ItemEntry<Item> CHAOTIC_ENERGY_CORE = register("chaotic_energy_core", "混沌能量核心");
@@ -1157,6 +1169,35 @@ public final class GTOItems {
             .properties(p -> p.rarity(Rarity.EPIC))
             .tag(Tags.Items.ARMORS_CHESTPLATES)
             .tag(CustomTags.PPE_ARMOR)
+            .register();
+
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_HELMET = item("heat_insulation_helmet", "隔热头盔",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.HELMET, p))
+            .lang("Heat Insulation Helmet")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_headpiece")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_HELMETS)
+            .register();
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_CHESTPLATE = item("heat_insulation_chestplate", "隔热胸甲",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.CHESTPLATE, p))
+            .lang("Heat Insulation Chestplate")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_chestpiece")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_CHESTPLATES)
+            .register();
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_LEGGINGS = item("heat_insulation_leggings", "隔热护腿",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.LEGGINGS, p))
+            .lang("Heat Insulation Leggings")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_leggings")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_LEGGINGS)
+            .register();
+    public static final ItemEntry<HeatInsulationArmorItem> HEAT_INSULATION_BOOTS = item("heat_insulation_boots", "隔热靴子",
+            p -> new HeatInsulationArmorItem(ArmorItem.Type.BOOTS, p))
+            .lang("Heat Insulation Boots")
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTCEu.id("item/hazmat_boots")))
+            .color(() -> () -> (stack, tintIndex) -> tintIndex == 0 ? HeatInsulationArmorItem.TEXTURE_TINT : -1)
+            .tag(Tags.Items.ARMORS_BOOTS)
             .register();
 
     public static final ItemEntry<WardenArmorComponentItem> WARDEN_QUARKTECH_HELMET = item("warden_quarktech_helmet", "夸克高科™监守者升级套装头盔 (III-Warden)",

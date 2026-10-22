@@ -14,7 +14,7 @@ GTOCore 是 GregTech Odyssey 的统一核心模组，面向 Minecraft 1.20.1 和
 
 本仓库公开 GTOCore 的源码与资源，方便大家阅读、了解和审阅实现。
 
-`com.gtocore` 范围内的公开代码依据本仓库 [LICENSE](LICENSE) 发布；gtolib 仍为闭源组件。
+本仓库内容的许可以 [GregTech Odyssey 许可证说明](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README_zh.md#许可证) 为准；gtolib 仍为闭源组件。
 
 ## gtolib 闭源声明
 
@@ -57,6 +57,20 @@ GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，因此
 
 源码公开是为了透明，便于大家查阅与审阅。完整构建依赖团队内部的组件，公开环境无法直接编译或运行，也无需自行搭建开发环境进行测试；如果想体验最新内容，请使用整合包发布的正式版本或测试版本。
 
+#### 构建与发布标记（维护者）
+
+推送到本仓库时，在 commit message 里写单独成词的标记来触发签名构建：
+
+| 标记 | 作用 | 谁可以用 |
+|---|---|---|
+| `-b` | 只构建签名 jar，不发布 | 组织成员 |
+| `-p` | 构建并只发布到 Maven，用于 dev 版整合包 | 发布者账号 |
+| `-cf` | 构建并发布到 Maven 与 CurseForge，用于 CurseForge 版整合包 | 发布者账号 |
+
+不想为构建单独提交时，也可以在 Actions 页手动运行 Build and Sign，选分支和模式（build / publish / publish-cf，后两者同 `-p`、`-cf`）。
+
+其他账号写的 `-p`、`-cf` 会被忽略。完整规则见 [签名构建说明](docs/build-signing.md)。
+
 ## 许可证
 
-`com.gtocore` 范围内的公开代码依据本仓库 [LICENSE](LICENSE) 发布。
+见 [GregTech Odyssey 许可证说明](https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README_zh.md#许可证)。

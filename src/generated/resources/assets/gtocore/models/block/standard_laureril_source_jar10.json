@@ -1,0 +1,6 @@
+{
+  "parent": "ars_nouveau:block/source_jar/source_jar10",
+  "textures": {
+    "2": "gtocore:block/laureril_source_jar"
+  }
+}

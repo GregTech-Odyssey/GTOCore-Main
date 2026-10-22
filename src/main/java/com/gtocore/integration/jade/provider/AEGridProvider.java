@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
+import vazkii.botania.api.block_entity.SpecialFlowerBlockEntity;
 
 @DataGeneratorScanned
 public final class AEGridProvider extends CapabilityBlockProvider<IExpandedGrid> {
@@ -44,6 +45,8 @@ public final class AEGridProvider extends CapabilityBlockProvider<IExpandedGrid>
         if (side != null || blockEntity == null) return null;
         if (blockEntity instanceof IObserved observed) {
             observed.onObserved();
+        } else if (blockEntity instanceof SpecialFlowerBlockEntity flower) {
+            flower.markObserved();
         }
         IInWorldGridNodeHost cap;
         if (blockEntity instanceof IInWorldGridNodeHost host) {

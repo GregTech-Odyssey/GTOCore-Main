@@ -3,10 +3,12 @@ package com.gtocore.data.recipe.ae2;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.ManaMachine;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.GTORules;
-import com.gtocore.integration.ae.SuperSpeedCard;
+import com.gtocore.integration.ae.SpeedCards;
+import com.gtocore.integration.ae.TieredInterfaces;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
@@ -31,6 +33,7 @@ import net.minecraft.world.item.Items;
 import appeng.core.AppEng;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
+import appeng.core.definitions.AEParts;
 import appeng.datagen.providers.tags.ConventionTags;
 
 import com.glodblock.github.extendedae.ExtendedAE;
@@ -46,7 +49,8 @@ public final class AE2 {
     public static void init() {
         Ae2wtlibRecipes.init();
         GTOInfCells.init();
-        SuperSpeedCard.recipes();
+        SpeedCards.recipes();
+        TieredInterfaces.recipes();
         VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("aesilicon"), EPPItemAndBlock.SILICON_BLOCK,
                 TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"), TagUtils.createForgeItemTag("silicon"));
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("matter_condenser"), new ItemStack(AEBlocks.CONDENSER.asItem()),
@@ -54,7 +58,13 @@ public final class AE2 {
                 "B B",
                 "ABA",
                 'A', ConventionTags.IRON_INGOT, 'B', ConventionTags.GLASS);
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("quest_ae_detector"), GTAEMachines.QUEST_AE_DETECTOR.asStack(),
+                "ABA",
+                "CDC",
+                "ABA",
+                'A', AEParts.LEVEL_EMITTER.asItem(), 'B', CustomTags.LV_CIRCUITS, 'C', AEItems.LOGIC_PROCESSOR.asItem(), 'D', AEBlocks.INTERFACE.asItem());
         if (GTORules.RECIPE_TIER.isEasy()) return;
+        SpeedCards.baseRecipe();
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("import_bus"), RegistriesUtils.getItemStack("ae2:import_bus"),
                 "ABC",
                 'A', AEItems.ANNIHILATION_CORE.asItem(), 'B', GTItems.ROBOT_ARM_LV.asItem(), 'C', RegistriesUtils.getItemStack("ae2:fluix_glass_cable"));
@@ -761,6 +771,11 @@ public final class AE2 {
     public static void initJsonFilter(Set<ResourceLocation> filters) {
         filters.add(ExtendedAE.id("silicon_block"));
         filters.add(AppEng.makeId("network/blocks/io_condenser"));
+        filters.add(ExtendedAE.id("oversize_interface"));
+        filters.add(ExtendedAE.id("oversize_interface_part"));
+        filters.add(ExtendedAE.id("oversize_interface_alt"));
+        filters.add(ExtendedAE.id("ei"));
+        filters.add(ExtendedAE.id("ei_upgrade"));
         if (GTORules.RECIPE_TIER.isEasy()) {
             if (GTOConfig.INSTANCE.gamePlay.disableBlankPatternRecipes) {
                 filters.add(AppEng.makeId("network/crafting/patterns_blank"));
@@ -786,6 +801,7 @@ public final class AE2 {
         filters.add(AppEng.makeId("materials/annihilationcore"));
         filters.add(AppEng.makeId("materials/formationcore"));
         filters.add(AppEng.makeId("materials/advancedcard"));
+        filters.add(AppEng.makeId("materials/cardspeed"));
         filters.add(AppEng.makeId("materials/basiccard"));
         filters.add(AppEng.makeId("network/cables/dense_covered_fluix"));
         filters.add(AppEng.makeId("network/cables/dense_smart_from_smart"));
@@ -810,7 +826,6 @@ public final class AE2 {
         filters.add(ExtendedAE.id("assembler_matrix_pattern"));
         filters.add(ExtendedAE.id("assembler_matrix_speed"));
         // EPP Upgrades
-        // filters.add(ExtendedAE.id("ei_upgrade"));
         filters.add(ExtendedAE.id("epp_upgrade"));
         // filters.add(ExtendedAE.id("ebus_upgrade"));
         // filters.add(ExtendedAE.id("epa_upgrade"));

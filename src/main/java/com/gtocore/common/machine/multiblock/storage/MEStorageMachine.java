@@ -15,6 +15,8 @@ import com.gtolib.utils.StringUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProvider;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProviderIndex;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -39,7 +41,7 @@ import java.util.List;
 import java.util.UUID;
 
 @DataGeneratorScanned
-public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements IBindable, IDropSaveMachine, IStorageMultiblock {
+public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements IBindable, IDropSaveMachine, IStorageMultiblock, MEStorageProvider {
 
     public static final long infinite = 1000000000000L; // 1T
     @RegisterLanguage(en = "Data Index Position", cn = "数据索引位置")
@@ -112,6 +114,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     @Override
     public void onStructureInvalid() {
         unloadContainer();
+        MEStorageProviderIndex.remove(getLevel(), this);
         super.onStructureInvalid();
     }
 
@@ -119,18 +122,30 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     public void onStructureFormed() {
         super.onStructureFormed();
         onMachineChanged();
+        // 结构成型后才算"世界里的一个容器"，注册进八叉树索引供合成站/其它设备查找
+        MEStorageProviderIndex.add(getLevel(), this);
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
-        if (isFormed()) loadContainer();
+        if (isFormed()) {
+            loadContainer();
+            MEStorageProviderIndex.add(getLevel(), this);
+        }
     }
 
     @Override
     public void onUnload() {
         unloadContainer();
+        MEStorageProviderIndex.remove(getLevel(), this);
         super.onUnload();
+    }
+
+    /** 存储本体挂在 ME 存储访问仓上（那东西本身就是 MEStorage）。 */
+    @Override
+    public appeng.api.storage.MEStorage getStorageCap(net.minecraft.core.Direction side) {
+        return accessPartMachine;
     }
 
     @Override

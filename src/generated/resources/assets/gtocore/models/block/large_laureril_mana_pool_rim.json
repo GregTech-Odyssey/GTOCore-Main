@@ -1,0 +1,9 @@
+{
+  "parent": "botania:block/large_mana_pool_rim",
+  "textures": {
+    "bottom": "gtocore:block/large_laureril_mana_pool_bottom",
+    "particle": "gtocore:block/large_laureril_mana_pool_top",
+    "side": "gtocore:block/large_laureril_mana_pool_side",
+    "top": "gtocore:block/large_laureril_mana_pool_top"
+  }
+}

@@ -412,6 +412,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     private void reloadPatternRecipe(int index) {
+        if (hasIncompleteEditorPattern(index)) return;
         var stack = getInternalPatternInventory().getStackInSlot(index);
         if (!stack.isEmpty()) MEPatternVirtualInputHelper.readRecipeTag(stack, getInternalInventory()[index]::setRecipe);
     }
@@ -482,6 +483,11 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     @Override
     protected boolean supportsSlotConfig() {
+        return true;
+    }
+
+    @Override
+    protected boolean supportsPatternEditor() {
         return true;
     }
 

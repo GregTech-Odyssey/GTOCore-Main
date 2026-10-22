@@ -3,8 +3,7 @@ package com.gtocore.api.research.techtree.ui;
 import com.gtocore.api.research.techtree.TechNode;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrays;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
@@ -19,8 +18,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * 科技树自动布局（分层图 / Sugiyama 框架），结果由 {@code TechTreeManager#getLayout} 缓存，每棵树只算一次：
@@ -89,7 +86,7 @@ public final class TechTreeAutoLayout {
             }
         }
         List<TechNode> topoOrder = topologicalSort(nodes, indegrees, children);
-        Map<TechNode, Integer> depths = assignTierDepths(topoOrder);
+        var depths = assignTierDepths(topoOrder);
         var columns = buildTierColumns(topoOrder, depths);
         return new Graph(columns).layout();
     }
@@ -124,14 +121,14 @@ public final class TechTreeAutoLayout {
     }
 
     /** 块内深度：只数同一数据等级里的前置（别的等级的前置在别的块里，不影响本块的列）。 */
-    private static Map<TechNode, Integer> assignTierDepths(List<TechNode> topoOrder) {
-        Map<TechNode, Integer> depths = new IdentityHashMap<>();
+    private static Reference2IntOpenHashMap<TechNode> assignTierDepths(List<TechNode> topoOrder) {
+        Reference2IntOpenHashMap<TechNode> depths = new Reference2IntOpenHashMap<>();
         for (var node : topoOrder) {
             int depth = 0;
             for (var prerequisite : node.prerequisites) {
                 if (prerequisite.getManager() != node.getManager() || prerequisite.getTier() != node.getTier()) continue;
-                Integer prerequisiteDepth = depths.get(prerequisite);
-                if (prerequisiteDepth != null) depth = Math.max(depth, prerequisiteDepth + 1);
+                var prerequisiteDepth = depths.getOrDefault(prerequisite, -1);
+                if (prerequisiteDepth != -1) depth = Math.max(depth, prerequisiteDepth + 1);
             }
             depths.put(node, depth);
         }
@@ -139,8 +136,8 @@ public final class TechTreeAutoLayout {
     }
 
     /** 按数据等级分块、块内按深度分列；返回各列的节点（按名称排好的初始顺序）与各块的列范围。 */
-    private static TierColumns buildTierColumns(List<TechNode> topoOrder, Map<TechNode, Integer> depths) {
-        Map<Integer, List<TechNode>> nodesByTier = new TreeMap<>();
+    private static TierColumns buildTierColumns(List<TechNode> topoOrder, Reference2IntOpenHashMap<TechNode> depths) {
+        Int2ObjectRBTreeMap<List<TechNode>> nodesByTier = new Int2ObjectRBTreeMap<>();
         for (var node : topoOrder) nodesByTier.computeIfAbsent(node.getTier(), ignored -> new ArrayList<>()).add(node);
 
         List<List<TechNode>> nodesByColumn = new ArrayList<>();
@@ -148,19 +145,15 @@ public final class TechTreeAutoLayout {
         IntArrayList tierStarts = new IntArrayList(nodesByTier.size());
         IntArrayList tierEnds = new IntArrayList(nodesByTier.size());
         int columnOffset = 0;
-        for (var entry : nodesByTier.entrySet()) {
-            TreeSet<Integer> tierDepths = new TreeSet<>();
-            for (var node : entry.getValue()) tierDepths.add(depths.get(node));
-            Map<Integer, Integer> localColumns = new TreeMap<>();
-            int localColumn = 0;
-            for (var depth : tierDepths) {
-                localColumns.put(depth, localColumn++);
-                nodesByColumn.add(new ArrayList<>());
-            }
-            for (var node : entry.getValue()) nodesByColumn.get(columnOffset + localColumns.get(depths.get(node))).add(node);
-            int endColumn = columnOffset + tierDepths.size() - 1;
+        for (var entry : nodesByTier.int2ObjectEntrySet()) {
+            var tierNodes = entry.getValue();
+            int maxDepth = 0;
+            for (var node : tierNodes) maxDepth = Math.max(maxDepth, depths.getInt(node));
+            for (int depth = 0; depth <= maxDepth; depth++) nodesByColumn.add(new ArrayList<>());
+            for (var node : tierNodes) nodesByColumn.get(columnOffset + depths.getInt(node)).add(node);
+            int endColumn = columnOffset + maxDepth;
             for (int column = columnOffset; column <= endColumn; column++) nodesByColumn.get(column).sort(NAME_ORDER);
-            tiers.add(entry.getKey().intValue());
+            tiers.add(entry.getIntKey());
             tierStarts.add(columnOffset);
             tierEnds.add(endColumn);
             columnOffset = endColumn + 1;
