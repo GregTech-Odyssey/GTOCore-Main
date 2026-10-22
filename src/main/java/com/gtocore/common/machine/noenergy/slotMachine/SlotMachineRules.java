@@ -80,6 +80,8 @@ public final class SlotMachineRules {
      * 5 列只填 3/4/5 三行，没填的组合自然不中奖。百搭同样按被替代符号查表。
      */
     private final int[][] paytable;
+    /** 单条中奖线的最高倍率：中奖附赠效果时拿它当「满档」的参照。 */
+    private final int maxLineMultiplier;
 
     private SlotMachineRules(SlotMachineLayout layout, SlotSymbol[][] reelStrips, int[][] paytable) {
         if (DEFAULT_BET < 1 || DEFAULT_MAX_BET < DEFAULT_BET) throw new IllegalArgumentException("Invalid bet range");
@@ -92,6 +94,7 @@ public final class SlotMachineRules {
                 maxMultiplier = Math.max(maxMultiplier, multiplier);
             }
         }
+        this.maxLineMultiplier = maxMultiplier;
         if ((long) DEFAULT_MAX_BET * maxMultiplier > Long.MAX_VALUE / layout.paylines().length) {
             throw new IllegalArgumentException("Maximum bet and payline count would overflow total rewards");
         }
@@ -99,6 +102,11 @@ public final class SlotMachineRules {
 
     SlotMachineLayout layout() {
         return layout;
+    }
+
+    /** 单条中奖线的最高倍率（多线相加还可能更高）。 */
+    int maxLineMultiplier() {
+        return maxLineMultiplier;
     }
 
     int spinTicks() {

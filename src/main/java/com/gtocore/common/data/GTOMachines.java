@@ -24,10 +24,11 @@ import com.gtocore.common.machine.multiblock.part.maintenance.*;
 import com.gtocore.common.machine.multiblock.part.voiding.*;
 import com.gtocore.common.machine.noenergy.*;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeploymentMachine;
-import com.gtocore.common.machine.noenergy.game2048.Game2048Machine;
-import com.gtocore.common.machine.noenergy.game24.Game24Machine;
+import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
+import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
+import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
-import com.gtocore.common.machine.noenergy.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
@@ -1262,6 +1263,13 @@ public final class GTOMachines {
             .modelRenderer(() -> GTOCore.id("block/machine/game_24"))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition MINESWEEPER_CORE = machine("minesweeper_core", "扫雷核心方块", MinesweeperCoreMachine::new)
+            .langValue("Minesweeper Core")
+            .tips(GTOMachineTooltips.MinesweeperCoreTooltips)
+            .nonYAxisRotation()
+            .modelRenderer(() -> GTOCore.id("block/machine/minesweeper_core"))
             .register();
 
     public static final MachineDefinition[] DIGITAL_MINER = registerTieredMachines("digital_miner", tier -> "%s数字型采矿机%s".formatted(GTOValues.VLVHCN[tier], VLVT[tier]), SingleDigitalMiner::new,

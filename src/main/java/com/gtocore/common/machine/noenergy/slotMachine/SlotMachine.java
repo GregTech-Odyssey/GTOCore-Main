@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.noenergy.slotMachine;
 
+import com.gtocore.common.data.GTOEffects;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.transaction.data.CoinExchange;
 import com.gtocore.data.transaction.data.CoinSeries;
@@ -39,6 +40,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Unit;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
@@ -54,6 +56,8 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.AlignContent;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.UUID;
 
 /**
  * 基于 {@link SlotMachineState} 的老虎机机器。
@@ -97,6 +101,31 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
     private static final String VALUE_NONE = "gtocore.machine.slot_machine.value.none";
     @RegisterLanguage(cn = "%s (倍率 ×%s)", en = "%s (multiplier ×%s)")
     private static final String VALUE_REWARD = "gtocore.machine.slot_machine.value.reward";
+    @RegisterLanguage(cn = "中奖附赠：%s", en = "Bonus on win: %s")
+    private static final String MESSAGE_BOOST_GRANTED = "gtocore.machine.slot_machine.message.boost_granted";
+
+    /** 中奖后附赠「机械之神降临」的概率。 */
+    public static final double BOOST_CHANCE = 0.3;
+    /**
+     * 下注在效果档位里的权重，剩下的给倍率。倍率决定大方向，投注额度把同一倍率的效果再拉开一截——
+     * 小额小奖只给脚下那台机器加个速，豪赌的大奖才能顶到满级。
+     */
+    private static final double BOOST_BET_WEIGHT = 0.3;
+    /** 效果上限：14 级（与满档监工可乐同档，能加速到 GT tier 14 的配方）、15 分钟；下限 1 级、半分钟。 */
+    public static final int BOOST_MAX_AMPLIFIER = 14;
+    private static final int BOOST_MIN_AMPLIFIER = 1;
+    private static final int BOOST_MIN_DURATION = 20 * 30;
+    public static final int BOOST_MAX_DURATION = 20 * 60 * 15;
+    /** 档位过半时换成「大瓶」的范围版（5×5×5）；低倍率只给自己脚下那台机器加速。 */
+    private static final double BOOST_LARGE_THRESHOLD = 0.5;
+    /** 同一档位内的随机浮动：倍率相近的两局也可能差一档。 */
+    private static final double BOOST_JITTER = 0.1;
+    /**
+     * 档位曲线：加权后的档位再取这个幂。指数越大，中低档被压得越狠，满档不受影响（{@code 1^n = 1}）。
+     * 当前 2.5 档把奖励整体压下一大截：最低档（×2 + 最小注）落在 1 级、约半分钟，中档 2~6 级，
+     * 只有满注 + 本机最高倍率才摸得到 14 级 / 15 分钟。
+     */
+    private static final double BOOST_CURVE = 2.5;
 
     private static final long[] CREDIT_STEPS = { 5, 25, 625 };
     private static final int REEL_ICON_SIZE = 24;
@@ -134,6 +163,9 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
     @Nullable
     private TickableSubscription tickSubs;
     private int winSoundTicksRemaining;
+    /** 开这一局的人：中奖附赠的效果给他；不存盘，读档中断的一局就退回机器主人。 */
+    @Nullable
+    private UUID spinnerUUID;
     // 盘面规则由方块类型决定，不参与存档：读档时机器工厂会重新注入同一份规则。
     private final SlotMachineRules rules;
 
@@ -195,7 +227,9 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
             SlotMachineResult result = state.lastResult();
             if (result != null && result.hasWin()) {
                 winSoundTicksRemaining = WIN_SOUND_PITCHES.length * WIN_SOUND_INTERVAL;
+                grantBoost(result);
             }
+            spinnerUUID = null;
             syncAndMarkChanged();
         } else if (state.isSpinning()) {
             // 倒计时也进入区块存盘，重载后从实际剩余时间继续。
@@ -215,12 +249,60 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
         winSoundTicksRemaining--;
     }
 
-    private void startSpin() {
+    private void startSpin(@Nullable ServerPlayer player) {
         var level = getLevel();
         if (level == null || isRemote() || !enabled || !slotMachineEnabled()) return;
         if (state.startSpin(level.getRandom(), rules)) {
+            spinnerUUID = player == null ? null : player.getUUID();
             syncAndMarkChanged();
         }
+    }
+
+    /**
+     * 中奖附赠「机械之神降临」：{@link #BOOST_CHANCE} 的概率，等级与时长由这一局的倍率和下注一起决定。
+     *
+     * <p>
+     * 倍率与下注各按对数压到 0~1 再加权（倍率占七成，见 {@link #BOOST_BET_WEIGHT}）：倍率从「随便中一点」到单线满档、
+     * 下注从最小到最大，都会线性地铺满整个区间，不会出现「小倍率永远 0 级、大倍率永远满级」。算完再抖一档，
+     * 封顶 {@link #BOOST_MAX_AMPLIFIER} 级 / {@link #BOOST_MAX_DURATION} tick（15 分钟）。
+     *
+     * <p>
+     * 档位过半给「大瓶」的范围版（周围 5×5×5 的单方块机器都能加速），低档只给「小瓶」，作用在玩家脚下那一台。
+     */
+    private void grantBoost(SlotMachineResult result) {
+        if (!(getLevel() instanceof ServerLevel level)) return;
+        var random = level.getRandom();
+        if (random.nextDouble() >= BOOST_CHANCE) return;
+        var player = resolveSpinner(level);
+        if (player == null) return;
+        double multiplier = result.reward() / (double) result.bet();
+        double multiplierQuality = Math.log(Math.max(1.0, multiplier)) / Math.log(Math.max(2.0, rules.maxLineMultiplier()));
+        double betQuality = Math.log10(Math.max(1, result.bet())) / Math.log10(SlotMachineRules.DEFAULT_MAX_BET);
+        double quality = (1 - BOOST_BET_WEIGHT) * Math.clamp(multiplierQuality, 0.0, 1.0) +
+                BOOST_BET_WEIGHT * Math.clamp(betQuality, 0.0, 1.0);
+        quality = Math.clamp(quality + (random.nextDouble() * 2 - 1) * BOOST_JITTER, 0.0, 1.0);
+        quality = Math.pow(quality, BOOST_CURVE);
+        int amplifier = Math.clamp((int) Math.floor(quality * BOOST_MAX_AMPLIFIER), BOOST_MIN_AMPLIFIER,
+                BOOST_MAX_AMPLIFIER);
+        int duration = BOOST_MIN_DURATION + (int) ((BOOST_MAX_DURATION - BOOST_MIN_DURATION) * quality);
+        var effect = quality >= BOOST_LARGE_THRESHOLD ? GTOEffects.LARGE_MYSTERIOUS_BOOST.get() : GTOEffects.MYSTERIOUS_BOOST.get();
+        var instance = new MobEffectInstance(effect, duration, amplifier, false, true);
+        player.addEffect(instance);
+        player.displayClientMessage(Component.translatable(MESSAGE_BOOST_GRANTED,
+                Component.translatable(effect.getDescriptionId())), true);
+    }
+
+    /** 开这一局的人优先（还在线的话），否则退回机器主人；都不在线就不给。 */
+    @Nullable
+    private ServerPlayer resolveSpinner(ServerLevel level) {
+        var server = level.getServer();
+        var players = server.getPlayerList();
+        if (spinnerUUID != null) {
+            var spinner = players.getPlayer(spinnerUUID);
+            if (spinner != null) return spinner;
+        }
+        var owner = getOwnerUUID();
+        return owner == null ? null : players.getPlayer(owner);
     }
 
     private void onDepositInventoryChanged() {
@@ -376,10 +458,10 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
         status.addLine(LINE_BALANCE, () -> number(balanceView));
         status.addLine(LINE_LAST_REWARD, this::lastRewardText);
 
-        var spin = Button.translatable(LayoutStyle.AUTO, BUTTON_SPIN)
-                .setOnServerClick(this::startSpin)
+        var spinButton = Button.translatable(LayoutStyle.AUTO, BUTTON_SPIN)
                 .disabled(() -> !slotMachineEnabled() || !enabled || !state.canStart(),
                         slotMachineEnabled() ? REASON_CANNOT_START : REASON_DISABLED);
+        spinButton.setOnServerClick(() -> startSpin(playerOf(spinButton)));
 
         var credits = UIElement.centeredRow(UISizes.SLOT_SIZE).layout(layout -> layout.justifyContent(AlignContent.CENTER));
         var deposit = ItemSlot.of(depositInventory, 0, true, true);
@@ -395,7 +477,7 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
                 NumberField.ofInt(LayoutStyle.AUTO, () -> betView, this::setBet, SlotMachineRules.DEFAULT_BET, SlotMachineRules.DEFAULT_MAX_BET)
                         .setSteps(CREDIT_STEPS).tooltips(ROW_BET, ROW_BET_TOOLTIP),
                 credits,
-                spin);
+                spinButton);
 
         return Form.page().addChildren(reels, status);
     }
@@ -409,12 +491,18 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
         return Component.literal(FormattingUtil.formatNumbers(value)).withStyle(ChatFormatting.AQUA);
     }
 
+    /** 点按钮的玩家：界面持有者，服务端才拿得到（「开始」按钮要把中奖附赠的效果给他）。 */
+    private static @Nullable ServerPlayer playerOf(Widget source) {
+        var gui = source.getGui();
+        return gui != null && gui.entityPlayer instanceof ServerPlayer player ? player : null;
+    }
+
     /**
      * 卷轴面板：同时兼作键盘入口，按空格等同于点「开始」。
      *
      * <p>
      * 键盘事件由 LDLib 从界面根控件逐层向下派发（{@code WidgetGroup.keyPressed}），本元素在派发链上，所以不需要焦点；
-     * 请求经 RPC 上行，服务端在 {@link #startSpin()} 里照旧自己校验能不能开（禁赌、滚动中、余额不足都拦得住），
+     * 请求经 RPC 上行，服务端在 {@link #startSpin} 里照旧自己校验能不能开（禁赌、滚动中、余额不足都拦得住），
      * 因此这里不做客户端的预判，界面上的禁用态仍由「开始」按钮自己显示。
      */
     private final class ReelPanel extends StatusPanel {
@@ -423,7 +511,7 @@ public class SlotMachine extends MetaMachine implements IFancyUIMachine, IMachin
 
         private ReelPanel() {
             addChildren(createReels());
-            spin = addRPC(player -> startSpin());
+            spin = addRPC(player -> startSpin(player instanceof ServerPlayer serverPlayer ? serverPlayer : null));
         }
 
         @Override

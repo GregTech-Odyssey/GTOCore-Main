@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.game24;
+package com.gtocore.common.machine.noenergy.game.game24;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
 
@@ -6,13 +6,17 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
@@ -23,10 +27,12 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.AlignContent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 「24点」游戏机：{@link Game24Rules#NUMBER_COUNT} 张牌（按 {@link Game24Rules.DrawRange} 抽 1~10 或 1~13），
@@ -157,14 +163,21 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         }
     }
 
-    // ==================== 基类钩子 ====================
+    // ==================== 局面 ====================
+
+    /** 读档后的收尾，只在服务端调用。 */
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (isRemote()) return;
+        sanitizeState();
+    }
 
     /**
      * 读档后的收尾：范围非法就回落整副 1~13；牌不对、或牌面超出当前范围（换过范围）就重发一局，token 里有非法项就把
      * 表达式丢掉，结果夹到合法取值。
      */
-    @Override
-    protected void sanitizeState() {
+    private void sanitizeState() {
         var range = Game24Rules.DrawRange.of(drawRange);
         if (range == null) range = Game24Rules.DrawRange.ONE_TO_THIRTEEN;
         drawRange = range.ordinal();
@@ -192,22 +205,39 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     @Override
-    protected void ensureStarted() {
-        if (numbers.length != Game24Rules.NUMBER_COUNT) startPuzzle();
-    }
-
-    @Override
     protected View createView() {
         int flags = (result == RESULT_SOLVED ? View.FLAG_SOLVED : 0) | (hinted ? View.FLAG_HINTED : 0);
         return new View(revision(), numbers, tokens, flags);
     }
 
-    /** 答题区：表达式一行 + 数字牌一行 + 运算符一行 + 撤回/清空/提交一行。 */
+    /** 首次打开界面时把没发的那一题发出来。 */
+    private void ensureStarted() {
+        if (numbers.length != Game24Rules.NUMBER_COUNT) startPuzzle();
+    }
+
+    // ==================== 界面 ====================
+
+    /** 主页 = 答题区 + 状态面板；答题区先建，通道里的快照项才排在状态面板之前。 */
     @Override
-    protected UIElement createGameArea() {
-        var board = new StatusPanel();
+    public Widget createUIWidget() {
+        if (!isRemote()) ensureStarted();
+
+        var page = Form.page();
+        page.addChildren(createGameArea(), createStatusPanel());
+        return page;
+    }
+
+    /** 主页之外再挂一个「配置」子页，抽牌范围的选择都在里面。 */
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new ConfigPage());
+    }
+
+    /** 答题区：表达式一行 + 数字牌一行 + 运算符一行 + 撤回/清空/提交一行。 */
+    private UIElement createGameArea() {
+        var board = panel();
         registerView(board, View.EMPTY, View.CODEC);
-        board.getLayoutStyle().gapAll(2);
         board.addChildren(
                 TextLine.of(LayoutStyle.AUTO, this::expressionText).styled().setTextAlign(Horizontal.CENTER),
                 createCardRow(),
@@ -216,14 +246,23 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return board;
     }
 
-    /** 状态面板：反馈行 + 提示/换一题 + 取出全部。 */
-    @Override
-    protected void addStatusLines(StatusPanel status) {
+    /** 状态面板：余额 + 反馈行 + 提示/换一题 + 取出全部。 */
+    private StatusPanel createStatusPanel() {
+        var status = panel();
+        status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addChild(TextLine.of(LayoutStyle.AUTO, this::feedbackText).setTextAlign(Horizontal.CENTER));
+        status.addChild(createStatusActions());
+        return status;
     }
 
-    @Override
-    protected UIElement createStatusActions() {
+    /** 带底图的面板，行距统一 2px；状态面板、配置页的余额面板与答题区都用它。 */
+    private static StatusPanel panel() {
+        var panel = new StatusPanel();
+        panel.getLayoutStyle().gapAll(2);
+        return panel;
+    }
+
+    private UIElement createStatusActions() {
         var hint = Button.translatable(77, BUTTON_HINT)
                 .setOnServerClick(this::useHint)
                 .clientDisabled(() -> view().hinted() || view().solved(), REASON_HINTED);
@@ -236,11 +275,6 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
                 centeredRow().addChildren(hint, next),
                 centeredRow().addChildren(createWithdrawButton(WITHDRAW_WIDTH)));
         return actions;
-    }
-
-    @Override
-    protected IFancyUIProvider createSettingsPage() {
-        return new ConfigPage();
     }
 
     // ==================== 局面状态 ====================
@@ -430,33 +464,49 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return Component.literal("—").withStyle(ChatFormatting.GRAY);
     }
 
-    /** 配置页：只放抽牌范围，区块、按钮与余额面板都由基类骨架画。 */
-    private final class ConfigPage extends SettingsPage {
+    /** 配置页：只有抽牌范围，按钮上只写范围名，每题奖励放悬浮提示。 */
+    private final class ConfigPage implements IFancyUIProvider {
 
         @Override
-        protected String settingsTitle() {
-            return SECTION_DRAW_RANGE;
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            var section = Form.section(SECTION_DRAW_RANGE);
+            for (int ordinal = 0; ordinal < RANGE_NAMES.length; ordinal++) {
+                // 循环变量不是有效 final，先拷一份给 lambda 用
+                int index = ordinal;
+                var button = Button.translatable(LayoutStyle.AUTO, RANGE_NAMES[index]);
+                button.setHoverTooltips(Component.translatable(TEXT_RANGE_REWARD,
+                        number(Game24Rules.DrawRange.ALL[index].solveReward())));
+                button.setOnServerClick(() -> setDrawRange(index));
+                button.setSelected(() -> drawRange == index);
+                section.addChild(button);
+            }
+            page.addChild(section);
+
+            var status = panel();
+            status.addLine(LINE_BALANCE, () -> number(balance()));
+            page.addChild(status);
+            return page;
         }
 
         @Override
-        protected String[] optionNames() {
-            return RANGE_NAMES;
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.SETTINGS;
         }
 
         @Override
-        protected @Nullable Component optionDetail(int ordinal) {
-            return Component.translatable(TEXT_RANGE_REWARD,
-                    number(Game24Rules.DrawRange.ALL[ordinal].solveReward()));
+        public Component getTitle() {
+            return Component.translatable(PAGE_SETTINGS);
         }
 
         @Override
-        protected int currentOption() {
-            return drawRange;
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
         }
 
         @Override
-        protected void applyOption(int ordinal) {
-            setDrawRange(ordinal);
+        public boolean hasPlayerInventory() {
+            return false;
         }
     }
 }

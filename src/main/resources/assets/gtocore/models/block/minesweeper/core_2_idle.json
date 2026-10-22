@@ -1,4 +1,0 @@
-{
-  "parent": "gtocore:block/minesweeper/block_base",
-  "textures": { "overlay": "gtocore:block/minesweeper/core_hard_idle" }
-}

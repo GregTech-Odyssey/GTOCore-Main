@@ -10,9 +10,7 @@ import com.gtocore.common.blockentity.MufflerPipeBlockEntity;
 import com.gtocore.common.blockentity.SteamPipeBlockEntity;
 import com.gtocore.common.blockentity.UniversalPipeBlockEntity;
 import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlockEntity;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperCoreBlockEntity;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperDisplayBlockEntity;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperDisplayBlockEntity;
 
 import com.gto.registrate.util.entry.BlockEntityEntry;
 import com.hollingsworth.arsnouveau.client.renderer.tile.LargeSourceJarRenderer;
@@ -81,19 +79,9 @@ public class GTOBlockEntities {
                     GTOBlocks.OPV_WIRELESS_ENERGY_UNIT, GTOBlocks.MAX_WIRELESS_ENERGY_UNIT)
             .register();
 
-    public static final BlockEntityEntry<MinesweeperCoreBlockEntity> MINESWEEPER_CORE = GTO
-            .blockEntity("minesweeper_core", MinesweeperCoreBlockEntity::new)
-            .validBlocks(GTOBlocks.MINESWEEPER_CORE)
-            .register();
-
     public static final BlockEntityEntry<MinesweeperDisplayBlockEntity> MINESWEEPER_DISPLAY = GTO
             .blockEntity("minesweeper_display", MinesweeperDisplayBlockEntity::new)
             .validBlocks(GTOBlocks.MINESWEEPER_DISPLAY)
-            .register();
-
-    public static final BlockEntityEntry<MinesweeperControlBlockEntity> MINESWEEPER_CONTROL = GTO
-            .blockEntity("minesweeper_control", MinesweeperControlBlockEntity::new)
-            .validBlocks(GTOBlocks.MINESWEEPER_CONTROL)
             .register();
 
     public static final BlockEntityEntry<HappyWaterGodStatue.Entity> HAPPY_WATER_GOD_STATUE = GTO.<HappyWaterGodStatue.Entity>blockEntity("happy_water_god_statue", HappyWaterGodStatue.Entity::new)

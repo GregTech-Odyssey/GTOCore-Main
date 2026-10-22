@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
-import static com.gtocore.common.data.GTOBlocks.MINESWEEPER_CORE;
 import static com.gtocore.common.data.GTOMachines.*;
 import static com.gtocore.data.transaction.data.GTOTrade.limitedTimesCondition;
 import static com.gtocore.data.transaction.data.GTOTrade.performAddMultiplier;

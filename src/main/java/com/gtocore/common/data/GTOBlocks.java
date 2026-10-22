@@ -8,10 +8,8 @@ import com.gtocore.common.item.MufflerPipeBlockItem;
 import com.gtocore.common.item.SteamPipeBlockItem;
 import com.gtocore.common.item.UniversalPipeBlockItem;
 import com.gtocore.common.item.WirelessEnergyUnitBlockItem;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperControlBlock;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperCoreBlock;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperDisplayBlock;
-import com.gtocore.common.machine.noenergy.minesweeper.MinesweeperFrameBlock;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperDisplayBlock;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperFrameBlock;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
@@ -836,12 +834,6 @@ public final class GTOBlocks {
     public static final BlockEntry<ManaPoolBlock> LAURERIL_MANA_POOL = LaurerilManaPools.registerPool();
     public static final BlockEntry<LargeManaPoolBlock> LARGE_LAURERIL_MANA_POOL = LaurerilManaPools.registerLarge();
 
-    public static BlockEntry<MinesweeperCoreBlock> MINESWEEPER_CORE = block("minesweeper_core", "扫雷核心方块", MinesweeperCoreBlock::new)
-            .properties(p -> p.mapColor(MapColor.STONE).strength(1.5f).sound(SoundType.STONE).noLootTable())
-            .blockstate(NonNullBiConsumer.noop())
-            .tag(BlockTags.MINEABLE_WITH_PICKAXE)
-            .simpleItem()
-            .register();
     public static BlockEntry<MinesweeperDisplayBlock> MINESWEEPER_DISPLAY = block("minesweeper_display", "扫雷显示方块", MinesweeperDisplayBlock::new)
             .properties(p -> p.mapColor(MapColor.STONE).strength(0.8f).sound(SoundType.STONE))
             .blockstate(NonNullBiConsumer.noop())
@@ -849,11 +841,6 @@ public final class GTOBlocks {
     public static BlockEntry<MinesweeperFrameBlock> MINESWEEPER_FRAME = block("minesweeper_frame", "扫雷边框方块", MinesweeperFrameBlock::new)
             .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE))
             .blockstate(NonNullBiConsumer.noop())
-            .register();
-    public static BlockEntry<MinesweeperControlBlock> MINESWEEPER_CONTROL = block("minesweeper_control", "扫雷控制方块", MinesweeperControlBlock::new)
-            .properties(p -> p.mapColor(MapColor.STONE).strength(1.0f).sound(SoundType.STONE).noLootTable())
-            .blockstate(NonNullBiConsumer.noop())
-            .simpleItem()
             .register();
 
     public static final BlockEntry<HappyWaterGodStatue> HAPPY_WATER_GOD_STATUE = block("happy_water_god_statue", "无限快乐水之神雕像", HappyWaterGodStatue::new)
