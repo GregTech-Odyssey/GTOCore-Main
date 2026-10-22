@@ -67,6 +67,8 @@ GTOCore 的功能设计、数值平衡与版本节奏需要整体把控，因此
 | `-p` | 构建并只发布到 Maven，用于 dev 版整合包 | 发布者账号 |
 | `-cf` | 构建并发布到 Maven 与 CurseForge，用于 CurseForge 版整合包 | 发布者账号 |
 
+不想为构建单独提交时，也可以在 Actions 页手动运行 Build and Sign，选分支和模式（build / publish / publish-cf，后两者同 `-p`、`-cf`）。
+
 其他账号写的 `-p`、`-cf` 会被忽略。完整规则见 [签名构建说明](docs/build-signing.md)。
 
 ## 许可证

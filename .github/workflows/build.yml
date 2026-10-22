@@ -6,6 +6,8 @@ name: "Build and Sign"
 # 2) pull_request_target opened：PR 由组织成员提起 → 自动构建一次（无需标记）
 # 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
 # 4) issue_comment：组织成员在 PR 下评论，且第一行精确为 /build → 构建 PR head
+# 5) workflow_dispatch：在 Actions 页手动运行，选分支和模式（build / publish / publish-cf），构建所选分支的最新提交
+#    （publish / publish-cf 仅发布者账号可选，其他账号选了直接失败）
 #
 # 使用 pull_request_target：工作流文件始终取 base 分支，PR 无法篡改本文件。
 # 安全：只构建本仓分支（fork 来源的 PR 一律跳过），且仅组织成员（或写权限
@@ -17,6 +19,13 @@ on:
     types: [opened, synchronize]
   issue_comment:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "build：只构建；publish：构建并只发 Maven（同 -p）；publish-cf：构建并发 Maven 与 CurseForge（同 -cf）"
+        type: choice
+        options: [build, publish, publish-cf]
+        default: build
 
 concurrency:
   group: build-sign-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
@@ -52,7 +61,8 @@ jobs:
           github.event_name == 'issue_comment' &&
           github.event.issue.pull_request &&
           startsWith(github.event.comment.body, '/build')
-        )
+        ) ||
+        github.event_name == 'workflow_dispatch'
       )
     runs-on: ubuntu-latest
     permissions:
@@ -88,6 +98,8 @@ jobs:
           COMMENT_USER: ${{ github.event.comment.user.login || '' }}
           IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || 'false' }}
           HEAD_COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
+          # workflow_dispatch
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
         run: |
           set -euo pipefail
           ORG="GregTech-Odyssey"
@@ -308,6 +320,31 @@ jobs:
               MEMBER_MODE="soft"
               ;;
 
+            workflow_dispatch)
+              case "$DISPATCH_MODE" in
+                build) ;;
+                publish|publish-cf)
+                  if [ "$ACTOR_ID" != "$PUBLISHER_ID" ]; then
+                    echo "::error::Only the publisher account may run mode=${DISPATCH_MODE}; @${ACTOR} may only use mode=build."
+                    exit 1
+                  fi
+                  PUBLISH="true"
+                  if [ "$DISPATCH_MODE" = "publish-cf" ]; then
+                    PUBLISH_CF="true"
+                  fi
+                  ;;
+                *)
+                  echo "::error::Unknown mode '${DISPATCH_MODE}'"
+                  exit 1
+                  ;;
+              esac
+              CHECK_USER="$ACTOR"
+              CHECKOUT_REPO="$REPO"
+              CHECKOUT_REF="$PUSH_SHA"
+              REASON="manual run (mode=${DISPATCH_MODE})"
+              MEMBER_MODE="hard"
+              ;;
+
             *)
               skip "unsupported event ${EVENT_NAME}"
               ;;
@@ -481,8 +518,12 @@ jobs:
             exit 1
           fi
           chmod +x ./gradlew
+          # 格式化依赖 Eclipse 的 p2 站点，站点停服时只告警、不拦签名构建；apply 成功时 check 必然通过，故 build 里跳过 check
+          if ! ./gradlew spotlessApply --no-daemon --stacktrace; then
+            echo "::warning::spotlessApply failed (formatter download unavailable?); building without formatting"
+          fi
           # 发行：gtocore（无 Seal SPI）+ 独立 gto-seal-runtime，均签名（密码只经 env 注入 signJar）
-          ./gradlew spotlessApply build --no-daemon --stacktrace \
+          ./gradlew build -x spotlessCheck --no-daemon --stacktrace \
             -Dorg.gradle.java.installations.auto-download=true
 
       - name: Verify gtocore packaging
@@ -622,7 +663,7 @@ jobs:
           done
           GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
           BEFORE=$(sha256sum "$GTO" | cut -d' ' -f1)
-          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=${PUBLISH_CF}             -x jar -x reobfJar -x sourcesJar -x signJar --no-daemon --stacktrace
+          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=${PUBLISH_CF}             -x jar -x reobfJar -x sourcesJar -x signJar -x spotlessCheck --no-daemon --stacktrace
           AFTER=$(sha256sum "$GTO" | cut -d' ' -f1)
           [ "$BEFORE" = "$AFTER" ] || { echo "::error::$GTO 在发布过程中被改写"; exit 1; }
           NAME=$(basename "$GTO")
@@ -639,7 +680,7 @@ jobs:
           ORG_GRADLE_PROJECT_gtoCurseforgeToken: ${{ secrets.CURSEFORGE_TOKEN }}
         run: |
           set -euo pipefail
-          ./gradlew gtoPublishCurseforge -PgtoPublishCurseforge=true --no-daemon --stacktrace
+          ./gradlew gtoPublishCurseforge -PgtoPublishCurseforge=true -x spotlessCheck --no-daemon --stacktrace
           cat build/gtoPublish/curseforge.json
 
       # 整合包按这个文件里的项目 ID、文件 ID 和 SHA-1 引用本次上传的 CurseForge 文件（审核通过前接口查不到）
