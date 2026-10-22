@@ -40,6 +40,7 @@ val parchment_mappings_version = prop("parchment_mappings_version")
 val mixinextras_version = prop("mixinextras_version")
 val taffy_version = prop("taffy_version")
 val ae2_version = prop("ae2_version")
+val emi_version = prop("emi_version")
 val botania_version = prop("botania_version")
 val ars_nouveau_version = prop("ars_nouveau_version")
 val gtceu_version = prop("gtceu_version")
@@ -182,12 +183,6 @@ legacyForge {
 // 每个 run source set 一个重映射依赖桶（modClientRuntimeOnly / modDataRuntimeOnly / modServerRuntimeOnly / modGametestRuntimeOnly）
 (runNames + "gametest").forEach { obfuscation.createRemappingConfiguration(configurations.getByName("${it}RuntimeOnly")) }
 
-// AE fork already ships EMI and EMI Trades; integrations must not pull in another copy.
-configurations.configureEach {
-    exclude(group = "dev.emi", module = "emi-forge")
-    exclude(group = "curse.maven", module = "emi-trades-villager-trading-emi-plugin-735523")
-}
-
 // ---------- 仓库 ----------
 
 repositories {
@@ -198,10 +193,6 @@ repositories {
     exclusiveContent { // CurseForge
         forRepository { maven("https://cursemaven.com") }
         filter { includeGroup("curse.maven") }
-    }
-    exclusiveContent { // EMI
-        forRepository { maven("https://maven.terraformersmc.com/releases/") }
-        filter { includeGroup("dev.emi") }
     }
     exclusiveContent { // Xaero's
         forRepository { maven("https://chocolateminecraft.com/maven/") }
@@ -312,6 +303,7 @@ dependencies {
     modImplementation("curse.maven:ad-astra-rocketed-996980:5245376")
 
     // JEI / EMI
+    modImplementation("dev.emi:emi-forge-1.20.1:$emi_version")
     modCompileOnly("mezz.jei:jei-$minecraft_version-forge-api:$jei_version") { isTransitive = false }
     modCompileOnly("mezz.jei:jei-$minecraft_version-common-api:$jei_version") { isTransitive = false }
     modImplementation("mezz.jei:jei-$minecraft_version-forge:$jei_version") { isTransitive = false }
