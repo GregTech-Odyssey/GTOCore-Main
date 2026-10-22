@@ -478,7 +478,6 @@ public final class GTOMachineTooltipsA {
         t.feature(t.tr("根据运行的配方发射高能光束射线", "Emits high-energy beam rays based on the running recipe"));
         t.feature(t.tr("超频规则：电压每乘以4，光强等级乘以2", "Overclocking rule: For every 4 times increase in voltage, the light intensity level increases by 2 times"));
         t.control(t.tr("在机器gui中调节射线的水平角与俯仰角", "Adjust the horizontal and pitch angles of the beam in the machine GUI"));
-        t.penalty(t.tr("光束射线在非超净间的环境中，每经过一格，光强都会乘以0.95", "In a non-cleanroom environment, the light intensity of the beam will be attenuated by a factor of 0.95 per block"));
     });
 
     public static final TipSpec BeamRedirectorTooltips = GTOTips.of("beam_redirector", t -> {
@@ -490,7 +489,7 @@ public final class GTOMachineTooltipsA {
     public static final TipSpec ExcitationCrystalTooltips = GTOTips.of("excitation_crystal", t -> {
         t.heading(MainFunction);
         t.feature(t.tr("如果它周围有晶体激发器，它将会被激发并使穿过的高能光束射线的光强翻倍", "If there are crystal exciters around it, it will be excited and double the light intensity of the high-energy beam rays passing through it"));
-        t.requirement(t.tr("该过程需要(光强 * 4096EU/t)的能量", "This process requires (light intensity * 4096 EU/t) of energy"));
+        t.requirement(t.tr("每单位输入光强平均消耗409.6 EU/t，多个光路共享激发器的供能上限", "Consumes an average of 409.6 EU/t per unit of input intensity; optical paths share the exciter power limit"));
         t.requirement(t.tr("并且激发功率受到晶体激发器的等级限制（至多2A*机器等级）", "And the excitation power is limited by the level of the crystal exciter (up to 2A * machine level)"));
     });
 
@@ -503,7 +502,7 @@ public final class GTOMachineTooltipsA {
     public static final TipSpec BeamSemiReflectorTooltips = GTOTips.of("beam_semi_reflector", t -> {
         t.heading(MainFunction);
         t.feature(t.tr("将穿过的高能光束射线分为两路，一路继续前进，一路被反射", "Splits the high-energy beam rays passing through into two paths, one continues forward, and the other is reflected"));
-        t.control(t.tr("在机器GUI中调节射线的反射率", "Adjust the reflectivity of the beam in the machine GUI"));
+        t.control(t.tr("在机器GUI中调节反射率与镜面法线方向", "Adjust reflectivity and the mirror surface normal in the machine GUI"));
     });
 
     public static final TipSpec BeamPolarizerTooltips = GTOTips.of("beam_polarizer", t -> {
