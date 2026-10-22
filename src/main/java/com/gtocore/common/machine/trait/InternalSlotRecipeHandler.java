@@ -150,7 +150,8 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         protected void onRecipeHandled(GTRecipe recipe) {
-            slot.setRecipe(recipe.definition);
+            // Transient recipes must not clear the pattern's registered recipe and mode.
+            if (recipe.definition.registered) slot.setRecipe(recipe.definition);
         }
 
         @Override
