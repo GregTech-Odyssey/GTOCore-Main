@@ -1,7 +1,9 @@
 package com.gtocore.common.machine.electric.beam;
 
-import com.gtolib.api.beam.BeamNode;
-import com.gtolib.api.beam.BeamPassContext;
+import com.gtolib.api.beam.BeamBatch;
+import com.gtolib.api.beam.BeamRay;
+import com.gtolib.api.beam.BeamRoute;
+import com.gtolib.api.beam.BeamRoutes;
 import com.gtolib.api.beam.IBeamOperator;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 
@@ -11,7 +13,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +21,8 @@ import org.jetbrains.annotations.NotNull;
 public class BeamRedirector extends SimpleNoEnergyMachine implements IBeamOperator {
 
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private float thetaRad;
     @SaveToDisk(defaultValue = "0")
-    @SyncToClient
     private float phiRad;
 
     public BeamRedirector(MetaMachineBlockEntity holder) {
@@ -31,14 +30,13 @@ public class BeamRedirector extends SimpleNoEnergyMachine implements IBeamOperat
     }
 
     @Override
-    public BeamNode operate(BeamPassContext context, BeamNode lastNode, Vec3 exactPos) {
-        var properties = lastNode.propertiesSnapshot().copy();
-        Vec3 direction = BeamMachineUtils.direction(thetaRad, phiRad);
-        properties.vx = direction.x;
-        properties.vy = direction.y;
-        properties.vz = direction.z;
-        properties.intensity = (long) (properties.intensity * context.decay());
-        return new BeamNode(exactPos.x, exactPos.y, exactPos.z, properties);
+    public void route(BeamRay incoming, Vec3 hit, BeamRoutes outputs) {
+        outputs.add(BeamRoute.transmit(incoming, hit, BeamMachineUtils.direction(thetaRad, phiRad), incoming.wavelength(), incoming.refractiveIndex()));
+    }
+
+    @Override
+    public void evaluate(BeamBatch batch) {
+        for (int i = 0; i < batch.size(); i++) batch.pass(i).forward(0, 1);
     }
 
     public void setThetaRad(float thetaRad) {

@@ -4,17 +4,15 @@ import com.gtocore.api.research.IResearchPointsOperation;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.common.machine.electric.beam.BeamAccessPartMachine;
 
+import com.gtolib.api.beam.BeamSignal;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-
-import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
 public class LaserComputationTestingPlatformMachine extends ElectricMultiblockMachine implements IResearchPointsOperation {
 
     private static final long MIN_BEAM_INTENSITY = 64L;
     private static final double LOG_4 = Math.log(4);
-    private final O2OOpenCacheHashMap<BeamAccessPartMachine.BeamKey, long[]> intensitySamples = new O2OOpenCacheHashMap<>();
 
     public LaserComputationTestingPlatformMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -30,23 +28,10 @@ public class LaserComputationTestingPlatformMachine extends ElectricMultiblockMa
     }
 
     private long getMatchingIntensity() {
+        double intensity = 0;
         for (var part : getParts(BeamAccessPartMachine.class)) {
-            part.collectRecentIntensitySamples(intensitySamples);
+            intensity += part.averageReceivedPower(749, 751, Double.NaN);
         }
-        long intensity = 0L;
-        for (var iterator = intensitySamples.object2ObjectEntrySet().fastIterator(); iterator.hasNext();) {
-            var entry = iterator.next();
-            int wavelength = entry.getKey().waveLength();
-            if (wavelength < 749 || wavelength > 751) continue;
-            long quotient = 0L;
-            long remainder = 0L;
-            for (long sample : entry.getValue()) {
-                quotient += sample / BeamAccessPartMachine.AVERAGE_WINDOW_TICKS;
-                remainder += sample % BeamAccessPartMachine.AVERAGE_WINDOW_TICKS;
-            }
-            intensity = Math.max(intensity, quotient + remainder / BeamAccessPartMachine.AVERAGE_WINDOW_TICKS);
-        }
-        intensitySamples.clear();
-        return intensity;
+        return BeamSignal.toLong(intensity);
     }
 }

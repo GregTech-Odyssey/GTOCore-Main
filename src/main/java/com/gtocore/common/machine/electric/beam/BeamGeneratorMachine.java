@@ -97,6 +97,7 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
         currentIntensity = 0;
         currentWaveLength = 0;
         ocLevel = 0;
+        removeBeam();
         super.afterWorking();
     }
 
@@ -114,6 +115,21 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(BeamConfigurator.angles(this::getThetaRad, this::setThetaRad, this::getPhiRad, this::setPhiRad));
+        configuratorPanel.attachConfigurators(BeamConfigurator.status(this::pathStatus));
+    }
+
+    private net.minecraft.network.chat.Component pathStatus() {
+        var manager = getLevel() == null ? null : BeamManager.getIfPresent(getLevel());
+        var beam = manager == null ? null : manager.getBeam(beamId);
+        if (beam == null) return net.minecraft.network.chat.Component.translatable(BeamConfigurator.INACTIVE);
+        return net.minecraft.network.chat.Component.translatable(switch (beam.status()) {
+            case READY -> BeamConfigurator.READY;
+            case LOOP -> BeamConfigurator.LOOP;
+            case BRANCH_LOOP -> BeamConfigurator.BRANCH_LOOP;
+            case LIMIT -> BeamConfigurator.LIMIT;
+            case UNLOADED -> BeamConfigurator.UNLOADED;
+            case PENDING -> BeamConfigurator.PENDING;
+        });
     }
 
     private void refreshBeam() {
