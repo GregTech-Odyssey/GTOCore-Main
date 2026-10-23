@@ -116,6 +116,8 @@ fun computeGtolibFingerprint(): String {
             md.update(f.readBytes())
             md.update(0)
         }
+    // GTOLib 按这些依赖编译，版本变了也要重建
+    listOf("gtceu_version", "ae2_version").forEach { md.update("$it=${property(it)}".toByteArray()); md.update(0) }
     return md.digest().joinToString("") { "%02x".format(it) }
 }
 
@@ -158,6 +160,9 @@ if (compileGtolibSources) {
 } else {
     logger.lifecycle("GTOLib: 指纹命中 → 编译复用 build/gtolib/gtolib-protected.jar")
 }
+extra["compileGtolibSources"] = compileGtolibSources
+// GTOLib 私有构建扩展
+protectDir.listFiles { f -> f.name.endsWith(".gradle.kts") }?.sortedBy { it.name }?.forEach { apply(from = it) }
 
 tasks.named<ProcessResources>("processResources") {
     from(gtolibMixinConfig.parentFile) {

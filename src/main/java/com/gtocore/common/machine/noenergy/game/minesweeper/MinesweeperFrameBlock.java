@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.minesweeper;
+package com.gtocore.common.machine.noenergy.game.minesweeper;
 
 import net.minecraft.world.level.block.Block;
 
