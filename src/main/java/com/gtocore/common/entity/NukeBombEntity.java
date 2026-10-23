@@ -2,7 +2,7 @@ package com.gtocore.common.entity;
 
 import com.gtocore.common.data.GTOBlocks;
 
-import com.gtolib.utils.explosion.SphereExplosion;
+import com.gtolib.utils.explosion.LargeExplosion;
 
 import com.gregtechceu.gtceu.common.data.GTEntityTypes;
 import com.gregtechceu.gtceu.common.entity.GTExplosiveEntity;
@@ -42,6 +42,6 @@ public final class NukeBombEntity extends GTExplosiveEntity {
 
     @Override
     protected void explode() {
-        SphereExplosion.explosion(blockPosition(), level(), 80, false, true);
+        LargeExplosion.sphere(level(), blockPosition(), 80).start();
     }
 }

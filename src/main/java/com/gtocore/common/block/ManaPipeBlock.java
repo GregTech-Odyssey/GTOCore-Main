@@ -6,11 +6,11 @@ import com.gtocore.common.pipe.mana.LevelManaPipeNet;
 import com.gtocore.common.pipe.mana.ManaPipeProperties;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.utils.ManaUnification;
+import com.gtocore.common.pipe.mana.ManaRoutePath;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.PipeBlock;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.model.PipeModel;
 import com.gregtechceu.gtceu.client.renderer.block.PipeBlockRenderer;
@@ -33,7 +33,6 @@ import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.api.BotaniaForgeCapabilities;
 
 import java.util.List;
 
@@ -126,6 +125,6 @@ public class ManaPipeBlock extends PipeBlock<ManaPipeType, ManaPipeProperties, L
     public boolean canPipeConnectToBlock(PipeBlockEntity<ManaPipeType, ManaPipeProperties> selfTile, Direction side, @Nullable BlockEntity tile) {
         // 魔源没有 Forge 能力，按方块实体判定（与 IManaMachine#findSourceJar 一致）
         return tile instanceof ISourceTile ||
-                GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, tile, side.getOpposite()) != null;
+                ManaRoutePath.receiverOf(tile, side.getOpposite()) != null;
     }
 }

@@ -142,6 +142,8 @@ public final class RecipeTypeModify {
             }
         });
 
+        STEAM_BOILER_RECIPES.generator(true);
+        LARGE_BOILER_RECIPES.generator(true);
         STEAM_BOILER_RECIPES.onRecipeBuild((builder) -> {
             THERMAL_GENERATOR_FUELS.copyFrom(builder)
                     .EUt(-8)

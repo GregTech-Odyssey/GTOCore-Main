@@ -554,9 +554,9 @@ public final class ArsNouveauRecipes {
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_source_jar"), RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"),
                     "ABA",
-                    "BCB",
+                    "CDC",
                     "ABA",
-                    'A', new MaterialEntry(TagPrefix.block, GTOMaterials.ManaGlass), 'B', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'C', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
+                    'A', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ElfGlass), 'C', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'D', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("standard_laureril_source_jar"), GTOBlocks.STANDARD_LAURERIL_JAR.asItem(),
                     "AAA",
@@ -632,9 +632,9 @@ public final class ArsNouveauRecipes {
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_source_jar"), RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"),
                     "ABA",
-                    "BCB",
+                    "CDC",
                     "ABA",
-                    'A', new MaterialEntry(TagPrefix.block, GTOMaterials.ManaGlass), 'B', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'C', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
+                    'A', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ElfGlass), 'C', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'D', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("standard_laureril_source_jar"), GTOBlocks.STANDARD_LAURERIL_JAR.asItem(),
                     "AAA",

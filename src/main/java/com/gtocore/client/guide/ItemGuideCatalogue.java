@@ -16,20 +16,25 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * gtodyssey.com 攻略目录（GET /api/item-guides，schema 1）的解析与校验；超限或格式不对的条目直接丢弃。
+ * gtodyssey.com 攻略目录（GET /api/item-guides/v1，schema 1）的解析与校验；超限或格式不对的条目直接丢弃，不认识的字段忽略。
  */
-public record ItemGuideCatalogue(List<String> versions, List<Article> articles, List<Link> links) {
+public record ItemGuideCatalogue(List<Locale> locales, List<String> versions, List<Article> articles, List<Link> links) {
 
     public static final int SCHEMA = 1;
     static final int MAX_VERSIONS = 512;
     static final int MAX_ARTICLES = 5000;
     static final int MAX_LINKS = 20000;
     static final int MAX_TITLE = 300;
-    static final List<String> LOCALES = List.of("en", "zh", "ja", "ru", "es", "pt");
+    static final int MAX_LOCALES = 32;
+    static final int MAX_LOCALE_NAME = 32;
+    static final List<String> FALLBACK_LOCALES = List.of("en", "zh", "ja", "ru", "es", "pt");
+    static final Pattern LOCALE = Pattern.compile("^[a-z]{2,3}(-[a-z0-9]{2,8})?$");
     static final Pattern UUID = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
     static final Pattern ITEM_ID = Pattern.compile("^[a-z0-9_.-]{1,64}:[a-z0-9_./-]{1,192}$");
     static final Pattern VERSION = Pattern.compile("^[0-9A-Za-z][0-9A-Za-z.+_-]{0,63}$");
     static final Pattern VOLTAGE = Pattern.compile("^[A-Za-z]{1,8}$");
+
+    public record Locale(String id, String name) {}
 
     public record Article(String id, String sourceLocale, long published, @Nullable String voltage, Map<String, String> titles) {
 
@@ -43,44 +48,70 @@ public record ItemGuideCatalogue(List<String> versions, List<Article> articles, 
     public static ItemGuideCatalogue parse(String json) {
         JsonObject root = JsonParser.parseString(json).getAsJsonObject();
         if (intOf(root, "schema") != SCHEMA) throw new IllegalArgumentException("unsupported item guide schema");
+        var locales = locales(root);
 
         var versions = new ObjectArrayList<String>();
-        for (var element : arrayOf(root, "versions", MAX_VERSIONS)) {
-            String version = stringOf(element);
-            if (version == null || !VERSION.matcher(version).matches()) throw new IllegalArgumentException("bad version");
-            versions.add(version);
+        var givenVersions = arrayOf(root, "versions");
+        for (int i = 0, n = Math.min(givenVersions.size(), MAX_VERSIONS); i < n; i++) {
+            String version = stringOf(givenVersions.get(i));
+            versions.add(version != null && VERSION.matcher(version).matches() ? version : null);
         }
 
         var articles = new ObjectArrayList<Article>();
-        var given = arrayOf(root, "articles", MAX_ARTICLES);
-        var positions = new int[given.size()];
-        int index = 0;
-        for (var element : given) {
-            Article article = element.isJsonObject() ? article(element.getAsJsonObject()) : null;
-            positions[index++] = article == null ? -1 : articles.size();
+        var given = arrayOf(root, "articles");
+        var positions = new int[Math.min(given.size(), MAX_ARTICLES)];
+        for (int i = 0; i < positions.length; i++) {
+            var element = given.get(i);
+            Article article = element.isJsonObject() ? article(element.getAsJsonObject(), locales) : null;
+            positions[i] = article == null ? -1 : articles.size();
             if (article != null) articles.add(article);
         }
 
         var links = new ObjectArrayList<Link>();
-        for (var element : arrayOf(root, "links", MAX_LINKS)) {
-            if (!element.isJsonObject()) continue;
-            var object = element.getAsJsonObject();
+        var givenLinks = arrayOf(root, "links");
+        for (int i = 0, n = Math.min(givenLinks.size(), MAX_LINKS); i < n; i++) {
+            if (!(givenLinks.get(i) instanceof JsonObject object)) continue;
             int a = intOf(object, "a"), v = intOf(object, "v");
             String type = stringOf(object.get("type")), id = stringOf(object.get("id"));
-            if (a < 0 || a >= positions.length || positions[a] < 0 || v < 0 || v >= versions.size()) continue;
+            if (a < 0 || a >= positions.length || positions[a] < 0 || v < 0 || v >= versions.size() || versions.get(v) == null) continue;
             if (id == null || !ITEM_ID.matcher(id).matches()) continue;
             if (!"item".equals(type) && !"fluid".equals(type)) continue;
             links.add(new Link(positions[a], "fluid".equals(type), id, v));
         }
-        return new ItemGuideCatalogue(Collections.unmodifiableList(versions), Collections.unmodifiableList(articles), Collections.unmodifiableList(links));
+        return new ItemGuideCatalogue(Collections.unmodifiableList(locales), Collections.unmodifiableList(versions), Collections.unmodifiableList(articles), Collections.unmodifiableList(links));
+    }
+
+    private static List<Locale> locales(JsonObject root) {
+        var locales = new ObjectArrayList<Locale>();
+        if (root.get("locales") instanceof JsonArray given) {
+            for (int i = 0, n = Math.min(given.size(), MAX_LOCALES); i < n; i++) {
+                if (!(given.get(i) instanceof JsonObject object)) continue;
+                String id = stringOf(object.get("id"));
+                if (id == null || !LOCALE.matcher(id).matches() || indexOf(locales, id) >= 0) continue;
+                String name = clean(stringOf(object.get("name")));
+                if (name != null && name.length() > MAX_LOCALE_NAME) name = name.substring(0, MAX_LOCALE_NAME);
+                locales.add(new Locale(id, name != null ? name : id));
+            }
+        }
+        if (locales.isEmpty()) {
+            for (String id : FALLBACK_LOCALES) locales.add(new Locale(id, id.toUpperCase(java.util.Locale.ROOT)));
+        }
+        return locales;
+    }
+
+    static int indexOf(List<Locale> locales, String id) {
+        for (int i = 0; i < locales.size(); i++) {
+            if (locales.get(i).id().equals(id)) return i;
+        }
+        return -1;
     }
 
     @Nullable
-    private static Article article(JsonObject object) {
+    private static Article article(JsonObject object, List<Locale> locales) {
         String id = stringOf(object.get("id"));
         String source = stringOf(object.get("sourceLocale"));
         String published = stringOf(object.get("published"));
-        if (id == null || !UUID.matcher(id).matches() || source == null || !LOCALES.contains(source) || published == null) return null;
+        if (id == null || !UUID.matcher(id).matches() || source == null || indexOf(locales, source) < 0 || published == null) return null;
         long when;
         try {
             when = Instant.parse(published).toEpochMilli();
@@ -91,9 +122,9 @@ public record ItemGuideCatalogue(List<String> versions, List<Article> articles, 
         if (voltage != null && !VOLTAGE.matcher(voltage).matches()) voltage = null;
         var titles = new Object2ObjectOpenHashMap<String, String>();
         if (object.get("title") instanceof JsonObject given) {
-            for (String locale : LOCALES) {
-                String title = clean(stringOf(given.get(locale)));
-                if (title != null) titles.put(locale, title);
+            for (var locale : locales) {
+                String title = clean(stringOf(given.get(locale.id())));
+                if (title != null) titles.put(locale.id(), title);
             }
         }
         if (!titles.containsKey(source)) return null;
@@ -113,9 +144,8 @@ public record ItemGuideCatalogue(List<String> versions, List<Article> articles, 
         return result.isEmpty() ? null : result;
     }
 
-    private static JsonArray arrayOf(JsonObject object, String key, int max) {
+    private static JsonArray arrayOf(JsonObject object, String key) {
         if (!(object.get(key) instanceof JsonArray array)) throw new IllegalArgumentException("missing " + key);
-        if (array.size() > max) throw new IllegalArgumentException("too many " + key);
         return array;
     }
 

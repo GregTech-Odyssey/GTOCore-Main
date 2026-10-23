@@ -4,10 +4,13 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.uipro.ILocalUI;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ButtonGroup;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.Popup;
@@ -31,6 +34,7 @@ import org.lwjgl.glfw.GLFW;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.function.Function;
 
 /**
@@ -93,8 +97,10 @@ public final class ItemGuidesScreen extends ModularUIGuiContainer {
     static final String CHOOSER_TITLE = "gtocore.item_guides.chooser.title";
     @RegisterLanguage(cn = "打开", en = "Open")
     static final String OPEN = "gtocore.item_guides.chooser.open";
-    @RegisterLanguage(cn = "关联于 %s", en = "Linked in %s")
-    static final String LINKED_IN = "gtocore.item_guides.chooser.linked_in";
+    @RegisterLanguage(cn = "用%s显示标题并打开攻略", en = "Show titles and open guides in %s")
+    static final String LANGUAGE_TIP = "gtocore.item_guides.chooser.language";
+    @RegisterLanguage(cn = "仅有%s版", en = "%s only")
+    static final String ONLY_IN = "gtocore.item_guides.chooser.only_in";
     @RegisterLanguage(cn = "在浏览器中打开gtodyssey.com的网页 · 目录更新于%s", en = "Opens a page on gtodyssey.com in your browser · catalogue from %s")
     static final String FOOTER = "gtocore.item_guides.chooser.footer";
     @RegisterLanguage(cn = "无法连接gtodyssey.com，使用%s的目录", en = "Could not reach gtodyssey.com; using the catalogue from %s")
@@ -102,6 +108,7 @@ public final class ItemGuidesScreen extends ModularUIGuiContainer {
 
     private static final int CONTENT_WIDTH = 2 * UISizes.CONTENT_WIDTH;
     private static final int ACTION_WIDTH = 2 * UISizes.BUTTON_WIDTH;
+    private static final int ENTRY_HEIGHT = 2 * TextLine.HEIGHT + UISizes.GAP;
     private static final int MARGIN = 8;
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
     private static final DateTimeFormatter MINUTE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
@@ -126,7 +133,8 @@ public final class ItemGuidesScreen extends ModularUIGuiContainer {
     }
 
     static void openChooser(Screen previous, ItemStack icon, Component name, ItemGuides.Guide[] guides) {
-        open(previous, guides, close -> Popup.of(() -> icon, () -> Component.translatable(CHOOSER_TITLE, name), content -> chooser(content, guides, close))
+        Runnable reopen = () -> Minecraft.getInstance().tell(() -> openChooser(previous, icon, name, guides));
+        open(previous, guides, close -> Popup.of(() -> icon, () -> Component.translatable(CHOOSER_TITLE, name), content -> chooser(content, guides, close, reopen))
                 .setContentWidth(CONTENT_WIDTH));
     }
 
@@ -174,28 +182,66 @@ public final class ItemGuidesScreen extends ModularUIGuiContainer {
         content.addChild(section);
     }
 
-    private static void chooser(UIElement content, ItemGuides.Guide[] guides, Runnable close) {
-        for (var guide : guides) {
-            var title = TextLine.constant(0, Component.literal(ItemGuides.title(guide))).layout(l -> l.flex(1));
-            var open = Button.translatable(UISizes.BUTTON_WIDTH, OPEN).setOnClientClick(() -> {
-                ItemGuides.openPage(guide);
-                close.run();
-            });
-            var row = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(title, open);
-            var meta = TextLine.constant(CONTENT_WIDTH, meta(guide)).bindClientColor(UITheme::textSecondary);
-            content.addChild(UIElement.column(CONTENT_WIDTH).addChildren(row, meta));
-        }
+    private static void chooser(UIElement content, ItemGuides.Guide[] guides, Runnable close, Runnable reopen) {
+        var languages = languages(reopen);
+        if (languages != null) content.addChild(languages);
         long synced = ItemGuides.syncedAt();
-        Component when = Component.literal(synced > 0 ? MINUTE.format(Instant.ofEpochMilli(synced)) : "-");
-        content.addChild(TextLine.constant(CONTENT_WIDTH, Component.translatable(ItemGuides.offline() ? FOOTER_OFFLINE : FOOTER, when))
-                .bindClientColor(UITheme::textSecondary));
+        var catalogue = Component.literal(synced > 0 ? MINUTE.format(Instant.ofEpochMilli(synced)) : "-");
+        if (ItemGuides.offline()) {
+            content.addChild(Label.of(CONTENT_WIDTH, () -> Component.translatable(FOOTER_OFFLINE, catalogue)).bindClientColor(() -> UITheme.STATUS_TEXT_WARNING));
+        }
+        var source = Component.translatable(FOOTER, catalogue);
+        for (var guide : guides) content.addChild(entry(guide, source, close));
     }
 
-    private static Component meta(ItemGuides.Guide guide) {
-        var line = Component.translatable(LINKED_IN, guide.version());
-        var voltage = guide.article().voltage();
-        if (voltage != null) line.append(" · ").append(voltage);
-        return line.append(" · ").append(DAY.format(Instant.ofEpochMilli(guide.article().published())));
+    private static UIElement entry(ItemGuides.Guide guide, Component source, Runnable close) {
+        var title = TextLine.constant(LayoutStyle.AUTO, Component.literal(ItemGuides.title(guide)));
+        var details = UIElement.row(TextLine.HEIGHT);
+        var article = guide.article();
+        var version = Component.literal(guide.version());
+        if (article.voltage() != null) version.append(" · ").append(article.voltage());
+        boolean foreign = !article.hasLocale(ItemGuides.siteLocale());
+        if (foreign) version.append(" · ");
+        details.addChild(fitted(version).bindClientColor(UITheme::textSecondary));
+        if (foreign) {
+            String name = ItemGuides.localeName(article.sourceLocale());
+            details.addChild(fitted(Component.translatable(ONLY_IN, name != null ? name : article.sourceLocale())).bindClientColor(() -> UITheme.STATUS_TEXT_WARNING));
+        }
+        details.addChild(UIElement.flexSpacer());
+        details.addChild(fitted(Component.literal(DAY.format(Instant.ofEpochMilli(article.published())))).bindClientColor(UITheme::textSecondary));
+        var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.flex(1).gapAll(UISizes.GAP)).addChildren(title, details);
+        var open = Button.translatable(UISizes.BUTTON_WIDTH, OPEN).setOnClientClick(() -> {
+            ItemGuides.openPage(guide);
+            close.run();
+        });
+        open.tooltips(source);
+        var entry = UIElement.section(CONTENT_WIDTH).layout(l -> l.paddingHorizontal(UISizes.SECTION_GAP));
+        entry.addChild(UIElement.centeredRow(ENTRY_HEIGHT).layout(l -> l.gapAll(UISizes.SECTION_GAP)).addChildren(text, open));
+        return entry;
+    }
+
+    private static TextLine fitted(Component text) {
+        return TextLine.constant(UIText.width(text), text);
+    }
+
+    @Nullable
+    private static UIElement languages(Runnable reopen) {
+        var locales = ItemGuides.locales();
+        if (locales.size() < 2) return null;
+        int current = Math.max(0, ItemGuideCatalogue.indexOf(locales, ItemGuides.siteLocale()));
+        var languages = ButtonGroup.single(locales.size(), i -> Component.literal(locales.get(i).name()), () -> current, i -> {
+            ItemGuides.chooseLocale(locales.get(i).id());
+            reopen.run();
+        }).compact().optionTooltips(i -> Collections.singletonList(Component.translatable(LANGUAGE_TIP, locales.get(i).name())));
+        languages.layout(l -> l.flexGrow(1));
+        int index = 0;
+        for (var option : languages.widgets) {
+            if (option instanceof Button button) {
+                int width = UIText.width(locales.get(index++).name()) + 2 * UISizes.TEXT_PADDING;
+                button.layout(l -> l.minWidth(width).flex(1));
+            }
+        }
+        return UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChild(languages);
     }
 
     @Override
@@ -230,14 +276,18 @@ public final class ItemGuidesScreen extends ModularUIGuiContainer {
 
     private static final class Host extends UIElement implements ILocalUI {
 
+        private final PopupCard card;
+
         private Host(Popup popup, int width, int height, Runnable close) {
             setClientSideWidget();
             layout(l -> l.size(width, height).column().alignCenter().justifyContent(AlignContent.CENTER));
-            addChild(new PopupCard("item_guides", popup, height - 2 * MARGIN, close).setResizable(false));
+            card = new PopupCard("item_guides", popup, height - 2 * MARGIN, close).setResizable(false);
+            addChild(card);
         }
 
         private void resize(int width, int height) {
             layout(l -> l.size(width, height));
+            card.setMaxHeight(height - 2 * MARGIN);
         }
     }
 }
