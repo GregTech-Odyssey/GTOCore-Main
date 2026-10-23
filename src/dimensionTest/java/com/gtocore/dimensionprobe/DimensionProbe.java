@@ -42,12 +42,16 @@ public final class DimensionProbe {
     private com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget remote;
     private java.util.UUID animalId;
     private TestData testData;
-    private java.util.List<com.gtocore.common.weather.WeatherTimeline.Period> weather;
+    private java.util.List<com.gtolib.api.weather.WeatherTimeline.Period> weather;
 
     /**
      * 注册隔离测试所需的事件监听，根据 JVM 属性选择探针场景。
      */
     public DimensionProbe() {
+        if (Boolean.getBoolean("dimensionDaylightProbe")) {
+            new DaylightProbe();
+            return;
+        }
         if (Boolean.getBoolean("dimensionCrashProbe")) {
             new CrashProbe();
             return;
@@ -115,7 +119,7 @@ public final class DimensionProbe {
             require(manager.getOrCreateSeries(new SeriesAddress(seriesId, -1)).id().equals(seriesInstance.id()), "Series identity changed");
             require(manager.instances().count() == before + 1, "Series eagerly created neighbours");
             require(!Files.exists(manager.dimensionPath(seriesInstance.dimension())), "Series metadata generated terrain");
-            com.gtocore.common.weather.WeatherSystem.get(server).forecast(seriesInstance.dimension());
+            com.gtolib.api.weather.WeatherSystem.get(server).forecast(seriesInstance.dimension());
             require(server.getLevel(seriesInstance.dimension()) == null, "Weather forecast woke terrain");
             UUID stranger = UUID.randomUUID();
             require(!manager.canAccess(stranger, false, instance.dimension()), "Private access granted to stranger");
@@ -162,7 +166,7 @@ public final class DimensionProbe {
             previous.addFreshEntity(cow);
             testData = previous.getDataStorage().computeIfAbsent(tag -> new TestData(tag.getInt("value")), () -> new TestData(77), "dimension_probe_data");
             testData.setDirty();
-            weather = java.util.List.copyOf(com.gtocore.common.weather.WeatherSystem.get(server).forecast(loadingKey));
+            weather = java.util.List.copyOf(com.gtolib.api.weather.WeatherSystem.get(server).forecast(loadingKey));
             var rocket = earth.terrarium.adastra.common.registry.ModEntityTypes.TIER_1_ROCKET.get().create(previous);
             rocket.setPos(8, 180, 8);
             previous.addFreshEntity(rocket);
@@ -249,7 +253,7 @@ public final class DimensionProbe {
                 require(!manager.requestUnload(loadingKey), "Valid temporary ticket allowed unload");
                 remote.blockEntity();
                 require(remote.level() == reopened, "Device cache failed to resolve reopened target");
-                require(com.gtocore.common.weather.WeatherSystem.get(server).forecast(loadingKey).getFirst().weather() == weather.getFirst().weather(), "Instance weather reset");
+                require(com.gtolib.api.weather.WeatherSystem.get(server).forecast(loadingKey).getFirst().weather() == weather.getFirst().weather(), "Instance weather reset");
                 previous = reopened;
                 phase = 4;
             } else if (phase == 4 && previous.getEntity(animalId) != null) {

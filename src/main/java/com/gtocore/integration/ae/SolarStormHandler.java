@@ -1,8 +1,9 @@
 package com.gtocore.integration.ae;
 
 import com.gtocore.common.machine.multiblock.electric.SolarStormAggregationReactor;
-import com.gtocore.common.weather.WeatherSystem;
-import com.gtocore.common.weather.WeatherTypes;
+
+import com.gtolib.api.weather.WeatherSystem;
+import com.gtolib.api.weather.WeatherTypes;
 
 import com.gregtechceu.gtceu.core.ILevel;
 

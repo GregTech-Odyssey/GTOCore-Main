@@ -31,6 +31,7 @@ import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.api.weather.WeatherForecastItem;
 import com.gtolib.quest.QuestBookItem;
 import com.gtolib.utils.StringUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;

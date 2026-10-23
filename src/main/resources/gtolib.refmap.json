@@ -121,7 +121,9 @@
       "<clinit>": "Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;<clinit>()V"
     },
     "com/gtolib/mixin/mc/world/ClientLevelMixin": {
-      "setDayTime": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104746_(J)V"
+      "setDayTime": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104746_(J)V",
+      "tickTime": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104826_()V",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;setDayTime(J)V": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104746_(J)V"
     },
     "com/gtolib/mixin/mc/nbt/ListTagMixin$Type": {
       "load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/ListTag;": "Lnet/minecraft/nbt/ListTag$1;m_7300_(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/ListTag;",
@@ -448,7 +450,9 @@
       "getSeed": "Lnet/minecraft/server/level/ServerLevel;m_7328_()J",
       "Lnet/minecraft/world/level/levelgen/WorldOptions;seed()J": "Lnet/minecraft/world/level/levelgen/WorldOptions;m_245499_()J",
       "<init>": "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/dimension/LevelStem;Lnet/minecraft/server/level/progress/ChunkProgressListener;ZJLjava/util/List;ZLnet/minecraft/world/RandomSequences;)V",
-      "setChunkForced": "Lnet/minecraft/server/level/ServerLevel;m_8602_(IIZ)Z"
+      "setChunkForced": "Lnet/minecraft/server/level/ServerLevel;m_8602_(IIZ)Z",
+      "tickTime": "Lnet/minecraft/server/level/ServerLevel;m_8809_()V",
+      "setDayTime": "Lnet/minecraft/server/level/ServerLevel;m_8615_(J)V"
     },
     "com/gtolib/mixin/mc/DimensionArgumentMixin": {
       "listSuggestions": "Lnet/minecraft/commands/arguments/DimensionArgument;listSuggestions(Lcom/mojang/brigadier/context/CommandContext;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;)Ljava/util/concurrent/CompletableFuture;",
@@ -511,6 +515,41 @@
     },
     "com/gtolib/mixin/mc/entity/FoodDataAccessor": {
       "saturationLevel": "f_38697_:F"
+    },
+    "com/gtocore/mixin/mc/TimeCommandMixin": {
+      "addTime": "Lnet/minecraft/server/commands/TimeCommand;m_139082_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+      "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;": "Lnet/minecraft/server/MinecraftServer;m_129785_()Ljava/lang/Iterable;",
+      "setTime": "Lnet/minecraft/server/commands/TimeCommand;m_139077_(Lnet/minecraft/commands/CommandSourceStack;I)I"
+    },
+    "com/gtolib/mixin/ftblibrary/LocalTimeCommandMixin": {
+      "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;": "Lnet/minecraft/server/MinecraftServer;m_129785_()Ljava/lang/Iterable;"
+    },
+    "com/gtolib/mixin/mc/client/LevelRendererWeatherMixin": {
+      "Lnet/minecraft/world/level/biome/Biome;getPrecipitationAt(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;": "Lnet/minecraft/world/level/biome/Biome;m_264600_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+      "tickRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109693_(Lnet/minecraft/client/Camera;)V",
+      "renderSnowAndRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109703_(Lnet/minecraft/client/renderer/LightTexture;FDDD)V",
+      "Lnet/minecraft/world/level/biome/Biome;hasPrecipitation()Z": "Lnet/minecraft/world/level/biome/Biome;m_264473_()Z",
+      "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
+    },
+    "com/gtolib/mixin/mc/world/WeatherCommandMixin": {
+      "setRain": "Lnet/minecraft/server/commands/WeatherCommand;m_139177_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+      "setClear": "Lnet/minecraft/server/commands/WeatherCommand;m_139172_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+      "setThunder": "Lnet/minecraft/server/commands/WeatherCommand;m_139182_(Lnet/minecraft/commands/CommandSourceStack;I)I"
+    },
+    "com/gtolib/mixin/mc/DimensionTimePacketMixin": {
+      "send(Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_9829_(Lnet/minecraft/network/protocol/Packet;)V"
+    },
+    "com/gtolib/mixin/mythicbotany/LocalSleepTimeMixin": {
+      "Lnet/minecraft/server/MinecraftServer;overworld()Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129783_()Lnet/minecraft/server/level/ServerLevel;"
+    },
+    "com/gtolib/mixin/mc/client/ClientLevelWeatherMixin": {
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+      "getSkyColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_171660_(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
+      "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyFlashTime()I": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104819_()I",
+      "getSkyDarken": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104805_(F)F",
+      "getCloudColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104808_(F)Lnet/minecraft/world/phys/Vec3;"
     }
   },
   "data": {
@@ -636,7 +675,9 @@
         "<clinit>": "Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;<clinit>()V"
       },
       "com/gtolib/mixin/mc/world/ClientLevelMixin": {
-        "setDayTime": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104746_(J)V"
+        "setDayTime": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104746_(J)V",
+        "tickTime": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104826_()V",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;setDayTime(J)V": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104746_(J)V"
       },
       "com/gtolib/mixin/mc/nbt/ListTagMixin$Type": {
         "load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/ListTag;": "Lnet/minecraft/nbt/ListTag$1;m_7300_(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/ListTag;",
@@ -963,7 +1004,9 @@
         "getSeed": "Lnet/minecraft/server/level/ServerLevel;m_7328_()J",
         "Lnet/minecraft/world/level/levelgen/WorldOptions;seed()J": "Lnet/minecraft/world/level/levelgen/WorldOptions;m_245499_()J",
         "<init>": "Lnet/minecraft/server/level/ServerLevel;<init>(Lnet/minecraft/server/MinecraftServer;Ljava/util/concurrent/Executor;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/world/level/storage/ServerLevelData;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/dimension/LevelStem;Lnet/minecraft/server/level/progress/ChunkProgressListener;ZJLjava/util/List;ZLnet/minecraft/world/RandomSequences;)V",
-        "setChunkForced": "Lnet/minecraft/server/level/ServerLevel;m_8602_(IIZ)Z"
+        "setChunkForced": "Lnet/minecraft/server/level/ServerLevel;m_8602_(IIZ)Z",
+        "tickTime": "Lnet/minecraft/server/level/ServerLevel;m_8809_()V",
+        "setDayTime": "Lnet/minecraft/server/level/ServerLevel;m_8615_(J)V"
       },
       "com/gtolib/mixin/mc/DimensionArgumentMixin": {
         "listSuggestions": "Lnet/minecraft/commands/arguments/DimensionArgument;listSuggestions(Lcom/mojang/brigadier/context/CommandContext;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;)Ljava/util/concurrent/CompletableFuture;",
@@ -1026,6 +1069,41 @@
       },
       "com/gtolib/mixin/mc/entity/FoodDataAccessor": {
         "saturationLevel": "f_38697_:F"
+      },
+      "com/gtocore/mixin/mc/TimeCommandMixin": {
+        "addTime": "Lnet/minecraft/server/commands/TimeCommand;m_139082_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+        "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;": "Lnet/minecraft/server/MinecraftServer;m_129785_()Ljava/lang/Iterable;",
+        "setTime": "Lnet/minecraft/server/commands/TimeCommand;m_139077_(Lnet/minecraft/commands/CommandSourceStack;I)I"
+      },
+      "com/gtolib/mixin/ftblibrary/LocalTimeCommandMixin": {
+        "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;": "Lnet/minecraft/server/MinecraftServer;m_129785_()Ljava/lang/Iterable;"
+      },
+      "com/gtolib/mixin/mc/client/LevelRendererWeatherMixin": {
+        "Lnet/minecraft/world/level/biome/Biome;getPrecipitationAt(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;": "Lnet/minecraft/world/level/biome/Biome;m_264600_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/biome/Biome$Precipitation;",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+        "tickRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109693_(Lnet/minecraft/client/Camera;)V",
+        "renderSnowAndRain": "Lnet/minecraft/client/renderer/LevelRenderer;m_109703_(Lnet/minecraft/client/renderer/LightTexture;FDDD)V",
+        "Lnet/minecraft/world/level/biome/Biome;hasPrecipitation()Z": "Lnet/minecraft/world/level/biome/Biome;m_264473_()Z",
+        "renderSky": "Lnet/minecraft/client/renderer/LevelRenderer;m_202423_(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
+      },
+      "com/gtolib/mixin/mc/world/WeatherCommandMixin": {
+        "setRain": "Lnet/minecraft/server/commands/WeatherCommand;m_139177_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+        "setClear": "Lnet/minecraft/server/commands/WeatherCommand;m_139172_(Lnet/minecraft/commands/CommandSourceStack;I)I",
+        "setThunder": "Lnet/minecraft/server/commands/WeatherCommand;m_139182_(Lnet/minecraft/commands/CommandSourceStack;I)I"
+      },
+      "com/gtolib/mixin/mc/DimensionTimePacketMixin": {
+        "send(Lnet/minecraft/network/protocol/Packet;)V": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_9829_(Lnet/minecraft/network/protocol/Packet;)V"
+      },
+      "com/gtolib/mixin/mythicbotany/LocalSleepTimeMixin": {
+        "Lnet/minecraft/server/MinecraftServer;overworld()Lnet/minecraft/server/level/ServerLevel;": "Lnet/minecraft/server/MinecraftServer;m_129783_()Lnet/minecraft/server/level/ServerLevel;"
+      },
+      "com/gtolib/mixin/mc/client/ClientLevelWeatherMixin": {
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46722_(F)F",
+        "getSkyColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_171660_(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F": "Lnet/minecraft/client/multiplayer/ClientLevel;m_46661_(F)F",
+        "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyFlashTime()I": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104819_()I",
+        "getSkyDarken": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104805_(F)F",
+        "getCloudColor": "Lnet/minecraft/client/multiplayer/ClientLevel;m_104808_(F)Lnet/minecraft/world/phys/Vec3;"
       }
     }
   }
