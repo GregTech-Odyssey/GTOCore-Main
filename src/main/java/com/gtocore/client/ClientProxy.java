@@ -6,6 +6,7 @@ import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.client.guide.ItemGuides;
 import com.gtocore.client.hud.AdAstraHUD;
 import com.gtocore.client.hud.IMoveableHUD;
+import com.gtocore.client.hud.MedicalConditionHUD;
 import com.gtocore.client.hud.ResearchPointsHUD;
 import com.gtocore.client.hud.WirelessEnergyHUD;
 import com.gtocore.client.hud.attribute.PlayerAttrHUD;
@@ -246,6 +247,7 @@ public final class ClientProxy extends CommonProxy {
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
         registerHUD(event, "wireless_energy_hud", WirelessEnergyHUD.INSTANCE);
         registerHUD(event, "research_points_hud", ResearchPointsHUD.INSTANCE);
+        registerHUD(event, "medical_condition_hud", MedicalConditionHUD.INSTANCE);
         registerHUD(event, "adastra_hud", AdAstraHUD.gto$INSTANCE);
         registerHUD(event, "client_property_hud", PlayerAttrHUD.INSTANCE);
         registerHUD(event, "quest_pinned_hud", QuestPinnedHud.INSTANCE);

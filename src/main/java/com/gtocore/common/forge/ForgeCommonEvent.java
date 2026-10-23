@@ -10,6 +10,7 @@ import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
+import com.gtocore.common.medical.MedicalConditionSync;
 import com.gtocore.common.saved.*;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
@@ -147,6 +148,7 @@ public final class ForgeCommonEvent {
         AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();
+        MedicalConditionSync.init();
         MEPatternBufferConnectionHandler.init();
         QuestServer.init();
     }

@@ -21,6 +21,7 @@ import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
+import com.gtocore.common.medical.MedicalConditionSync;
 import com.gtocore.integration.ae.wireless.WirelessClientCache;
 import com.gtocore.integration.emi.HiddenItems;
 
@@ -304,6 +305,7 @@ public final class ForgeClientEvent {
     }
 
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
+        MedicalConditionSync.clearClientSnapshot();
         TeamResearchSavedData.clearClientInstance();
         TechTreeSavedData.clearClientInstance();
         WirelessClientCache.clear();

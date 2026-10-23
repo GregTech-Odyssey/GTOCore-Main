@@ -94,7 +94,7 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
         super.afterWorking();
         if (cwuBuffer > 0) {
             coinBuffer += VirtualCoinSavedData.accumulateCoinWork(getOwnerUUID(), cwuBuffer);
-            if (outputItem(ChemicalHelper.getItem(GTOTagPrefix.COIN, GTMaterials.Gold), coinBuffer)) {
+            if (outputItem(ChemicalHelper.getItem(GTOTagPrefix.COIN, GTMaterials.Osmium), coinBuffer)) {
                 coinBuffer = 0L;
             }
             cwuBuffer = 0L;

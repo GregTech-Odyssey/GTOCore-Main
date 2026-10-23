@@ -475,6 +475,25 @@ public final class GTOConfig {
             public int researchPointsHUDDefaultY = 12;
 
             @Configurable
+            @Configurable.Comment({ "有疾病积累时显示疾病 HUD", "Show the Disease HUD when a medical condition has accumulated" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Enabled", cn = "疾病 HUD 启用")
+            public boolean medicalConditionHUDEnabled = true;
+
+            @Configurable
+            @Configurable.Comment({ "疾病 HUD 的默认 X 相对位置，0 为左侧，100 为右侧", "Disease HUD relative X position: 0 is left, 100 is right" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Default X", cn = "疾病 HUD 默认 X 位置")
+            @Configurable.Range(min = 0, max = 100)
+            @Configurable.Gui.Slider
+            public int medicalConditionHUDDefaultX = 0;
+
+            @Configurable
+            @Configurable.Comment({ "疾病 HUD 的默认 Y 相对位置，0 为顶部，100 为底部", "Disease HUD relative Y position: 0 is top, 100 is bottom" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Default Y", cn = "疾病 HUD 默认 Y 位置")
+            @Configurable.Range(min = 0, max = 100)
+            @Configurable.Gui.Slider
+            public int medicalConditionHUDDefaultY = 50;
+
+            @Configurable
             @Configurable.Comment({ "启用客户端属性 HUD 显示", "Enable Client Attributes HUD display" })
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Client Attributes HUD Enabled", cn = "客户端属性 HUD 启用")
             public boolean clientAttributesHUDEnabled = false;
