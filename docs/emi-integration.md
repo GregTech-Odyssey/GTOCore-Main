@@ -20,7 +20,7 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 | 库存合成判定、可合成列表及库存比较 | EMI-gto `dev.emi.emi.api.recipe.EmiPlayerInventory` |
 | 合成余物发现 | EMI-gto `dev.emi.emi.recipe.EmiShapedRecipe` |
 | 自定义物品列表的过滤及索引烘焙 | EMI-gto `dev.emi.emi.registry.EmiStackList.bake(List)` |
-| 物品/流体连同 NBT 的驻留键、NBT 比较 | EMI-gto `EmiStackKey`/`EmiItemKey`/`EmiFluidKey`、`Comparison` |
+| 物品/流体连同 NBT 的驻留键、NBT 比较 | 装有 AE 时为 AE 的 `AEItemKey`/`AEFluidKey`（EMI-gto `StackKeys` 选择）、`Comparison` |
 | 全局/服务器分组 JSON 读写与旧格式兼容 | EMI-gto `dev.emi.emi.runtime.EmiPersistentData` |
 | 工作站多列布局 | EMI-gto `RecipeScreen` |
 | 异步搜索烘焙、搜索就绪状态与进度显示 | EMI-gto `EmiSearch`、`EmiReloadManager`、`EmiScreenManager` |
@@ -30,11 +30,11 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 | 大数量按 AE 格式渲染、AE 包装流体的配方查询、收藏变动回调 | AE `AppEngEmiHooks`（接 EMI-gto 的 `EmiHooks`） |
 | 无槽位的 AE 合成确认/合成 CPU 界面显示 EMI | AE `AppEngEmiPlugin`（通用界面范围提供器） |
 
-`ItemEmiStack` / `FluidEmiStack` 内部持有 EMI 自己的驻留键（`EmiItemKey` / `EmiFluidKey`，内容相同即同一对象，按 `==` 比较），`getStackKey()` 提供该引用；键的 `attachment` 槽位由 AE 填入对应的 AEKey，`EmiStackHelper.toAEKey` 先读槽位，没有才换算一次并写回。`getKey()` 继续返回 `Item` / `Fluid`，以维持注册表适配、配方比较及第三方集成的既有语义。
+`ItemEmiStack` / `FluidEmiStack` 内部持有驻留键（内容相同即同一对象，按 `==` 比较），`getStackKey()` 提供该引用。装有 AE 时 EMI 直接使用 AE 的 `AEItemKey` / `AEFluidKey`，与 AE 共用一套键，`EmiStackHelper.toAEKey` 直接取用、`toEmiStack` 用 `ItemEmiStack.ofKey` / `FluidEmiStack.ofKey` 包回；没装 AE 时 EMI 才用自带的键。`getKey()` 继续返回 `Item` / `Fluid`，以维持注册表适配、配方比较及第三方集成的既有语义。自定义 EMI 资源没有驻留键，仍走自身的 key/NBT 逻辑。
 
 ### 资源专属比较器
 
-严格比较通过 `EmiStack.getStrictComparison()` 选择资源专属的共享比较器，调用方用 `isStrictEqual`；严格索引的 hash 也必须取同一个比较器，不能另行读取 NBT。物品/流体使用 `COMPARE_STACK_KEY`，搜索文本使用 `COMPARE_STRING`，材料形态、研究标签、科技节点和离子使用各自的注册对象引用。AE 的 `EmiStackHelper.COMPARE_AEKEY` 按 AEKey 引用比较，并优先复用驻留键中缓存的 AEKey；需要区分数据的 GTO 物品默认比较也使用它。
+严格比较通过 `EmiStack.getStrictComparison()` 选择资源专属的共享比较器，调用方用 `isStrictEqual`；严格索引的 hash 也必须取同一个比较器，不能另行读取 NBT。物品/流体使用 `COMPARE_STACK_KEY`，搜索文本使用 `COMPARE_STRING`，材料形态、研究标签、科技节点和离子使用各自的注册对象引用。装有 AE 时物品/流体的驻留键就是 AEKey，`COMPARE_STACK_KEY` 即按 AEKey 引用比较；需要区分数据的 GTO 物品默认比较也使用它。
 
 新增自定义资源必须覆写 `getStrictComparison()`，比较与 hash 使用同一业务标识；不要为了匹配而临时序列化 NBT。旧 `COMPARE_NBT`、`Comparison.compareNbt()` 与无资源参数的 `EmiPort.compareStrict()` 保留并标记弃用，仅供尚未迁移的第三方二进制兼容，本仓及维护中的 EMI/AE 调用不再使用。
 

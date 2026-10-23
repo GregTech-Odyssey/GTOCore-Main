@@ -1,5 +1,6 @@
 package com.gtocore.mixin.mc;
 
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 
 import org.spongepowered.asm.mixin.Overwrite;
@@ -13,6 +14,6 @@ public class GameRendererMixin {
      */
     @Overwrite
     public static float getNightVisionScale(LivingEntity livingEntity, float nanoTime) {
-        return 1.0F;
+        return livingEntity.hasEffect(MobEffects.NIGHT_VISION) ? 1.0F : 0.0F;
     }
 }

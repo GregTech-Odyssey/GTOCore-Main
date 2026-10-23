@@ -59,7 +59,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,7 +91,7 @@ public final class ItemGuides {
 
     private static final String SITE = "https://gtodyssey.com";
     private static final String USER_AGENT = "GTOCore-ItemGuides/1";
-    private static final int MAX_BYTES = 4 << 20;
+    private static final int MAX_BYTES = 16 << 20;
     private static final int PROMPT_DELAY_TICKS = 60;
     private static final int PROMPT_RETRY_TICKS = 20;
     private static final int PROMPT_RETRIES = 30;
@@ -113,6 +115,8 @@ public final class ItemGuides {
     private static volatile Index index = Index.EMPTY;
     private static volatile long syncedAt;
     private static volatile boolean offline;
+    @Nullable
+    private static volatile String chosenLocale;
     @Nullable
     private static String etag;
     @Nullable
@@ -168,12 +172,31 @@ public final class ItemGuides {
         return KEY.getTranslatedKeyMessage().copy().withStyle(Style.EMPTY.withColor(TipTheme.VALUE));
     }
 
+    static List<ItemGuideCatalogue.Locale> locales() {
+        return index.locales;
+    }
+
     static String siteLocale() {
+        var locales = index.locales;
+        String chosen = chosenLocale;
+        if (chosen != null && ItemGuideCatalogue.indexOf(locales, chosen) >= 0) return chosen;
         String language = Minecraft.getInstance().getLanguageManager().getSelected().toLowerCase(Locale.ROOT);
-        for (String locale : ItemGuideCatalogue.LOCALES) {
-            if (language.startsWith(locale)) return locale;
+        for (var locale : locales) {
+            if (language.startsWith(locale.id())) return locale.id();
         }
         return "en";
+    }
+
+    static void chooseLocale(String locale) {
+        chosenLocale = locale;
+        WORKER.execute(ItemGuides::writeState);
+    }
+
+    @Nullable
+    static String localeName(String id) {
+        var locales = index.locales;
+        int found = ItemGuideCatalogue.indexOf(locales, id);
+        return found < 0 ? null : locales.get(found).name();
     }
 
     static String title(Guide guide) {
@@ -323,6 +346,7 @@ public final class ItemGuides {
                 case "denied" -> Consent.DENIED;
                 default -> Consent.UNSET;
             };
+            chosenLocale = root.has("locale") ? root.get("locale").getAsString() : null;
             etag = root.has("etag") ? root.get("etag").getAsString() : null;
             syncedAt = root.has("syncedAt") ? root.get("syncedAt").getAsLong() : 0;
         } catch (Exception e) {
@@ -334,6 +358,8 @@ public final class ItemGuides {
     private static void writeState() {
         var root = new JsonObject();
         root.addProperty("consent", consent.name().toLowerCase(Locale.ROOT));
+        String locale = chosenLocale;
+        if (locale != null) root.addProperty("locale", locale);
         if (etag != null) root.addProperty("etag", etag);
         if (syncedAt > 0) root.addProperty("syncedAt", syncedAt);
         try {
@@ -360,7 +386,7 @@ public final class ItemGuides {
     private static void fetch() {
         long started = System.nanoTime();
         try {
-            var request = HttpRequest.newBuilder(URI.create(origin() + "/api/item-guides"))
+            var request = HttpRequest.newBuilder(URI.create(origin() + "/api/item-guides/v" + ItemGuideCatalogue.SCHEMA))
                     .timeout(Duration.ofSeconds(10))
                     .header("User-Agent", USER_AGENT)
                     .header("Accept", "application/json")
@@ -447,9 +473,9 @@ public final class ItemGuides {
 
     private record Ranked(ItemGuideCatalogue.Article article, String version, int rank) {}
 
-    private record Index(Reference2ObjectOpenHashMap<Item, Guide[]> items, Reference2ObjectOpenHashMap<Fluid, Guide[]> fluids) {
+    private record Index(List<ItemGuideCatalogue.Locale> locales, Reference2ObjectOpenHashMap<Item, Guide[]> items, Reference2ObjectOpenHashMap<Fluid, Guide[]> fluids) {
 
-        static final Index EMPTY = new Index(new Reference2ObjectOpenHashMap<>(), new Reference2ObjectOpenHashMap<>());
+        static final Index EMPTY = new Index(Collections.emptyList(), new Reference2ObjectOpenHashMap<>(), new Reference2ObjectOpenHashMap<>());
 
         boolean isEmpty() {
             return items.isEmpty() && fluids.isEmpty();
@@ -468,7 +494,7 @@ public final class ItemGuides {
                     add(items.computeIfAbsent(ForgeRegistries.ITEMS.getValue(id), k -> new ObjectArrayList<>()), ranked);
                 }
             }
-            return new Index(freeze(items), freeze(fluids));
+            return new Index(catalogue.locales(), freeze(items), freeze(fluids));
         }
 
         private static void add(ObjectArrayList<Ranked> list, Ranked ranked) {

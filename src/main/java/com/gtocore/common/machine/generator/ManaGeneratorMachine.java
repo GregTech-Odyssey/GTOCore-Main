@@ -7,7 +7,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IManaContainer;
 import com.gtolib.api.machine.mana.feature.IManaMachine;
 import com.gtolib.api.machine.mana.trait.NotifiableManaContainer;
-import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -30,8 +29,7 @@ import net.minecraft.world.level.Level;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
-import vazkii.botania.api.mana.ManaCollector;
-import vazkii.botania.api.mana.ManaPool;
+import vazkii.botania.api.mana.ManaEndpoint;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -59,6 +57,7 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
 
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
+    private final ManaEndpoint manaEndpoint;
     private final long energyPerTick;
     private final long manaPerTick;
     @SaveToDisk(defaultValue = "true")
@@ -70,6 +69,7 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
         energyPerTick = GTValues.V[tier];
         manaPerTick = manaPerTick(tier);
         manaContainer = new NotifiableManaContainer(this, IO.OUT, MANA_CAPACITY, MANA_CAPACITY);
+        manaEndpoint = ManaUnification.of(manaContainer, 20);
     }
 
     /** 某档次的每 tick 魔力产出（= 该档位电压 × 换算比）。 */
@@ -118,30 +118,13 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
         var facing = getFrontFacing();
         var receiver = findManaReceiver(facing, null);
         if (receiver != null && !receiver.isFull()) {
-            if (receiver instanceof ManaPool pool) {
-                mana = Math.min(mana, pool.getMaxMana() - pool.getCurrentMana());
-            } else if (receiver instanceof ManaCollector collector) {
-                mana = Math.min(mana, collector.getMaxMana() - collector.getCurrentMana());
-            }
-            int change = MathUtil.saturatedCast(mana);
-            if (change > 0) {
-                long removed = manaContainer.removeMana(change, 20, false);
-                if (removed > 0) receiver.receiveMana(MathUtil.saturatedCast(removed));
-            }
+            ManaEndpoint.transfer(manaEndpoint, receiver, mana);
         }
         mana = manaContainer.getCurrentMana();
         if (mana < 1) return;
         var jarTile = findSourceJar(facing);
-        if (jarTile == null) return;
-        long space = jarTile.canAcceptSource() ? jarTile.getMaxSourceLong() - jarTile.getSourceLong() : 0;
-        if (space > 0) {
-            long available = manaContainer.removeMana(ManaUnification.sourceToMana(space), 20, true);
-            long source = ManaUnification.manaToSource(available);
-            if (source > 0) {
-                manaContainer.removeMana(ManaUnification.sourceToMana(source), 20, false);
-                jarTile.addSourceLong(source);
-            }
-        }
+        if (jarTile == null || !jarTile.canAcceptSource()) return;
+        ManaEndpoint.transfer(manaEndpoint, ManaUnification.of(jarTile), mana);
     }
 
     private void generateMana() {

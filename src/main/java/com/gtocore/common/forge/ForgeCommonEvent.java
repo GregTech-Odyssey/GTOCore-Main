@@ -3,6 +3,7 @@ package com.gtocore.common.forge;
 import com.gtocore.api.electrochemistry.ElectrochemistryMigration;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
+import com.gtocore.common.block.ChargeBomb;
 import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.item.armor.HeatInsulationArmorItem;
@@ -19,7 +20,6 @@ import com.gtocore.integration.ae.TieredInterfaces;
 import com.gtocore.integration.ae.wireless.WirelessEvents;
 import com.gtocore.integration.ae.wireless.WirelessNetworks;
 import com.gtocore.integration.ae.wireless.WirelessSync;
-import com.gtocore.integration.botania.IEntropinnyum;
 import com.gtocore.integration.ftbquests.AdditionalTeamData;
 
 import com.gtolib.GTOCore;
@@ -37,7 +37,6 @@ import com.gtolib.quest.QuestServer;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.ServerUtils;
-import com.gtolib.utils.explosion.SphereExplosion;
 import com.gtolib.utils.register.BlockRegisterUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -220,28 +219,7 @@ public final class ForgeCommonEvent {
             return;
         }
 
-        if (!GTOConfig.INSTANCE.gamePlay.disableChargeBomb) {
-            if (item == GTItems.QUANTUM_STAR.get() &&
-                    level.getBlockState(pos).getBlock() == GTOBlocks.NAQUADRIA_CHARGE.get() &&
-                    !IEntropinnyum.absorbBomb(level, pos, (int) 1e6)) {
-                SphereExplosion.explosion(pos, level, 200, true, true);
-                return;
-            }
-
-            if (item == GTItems.GRAVI_STAR.get() &&
-                    level.getBlockState(pos).getBlock() == GTOBlocks.LEPTONIC_CHARGE.get() &&
-                    !IEntropinnyum.absorbBomb(level, pos, (int) 4e6)) {
-                SphereExplosion.explosion(pos, level, 800, true, true);
-                return;
-            }
-
-            if (item == GTOItems.UNSTABLE_STAR.get() &&
-                    level.getBlockState(pos).getBlock() == GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.get() &&
-                    !IEntropinnyum.absorbBomb(level, pos, (int) 1e7)) {
-                SphereExplosion.explosion(pos, level, 2000, true, true);
-                return;
-            }
-        }
+        if (!GTOConfig.INSTANCE.gamePlay.disableChargeBomb && ChargeBomb.tryDetonate(level, pos, item)) return;
 
         if (player.isShiftKeyDown()) {
             if (item == GTOItems.COMMAND_WAND.get()) {

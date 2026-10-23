@@ -7,7 +7,6 @@ import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.ManaDistributorMachine;
 import com.gtolib.api.machine.mana.feature.IManaMachine;
 import com.gtolib.api.machine.mana.trait.NotifiableManaContainer;
-import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -24,8 +23,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import org.jetbrains.annotations.NotNull;
-import vazkii.botania.api.mana.ManaCollector;
-import vazkii.botania.api.mana.ManaPool;
+import vazkii.botania.api.mana.ManaEndpoint;
 
 public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements IManaMachine {
 
@@ -35,10 +33,12 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
     TickableSubscription tickSubs;
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
+    final ManaEndpoint manaEndpoint;
 
     public ManaHatchPartMachine(MetaMachineBlockEntity holder, int tier, IO io, int rate) {
         super(holder, tier, io);
         manaContainer = createManaContainer(rate);
+        manaEndpoint = ManaUnification.of(manaContainer, 20);
         manaContainer.setAcceptDistributor(io == IO.IN);
     }
 
@@ -81,30 +81,15 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
             var facing = getFrontFacing();
             var receiver = this.findManaReceiver(facing, null);
             if (receiver != null && !receiver.isFull()) {
-                int mana = MathUtil.saturatedCast(manaContainer.getCurrentMana());
-                if (receiver instanceof ManaCollector collector) {
-                    mana = Math.min(mana, collector.getMaxMana() - collector.getCurrentMana());
-                } else if (receiver instanceof ManaPool pool) {
-                    mana = Math.min(mana, pool.getMaxMana() - pool.getCurrentMana());
-                }
-                int change = MathUtil.saturatedCast(manaContainer.removeMana(mana, 20, false));
-                if (change > 0) {
-                    receiver.receiveMana(change);
+                if (ManaEndpoint.transfer(manaEndpoint, receiver, manaContainer.getCurrentMana()) > 0) {
                     manaContainer.notifyListeners();
                 }
             }
             var jarTile = findSourceJar(facing);
             if (jarTile == null) return;
             if (!jarTile.canAcceptSource()) return;
-            long availableSpace = jarTile.getMaxSourceLong() - jarTile.getSourceLong();
-            if (availableSpace > 0) {
-                long removable = manaContainer.removeMana(ManaUnification.sourceToMana(availableSpace), 20, true);
-                long source = ManaUnification.manaToSource(removable);
-                if (source > 0) {
-                    manaContainer.removeMana(ManaUnification.sourceToMana(source), 20, false);
-                    jarTile.addSourceLong(source);
-                    manaContainer.notifyListeners();
-                }
+            if (ManaEndpoint.transfer(manaEndpoint, ManaUnification.of(jarTile), manaContainer.getCurrentMana()) > 0) {
+                manaContainer.notifyListeners();
             }
         }
     }

@@ -4,7 +4,6 @@ import com.gtocore.common.blockentity.ManaPipeBlockEntity;
 
 import com.gtolib.GTOCore;
 
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.pipenet.PipeNetWalker;
 
 import net.minecraft.core.BlockPos;
@@ -15,7 +14,6 @@ import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.api.BotaniaForgeCapabilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +66,7 @@ public final class ManaNetWalker extends PipeNetWalker<ManaPipeBlockEntity, Mana
         if (pipeTile != pipes[pipes.length - 1]) throw new IllegalStateException("The current pipe is not the last added pipe. Something went seriously wrong!");
         if (neighbourTile == null) return;
         var opposite = faceToNeighbour.getOpposite();
-        if (GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, neighbourTile, opposite) != null) {
+        if (ManaRoutePath.receiverOf(neighbourTile, opposite) != null) {
             manaRoutes.add(new ManaRoutePath(pipeTile, faceToNeighbour, getWalkedBlocks()));
         }
         if (neighbourTile instanceof ISourceTile) {

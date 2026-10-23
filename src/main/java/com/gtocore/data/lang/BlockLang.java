@@ -35,7 +35,6 @@ final class BlockLang {
         addCNEN("gtocore.universal_pipe.fluid_transfer_rate", "流体传输速率：§f%s 桶/s", "Fluid Transfer Rate: §f%s B/s");
         addCNEN("gtocore.universal_pipe.pull_mode", "管道不存货；shift+扳手把一面设为堵住后，改从其余相邻存储主动抽取",
                 "No buffer. Block a face with shift + wrench to pull from the other neighbours instead");
-        addCNEN("gtocore.large_laureril_mana_pool.capacity", "占地 3×3，可储存 %s 点魔力", "Occupies 3x3 blocks and stores %s Mana");
         addCNEN("gtocore.mana_pipe.transfer_rate", "传输速率：§f%s 魔力/s（约 %s 池/s）", "Transfer Rate: §f%s mana/s (~%s pools/s)");
         addCNEN("gtocore.mana_pipe.source_rate", "魔源传输速率：§f%s 魔源/s", "Source Transfer Rate: §f%s source/s");
         addCNEN("gtocore.mana_pipe.conversion", "魔力与魔源可互相换算：§f4 魔源 = 1 魔力", "Mana and source convert into each other: §f4 source = 1 mana");

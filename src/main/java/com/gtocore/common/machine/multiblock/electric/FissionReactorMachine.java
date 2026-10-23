@@ -12,7 +12,7 @@ import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 import com.gtolib.utils.MathUtil;
-import com.gtolib.utils.explosion.SphereExplosion;
+import com.gtolib.utils.explosion.LargeExplosion;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
@@ -126,7 +126,7 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
         var level = machine.getLevel();
         if (level != null) {
             level.removeBlock(machine.getPos(), false);
-            SphereExplosion.explosion(pos, level, (int) Math.sqrt(explosionPower), false, true);
+            LargeExplosion.sphere(level, pos, (int) Math.sqrt(explosionPower)).start();
         }
     }
 

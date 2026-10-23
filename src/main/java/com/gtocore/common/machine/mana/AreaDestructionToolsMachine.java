@@ -5,10 +5,7 @@ import com.gtocore.common.data.GTOItems;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.utils.explosion.AreaExplosion;
-import com.gtolib.utils.explosion.ChunkExplosion;
-import com.gtolib.utils.explosion.CylinderExplosion;
-import com.gtolib.utils.explosion.SphereExplosion;
+import com.gtolib.utils.explosion.LargeExplosion;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
@@ -119,16 +116,21 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
         clearInventory(inventory.storage);
     }
 
+    private static int chunkCount(int sideLength) {
+        int count = Math.max(1, sideLength / 8);
+        return (count & 1) == 0 ? count - 1 : count;
+    }
+
     private void triggerExplosion() {
         BlockPos pos = getPos();
         Level level = getLevel();
         if (level == null) return;
 
         if (model == 0) return;
-        else if (model == 1) SphereExplosion.explosion(pos, level, explosiveYield, true, true, false);
-        else if (model == 2) CylinderExplosion.explosion(pos, level, explosiveYield, true, true, false);
-        else if (model == 3) ChunkExplosion.explosion(pos, level, explosiveYield, true, true, false);
-        else if (model == 4) if (explosiveYield > 0) AreaExplosion.explosion(pos, pos1, pos2, level, true, true, false);
+        else if (model == 1) LargeExplosion.sphere(level, pos, explosiveYield).breakBedrock(true).damageEntities(false).start();
+        else if (model == 2) LargeExplosion.cylinder(level, pos, explosiveYield).breakBedrock(true).damageEntities(false).start();
+        else if (model == 3) LargeExplosion.chunks(level, pos, chunkCount(explosiveYield)).breakBedrock(true).damageEntities(false).start();
+        else if (model == 4) if (explosiveYield > 0) LargeExplosion.area(level, pos, pos1, pos2).breakBedrock(true).damageEntities(false).start();
 
         inventory.storage.clear();
     }
