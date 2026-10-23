@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import appeng.api.client.AEKeyRendering;
 
+import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
 
 import java.util.List;
@@ -24,7 +25,16 @@ import static com.gtocore.integration.emi.research.EmiResearchHelper.TECH_NODE_N
 
 public class TechNodeEmiStack extends EmiStack {
 
+    private static final Comparison COMPARE_TECH_NODE = Comparison.of(
+            (a, b) -> a instanceof TechNodeEmiStack first && b instanceof TechNodeEmiStack second && first.data == second.data,
+            stack -> ((TechNodeEmiStack) stack).data.hashCode());
+
     public final TechNode data;
+
+    @Override
+    public Comparison getStrictComparison() {
+        return COMPARE_TECH_NODE;
+    }
 
     public TechNodeEmiStack(TechNode data) {
         super();
