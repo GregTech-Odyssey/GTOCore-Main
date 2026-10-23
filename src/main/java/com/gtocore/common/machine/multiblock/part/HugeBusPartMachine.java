@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.ItemCell;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -181,11 +182,14 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
     @Override
     public Widget createUIWidget() {
-        // 与其他总线、仓一样分两区：上面放入槽、存储物品（只取）、取出一组按钮，下面状态面板（物品、存储数量）
+        // 与其他总线、仓一样分两区：上面放入槽、存储物品图标、取出一组按钮，下面状态面板（物品、存储数量）
         var importSlot = ItemSlot.of(createImportItems(), 0, false, true);
         importSlot.setBackgroundTexture(new GuiTextureGroup(UITheme.ITEM_SLOT, GuiTextures.IN_SLOT_OVERLAY));
-        var storedSlot = ItemSlot.of(inventory.storage, 0, false, false);
-        storedSlot.setItemHook(s -> s.copyWithCount((int) Math.min(inventory.storage.amountAt(0), s.getMaxStackSize())));
+        // 只同步物品类型，避免存储数量进入原版槽位的 byte 计数。
+        var storedSlot = ItemCell.of(() -> {
+            var key = inventory.storage.keyAt(0);
+            return key == null ? ItemStack.EMPTY : key.getReadOnlyStack();
+        });
         var extract = Button.icon(UISizes.SLOT_SIZE, UITheme.ARROW_DOWN);
         extract.setOnServerClick(() -> extractStack(extract.getGui() == null ? null : extract.getGui().entityPlayer));
         extract.setHoverTooltips(HatchViews.EXTRACT_STACK);
