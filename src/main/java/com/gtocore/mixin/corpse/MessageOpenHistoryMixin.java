@@ -19,8 +19,8 @@ import java.util.List;
 
 /**
  * Corpse 的死亡历史会把每条记录的装备 NBT 全部塞进一个包，记录一多就超过
- * 客户端 readNbt 的 2 MiB 配额，导致解码失败并踢出玩家。
- * 这里按客户端 NbtAccounter 的实际记账量重新裁剪：历史由 DeathManager 按时间
+ * 网络载荷的 1 MiB 上限或客户端 readNbt 的 2 MiB 配额，导致发送或解码失败。
+ * 这里同时按实际载荷字节数和 NbtAccounter 记账量裁剪：历史由 DeathManager 按时间
  * 倒序提供，优先保留最新记录的装备，超限后只保留历史条目的元数据；反射失败时
  * 退回原编码。
  */
@@ -30,6 +30,11 @@ public abstract class MessageOpenHistoryMixin {
 
     @Unique
     private static final long gtocore$MAX_NBT_USAGE = 2_000_000L;
+    @Unique
+    private static final int gtocore$MAX_PAYLOAD_BYTES = 1_048_576;
+    // 独立 compound 的类型和空名称不出现在 ListTag 元素中
+    @Unique
+    private static final int gtocore$NBT_ROOT_HEADER_BYTES = 3;
     // ListTag 读取时按元素追加 4 字节记账
     @Unique
     private static final long gtocore$LIST_ELEMENT_USAGE = 4L;
@@ -53,30 +58,39 @@ public abstract class MessageOpenHistoryMixin {
         ListTag list = new ListTag();
         CompoundTag wrapper = new CompoundTag();
         wrapper.put("Deaths", list);
-        long usage = gtocore$accountedUsage(wrapper);
-        boolean withoutEquipment = false;
+        FriendlyByteBuf probe = new FriendlyByteBuf(Unpooled.buffer());
         try {
+            long usage = gtocore$accountedUsage(wrapper, probe);
+            // SimpleChannel 在调用编码器前已写入消息编号，也需要计入载荷预算
+            long payloadBytes = (long) buf.writerIndex() + probe.writerIndex();
+            boolean withoutEquipment = false;
             for (Object death : history) {
                 CompoundTag entry = (CompoundTag) method.invoke(death, false);
                 if (!withoutEquipment) {
-                    long entryUsage = gtocore$accountedUsage(entry);
-                    if (usage + entryUsage <= gtocore$MAX_NBT_USAGE) {
+                    long entryUsage = gtocore$accountedUsage(entry, probe) + gtocore$LIST_ELEMENT_USAGE;
+                    int entryBytes = probe.writerIndex() - gtocore$NBT_ROOT_HEADER_BYTES;
+                    if (usage + entryUsage <= gtocore$MAX_NBT_USAGE && payloadBytes + entryBytes <= gtocore$MAX_PAYLOAD_BYTES) {
                         list.add(entry);
-                        usage += entryUsage + gtocore$LIST_ELEMENT_USAGE;
+                        usage += entryUsage;
+                        payloadBytes += entryBytes;
                         continue;
                     }
                     withoutEquipment = true;
                 }
                 entry.remove("Equipment");
-                long entryUsage = gtocore$accountedUsage(entry);
-                if (usage + entryUsage > gtocore$MAX_NBT_USAGE) {
+                long entryUsage = gtocore$accountedUsage(entry, probe) + gtocore$LIST_ELEMENT_USAGE;
+                int entryBytes = probe.writerIndex() - gtocore$NBT_ROOT_HEADER_BYTES;
+                if (usage + entryUsage > gtocore$MAX_NBT_USAGE || payloadBytes + entryBytes > gtocore$MAX_PAYLOAD_BYTES) {
                     break;
                 }
                 list.add(entry);
-                usage += entryUsage + gtocore$LIST_ELEMENT_USAGE;
+                usage += entryUsage;
+                payloadBytes += entryBytes;
             }
         } catch (ReflectiveOperationException e) {
             return;
+        } finally {
+            probe.release();
         }
 
         buf.writeNbt(wrapper);
@@ -99,8 +113,8 @@ public abstract class MessageOpenHistoryMixin {
     }
 
     @Unique
-    private static long gtocore$accountedUsage(CompoundTag tag) {
-        FriendlyByteBuf probe = new FriendlyByteBuf(Unpooled.buffer());
+    private static long gtocore$accountedUsage(CompoundTag tag, FriendlyByteBuf probe) {
+        probe.clear();
         probe.writeNbt(tag);
         NbtAccounter accounter = new NbtAccounter(Long.MAX_VALUE);
         probe.readNbt(accounter);
