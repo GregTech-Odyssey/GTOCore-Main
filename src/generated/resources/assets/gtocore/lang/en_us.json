@@ -6707,7 +6707,7 @@
   "gtocore.machine.ray_beam.configurator": "Ray Beam Configurator",
   "gtocore.machine.ray_beam.direction": "Ray beam direction",
   "gtocore.machine.ray_beam.inactive": "Light source inactive",
-  "gtocore.machine.ray_beam.limit": "Optical path exceeds its work budget; output disabled",
+  "gtocore.machine.ray_beam.limit": "Optical path exceeds its work budget; further tracing truncated",
   "gtocore.machine.ray_beam.loop": "Optical loop detected; output disabled",
   "gtocore.machine.ray_beam.normal": "Mirror surface normal",
   "gtocore.machine.ray_beam.pending": "Optical path waiting for rebuild",

@@ -6835,7 +6835,7 @@
   "gtocore.machine.ray_beam.configurator": "光束配置器",
   "gtocore.machine.ray_beam.direction": "光束方向",
   "gtocore.machine.ray_beam.inactive": "光源未發射",
-  "gtocore.machine.ray_beam.limit": "光路超過計算預算，已停止供光",
+  "gtocore.machine.ray_beam.limit": "光路超過計算預算，已截斷後續光路",
   "gtocore.machine.ray_beam.loop": "檢測到光路閉環，已停止供光",
   "gtocore.machine.ray_beam.normal": "鏡面法線方向",
   "gtocore.machine.ray_beam.pending": "光路等待重建",

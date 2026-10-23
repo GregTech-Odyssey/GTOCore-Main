@@ -5,8 +5,8 @@ import com.gtocore.common.data.GTOBlockEntities;
 import com.gtocore.common.pipe.mana.LevelManaPipeNet;
 import com.gtocore.common.pipe.mana.ManaPipeProperties;
 import com.gtocore.common.pipe.mana.ManaPipeType;
-import com.gtocore.utils.ManaUnification;
 import com.gtocore.common.pipe.mana.ManaRoutePath;
+import com.gtocore.utils.ManaUnification;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.PipeBlock;
