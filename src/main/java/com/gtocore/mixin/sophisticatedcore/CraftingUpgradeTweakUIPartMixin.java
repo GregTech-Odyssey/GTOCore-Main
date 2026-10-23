@@ -5,6 +5,7 @@ import com.gtocore.client.CraftingUIReferenceHolder;
 
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.inventory.Slot;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.craftingtweaks.CraftingUpgradeTweakUIPart;
 
@@ -35,6 +36,12 @@ public abstract class CraftingUpgradeTweakUIPartMixin implements CraftingUIRefer
     @Inject(method = "setStorageScreen", at = @At("HEAD"))
     private void gtocore$releasePreviousButtons(StorageScreenBase<?> screen, CallbackInfo ci) {
         if (storageScreen != screen) buttons.clear();
+    }
+
+    // 上游在 StorageScreenBase 构造期恢复已打开的标签页时会调用，此时 setStorageScreen 尚未执行
+    @Inject(method = "onCraftingSlotsDisplayed", at = @At("HEAD"), cancellable = true)
+    private void gtocore$skipUntilScreenAssigned(List<Slot> slots, CallbackInfo ci) {
+        if (storageScreen == null) ci.cancel();
     }
 
     @Unique

@@ -169,6 +169,7 @@
     "buildinggadgets2.PacketUpdateTemplateManagerMixin",
     "buildinggadgets2.TemplateManagerHandlerMixin",
     "corgilib.CorgiLibForgeClientEventsMixin",
+    "corpse.MessageOpenHistoryMixin",
     "deeperdarker.DDItemsMixin",
     "endremastered.EREnderEyeMixin",
     "extrabotany.GaiaArenaMixin",

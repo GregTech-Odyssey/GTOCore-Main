@@ -219,7 +219,7 @@ public final class GTOItemTooltips {
                 t.bonus(t.tr("存储容量最高是原来的二倍", "Storage capacity is doubled compared to the original"));
                 t.feature(t.tr("你走到了单个存储元件的尽头", "You've reached the end of a single storage cell"));
                 t.bonus(Tx.join(ComponentSlang.RecommendedToUsePrefix, Tx.gold(t.tr("ME存储器 (多方块结构)", "ME Storage (MultiBlock)"))));
-                t.bonus(t.tr("他最高可以实现不限类型的无限存储", "It can even store unlimited amounts of items and fluids without type limit"));
+                t.bonus(t.tr("它最高可以实现不限类型的无限存储", "It can even store unlimited amounts of items and fluids without type limit"));
                 t.edition();
             }));
         }
