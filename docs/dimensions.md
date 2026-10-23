@@ -1,137 +1,102 @@
 # 动态维度系统
 
-本文描述当前分支源码中的维度系统。核心实现在 [GTOLib 的 dimension 包](../GTOLib/src/main/java/com/gtolib/api/dimension)，天气系统也位于 GTOLib 的 weather 包，GTOCore 负责游戏入口、内容注册及部分依赖模组适配。本文同时包含维度与天气存盘说明。类名链接定位到声明，流程链接定位到实现方法；原版及第三方入口链接到本分支负责接管它们的 Mixin 方法。（[DimensionManager][src-dimensionmanager-57]；[GTOCore ForgeCommonEvent.onLevelLoad][src-forgecommonevent-414]；[WeatherSystem][src-weathersystem-33]）
+本文按当前 `dynamic-dim2` 源码说明维度的定义、加载与回收、同步、存盘、天气和昼夜。完整的分支差异与类关系见 [维度类关系图：对比 0.6.0](dimension-class-map.md)，天气权重和预报界面细节见 [星系天气](galaxy-weather.md)。
 
-系统把**定义、持久化实例、运行世界**分开管理。登记模板或创建实例描述不会构造 `ServerLevel`；需要区块、实体或传送时才显式加载。卸载关闭运行资源，保留定义、实例描述和世界目录，下次访问重新构造 `ServerLevel`。（[DimensionManager.getOrCreatePrivate][src-dimensionmanager-243]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.unload][src-dimensionmanager-822]）
+本次核对基线是本地 `0.6.0`（`3b9ca0f77`），当前主仓为 `a19c312a3`；对应 GTOLib 从 `82f7cc14` 对比到 `414f1dc4`。比较的是两个分支端点及各自记录的 gitlink，不是拿主仓分支名直接比较子模块。下文描述源码行为；历史验证记录不代表本次重新执行了游戏测试。
 
-## 1. 数据内存架构与类架构
+## 1. 定义、实例与运行对象
 
-### 1.1 三类维度与三层数据
+### 1.1 三类维度与三层身份
 
-| 维度类别 | 定义来源 | 身份与种子 | 运行方式 |
-|---|---|---|---|
-| 主世界 | 启动注册表中的 `LevelStem.OVERWORLD` | 原世界身份与种子 | 按主世界初始化流程创建，始终常驻；[DimensionServerMixin.createLevels][src-dimensionservermixin-142]；[DimensionManager.resident][src-dimensionmanager-903] |
-| 固定维度 | 数据包 `LEVEL_STEM`，或代码 `registerDefinition`；包括下界、末地、星球、轨道及 AE2 空间存储世界 | 固定维度键；沿用原世界种子与对应生成器 | 定义常驻内存，运行世界可以休眠；[DimensionManager.registerDefinition][src-dimensionmanager-199]；[DimensionCompatibility.register][src-dimensioncompatibility-23]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238] |
-| 动态实例 | 私人地址或系列地址对应的 [InstanceDescriptor][src-instancedescriptor-22] | `gtocore:instance/<UUID>`；首次创建确定的独立种子 | 描述按需读取，运行世界按需创建；不加入数据包 `LEVEL_STEM` 注册表；[InstanceKey.id][src-instancekey-53]；[DimensionManager.getOrCreatePrivate][src-dimensionmanager-243]；[DimensionManager.getOrCreateSeries][src-dimensionmanager-263]；[DimensionManager.load][src-dimensionmanager-431] |
-
-“维度存在”表示有可加载的固定定义或实例描述；“维度运行”表示本次 `ServerLevel` 已初始化完成。`state(key) == DORMANT` 也可能是未知键，判断存在性应使用 [isDefined(key)][src-dimensionmanager-314]。（[DimensionManager.state][src-dimensionmanager-655]；[DimensionManager.load][src-dimensionmanager-431]）
-
-[DimensionManager][src-dimensionmanager-57] 绑定单个 `MinecraftServer`，由注入服务器的 [DimensionServer][src-dimensionserver-13] 接口取得，不是跨存档的静态管理器。它持有的数据如下：（[DimensionManager 构造器][src-dimensionmanager-81]；[DimensionServerMixin.gtolib$dimensions][src-dimensionservermixin-130]）
-
-| 内存对象 | 内容 | 生命周期与规模 |
+| 类别 | 定义和身份 | 何时构造运行世界 |
 |---|---|---|
-| `definitions` | 固定维度键 → `LevelStem` | 从启动注册表及代码登记建立；不包含动态历史实例；[DimensionManager.definitions][src-dimensionmanager-61]；[DimensionManager.registerDefinition][src-dimensionmanager-199] |
-| `catalog` | 已解析模板、系列规则、持久化强加载候选集合 | 服务器级规则目录；不保存全部实例描述；[DimensionCatalog][src-dimensioncatalog-17] |
-| `instances` | UUID → [InstanceDescriptor][src-instancedescriptor-22] 的访问缓存及磁盘索引 | 描述缓存最多 32 条；分页只读取对应页面，不扫描全库；[InstanceStore.cache][src-instancestore-24]；[InstanceStore.cache][src-instancestore-210]；[InstanceStore.page][src-instancestore-154] |
-| `running` | 维度键 → `Running`，其中有 Level、描述、状态机、边界监听器及保存期间的加载请求 | 只持有已完成初始化的世界；动态描述也由运行记录持有，不能用“缓存 32 条”限制运行实例数；[DimensionManager.Running][src-dimensionmanager-1056]；[DimensionManager.load][src-dimensionmanager-431] |
-| 内存 `pending` | 正在初始化的状态机及共享 future | 一次加载期间；与磁盘 `pending.dat` 创建事务日志是两种对象；[DimensionManager.Pending][src-dimensionmanager-1073]；[InstanceStore.create][src-instancestore-116] |
-| `poisoned`、`unloadQueue` | 关闭失败记录、待安全卸载的键 | 当前服务器运行周期内；[DimensionManager.poisoned][src-dimensionmanager-64]；[DimensionManager.unloadQueue][src-dimensionmanager-65]；[DimensionManager.unload][src-dimensionmanager-822] |
-| `snapshot` | 已初始化 `ServerLevel` 的稳定列表 | 增删运行世界时重建；用于世界枚举、tick、保存及 Forge 世界数组；[DimensionManager.refresh][src-dimensionmanager-1041]；[DimensionServerMixin.gtolib$refreshLevels][src-dimensionservermixin-251] |
-| `metadataStores` | 休眠维度的 `DimensionDataStorage` | 最多 16 个存储对象；只打开 `data/`，不打开区块或实体系统；[DimensionManager.metadataStorage][src-dimensionmanager-154] |
+| 主世界 | 注册表中的 `LevelStem.OVERWORLD`；原世界种子 | 启动构造，始终常驻 |
+| 固定维度 | 数据包 `LEVEL_STEM` 或 `registerDefinition` 登记的 `LevelStem`；固定维度键 | 按常驻配置、持久化票据或实际访问加载；下界、末地、星球、轨道和 AE2 空间世界均可休眠 |
+| 动态实例 | `InstanceDescriptor` 保存逻辑地址、独立种子与冻结模板；键为 `gtocore:instance/<UUID>` | 创建描述不构造 `ServerLevel`，首次实际操作才显式加载；不加入 `LEVEL_STEM` 注册表 |
 
-运行索引使用 `ResourceKey` 的引用语义容器；目录使用 `O2OOpenCacheHashMap` / `OpenCacheHashSet`；描述和休眠存储使用按访问顺序淘汰的 `LinkedHashMap`。16 的上限限制的是休眠存储对象数，不是每个存储内部 SavedData 的条目数。（[DimensionManager][src-dimensionmanager-57]；[DimensionCatalog][src-dimensioncatalog-17]；[InstanceStore.cache][src-instancestore-24]；[DimensionManager.metadataStorage][src-dimensionmanager-154]）
-
-世界内部的机器网络、监控状态、天气当前状态等绑定在 **Level 自身的 capability** 上。它们随该 Level 对象释放，不进入全局动态历史表。跨维度目标的弱引用索引也挂在目标 Level 上，卸载事件通知设备释放旧 Level、方块实体与处理器引用。客户端连接缓存单独管理，在断开连接时清理。（[LevelMixin.init][src-levelmixin-53]；[monitor.Manager.state][src-manager-59]；[WeatherSystem.state][src-weathersystem-85]；[DimensionRuntimeCaches.track][src-dimensionruntimecaches-31]；[DimensionRuntimeCaches.unload][src-dimensionruntimecaches-51]；[DimensionSync.Client.logout][src-dimensionsync-127]）
+[DimensionManager] 绑定一个 `MinecraftServer`，通过 [DimensionServer] 接口取得。**登记定义、创建实例描述、加载 `ServerLevel` 是三个不同节点。** 同一个维度键在卸载和重载之间会对应不同的 Level 对象。
 
 ```mermaid
 flowchart TD
-    S[MinecraftServer / DimensionServer] --> M[DimensionManager]
-    M --> D[固定 LevelStem 定义]
-    M --> C[DimensionCatalog: 模板 / 系列 / 强加载候选]
-    M --> I[InstanceStore: 磁盘索引 + 32 条描述缓存]
-    M --> R[running: 已初始化世界]
-    M --> H[休眠 DimensionDataStorage: 最多 16 个]
-    R --> L[ServerLevel]
-    R --> ID[InstanceDescriptor]
-    L --> LD[InstanceLevelData: 实例数据视图]
-    LD --> ID
-    ID --> T[ResolvedTemplate: 冻结定义与环境]
-    L --> CAP[Level capability: 机器 / 监控 / 天气 / 远程引用]
-    L --> NATIVE[原版区块 / 实体 / SavedData]
+    SERVER["MinecraftServer / DimensionServer"] --> MANAGER[DimensionManager]
+    MANAGER --> FIXED["definitions：固定 LevelStem"]
+    MANAGER --> CATALOG["DimensionCatalog：模板、系列、强加载候选"]
+    MANAGER --> STORE["InstanceStore：索引、磁盘描述、32 条访问缓存"]
+    MANAGER --> RUNNING["running：Level、描述、状态机、监听器"]
+    MANAGER --> META["metadataStores：最多 16 个休眠存储对象"]
+    RUNNING --> LEVEL[ServerLevel]
+    LEVEL --> VIEW["DimensionLevelData / InstanceLevelData"]
+    VIEW --> DATA["LevelData：本维度天气与太阳时"]
+    LEVEL --> CAP["Level capability：机器网络、监控、当前天气、远程目标索引"]
+    LEVEL --> CONTENT["原版区块、实体、POI、其他 SavedData"]
 ```
 
-图中所有权与运行记录见 [DimensionManager.Running][src-dimensionmanager-1064]；[InstanceLevelData][src-instanceleveldata-13]；[InstanceDescriptor][src-instancedescriptor-22]；[ResolvedTemplate][src-resolvedtemplate-27]；[LevelMixin.init][src-levelmixin-53]。
+### 1.2 地址与冻结定义
 
-### 1.2 主要类的职责
+私人地址由 `OwnerRef` 的归属种类和 UUID、模板 ID、槽位共同组成；系列地址由系列 ID 和有符号 `long` 序号组成。[InstanceKey] 将各字段用四字节长度前缀加 UTF-8 编码，整体 Base64 保存，再对原始字段字节计算名称 UUID。模板版本不参与寻址，读取时校验文件 UUID 与完整逻辑键，拒绝身份碰撞。
 
-| 类或接口 | 职责 |
+[DimensionTemplate] 是登记入口，[ResolvedTemplate] 冻结完整 `LevelStem` JSON、出生策略和 [DimensionEnvironment]。噪声设置及多噪声预设参数内联，维度类型仍引用已注册 ID。模板升级必须增加版本；同版本不同内容会被拒绝。已有实例和 [SeriesDefinition] 使用创建时快照，不随模板升级改变；冻结定义仍依赖当前注册表里的维度类型、生物群系、方块及生成器 codec。
+
+[DimensionTemplates] 登记 `private_void`、`private_flat` 和 `overworld_noise`。私人实例只在首次创建时采用传入或随机种子；已有实例忽略后来的种子参数。系列规则冻结基础种子、模板和默认权限，再由序号派生实例种子。[SeriesAddress] 的地址偏移采用精确加法，溢出报错；计算相邻地址不创建实例。
+
+环境六项为 `voidWorld`、氧气、重力、开尔文温度、太阳能和天气 profile ID。`private_flat` 当前使用 `DimensionEnvironment.OVERWORLD`，不带虚空标记；固定 `gtocore:flat` 则属于固定虚空集合，两者不能混同。[GTODimensions] 和 [WeatherProfiles] 在服务端主线程查描述，在客户端线程查连接缓存；[LevelMixin] 经 [ILevel] 将实例环境应用到当前 Level 的虚空与 Planet 视图。
+
+### 1.3 查询边界与内存规模
+
+| 对象或入口 | 范围和约定 |
 |---|---|
-| [DimensionManager][src-dimensionmanager-57] | 授权、元数据查询、实例创建、加载请求合并、运行集合、保活、卸载及启动恢复 |
-| [DimensionServer][src-dimensionserver-13] / [DimensionServerMixin][src-dimensionservermixin-64] | 连接服务器世界映射、世界工厂和 Forge 世界数组；接管启动创建及 tick 末尾维护 |
-| [DimensionLifecycle][src-dimensionlifecycle-11] | 单次运行的状态、空闲起点及 `EnumMap<KeepAlive, Integer>` 租约计数；不执行 IO |
-| [DimensionTemplate][src-dimensiontemplate-25] / [ResolvedTemplate][src-resolvedtemplate-27] | 模板登记入口与可保存的冻结快照；重开时由快照解析 `LevelStem` |
-| [DimensionTemplates][src-dimensiontemplates-15] | 登记内置 `private_void`、`private_flat`、`overworld_noise` 模板 |
-| [InstanceKey][src-instancekey-16] / [OwnerRef][src-ownerref-14] / [SeriesAddress][src-seriesaddress-13] | 私人或系列逻辑地址、玩家/队伍归属、系列序号与精确偏移 |
-| [InstanceDescriptor][src-instancedescriptor-22] | 实例身份、种子、冻结模板、归属、权限、访客及出生点；不持有运行 Level |
-| [SeriesDefinition][src-seriesdefinition-18] | 系列创建时冻结的模板、基础种子和新实例默认归属/权限 |
-| [DimensionLevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLevelData.java) / [InstanceLevelData][src-instanceleveldata-13] | 非主世界独立昼夜时钟；实例额外隔离种子与出生点；游戏 tick 和游戏规则沿用主世界 |
-| [DimensionCatalog][src-dimensioncatalog-17] / [InstanceStore][src-instancestore-17] | 小型规则目录与独立实例文件、分页索引、单项创建事务恢复 |
-| [DimensionDataCodecs][src-dimensiondatacodecs-9] / [DimensionDataIO][src-dimensiondataio-28] / [DimensionDataFixes][src-dimensiondatafixes-16] | 专用磁盘流式编解码、原子提交及 schema 分流迁移 |
-| [DimensionSaveAttempt][src-dimensionsaveattempt-9] | 卸载及休眠元数据保存的线程局部失败收集作用域 |
-| [DimensionSync][src-dimensionsync-28] | 目标连接的动态环境同步、客户端缓存及可选队伍权限事件 |
-| [DimensionTickets][src-dimensiontickets-6] / [DimensionVehicle][src-dimensionvehicle-6] | 有效运行票据检查、活动载具的租约与随行区块票据 |
-| [DimensionRuntimeCaches][src-dimensionruntimecaches-18] / [DimensionRemoteTarget][src-dimensionremotetarget-13] | 跨维度设备释放旧运行引用，按键重新绑定当前世界 |
-| [DimensionCompatibility][src-dimensioncompatibility-13] / [DimensionStations][src-dimensionstations-26] | 依赖模组维度定义登记、无需加载地形的空间站查询与归属检查 |
-| [LevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java) / [WeatherSystem][src-weathersystem-33] | 每维度统一持久化太阳时、补算锚点和天气日程；主世界保存共享推进计数，运行调度及当前天气绑定 Level capability；InstanceWeatherData 只用于旧档读取 |
+| `definitions` / `fixedDimensionKeys()` | 全部已登记固定定义，包括休眠世界；不包含动态历史 |
+| `catalog` | 小型模板、系列规则与强加载候选目录；不保存全部描述 |
+| `instances` | 磁盘按 UUID 定位，描述访问缓存最多 32 条；分页只读取对应索引页，页大小 1..100 |
+| `running` / `levels()` / `getAllLevels()` | 只枚举初始化完成的运行快照；运行记录会额外持有描述，不受 32 条缓存限制 |
+| 内存 `pending` | 单次加载状态机和共享 future；与磁盘创建事务 `pending.dat` 无关 |
+| `metadataStorage(key)` | 运行中复用 Level 的存储；休眠时仅打开 `data/`，最多缓存 16 个 `DimensionDataStorage` |
+| `WeatherSystem.fixedData` | 已访问固定维度的 `LevelData`，由主世界 capability 上的调度器持有；不受上述 16 个存储对象上限限制 |
+| `server.getLevel(key)` | 只查当前世界映射，休眠时返回 `null`；不隐式加载 |
+| `isDefined(key)` / `descriptor(key)` | 查询定义或实例描述，不加载地形；未知键也可能返回 `DORMANT`，不能只靠状态判断存在性 |
 
-### 1.3 地址、冻结定义与调用边界
+除了 `load(key)` 可以从其他线程提交到服务器主线程，管理器的查询和修改均按服务器主线程使用。`load` / `loadNow` 是供已授权调用方使用的低层接口，本身不检查玩家权限；玩家或有玩家乘客的实体应走 `loadFor`，安全出生点传送用 `teleport`。
 
-私人实例的逻辑身份由归属种类、归属 UUID、模板 ID、槽位决定；系列实例由系列 ID 和有符号 `long` 序号决定。字段以 UTF-8 和四字节长度前缀编码，整体 Base64 保存，再由原始字段字节调用 `UUID.nameUUIDFromBytes`。读取时对照逻辑键和文件 UUID，拒绝身份碰撞。模板版本不参与寻址。（[InstanceKey.privateKey][src-instancekey-29]；[InstanceKey.seriesKey][src-instancekey-42]；[InstanceKey.encode][src-instancekey-57]；[InstanceKey.id][src-instancekey-53]；[InstanceStore.find][src-instancestore-78]）
+## 2. ServerLevel 生命周期与何时回收
 
-私人实例第一次创建才使用指定种子或随机种子；已有实例忽略后来传入的种子和模板版本。系列种子由基础种子与序号经过 SplitMix64 派生，系列地址偏移使用精确加法，溢出抛错。未访问的序号没有描述和地形文件，查询相邻地址也不创建实例。（[DimensionManager.getOrCreatePrivate][src-dimensionmanager-243]；[DimensionManager.getOrCreateSeries][src-dimensionmanager-263]；[SeriesDefinition.seed][src-seriesdefinition-41]；[SeriesAddress.offset][src-seriesaddress-31]）
+类关系见 [生命周期、保活与引用释放图](dimension-class-map.md#map-lifecycle)。
 
-模板解析时冻结完整 `LevelStem` JSON，内联噪声设置及多噪声生物群系预设参数；维度类型仍引用已注册 ID。新模板需要提升版本，同版本不同内容会被拒绝；模板升级不改已有系列或实例快照。冻结生成定义仍依赖当前注册表中的维度类型、生物群系、方块、生成器 codec 等对象，并不意味着删除这些依赖后仍能重开。（[ResolvedTemplate.resolve][src-resolvedtemplate-44]；[ResolvedTemplate.createStem][src-resolvedtemplate-91]；[DimensionCatalog.register][src-dimensioncatalog-72]；[DimensionCatalog.createSeries][src-dimensioncatalog-106]）
+### 2.1 启动与显式加载
 
-除 `load(key)` 能从其他线程提交外，管理器的查询与修改按服务器主线程使用：（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.checkThread][src-dimensionmanager-1050]）
+[DimensionServerMixin] 接管 `createLevels`，先打开目录和实例索引，再构造主世界，保留原版出生点、计分板、命令存储、Boss 事件和边界初始化。主世界 `LevelData` 绑定后发布加载事件，登记内置模板及 [DimensionCompatibility] 提供的 AE2 空间维度定义，最后执行 `restoreStartup`。`prepareLevels` 只准备主世界出生区块并恢复其票据。
 
-- [server.getLevel(key)][src-dimensionservermixin-233] 只查询当前映射；休眠时返回 `null`，不隐式加载。
-- [server.getAllLevels()][src-dimensionservermixin-220] / [manager.levels()][src-dimensionmanager-113] 枚举已初始化的运行快照，不能用于枚举所有定义或全部历史实例。
-- `descriptor`、`instances().page`、`metadataStorage`、空间站查询与休眠天气预报只访问元数据。（[DimensionManager.descriptor][src-dimensionmanager-285]；[InstanceStore.page][src-instancestore-154]；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionStations.query][src-dimensionstations-37]；[WeatherSystem.forecast][src-weathersystem-205]）
-- 面向实体的操作用 `loadFor(entity, key)`，先检查实体树中所有玩家乘客的权限，再加载。玩家安全传送用 `teleport(player, key)`。（[DimensionManager.loadFor][src-dimensionmanager-558]；[DimensionManager.teleport][src-dimensionmanager-595]）
-- `load` / `loadNow` 是供已授权调用方使用的低层接口，本身不检查玩家权限。`loadNow` 要求主线程且 future 已完成，不能在初始化回调中等待自身加载。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.loadNow][src-dimensionmanager-540]；[DimensionManager.checkThread][src-dimensionmanager-1050]）
+[GTOConfig] 的默认值是 `dimensions.enabled=true`、`idleTicks=1200`、`residentDimensions=[]`。当前只有主世界强制常驻；下界和末地不默认启动加载。配置指定的常驻维度启动加载。关闭懒加载时，全部固定定义在启动加载，且所有运行维度都跳过安全卸载；动态历史仍不批量构造。
 
-## 2. ServerLevel 生命周期
+启动恢复对固定定义只检查小型 `chunks` 元数据；动态历史只检查目录中的强加载候选。实际加载后恢复原版强加载，再执行 `ForgeChunkManager.reinstatePersistentChunks` 的 owner、在线和过期等校验回调。候选不等于有效票据；校验后无持久化强加载且非常驻的候选会立即再次休眠。
 
-### 2.1 创建：启动世界、创建描述、加载世界是三个节点
+一次显式 `load(key)` 的顺序为：
 
-[DimensionServerMixin][src-dimensionservermixin-64] 接管 [MinecraftServer.createLevels][src-dimensionservermixin-142]，先打开规则目录与实例索引，创建主世界，保留出生点、计分板、命令存储、Boss 事件、边界监听及主世界加载事件初始化。随后登记内置模板和 AE2 固定定义，按配置及持久化票据恢复其他世界。`prepareLevels` 只准备主世界出生区块并恢复其票据。（[DimensionServerMixin.prepareLevels][src-dimensionservermixin-191]；[DimensionTemplates.register][src-dimensiontemplates-37]；[DimensionCompatibility.register][src-dimensioncompatibility-23]；[DimensionManager.restoreStartup][src-dimensionmanager-715]）
+1. 切到服务器主线程。已运行则返回；正在加载则复用同一个 future；`SAVING` 中的请求等待保存结束并取消卸载；`CLOSING` 和当前进程内的 `POISONED` 拒绝加载。
+2. 找到固定 `LevelStem` 或实例冻结定义；未知键失败。建立内存 `pending`，状态进入 `LOADING`。
+3. 若有休眠元数据存储，先受检查地保存，成功后从缓存移除，避免与新 Level 的存储同时维护数据。
+4. 经 `gtolib$createLevel` 调用正常 `ServerLevel` 构造器。固定世界用 `DimensionLevelData`，实例用 `InstanceLevelData`。实例独立种子贯穿噪声、结构检查、生成状态和 `getSeed()`；动态实例及 AE2 空间世界使用独立随机序列存储，其他固定世界沿用主世界随机序列。
+5. 加载事件前绑定本维度昼夜与天气存储；接入世界边界委托监听、写入服务器映射，发布 `LevelEvent.Load`，恢复真实票据。
+6. 全部成功后进入 `LOADED`，加入 `running`，移除 `pending`，重建运行快照及 Forge 世界数组，最后完成 future。
 
-默认 `GTOConfig.dimensions.enabled=true`、`idleTicks=1200`、`residentDimensions=[]`。当前运行逻辑只强制主世界常驻；下界、末地也可以休眠。配置额外常驻键会在启动显式加载。关闭懒加载时，启动加载全部固定定义并禁止安全卸载，动态历史仍按地址访问，不批量构造。（[GTOConfig.Dimensions][src-gtoconfig-189]；[DimensionManager.resident][src-dimensionmanager-903]；[DimensionManager.restoreStartup][src-dimensionmanager-715]）
+加载事件期间 `getLevel` 可以读到尚在初始化的世界，但它尚未进入运行快照，传送守卫会拒绝进入。`loadNow` 只接受已经完成的 future，初始化回调不能等待自身加载。加载失败且资源能安全释放时回到休眠；构造器抛错后资源无法取得、或清理失败时封禁并停服。
 
-创建私人实例或首次访问系列地址先保存 [InstanceDescriptor][src-instancedescriptor-22]，此时还没有 `ServerLevel`。真正的 `load(key)` 顺序如下：（[DimensionManager.getOrCreatePrivate][src-dimensionmanager-243]；[DimensionManager.getOrCreateSeries][src-dimensionmanager-263]；[DimensionManager.load][src-dimensionmanager-431]）
+### 2.2 保活与空闲判断
 
-1. 转交服务器主线程；已运行的世界直接返回，正在加载的请求复用同一 future。`CLOSING` 或当前进程内 `POISONED` 的键拒绝加载；`SAVING` 请求等待保存完成并取消此次关闭。（[DimensionManager.load][src-dimensionmanager-431]）
-2. 查询固定定义或实例描述。动态实例从冻结模板构造 `LevelStem`，固定维度用登记的定义；未知键失败。（[DimensionManager.load][src-dimensionmanager-431]；[ResolvedTemplate.createStem][src-resolvedtemplate-91]）
-3. 建立内存 `pending`，状态进入 `LOADING`。若已有休眠 `DimensionDataStorage`，先受检查地保存并从休眠缓存移除，随后由新 Level 重新读取，避免两个存储对象同时维护数据。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionLifecycle.beginLoad][src-dimensionlifecycle-49]）
-4. 通过 `gtolib$createLevel` 调用正常 `ServerLevel` 构造器。固定维度用 `DimensionLevelData` 和原世界种子；动态实例用 [InstanceLevelData][src-instanceleveldata-13] 和独立种子。构造后、加载事件前绑定该维度的昼夜存储。动态实例及 AE2 空间世界使用独立随机序列存储，其他固定世界沿用主世界随机序列。（[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]）
-5. 将世界边界接入主世界委托监听，写入服务器世界映射，发布 `LevelEvent.Load`，恢复原版及 Forge 持久化强加载并执行校验回调。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.restoreForcedChunks][src-dimensionmanager-946]）
-6. 全部成功后标为 `LOADED`，加入 `running`，移除 `pending`，刷新稳定快照及 Forge 世界数组，最后完成 future。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionLifecycle.loaded][src-dimensionlifecycle-62]；[DimensionManager.refresh][src-dimensionmanager-1041]；[DimensionServerMixin.gtolib$refreshLevels][src-dimensionservermixin-251]）
+[DimensionManager] 每个服务器 tick 末尾维护生命周期；每 20 tick 只遍历运行快照，复查在线玩家权限、空闲和持久化候选，每 tick 处理卸载队列。
 
-加载事件期间 `getLevel` 可以取得正在构造的世界，供事件读取数据；它尚未进入已初始化快照，底层传送守卫也不允许进入。因此取得非空 Level 引用不等于可以传送，操作入口必须检查状态或等待 future。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionServerMixin.getLevel][src-dimensionservermixin-233]；[DimensionManager.mayTransfer][src-dimensionmanager-573]）
-
-实例种子不仅替换 `getSeed()`，还在 `ServerLevel` 构造阶段替换生成种子，让噪声、结构生成状态、`StructureCheck`、随机序列及混淆种子一致。安全传送会验证已存出生点；虚空模板需要时建立 5×5 平台，地表模板选择地表并清理站立空间，保存出生位置与朝向。（[ServerLevelMixin.gtolib$instanceGenerationSeed][src-serverlevelmixin-36]；[ServerLevelMixin.gtolib$instanceSeed][src-serverlevelmixin-41]；[DimensionManager.safeSpawn][src-dimensionmanager-958]）
-
-加载失败会清除映射和 pending、解除边界监听，并尝试发布卸载事件和关闭已创建资源。能够安全关闭时回到休眠；构造器失败且无法取得待关闭资源，或清理关闭再次失败时，标记 `POISONED` 并请求停服。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.detach][src-dimensionmanager-876]；[DimensionLifecycle.loadFailed][src-dimensionlifecycle-75]；[DimensionLifecycle.poison][src-dimensionlifecycle-200]）
-
-### 2.2 维护：只观察运行世界
-
-服务器 `tickServer` 末尾调用 `tickEnd()`。每 20 tick 检查一次运行快照：复核在线玩家权限、观察空闲状态、更新持久化强加载候选；每 tick 处理卸载队列。动态历史实例不参与全库 tick。（[DimensionServerMixin.gtolib$unloadIdleDimensions][src-dimensionservermixin-258]；[DimensionManager.tickEnd][src-dimensionmanager-758]）
-
-以下条件阻止卸载：（[DimensionManager.occupied][src-dimensionmanager-897]；[DimensionLifecycle.leases][src-dimensionlifecycle-40]）
-
-| 条件 | 检测与用途 |
+| 条件 | 是否阻止回收 |
 |---|---|
-| 主世界或配置常驻 | `resident(key)`；关闭懒加载时所有已加载世界视为常驻；[DimensionManager.resident][src-dimensionmanager-903] |
-| 在线玩家 | 运行世界的 `players()` 非空；[DimensionManager.occupied][src-dimensionmanager-897] |
-| 原版/Forge 持久化强加载 | `ForgeChunkManager.hasForcedChunks(level)`；[DimensionManager.occupied][src-dimensionmanager-897] |
-| 未过期的运行票据 | [DimensionTickets][src-dimensiontickets-6] 检查 `DistanceManager`；排除 `UNKNOWN`、`LIGHT`、`PLAYER`、`DRAGON`，玩家另查；[DimensionTicketsMixin.gtolib$hasActiveTickets][src-dimensionticketsmixin-28] |
-| 显式租约 | `TRANSFER`、`ROCKET`、`LANDER`、`BUILD`、`SPATIAL_EXCHANGE`、`EXPLICIT` 的引用计数非空；[DimensionManager.keepAlive][src-dimensionmanager-619]；[DimensionLifecycle.acquire][src-dimensionlifecycle-90]；[DimensionLifecycle.release][src-dimensionlifecycle-104] |
+| 主世界、配置常驻维度，或已关闭懒加载 | 始终阻止；管理员 `unload` 同样不能绕过 |
+| 世界内仍有玩家 | 阻止，并重置空闲起点 |
+| 原版或 Forge 持久化强加载 | 阻止；重启时还须校验磁盘票据 |
+| 有效运行票据 | 阻止；[DimensionTicketsMixin] 排除 `UNKNOWN`、`LIGHT`、`PLAYER`、`DRAGON`，其余按 [DimensionTicketAccessor] 检查是否过期 |
+| 显式租约 | 阻止；[DimensionLifecycle] 按原因维护引用计数，最后一次释放后重新观察空闲 |
+| 普通静止实体、仅有描述或天气日程 | 本身不保活；区块和实体在卸载前保存 |
+| 查询描述、空间站、AE2 空间元数据或休眠天气预报 | 不构造运行世界，不产生运行保活 |
 
-占用或租约使空闲起点重置；持续空闲达到阈值才入队。手动 `requestUnload` 同样拒绝常驻、玩家、票据或租约占用，且执行时重新检查。（[DimensionLifecycle.observe][src-dimensionlifecycle-124]；[DimensionManager.tickEnd][src-dimensionmanager-758]；[DimensionManager.requestUnload][src-dimensionmanager-637]；[DimensionManager.unload][src-dimensionmanager-822]）
+租约原因有 `TRANSFER`、`ROCKET`、`LANDER`、`BUILD`、`SPATIAL_EXCHANGE` 和 `EXPLICIT`。[DimensionVehicleMixin] 为活动火箭和着陆器维护租约以及随位置移动、40 tick 超时的区块票据；停止、移除或换世界时释放旧票据和租约。[RocketMixin] 和 [LanderMixin] 判定活动状态。租约保证维度运行，需要区块 tick 的任务还须有相应区块票据。
 
-租约只保活维度，不能替代区块票据。跨 tick 操作必须持有并在结束时关闭租约；传送、空间站建造和 AE2 交换使用作用域租约。飞行火箭和未落地着陆器额外维护随位置移动、40 tick 过期的区块票据，活动时刷新，落地、移除或换世界时释放。普通静止实体会随世界保存休眠；需要离线运行的设备仍需有效区块强加载。（[DimensionManager.keepAlive][src-dimensionmanager-619]；[DimensionManager.teleport][src-dimensionmanager-595]；[DimensionConstructPacketMixin.gtolib$build][src-dimensionconstructpacketmixin-24]；[DimensionSpatialExchangeMixin.gtolib$pinExchange][src-dimensionspatialexchangemixin-21]；[DimensionVehicleMixin.gtolib$vehicleActive][src-dimensionvehiclemixin-41]；[DimensionVehicleMixin.gtolib$releaseFlight][src-dimensionvehiclemixin-66]；[RocketMixin.gtolib$keepFlightAlive][src-rocketmixin-17]；[LanderMixin.gtolib$keepLandingAlive][src-landermixin-18]）
-
-权限由实例策略、个人所有者或当前队伍成员、显式访客、管理员等级 2 决定。队伍删除后普通玩家即使有访客授权也不能进入。撤销访客和队伍事件立即复查，常规每 20 tick 再检查一次，把失去权限的在线玩家送回主世界。实例访问权、星球解锁和空间站归属分别判断。（[DimensionManager.canAccess][src-dimensionmanager-325]；[DimensionManager.grant][src-dimensionmanager-397]；[DimensionManager.enforcePermissions][src-dimensionmanager-782]；[DimensionSync.Teams.enforce][src-dimensionsync-157]；[DimensionStations.mayLand][src-dimensionstations-53]）
+自动卸载必须连续空闲达到 `idleTicks`，默认 1200 tick（正常 20 TPS 下约一分钟），再等周期检查入队；它按服务器 tick 计时，不是墙上时间。管理员 `requestUnload` 可以跳过空闲时长，但实际卸载仍检查常驻、玩家、票据和租约。
 
 ### 2.3 回收：保存成功且复查通过才关闭
 
@@ -139,32 +104,41 @@ flowchart TD
 stateDiagram-v2
     [*] --> DORMANT
     DORMANT --> LOADING: 显式加载
-    LOADING --> LOADED: 初始化及票据恢复成功
-    LOADING --> DORMANT: 加载失败且资源安全释放
-    LOADING --> POISONED: 无法安全清理
-    LOADED --> SAVING: 无占用与租约
-    SAVING --> LOADED: 保存失败 / 重入加载 / 再次占用
-    SAVING --> CLOSING: 保存成功且再次复查通过
-    CLOSING --> DORMANT: 关闭成功并移除运行引用
-    CLOSING --> POISONED: 卸载事件或资源关闭失败
-    POISONED --> [*]: 停服；本次进程拒绝重开
+    LOADING --> LOADED: 初始化和票据恢复成功
+    LOADING --> DORMANT: 失败后安全释放
+    LOADING --> POISONED: 无法安全释放
+    LOADED --> SAVING: 入队且无占用或租约
+    SAVING --> LOADED: 保存失败、重入加载、重新占用
+    SAVING --> CLOSING: 保存成功且复查通过
+    CLOSING --> DORMANT: 关闭成功并摘除引用
+    CLOSING --> POISONED: 卸载事件或关闭失败
+    POISONED --> [*]: 停服，本进程拒绝重开
 ```
 
-图中状态转移由 [DimensionLifecycle.beginLoad][src-dimensionlifecycle-49]；[DimensionLifecycle.loaded][src-dimensionlifecycle-62]；[DimensionLifecycle.observe][src-dimensionlifecycle-124]；[DimensionLifecycle.beginSave][src-dimensionlifecycle-144]；[DimensionLifecycle.cancelSave][src-dimensionlifecycle-158]；[DimensionLifecycle.beginClose][src-dimensionlifecycle-173]；[DimensionLifecycle.closed][src-dimensionlifecycle-189]；[DimensionLifecycle.poison][src-dimensionlifecycle-200]；[DimensionManager.unload][src-dimensionmanager-822] 实现。
+进入 `SAVING` 后，在 [DimensionSaveAttempt] 作用域中执行 `level.save(null, true, false)`、SavedData 保存和实例描述保存，再更新强加载候选。区块/实体序列化错误和异步区域写入错误必须能阻止关闭。保存失败回到 `LOADED`，保留当前世界并重置空闲计时；保存回调重入的加载请求也会取消此次关闭并取得当前世界。
 
-卸载时先进入 `SAVING`，在 [DimensionSaveAttempt][src-dimensionsaveattempt-9] 作用域中调用 `level.save(null, true, false)`、SavedData 保存及实例描述保存。原版部分只记日志的错误会被传播，区域异步写入会等待 future，避免保存尚未成功就关闭。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionSaveAttempt.begin][src-dimensionsaveattempt-20]；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionIOWorkerMixin.gtolib$awaitUnloadWrite][src-dimensionioworkermixin-28]）
+保存成功后再次检查占用和租约，才进入 `CLOSING`。正常关闭依次发布 `LevelEvent.Unload`、调用 `ServerLevel.close()`、移除边界监听及服务器映射和运行记录、刷新运行快照与 Forge 世界数组，并清理旧世界计时引用。若卸载事件或关闭抛错，则摘除运行引用、记录 `POISONED`、调用 `server.halt(false)`，同一进程中禁止重开。
 
-保存失败回到 `LOADED`，保留运行引用并重置空闲计时，后续可重试。保存回调中的加载请求也会取消卸载，返回当前世界。保存完成后再次检查玩家、票据及租约，通过才进入 `CLOSING`。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionLifecycle.cancelSave][src-dimensionlifecycle-158]）
+**这里的回收是关闭运行资源，不删除维度。** 实例描述、分页索引、世界目录、区块和实体保留，后续按同一个键重新加载。当前没有自动删除历史实例或地形的机制。32 条描述缓存、16 个休眠存储对象的淘汰也只释放缓存；它们不触发世界删除。摘除引用后何时真正 GC 由 JVM 决定。
 
-正常关闭发布 `LevelEvent.Unload`，调用 `ServerLevel.close()`，移除边界委托监听、服务器世界映射和 `running` 条目，再刷新快照、Forge 世界数组及计时缓存。保存目录与实例描述保留。下一次加载得到新对象；维度键相同的旧 Level 引用不能继续用于传送、着陆或设备处理。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionManager.detach][src-dimensionmanager-876]；[DimensionServerMixin.gtolib$refreshLevels][src-dimensionservermixin-251]；[DimensionManager.mayTransfer][src-dimensionmanager-573]；[DimensionRuntimeCaches.unload][src-dimensionruntimecaches-51]）
-
-卸载事件或资源关闭异常意味着已经无法保证资源状态完整，系统移除运行引用、记录 `POISONED` 并调用 `server.halt(false)`。这和可重试的保存失败不同，不会在同一次服务器运行中重新打开该世界。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionLifecycle.poison][src-dimensionlifecycle-200]；[DimensionManager.load][src-dimensionmanager-431]）
+跨维度设备通过 [DimensionRemoteTarget] 保存键与坐标，通过 [DimensionRuntimeCaches] 在目标 Level 的 capability 中登记弱引用。目标卸载只通知相关设备释放 Level、方块实体、监听器和处理器；[DimensionRemoteKeyTargetMixin] 后续只查当前运行世界，重新加载后再绑定，不主动唤醒目标。[DirectedTesseractMachine] → [TesseractTargets] 使用这条路径。[Manager] 的监控网络和待处理队列也改为每 Level capability；这些状态随 Level 释放，不能由一个世界卸载去清空其他世界。
 
 ### 2.4 独立昼夜时间
 
-主世界保持原版 24000 tick 一天。非主世界通过 [DimensionLevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLevelData.java) 读取各自的 [DimensionClock](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionClock.java)，每个服务器 tick 增加 `24000 / 太阳日长度` 个太阳时 tick。整数时间和除法余量分开保存，长周期不会因逐 tick 取整而停滞。游戏 tick、机器计时、天气周期和天体公转仍使用原有时钟，不随太阳时缩放。
+类关系见 [昼夜定义与同步图](dimension-class-map.md#map-time)。
 
-太阳日长度复用 `CelestialBody.dayTicks`，由带方向的自转频率减去绕恒星公转频率计算；卫星使用自身自转与母星绕恒星的公转年，不能把潮汐锁定母星误认为永昼。水星约 176 地球日、金星约 117 地球日、月球约 29.53 地球日，参考 [NASA 水星资料](https://science.nasa.gov/mercury/facts/)、[NASA 金星昼夜说明](https://spaceplace.nasa.gov/all-about-venus/en/)和 [NASA 月球运动说明](https://ntrs.nasa.gov/citations/20180004489)。当前数据换算如下，实际一昼夜时长为表中倍率乘以主世界的 20 分钟：
+必须区分四种时间：
+
+| 时间 | 定义、推进和暂停 |
+|---|---|
+| 游戏时间 `gameTime` | 世界 tick、机器及天气渐变使用的时间；非主世界数据视图沿用主世界 |
+| 太阳时 `dayTime` | 主世界原版 24000 tick 一天；非主世界按本维度太阳日长度缩放，供太阳/月亮相位和睡眠使用 |
+| 有效昼夜计数 | 主世界 `LevelData` 累计的 `daylightTicks`；只在 `doDaylightCycle=true` 时增加，虚空另用排除锁时区间的 `voidDaylightTicks` |
+| 天气时钟 `WeatherSystem.clock` | `doWeatherCycle=true` 时每服务器 tick 加一；天气周期与预报范围均使用它，改太阳时不会跳过天气日程 |
+
+[DimensionClock] 用整数太阳时和分数余量推进，等价于每有效 tick 增加 `24000 / dayLength`。批量补算先拆整日再计算余数，不逐 tick 回放，长昼夜不会因取整停滞。[DimensionLevelData] 将此时钟接到 `getDayTime` / `setDayTime`；[InstanceLevelData] 还隔离实例种子和出生点，游戏规则仍共享。
+
+太阳日长度读取既有 [CelestialBody] 的 `dayTicks`，源数据按有方向的自转频率减去绕恒星的公转频率求太阳日；卫星不能用绕母星周期代替恒星年。当前典型值如下，正常 20 TPS 下的实际时长等于倍率乘主世界 20 分钟：
 
 | 天体 | 主世界昼夜倍率 | 一昼夜服务器 tick |
 |---|---:|---:|
@@ -179,619 +153,353 @@ stateDiagram-v2
 | 土卫六 | 15.96867 | 383248 |
 | 冥王星 | 6.38675 | 153282 |
 
-太阳表面始终为正午 6000。仓库设为绕恒星潮汐锁定的霜原星（比邻星 b）、巴纳德 C 同样固定正午，表示朝向恒星的一侧；这是沿用现有天体数据的游戏近似。无天体数据的维度采用 24000 tick，维度类型已有的 `fixed_time` 继续生效。
+太阳表面及太阳日为零的绕恒星潮汐锁定天体固定正午 6000；当前包括霜原星和巴纳德 C。无天体定义时默认 24000，维度类型原有 `fixed_time` 保留。固定虚空、固定超平坦和带 `voidWorld` 的实例在 `/gtocore void time` 锁时期间显示 1000；解锁后恢复本维度自己的太阳时。私人超平坦没有该标记。客户端既有戴森球遮蔽显示仍由 `Lib.ClientLevelMixin` 处理，太阳表面排除遮蔽改时。
 
-固定虚空、固定超平坦和带 `voidWorld` 标记的实例保留 `/gtocore void time`：锁定时服务端与客户端均为 1000，解除后恢复该维度自己的时间并可用 `/time` 设置。私人超平坦仍沿用已有模板的环境标记。`/time set`、`/time add` 以及睡眠只修改所在维度；`doDaylightCycle` 仍是原有的共享游戏规则，关闭后所有昼夜时钟暂停。Ars Nouveau 4.12.19 的升阳、落月仪式调用所在 ServerLevel 的 setter，由独立 LevelData 隔离；第三方直接发送的原版时间包也转换为本维度的速率与余量包。FTB 的 day/night 快捷命令改为仅遍历命令所在维度，MythicBotany 精灵界睡眠监听改为写回睡眠所在世界。
+非主世界运行时在 `ServerLevel.tickTime` 补算；休眠世界重载或查询预报时，用当前有效计数减保存的锚点，一次推进太阳时和余量。`doDaylightCycle=false` 时计数不增加，虚空锁时也不累计对应计数；停服期间不按现实时间补算。若主世界提交计数回退，重新绑定锚点，不倒退本维度太阳时。
 
-每个维度的时间与天气统一由 [LevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java) 保存到 `data/gtolib_level.dat`。有旧独立时钟时导入其太阳时和分数余量；没有旧时钟时，固定维度在天气登记时以当前主世界太阳时初始化，动态实例在首次实际加载时初始化；此后各维度按自己的太阳日推进。休眠时昼夜和自然天气继续按服务器有效 tick 推进，不按墙上时间计算。主世界保存累计昼夜 tick；关闭昼夜循环时不累计，虚空/超平坦另用排除锁定时间段的计数。每个维度保存上次补算锚点与速率，重载或休眠预报时按差值一次补算太阳时及余量，无需加载地形、逐 tick 扫描历史实例。主世界原版 `level.dat` 的时间字段作为兼容镜像保留，加载时从新 LevelData 恢复，后续原版时间 setter 同步写入同一个 LevelData。
+没有新时间时，固定维度在天气日程登记时以当时主世界太阳时初始化；动态实例在首次实际加载绑定时初始化。旧独立时钟存在则先导入。主世界仍以原版 24000 推进，`level.dat` 时间保留兼容镜像；`bindOverworld` 从 `LevelData` 恢复时间，主世界 setter 经 [ServerLevelMixin] 回写同一份数据。
 
-非主世界的周期时间同步改用 `dimension_clock` 紧凑流式包，包含维度键、游戏 tick、太阳时、余量、周期和运行状态。只发给所在维度玩家，登录、重生、切换维度和虚空规则变化也同步；客户端预测使用同一整数余量算法，状态绑定当前 `ClientLevel`。天气预报的日出日落和刻度按相同倍率换算为服务器 tick，不缩放天气持续时间。
-
-隔离回归：`gradlew runServer -I gradle/scripts/dimensions-probe.gradle -PdimensionDaylightProbe=true -PdimensionProbeFTB=false -PgtolibUnprotected=true -PdimensionProbeDir=<隔离目录>`，按 [AGENTS.md](../AGENTS.md) 先设置 JDK 21。探针检查实际 `ServerLevel.tickTime` 注入、太阳日倍率、局部时间命令、暂停、太阳永昼、虚空/超平坦规则、私人实例隔离和卸载重载余量；`DimensionClockTest` 覆盖完整长周期和保存后继续推进。
-
-本次验证：JDK 21 的 Java/Kotlin 编译、改动范围内 Spotless、69 项维度与天气单测、隔离 Forge 服务器探针及 buildGtolibProtected 的开发/发行保护流水线均通过。探针验证了十万 tick 休眠补算、暂停与虚空锁时、预报不加载地形、时间和天气同文件保存及重载余量，以及神像、Ars 升阳/落月、FTB 昼夜快捷命令与精灵界睡眠的局部改时。旧天气 schema 2/3、独立时钟导入和新文件损坏/原子保存失败也有回归覆盖。隔离目录按启动兼容说明关闭 LeanObject AEKey 功能，生产配置未改。客户端类加载 datagen 探针重试后仍在 gtceu:cover 注册表冻结处中断，未完成该项检查及游戏画面验收。
+`/time set`、`/time add`、睡眠和 [HappyWaterGodStatue] 的午夜效果只改所在维度。[TimeCommandMixin]、FTB 的 [LocalTimeCommandMixin]、MythicBotany 的 [LocalSleepTimeMixin] 分别接入局部入口。Ars 的升阳/落月使用当前 ServerLevel setter；第三方直接发送原版时间包时由 [DimensionTimePacketMixin] 转成带速率和余量的本维度包。
 
 ## 3. 网络同步
 
+类关系见 [连接、环境与时钟图](dimension-class-map.md#map-sync)。专用服务器和集成服务器使用同一加载、授权和同步路径；同一 JVM 中的两端也通过连接同步，不能共享服务端描述对象。
+
 ### 3.1 同步节点与内容
 
-动态实例复用登录时已同步注册表中的 `DimensionType`，不发送新类型注册表或完整地形生成定义。实例自定义包由 [DimensionSync][src-dimensionsync-28] 经 [NetworkPack][src-networkpack-16] 注册为 `dimension_instance`。（[DimensionSync.PACKET][src-dimensionsync-30]；[NetworkPack.registerS2C][src-networkpack-18]）
-
-| 节点 | 同步内容与接收者 | 触发位置 |
+| 通道或数据 | 触发点与接收者 | 内容与边界 |
 |---|---|---|
-| 登录到固定或动态世界 | 原版登录包携带所有固定定义键，以及玩家当前世界键；不加入其他动态历史或其他玩家实例 | [DimensionPlayerListMixin][src-dimensionplayerlistmixin-32] 修改 `placeNewPlayer` 的维度集合；[DimensionPlayerListMixin.gtolib$onlyConnectedDynamicDimensions][src-dimensionplayerlistmixin-51]；[DimensionManager.fixedDimensionKeys][src-dimensionmanager-122] |
-| 登录到动态实例，原版 Login 包构造前 | 目标实例环境包，只发该玩家；允许客户端在玩家/ClientLevel 建立前暂存环境 | `placeNewPlayer` → [DimensionSync.prepare][src-dimensionsync-73]；[DimensionPlayerListMixin.gtolib$syncLoginInstance][src-dimensionplayerlistmixin-62] |
-| 重生到动态实例，原版 Respawn 包构造前 | 目标实例环境包，只发重生连接 | [PlayerList.respawn 的同步注入][src-dimensionplayerlistmixin-69] 注入；[DimensionSync.prepare][src-dimensionsync-73] |
-| 实际跨维度进入动态实例前 | 目标实例环境包，只发被传送玩家 | [ServerPlayer.changeDimension 的入口守卫][src-dimensionplayermixin-45] 和跨 Level 的 `teleportTo` 守卫；[DimensionPlayerMixin.gtolib$authorizeTeleport][src-dimensionplayermixin-59]；[DimensionPlayerMixin.gtolib$authorizeRelativeTeleport][src-dimensionplayermixin-75] |
-| 登录、切维度、重生完成及实际天气类型变化 | 所在维度键、天气注册整数 ID、当前雨强度与原始雷强度；天气变化发送给该世界内玩家 | [GTOLib WeatherEvents](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherEvents.java) 与 [WeatherSystem.apply/sync](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java) |
-| 维度参数补全 | 使用原版命令补全请求/响应，返回固定定义及当前可访问的已加载动态实例 | [DimensionArgument.listSuggestions 的补全注入][src-dimensionargumentmixin-35]；不扫描历史、不加载世界 |
-| 打开星球菜单、天气预报等界面 | 各界面自己的目标/站点/预报数据，按查询需求发送 | 相应菜单与 UI 同步路径；不是动态维度目录广播；[DimensionPlanetsMenuProviderMixin.writeExtraData][src-dimensionplanetsmenuprovidermixin-34]；[WeatherForecastUI.writeHolderToSyncData][src-weatherforecastui-99]；[WeatherForecastUI.encode][src-weatherforecastui-250] |
+| 原版 Login / Respawn | 登录、重生、切维度的原有进入流程 | 原版创建 ClientLevel 所需的类型、混淆种子等；登录维度集合为全部固定定义加玩家当前维度，不含全部动态历史 |
+| `dimension_instance` | 登录/重生包构造前，或跨 Level 传送前；只发目标玩家 | 维度键、已注册 `DimensionType` 的 VarInt ID、混淆种子、环境六项；不发送生成 JSON、归属、访客或历史目录 |
+| `dimension_clock` | 非主世界周期同步，登录/重生/切维度完成，setter 或虚空规则变更；只发所在维度玩家 | 维度键、游戏时间、太阳时、余量、太阳日长度、是否推进；主世界仍用原版时间包 |
+| `galaxyWeatherS2C` | 登录/重生/切维度完成、实际天气类型变化 | 维度键、天气注册整数 ID、当前雨强度和原始雷强度；变化只发当前世界玩家 |
+| 命令补全 | 客户端按需请求 | 全部固定定义及当前可访问的已加载实例；不扫描历史、不加载世界 |
+| 星球菜单 / 预报 UI | 打开界面及其刷新 | 菜单空间站或目标预报所需数据，经各自 UI 协议传输；不广播动态目录 |
+| 区块、实体、方块实体、背包 | 原版及模组既有节点 | 继续走已有通道 |
 
-环境包字段为：维度 `ResourceLocation`、已注册 `DimensionType` 的 VarInt ID、混淆后的种子 `long`、虚空标记、氧气、重力、温度、太阳能与天气 profile ID。归属、访客、系列规则、完整生成 JSON、磁盘载荷及历史天气日程不进入该包。（[DimensionSync.PACKET][src-dimensionsync-30]；[DimensionEnvironment][src-dimensionenvironment-15]）
-
-当前客户端接收实现缓存并应用环境、检查维度类型 ID，更新连接的维度键集合；它读取混淆种子但未单独应用该值，实际创建 ClientLevel 的类型与种子仍由原版 Login/Respawn 包承载。不要把这个自定义包理解为重新实现原版世界进入协议。（[DimensionSync.Client.receive][src-dimensionsync-97]；[DimensionPlayerListMixin.gtolib$syncLoginInstance][src-dimensionplayerlistmixin-62]；[DimensionPlayerListMixin.gtolib$syncRespawnInstance][src-dimensionplayerlistmixin-69]）
-
-区块、实体、方块实体、背包等仍由原版/Forge 及各模组已有通道同步。保存、空闲检查、服务端加载成功或卸载本身没有全服动态目录广播，也没有维度删除包。固定定义登录后新增时，命令补全按请求读取服务器最新定义。（[DimensionSync.prepare][src-dimensionsync-73]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionArgumentMixin.gtolib$suggestDefinedDimensions][src-dimensionargumentmixin-35]）
+[DimensionSync] 使用 [NetworkPack] 注册两个维度包；[WeatherSync] 注册天气包。维度标识使用 `ByteBufCodecExtends.RESOURCE_LOCATION_CODEC`，天气网络使用 `WeatherTypes.REGISTRY.streamCodec()` 整数 ID；磁盘是另一套协议，不能复用整个 SavedData/NBT 作网络包。
 
 ### 3.2 客户端缓存与包顺序
 
-环境必须先于进入包到达，才能让新 `ClientLevel` 的 [LevelMixin][src-levelmixin-37] 从缓存应用虚空及星球环境。接收逻辑在客户端主线程执行；登录早期没有连接时先暂存环境。后续接收动态环境时只保留当前与即将进入的实例，清理更早的动态连接键，断开连接清空环境缓存。（[FromServerMessage.handle][src-fromservermessage-70]；[DimensionSync.Client.receive][src-dimensionsync-97]；[DimensionSync.Client.logout][src-dimensionsync-127]；[LevelMixin.init][src-levelmixin-53]）
+```mermaid
+sequenceDiagram
+    participant Entry as 登录/重生/传送入口
+    participant Manager as DimensionManager
+    participant Sync as DimensionSync
+    participant Client as 客户端
+    Entry->>Manager: 授权并加载目标
+    Manager-->>Entry: 初始化完成的当前 ServerLevel
+    Entry->>Sync: prepare(player, level, descriptor)
+    Sync-->>Client: 动态实例环境（固定世界跳过）
+    Entry-->>Client: 原版 Login / Respawn 进入包
+    Note over Client: LevelMixin 在 ClientLevel 构造时应用环境
+    Entry-->>Client: 进入完成后的时间包与天气包
+    Note over Client: 时钟预测和天气渐变绑定当前 Level
+```
 
-天气包在玩家进入后的事件同步，与进入前的环境包职责不同。接收端检查包中的维度键，只应用到当前世界；雨/雷渐变根据初始强度和游戏时间计算，无需每 tick 同步。天气日程和随机状态属于服务端持久化数据，客户端不维护全部历史实例的天气。（[WeatherEvents](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherEvents.java)；[WeatherSync](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSync.java)；[WeatherSystem.receiveWeather][src-weathersystem-109]；[WeatherState.intensity][src-weatherstate-20]）
+[DimensionPlayerListMixin] 在登录/重生解析目标时先授权并显式加载，无权访问则回退主世界；[DimensionPlayerMixin] 守卫实际传送，拒绝正在初始化或已关闭的旧 Level 对象。环境先于进入包接收；客户端主线程将环境放入连接缓存，即使登录早期没有 player/ClientLevel 也能暂存。后续接收只保留当前及即将进入的动态实例，断线时清空；没有全服目录广播或卸载删除包。
 
-### 3.3 专用服务器与集成服务器
+环境接收器会检查已注册的维度类型 ID，但读取的混淆种子不单独应用；实际 ClientLevel 类型和种子仍由原版进入包承载。动态实例复用已在登录注册表同步的 DimensionType，当前协议不支持临时新建客户端未知的类型。
 
-两者使用同一管理器、加载与授权流程、同一环境包和天气包，没有跳过集成服务器同步的分支。集成服务器与客户端共享 JVM，也仍有独立的服务器线程、客户端线程和连接，不能直接共享服务端描述作为客户端状态。（[DimensionSync.init][src-dimensionsync-58]；[DimensionSync.prepare][src-dimensionsync-73]；[DimensionSync.Client.receive][src-dimensionsync-97]；[DimensionManager.load][src-dimensionmanager-431]）
+时间包只应用到维度键匹配的当前 ClientLevel。[DimensionClientClock] 在 capability 中保存周期与余量，[LibClientLevelMixin] 以同一整数算法预测；换世界后不复用旧对象。天气包同样检查当前维度，[WeatherState] 用初始强度及 `gameTime` 按需计算每 tick 0.01 的雨/雷渐变，无需每 tick 广播。原版客户端天气包对强度 setter 的写入被 [LevelWeatherMixin] 忽略，天气查询读取系统状态，因此原版字段和包不能覆盖当前天气。
 
-按维度键查询环境的 [GTODimensions.isVoid][src-gtodimensions-57]、[WeatherProfiles.get][src-weatherprofiles-32] 在当前线程就是服务器线程时读取服务端描述；在客户端线程读取 [DimensionSync][src-dimensionsync-28] 的连接缓存。专用服务器只初始化服务端逻辑，客户端缓存监听通过 `DistExecutor` 在客户端环境注册。（[DimensionSync.clientEnvironment][src-dimensionsync-85]；[DimensionSync.init][src-dimensionsync-58]）
+### 3.3 同步不等于保活
 
-因此两种部署需要同步的字段和节点相同；区别在于集成服务器两端同进程、传输为本地连接。联机双客户端探针覆盖专用服务器路径，不能据此宣称集成服务器客户端表现已经验收。（[NetworkProbe.init][src-networkprobe-21]；[DimensionSync.prepare][src-dimensionsync-73]；[WeatherSystem.sync][src-weathersystem-248]）
+服务端单独加载或卸载一个无人维度，不向所有客户端通知目录变化，也不因此生成新的客户端世界。预报和空间站查询可读休眠元数据，但不隐式加载地形。客户端当前/目标环境缓存、Level 上的预测状态、服务端持久化描述有不同生命周期，不能拿其中一份代替其他两份。
 
 ## 4. 存盘与错误处理
 
-### 4.1 哪些字段需要持久化
+类关系见 [持久化与兼容读取图](dimension-class-map.md#map-storage)。
 
-下表路径以世界根目录为基准。实例元数据与实际世界区块目录分离。（[DimensionCatalog 构造器][src-dimensioncatalog-30]；[InstanceStore.path][src-instancestore-205]；[DimensionManager.dimensionPath][src-dimensionmanager-928]）
+### 4.1 哪些数据保存在哪里
 
-| 数据 | 必须持久化的字段 | 文件与负责类 |
+以下路径相对世界根目录。维度路径沿用原版：主世界为根，下界 `DIM-1`，末地 `DIM1`，其他世界 `dimensions/<namespace>/<path>`，实例为 `dimensions/gtocore/instance/<UUID>`。
+
+| 文件 / 数据 | 保存内容 | 所有者 |
 |---|---|---|
-| 模板目录 | 模板 ID、版本、完整冻结生成 JSON、出生策略、环境六项字段 | `gtolib/dimensions/catalog.dat`；[DimensionCatalog][src-dimensioncatalog-17]；[DimensionDataCodecs.TEMPLATE][src-dimensiondatacodecs-37]；[DimensionDataCodecs.ENVIRONMENT][src-dimensiondatacodecs-20]；[DimensionCatalog.save][src-dimensioncatalog-147] |
-| 系列规则 | 系列 ID、冻结模板、基础种子、默认归属种类/UUID、访问策略 | 同一 `catalog.dat`；[DimensionDataCodecs.SERIES][src-dimensiondatacodecs-50]；[DimensionCatalog.save][src-dimensioncatalog-147] |
-| 强加载启动候选 | 需要在重启时检查真实持久化票据的维度 ID 集合 | 同一 `catalog.dat`；不是完整票据或运行租约；[DimensionCatalog.setForced][src-dimensioncatalog-126]；[DimensionDataIO.writeCatalogAtomic][src-dimensiondataio-83] |
-| 实例描述 | 完整逻辑键、独立种子、创建序号、冻结模板、可选归属、访问策略、访客 UUID、可选出生坐标和角度 | `gtolib/dimensions/instances/<UUID前两位>/<UUID>.dat`；[InstanceStore][src-instancestore-17]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[InstanceStore.path][src-instancestore-205]；[InstanceStore.save][src-instancestore-138] |
-| 分页与创建事务 | 按创建顺序的 UUID；尚未完成创建的完整描述 | `gtolib/dimensions/instances/instances.index`（每条 16 字节）及同目录 `pending.dat`；[InstanceStore.create][src-instancestore-116]；[InstanceStore.appendIndex][src-instancestore-183]；[InstanceStore.recoverPending][src-instancestore-173] |
-| 共享推进计数与虚拟恒星 | 天气时钟、累计有效昼夜 tick、排除虚空锁定的昼夜 tick、两个虚拟恒星日程 | 主世界 `data/gtolib_level.dat`；`LevelData`，由 `WeatherSystem` 调度 |
-| 各维度天气与昼夜 | 自然天气日程（随机状态、恢复边界、天气与时段）、天气时钟快照、太阳时、分数余量、昼夜补算锚点与速率 | 对应维度 `data/gtolib_level.dat`；`LevelData`，动态实例使用自己的世界目录 |
-| 世界内容 | 区块、方块实体、实体、POI、SavedData、需要独立存储的随机序列等 | 原版目录和原协议；由 Level、区块/实体系统、各 SavedData 负责；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238] |
-| 原版/Forge 及第三方元数据 | 原版强加载、Forge owner/ticking 票据、Ad Astra 空间站、AE2 空间区域等原有字段 | 对应维度 `data/` 内各模组原有文件；[DimensionManager.restoreForcedChunks][src-dimensionmanager-946]；[DimensionStations.query][src-dimensionstations-37]；[DimensionSpatialStorageMixin.getWorldData][src-dimensionspatialstoragemixin-29] |
+| `gtolib/dimensions/catalog.dat` | 冻结模板、系列规则、持久化强加载启动候选 | [DimensionCatalog] / [DimensionDataIO] |
+| `gtolib/dimensions/instances/<UUID前两位>/<UUID>.dat` | 完整逻辑键、种子、序号、冻结模板、归属/访问策略、访客、可选出生点和朝向 | [InstanceStore] / [DimensionDataCodecs] |
+| 同实例库的 `instances.index` | 按创建顺序排列的 UUID，每条 16 字节 | [InstanceStore] |
+| 同实例库的 `pending.dat` | 尚未完成创建的一个完整描述 | [InstanceStore] 的创建事务 |
+| 各维度 `data/gtolib_level.dat` | 太阳时、余量、有效 tick 锚点、周期、虚空/天空光标记、自然天气日程及天气时钟快照 | [LevelData] |
+| 主世界同名 `data/gtolib_level.dat` 的额外字段 | 共享天气时钟、两项有效昼夜计数、比邻星和巴纳德虚拟恒星日程 | [LevelData] / [WeatherSystem] |
+| 原版/模组原有目录和 SavedData | 区块、实体、POI、随机序列、`chunks.dat`、空间站、AE2 空间区域等 | 原版及各模组 |
+| 主世界 `level.dat` | 游戏规则、世界级共享数据、兼容时间镜像等 | 原版；动态实例无独立完整副本 |
 
-实例 UUID 和维度键由逻辑键派生，不在描述载荷中重复保存；目录 Map 的键由记录 ID 派生。模板/归属/访问策略枚举用固定序号，顺序变动需要 schema 迁移；天气类型保存稳定字符串 ID，网络另用注册整数 ID。生成 JSON 使用 VarInt 字节长度 + UTF-8，避开 `writeUTF` 的 64 KiB 上限。（[IOStreamCodecs.UTF8][src-iostreamcodecs-30]；[InstanceKey.id][src-instancekey-53]；[DimensionDataCodecs.TEMPLATE][src-dimensiondatacodecs-37]；[DimensionDataCodecs.SERIES][src-dimensiondatacodecs-50]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[WeatherTimeline.save][src-weathertimeline-188]；[DimensionSync.PACKET][src-dimensionsync-30]）
+运行状态、空闲起点、future、租约、临时飞行票据、Level 引用、监听器和客户端连接缓存不持久化。实例 UUID 和维度键由逻辑键派生，不在描述载荷重复保存。太阳时、天气日程必须在同一个 `LevelData` 文件提交，不能再拆成两个独立现行文件。
 
-运行状态、空闲 tick、future、租约计数、临时飞行票据、Level 引用、监听器、客户端缓存和能力中的派生运行索引不持久化。实例没有独立的完整 `level.dat` 副本：游戏 tick、游戏规则等共享世界数据仍由主世界持久化，昼夜时间与天气日程统一保存到本维度 `data/gtolib_level.dat`，实例独立出生点保存到描述。（[DimensionLifecycle][src-dimensionlifecycle-11]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]；[InstanceLevelData.setSpawn][src-instanceleveldata-94]；[DimensionManager.saveDescriptor][src-dimensionmanager-1033]）
+### 4.2 何时保存
 
-### 4.2 什么维度在什么情况下保存
-
-| 情况 | 保存行为 |
+| 触发 | 行为 |
 |---|---|
-| 登记或升级模板、创建系列、强加载候选集合发生变化 | 立即原子保存目录；内容未变不重复写入；[DimensionCatalog.register][src-dimensioncatalog-72]；[DimensionCatalog.createSeries][src-dimensioncatalog-106]；[DimensionCatalog.setForced][src-dimensioncatalog-126] |
-| 首次创建私人实例或首次访问某系列序号 | 立即提交描述、分页索引和 pending 事务；不生成地形；[InstanceStore.create][src-instancestore-116] |
-| 只登记固定维度或查询未创建系列地址 | 不生成动态描述/地形；固定定义由下次启动的数据包或代码重新登记；[DimensionManager.registerDefinition][src-dimensionmanager-199]；[SeriesAddress.offset][src-seriesaddress-31]；[DimensionManager.restoreStartup][src-dimensionmanager-715] |
-| 修改访客权限、由安全传送确定出生点 | 保存对应描述；访客保存失败回滚内存授权；[DimensionManager.grant][src-dimensionmanager-397]；[DimensionManager.safeSpawn][src-dimensionmanager-958]；[DimensionManager.saveDescriptor][src-dimensionmanager-1033] |
-| 动态实例的普通出生点 setter | 更新内存描述，随后由世界保存或卸载时保存；不是每个 setter 都立即写盘；[InstanceLevelData.setSpawn][src-instanceleveldata-94]；[InstanceLevelData.setXSpawn][src-instanceleveldata-104]；[InstanceLevelData.setYSpawn][src-instanceleveldata-114]；[InstanceLevelData.setZSpawn][src-instanceleveldata-124]；[InstanceLevelData.setSpawnAngle][src-instanceleveldata-134]；[DimensionManager.saveLoadedDescriptors][src-dimensionmanager-794] |
-| 服务器 `saveAllChunks`，包括正常保存/停服路径 | 先保存运行实例描述及已缓存的休眠元数据；运行世界内容继续走正常保存流程，不遍历动态历史；[DimensionServerMixin.gtolib$saveInstanceMetadata][src-dimensionservermixin-265]；[DimensionManager.saveLoadedDescriptors][src-dimensionmanager-794] |
-| 空闲或手动安全卸载 | 强制完成世界保存、SavedData 和描述保存，通过后才关闭；[DimensionManager.unload][src-dimensionmanager-822] |
-| 查询休眠空间站/AE2 元数据 | 只读对应 SavedData；发生变更时由保存、缓存淘汰或后续加载前提交；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionStations.query][src-dimensionstations-37]；[DimensionSpatialStorageMixin.getWorldData][src-dimensionspatialstoragemixin-29] |
-| 查询休眠动态实例天气预报 | 补算该实例昼夜并沿原随机状态扩展天气日程，立即原子保存同一个 LevelData 文件，成功后清 dirty，不加载地形；[WeatherSystem.timeline][src-weathersystem-149]；[WeatherSystem.forecast][src-weathersystem-205]；[DimensionDataIO.writeFastAtomic][src-dimensiondataio-120] |
-| 休眠元数据缓存达到上限，或准备加载该维度 | 先受检查保存对应存储，成功后淘汰或移交；失败保留缓存并传播；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.saveMetadata][src-dimensionmanager-885] |
-| 重启 | 读取目录、索引长度并恢复唯一 pending；固定维度检查小型 `chunks` 元数据，动态历史只遍历强加载候选，不扫描地形或全部描述；[DimensionCatalog 构造器][src-dimensioncatalog-30]；[InstanceStore 构造器][src-instancestore-35]；[InstanceStore.recoverPending][src-instancestore-173]；[DimensionManager.restoreStartup][src-dimensionmanager-715]；[DimensionManager.hasSavedForcedChunks][src-dimensionmanager-915] |
+| 模板/系列登记或强加载候选变更 | 立即原子保存目录；无变更不重复写；IO 失败回滚内存 |
+| 首次创建实例 | 提交 pending、描述及索引，不生成地形 |
+| 访客授权/撤销、安全传送确定出生点 | 保存对应描述；访客保存失败回滚权限 |
+| 实例普通出生点 setter | 先改内存描述，随后世界保存或卸载时持久化 |
+| `saveAllChunks` / 正常停服 | 先保存运行实例描述和已缓存休眠存储；运行世界继续原有保存流程 |
+| 主世界 `LevelEvent.Save` | `WeatherSystem.saveDormant` 额外提交调度器持有的脏固定维度 LevelData，避免存储缓存淘汰后遗漏 |
+| 休眠天气预报 | 扩展天气、补算已有昼夜锚点，立即保存目标 LevelData；不构造世界 |
+| 休眠存储缓存满或准备加载该维度 | 先受检查保存，成功后淘汰或移交；失败保留缓存并传播 |
+| 安全卸载 | 完整保存世界、SavedData 和描述，确认成功后才关闭 |
 
-正常停服时休眠历史的区块和实体已经在先前卸载时保存，不需要逐个唤醒。存在强加载候选只意味着需要加载并校验：恢复原版强加载后，调用 `ForgeChunkManager.reinstatePersistentChunks` 执行各模组验证回调；无有效强加载且非常驻的候选会再次休眠。（[DimensionManager.restoreStartup][src-dimensionmanager-715]；[DimensionManager.loadStartupCandidate][src-dimensionmanager-744]；[DimensionManager.restoreForcedChunks][src-dimensionmanager-946]）
-
-世界目录保持原版约定：主世界为根目录，下界为 `DIM-1`，末地为 `DIM1`，其他维度为 `dimensions/<namespace>/<path>`；动态实例即 `dimensions/gtocore/instance/<UUID>`。卸载不删除或移动这些目录。（[DimensionManager.dimensionPath][src-dimensionmanager-928]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]；[DimensionManager.unload][src-dimensionmanager-822]）
+正常停服不需要唤醒全部历史实例；已休眠的区块和实体在先前卸载时已经保存。历史描述查询和分页不会批量读取地形。
 
 ### 4.3 持久化是在原版上增补，还是重写
 
-**维度生命周期和实例元数据是新增实现，世界内容存盘沿用原版并加强卸载时的错误传播，天气日程使用自己的二进制协议。** 具体边界如下：（[DimensionManager.unload][src-dimensionmanager-822]；[InstanceStore.create][src-instancestore-116]；[WeatherDataIO.writeGlobal][src-weatherdataio-67]；[WeatherDataIO.writeInstance][src-weatherdataio-80]）
+维度目录、描述、索引和创建日志是新增文件，由 `DimensionDataIO` / `InstanceStore` 直接管理；实例不靠改写 `level.dat` 的维度注册表保存。世界区块、实体、POI 和第三方 SavedData 保留原有数据格式与路径，卸载过程加强保存错误传播。
 
-- 动态实例不通过改写 `level.dat` 的 `LEVEL_STEM` 定义列表保存；目录、描述、索引和 pending 是本系统新增文件，由 [DimensionDataIO][src-dimensiondataio-28] / [InstanceStore][src-instancestore-17] 直接管理，不是自定义 SavedData 或磁盘 DataComponentMap。（[DimensionDataIO.writeAtomic][src-dimensiondataio-79]；[InstanceStore.create][src-instancestore-116]；[InstanceStore.appendIndex][src-instancestore-183]）
-- `ServerLevel`、区块/实体管理器、区域文件、POI 和普通第三方 SavedData 的数据结构及路径保留。普通 SavedData 在自动保存、停服和卸载保存时均编码 `DataVersion` + `data` 的压缩 NBT，通过原子提交替换文件，成功后才清 dirty；覆写 `save(File)` 的第三方实现仍由其自身负责。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionDataIO.writeNbtAtomic][src-dimensiondataio-113]）
-- `LevelData` 继承 `DimensionSavedData`，复用 SavedData 缓存和保存调度，用一次原子写入提交该维度的天气与时间。`WeatherSystem` 只负责运行调度，不再单独继承 SavedData；旧全局和实例天气编解码对象只用于兼容读取。原版天气字段不再负责日程。
-- [FastSavedData.save(File)][src-fastsaveddata-54] 在所有保存入口统一使用 [DimensionDataIO.writeFastAtomic][src-dimensiondataio-120]，先 force 临时文件内容再原子替换目标。序列化、force 或替换失败都保留旧文件和 dirty。
-
-维度与环境数据使用 FriendlyByteBuf 流式编解码。维度文件完整解压并校验 GZIP 尾部后解码；编码使用可释放的池化缓冲，schema 3 的字段顺序及 UTF-8/modified-UTF 格式保持不变。普通 `FastSavedData` 保留上游的版本前缀和旧格式读取入口；天气由 `DimensionSavedData` 保留独立信封，已有文件读取失败会传播，不重置日程。
-
-当前维度和天气文件都从 schema 整数开始，压缩方式与后续载荷分别如下：（[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionDataIO.writeAtomic(encoder)][src-dimensiondataio-102]；[DimensionDataIO.writeCatalogAtomic][src-dimensiondataio-83]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[WeatherDataIO.writeGlobal][src-weatherdataio-67]；[WeatherDataIO.writeInstance][src-weatherdataio-80]；[WeatherTimeline.save][src-weathertimeline-188]）
+[LevelData] 继承 [DimensionSavedData]，复用 SavedData 缓存与保存调度，以一次原子写入提交天气和时间。[WeatherSystem] 是运行调度器，不继承 SavedData。[DimensionSavedDataMixin] 为普通原版 SavedData 保留 `DataVersion + data` 压缩 NBT，并统一原子提交；第三方覆写 `save(File)` 的实现仍由自己负责。[FastSavedData] 也统一原子保存，但保留 DataSyncLib 版本化协议及自己的读取语义。
 
 ```text
-维度目录 / 实例 / pending：GZIP 解压后
-  schema_version[int] = 3
-  catalog = templates[count + records] + series[count + records] + forced[count + IDs]
-  instance / pending = logical_key + seed + ordinal + frozen_template
-                       + flags + optional owner / visitors / spawn
+catalog / instance / pending：GZIP 压缩
+  schema[int] = 3
+  catalog：templates + series + forced IDs
+  instance / pending：logical key + seed + ordinal + frozen template
+                     + flags + optional owner / visitors / spawn
 
-LevelData：每维度一份未压缩二进制流
-  schema_version[int] = 1
-  flags[byte] + optional day_time[long] / remainder[VarLong]
-  optional natural_weather[timeline] + optional weather_clock_snapshot[long]
-  optional daylight_anchor[long] / day_length[VarLong] / void_clock[boolean] / skylight[boolean]
-  optional global_daylight_ticks[long] / global_void_daylight_ticks[long]（仅主世界）
-  stars[count + dimension_key + timeline]（仅主世界的两个虚拟恒星）
-  timeline = random_state[long] + storm_end_present[boolean] + optional lastStormEnd[long]
-             + periods[count + weather_name + start[long] + duration[VarLong]]
+gtolib_level.dat：未压缩二进制流（不套普通 FastSavedData 版本前缀）
+  schema[int] = 1
+  flags[byte]
+  optional dayTime[long] + remainder[VarLong]
+  optional naturalWeather[timeline]
+  optional weatherClockSnapshot[long]
+  optional daylightAnchor[long] + dayLength[VarLong] + voidClock + skylight
+  optional globalDaylightTicks[long] + globalVoidDaylightTicks[long]
+  stars[count + dimension key + timeline]
+
+每条 timeline：randomState + optional lastStormEnd
+              + periods[count + stable weather name + start + duration]
 ```
 
-维度目录、实例描述与 pending 继续使用 schema 3。新的 `LevelData.load` 按固定文件路径读取 schema 1，并检查标记和载荷尾部；文件已存在但不可读取时传播错误，不重建空数据。天气旧格式的 `WeatherDataIO.readGlobal/readInstance` 只在对应新日程尚不存在时用于导入。
+[DimensionDataCodecs] 使用专用流式磁盘编码，长生成 JSON 使用 VarInt 字节长度加 UTF-8，不受 `writeUTF` 64 KiB 上限限制。枚举固定序号的顺序变更需要迁移；天气磁盘值由 [WeatherDataIO] 的 `WEATHER` 编码为稳定字符串 key，网络另用注册整数 ID。
 
-目录、实例描述和旧天气仍保留 schema 2/3 的兼容读取；旧天气 schema 2 接受历史 `GTWC` 信封，时间额外接受上一版独立时钟的专用 NBT。导入仅复制到新 LevelData，旧文件保留原字节且不再写回；新时间、日程或天气时钟已存在时优先使用新值。新文件成功保存后，旧文件不参与该字段的后续读取。实例 pending 恢复与索引、强加载候选提交顺序保持原规则。
+旧格式按字段按需导入：目录/描述保留 schema 2/3 和历史 `GTDC` 信封读取；旧全局/实例天气保留 schema 2/3 和 `GTWC` 信封读取。`gtocore_galaxy_weather.dat`、`gtocore_instance_weather.dat`、NBT 独立时钟 `gtolib_dimension_clock.dat` 只作为旧档来源；新字段已存在时优先使用新数据，旧文件字节保留且运行系统不再写回。`WeatherDataIO.GlobalData` 和 [InstanceWeatherData] 只服务兼容路径，不能再作为新天气存盘入口。
 
 ### 4.4 原子提交与创建事务
 
-[DimensionDataIO][src-dimensiondataio-28] 写入目标同目录的 `.tmp` 文件，关闭编码流，`force(true)` 临时文件内容，再用 `ATOMIC_MOVE + REPLACE_EXISTING` 替换目标；不支持原子移动或其他 IO 失败就传播错误，不降级为直接覆盖。它保证单个文件的提交，不提供整世界所有文件同时提交的事务。各维度天气附带保存时的共享天气时钟快照；若维度文件先于主世界提交，重启后按时差平移日程和恒星恢复期，保留相对阶段及随机状态。昼夜锚点遇到主世界计数回退时重新绑定当前计数，不倒退太阳时。（[DimensionDataIO.temporary][src-dimensiondataio-128]；[DimensionDataIO.commit][src-dimensiondataio-133]；[DimensionDataIO.writeAtomic][src-dimensiondataio-79]）
+单文件保存先写同目录 `<目标>.tmp`，关闭编码流并对临时文件 `force(true)`，再用 `ATOMIC_MOVE + REPLACE_EXISTING` 替换目标。序列化、force 或替换失败均保留旧文件；不支持原子移动时直接报错，不降级直接覆盖。SavedData 仅在提交成功后清 dirty。未提交 `.tmp` 不作为新数据读取。
 
-实例创建的跨文件一致性由单项 pending 日志保证：（[InstanceStore.create][src-instancestore-116]；[InstanceStore.recoverPending][src-instancestore-173]）
+这只保证单个文件替换，不是整个世界的多文件事务。若维度文件先于主世界时钟提交，重启时 [LevelData] 的 `bindWeatherClock` 按差值平移日程和恒星恢复边界，保留相对阶段与随机状态；昼夜锚点遇到共享计数回退则重新绑定，不回拨太阳时。
 
-1. 恢复已有 pending，再原子写入新 `pending.dat`。（[InstanceStore.create][src-instancestore-116]；[InstanceStore.recoverPending][src-instancestore-173]）
-2. 原子写描述文件。（[InstanceStore.create][src-instancestore-116]；[DimensionDataIO.writeAtomic][src-dimensiondataio-79]）
-3. 按创建序号追加或核对固定长度 UUID 索引，新增写入执行 force。（[InstanceStore.appendIndex][src-instancestore-183]）
-4. 删除 pending，随后更新描述缓存。（[InstanceStore.create][src-instancestore-116]；[InstanceStore.cache][src-instancestore-210]）
+创建事务顺序如下：
 
-重启、后续查询和分页会先恢复 pending。恢复先验证日志的完整载荷和 GZIP 尾部，再核对索引位置与已有描述的不可变字段；匹配的已有描述保留其最新访客和出生点。pending 只能修复最后一条索引，包括文件已达到 16 字节但内容尚未完整写入的尾记录；恢复重新 force 索引后才删除日志。旧序号、索引间隙或描述身份冲突报错，不扫描历史来猜测修补；无 pending 的截断索引也不猜测修复。（[InstanceStore 构造器][src-instancestore-35]；[InstanceStore.recoverPending][src-instancestore-173]；[InstanceStore.appendIndex][src-instancestore-183]；[InstanceStore.find][src-instancestore-78]）
+```mermaid
+flowchart LR
+    RECOVER[恢复已有 pending] --> JOURNAL[原子写 pending.dat]
+    JOURNAL --> DESCRIPTOR[原子写实例描述]
+    DESCRIPTOR --> INDEX[追加或核对 16 字节索引并 force]
+    INDEX --> REMOVE[删除 pending]
+    REMOVE --> CACHE[更新描述缓存]
+```
 
-强加载候选采用提交顺序保护：新增持久化票据后立即保存候选；删除最后一张票据时，如果 `chunks` SavedData 仍是 dirty，就保留候选，直到无票据状态成功提交。若在删除内存票据后、保存 `chunks.dat` 前崩溃，重启仍按磁盘旧票据加载并校验该维度；多余候选不会凭空恢复已删除的磁盘票据。（[DimensionManager.updateForcedIndex][src-dimensionmanager-814]；[DimensionManager.restoreStartup][src-dimensionmanager-715]）
+重启、查询、创建及分页前恢复 pending。恢复必须完整验证载荷、GZIP 尾部、索引位置及已有描述不可变字段；存在匹配描述时保留其最新访客和出生点。pending **只能修复索引尾部一条**，包括长度已满但写入中断的尾记录；不能改写更老记录、填补间隙或覆盖冲突描述。无 pending 的截断索引报错，不扫描历史猜测修复。
 
-运行世界在周期维护时清理已提交为空的候选，安全卸载也在保存成功后、关闭前更新候选；目录写入失败会取消此次卸载，保留运行世界。
+强加载候选还有独立提交顺序：新增持久化票据及时登记候选；删除最后一张票据后，如果 `chunks` 仍 dirty，候选必须保留，直到无票据的 `chunks.dat` 成功提交。这样在内存删票据后崩溃，重启仍能找到磁盘旧票据并校验，而不会因候选提前消失漏加载。
 
-### 4.5 持久化 data 错误的处理与当前边界
+### 4.5 保存失败与关闭失败
 
-| 错误 | 当前处理 |
+| 错误 | 当前处理与范围 |
 |---|---|
-| `catalog.dat` 不存在 | 建立空内存目录，由模板登记等后续变更写入；这和“已有目录读取失败”不同；[DimensionCatalog 构造器][src-dimensioncatalog-30] |
-| 现有目录/描述读取或迁移失败 | 传播 IO/解码错误；管理器打开失败会终止初始化，按实例查询失败则中止该请求；不把坏文件替换为空描述；[DimensionDataIO.readCatalog][src-dimensiondataio-56]；[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionManager 构造器][src-dimensionmanager-81]；[DimensionManager.descriptor][src-dimensionmanager-285] |
-| 天气 schema 不支持、载荷截断、天气 ID 或内容无法解码 | [FastSavedData][src-fastsaveddata-21] 读取异常传播；只有文件不存在才新建日程，不重置已有文件的随机状态和日程。文件类型由 reader 选择，没有额外 kind 校验；[FastSavedData.getFromFile][src-fastsaveddata-32]；[FileUtils.loadFromFile][src-fileutils-180]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[WeatherTimeline.load][src-weathertimeline-203] |
-| 目录变更保存失败 | 模板、系列、强加载候选的内存变更回滚，保留原目标文件并传播；[DimensionCatalog.register][src-dimensioncatalog-72]；[DimensionCatalog.createSeries][src-dimensioncatalog-106]；[DimensionCatalog.setForced][src-dimensioncatalog-126] |
-| 访客变更保存失败 | 回滚授权/撤销动作，传播错误；[DimensionManager.grant][src-dimensionmanager-397] |
-| 任意入口的普通 SavedData 或 FastSavedData 保存失败 | 原子替换失败保留旧文件，成功后才清 dirty，异常传播；卸载流程取消关闭并保留运行世界；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionManager.unload][src-dimensionmanager-822] |
-| 卸载期间区块序列化失败 | 恢复该区块 `unsaved`，记录失败并终止刷新循环，避免无限重试；[DimensionChunkSaveMixin.gtolib$recordSaveFailure][src-dimensionchunksavemixin-24] |
-| 卸载期间实体序列化、区域写入失败 | 传播原版只记日志或异步 future 中的错误，取消卸载；[DimensionEntitySaveMixin.gtolib$abortEntitySerialization][src-dimensionentitysavemixin-23]；[DimensionIOWorkerMixin.gtolib$awaitUnloadWrite][src-dimensionioworkermixin-28]；[DimensionManager.unload][src-dimensionmanager-822] |
-| 休眠元数据保存失败 | 不淘汰对应缓存；休眠天气写入失败保留 dirty，不覆盖旧目标文件；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[WeatherSystem.timeline][src-weathersystem-149]；[DimensionDataIO.writeFastAtomic][src-dimensiondataio-120] |
-| 卸载事件或区域资源关闭失败 | 当前实例 `POISONED`、拒绝重开、停服；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionLifecycle.poison][src-dimensionlifecycle-200]；[DimensionIOWorkerMixin.gtolib$propagateCloseFailure][src-dimensionioworkermixin-39] |
+| 自有目录、描述、新 LevelData 或需要导入的旧天气已存在但不可读 | 传播错误，不重建空数据；新 LevelData 还检查 schema、标记和尾部 |
+| 目录或访客变更提交失败 | 回滚对应内存变更，保留旧文件 |
+| 卸载时区块序列化失败 | [DimensionChunkSaveMixin] 恢复 unsaved 并中止刷新，防止无限重试 |
+| 卸载时实体序列化失败 | [DimensionEntitySaveMixin] 将原版只记日志的失败上抛 |
+| 卸载时异步区域写入失败 | [DimensionIOWorkerMixin] 在保存作用域内等待 future，使错误阻止卸载 |
+| 卸载保存、候选目录提交或休眠元数据保存失败 | 保留运行世界/缓存和 dirty，取消关闭，后续可重试 |
+| 卸载事件、资源关闭或初始化失败后的清理不可恢复 | `POISONED`，摘除运行引用，停服；本进程拒绝重开 |
 
-这些保护有明确范围：[DimensionSaveAttempt][src-dimensionsaveattempt-9] 用于卸载和休眠元数据提交，普通保存的区块/实体路径没有整体改成相同的失败收集流程；SavedData 的单文件原子提交则适用于普通保存。目录、描述和 pending 读取会完整消费载荷并验证 GZIP 尾部；天气仍由其 reader 解码。没有自动从备份修复坏文件的机制。（[DimensionSaveAttempt.begin][src-dimensionsaveattempt-20]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]）
+[DimensionSaveAttempt] 的失败收集作用域用于卸载和休眠元数据保存；普通自动保存的区块/实体流程没有整体改成同一套失败收集。普通 SavedData 的原子提交适用于所有保存入口，但不能推广为所有第三方自有 IO 都被接管。
 
-进程异常退出后，创建事务可以续做，已提交元数据保留，未提交的 `.tmp` 不作为新数据读取。玩家、区块、实体、POI、`level.dat` 和各模组自有文件仍是多文件保存，系统不提供整个存档的同一时刻快照；未保存进度可能回退，原版区域文件写入、第三方自有 IO、系统断电或磁盘故障不在这些单文件保证之内。
+`DimensionSavedData.getFromFile` 对自有环境数据实行读取失败传播；普通 `FastSavedData.getFromFile` 仍保留原有记录错误并回退为空的语义，两者必须区分。没有自动备份修复机制。玩家、区块、实体、POI、`level.dat` 和模组文件仍是多文件保存，异常退出可能回退尚未保存的进度，不能宣称整个存档有同一时刻快照。
 
-崩溃回归探针使用两次启动的独立目录：`gradlew runServer -I gradle/scripts/dimensions-probe.gradle -PdimensionCrashProbe=true -PdimensionProbeFTB=false -PgtolibUnprotected=true -PdimensionProbeDir=<隔离目录>`。第一次注入普通 NBT 写入失败和二进制序列化失败，随后在强加载票据移除尚未保存时调用 `Runtime.halt(0)`，不执行停服保存；第二次核对旧元数据、实例种子、地形和磁盘强加载票据，再验证票据提交后才移除启动候选。JDK 21 前置设置仍按 [AGENTS.md](../AGENTS.md) 执行。
+## 5. 天气定义、休眠演进与表现
 
-当前依赖组合的 LeanObject AEKey Mixin 与 AE2 `15.2610.8` 有启动冲突。隔离验证可在该测试目录的 `config/leanobject.toml` 将 `[features.aeKey]` 下的 `enabled` 设为 `false`；该配置仅绕开依赖启动问题，生产配置和依赖版本不随维度修复改变。现有 schema 2 历史文件测试依赖 `src/test/resources/saved-data/schema-2/` 的真实样本；样本缺失时不能声称已验证历史迁移。
+完整类图见 [天气定义、调度、同步与表现](dimension-class-map.md#map-weather)，具体权重表见 [星系天气](galaxy-weather.md)。
 
-运行验证采用明文开发模式；加密模式的探针当前在进入存档前遇到 `AddonFinderMixin` 类加载失败，尚未验证加密模式游戏运行。保护产物构建成功与游戏运行验证是不同的检查。生命周期探针等待注入异常确实发生后才解除故障，防止服务器 tick 的事件顺序导致提前关掉注入而假通过。
+[WeatherType] 定义稳定 ID、名称和雨/雷语义；[WeatherTypes] 先登记全部天气，再冻结注册表。[WeatherProfile] 定义自然天气条目、相对权重、基础时长和对称浮动；[WeatherProfiles] 将固定天体、轨道和实例冻结的 profile ID 映射到规则。[Dimension] 为固定天体选择 profile，未指定者默认无大气天气；未登记普通维度回退主世界规则，轨道使用平静规则。
 
-原版/第三方 SavedData 的读取仍保留它们自己的错误与 fallback 语义，不能把本系统“自有坏文件不回退为空”的约束推广到所有模组。维度元数据及旧天气保留 schema 2/3 兼容读取，新天气与时间使用 LevelData schema 1；普通 `FastSavedData` 使用当前 DataSyncLib 的版本化格式；二者均在临时文件写入并 force 成功后原子替换目标。后续不兼容变更应提升 schema 并提供对应迁移与真实历史文件验证。（[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[FastSavedData.getFromFile][src-fastsaveddata-32]）
+```mermaid
+flowchart TD
+    TYPES[WeatherTypes / WeatherType] --> PROFILE[WeatherProfile / WeatherProfiles]
+    DIM[Dimension / DimensionEnvironment] --> PROFILE
+    PROFILE --> NATURAL[WeatherTimeline 自然日程]
+    NATURAL --> EFFECTIVE[自然天气与同星系恒星覆盖合成]
+    STAR[恒星日程与 6000 tick 恢复期] --> EFFECTIVE
+    EFFECTIVE --> STATE[WeatherState 当前状态与渐变]
+    EFFECTIVE --> UI[WeatherForecastUI 三日预报]
+    STATE --> SYNC[WeatherSync 当前维度玩家]
+    STATE --> AE[SolarStormHandler AE 连接和反应堆]
+    NATURAL --> SAVE[LevelData 单文件保存]
+```
 
-## 5. 对原版与其他模组的修改
+[WeatherSystem] 运行在主世界 capability 上，`WeatherEvents` 于服务器 tick START 推进共享计数。每 tick 只增加有效计数和可运行的天气时钟；到自然日程边界、恒星恢复边界或人工修改时才重新计算运行世界状态。初始化会为已定义天体和轨道建立至少未来 72000 tick 日程；其他固定维度及动态实例按需创建。
 
-### 5.1 原版方法的整体覆写
+[WeatherTimeline] 保存自己的随机状态、当前及未来区间、最近恒星风暴结束点。休眠后扩展会沿原随机状态消费经过的天气区间、补齐预报，而不是从查询时刻重抽；不加载区块，也不遍历全部动态历史。固定日程由调度器持有并在边界扩展；动态实例在实际使用、重载或预报时补算。昼夜按 tick 差值算术补齐，天气则按经过的天气区间补齐，两者算法不同。
 
-| 位置 | 覆写的方法 | 当前效果 |
-|---|---|---|
-| GTOLib [DimensionServerMixin][src-dimensionservermixin-64] → `MinecraftServer` | `createLevels`、`prepareLevels` | 主世界按原初始化逻辑创建；其他定义按常驻/有效强加载恢复，不再启动构造全部世界；[DimensionServerMixin.createLevels][src-dimensionservermixin-142]；[DimensionServerMixin.prepareLevels][src-dimensionservermixin-191] |
-| 同上 | `getAllLevels`、`getLevel` | 返回已初始化运行快照；只查询映射，休眠时返回 null；[DimensionServerMixin.getAllLevels][src-dimensionservermixin-220]；[DimensionServerMixin.getLevel][src-dimensionservermixin-233] |
-| GTOLib [ServerLevelMixin][src-serverlevelmixin-23] → `ServerLevel` | 两个 `isNaturalSpawningAllowed` 重载 | 虚空环境禁止自然生成；其余使用实体管理器判断；动态环境复用这条已有入口；[ServerLevelMixin.isNaturalSpawningAllowed(BlockPos)][src-serverlevelmixin-59]；[ServerLevelMixin.isNaturalSpawningAllowed(ChunkPos)][src-serverlevelmixin-69] |
-| GTOCore [LevelWeatherMixin][src-levelweathermixin-15] → `Level` | `prepareWeather`、雨/雷强度 getter/setter、天气布尔查询、`isRainingAt` | 停用原版天气初始化，查询本系统当前状态；外部天气修改只影响主世界；[LevelWeatherMixin.prepareWeather][src-levelweathermixin-22]；[LevelWeatherMixin.getRainLevel][src-levelweathermixin-29]；[LevelWeatherMixin.getThunderLevel][src-levelweathermixin-38]；[LevelWeatherMixin.setRainLevel][src-levelweathermixin-47]；[LevelWeatherMixin.setThunderLevel][src-levelweathermixin-56]；[LevelWeatherMixin.isRaining][src-levelweathermixin-65]；[LevelWeatherMixin.isThundering][src-levelweathermixin-75]；[LevelWeatherMixin.isRainingAt][src-levelweathermixin-85] |
-| GTOCore [ServerLevelWeatherMixin][src-serverlevelweathermixin-12] → `ServerLevel` | `advanceWeatherCycle`、`setWeatherParameters`、`resetWeatherCycle` | 停用原版天气循环；外部 setter 仅主世界生效；睡眠清天气修改当前维度日程；[ServerLevelWeatherMixin.advanceWeatherCycle][src-serverlevelweathermixin-19]；[ServerLevelWeatherMixin.setWeatherParameters][src-serverlevelweathermixin-26]；[ServerLevelWeatherMixin.resetWeatherCycle][src-serverlevelweathermixin-40] |
+同星系且 profile 允许恒星影响的维度，恒星风暴期间覆盖为晴天，风暴结束后覆盖为 6000 tick 雷暴，再回到原自然日程；覆盖不消耗或重抽本地自然天气。无大气天体、轨道及其他星系不受影响。太阳表面使用实际维度日程，比邻星与巴纳德使用主世界 LevelData 中两个虚拟恒星日程，不为它们构造世界。预报用同一个合成算法并合并相邻同类区间。
 
-天气行为与附带的渲染/命令适配详见 [星系天气](galaxy-weather.md)。上表包含动态环境依赖的既有入口，并不表示其中所有方法都由本分支首次引入。（[LevelWeatherMixin][src-levelweathermixin-15]；[ServerLevelWeatherMixin][src-serverlevelweathermixin-12]）
+`doWeatherCycle=false` 暂停天气时钟，显式天气修改仍生效；`/time` 与睡眠不推进天气序列。睡眠清天气仅修改当前维度自然日程，仍可被恒星覆盖。原版 `/weather` 和 `/gtocore weather` 走本维度显式入口，并将 rain 映射为该 profile 的降水或太阳风暴；不支持的天气拒绝。
 
-### 5.2 原版与 Forge 的局部修改
+[LevelWeatherMixin] 接管 Level 的天气查询、雨雷强度和初始化；[LibServerLevelWeatherMixin] 停用原版自然循环并接入 setter、睡眠清天气。直接读写 `ServerLevelData` 的原版天气字段不会改变新系统。外部模组通过 `setWeatherParameters` 或强度 setter 只允许修改主世界，Ars Cloudshaper 的 [WeatherRitualMixin] 在非主世界直接结束。
 
-| Mixin / 入口 | 修改方式与触发点 | 用途 |
-|---|---|---|
-| [DimensionServerMixin][src-dimensionservermixin-64] | `tickServer` 尾部、`saveAllChunks` 头部注入；新增 [DimensionServer][src-dimensionserver-13] 桥接 | 维护与安全卸载、描述/休眠元数据保存、刷新 Forge 世界数组与计时表；[DimensionServerMixin.gtolib$unloadIdleDimensions][src-dimensionservermixin-258]；[DimensionServerMixin.gtolib$saveInstanceMetadata][src-dimensionservermixin-265]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]；[DimensionServerMixin.gtolib$refreshLevels][src-dimensionservermixin-251] |
-| [DimensionPlayerListMixin][src-dimensionplayerlistmixin-32] | Redirect 登录/重生的 `getLevel`；修改登录维度集合；Login/Respawn 包构造前注入 | 授权后显式加载；拒绝时沿用主世界回退；提前同步动态环境；[DimensionPlayerListMixin.gtolib$loadAuthorizedPlayerDestination][src-dimensionplayerlistmixin-37]；[DimensionPlayerListMixin.gtolib$onlyConnectedDynamicDimensions][src-dimensionplayerlistmixin-51]；[DimensionPlayerListMixin.gtolib$syncLoginInstance][src-dimensionplayerlistmixin-62]；[DimensionPlayerListMixin.gtolib$syncRespawnInstance][src-dimensionplayerlistmixin-69] |
-| [DimensionPlayerMixin][src-dimensionplayermixin-28] | `setServerLevel`、`changeDimension`、`teleportTo` 入口守卫 | 检查当前 Level 对象身份、`LOADED` 状态及权限；允许跨维度时提前同步；[DimensionPlayerMixin.gtolib$authorizeLevelAssignment][src-dimensionplayermixin-31]；[DimensionPlayerMixin.gtolib$authorizeDimensionChange][src-dimensionplayermixin-45]；[DimensionPlayerMixin.gtolib$authorizeTeleport][src-dimensionplayermixin-59]；[DimensionPlayerMixin.gtolib$authorizeRelativeTeleport][src-dimensionplayermixin-75]；[DimensionManager.mayTransfer][src-dimensionmanager-573] |
-| [DimensionArgumentMixin][src-dimensionargumentmixin-32] | 替换补全返回值，Redirect `getDimension` 的目标查询 | 补全按服务器定义查询，执行前授权并加载；[DimensionArgumentMixin.gtolib$suggestDefinedDimensions][src-dimensionargumentmixin-35]；[DimensionArgumentMixin.gtolib$explicitCommandLoad][src-dimensionargumentmixin-60] |
-| [ServerLevelMixin][src-serverlevelmixin-23] | 构造器种子表达式替换、`getSeed` 头部、`setChunkForced` 返回处注入 | 一致的实例种子、原版持久化强加载候选更新；[ServerLevelMixin.gtolib$instanceGenerationSeed][src-serverlevelmixin-36]；[ServerLevelMixin.gtolib$instanceSeed][src-serverlevelmixin-41]；[ServerLevelMixin.gtolib$persistForcedDimension][src-serverlevelmixin-46] |
-| [LevelMixin][src-levelmixin-37] | 构造尾部应用环境，提供 `ILevel` 实例环境 setter | 两端虚空标记及 Level 上的星球环境视图；[LevelMixin.init][src-levelmixin-53]；[LevelMixin.gtolib$setInstanceEnvironment][src-levelmixin-100] |
-| [DimensionTicketsMixin][src-dimensionticketsmixin-19] / [DimensionTicketAccessor][src-dimensionticketaccessor-12] | 给 `DistanceManager` 提供有效票据检查，访问 Ticket 过期状态 | 保活复查；不创建或续期普通票据；[DimensionTicketsMixin.gtolib$hasActiveTickets][src-dimensionticketsmixin-28] |
-| [DimensionVehicleMixin][src-dimensionvehiclemixin-26] | 给 Entity 增加租约/飞行票据接口，实体移除时释放 | 由活动载具 tick 调用，普通实体不持续保活；[DimensionVehicleMixin.gtolib$vehicleActive][src-dimensionvehiclemixin-41]；[DimensionVehicleMixin.gtolib$releaseFlight][src-dimensionvehiclemixin-66]；[DimensionVehicleMixin.gtolib$releaseVehicle][src-dimensionvehiclemixin-80] |
-| [DimensionSavedDataMixin][src-dimensionsaveddatamixin-24] | 所有入口取消原保存并原子写原协议 NBT | 成功后清 dirty，失败保留旧文件并传播异常；卸载时取消关闭；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36] |
-| [DimensionChunkSaveMixin][src-dimensionchunksavemixin-18] / [DimensionEntitySaveMixin][src-dimensionentitysavemixin-17] | 原版错误日志位置注入 | 把序列化失败传播到卸载流程；[DimensionChunkSaveMixin.gtolib$recordSaveFailure][src-dimensionchunksavemixin-24]；[DimensionEntitySaveMixin.gtolib$abortEntitySerialization][src-dimensionentitysavemixin-23] |
-| [DimensionIOWorkerMixin][src-dimensionioworkermixin-25] | `store` 返回处等待 future，`close` 错误位置抛出 | 捕获异步写入失败，传播区域关闭失败；[DimensionIOWorkerMixin.gtolib$awaitUnloadWrite][src-dimensionioworkermixin-28]；[DimensionIOWorkerMixin.gtolib$propagateCloseFailure][src-dimensionioworkermixin-39] |
-| [DimensionForgeTicketsMixin][src-dimensionforgeticketsmixin-20] → `ForgeChunkManager` | `forceChunk` 成功返回时注入 | 增删持久化票据后保存启动候选索引；仍使用 Forge 原票据及校验回调；[DimensionForgeTicketsMixin.gtolib$persistForcedDimension][src-dimensionforgeticketsmixin-24] |
+[WeatherSync] 只在进入节点和天气类型变化时同步当前状态；[WeatherClient] 处理特殊降水、雾、粒子与太阳表现；原版强度写入由 Level 的天气 setter 边界隔离。[ClientLevelWeatherMixin] / [LevelRendererWeatherMixin] 承接原 Core 的太阳天空和降水修正。酸雨、甲烷雨用降雨表现，降雪强制雪，沙尘暴用尘粒与雾；这里没有新增腐蚀伤害或雨水流体。[SolarStormHandler] 从实际天气类型查询太阳风暴，切换时即时更新已有 AE 跨太阳边界连接和反应堆状态。
 
-### 5.3 其他模组与本仓游戏入口的适配
+预报仪由 [GTOItems] → [WeatherForecastItem] → [WeatherForecastUI] 打开；[MiscRecipe] 和 [LangHandler] 提供配方与语言。UI 发送未来 72000 天气 tick 的目标区间、游戏时间、目标太阳时/周期和暂停标记，每秒刷新。休眠查询只读写元数据；日出日落按目标维度太阳日换算，天气时长不缩放。固定时间、无天空光、锁时、昼夜暂停或戴森球遮蔽时按界面条件隐藏标记。
 
-| 对象 | 适配内容 | 代码位置 |
-|---|---|---|
-| AE2 空间存储 | 启动只登记固定生成定义；覆写 [SpatialStoragePlotManager.getWorldData][src-dimensionspatialstoragemixin-29] 只开元数据，`getLevel` 实际操作才加载；包装 `swapRegions` 同时保活源和目标 | GTOLib [DimensionCompatibility][src-dimensioncompatibility-13]；GTOCore [DimensionSpatialStorageMixin][src-dimensionspatialstoragemixin-19]、[DimensionSpatialExchangeMixin][src-dimensionspatialexchangemixin-18]；[DimensionCompatibility.register][src-dimensioncompatibility-23]；[DimensionSpatialStorageMixin.getLevel][src-dimensionspatialstoragemixin-43]；[DimensionSpatialExchangeMixin.gtolib$pinExchange][src-dimensionspatialexchangemixin-21] |
-| Ad Astra 星球/空间站入口 | Redirect 三种旅行包的目标查询到授权加载；包装空间站着陆与建造，先检查实例权限、星球规则和站点归属，再持有传送/建造租约 | GTOLib [DimensionPlanetPacketMixin][src-dimensionplanetpacketmixin-25]、[DimensionStationPacketMixin][src-dimensionstationpacketmixin-22]、[DimensionConstructPacketMixin][src-dimensionconstructpacketmixin-21]；[DimensionPlanetPacketMixin.gtolib$loadTravelDestination][src-dimensionplanetpacketmixin-31]；[DimensionStationPacketMixin.gtolib$land][src-dimensionstationpacketmixin-25]；[DimensionConstructPacketMixin.gtolib$build][src-dimensionconstructpacketmixin-24] |
-| Ad Astra 旅行菜单 | 覆写 [PlanetsMenuProvider.writeExtraData][src-dimensionplanetsmenuprovidermixin-34]，通过休眠 SavedData 查询站点，保留菜单包布局；Cadmus 查询只使用已加载目标，休眠目标按未查询到声明处理 | GTOLib [DimensionPlanetsMenuProviderMixin][src-dimensionplanetsmenuprovidermixin-23]、[DimensionStations][src-dimensionstations-26]、[DimensionStationAccessor][src-dimensionstationaccessor-16]；[DimensionStations.query][src-dimensionstations-37] |
-| Ad Astra 环境 API | Level 版本的星球、氧气、温度、重力、太阳能查询使用 Level 上的环境视图，支持动态实例的冻结环境；按 ResourceKey 的静态星球目录仍不自动包含实例 | GTOLib [LevelMixin][src-levelmixin-37] 及 [PlanetApiImplMixin][src-planetapiimplmixin-14]、[OxygenApiImplMixin][src-oxygenapiimplmixin-12]、[TemperatureApiImplMixin][src-temperatureapiimplmixin-12]、[GravityApiImplMixin][src-gravityapiimplmixin-12]；[LevelMixin.gtolib$setInstanceEnvironment][src-levelmixin-100]；[PlanetApiImplMixin.getPlanet][src-planetapiimplmixin-21]；[PlanetApiImplMixin.isPlanet][src-planetapiimplmixin-30]；[PlanetApiImplMixin.isSpace][src-planetapiimplmixin-39]；[PlanetApiImplMixin.getSolarPower][src-planetapiimplmixin-50]；[OxygenApiImplMixin.hasOxygen][src-oxygenapiimplmixin-19]；[TemperatureApiImplMixin.getTemperature][src-temperatureapiimplmixin-19]；[GravityApiImplMixin.getGravity][src-gravityapiimplmixin-19] |
-| Ad Astra 载具/着陆 | 火箭和着陆器 tick 刷新租约及随行票据；[ModUtils.land][src-modutilsmixin-71] 在移动玩家或创建着陆器前拒绝旧对象、未完成初始化或无权目标 | GTOLib [RocketMixin][src-rocketmixin-9]、[LanderMixin][src-landermixin-10]、[ModUtilsMixin][src-modutilsmixin-30]；[RocketMixin.gtolib$keepFlightAlive][src-rocketmixin-17]；[LanderMixin.gtolib$keepLandingAlive][src-landermixin-18] |
-| GTM 远程目标 | 保留维度键与坐标；目标卸载时释放监听器、Level、方块实体和处理器，后续 `blockEntity` 查询按键重新绑定当前已加载世界，不唤醒目标 | GTOCore [DimensionRemoteKeyTargetMixin][src-dimensionremotekeytargetmixin-28]；GTOLib [DimensionRuntimeCaches][src-dimensionruntimecaches-18]；[DimensionRemoteKeyTargetMixin.gtolib$trackRuntime][src-dimensionremotekeytargetmixin-56]；[DimensionRemoteKeyTargetMixin.gtolib$releaseDimension][src-dimensionremotekeytargetmixin-72]；[DimensionRemoteKeyTargetMixin.gtolib$resolveLoadedTarget][src-dimensionremotekeytargetmixin-85]；[DimensionRuntimeCaches.unload][src-dimensionruntimecaches-51] |
-| FTB Teams | 实例归属按当前队伍资格检查；变更、离队和删除事件复核在线玩家；站点共享使用现有队伍成员规则 | [DimensionManager.Teams][src-dimensionmanager-1108]、[DimensionSync.Teams][src-dimensionsync-132]、[DimensionStations][src-dimensionstations-26]；[DimensionManager.Teams.exists][src-dimensionmanager-1110]；[DimensionManager.Teams.contains][src-dimensionmanager-1115]；[DimensionSync.Teams.init][src-dimensionsync-134]；[DimensionSync.Teams.enforce][src-dimensionsync-157]；[DimensionStations.owns][src-dimensionstations-83] |
-| FTB Chunks | 已运行世界的票据及重启候选使用 Forge 恢复/校验；当前尚无针对休眠世界新增强加载请求的显式加载适配 | 当前没有对应生产 Mixin；[RestartProbe][src-restartprobe-19] 中该路径是待验证断言，不能视为功能已实现；[DimensionManager.restoreForcedChunks][src-dimensionmanager-946]；[RestartProbe.started：休眠 FTB 强加载断言][src-restartprobe-57] |
-| GTOCore 传送入口 | 登录/重生、原版维度参数、虚空设备、统一 [ServerUtils][src-serverutils-19] 等改用授权加载；Level 参数版本拒绝旧运行对象 | [VoidTransporterMachine][src-voidtransportermachine-32]、主仓 `ForgeCommonEvent`、GTOLib [ServerUtils][src-serverutils-19]；[VoidTransporterMachine.teleportToDimension][src-voidtransportermachine-46]；[GTOCore ForgeCommonEvent.onPlayerLoggedInEvent][src-forgecommonevent-371]；[ServerUtils.teleportToDimension][src-serverutils-59]；[ServerUtils.teleportToDimension][src-serverutils-74] |
-| GTOCore/GTOLib 全局存档 | 全局 SavedData 初始化限制在主世界加载事件，避免每次动态世界创建重置全局对象 | 两仓 `ForgeCommonEvent.onLevelLoad`；[GTOCore ForgeCommonEvent.onLevelLoad][src-forgecommonevent-414]；[GTOLib ForgeCommonEvent.onLevelLoad][src-forgecommonevent-270] |
-| 监控与机器网络 | 监控运行队列和网络挂在 Level capability；卸载只处理对应客户端缓存，服务端世界索引随 Level 释放 | 主仓 `common/machine/monitor/Manager`、GTOLib [LevelMixin][src-levelmixin-37]；[monitor.Manager.state][src-manager-59]；[monitor.Manager.onWorldUnload][src-manager-662]；[LevelMixin.init][src-levelmixin-53] |
-| 天气及天气模组 | 动态实例的昼夜与天气日程统一保存，休眠时继续模拟，预报只读写元数据；Ars Nouveau 天气仪式的非主世界入口受限制 | [InstanceWeatherData][src-instanceweatherdata-20]、[WeatherProfiles][src-weatherprofiles-15] 及天气 Mixin；详见星系天气文档；[LevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java)；[WeatherProfiles.get][src-weatherprofiles-32]；[WeatherSystem.timeline][src-weathersystem-149]；[WeatherRitualMixin.gto$overworldOnly][src-weatherritualmixin-16] |
+## 6. 入口与兼容边界
 
-这些是当前 GTOCore/GTOLib 的适配位置，并不表示已在 AE2 或 GTM fork 内全面改写所有调用者。对它们内部行为的后续修复，按 [fork 修改位置](forked-dependencies.md) 判断归属；只属于 GTO 生命周期的集成可以放在本仓，依赖自身缺陷应先考虑对应 fork。（[DimensionSpatialStorageMixin][src-dimensionspatialstoragemixin-19]；[DimensionRemoteKeyTargetMixin][src-dimensionremotekeytargetmixin-28]）
+完整关系见 [授权、旅行和第三方适配](dimension-class-map.md#map-integration)。
 
-### 5.4 新增模组时需要检查的潜在冲突点
+| 入口 | 接入方式 |
+|---|---|
+| 登录、重生、原版玩家跨维度 | `DimensionPlayerListMixin` / `DimensionPlayerMixin` 登录重生先授权加载，实际传送检查当前运行对象与玩家权限，再同步环境 |
+| 虚空/超平坦入口、虚空传送器 | [CoreForgeCommonEvent] / [VoidTransporterMachine] / [ServerUtils] 改用按键授权加载；已有 Level 重载版本拒绝旧运行对象 |
+| 星球/轨道着陆、空间站建造 | [DimensionPlanetPacketMixin] 显式加载；[DimensionStationPacketMixin] / [DimensionConstructPacketMixin] 分别检查访问权、星球解锁、站点归属并持租约 |
+| 空间站列表与归属 | [DimensionStations] 经 [DimensionStationAccessor] 读 SavedData；[DimensionPlanetsMenuProviderMixin] 不为菜单唤醒地形；[ServerboundLandOnSpaceStationPacketMixin] 复用同一归属检查 |
+| Ad Astra 最终着陆 | [ModUtilsMixin] 检查当前 Level 对象身份、LOADED 和玩家乘客树；不能使用同键旧 Level |
+| AE2 空间存储 | 禁用依赖自己的空间世界创建 Mixin，固定定义交给管理器；[DimensionSpatialStorageMixin] 分开元数据查询与实际加载，[DimensionSpatialExchangeMixin] 在交换期间持租约 |
+| GTM 远程目标 | `DirectedTesseractMachine` → `TesseractTargets` → `DimensionRemoteKeyTargetMixin` → `DimensionRuntimeCaches`，仅绑定当前运行目标 |
+| 监控、旅行目标、远程机器 UI | `Manager` 按 Level 管理；[PatternTravelTarget] 容忍休眠目标；[Message] 先检查访问权再查询当前目标 |
+| 全局初始化 | Core 与 [LibForgeCommonEvent] 的世界初始化限定主世界，其他 Level 的反复 Load 不重复初始化全局单例 |
 
-下表是根据当前入口推导的适配风险；应检查新依赖的实际调用链后决定修改位置。（[DimensionServerMixin.getLevel][src-dimensionservermixin-233]；[DimensionManager.unload][src-dimensionmanager-822]）
+实例权限、星球解锁和空间站归属是三次不同判断。实例访问由管理员、公开策略、访客、归属玩家本人或当前所属队伍成员资格决定；队伍已删除时，即使有访客记录也拒绝普通玩家，管理员仍可处理。FTB 队伍变化事件和每 20 tick 的在线复查会将失权玩家送回主世界。拒绝授权不应先加载目标。
 
-| 新模组的假设或行为 | 可能表现 | 适配方向 |
-|---|---|---|
-| `getLevel(key)` 必须非空，所有数据包世界启动就存在 | 空指针、跳过功能、传送失败 | 元数据查询改用 `metadataStorage`；实际操作先授权再显式加载；[DimensionServerMixin.getLevel][src-dimensionservermixin-233]；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.loadFor][src-dimensionmanager-558] |
-| `getAllLevels()` 等于全部世界目录，或启动时只扫描一次 | 菜单漏掉休眠世界，后创建实例没被登记 | 定义查询与运行枚举分开；处理重复 Load/Unload；[DimensionServerMixin.getAllLevels][src-dimensionservermixin-220]；[DimensionManager.fixedDimensionKeys][src-dimensionmanager-122]；[DimensionManager.levels][src-dimensionmanager-113]；[DimensionRuntimeCaches.unload][src-dimensionruntimecaches-51] |
-| 模组自己构造 Level、直接写 Forge 世界映射 | 绕过状态机、快照、边界监听及票据恢复 | 将固定生成定义接入 `registerDefinition`，统一由管理器创建；[DimensionManager.registerDefinition][src-dimensionmanager-199]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238] |
-| 永久缓存 Level、区块、方块实体、处理器 | 持有已关闭资源、阻止 GC、重开后仍用旧世界 | 保存键和位置，卸载释放运行引用，使用当前 Level 重绑；[DimensionRuntimeCaches.unload][src-dimensionruntimecaches-51]；[DimensionRemoteKeyTargetMixin.gtolib$resolveLoadedTarget][src-dimensionremotekeytargetmixin-85]；[DimensionManager.mayTransfer][src-dimensionmanager-573] |
-| 收到任一 Level 卸载就清全局网络或重置单例 | 卸载一个实例破坏其他世界 | 世界数据绑定 capability；全局初始化/清理限定真正的主世界或服务器生命周期；[LevelMixin.init][src-levelmixin-53]；[GTOCore ForgeCommonEvent.onLevelLoad][src-forgecommonevent-414]；[GTOLib ForgeCommonEvent.onLevelLoad][src-forgecommonevent-270]；[monitor.Manager.onWorldUnload][src-manager-662] |
-| 后台异步任务继续使用世界，或设备需要离线执行但没有票据 | 操作期间被卸载，任务碰到关闭的 IO | 主线程显式租约及配对释放；需要区块运行再使用有效区块票据；[DimensionManager.keepAlive][src-dimensionmanager-619]；[DimensionManager.Lease.close][src-dimensionmanager-1097]；[DimensionTicketsMixin.gtolib$hasActiveTickets][src-dimensionticketsmixin-28] |
-| 在休眠世界上新增自有/Forge 强加载，只做普通 getLevel 查询 | 元数据记录成功但世界没被唤醒，重启索引缺失 | 在有效性、权限、在线/过期策略检查后接入加载；更新可发现的持久化候选，避免全库扫描；[DimensionManager.loadFor][src-dimensionmanager-558]；[DimensionManager.updateForcedIndex][src-dimensionmanager-814]；[DimensionForgeTicketsMixin.gtolib$persistForcedDimension][src-dimensionforgeticketsmixin-24]；[RestartProbe.started][src-restartprobe-28] |
-| 传送绕开现有登录/重生/ServerPlayer 入口或有玩家乘客 | 未授权、未同步或把玩家送入初始化中的世界 | 接入 `loadFor`、当前对象守卫与进入前同步；检查整个玩家乘客树；[DimensionManager.loadFor][src-dimensionmanager-558]；[DimensionManager.mayTransfer][src-dimensionmanager-573]；[DimensionSync.prepare][src-dimensionsync-73] |
-| 客户端维度列表永久缓存或要求所有历史实例一次同步 | 菜单陈旧、误判实例不存在、历史数量导致包膨胀 | 按需向服务器查询，连接缓存只留所需实例；[DimensionSync.Client.receive][src-dimensionsync-97]；[DimensionPlanetsMenuProviderMixin.writeExtraData][src-dimensionplanetsmenuprovidermixin-34]；[WeatherForecastUI.writeHolderToSyncData][src-weatherforecastui-99] |
-| 运行时新建 DimensionType/生成器 codec，或按静态星球 ID 取环境 | 客户端缺类型、环境不一致、存档无法重开 | 当前设计复用已注册类型；提前注册 codec，环境查询接入 Level/连接缓存；[ResolvedTemplate.createStem][src-resolvedtemplate-91]；[DimensionSync.PACKET][src-dimensionsync-30]；[LevelMixin.init][src-levelmixin-53]；[PlanetApiImplMixin.getPlanet][src-planetapiimplmixin-21] |
-| 生成器直接读全局 WorldOptions 种子 | `getSeed` 正确但实际地形/结构不一致 | 检查生成器构造与随机状态所有入口是否使用实例种子；[ServerLevelMixin.gtolib$instanceGenerationSeed][src-serverlevelmixin-36]；[ServerLevelMixin.gtolib$instanceSeed][src-serverlevelmixin-41]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238] |
-| 吞掉保存异常、另外异步写文件、修改 SavedData dirty 或覆写区域关闭 | 保存未完成却卸载，失败后无法重试 | 检查是否落在受检查作用域内，等待真实写入完成并传播失败；[DimensionSaveAttempt.fail][src-dimensionsaveattempt-34]；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionIOWorkerMixin.gtolib$awaitUnloadWrite][src-dimensionioworkermixin-28]；[DimensionIOWorkerMixin.gtolib$propagateCloseFailure][src-dimensionioworkermixin-39] |
-| 覆写相同方法或升级后更改 lambda/方法签名 | Mixin 冲突、注入失效、启动失败 | 核对 Minecraft/Forge 及依赖版本的目标方法，验证启动及关键路径；[DimensionServerMixin][src-dimensionservermixin-64]；[DimensionPlayerListMixin][src-dimensionplayerlistmixin-32]；[DimensionPlanetPacketMixin][src-dimensionplanetpacketmixin-25]；[DimensionSpatialStorageMixin][src-dimensionspatialstoragemixin-19] |
-| 直接操作原版天气字段或仅通过非主世界天气 API 修改 | 写入不影响本系统，天气包相互覆盖 | 按天气入口规则适配，不能继续依赖原版日程字段；[LevelWeatherMixin][src-levelweathermixin-15]；[ServerLevelWeatherMixin][src-serverlevelweathermixin-12]；[WeatherSystem.change][src-weathersystem-216] |
+新增兼容入口应先判断它是查询元数据还是要操作区块：前者用 `metadataStorage` / 描述，后者先授权、显式加载并按任务持租约。不要永久缓存 Level、区块实体或处理器；不要假设 `getAllLevels()` 是所有历史世界；不要在一次实例卸载中清空其他世界的全局数据。GTM / AE2 内部行为修复的位置仍按 [fork 修改位置](forked-dependencies.md) 判断，本图记录既有实现，不要求继续新增 Mixin。项目固定数据包，不承诺 `/reload` 重建动态定义。
 
-当前数据包按项目约束固定，不承诺 `/reload` 重新登记或迁移全部动态定义。新增依赖若要求运行时重载注册表，需要单独决定支持范围。（[编码规范：数据包与重载][src-coding_guidelines.md-147]；[DimensionManager.restoreStartup][src-dimensionmanager-715]）
+## 7. 操作与验证入口
 
-## 6. 操作入口与验证
-
-管理指令根为 `/gtocore dimensions`，全部要求权限等级 2。（[DimensionCommands.create][src-dimensioncommands-78]）
+管理命令由 [GTOCommands] 接入 [DimensionCommands]，根为 `/gtocore dimensions`，均要求权限等级 2。
 
 | 参数 | 作用 |
 |---|---|
-| `templates` | 列出模板和版本；[DimensionCommands.create][src-dimensioncommands-78]；[DimensionCatalog.templates][src-dimensioncatalog-43] |
-| `private create player\|team <UUID> <模板> [槽位 [种子]]` | 创建描述；默认槽位 `main`，不生成地形；[DimensionCommands.privateCreate][src-dimensioncommands-178] |
-| `series create <系列ID> [模板 [基础种子 [player\|team <UUID>]]]` | 登记系列；默认噪声模板，无归属时公开；[DimensionCommands.createSeries][src-dimensioncommands-188] |
-| `series enter <系列ID> <long序号> [玩家选择器]` | 授权后取得/创建该地址并进入安全出生点；[DimensionCommands.enterSeries][src-dimensioncommands-198] |
-| `info <维度ID>`、`list [页码]` | 查询状态、种子、归属、保活原因与历史分页；每页 10 条；[DimensionCommands.showInfo][src-dimensioncommands-248]；[DimensionCommands.list][src-dimensioncommands-238] |
-| `tp <维度ID> [玩家选择器]` | 安全出生策略传送；[DimensionCommands.teleport][src-dimensioncommands-221] |
-| `grant\|revoke <维度ID> <访客UUID>` | 持久化访客授权或撤销，撤销后复查在线玩家；[DimensionCommands.create][src-dimensioncommands-78]；[DimensionManager.grant][src-dimensionmanager-397] |
-| `load\|unload <维度ID>` | 显式加载或申请安全卸载；[DimensionCommands.create][src-dimensioncommands-78]；[DimensionManager.loadNow][src-dimensionmanager-540]；[DimensionManager.requestUnload][src-dimensionmanager-637] |
+| `templates` | 列模板及版本 |
+| `private create player\|team <UUID> <模板> [槽位 [种子]]` | 创建描述；默认槽位 `main`，不生成地形 |
+| `series create <系列ID> [模板 [基础种子 [player\|team <UUID>]]]` | 登记系列，无归属时公开 |
+| `series enter <系列ID> <long序号> [玩家选择器]` | 授权后创建或取得实例并安全进入 |
+| `info <维度ID>` / `list [页码]` | 状态、种子、归属、租约及历史分页；命令每页 10 条 |
+| `tp <维度ID> [玩家选择器]` | 安全出生点传送 |
+| `grant\|revoke <维度ID> <访客UUID>` | 持久化授权/撤销并复查在线权限 |
+| `load\|unload <维度ID>` | 显式加载/申请安全卸载；不是删除命令 |
 
-相关检查包括 [DimensionLifecycleTest][src-dimensionlifecycletest-10]、[DimensionInstanceStoreTest][src-dimensioninstancestoretest-30]、[WeatherTimelineTest][src-weathertimelinetest-35]，以及显式启用的 `src/dimensionTest` Forge 探针。验证应覆盖重复开关世界、初始化重入、保存期间重新占用、保存失败与关闭失败、授权拒绝不加载、种子/出生点/冻结定义恢复、有界缓存、真实历史格式迁移及专用/集成服务器进入顺序。（[DimensionProbe][src-dimensionprobe-29]；[NetworkProbe][src-networkprobe-19]；[RestartProbe][src-restartprobe-19]；[CloseProbe][src-closeprobe-20]）
-
-执行 Gradle 前按 [AGENTS.md](../AGENTS.md) 设置并确认有效 JDK 21。生产代码修改应按范围完成编译、Spotless 和相关测试；修改 GTOLib 后按 [GTOLib 构建要求](gtolib.md) 在收尾运行 `buildGtolibProtected`，文档修改不需要构建。（[探针 sourceSet 注册][src-dimensions-probe.gradle-2]）
+类与覆盖范围见 [测试和隔离探针图](dimension-class-map.md#map-tests)。纯文档更新不运行 Gradle；修改生产代码后按 [AGENTS.md](../AGENTS.md) 设置有效 JDK 21、执行相称编译、格式和相关测试；修改 GTOLib 代码必须在收尾通过 `buildGtolibProtected`。
 
 ```powershell
 $env:JAVA_HOME = '<JDK_21_HOME>'
 if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid JDK 21 required' }
 .\gradlew.bat spotlessApply spotlessCheck test --tests 'com.gtolib.api.dimension.*' --tests 'com.gtolib.api.weather.WeatherTimelineTest' -PgtolibUnprotected=true
-# 单服隔离探针；配置与 EULA 准备好后执行
+# 配置与 EULA 准备好后，在隔离目录运行 Forge 探针
 .\gradlew.bat runServer -I gradle/scripts/dimensions-probe.gradle -PgtolibUnprotected=true -PdimensionProbeFTB=false
 ```
 
-明文测试只消费编译输出。`gradle.properties` 中的 `kotlin.build.archivesTaskOutputAsFriendModule=false` 让 Kotlin 测试通过 main 编译目录访问同模块代码，避免间接触发发行打包；仓库禁止将明文 GTOLib 打进发行 jar。
+探针开关以 [dimensions-probe.gradle](../gradle/scripts/dimensions-probe.gradle) 和 [DimensionProbe] 的实际分派为准。默认根目录 `build/dimensions-test`，可用 `-PdimensionProbeDir=<隔离目录>` 指定；服务端端口 25577，`online-mode=false` 仅用于本地测试。保持隔离配置 `residentDimensions=[]`，按结果文件和断言判断通过，不只看 Gradle 退出码。
 
-探针默认目录为 `build/dimensions-test/server`，可用 `-PdimensionProbeDir=<测试根目录>` 指定隔离位置。端口为 25577，`online-mode=false` 仅用于本地测试。生命周期探针假定启动时仅主世界常驻，应保持隔离配置 `residentDimensions` 为空。（[探针目录配置][src-dimensions-probe.gradle-21]；[runServer 探针配置][src-dimensions-probe.gradle-30]；[DimensionProbe.started][src-dimensionprobe-83]）
+| 验证目标 | 开关 / 入口 |
+|---|---|
+| 生命周期、授权、重新占用、元数据与远程设备 | 默认 `DimensionProbe` + `IntegrationPaths` |
+| 长期休眠、昼夜倍率、暂停、锁时、局部改时、预报不加载地形 | `-PdimensionDaylightProbe=true` |
+| 两次启动验证磁盘强加载、候选提交顺序和恢复 | `-PdimensionRestartProbe=true`；无 FTB 核心场景再加 `-PdimensionRestartCoreProbe=true -PdimensionProbeFTB=false` |
+| 注入写入失败后异常退出，再启动核对旧文件与磁盘票据 | `-PdimensionCrashProbe=true`，运行两次 |
+| 关闭失败、POISONED 与拒绝重开 | `-PdimensionCloseProbe=true` |
+| 专服双客户端环境隔离和进入顺序 | `-PdimensionNetworkProbe=true`，客户端分别指定 `DimensionA` / `DimensionB` 的 `-PdimensionClientName` |
 
-联机探针增加 `-PdimensionNetworkProbe=true`，在两个客户端分别指定 `-PdimensionClientName=DimensionA` / `DimensionB`；关闭故障探针用 `-PdimensionCloseProbe=true`。重启探针用 `-PdimensionRestartProbe=true` 执行两次服务器启动，核心无 FTB 场景再加 `-PdimensionRestartCoreProbe=true -PdimensionProbeFTB=false`。以各探针结果文件和断言为准，不能只看 Gradle 退出码，也不能把预期注入的保存失败日志当作通过证明。（[服务端探针开关][src-dimensions-probe.gradle-30]；[双客户端探针配置][src-dimensions-probe.gradle-58]；[NetworkProbe.root][src-networkprobe-26]；[NetworkProbe.result][src-networkprobe-30]；[CloseProbe.started][src-closeprobe-31]；[RestartProbe.started][src-restartprobe-28]；[DimensionProbe.fail][src-dimensionprobe-265]）
+当前 checkout 的验证边界仍需保留：`dimensionSuggestionsProbe` 分派所需实现类缺失；完整 FTB 重启场景包含尚未实现的休眠强加载入口。历史隔离运行记录还包含 LeanObject AEKey 启动冲突、加密模式 `AddonFinderMixin` 类加载失败及客户端 datagen 的 gtceu:cover 冻结中断；这些应在目标依赖组合实测，不能用保护构建成功替代游戏运行，也不能宣称客户端画面或集成服务器已验收。
 
-当前验证材料仍有需要核对的边界：完整 FTB 场景要求尚未实现的休眠强加载入口，`dimensionSuggestionsProbe` 的实现类在当前 checkout 缺失。（[RestartProbe.started：休眠 FTB 强加载断言][src-restartprobe-57]；[DimensionProbe 构造器][src-dimensionprobe-50]）
+schema 2 迁移单测依赖 `src/test/resources/saved-data/schema-2/` 的真实旧文件；样本缺失时不能宣称验证了历史迁移。此次更新只核对源码、分支类清单、文档链接与图表，不新增编译、服务器或客户端验收结论。
 
-同步到 `0.6.0` 时，已将维度和天气测试迁移到当前 DataSyncLib API，并按 schema 3 的实际位置调整断言。`src/test/resources/saved-data/schema-2/` 已补入 2026-10-07 隔离服务器实际写出的目录、实例和两种天气样本；旧 pending 测试仍修改样本的 kind 字节，验证实际历史信封。JDK 21 下 Java/Kotlin 编译、隔离探针编译、Spotless 和 56 项相关测试通过，包括版本化 `FastSavedData` 编码/原子提交失败后保留旧文件及 dirty，以及损坏 GZIP 头部读取失败后关闭文件句柄。标准单模组 `runData` 已实际回写语言和模型；该隔离 datagen 目录按天气文档关闭 LeanObject 的 AEKey 优化，以避开与 AE2 fork 的既有 Mixin 冲突。`buildGtolibProtected` 与普通 `build` 均通过，保护模式使用 protected jar 的 named 接口字节码完成测试编译，相关测试已在明文模式单独执行。新目录的服务端探针在 EULA 检查处退出，维度开关实测尚未执行。
-
-### dynamic-dim2 迁移（2026-10-16）
-
-主仓从 `0.6.0` 的 `bf42d6cae` 创建 `dynamic-dim2`，保留该分支历史，只迁入 `dynamic-dim` 的动态维度、天气及相关适配增量。GTOLib 保持 `dynamic-dim` 分支，并合入其 `0.6.0` 的 `bf3e6ec0`，保留新版主仓所需接口与保护规则。网络维度标识统一使用 `ByteBufCodecExtends.RESOURCE_LOCATION_CODEC`；客户端天气和玩家重生同步改用显式事件注册。维度开关使用完整配置翻译路径，避免与包头索引开关同名。
-
-JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单模组 `runData`、GTOLib 两条保护轨及主仓完整 `build` 通过。保护模式下的测试编译、引用映射和继承契约检查也通过；单测在明文模式单独执行。完整构建暴露的新版主菜单私有 lambda 与原版方法重映射重名问题，已通过等价的方法引用回调修复。生成的三种语言及预报仪模型已核对实际写入时间。本次未执行游戏内客户端画面与维度开关验收。
-
-[src-dimensionmanager-57]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L57
-[src-forgecommonevent-414]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L414
-[src-weathersystem-33]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L33
-[src-dimensionmanager-243]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L243
-[src-dimensionmanager-431]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L431
-[src-dimensionmanager-822]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L822
-[src-dimensionservermixin-142]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L142
-[src-dimensionmanager-903]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L903
-[src-dimensionmanager-199]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L199
-[src-dimensioncompatibility-23]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCompatibility.java#L23
-[src-dimensionservermixin-238]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L238
-[src-instancekey-53]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceKey.java#L53
-[src-dimensionmanager-263]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L263
-[src-dimensionmanager-314]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L314
-[src-dimensionmanager-655]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L655
-[src-dimensionmanager-81]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L81
-[src-dimensionservermixin-130]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L130
-[src-dimensionmanager-61]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L61
-[src-dimensioncatalog-17]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L17
-[src-instancestore-24]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L24
-[src-instancestore-210]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L210
-[src-instancestore-154]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L154
-[src-dimensionmanager-1056]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1056
-[src-dimensionmanager-1073]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1073
-[src-instancestore-116]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L116
-[src-dimensionmanager-64]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L64
-[src-dimensionmanager-65]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L65
-[src-dimensionmanager-1041]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1041
-[src-dimensionservermixin-251]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L251
-[src-dimensionmanager-154]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L154
-[src-levelmixin-53]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelMixin.java#L53
-[src-manager-59]: ../src/main/java/com/gtocore/common/machine/monitor/Manager.java#L59
-[src-weathersystem-85]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L85
-[src-dimensionruntimecaches-31]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRuntimeCaches.java#L31
-[src-dimensionruntimecaches-51]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRuntimeCaches.java#L51
-[src-dimensionsync-127]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L127
-[src-instancekey-29]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceKey.java#L29
-[src-instancekey-42]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceKey.java#L42
-[src-instancekey-57]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceKey.java#L57
-[src-instancestore-78]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L78
-[src-seriesdefinition-41]: ../GTOLib/src/main/java/com/gtolib/api/dimension/SeriesDefinition.java#L41
-[src-seriesaddress-31]: ../GTOLib/src/main/java/com/gtolib/api/dimension/SeriesAddress.java#L31
-[src-resolvedtemplate-44]: ../GTOLib/src/main/java/com/gtolib/api/dimension/ResolvedTemplate.java#L44
-[src-resolvedtemplate-91]: ../GTOLib/src/main/java/com/gtolib/api/dimension/ResolvedTemplate.java#L91
-[src-dimensioncatalog-72]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L72
-[src-dimensioncatalog-106]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L106
-[src-dimensionmanager-1050]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1050
-[src-dimensionservermixin-233]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L233
-[src-dimensionservermixin-220]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L220
-[src-dimensionmanager-113]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L113
-[src-dimensionmanager-285]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L285
-[src-dimensionstations-37]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L37
-[src-weathersystem-205]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L205
-[src-dimensionmanager-558]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L558
-[src-dimensionmanager-595]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L595
-[src-dimensionmanager-540]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L540
-[src-dimensionservermixin-191]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L191
-[src-dimensiontemplates-37]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionTemplates.java#L37
-[src-dimensionmanager-715]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L715
-[src-gtoconfig-189]: ../src/main/java/com/gtocore/config/GTOConfig.java#L189
-[src-dimensionmanager-885]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L885
-[src-dimensionlifecycle-49]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L49
-[src-instanceleveldata-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L13
-[src-dimensionmanager-946]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L946
-[src-dimensionlifecycle-62]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L62
-[src-dimensionmanager-573]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L573
-[src-serverlevelmixin-36]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L36
-[src-serverlevelmixin-41]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L41
-[src-dimensionmanager-958]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L958
-[src-dimensionmanager-876]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L876
-[src-dimensionlifecycle-75]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L75
-[src-dimensionlifecycle-200]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L200
-[src-dimensionservermixin-258]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L258
-[src-dimensionmanager-758]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L758
-[src-dimensionmanager-897]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L897
-[src-dimensionlifecycle-40]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L40
-[src-dimensionticketsmixin-28]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionTicketsMixin.java#L28
-[src-dimensionmanager-619]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L619
-[src-dimensionlifecycle-90]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L90
-[src-dimensionlifecycle-104]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L104
-[src-dimensionlifecycle-124]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L124
-[src-dimensionmanager-637]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L637
-[src-dimensionconstructpacketmixin-24]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionConstructPacketMixin.java#L24
-[src-dimensionspatialexchangemixin-21]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialExchangeMixin.java#L21
-[src-dimensionvehiclemixin-41]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionVehicleMixin.java#L41
-[src-dimensionvehiclemixin-66]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionVehicleMixin.java#L66
-[src-rocketmixin-17]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/RocketMixin.java#L17
-[src-landermixin-18]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/LanderMixin.java#L18
-[src-dimensionmanager-325]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L325
-[src-dimensionmanager-397]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L397
-[src-dimensionmanager-782]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L782
-[src-dimensionsync-157]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L157
-[src-dimensionstations-53]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L53
-[src-dimensionsaveattempt-20]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSaveAttempt.java#L20
-[src-dimensionsaveddatamixin-36]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionSavedDataMixin.java#L36
-[src-dimensionioworkermixin-28]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionIOWorkerMixin.java#L28
-[src-dimensionlifecycle-158]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L158
-[src-dimensionsync-30]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L30
-[src-networkpack-18]: ../GTOLib/src/main/java/com/gtolib/api/network/NetworkPack.java#L18
-[src-dimensionplayerlistmixin-51]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L51
-[src-dimensionmanager-122]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L122
-[src-dimensionplayerlistmixin-62]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L62
-[src-dimensionsync-73]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L73
-[src-dimensionplayerlistmixin-69]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L69
-[src-dimensionplayermixin-45]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L45
-[src-dimensionplayermixin-59]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L59
-[src-dimensionplayermixin-75]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L75
-[src-forgecommonevent-371]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L371
-[src-forgecommonevent-399]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L399
-[src-forgecommonevent-409]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L409
-[src-weathersystem-228]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L228
-[src-weathersystem-248]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L248
-[src-dimensionargumentmixin-35]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionArgumentMixin.java#L35
-[src-dimensionplanetsmenuprovidermixin-34]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetsMenuProviderMixin.java#L34
-[src-weatherforecastui-99]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherForecastUI.java#L99
-[src-weatherforecastui-250]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherForecastUI.java#L250
-[src-dimensionenvironment-15]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionEnvironment.java#L15
-[src-dimensionsync-97]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L97
-[src-fromservermessage-70]: ../GTOLib/src/main/java/com/gtolib/network/FromServerMessage.java#L70
-[src-message-77]: ../src/main/java/com/gtocore/client/Message.java#L77
-[src-weathersystem-109]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L109
-[src-weatherstate-20]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherState.java#L20
-[src-dimensionsync-58]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L58
-[src-gtodimensions-57]: ../GTOLib/src/main/java/com/gtolib/api/data/GTODimensions.java#L57
-[src-weatherprofiles-32]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherProfiles.java#L32
-[src-dimensionsync-85]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L85
-[src-networkprobe-21]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/NetworkProbe.java#L21
-[src-dimensioncatalog-30]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L30
-[src-instancestore-205]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L205
-[src-dimensionmanager-928]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L928
-[src-dimensiondatacodecs-37]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataCodecs.java#L37
-[src-dimensiondatacodecs-20]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataCodecs.java#L20
-[src-dimensioncatalog-147]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L147
-[src-dimensiondatacodecs-50]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataCodecs.java#L50
-[src-dimensioncatalog-126]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L126
-[src-dimensiondataio-83]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L83
-[src-dimensiondatacodecs-67]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataCodecs.java#L67
-[src-instancestore-138]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L138
-[src-instancestore-183]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L183
-[src-instancestore-173]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L173
-[src-weathersystem-283]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L283
-[src-weatherdataio-67]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L67
-[src-weathertimeline-188]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherTimeline.java#L188
-[src-instanceweatherdata-71]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L71
-[src-weatherdataio-80]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L80
-[src-dimensionspatialstoragemixin-29]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialStorageMixin.java#L29
-[src-iostreamcodecs-30]: ../GTOLib/src/main/java/com/gtolib/utils/iostream/IOStreamCodecs.java#L30
-[src-dimensionlifecycle-11]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L11
-[src-instanceleveldata-94]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L94
-[src-dimensionmanager-1033]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1033
-[src-instanceleveldata-104]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L104
-[src-instanceleveldata-114]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L114
-[src-instanceleveldata-124]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L124
-[src-instanceleveldata-134]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L134
-[src-dimensionmanager-794]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L794
-[src-dimensionservermixin-265]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L265
-[src-weathersystem-149]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L149
-[src-dimensiondataio-120]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L120
-[src-instancestore-35]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L35
-[src-dimensionmanager-915]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L915
-[src-dimensionmanager-744]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L744
-[src-dimensiondataio-79]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L79
-[src-dimensiondataio-113]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L113
-[src-fastsaveddata-46]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L46
-[src-levelweathermixin-22]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L22
-[src-serverlevelweathermixin-19]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L19
-[src-fastsaveddata-54]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L54
-[src-fileutils-144]: ../GTOLib/src/main/java/com/gtolib/utils/FileUtils.java#L144
-[src-dimensiondataio-38]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L38
-[src-dimensiondataio-102]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L102
-[src-dimensiondataio-56]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L56
-[src-dimensiondatafixes-20]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L20
-[src-dimensiondatafixes-27]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L27
-[src-dimensiondatafixes-87]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L87
-[src-weatherdataio-35]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L35
-[src-weatherdataio-43]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L43
-[src-dimensiondataio-128]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L128
-[src-dimensiondataio-133]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L133
-[src-fastsaveddata-32]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L32
-[src-fileutils-180]: ../GTOLib/src/main/java/com/gtolib/utils/FileUtils.java#L180
-[src-weathertimeline-203]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherTimeline.java#L203
-[src-dimensionchunksavemixin-24]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionChunkSaveMixin.java#L24
-[src-dimensionentitysavemixin-23]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionEntitySaveMixin.java#L23
-[src-dimensionioworkermixin-39]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionIOWorkerMixin.java#L39
-[src-serverlevelmixin-59]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L59
-[src-serverlevelmixin-69]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L69
-[src-levelweathermixin-29]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L29
-[src-levelweathermixin-38]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L38
-[src-levelweathermixin-47]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L47
-[src-levelweathermixin-56]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L56
-[src-levelweathermixin-65]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L65
-[src-levelweathermixin-75]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L75
-[src-levelweathermixin-85]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L85
-[src-serverlevelweathermixin-26]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L26
-[src-serverlevelweathermixin-40]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L40
-[src-levelweathermixin-15]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L15
-[src-serverlevelweathermixin-12]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L12
-[src-dimensionplayerlistmixin-37]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L37
-[src-dimensionplayermixin-31]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L31
-[src-dimensionargumentmixin-60]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionArgumentMixin.java#L60
-[src-serverlevelmixin-46]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L46
-[src-levelmixin-100]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelMixin.java#L100
-[src-dimensionticketaccessor-12]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionTicketAccessor.java#L12
-[src-dimensionvehiclemixin-80]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionVehicleMixin.java#L80
-[src-dimensionforgeticketsmixin-24]: ../GTOLib/src/main/java/com/gtolib/mixin/forge/DimensionForgeTicketsMixin.java#L24
-[src-dimensionspatialstoragemixin-43]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialStorageMixin.java#L43
-[src-dimensionplanetpacketmixin-31]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetPacketMixin.java#L31
-[src-dimensionstationpacketmixin-25]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionStationPacketMixin.java#L25
-[src-dimensionstationaccessor-16]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionStationAccessor.java#L16
-[src-planetapiimplmixin-21]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/PlanetApiImplMixin.java#L21
-[src-planetapiimplmixin-30]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/PlanetApiImplMixin.java#L30
-[src-planetapiimplmixin-39]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/PlanetApiImplMixin.java#L39
-[src-planetapiimplmixin-50]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/PlanetApiImplMixin.java#L50
-[src-oxygenapiimplmixin-19]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/OxygenApiImplMixin.java#L19
-[src-temperatureapiimplmixin-19]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/TemperatureApiImplMixin.java#L19
-[src-gravityapiimplmixin-19]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/GravityApiImplMixin.java#L19
-[src-modutilsmixin-71]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/ModUtilsMixin.java#L71
-[src-dimensionremotekeytargetmixin-56]: ../src/main/java/com/gtocore/mixin/gtm/DimensionRemoteKeyTargetMixin.java#L56
-[src-dimensionremotekeytargetmixin-72]: ../src/main/java/com/gtocore/mixin/gtm/DimensionRemoteKeyTargetMixin.java#L72
-[src-dimensionremotekeytargetmixin-85]: ../src/main/java/com/gtocore/mixin/gtm/DimensionRemoteKeyTargetMixin.java#L85
-[src-dimensionmanager-1110]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1110
-[src-dimensionmanager-1115]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1115
-[src-dimensionsync-134]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L134
-[src-dimensionstations-83]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L83
-[src-restartprobe-57]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/RestartProbe.java#L57
-[src-voidtransportermachine-46]: ../src/main/java/com/gtocore/common/machine/multiblock/electric/voidseries/VoidTransporterMachine.java#L46
-[src-serverutils-59]: ../GTOLib/src/main/java/com/gtolib/utils/ServerUtils.java#L59
-[src-serverutils-74]: ../GTOLib/src/main/java/com/gtolib/utils/ServerUtils.java#L74
-[src-forgecommonevent-270]: ../GTOLib/src/main/java/com/gtolib/forge/ForgeCommonEvent.java#L270
-[src-manager-662]: ../src/main/java/com/gtocore/common/machine/monitor/Manager.java#L662
-[src-instanceweatherdata-40]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L40
-[src-weatherritualmixin-16]: ../src/main/java/com/gtocore/mixin/arsnouveau/WeatherRitualMixin.java#L16
-[src-dimensionspatialstoragemixin-19]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialStorageMixin.java#L19
-[src-dimensionremotekeytargetmixin-28]: ../src/main/java/com/gtocore/mixin/gtm/DimensionRemoteKeyTargetMixin.java#L28
-[src-dimensionmanager-1097]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1097
-[src-dimensionmanager-814]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L814
-[src-restartprobe-28]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/RestartProbe.java#L28
-[src-dimensionsaveattempt-34]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSaveAttempt.java#L34
-[src-dimensionservermixin-64]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L64
-[src-dimensionplayerlistmixin-32]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L32
-[src-dimensionplanetpacketmixin-25]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetPacketMixin.java#L25
-[src-weathersystem-216]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L216
-[src-coding_guidelines.md-147]: ../CODING_GUIDELINES.md#L147
-[src-dimensioncommands-78]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L78
-[src-dimensioncatalog-43]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L43
-[src-dimensioncommands-178]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L178
-[src-dimensioncommands-188]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L188
-[src-dimensioncommands-198]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L198
-[src-dimensioncommands-248]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L248
-[src-dimensioncommands-238]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L238
-[src-dimensioncommands-221]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L221
-[src-dimensionlifecycletest-10]: ../src/test/java/com/gtolib/api/dimension/DimensionLifecycleTest.java#L10
-[src-dimensioninstancestoretest-30]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L30
-[src-weathertimelinetest-35]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L35
-[src-dimensionprobe-29]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/DimensionProbe.java#L29
-[src-networkprobe-19]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/NetworkProbe.java#L19
-[src-restartprobe-19]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/RestartProbe.java#L19
-[src-closeprobe-20]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/CloseProbe.java#L20
-[src-dimensions-probe.gradle-2]: ../gradle/scripts/dimensions-probe.gradle#L2
-[src-dimensions-probe.gradle-21]: ../gradle/scripts/dimensions-probe.gradle#L21
-[src-dimensions-probe.gradle-30]: ../gradle/scripts/dimensions-probe.gradle#L30
-[src-dimensionprobe-83]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/DimensionProbe.java#L83
-[src-dimensions-probe.gradle-58]: ../gradle/scripts/dimensions-probe.gradle#L58
-[src-networkprobe-26]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/NetworkProbe.java#L26
-[src-networkprobe-30]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/NetworkProbe.java#L30
-[src-closeprobe-31]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/CloseProbe.java#L31
-[src-dimensionprobe-265]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/DimensionProbe.java#L265
-[src-dimensionprobe-50]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/DimensionProbe.java#L50
-[src-dimensioninstancestoretest-209]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L209
-[src-dimensioninstancestoretest-258]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L258
-[src-dimensioninstancestoretest-300]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L300
-[src-dimensioninstancestoretest-251]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L251
-[src-weathertimelinetest-200]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L200
-[src-instancedescriptor-22]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceDescriptor.java#L22
-[src-dimensionserver-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionServer.java#L13
-[src-resolvedtemplate-27]: ../GTOLib/src/main/java/com/gtolib/api/dimension/ResolvedTemplate.java#L27
-[src-dimensiontemplate-25]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionTemplate.java#L25
-[src-dimensiontemplates-15]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionTemplates.java#L15
-[src-instancekey-16]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceKey.java#L16
-[src-ownerref-14]: ../GTOLib/src/main/java/com/gtolib/api/dimension/OwnerRef.java#L14
-[src-seriesaddress-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/SeriesAddress.java#L13
-[src-seriesdefinition-18]: ../GTOLib/src/main/java/com/gtolib/api/dimension/SeriesDefinition.java#L18
-[src-instancestore-17]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L17
-[src-dimensiondatacodecs-9]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataCodecs.java#L9
-[src-dimensiondataio-28]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L28
-[src-dimensiondatafixes-16]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L16
-[src-dimensionsaveattempt-9]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSaveAttempt.java#L9
-[src-dimensionsync-28]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L28
-[src-dimensiontickets-6]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionTickets.java#L6
-[src-dimensionvehicle-6]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionVehicle.java#L6
-[src-dimensionruntimecaches-18]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRuntimeCaches.java#L18
-[src-dimensionremotetarget-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRemoteTarget.java#L13
-[src-dimensioncompatibility-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCompatibility.java#L13
-[src-dimensionstations-26]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L26
-[src-instanceweatherdata-20]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L20
-[src-networkpack-16]: ../GTOLib/src/main/java/com/gtolib/api/network/NetworkPack.java#L16
-[src-levelmixin-37]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelMixin.java#L37
-[src-fastsaveddata-21]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L21
-[src-serverlevelmixin-23]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L23
-[src-dimensionplayermixin-28]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L28
-[src-dimensionargumentmixin-32]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionArgumentMixin.java#L32
-[src-dimensionticketsmixin-19]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionTicketsMixin.java#L19
-[src-dimensionvehiclemixin-26]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionVehicleMixin.java#L26
-[src-dimensionsaveddatamixin-24]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionSavedDataMixin.java#L24
-[src-dimensionchunksavemixin-18]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionChunkSaveMixin.java#L18
-[src-dimensionentitysavemixin-17]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionEntitySaveMixin.java#L17
-[src-dimensionioworkermixin-25]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionIOWorkerMixin.java#L25
-[src-dimensionforgeticketsmixin-20]: ../GTOLib/src/main/java/com/gtolib/mixin/forge/DimensionForgeTicketsMixin.java#L20
-[src-dimensionspatialexchangemixin-18]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialExchangeMixin.java#L18
-[src-dimensionstationpacketmixin-22]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionStationPacketMixin.java#L22
-[src-dimensionconstructpacketmixin-21]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionConstructPacketMixin.java#L21
-[src-dimensionplanetsmenuprovidermixin-23]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetsMenuProviderMixin.java#L23
-[src-planetapiimplmixin-14]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/PlanetApiImplMixin.java#L14
-[src-oxygenapiimplmixin-12]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/OxygenApiImplMixin.java#L12
-[src-temperatureapiimplmixin-12]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/TemperatureApiImplMixin.java#L12
-[src-gravityapiimplmixin-12]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/GravityApiImplMixin.java#L12
-[src-rocketmixin-9]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/RocketMixin.java#L9
-[src-landermixin-10]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/LanderMixin.java#L10
-[src-modutilsmixin-30]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/ModUtilsMixin.java#L30
-[src-dimensionmanager-1108]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1108
-[src-dimensionsync-132]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L132
-[src-serverutils-19]: ../GTOLib/src/main/java/com/gtolib/utils/ServerUtils.java#L19
-[src-voidtransportermachine-32]: ../src/main/java/com/gtocore/common/machine/multiblock/electric/voidseries/VoidTransporterMachine.java#L32
-[src-weatherprofiles-15]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherProfiles.java#L15
-[src-dimensionmanager-1064]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1064
-[src-dimensionlifecycle-144]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L144
-[src-dimensionlifecycle-173]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L173
-[src-dimensionlifecycle-189]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L189
-[src-dimensiondataio-52]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L52
-[src-weathertimelinetest-92]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L92
-[src-weathertimelinetest-148]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L148
+[DimensionServer]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionServer.java#L13
+[DimensionServerMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L64
+[GTOConfig]: ../src/main/java/com/gtocore/config/GTOConfig.java#L35
+[DimensionManager]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L57
+[DimensionCompatibility]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCompatibility.java#L13
+[DimensionTemplates]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionTemplates.java#L16
+[DimensionTemplate]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionTemplate.java#L25
+[ResolvedTemplate]: ../GTOLib/src/main/java/com/gtolib/api/dimension/ResolvedTemplate.java#L27
+[DimensionEnvironment]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionEnvironment.java#L15
+[DimensionCatalog]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L17
+[SeriesAddress]: ../GTOLib/src/main/java/com/gtolib/api/dimension/SeriesAddress.java#L13
+[SeriesDefinition]: ../GTOLib/src/main/java/com/gtolib/api/dimension/SeriesDefinition.java#L18
+[InstanceKey]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceKey.java#L16
+[InstanceStore]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L18
+[Dimension]: ../GTOLib/src/main/java/com/gtolib/api/data/Dimension.java#L26
+[GTODimensions]: ../GTOLib/src/main/java/com/gtolib/api/data/GTODimensions.java#L19
+[ILevel]: ../GTOLib/src/main/java/com/gtolib/mc/ILevel.java#L18
+[LevelMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelMixin.java#L37
+[DimensionLifecycle]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L11
+[DimensionTicketsMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionTicketsMixin.java#L19
+[DimensionTicketAccessor]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionTicketAccessor.java#L12
+[DimensionVehicleMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionVehicleMixin.java#L26
+[RocketMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/RocketMixin.java#L9
+[LanderMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/LanderMixin.java#L10
+[DirectedTesseractMachine]: ../src/main/java/com/gtocore/common/machine/tesseract/DirectedTesseractMachine.java#L68
+[TesseractTargets]: ../src/main/java/com/gtocore/common/machine/tesseract/TesseractTargets.java#L13
+[DimensionRemoteTarget]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRemoteTarget.java#L13
+[DimensionRemoteKeyTargetMixin]: ../src/main/java/com/gtocore/mixin/gtm/DimensionRemoteKeyTargetMixin.java#L28
+[DimensionRuntimeCaches]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRuntimeCaches.java#L18
+[Manager]: ../src/main/java/com/gtocore/common/machine/monitor/Manager.java#L48
+[LibForgeCommonEvent]: ../GTOLib/src/main/java/com/gtolib/forge/ForgeCommonEvent.java#L112
+[DimensionDataCodecs]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataCodecs.java#L16
+[DimensionDataIO]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L30
+[LevelData]: ../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java#L18
+[DimensionSavedData]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSavedData.java#L19
+[FastSavedData]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L27
+[WeatherDataIO]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L19
+[InstanceWeatherData]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L8
+[DimensionSaveAttempt]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSaveAttempt.java#L9
+[DimensionSavedDataMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionSavedDataMixin.java#L23
+[DimensionChunkSaveMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionChunkSaveMixin.java#L18
+[DimensionEntitySaveMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionEntitySaveMixin.java#L17
+[DimensionIOWorkerMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionIOWorkerMixin.java#L25
+[DimensionSync]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L31
+[DimensionPlayerListMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L32
+[DimensionPlayerMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L28
+[CoreForgeCommonEvent]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L120
+[DimensionClock]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionClock.java#L6
+[DimensionLevelData]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLevelData.java#L17
+[InstanceLevelData]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L12
+[ServerLevelMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L25
+[DimensionTimePacketMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionTimePacketMixin.java#L16
+[DimensionClientClock]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionClientClock.java#L11
+[LibClientLevelMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ClientLevelMixin.java#L33
+[TimeCommandMixin]: ../src/main/java/com/gtocore/mixin/mc/TimeCommandMixin.java#L14
+[HappyWaterGodStatue]: ../src/main/java/com/gtocore/common/block/HappyWaterGodStatue.java#L96
+[LocalTimeCommandMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/ftblibrary/LocalTimeCommandMixin.java#L15
+[LocalSleepTimeMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mythicbotany/LocalSleepTimeMixin.java#L12
+[WeatherType]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherType.java#L6
+[WeatherTypes]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherTypes.java#L7
+[WeatherProfile]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherProfile.java#L4
+[WeatherProfiles]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherProfiles.java#L15
+[WeatherTimeline]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherTimeline.java#L9
+[WeatherSystem]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L38
+[WeatherState]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherState.java#L6
+[WeatherSync]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSync.java#L8
+[LevelWeatherMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L12
+[LibServerLevelWeatherMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L11
+[SolarStormHandler]: ../src/main/java/com/gtocore/integration/ae/SolarStormHandler.java#L26
+[WeatherRitualMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/arsnouveau/WeatherRitualMixin.java#L13
+[WeatherClient]: ../GTOLib/src/main/java/com/gtolib/api/weather/client/WeatherClient.java#L18
+[ClientLevelWeatherMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/client/ClientLevelWeatherMixin.java#L12
+[LevelRendererWeatherMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/client/LevelRendererWeatherMixin.java#L17
+[GTOItems]: ../src/main/java/com/gtocore/common/data/GTOItems.java#L91
+[WeatherForecastItem]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherForecastItem.java#L18
+[WeatherForecastUI]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherForecastUI.java#L58
+[LangHandler]: ../src/main/java/com/gtocore/data/lang/LangHandler.java#L55
+[MiscRecipe]: ../src/main/java/com/gtocore/data/recipe/MiscRecipe.java#L56
+[GTOCommands]: ../src/main/java/com/gtocore/common/data/GTOCommands.java#L53
+[DimensionCommands]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L42
+[Message]: ../src/main/java/com/gtocore/client/Message.java#L43
+[PatternTravelTarget]: ../src/main/java/com/gtocore/eio_travel/implementations/PatternTravelTarget.java#L38
+[DimensionStations]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L26
+[DimensionStationAccessor]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionStationAccessor.java#L16
+[DimensionPlanetsMenuProviderMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetsMenuProviderMixin.java#L23
+[DimensionPlanetPacketMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetPacketMixin.java#L25
+[DimensionStationPacketMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionStationPacketMixin.java#L22
+[DimensionConstructPacketMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionConstructPacketMixin.java#L21
+[ServerboundLandOnSpaceStationPacketMixin]: ../src/main/java/com/gtocore/mixin/adastra/ServerboundLandOnSpaceStationPacketMixin.java#L14
+[ModUtilsMixin]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/ModUtilsMixin.java#L30
+[ServerUtils]: ../GTOLib/src/main/java/com/gtolib/utils/ServerUtils.java#L19
+[VoidTransporterMachine]: ../src/main/java/com/gtocore/common/machine/multiblock/electric/voidseries/VoidTransporterMachine.java#L32
+[DimensionSpatialStorageMixin]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialStorageMixin.java#L19
+[DimensionSpatialExchangeMixin]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialExchangeMixin.java#L18
+[DimensionProbe]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/DimensionProbe.java#L29
+[CelestialBody]: ../GTOLib/src/main/java/com/gtolib/api/data/CelestialBody.java
+[NetworkPack]: ../GTOLib/src/main/java/com/gtolib/api/network/NetworkPack.java
