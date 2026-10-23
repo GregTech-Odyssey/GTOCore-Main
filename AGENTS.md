@@ -20,7 +20,7 @@
 | 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 | 修改天气类型、天体天气行为、天气指令或天气预报 | [星系天气](docs/galaxy-weather.md) |
-| 修改动态维度生命周期、同步、兼容适配、实例元数据或天气存盘结构 | [动态维度系统](docs/dimensions.md) |
+| 修改动态维度生命周期、昼夜时钟、同步、兼容适配、实例元数据或天气存盘结构 | [动态维度系统](docs/dimensions.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
@@ -80,6 +80,9 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 用 `git reset` / `git checkout --` / 合并 / 手工改写动过生成文件后再跑 `runData` 可能空转（成功但文件没变）：按 `docs/generated-resources.md` 删掉含 `Registrate Provider for gtocore` 的 `.cache` 清单并加 `--rerun-tasks`；跑完对比文件 mtime 确认真的写了。
 
 ## GTOLib 与构建产物安全
+
+- 天气日程与昼夜时间统一放在 GTOLib 的 `LevelData`，按维度写入同一个 `data/gtolib_level.dat`；不要重新拆成独立天气或时钟存储。旧档导入与原子保存流程见 [动态维度系统](docs/dimensions.md)。
+- 修改昼夜或天气推进时，维度卸载后仍须继续模拟；用有效 tick 锚点补算昼夜、沿原随机状态补齐天气，不加载地形或遍历动态历史。改变时间的道具、睡眠和快捷命令仅影响所在维度，第三方原版时间包也须保留该维度的速率与余量。
 
 - 动态维度存盘改动须保持单文件原子提交、pending 仅修复索引尾记录，以及强加载候选在 `chunks.dat` 提交后才能移除的顺序；崩溃边界与隔离探针见 [动态维度系统](docs/dimensions.md)。
 

@@ -15404,7 +15404,7 @@
   "gtocore.weather.forecast_paused": "已暂停",
   "gtocore.weather.forecast_range": "%s至%s",
   "gtocore.weather.forecast_running": "正常推进",
-  "gtocore.weather.forecast_scale_hint": "短刻度3小时，长刻度12小时；太阳为日出，月亮为日落",
+  "gtocore.weather.forecast_scale_hint": "短刻度3小时，长刻度12小时；上箭头为日出，下箭头为日落",
   "gtocore.weather.forecast_sunrise": "日出",
   "gtocore.weather.forecast_sunset": "日落",
   "gtocore.weather.forecast_time": "+%s时%s分",

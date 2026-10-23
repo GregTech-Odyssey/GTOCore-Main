@@ -921,12 +921,10 @@ public final class HappyWaterGodStatue extends HorizontalDirectionalBlock implem
     }
 
     private static void midnight(ServerLevel level) {
-        for (ServerLevel each : level.getServer().getAllLevels()) {
-            long now = each.getDayTime();
-            long target = now - Math.floorMod(now, 24000L) + 18000L;
-            if (target < now) target += 24000L;
-            each.setDayTime(target);
-        }
+        long now = level.getDayTime();
+        long target = now - Math.floorMod(now, 24000L) + 18000L;
+        if (target < now) target += 24000L;
+        level.setDayTime(target);
     }
 
     private static final class Ftb {

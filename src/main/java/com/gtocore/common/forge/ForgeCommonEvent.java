@@ -10,7 +10,6 @@ import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
-import com.gtocore.common.weather.WeatherSystem;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.data.techtree.BaseNodes;
@@ -63,7 +62,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -76,7 +74,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -382,12 +379,10 @@ public final class ForgeCommonEvent {
             TechTreeSavedData.sync(player);
             CelestialSavedData.sync(player);
             MEPatternBufferConnectionHandler.syncToPlayer(player);
-            WeatherSystem.get(player.server).sync(player);
         }
     }
 
     public static void onServerTickEvent(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) WeatherSystem.get(event.getServer()).tick();
         if (event.phase == TickEvent.Phase.END) {
             TeamResearchSavedData.syncIfNeeded(event.getServer());
             TechTreeSavedData.syncIfNeeded(event.getServer());
@@ -399,13 +394,14 @@ public final class ForgeCommonEvent {
             showVoidTimeHint(player);
             syncPlayerTime(player);
             MEPatternBufferConnectionHandler.syncToPlayer(player);
-            WeatherSystem.get(player.server).sync(player);
             // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
         }
     }
 
     public static void onPlayerRespawnEvent(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) WeatherSystem.get(player.server).sync(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            syncPlayerTime(player);
+        }
     }
 
     public static void onLevelLoad(LevelEvent.Load event) {
@@ -446,18 +442,14 @@ public final class ForgeCommonEvent {
     }
 
     public static void syncVoidWorldTime(MinecraftServer server) {
-        server.getPlayerList().getPlayers().stream()
-                .filter(player -> GTODimensions.isVoid(player.serverLevel().dimension()))
-                .forEach(ForgeCommonEvent::syncPlayerTime);
+        for (var player : server.getPlayerList().getPlayers()) {
+            if (GTODimensions.isVoid(player.serverLevel().dimension())) syncPlayerTime(player);
+        }
     }
 
     @SuppressWarnings("resource")
     private static void syncPlayerTime(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
-        boolean fixedTime = VoidWorldTimeSavedData.INSTANCE.isFixedTime() && GTODimensions.isVoid(level.dimension());
-        long dayTime = fixedTime ? 1000L : level.getDayTime();
-        boolean daylightCycle = !fixedTime && level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT);
-        player.connection.send(new ClientboundSetTimePacket(level.getGameTime(), dayTime, daylightCycle));
+        com.gtolib.api.dimension.DimensionSync.syncTime(player);
     }
 
     @RegisterLanguage(valuePrefix = "gtocore.lang", en = "Channel mode command banned in expert", cn = "在专家模式下，频道模式命令被禁止")

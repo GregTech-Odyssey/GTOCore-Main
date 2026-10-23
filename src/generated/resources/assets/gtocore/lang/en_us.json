@@ -8850,7 +8850,7 @@
   "gtocore.weather.forecast_paused": "Paused",
   "gtocore.weather.forecast_range": "%s to %s",
   "gtocore.weather.forecast_running": "Running",
-  "gtocore.weather.forecast_scale_hint": "Ticks: 3h / 12h; sun: sunrise; moon: sunset",
+  "gtocore.weather.forecast_scale_hint": "Ticks: 3h / 12h; up arrow: sunrise; down arrow: sunset",
   "gtocore.weather.forecast_sunrise": "Sunrise",
   "gtocore.weather.forecast_sunset": "Sunset",
   "gtocore.weather.forecast_time": "+%sh %sm",

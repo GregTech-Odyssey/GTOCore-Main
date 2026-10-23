@@ -123,7 +123,6 @@ public final class ClientProxy extends CommonProxy {
         KeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
-        WeatherClient.init();
         GTORender.init();
         DebugScreenInspector.init();
         MonitorRenderer.RenderedCacheClearer.init();

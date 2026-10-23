@@ -118,10 +118,6 @@ public final class GTOTitleScreen extends TitleScreen {
         if (copyright != null) addRenderableWidget(copyright);
     }
 
-    private static void openWiki(Button button) {
-        Util.getPlatform().openUri(WIKI_URL);
-    }
-
     @Override
     public void tick() {
         // This layout hides Realms, so do not start its notification overlay or warning screens.

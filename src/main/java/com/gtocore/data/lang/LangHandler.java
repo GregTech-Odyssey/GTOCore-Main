@@ -11,8 +11,6 @@ import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformTemplateStorage;
 import com.gtocore.data.quest.QuestBookContents;
-import com.gtocore.common.weather.WeatherTypes;
-import com.gtocore.common.weather.WeatherTypes;
 import com.gtocore.data.techtree.BaseNodes;
 import com.gtocore.data.transaction.data.GTOTrade;
 import com.gtocore.data.transaction.data.TradeLang;
@@ -36,6 +34,7 @@ import com.gtolib.api.registries.GTOMachineBuilder;
 import com.gtolib.api.registries.MultiblockBuilder;
 import com.gtolib.api.registries.ScanningClass;
 import com.gtolib.api.rule.RuleRegistry;
+import com.gtolib.api.weather.WeatherTypes;
 import com.gtolib.quest.QuestServerLang;
 import com.gtolib.utils.ChineseConverter;
 import com.gtolib.utils.register.BlockRegisterUtils;
@@ -88,7 +87,7 @@ public final class LangHandler {
         addCNEN("gtocore.weather.forecast_now", "现在", "Now");
         addCNEN("gtocore.weather.forecast_range", "%s至%s", "%s to %s");
         addCNEN("gtocore.weather.forecast_bar_hint", "天气条按持续时间着色；悬停查看天气与时段", "Colors show weather duration; hover for weather and times");
-        addCNEN("gtocore.weather.forecast_scale_hint", "短刻度3小时，长刻度12小时；太阳为日出，月亮为日落", "Ticks: 3h / 12h; sun: sunrise; moon: sunset");
+        addCNEN("gtocore.weather.forecast_scale_hint", "短刻度3小时，长刻度12小时；上箭头为日出，下箭头为日落", "Ticks: 3h / 12h; up arrow: sunrise; down arrow: sunset");
         addCNEN("gtocore.weather.forecast_sunrise", "日出", "Sunrise");
         addCNEN("gtocore.weather.forecast_sunset", "日落", "Sunset");
         GTOFluids.LANG.forEach((k, v) -> {

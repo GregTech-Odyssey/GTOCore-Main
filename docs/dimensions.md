@@ -1,6 +1,6 @@
 # 动态维度系统
 
-本文描述当前分支源码中的维度系统。核心实现在 [GTOLib 的 dimension 包](../GTOLib/src/main/java/com/gtolib/api/dimension)，GTOCore 负责游戏入口、天气及部分依赖模组适配。本文同时包含维度与天气存盘说明。类名链接定位到声明，流程链接定位到实现方法；原版及第三方入口链接到本分支负责接管它们的 Mixin 方法。（[DimensionManager][src-dimensionmanager-57]；[GTOCore ForgeCommonEvent.onLevelLoad][src-forgecommonevent-414]；[WeatherSystem][src-weathersystem-33]）
+本文描述当前分支源码中的维度系统。核心实现在 [GTOLib 的 dimension 包](../GTOLib/src/main/java/com/gtolib/api/dimension)，天气系统也位于 GTOLib 的 weather 包，GTOCore 负责游戏入口、内容注册及部分依赖模组适配。本文同时包含维度与天气存盘说明。类名链接定位到声明，流程链接定位到实现方法；原版及第三方入口链接到本分支负责接管它们的 Mixin 方法。（[DimensionManager][src-dimensionmanager-57]；[GTOCore ForgeCommonEvent.onLevelLoad][src-forgecommonevent-414]；[WeatherSystem][src-weathersystem-33]）
 
 系统把**定义、持久化实例、运行世界**分开管理。登记模板或创建实例描述不会构造 `ServerLevel`；需要区块、实体或传送时才显式加载。卸载关闭运行资源，保留定义、实例描述和世界目录，下次访问重新构造 `ServerLevel`。（[DimensionManager.getOrCreatePrivate][src-dimensionmanager-243]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.unload][src-dimensionmanager-822]）
 
@@ -64,7 +64,7 @@ flowchart TD
 | [InstanceKey][src-instancekey-16] / [OwnerRef][src-ownerref-14] / [SeriesAddress][src-seriesaddress-13] | 私人或系列逻辑地址、玩家/队伍归属、系列序号与精确偏移 |
 | [InstanceDescriptor][src-instancedescriptor-22] | 实例身份、种子、冻结模板、归属、权限、访客及出生点；不持有运行 Level |
 | [SeriesDefinition][src-seriesdefinition-18] | 系列创建时冻结的模板、基础种子和新实例默认归属/权限 |
-| [InstanceLevelData][src-instanceleveldata-13] | 继承 `DerivedLevelData`，隔离实例种子与出生点；时钟、游戏规则等仍沿用主世界数据视图 |
+| [DimensionLevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLevelData.java) / [InstanceLevelData][src-instanceleveldata-13] | 非主世界独立昼夜时钟；实例额外隔离种子与出生点；游戏 tick 和游戏规则沿用主世界 |
 | [DimensionCatalog][src-dimensioncatalog-17] / [InstanceStore][src-instancestore-17] | 小型规则目录与独立实例文件、分页索引、单项创建事务恢复 |
 | [DimensionDataCodecs][src-dimensiondatacodecs-9] / [DimensionDataIO][src-dimensiondataio-28] / [DimensionDataFixes][src-dimensiondatafixes-16] | 专用磁盘流式编解码、原子提交及 schema 分流迁移 |
 | [DimensionSaveAttempt][src-dimensionsaveattempt-9] | 卸载及休眠元数据保存的线程局部失败收集作用域 |
@@ -72,7 +72,7 @@ flowchart TD
 | [DimensionTickets][src-dimensiontickets-6] / [DimensionVehicle][src-dimensionvehicle-6] | 有效运行票据检查、活动载具的租约与随行区块票据 |
 | [DimensionRuntimeCaches][src-dimensionruntimecaches-18] / [DimensionRemoteTarget][src-dimensionremotetarget-13] | 跨维度设备释放旧运行引用，按键重新绑定当前世界 |
 | [DimensionCompatibility][src-dimensioncompatibility-13] / [DimensionStations][src-dimensionstations-26] | 依赖模组维度定义登记、无需加载地形的空间站查询与归属检查 |
-| [WeatherSystem][src-weathersystem-33] / [InstanceWeatherData][src-instanceweatherdata-20] | 主世界天气时钟和固定维度日程、每个动态实例独立日程；当前状态存于 Level capability |
+| [LevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java) / [WeatherSystem][src-weathersystem-33] | 每维度统一持久化太阳时、补算锚点和天气日程；主世界保存共享推进计数，运行调度及当前天气绑定 Level capability；InstanceWeatherData 只用于旧档读取 |
 
 ### 1.3 地址、冻结定义与调用边界
 
@@ -103,7 +103,7 @@ flowchart TD
 1. 转交服务器主线程；已运行的世界直接返回，正在加载的请求复用同一 future。`CLOSING` 或当前进程内 `POISONED` 的键拒绝加载；`SAVING` 请求等待保存完成并取消此次关闭。（[DimensionManager.load][src-dimensionmanager-431]）
 2. 查询固定定义或实例描述。动态实例从冻结模板构造 `LevelStem`，固定维度用登记的定义；未知键失败。（[DimensionManager.load][src-dimensionmanager-431]；[ResolvedTemplate.createStem][src-resolvedtemplate-91]）
 3. 建立内存 `pending`，状态进入 `LOADING`。若已有休眠 `DimensionDataStorage`，先受检查地保存并从休眠缓存移除，随后由新 Level 重新读取，避免两个存储对象同时维护数据。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionLifecycle.beginLoad][src-dimensionlifecycle-49]）
-4. 通过 `gtolib$createLevel` 调用正常 `ServerLevel` 构造器。固定维度用 `DerivedLevelData` 和原世界种子；动态实例用 [InstanceLevelData][src-instanceleveldata-13] 和独立种子。动态实例及 AE2 空间世界使用独立随机序列存储，其他固定世界沿用主世界随机序列。（[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]）
+4. 通过 `gtolib$createLevel` 调用正常 `ServerLevel` 构造器。固定维度用 `DimensionLevelData` 和原世界种子；动态实例用 [InstanceLevelData][src-instanceleveldata-13] 和独立种子。构造后、加载事件前绑定该维度的昼夜存储。动态实例及 AE2 空间世界使用独立随机序列存储，其他固定世界沿用主世界随机序列。（[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]）
 5. 将世界边界接入主世界委托监听，写入服务器世界映射，发布 `LevelEvent.Load`，恢复原版及 Forge 持久化强加载并执行校验回调。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.restoreForcedChunks][src-dimensionmanager-946]）
 6. 全部成功后标为 `LOADED`，加入 `running`，移除 `pending`，刷新稳定快照及 Forge 世界数组，最后完成 future。（[DimensionManager.load][src-dimensionmanager-431]；[DimensionLifecycle.loaded][src-dimensionlifecycle-62]；[DimensionManager.refresh][src-dimensionmanager-1041]；[DimensionServerMixin.gtolib$refreshLevels][src-dimensionservermixin-251]）
 
@@ -160,6 +160,37 @@ stateDiagram-v2
 
 卸载事件或资源关闭异常意味着已经无法保证资源状态完整，系统移除运行引用、记录 `POISONED` 并调用 `server.halt(false)`。这和可重试的保存失败不同，不会在同一次服务器运行中重新打开该世界。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionLifecycle.poison][src-dimensionlifecycle-200]；[DimensionManager.load][src-dimensionmanager-431]）
 
+### 2.4 独立昼夜时间
+
+主世界保持原版 24000 tick 一天。非主世界通过 [DimensionLevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLevelData.java) 读取各自的 [DimensionClock](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionClock.java)，每个服务器 tick 增加 `24000 / 太阳日长度` 个太阳时 tick。整数时间和除法余量分开保存，长周期不会因逐 tick 取整而停滞。游戏 tick、机器计时、天气周期和天体公转仍使用原有时钟，不随太阳时缩放。
+
+太阳日长度复用 `CelestialBody.dayTicks`，由带方向的自转频率减去绕恒星公转频率计算；卫星使用自身自转与母星绕恒星的公转年，不能把潮汐锁定母星误认为永昼。水星约 176 地球日、金星约 117 地球日、月球约 29.53 地球日，参考 [NASA 水星资料](https://science.nasa.gov/mercury/facts/)、[NASA 金星昼夜说明](https://spaceplace.nasa.gov/all-about-venus/en/)和 [NASA 月球运动说明](https://ntrs.nasa.gov/citations/20180004489)。当前数据换算如下，实际一昼夜时长为表中倍率乘以主世界的 20 分钟：
+
+| 天体 | 主世界昼夜倍率 | 一昼夜服务器 tick |
+|---|---:|---:|
+| 月球 | 29.53063 | 708735 |
+| 火星 | 1.02750 | 24660 |
+| 水星 | 175.97400 | 4223376 |
+| 金星 | 116.75204 | 2802049 |
+| 谷神星 | 0.37817 | 9076 |
+| 木卫一 | 1.76988 | 42477 |
+| 木卫三 | 7.16638 | 171993 |
+| 土卫二 | 1.37037 | 32889 |
+| 土卫六 | 15.96867 | 383248 |
+| 冥王星 | 6.38675 | 153282 |
+
+太阳表面始终为正午 6000。仓库设为绕恒星潮汐锁定的霜原星（比邻星 b）、巴纳德 C 同样固定正午，表示朝向恒星的一侧；这是沿用现有天体数据的游戏近似。无天体数据的维度采用 24000 tick，维度类型已有的 `fixed_time` 继续生效。
+
+固定虚空、固定超平坦和带 `voidWorld` 标记的实例保留 `/gtocore void time`：锁定时服务端与客户端均为 1000，解除后恢复该维度自己的时间并可用 `/time` 设置。私人超平坦仍沿用已有模板的环境标记。`/time set`、`/time add` 以及睡眠只修改所在维度；`doDaylightCycle` 仍是原有的共享游戏规则，关闭后所有昼夜时钟暂停。Ars Nouveau 4.12.19 的升阳、落月仪式调用所在 ServerLevel 的 setter，由独立 LevelData 隔离；第三方直接发送的原版时间包也转换为本维度的速率与余量包。FTB 的 day/night 快捷命令改为仅遍历命令所在维度，MythicBotany 精灵界睡眠监听改为写回睡眠所在世界。
+
+每个维度的时间与天气统一由 [LevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java) 保存到 `data/gtolib_level.dat`。有旧独立时钟时导入其太阳时和分数余量；没有旧时钟时，固定维度在天气登记时以当前主世界太阳时初始化，动态实例在首次实际加载时初始化；此后各维度按自己的太阳日推进。休眠时昼夜和自然天气继续按服务器有效 tick 推进，不按墙上时间计算。主世界保存累计昼夜 tick；关闭昼夜循环时不累计，虚空/超平坦另用排除锁定时间段的计数。每个维度保存上次补算锚点与速率，重载或休眠预报时按差值一次补算太阳时及余量，无需加载地形、逐 tick 扫描历史实例。主世界原版 `level.dat` 的时间字段作为兼容镜像保留，加载时从新 LevelData 恢复，后续原版时间 setter 同步写入同一个 LevelData。
+
+非主世界的周期时间同步改用 `dimension_clock` 紧凑流式包，包含维度键、游戏 tick、太阳时、余量、周期和运行状态。只发给所在维度玩家，登录、重生、切换维度和虚空规则变化也同步；客户端预测使用同一整数余量算法，状态绑定当前 `ClientLevel`。天气预报的日出日落和刻度按相同倍率换算为服务器 tick，不缩放天气持续时间。
+
+隔离回归：`gradlew runServer -I gradle/scripts/dimensions-probe.gradle -PdimensionDaylightProbe=true -PdimensionProbeFTB=false -PgtolibUnprotected=true -PdimensionProbeDir=<隔离目录>`，按 [AGENTS.md](../AGENTS.md) 先设置 JDK 21。探针检查实际 `ServerLevel.tickTime` 注入、太阳日倍率、局部时间命令、暂停、太阳永昼、虚空/超平坦规则、私人实例隔离和卸载重载余量；`DimensionClockTest` 覆盖完整长周期和保存后继续推进。
+
+本次验证：JDK 21 的 Java/Kotlin 编译、改动范围内 Spotless、69 项维度与天气单测、隔离 Forge 服务器探针及 buildGtolibProtected 的开发/发行保护流水线均通过。探针验证了十万 tick 休眠补算、暂停与虚空锁时、预报不加载地形、时间和天气同文件保存及重载余量，以及神像、Ars 升阳/落月、FTB 昼夜快捷命令与精灵界睡眠的局部改时。旧天气 schema 2/3、独立时钟导入和新文件损坏/原子保存失败也有回归覆盖。隔离目录按启动兼容说明关闭 LeanObject AEKey 功能，生产配置未改。客户端类加载 datagen 探针重试后仍在 gtceu:cover 注册表冻结处中断，未完成该项检查及游戏画面验收。
+
 ## 3. 网络同步
 
 ### 3.1 同步节点与内容
@@ -172,7 +203,7 @@ stateDiagram-v2
 | 登录到动态实例，原版 Login 包构造前 | 目标实例环境包，只发该玩家；允许客户端在玩家/ClientLevel 建立前暂存环境 | `placeNewPlayer` → [DimensionSync.prepare][src-dimensionsync-73]；[DimensionPlayerListMixin.gtolib$syncLoginInstance][src-dimensionplayerlistmixin-62] |
 | 重生到动态实例，原版 Respawn 包构造前 | 目标实例环境包，只发重生连接 | [PlayerList.respawn 的同步注入][src-dimensionplayerlistmixin-69] 注入；[DimensionSync.prepare][src-dimensionsync-73] |
 | 实际跨维度进入动态实例前 | 目标实例环境包，只发被传送玩家 | [ServerPlayer.changeDimension 的入口守卫][src-dimensionplayermixin-45] 和跨 Level 的 `teleportTo` 守卫；[DimensionPlayerMixin.gtolib$authorizeTeleport][src-dimensionplayermixin-59]；[DimensionPlayerMixin.gtolib$authorizeRelativeTeleport][src-dimensionplayermixin-75] |
-| 登录、切维度、重生完成及实际天气类型变化 | 所在维度键、天气注册整数 ID、当前雨强度与原始雷强度；天气变化发送给该世界内玩家 | GTOCore 玩家事件及 [WeatherSystem.apply][src-weathersystem-228] / [WeatherSystem.sync][src-weathersystem-248]；[GTOCore ForgeCommonEvent.onPlayerLoggedInEvent][src-forgecommonevent-371]；[GTOCore ForgeCommonEvent.onPlayerChangedDimensionEvent][src-forgecommonevent-399]；[GTOCore ForgeCommonEvent.onPlayerRespawnEvent][src-forgecommonevent-409] |
+| 登录、切维度、重生完成及实际天气类型变化 | 所在维度键、天气注册整数 ID、当前雨强度与原始雷强度；天气变化发送给该世界内玩家 | [GTOLib WeatherEvents](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherEvents.java) 与 [WeatherSystem.apply/sync](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java) |
 | 维度参数补全 | 使用原版命令补全请求/响应，返回固定定义及当前可访问的已加载动态实例 | [DimensionArgument.listSuggestions 的补全注入][src-dimensionargumentmixin-35]；不扫描历史、不加载世界 |
 | 打开星球菜单、天气预报等界面 | 各界面自己的目标/站点/预报数据，按查询需求发送 | 相应菜单与 UI 同步路径；不是动态维度目录广播；[DimensionPlanetsMenuProviderMixin.writeExtraData][src-dimensionplanetsmenuprovidermixin-34]；[WeatherForecastUI.writeHolderToSyncData][src-weatherforecastui-99]；[WeatherForecastUI.encode][src-weatherforecastui-250] |
 
@@ -186,7 +217,7 @@ stateDiagram-v2
 
 环境必须先于进入包到达，才能让新 `ClientLevel` 的 [LevelMixin][src-levelmixin-37] 从缓存应用虚空及星球环境。接收逻辑在客户端主线程执行；登录早期没有连接时先暂存环境。后续接收动态环境时只保留当前与即将进入的实例，清理更早的动态连接键，断开连接清空环境缓存。（[FromServerMessage.handle][src-fromservermessage-70]；[DimensionSync.Client.receive][src-dimensionsync-97]；[DimensionSync.Client.logout][src-dimensionsync-127]；[LevelMixin.init][src-levelmixin-53]）
 
-天气包在玩家进入后的事件同步，与进入前的环境包职责不同。接收端检查包中的维度键，只应用到当前世界；雨/雷渐变根据初始强度和游戏时间计算，无需每 tick 同步。天气日程和随机状态属于服务端持久化数据，客户端不维护全部历史实例的天气。（[GTOCore ForgeCommonEvent.onPlayerChangedDimensionEvent][src-forgecommonevent-399]；[WeatherSystem.sync][src-weathersystem-248]；[Message.WEATHER_S2C][src-message-77]；[WeatherSystem.receiveWeather][src-weathersystem-109]；[WeatherState.intensity][src-weatherstate-20]）
+天气包在玩家进入后的事件同步，与进入前的环境包职责不同。接收端检查包中的维度键，只应用到当前世界；雨/雷渐变根据初始强度和游戏时间计算，无需每 tick 同步。天气日程和随机状态属于服务端持久化数据，客户端不维护全部历史实例的天气。（[WeatherEvents](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherEvents.java)；[WeatherSync](../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSync.java)；[WeatherSystem.receiveWeather][src-weathersystem-109]；[WeatherState.intensity][src-weatherstate-20]）
 
 ### 3.3 专用服务器与集成服务器
 
@@ -209,14 +240,14 @@ stateDiagram-v2
 | 强加载启动候选 | 需要在重启时检查真实持久化票据的维度 ID 集合 | 同一 `catalog.dat`；不是完整票据或运行租约；[DimensionCatalog.setForced][src-dimensioncatalog-126]；[DimensionDataIO.writeCatalogAtomic][src-dimensiondataio-83] |
 | 实例描述 | 完整逻辑键、独立种子、创建序号、冻结模板、可选归属、访问策略、访客 UUID、可选出生坐标和角度 | `gtolib/dimensions/instances/<UUID前两位>/<UUID>.dat`；[InstanceStore][src-instancestore-17]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[InstanceStore.path][src-instancestore-205]；[InstanceStore.save][src-instancestore-138] |
 | 分页与创建事务 | 按创建顺序的 UUID；尚未完成创建的完整描述 | `gtolib/dimensions/instances/instances.index`（每条 16 字节）及同目录 `pending.dat`；[InstanceStore.create][src-instancestore-116]；[InstanceStore.appendIndex][src-instancestore-183]；[InstanceStore.recoverPending][src-instancestore-173] |
-| 固定维度天气与共享天气时钟 | 时钟、维度键 → 日程；每个日程的随机状态、可选 `lastStormEnd`、天气 ID、开始时间及持续时间 | 主世界 `data/gtocore_galaxy_weather.dat`；[WeatherSystem][src-weathersystem-33]；[WeatherSystem.save][src-weathersystem-283]；[WeatherDataIO.writeGlobal][src-weatherdataio-67]；[WeatherTimeline.save][src-weathertimeline-188] |
-| 动态实例天气 | 该实例独立日程，字段同上；不重复保存共享时钟 | 实例世界目录 `data/gtocore_instance_weather.dat`；[InstanceWeatherData][src-instanceweatherdata-20]；[InstanceWeatherData.save][src-instanceweatherdata-71]；[WeatherDataIO.writeInstance][src-weatherdataio-80]；[WeatherTimeline.save][src-weathertimeline-188] |
+| 共享推进计数与虚拟恒星 | 天气时钟、累计有效昼夜 tick、排除虚空锁定的昼夜 tick、两个虚拟恒星日程 | 主世界 `data/gtolib_level.dat`；`LevelData`，由 `WeatherSystem` 调度 |
+| 各维度天气与昼夜 | 自然天气日程（随机状态、恢复边界、天气与时段）、天气时钟快照、太阳时、分数余量、昼夜补算锚点与速率 | 对应维度 `data/gtolib_level.dat`；`LevelData`，动态实例使用自己的世界目录 |
 | 世界内容 | 区块、方块实体、实体、POI、SavedData、需要独立存储的随机序列等 | 原版目录和原协议；由 Level、区块/实体系统、各 SavedData 负责；[DimensionManager.unload][src-dimensionmanager-822]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238] |
 | 原版/Forge 及第三方元数据 | 原版强加载、Forge owner/ticking 票据、Ad Astra 空间站、AE2 空间区域等原有字段 | 对应维度 `data/` 内各模组原有文件；[DimensionManager.restoreForcedChunks][src-dimensionmanager-946]；[DimensionStations.query][src-dimensionstations-37]；[DimensionSpatialStorageMixin.getWorldData][src-dimensionspatialstoragemixin-29] |
 
 实例 UUID 和维度键由逻辑键派生，不在描述载荷中重复保存；目录 Map 的键由记录 ID 派生。模板/归属/访问策略枚举用固定序号，顺序变动需要 schema 迁移；天气类型保存稳定字符串 ID，网络另用注册整数 ID。生成 JSON 使用 VarInt 字节长度 + UTF-8，避开 `writeUTF` 的 64 KiB 上限。（[IOStreamCodecs.UTF8][src-iostreamcodecs-30]；[InstanceKey.id][src-instancekey-53]；[DimensionDataCodecs.TEMPLATE][src-dimensiondatacodecs-37]；[DimensionDataCodecs.SERIES][src-dimensiondatacodecs-50]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[WeatherTimeline.save][src-weathertimeline-188]；[DimensionSync.PACKET][src-dimensionsync-30]）
 
-运行状态、空闲 tick、future、租约计数、临时飞行票据、Level 引用、监听器、客户端缓存和能力中的派生运行索引不持久化。实例没有独立的完整 `level.dat` 副本：时间、游戏规则等共享世界数据仍由主世界持久化，实例独立出生点保存到描述。（[DimensionLifecycle][src-dimensionlifecycle-11]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]；[InstanceLevelData.setSpawn][src-instanceleveldata-94]；[DimensionManager.saveDescriptor][src-dimensionmanager-1033]）
+运行状态、空闲 tick、future、租约计数、临时飞行票据、Level 引用、监听器、客户端缓存和能力中的派生运行索引不持久化。实例没有独立的完整 `level.dat` 副本：游戏 tick、游戏规则等共享世界数据仍由主世界持久化，昼夜时间与天气日程统一保存到本维度 `data/gtolib_level.dat`，实例独立出生点保存到描述。（[DimensionLifecycle][src-dimensionlifecycle-11]；[DimensionServerMixin.gtolib$createLevel][src-dimensionservermixin-238]；[InstanceLevelData.setSpawn][src-instanceleveldata-94]；[DimensionManager.saveDescriptor][src-dimensionmanager-1033]）
 
 ### 4.2 什么维度在什么情况下保存
 
@@ -230,7 +261,7 @@ stateDiagram-v2
 | 服务器 `saveAllChunks`，包括正常保存/停服路径 | 先保存运行实例描述及已缓存的休眠元数据；运行世界内容继续走正常保存流程，不遍历动态历史；[DimensionServerMixin.gtolib$saveInstanceMetadata][src-dimensionservermixin-265]；[DimensionManager.saveLoadedDescriptors][src-dimensionmanager-794] |
 | 空闲或手动安全卸载 | 强制完成世界保存、SavedData 和描述保存，通过后才关闭；[DimensionManager.unload][src-dimensionmanager-822] |
 | 查询休眠空间站/AE2 元数据 | 只读对应 SavedData；发生变更时由保存、缓存淘汰或后续加载前提交；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.saveMetadata][src-dimensionmanager-885]；[DimensionStations.query][src-dimensionstations-37]；[DimensionSpatialStorageMixin.getWorldData][src-dimensionspatialstoragemixin-29] |
-| 查询休眠动态实例天气预报 | 只读取并扩展该实例日程，立即原子保存天气文件，成功后清 dirty，不加载地形；[WeatherSystem.timeline][src-weathersystem-149]；[WeatherSystem.forecast][src-weathersystem-205]；[DimensionDataIO.writeFastAtomic][src-dimensiondataio-120] |
+| 查询休眠动态实例天气预报 | 补算该实例昼夜并沿原随机状态扩展天气日程，立即原子保存同一个 LevelData 文件，成功后清 dirty，不加载地形；[WeatherSystem.timeline][src-weathersystem-149]；[WeatherSystem.forecast][src-weathersystem-205]；[DimensionDataIO.writeFastAtomic][src-dimensiondataio-120] |
 | 休眠元数据缓存达到上限，或准备加载该维度 | 先受检查保存对应存储，成功后淘汰或移交；失败保留缓存并传播；[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionManager.load][src-dimensionmanager-431]；[DimensionManager.saveMetadata][src-dimensionmanager-885] |
 | 重启 | 读取目录、索引长度并恢复唯一 pending；固定维度检查小型 `chunks` 元数据，动态历史只遍历强加载候选，不扫描地形或全部描述；[DimensionCatalog 构造器][src-dimensioncatalog-30]；[InstanceStore 构造器][src-instancestore-35]；[InstanceStore.recoverPending][src-instancestore-173]；[DimensionManager.restoreStartup][src-dimensionmanager-715]；[DimensionManager.hasSavedForcedChunks][src-dimensionmanager-915] |
 
@@ -244,10 +275,10 @@ stateDiagram-v2
 
 - 动态实例不通过改写 `level.dat` 的 `LEVEL_STEM` 定义列表保存；目录、描述、索引和 pending 是本系统新增文件，由 [DimensionDataIO][src-dimensiondataio-28] / [InstanceStore][src-instancestore-17] 直接管理，不是自定义 SavedData 或磁盘 DataComponentMap。（[DimensionDataIO.writeAtomic][src-dimensiondataio-79]；[InstanceStore.create][src-instancestore-116]；[InstanceStore.appendIndex][src-instancestore-183]）
 - `ServerLevel`、区块/实体管理器、区域文件、POI 和普通第三方 SavedData 的数据结构及路径保留。普通 SavedData 在自动保存、停服和卸载保存时均编码 `DataVersion` + `data` 的压缩 NBT，通过原子提交替换文件，成功后才清 dirty；覆写 `save(File)` 的第三方实现仍由其自身负责。（[DimensionManager.unload][src-dimensionmanager-822]；[DimensionSavedDataMixin.gtolib$checkedUnloadSave][src-dimensionsaveddatamixin-36]；[DimensionDataIO.writeNbtAtomic][src-dimensiondataio-113]）
-- 两种天气数据继承 [DimensionSavedData](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSavedData.java)（`FastSavedData` 的专用子类），复用 `DimensionDataStorage.cache` 和世界保存调度，覆写文件保存为流式二进制，绕过 SavedData 的 NBT 载荷。原版天气字段不再负责本系统日程。（[FastSavedData.save][src-fastsaveddata-46]；[WeatherSystem.save][src-weathersystem-283]；[InstanceWeatherData.save][src-instanceweatherdata-71]；[LevelWeatherMixin.prepareWeather][src-levelweathermixin-22]；[ServerLevelWeatherMixin.advanceWeatherCycle][src-serverlevelweathermixin-19]）
+- `LevelData` 继承 `DimensionSavedData`，复用 SavedData 缓存和保存调度，用一次原子写入提交该维度的天气与时间。`WeatherSystem` 只负责运行调度，不再单独继承 SavedData；旧全局和实例天气编解码对象只用于兼容读取。原版天气字段不再负责日程。
 - [FastSavedData.save(File)][src-fastsaveddata-54] 在所有保存入口统一使用 [DimensionDataIO.writeFastAtomic][src-dimensiondataio-120]，先 force 临时文件内容再原子替换目标。序列化、force 或替换失败都保留旧文件和 dirty。
 
-维度和天气使用 DataSyncLib 的 `StreamCodec<FriendlyByteBuf, T>`。维度文件完整解压并校验 GZIP 尾部后解码；编码使用可释放的池化缓冲，schema 3 的字段顺序及 UTF-8/modified-UTF 格式保持不变。普通 `FastSavedData` 保留上游的版本前缀和旧格式读取入口；天气由 `DimensionSavedData` 保留独立信封，已有文件读取失败会传播，不重置日程。
+维度与环境数据使用 FriendlyByteBuf 流式编解码。维度文件完整解压并校验 GZIP 尾部后解码；编码使用可释放的池化缓冲，schema 3 的字段顺序及 UTF-8/modified-UTF 格式保持不变。普通 `FastSavedData` 保留上游的版本前缀和旧格式读取入口；天气由 `DimensionSavedData` 保留独立信封，已有文件读取失败会传播，不重置日程。
 
 当前维度和天气文件都从 schema 整数开始，压缩方式与后续载荷分别如下：（[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionDataIO.writeAtomic(encoder)][src-dimensiondataio-102]；[DimensionDataIO.writeCatalogAtomic][src-dimensiondataio-83]；[DimensionDataCodecs.INSTANCE][src-dimensiondatacodecs-67]；[WeatherDataIO.writeGlobal][src-weatherdataio-67]；[WeatherDataIO.writeInstance][src-weatherdataio-80]；[WeatherTimeline.save][src-weathertimeline-188]）
 
@@ -258,21 +289,24 @@ stateDiagram-v2
   instance / pending = logical_key + seed + ordinal + frozen_template
                        + flags + optional owner / visitors / spawn
 
-天气：未压缩 FastSavedData 流
-  schema_version[int] = 3
-  global = clock[long] + timelines[count + dimension_key + timeline]
-  instance = timeline
+LevelData：每维度一份未压缩二进制流
+  schema_version[int] = 1
+  flags[byte] + optional day_time[long] / remainder[VarLong]
+  optional natural_weather[timeline] + optional weather_clock_snapshot[long]
+  optional daylight_anchor[long] / day_length[VarLong] / void_clock[boolean] / skylight[boolean]
+  optional global_daylight_ticks[long] / global_void_daylight_ticks[long]（仅主世界）
+  stars[count + dimension_key + timeline]（仅主世界的两个虚拟恒星）
   timeline = random_state[long] + storm_end_present[boolean] + optional lastStormEnd[long]
              + periods[count + weather_name + start[long] + duration[VarLong]]
 ```
 
-维度和天气的自有二进制载荷均不包含 magic、storage version 或 kind 字段。载荷种类由文件路径和调用的 reader 决定：目录用 [DimensionDataIO.readCatalog][src-dimensiondataio-56]，实例描述和创建日志共用 [DimensionDataIO.read(Path)][src-dimensiondataio-52] / [DimensionDataIO.writeAtomic(Path, InstanceDescriptor)][src-dimensiondataio-79]；全局与实例天气分别用 [WeatherDataIO.readGlobal][src-weatherdataio-35]、[WeatherDataIO.readInstance][src-weatherdataio-43]。各入口检查 schema 后按对应载荷解码，没有独立的文件类型标识校验。（[InstanceStore.find][src-instancestore-78]；[InstanceStore.create][src-instancestore-116]；[InstanceStore.recoverPending][src-instancestore-173]）
+维度目录、实例描述与 pending 继续使用 schema 3。新的 `LevelData.load` 按固定文件路径读取 schema 1，并检查标记和载荷尾部；文件已存在但不可读取时传播错误，不重建空数据。天气旧格式的 `WeatherDataIO.readGlobal/readInstance` 只在对应新日程尚不存在时用于导入。
 
-当前 reader 提供 schema 2 和 3 的 datafix 分流，不追溯更早开发格式或旧压缩 NBT。schema 2 同时接受旧 Forge 探针实际写出的 `GTDC`（维度）/`GTWC`（天气）信封，并核对类型；没有旧信封的 schema 2 文件仍可读取。入口读取 Minecraft DataVersion、定长载荷长度及旧 Data 树后还原领域对象；schema 3 直接流式读写，不构造中间组件树。读取本身不升级文件，正常保存才写当前格式；pending 恢复只补写缺失描述，已有匹配描述保留其最新访客和出生点。模板版本和 Minecraft DataVersion 不能代替自有 schema。（[DimensionDataIO.read][src-dimensiondataio-38]；[DimensionDataIO.readCatalog][src-dimensiondataio-56]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[DimensionDataFixes.catalog][src-dimensiondatafixes-27]；[DimensionDataFixes.instance][src-dimensiondatafixes-87]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[InstanceStore.recoverPending][src-instancestore-173]）
+目录、实例描述和旧天气仍保留 schema 2/3 的兼容读取；旧天气 schema 2 接受历史 `GTWC` 信封，时间额外接受上一版独立时钟的专用 NBT。导入仅复制到新 LevelData，旧文件保留原字节且不再写回；新时间、日程或天气时钟已存在时优先使用新值。新文件成功保存后，旧文件不参与该字段的后续读取。实例 pending 恢复与索引、强加载候选提交顺序保持原规则。
 
 ### 4.4 原子提交与创建事务
 
-[DimensionDataIO][src-dimensiondataio-28] 写入目标同目录的 `.tmp` 文件，关闭编码流，`force(true)` 临时文件内容，再用 `ATOMIC_MOVE + REPLACE_EXISTING` 替换目标；不支持原子移动或其他 IO 失败就传播错误，不降级为直接覆盖。它保证单个文件的提交，不提供整世界所有文件同时提交的事务。（[DimensionDataIO.temporary][src-dimensiondataio-128]；[DimensionDataIO.commit][src-dimensiondataio-133]；[DimensionDataIO.writeAtomic][src-dimensiondataio-79]）
+[DimensionDataIO][src-dimensiondataio-28] 写入目标同目录的 `.tmp` 文件，关闭编码流，`force(true)` 临时文件内容，再用 `ATOMIC_MOVE + REPLACE_EXISTING` 替换目标；不支持原子移动或其他 IO 失败就传播错误，不降级为直接覆盖。它保证单个文件的提交，不提供整世界所有文件同时提交的事务。各维度天气附带保存时的共享天气时钟快照；若维度文件先于主世界提交，重启后按时差平移日程和恒星恢复期，保留相对阶段及随机状态。昼夜锚点遇到主世界计数回退时重新绑定当前计数，不倒退太阳时。（[DimensionDataIO.temporary][src-dimensiondataio-128]；[DimensionDataIO.commit][src-dimensiondataio-133]；[DimensionDataIO.writeAtomic][src-dimensiondataio-79]）
 
 实例创建的跨文件一致性由单项 pending 日志保证：（[InstanceStore.create][src-instancestore-116]；[InstanceStore.recoverPending][src-instancestore-173]）
 
@@ -312,7 +346,7 @@ stateDiagram-v2
 
 运行验证采用明文开发模式；加密模式的探针当前在进入存档前遇到 `AddonFinderMixin` 类加载失败，尚未验证加密模式游戏运行。保护产物构建成功与游戏运行验证是不同的检查。生命周期探针等待注入异常确实发生后才解除故障，防止服务器 tick 的事件顺序导致提前关掉注入而假通过。
 
-原版/第三方 SavedData 的读取仍保留它们自己的错误与 fallback 语义，不能把本系统“自有坏文件不回退为空”的约束推广到所有模组。维度和天气的 `DimensionSavedData` 保留既有 schema 2/3 格式，普通 `FastSavedData` 使用当前 DataSyncLib 的版本化格式；二者均在临时文件写入并 force 成功后原子替换目标。后续不兼容变更应提升 schema 并提供对应迁移与真实历史文件验证。（[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[FastSavedData.getFromFile][src-fastsaveddata-32]）
+原版/第三方 SavedData 的读取仍保留它们自己的错误与 fallback 语义，不能把本系统“自有坏文件不回退为空”的约束推广到所有模组。维度元数据及旧天气保留 schema 2/3 兼容读取，新天气与时间使用 LevelData schema 1；普通 `FastSavedData` 使用当前 DataSyncLib 的版本化格式；二者均在临时文件写入并 force 成功后原子替换目标。后续不兼容变更应提升 schema 并提供对应迁移与真实历史文件验证。（[DimensionManager.metadataStorage][src-dimensionmanager-154]；[DimensionDataIO.read][src-dimensiondataio-38]；[WeatherDataIO.readGlobal][src-weatherdataio-35]；[WeatherDataIO.readInstance][src-weatherdataio-43]；[DimensionDataFixes.readSchema2][src-dimensiondatafixes-20]；[FastSavedData.getFromFile][src-fastsaveddata-32]）
 
 ## 5. 对原版与其他模组的修改
 
@@ -360,7 +394,7 @@ stateDiagram-v2
 | GTOCore 传送入口 | 登录/重生、原版维度参数、虚空设备、统一 [ServerUtils][src-serverutils-19] 等改用授权加载；Level 参数版本拒绝旧运行对象 | [VoidTransporterMachine][src-voidtransportermachine-32]、主仓 `ForgeCommonEvent`、GTOLib [ServerUtils][src-serverutils-19]；[VoidTransporterMachine.teleportToDimension][src-voidtransportermachine-46]；[GTOCore ForgeCommonEvent.onPlayerLoggedInEvent][src-forgecommonevent-371]；[ServerUtils.teleportToDimension][src-serverutils-59]；[ServerUtils.teleportToDimension][src-serverutils-74] |
 | GTOCore/GTOLib 全局存档 | 全局 SavedData 初始化限制在主世界加载事件，避免每次动态世界创建重置全局对象 | 两仓 `ForgeCommonEvent.onLevelLoad`；[GTOCore ForgeCommonEvent.onLevelLoad][src-forgecommonevent-414]；[GTOLib ForgeCommonEvent.onLevelLoad][src-forgecommonevent-270] |
 | 监控与机器网络 | 监控运行队列和网络挂在 Level capability；卸载只处理对应客户端缓存，服务端世界索引随 Level 释放 | 主仓 `common/machine/monitor/Manager`、GTOLib [LevelMixin][src-levelmixin-37]；[monitor.Manager.state][src-manager-59]；[monitor.Manager.onWorldUnload][src-manager-662]；[LevelMixin.init][src-levelmixin-53] |
-| 天气及天气模组 | 动态实例独立保存日程，休眠预报只读写元数据；Ars Nouveau 天气仪式的非主世界入口受限制 | [InstanceWeatherData][src-instanceweatherdata-20]、[WeatherProfiles][src-weatherprofiles-15] 及天气 Mixin；详见星系天气文档；[InstanceWeatherData.timeline][src-instanceweatherdata-40]；[WeatherProfiles.get][src-weatherprofiles-32]；[WeatherSystem.timeline][src-weathersystem-149]；[WeatherRitualMixin.gto$overworldOnly][src-weatherritualmixin-16] |
+| 天气及天气模组 | 动态实例的昼夜与天气日程统一保存，休眠时继续模拟，预报只读写元数据；Ars Nouveau 天气仪式的非主世界入口受限制 | [InstanceWeatherData][src-instanceweatherdata-20]、[WeatherProfiles][src-weatherprofiles-15] 及天气 Mixin；详见星系天气文档；[LevelData](../GTOLib/src/main/java/com/gtolib/api/dimension/LevelData.java)；[WeatherProfiles.get][src-weatherprofiles-32]；[WeatherSystem.timeline][src-weathersystem-149]；[WeatherRitualMixin.gto$overworldOnly][src-weatherritualmixin-16] |
 
 这些是当前 GTOCore/GTOLib 的适配位置，并不表示已在 AE2 或 GTM fork 内全面改写所有调用者。对它们内部行为的后续修复，按 [fork 修改位置](forked-dependencies.md) 判断归属；只属于 GTO 生命周期的集成可以放在本仓，依赖自身缺陷应先考虑对应 fork。（[DimensionSpatialStorageMixin][src-dimensionspatialstoragemixin-19]；[DimensionRemoteKeyTargetMixin][src-dimensionremotekeytargetmixin-28]）
 
@@ -409,7 +443,7 @@ stateDiagram-v2
 ```powershell
 $env:JAVA_HOME = '<JDK_21_HOME>'
 if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid JDK 21 required' }
-.\gradlew.bat spotlessApply spotlessCheck test --tests 'com.gtolib.api.dimension.*' --tests 'com.gtocore.common.weather.WeatherTimelineTest' -PgtolibUnprotected=true
+.\gradlew.bat spotlessApply spotlessCheck test --tests 'com.gtolib.api.dimension.*' --tests 'com.gtolib.api.weather.WeatherTimelineTest' -PgtolibUnprotected=true
 # 单服隔离探针；配置与 EULA 准备好后执行
 .\gradlew.bat runServer -I gradle/scripts/dimensions-probe.gradle -PgtolibUnprotected=true -PdimensionProbeFTB=false
 ```
@@ -432,7 +466,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 
 [src-dimensionmanager-57]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L57
 [src-forgecommonevent-414]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L414
-[src-weathersystem-33]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L33
+[src-weathersystem-33]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L33
 [src-dimensionmanager-243]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L243
 [src-dimensionmanager-431]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L431
 [src-dimensionmanager-822]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L822
@@ -462,7 +496,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensionmanager-154]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L154
 [src-levelmixin-53]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelMixin.java#L53
 [src-manager-59]: ../src/main/java/com/gtocore/common/machine/monitor/Manager.java#L59
-[src-weathersystem-85]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L85
+[src-weathersystem-85]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L85
 [src-dimensionruntimecaches-31]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRuntimeCaches.java#L31
 [src-dimensionruntimecaches-51]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRuntimeCaches.java#L51
 [src-dimensionsync-127]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L127
@@ -482,7 +516,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensionmanager-113]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L113
 [src-dimensionmanager-285]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L285
 [src-dimensionstations-37]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L37
-[src-weathersystem-205]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L205
+[src-weathersystem-205]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L205
 [src-dimensionmanager-558]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L558
 [src-dimensionmanager-595]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L595
 [src-dimensionmanager-540]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L540
@@ -540,21 +574,21 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-forgecommonevent-371]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L371
 [src-forgecommonevent-399]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L399
 [src-forgecommonevent-409]: ../src/main/java/com/gtocore/common/forge/ForgeCommonEvent.java#L409
-[src-weathersystem-228]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L228
-[src-weathersystem-248]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L248
+[src-weathersystem-228]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L228
+[src-weathersystem-248]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L248
 [src-dimensionargumentmixin-35]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionArgumentMixin.java#L35
 [src-dimensionplanetsmenuprovidermixin-34]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetsMenuProviderMixin.java#L34
-[src-weatherforecastui-99]: ../src/main/java/com/gtocore/common/weather/WeatherForecastUI.java#L99
-[src-weatherforecastui-250]: ../src/main/java/com/gtocore/common/weather/WeatherForecastUI.java#L250
+[src-weatherforecastui-99]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherForecastUI.java#L99
+[src-weatherforecastui-250]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherForecastUI.java#L250
 [src-dimensionenvironment-15]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionEnvironment.java#L15
 [src-dimensionsync-97]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L97
 [src-fromservermessage-70]: ../GTOLib/src/main/java/com/gtolib/network/FromServerMessage.java#L70
 [src-message-77]: ../src/main/java/com/gtocore/client/Message.java#L77
-[src-weathersystem-109]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L109
-[src-weatherstate-20]: ../src/main/java/com/gtocore/common/weather/WeatherState.java#L20
+[src-weathersystem-109]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L109
+[src-weatherstate-20]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherState.java#L20
 [src-dimensionsync-58]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L58
 [src-gtodimensions-57]: ../GTOLib/src/main/java/com/gtolib/api/data/GTODimensions.java#L57
-[src-weatherprofiles-32]: ../src/main/java/com/gtocore/common/weather/WeatherProfiles.java#L32
+[src-weatherprofiles-32]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherProfiles.java#L32
 [src-dimensionsync-85]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L85
 [src-networkprobe-21]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/NetworkProbe.java#L21
 [src-dimensioncatalog-30]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L30
@@ -570,11 +604,11 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-instancestore-138]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L138
 [src-instancestore-183]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L183
 [src-instancestore-173]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L173
-[src-weathersystem-283]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L283
-[src-weatherdataio-67]: ../src/main/java/com/gtocore/common/weather/WeatherDataIO.java#L67
-[src-weathertimeline-188]: ../src/main/java/com/gtocore/common/weather/WeatherTimeline.java#L188
-[src-instanceweatherdata-71]: ../src/main/java/com/gtocore/common/weather/InstanceWeatherData.java#L71
-[src-weatherdataio-80]: ../src/main/java/com/gtocore/common/weather/WeatherDataIO.java#L80
+[src-weathersystem-283]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L283
+[src-weatherdataio-67]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L67
+[src-weathertimeline-188]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherTimeline.java#L188
+[src-instanceweatherdata-71]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L71
+[src-weatherdataio-80]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L80
 [src-dimensionspatialstoragemixin-29]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialStorageMixin.java#L29
 [src-iostreamcodecs-30]: ../GTOLib/src/main/java/com/gtolib/utils/iostream/IOStreamCodecs.java#L30
 [src-dimensionlifecycle-11]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L11
@@ -586,7 +620,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-instanceleveldata-134]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceLevelData.java#L134
 [src-dimensionmanager-794]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L794
 [src-dimensionservermixin-265]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L265
-[src-weathersystem-149]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L149
+[src-weathersystem-149]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L149
 [src-dimensiondataio-120]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L120
 [src-instancestore-35]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceStore.java#L35
 [src-dimensionmanager-915]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L915
@@ -594,8 +628,8 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensiondataio-79]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L79
 [src-dimensiondataio-113]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L113
 [src-fastsaveddata-46]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L46
-[src-levelweathermixin-22]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L22
-[src-serverlevelweathermixin-19]: ../src/main/java/com/gtocore/mixin/mc/ServerLevelWeatherMixin.java#L19
+[src-levelweathermixin-22]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L22
+[src-serverlevelweathermixin-19]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L19
 [src-fastsaveddata-54]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L54
 [src-fileutils-144]: ../GTOLib/src/main/java/com/gtolib/utils/FileUtils.java#L144
 [src-dimensiondataio-38]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L38
@@ -604,29 +638,29 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensiondatafixes-20]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L20
 [src-dimensiondatafixes-27]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L27
 [src-dimensiondatafixes-87]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataFixes.java#L87
-[src-weatherdataio-35]: ../src/main/java/com/gtocore/common/weather/WeatherDataIO.java#L35
-[src-weatherdataio-43]: ../src/main/java/com/gtocore/common/weather/WeatherDataIO.java#L43
+[src-weatherdataio-35]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L35
+[src-weatherdataio-43]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherDataIO.java#L43
 [src-dimensiondataio-128]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L128
 [src-dimensiondataio-133]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L133
 [src-fastsaveddata-32]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L32
 [src-fileutils-180]: ../GTOLib/src/main/java/com/gtolib/utils/FileUtils.java#L180
-[src-weathertimeline-203]: ../src/main/java/com/gtocore/common/weather/WeatherTimeline.java#L203
+[src-weathertimeline-203]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherTimeline.java#L203
 [src-dimensionchunksavemixin-24]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionChunkSaveMixin.java#L24
 [src-dimensionentitysavemixin-23]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionEntitySaveMixin.java#L23
 [src-dimensionioworkermixin-39]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/DimensionIOWorkerMixin.java#L39
 [src-serverlevelmixin-59]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L59
 [src-serverlevelmixin-69]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelMixin.java#L69
-[src-levelweathermixin-29]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L29
-[src-levelweathermixin-38]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L38
-[src-levelweathermixin-47]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L47
-[src-levelweathermixin-56]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L56
-[src-levelweathermixin-65]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L65
-[src-levelweathermixin-75]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L75
-[src-levelweathermixin-85]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L85
-[src-serverlevelweathermixin-26]: ../src/main/java/com/gtocore/mixin/mc/ServerLevelWeatherMixin.java#L26
-[src-serverlevelweathermixin-40]: ../src/main/java/com/gtocore/mixin/mc/ServerLevelWeatherMixin.java#L40
-[src-levelweathermixin-15]: ../src/main/java/com/gtocore/mixin/mc/LevelWeatherMixin.java#L15
-[src-serverlevelweathermixin-12]: ../src/main/java/com/gtocore/mixin/mc/ServerLevelWeatherMixin.java#L12
+[src-levelweathermixin-29]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L29
+[src-levelweathermixin-38]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L38
+[src-levelweathermixin-47]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L47
+[src-levelweathermixin-56]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L56
+[src-levelweathermixin-65]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L65
+[src-levelweathermixin-75]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L75
+[src-levelweathermixin-85]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L85
+[src-serverlevelweathermixin-26]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L26
+[src-serverlevelweathermixin-40]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L40
+[src-levelweathermixin-15]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelWeatherMixin.java#L15
+[src-serverlevelweathermixin-12]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/ServerLevelWeatherMixin.java#L12
 [src-dimensionplayerlistmixin-37]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L37
 [src-dimensionplayermixin-31]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/entity/DimensionPlayerMixin.java#L31
 [src-dimensionargumentmixin-60]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionArgumentMixin.java#L60
@@ -660,7 +694,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-serverutils-74]: ../GTOLib/src/main/java/com/gtolib/utils/ServerUtils.java#L74
 [src-forgecommonevent-270]: ../GTOLib/src/main/java/com/gtolib/forge/ForgeCommonEvent.java#L270
 [src-manager-662]: ../src/main/java/com/gtocore/common/machine/monitor/Manager.java#L662
-[src-instanceweatherdata-40]: ../src/main/java/com/gtocore/common/weather/InstanceWeatherData.java#L40
+[src-instanceweatherdata-40]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L40
 [src-weatherritualmixin-16]: ../src/main/java/com/gtocore/mixin/arsnouveau/WeatherRitualMixin.java#L16
 [src-dimensionspatialstoragemixin-19]: ../src/main/java/com/gtocore/mixin/ae2/DimensionSpatialStorageMixin.java#L19
 [src-dimensionremotekeytargetmixin-28]: ../src/main/java/com/gtocore/mixin/gtm/DimensionRemoteKeyTargetMixin.java#L28
@@ -671,7 +705,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensionservermixin-64]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionServerMixin.java#L64
 [src-dimensionplayerlistmixin-32]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/DimensionPlayerListMixin.java#L32
 [src-dimensionplanetpacketmixin-25]: ../GTOLib/src/main/java/com/gtolib/mixin/adastra/DimensionPlanetPacketMixin.java#L25
-[src-weathersystem-216]: ../src/main/java/com/gtocore/common/weather/WeatherSystem.java#L216
+[src-weathersystem-216]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherSystem.java#L216
 [src-coding_guidelines.md-147]: ../CODING_GUIDELINES.md#L147
 [src-dimensioncommands-78]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L78
 [src-dimensioncatalog-43]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCatalog.java#L43
@@ -683,7 +717,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensioncommands-221]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCommands.java#L221
 [src-dimensionlifecycletest-10]: ../src/test/java/com/gtolib/api/dimension/DimensionLifecycleTest.java#L10
 [src-dimensioninstancestoretest-30]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L30
-[src-weathertimelinetest-35]: ../src/test/java/com/gtocore/common/weather/WeatherTimelineTest.java#L35
+[src-weathertimelinetest-35]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L35
 [src-dimensionprobe-29]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/DimensionProbe.java#L29
 [src-networkprobe-19]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/NetworkProbe.java#L19
 [src-restartprobe-19]: ../src/dimensionTest/java/com/gtocore/dimensionprobe/RestartProbe.java#L19
@@ -702,7 +736,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensioninstancestoretest-258]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L258
 [src-dimensioninstancestoretest-300]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L300
 [src-dimensioninstancestoretest-251]: ../src/test/java/com/gtolib/api/dimension/DimensionInstanceStoreTest.java#L251
-[src-weathertimelinetest-200]: ../src/test/java/com/gtocore/common/weather/WeatherTimelineTest.java#L200
+[src-weathertimelinetest-200]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L200
 [src-instancedescriptor-22]: ../GTOLib/src/main/java/com/gtolib/api/dimension/InstanceDescriptor.java#L22
 [src-dimensionserver-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionServer.java#L13
 [src-resolvedtemplate-27]: ../GTOLib/src/main/java/com/gtolib/api/dimension/ResolvedTemplate.java#L27
@@ -724,7 +758,7 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensionremotetarget-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionRemoteTarget.java#L13
 [src-dimensioncompatibility-13]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionCompatibility.java#L13
 [src-dimensionstations-26]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionStations.java#L26
-[src-instanceweatherdata-20]: ../src/main/java/com/gtocore/common/weather/InstanceWeatherData.java#L20
+[src-instanceweatherdata-20]: ../GTOLib/src/main/java/com/gtolib/api/weather/InstanceWeatherData.java#L20
 [src-networkpack-16]: ../GTOLib/src/main/java/com/gtolib/api/network/NetworkPack.java#L16
 [src-levelmixin-37]: ../GTOLib/src/main/java/com/gtolib/mixin/mc/world/LevelMixin.java#L37
 [src-fastsaveddata-21]: ../GTOLib/src/main/java/com/gtolib/api/misc/FastSavedData.java#L21
@@ -753,11 +787,11 @@ JDK 21 下 56 项维度/天气单测、隔离探针编译、Spotless、标准单
 [src-dimensionsync-132]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionSync.java#L132
 [src-serverutils-19]: ../GTOLib/src/main/java/com/gtolib/utils/ServerUtils.java#L19
 [src-voidtransportermachine-32]: ../src/main/java/com/gtocore/common/machine/multiblock/electric/voidseries/VoidTransporterMachine.java#L32
-[src-weatherprofiles-15]: ../src/main/java/com/gtocore/common/weather/WeatherProfiles.java#L15
+[src-weatherprofiles-15]: ../GTOLib/src/main/java/com/gtolib/api/weather/WeatherProfiles.java#L15
 [src-dimensionmanager-1064]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionManager.java#L1064
 [src-dimensionlifecycle-144]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L144
 [src-dimensionlifecycle-173]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L173
 [src-dimensionlifecycle-189]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionLifecycle.java#L189
 [src-dimensiondataio-52]: ../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionDataIO.java#L52
-[src-weathertimelinetest-92]: ../src/test/java/com/gtocore/common/weather/WeatherTimelineTest.java#L92
-[src-weathertimelinetest-148]: ../src/test/java/com/gtocore/common/weather/WeatherTimelineTest.java#L148
+[src-weathertimelinetest-92]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L92
+[src-weathertimelinetest-148]: ../GTOLib/src/test/java/com/gtolib/api/weather/WeatherTimelineTest.java#L148

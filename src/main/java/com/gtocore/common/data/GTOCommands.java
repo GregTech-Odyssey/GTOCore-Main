@@ -6,13 +6,13 @@ import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.common.saved.DysonSphereSavaedData;
 import com.gtocore.common.saved.VoidWorldTimeSavedData;
-import com.gtocore.common.weather.WeatherCommands;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.weather.WeatherCommands;
 import com.gtolib.quest.QuestCommands;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
