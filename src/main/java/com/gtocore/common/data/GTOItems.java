@@ -1466,7 +1466,7 @@ public final class GTOItems {
                     Tips.leftClick(GTOTips.global("§a左键方块：§r 按当前模式从末尾添加或移除标记§r", "§aLeft-Click:§r Add from the end or remove marks, per the current mode§r")),
                     Tips.rightClick(GTOTips.global("§a右键空气：§r 打开界面，调整模式与编辑目标§r", "§aRight-Click Air:§r Open the interface to change modes and edit targets§r")),
                     Tips.leftClick(GTOTips.global("§aShift + 左键超立方体：§r 将当前的标签应用到该超立方体§r", "§aShift + Left-Click Tesseract:§r Apply the current markers to this Tesseract§r")),
-                    Tips.middleClick(GTOTips.global("§a中键选取键超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r", "§aPick Block Key(default Middle-Click) Tesseract:§r Copy the coordinate configuration of this Tesseract to the marker gun§r")),
+                    Tips.middleClick(GTOTips.global("§a中键选取超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r", "§aPick Block Key(default Middle-Click) Tesseract:§r Copy the coordinate configuration of this Tesseract to the marker gun§r")),
                     Tips.attention(GTOTips.global("§6注意：§r 向基于坐标信息卡的超立方体应用标签时需要足量的坐标信息卡！§r", "§6Note:§r Applying markers to a coordinate card-based Tesseract requires sufficient coordinate cards!§r")))
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(new TesseractTargetMarker()))
