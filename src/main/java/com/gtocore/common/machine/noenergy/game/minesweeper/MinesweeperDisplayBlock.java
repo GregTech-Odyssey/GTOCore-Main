@@ -1,7 +1,9 @@
-package com.gtocore.common.machine.noenergy.minesweeper;
+package com.gtocore.common.machine.noenergy.game.minesweeper;
 
 import com.gtocore.common.data.GTOBlockEntities;
 import com.gtocore.common.data.GTOBlocks;
+
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,11 +20,11 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * 扫雷显示方块：一格一个，铺在核心方块旁边；格子的内容不存在这里——它读核心方块的状态，渲染用的数字直接写在方块状态
- * {@link #STATE} 上（由核心方块在落子后改写），所以两端不用再同步一份数据。
+ * 扫雷显示方块：一格一个，铺在扫雷机器旁边；格子的内容不存在这里——它读机器里的盘面，渲染用的数字直接写在方块状态
+ * {@link #STATE} 上（由机器在落子后改写），所以两端不用再同步一份数据。
  *
  * <p>
- * 右击翻开、潜行右击插旗，都转发给核心方块处理（{@link MinesweeperCoreBlockEntity#click}）。
+ * 右击翻开、潜行右击插旗，都转发给机器处理（{@link MinesweeperCoreMachine#click}）。
  */
 public class MinesweeperDisplayBlock extends Block implements EntityBlock {
 
@@ -66,9 +68,10 @@ public class MinesweeperDisplayBlock extends Block implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof MinesweeperDisplayBlockEntity display)) return InteractionResult.PASS;
         BlockPos core = display.getCore();
         if (core == null || !level.isLoaded(core)) return InteractionResult.PASS;
-        if (level.getBlockEntity(core) instanceof MinesweeperCoreBlockEntity coreEntity &&
+        if (level.getBlockEntity(core) instanceof MetaMachineBlockEntity holder &&
+                holder.getMetaMachine() instanceof MinesweeperCoreMachine machine &&
                 player instanceof ServerPlayer serverPlayer) {
-            coreEntity.click(pos, serverPlayer, player.isSecondaryUseActive());
+            machine.click(pos, serverPlayer, player.isSecondaryUseActive());
         }
         return InteractionResult.SUCCESS;
     }

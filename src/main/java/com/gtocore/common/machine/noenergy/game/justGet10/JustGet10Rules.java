@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.justGet10;
+package com.gtocore.common.machine.noenergy.game.justGet10;
 
 import net.minecraft.util.RandomSource;
 
@@ -8,13 +8,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 /**
- * 「合成十」的盘面规则：{@link BoardSize#size()}×{@link BoardSize#size()} 方格，每格一个 {@link #VALUE_MIN}~{@link #VALUE_MAX}
- * 的整数，按行优先存进 {@code size * size} 长的 {@code int[]}（第 0 行在最上面）。点一格把与它四向连通、数字相同的一整组
+ * 「合成十」的盘面规则：{@link #SIZE}×{@link #SIZE} 方格，每格一个 {@link #VALUE_MIN}~{@link #VALUE_MAX}
+ * 的整数，按行优先存进 {@link #CELL_COUNT} 长的 {@code int[]}（第 0 行在最上面）。点一格把与它四向连通、数字相同的一整组
  * 合并成「该数字 + 1」，合并后整列下坠、顶部补随机数字。
  *
  * <p>
- * 盘面尺寸是实例状态：机器按当前 {@link BoardSize} 建一份规则，换档位就重建，临时容器（BFS 队列、列暂存）跟着尺寸分配。
- * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用。
+ * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用（机器持有一份）。
  */
 public final class JustGet10Rules {
 
@@ -24,47 +23,12 @@ public final class JustGet10Rules {
     /** 空格标记，只在合并中途占位。 */
     public static final int EMPTY = -1;
 
-    /**
-     * 棋盘档位：格子越多越好合（同样分数能刷得更高），所以兑现比例随档位放宽——{@link #pointsPerCoin()} 是「超过兑现
-     * 基线后每多少分折 1 枚游戏币」，越大越不值钱。
-     */
-    public enum BoardSize {
-
-        SMALL(5, 100),
-        MEDIUM(7, 200),
-        LARGE(9, 400),
-        HUGE(11, 800);
-
-        public static final BoardSize[] ALL = values();
-
-        private final int size;
-        private final int pointsPerCoin;
-
-        BoardSize(int size, int pointsPerCoin) {
-            this.size = size;
-            this.pointsPerCoin = pointsPerCoin;
-        }
-
-        /** 盘面边长。 */
-        public int size() {
-            return size;
-        }
-
-        /** 一盘多少格。 */
-        public int cellCount() {
-            return size * size;
-        }
-
-        /** 兑现比例：超过基线后每多少分折 1 枚游戏币。 */
-        public int pointsPerCoin() {
-            return pointsPerCoin;
-        }
-
-        /** 按序数取档位，越界返回 {@code null}（存档与网络来的值一律校验）。 */
-        public static @Nullable BoardSize of(int ordinal) {
-            return ordinal >= 0 && ordinal < ALL.length ? ALL[ordinal] : null;
-        }
-    }
+    /** 盘面边长（固定 5×5）。 */
+    public static final int SIZE = 5;
+    /** 一盘多少格。 */
+    public static final int CELL_COUNT = SIZE * SIZE;
+    /** 兑现比例：超过兑现基线后每多少分折 1 枚游戏币（只留小盘的那个比例）。 */
+    public static final int POINTS_PER_COIN = 100;
 
     /** 难度区间：分数到 DIFFICULTY_START 之前新格等概率，到 DIFFICULTY_END 完全按高难度权重。 */
     private static final int DIFFICULTY_START = 500;
@@ -77,9 +41,8 @@ public final class JustGet10Rules {
     private static final int[] NEIGHBOR_ROW = { -1, 1, 0, 0 };
     private static final int[] NEIGHBOR_COL = { 0, 0, -1, 1 };
 
-    private final BoardSize boardSize;
-    private final int size;
-    private final int cellCount;
+    private final int size = SIZE;
+    private final int cellCount = CELL_COUNT;
 
     /** {@link #groupAt} 的上一次结果，下一次调用前有效；只有一个调用方，直接复用。 */
     private final IntArrayList group;
@@ -88,23 +51,16 @@ public final class JustGet10Rules {
     /** 下坠时按列暂存数字。 */
     private final int[] columnScratch;
 
-    private JustGet10Rules(BoardSize boardSize) {
-        this.boardSize = boardSize;
-        this.size = boardSize.size();
-        this.cellCount = boardSize.cellCount();
+    private JustGet10Rules() {
         this.group = new IntArrayList(cellCount);
         this.visited = new boolean[cellCount];
         this.queue = new int[cellCount];
         this.columnScratch = new int[size];
     }
 
-    /** 机器按当前档位持有一份实例，临时容器跟着它复用；换档位时重建。 */
-    public static JustGet10Rules create(BoardSize boardSize) {
-        return new JustGet10Rules(boardSize);
-    }
-
-    public BoardSize boardSize() {
-        return boardSize;
+    /** 机器持有一份实例，临时容器跟着它复用。 */
+    public static JustGet10Rules create() {
+        return new JustGet10Rules();
     }
 
     public int size() {

@@ -4,12 +4,15 @@ import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
 import com.gtocore.common.machine.multiblock.generator.TurbineMachine;
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine;
-import com.gtocore.common.machine.noenergy.game2048.Game2048Machine;
-import com.gtocore.common.machine.noenergy.game2048.Game2048Rules;
-import com.gtocore.common.machine.noenergy.game24.Game24Machine;
-import com.gtocore.common.machine.noenergy.game24.Game24Rules;
-import com.gtocore.common.machine.noenergy.justGet10.JustGet10Machine;
-import com.gtocore.common.machine.noenergy.justGet10.JustGet10Rules;
+import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
+import com.gtocore.common.machine.noenergy.game.game2048.Game2048Rules;
+import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
+import com.gtocore.common.machine.noenergy.game.game24.Game24Rules;
+import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
+import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Rules;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperRules;
+import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.slotMachine.SlotSymbol;
 import com.gtocore.config.GTORules;
@@ -138,6 +141,13 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("下注范围 %s ~ %s", "Bet range %s to %s",
                 FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_BET),
                 FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_MAX_BET)));
+        t.heading(t.tr("中奖附赠", "Bonus on Wins"));
+        t.feature(t.tr("每次中奖有 %s%% 概率附赠「机械之神降临」：带着它跳跃会推进附近工作中的单方块机器的配方进度，代价是消耗效果剩余时长",
+                "%s%% of wins also grant Descent of the Machine God: while it lasts, jumping advances the recipe progress of nearby working single-block machines, spending the effect's remaining time",
+                (int) (SlotMachine.BOOST_CHANCE * 100)));
+        t.feature(t.tr("倍率越高、下注越大，效果越好：可加速的配方电压上限最高到 %s 档，时长最长 %s 分钟；档位过半时换成范围版（周围 5×5×5）",
+                "Higher multipliers and bigger bets give a better result: the boostable recipe voltage reaches tier %s and the effect lasts up to %s minutes; past the halfway point it becomes the area version (5×5×5)",
+                GTValues.VNF[SlotMachine.BOOST_MAX_AMPLIFIER], SlotMachine.BOOST_MAX_DURATION / (20 * 60)));
         t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the remaining credits back into the world"));
     });
 
@@ -178,13 +188,20 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("下注范围 %s ~ %s", "Bet range %s to %s",
                 FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_BET),
                 FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_MAX_BET)));
+        t.heading(t.tr("中奖附赠", "Bonus on Wins"));
+        t.feature(t.tr("每次中奖有 %s%% 概率附赠「机械之神降临」：带着它跳跃会推进附近工作中的单方块机器的配方进度，代价是消耗效果剩余时长",
+                "%s%% of wins also grant Descent of the Machine God: while it lasts, jumping advances the recipe progress of nearby working single-block machines, spending the effect's remaining time",
+                (int) (SlotMachine.BOOST_CHANCE * 100)));
+        t.feature(t.tr("倍率越高、下注越大，效果越好：可加速的配方电压上限最高到 %s 档，时长最长 %s 分钟；档位过半时换成范围版（周围 5×5×5）",
+                "Higher multipliers and bigger bets give a better result: the boostable recipe voltage reaches tier %s and the effect lasts up to %s minutes; past the halfway point it becomes the area version (5×5×5)",
+                GTValues.VNF[SlotMachine.BOOST_MAX_AMPLIFIER], SlotMachine.BOOST_MAX_DURATION / (20 * 60)));
         t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the remaining credits back into the world"));
     });
 
     // 合成十 - 玩法与计分说明
     public static final TipSpec JustGet10MachineTooltips = GTOTips.of("just_get_10", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成UHV", "Just Get UHV")));
-        t.heading(t.tr("5×5~11×11 盘面，提起整组后合并", "5×5 to 11×11 board; lift a group, then merge it"));
+        t.heading(t.tr("5×5 盘面，提起整组后合并", "5×5 board; lift a group, then merge it"));
 
         t.heading(t.tr("玩法", "How to play"));
         t.feature(t.tr("点一格提起相连的相同数字整组（两格及以上才成组），再点组内格把它合并成「该数字 + 1」",
@@ -192,20 +209,17 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("盘面再没有相邻同数字时这一局结束，随时可以重新开始或提前兑现重开",
                 "The round ends when no two adjacent numbers match; restart or cash out early at any time"));
 
-        t.heading(t.tr("档位与兑现", "Board size and payout"));
-        t.feature(t.tr("「配置」页可换棋盘：小 5×5、中 7×7、大 9×9、特大 11×11；越大越好合，同一份积分越不值钱",
-                "The Config page switches the board: 5×5 / 7×7 / 9×9 / 11×11; bigger boards are easier to merge on and make the same score worth less"));
-        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 %s 分的部分按档位每 %s / %s / %s / %s 分折 1 枚游戏币，达不到门槛不给",
-                "A merge scores the merged number × group size; when the round ends or you restart, the points above %s pay 1 Game Coin per %s / %s / %s / %s points by board size, and a round below the threshold pays nothing",
+        t.heading(t.tr("计分与兑现", "Scoring and payout"));
+        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 %s 分的部分每 %s 分折 1 枚游戏币，达不到门槛不给",
+                "A merge scores the merged number × group size; when the round ends or you restart, the points above %s pay 1 Game Coin per %s points, and a round below the threshold pays nothing",
                 FormattingUtil.formatNumbers(JustGet10Machine.REDEMPTION_BASELINE),
-                JustGet10Rules.BoardSize.SMALL.pointsPerCoin(), JustGet10Rules.BoardSize.MEDIUM.pointsPerCoin(),
-                JustGet10Rules.BoardSize.LARGE.pointsPerCoin(), JustGet10Rules.BoardSize.HUGE.pointsPerCoin()));
+                JustGet10Rules.POINTS_PER_COIN));
     });
 
     // 2048 - 玩法与计分说明
     public static final TipSpec Game2048MachineTooltips = GTOTips.of("game_2048", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("电路2048", "Circuit 2048")));
-        t.heading(t.tr("4×4~8×8 盘面，键盘推格合并", "4×4 to 8×8 board; push and merge with the keyboard"));
+        t.heading(t.tr("4×4 盘面，键盘推格合并", "4×4 board; push and merge with the keyboard"));
 
         t.heading(t.tr("玩法", "How to play"));
         t.feature(t.tr("W A S D 与四个方向键各推一次：整盘往该方向推到底，相邻同值两两合并（每块一回合只合并一次），并在空位补一个新数字",
@@ -213,15 +227,11 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("没有空格也没有相邻同值时这一局结束，随时可以重新开始或提前兑现重开",
                 "The round ends when the board is full with no equal neighbours; restart or cash out early at any time"));
 
-        t.heading(t.tr("档位与兑现", "Board size and payout"));
-        t.feature(t.tr("「配置」页可换棋盘：小 4×4、中 6×6、大 8×8；越大越好合、同一份积分越容易刷高，但兑现比例也越宽",
-                "The Config page switches the board: 4×4 / 6×6 / 8×8; bigger boards are easier to merge on and push the same score higher, but pay fewer coins for it"));
-        t.feature(t.tr("每次合并得分就是合并出的数字；本局结束或重开时，超过 %s 分的部分按档位每 %s / %s / %s 分折 1 枚游戏币",
-                "Each merge scores the tile it creates; when the round ends or you restart, above %s points it pays 1 Game Coin per %s / %s / %s points, by board size",
+        t.heading(t.tr("计分与兑现", "Scoring and payout"));
+        t.feature(t.tr("每次合并得分就是合并出的数字；本局结束或重开时，超过 %s 分的部分每 %s 分折 1 枚游戏币",
+                "Each merge scores the tile it creates; when the round ends or you restart, above %s points it pays 1 Game Coin per %s points",
                 FormattingUtil.formatNumbers(Game2048Machine.REDEMPTION_BASELINE),
-                FormattingUtil.formatNumbers(Game2048Rules.BoardSize.SMALL.pointsPerCoin()),
-                FormattingUtil.formatNumbers(Game2048Rules.BoardSize.MEDIUM.pointsPerCoin()),
-                FormattingUtil.formatNumbers(Game2048Rules.BoardSize.LARGE.pointsPerCoin())));
+                FormattingUtil.formatNumbers(Game2048Rules.POINTS_PER_COIN)));
     });
 
     // 24点 - 玩法与计分说明
@@ -245,6 +255,42 @@ public final class GTOMachineTooltips {
                 "A correct answer pays coins, more for a wider range: %s for 1 to 10 and %s for 1 to 13; \"Withdraw all\" turns the balance back into coins by denomination",
                 FormattingUtil.formatNumbers(Game24Rules.DrawRange.ONE_TO_TEN.solveReward()),
                 FormattingUtil.formatNumbers(Game24Rules.DrawRange.ONE_TO_THIRTEEN.solveReward())));
+    });
+
+    // 扫雷 - 玩法与计分说明
+    public static final TipSpec MinesweeperCoreTooltips = GTOTips.of("minesweeper_core", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("扫雷", "Minesweeper")));
+        t.heading(t.tr("盘面铺在机器旁边，右击打开配置界面", "The board is laid out next to the machine; right-click it for the control panel"));
+
+        t.heading(t.tr("玩法", "How to play"));
+        t.feature(t.tr("界面里「展开盘面」把棋盘铺到机器旁边的空地，一格一个显示方块；「收起盘面」把棋盘收回机器",
+                "Unfold board in the interface lays the grid out on the free ground next to the machine, one block per cell; Pack up board puts it back"));
+        t.feature(t.tr("右击方块翻开，潜行右击插旗；旗子最多插到雷数。数字格周围旗数对上了就会连开一圈",
+                "Right-click a block to open it, sneak-right-click to flag it, up to the number of mines; a numbered cell whose neighbours are all flagged opens them at once"));
+        t.feature(t.tr("第一下翻开的格子连同周围 3×3 保证没有雷", "The first opened cell and its 3×3 surroundings are always free of mines"));
+
+        t.heading(t.tr("难度与奖励", "Difficulty and payout"));
+        for (var preset : MinesweeperRules.Difficulty.ALL) {
+            if (preset.custom()) {
+                t.feature(t.tr("%s：自己定宽高与雷数（各 %s~%s），不计奖励",
+                        "%s: set your own width, height and mine count (%s to %s each); pays nothing",
+                        Component.translatable(MinesweeperCoreMachine.difficultyName(preset)),
+                        MinesweeperRules.CUSTOM_MIN_SIDE, MinesweeperRules.CUSTOM_MAX_SIDE));
+                continue;
+            }
+            t.feature(t.tr("%s：%s×%s，%s 雷，全找到给 %s 币", "%s: %s×%s, %s mines, %s coins if all found",
+                    Component.translatable(MinesweeperCoreMachine.difficultyName(preset)),
+                    preset.width(), preset.height(),
+                    FormattingUtil.formatNumbers(preset.mineCount()),
+                    FormattingUtil.formatNumbers(preset.maxReward())));
+        }
+        t.feature(t.tr("只有整局通关（所有非雷格翻开，或雷全部插旗）才给奖励；中途重开、收起盘面、换难度、拆机器都拿不到币",
+                "Only a fully cleared round pays (every safe cell opened, or every mine flagged); restarting, packing up, switching difficulty or breaking the machine pays nothing"));
+        t.feature(t.tr("踩到雷会连环引爆盘上的雷（落点必炸，其余按间隔抽到最多 %s 处，不破坏方块），本局没有奖励",
+                "Hitting a mine sets off a chain of explosions across the board (the clicked mine always, the rest sampled up to %s in total, without breaking blocks) and the round pays nothing",
+                MinesweeperCoreMachine.MAX_EXPLOSIONS));
+        t.feature(t.tr("奖励记进余额，用「取出全部」按面额换成硬币；拆除机器时余额会掉回世界",
+                "Payout goes into the balance; Withdraw all turns it into coins by denomination, and breaking the machine drops the balance back into the world"));
     });
 
     public static final TipSpec PatternContentAccessTerminalTooltips = GTOTips.of("pattern_content_access_terminal", t -> {
