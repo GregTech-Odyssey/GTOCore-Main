@@ -116,7 +116,6 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         shareInventory.addChangedListener(this::requestPatternUpdate);
         circuitInventorySimulated.addChangedListener(this::requestPatternUpdate);
         shareTank.addChangedListener(this::requestPatternUpdate);
-        getInternalInventory()[0].shareTank.addChangedListener(this::requestPatternUpdate);
         Runnable requestPatternUpdateIfUnlocked = () -> {
             if (!getInternalInventory()[0].isLock()) {
                 requestPatternUpdate();
@@ -124,6 +123,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         };
         getInternalInventory()[0].circuitInventory.addChangedListener(requestPatternUpdateIfUnlocked);
         getInternalInventory()[0].shareInventory.addChangedListener(requestPatternUpdateIfUnlocked);
+        getInternalInventory()[0].shareTank.addChangedListener(requestPatternUpdateIfUnlocked);
         getInternalInventory()[0].setShouldLockRecipe(false);
         var slot = getInternalInventory()[0];
         sharedSearchHandlers = RecipeHandlerUnit.of(IO.IN,
