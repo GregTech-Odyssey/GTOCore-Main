@@ -68,6 +68,7 @@ import net.minecraft.world.level.material.Fluid;
 import appeng.core.AppEng;
 import appeng.integration.modules.emi.AppEngEmiPlugin;
 import appeng.integration.modules.emi.EmiEncodePatternHandler;
+import appeng.integration.modules.emi.EmiStackHelper;
 import appeng.integration.modules.emi.EmiUseCraftingRecipeHandler;
 import appeng.integration.modules.emi.IStackInteractionScreen;
 import appeng.menu.me.items.PatternEncodingTermMenu;
@@ -265,8 +266,8 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTBedrockFluidEmiCategory.registerWorkStations(registry);
         GTBedrockOreEmiCategory.registerWorkStations(registry);
         NanitesIntegratedProcessingEmiCategory.registerWorkstations(registry);
-        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.compareNbt());
-        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.compareNbt());
+        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), EmiStackHelper.COMPARE_AEKEY);
+        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), EmiStackHelper.COMPARE_AEKEY);
         registerDimensionDataVariants(registry);
 
         Comparison potionComparison = Comparison.compareData(stack -> PotionUtils.getPotion(stack.getNbt()));
@@ -274,8 +275,11 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.setDefaultComparison(potionFluid.getSource(), potionComparison);
         registry.setDefaultComparison(potionFluid.getFlowing(), potionComparison);
 
-        GTCEuAPI.materialManager.getRegisteredMaterials().stream().filter(m -> GTOUtils.isGeneration(TagPrefix.turbineBlade, m)).forEach(
-                m -> registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, m), Comparison.compareNbt()));
+        for (var material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+            if (GTOUtils.isGeneration(TagPrefix.turbineBlade, material)) {
+                registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, material), EmiStackHelper.COMPARE_AEKEY);
+            }
+        }
 
         registry.addGenericDragDropHandler(new EmiDragDropHandler<>() {
 

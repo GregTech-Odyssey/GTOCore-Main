@@ -26,6 +26,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.emi.emi.EmiRenderHelper;
+import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.runtime.EmiDrawContext;
 import org.joml.Matrix4f;
@@ -36,10 +37,19 @@ import static com.gtocore.integration.emi.research.EmiResearchHelper.*;
 
 public class ResearchTagEmiStack extends EmiStack {
 
+    private static final Comparison COMPARE_RESEARCH_TAG = Comparison.of(
+            (a, b) -> a instanceof ResearchTagEmiStack first && b instanceof ResearchTagEmiStack second && first.tag == second.tag,
+            stack -> ((ResearchTagEmiStack) stack).tag.hashCode());
+
     private static final int ICON_SIZE = 16;
     private static final float SHADER_PADDING = 8.0F;
 
     public final ResearchTag tag;
+
+    @Override
+    public Comparison getStrictComparison() {
+        return COMPARE_RESEARCH_TAG;
+    }
 
     public ResearchTagEmiStack(ResearchTag tag) {
         super();
