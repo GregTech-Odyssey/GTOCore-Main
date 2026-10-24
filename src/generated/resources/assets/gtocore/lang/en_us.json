@@ -3961,7 +3961,7 @@
   "gtocore.lang.fuel_cell_generator.3.655160473": "The input materials in each side area independently search for half-reaction recipes",
   "gtocore.lang.fuel_cell_generator.4.1426871953": "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction",
   "gtocore.lang.fuel_cell_generator.5.240932784": "Total reaction power = sum of both half-reaction powers / 2",
-  "gtocore.lang.fuel_cell_generator.6.-2012704672": "Total reaction time = sum of both half-reaction (time × power) / total reaction power",
+  "gtocore.lang.fuel_cell_generator.6.-16676791": "Base storage duration = 1 second × membrane time multiplier;",
   "gtocore.lang.fuel_cell_generator.7.1432634293": "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions",
   "gtocore.lang.fuel_cell_generator.8.946618163": "And the provided fuel efficiency multiplier will multiply with the converted heat value, affecting the total energy storage of the reaction",
   "gtocore.lang.fuel_cell_generator.9.-1061378684": "Membrane durability consumed per total reaction: ceil(sqrt(total reaction parallels)) with a basic hatch, or ceil((total reaction parallels)^0.25) with an advanced hatch",
