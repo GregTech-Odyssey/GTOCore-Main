@@ -16,8 +16,8 @@
 
 ```powershell
 .\tools\generator-report\Update-GeneratorData.ps1 `
-    -RepoPath 'E:\your-repository' `
-    -GtmPath 'E:\GregTech-Modern' `
+    -RepoPath '.' `
+    -GtmPath '..\GregTech-Modern' `
     -OutputDirectory '.\outputs\generator-report' `
     -Difficulty Expert
 ```
