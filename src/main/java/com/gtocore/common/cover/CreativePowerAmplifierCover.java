@@ -81,12 +81,12 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
     }
 
     private void setDurationMultiplier(double durationMultiplier) {
-        this.durationMultiplier = clamp(durationMultiplier, MIN_DURATION_MULTIPLIER, MAX_MULTIPLIER);
+        this.durationMultiplier = Math.clamp(durationMultiplier, MIN_DURATION_MULTIPLIER, MAX_MULTIPLIER);
         updatePowerAmplifier();
     }
 
     private void setEnergyMultiplier(double energyMultiplier) {
-        this.energyMultiplier = clamp(energyMultiplier, MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER);
+        this.energyMultiplier = Math.clamp(energyMultiplier, MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER);
         updatePowerAmplifier();
     }
 
@@ -114,12 +114,8 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
     }
 
     private void clampMultipliers() {
-        durationMultiplier = clamp(durationMultiplier, MIN_DURATION_MULTIPLIER, MAX_MULTIPLIER);
-        energyMultiplier = clamp(energyMultiplier, MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER);
-    }
-
-    private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
+        durationMultiplier = Math.clamp(durationMultiplier, MIN_DURATION_MULTIPLIER, MAX_MULTIPLIER);
+        energyMultiplier = Math.clamp(energyMultiplier, MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER);
     }
 
     @Nullable

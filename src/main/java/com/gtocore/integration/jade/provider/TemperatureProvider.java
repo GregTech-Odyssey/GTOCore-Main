@@ -1,5 +1,6 @@
 package com.gtocore.integration.jade.provider;
 
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gtolib.GTOCore;
 import com.gtolib.api.capability.IHeatContainer;
 
@@ -43,6 +44,7 @@ public final class TemperatureProvider extends CapabilityBlockProvider<IHeatCont
     protected void addTooltip(CompoundTag capData, ITooltip tooltip, Player player, BlockAccessor block, BlockEntity blockEntity, IPluginConfig config) {
         var max_temperature = capData.getLong("max_temperature");
         if (max_temperature == 0) return;
-        tooltip.add(Component.translatable("gtocore.machine.current_temperature", (long) capData.getDouble("temperature") + " / " + max_temperature));
+        tooltip.add(Component.translatable("gtocore.machine.current_temperature",
+                FormattingUtil.formatNumbers (capData.getDouble("temperature")) + " / " + FormattingUtil.formatNumbers(max_temperature)));
     }
 }

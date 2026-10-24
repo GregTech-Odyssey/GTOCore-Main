@@ -1,5 +1,6 @@
 package com.gtocore.common.data;
 
+import com.gregtechceu.gtceu.common.data.*;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.OffsetGradientColor;
@@ -45,10 +46,6 @@ import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.ArmorLogicSuite;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
-import com.gregtechceu.gtceu.common.data.GTCovers;
-import com.gregtechceu.gtceu.common.data.GTFluids;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.common.data.GTMedicalConditions;
 import com.gregtechceu.gtceu.common.item.*;
 import com.gregtechceu.gtceu.common.item.armor.*;
 import com.gregtechceu.gtceu.config.ConfigHolder;
@@ -350,14 +347,14 @@ public final class GTOItems {
             }), new CoverPlaceBehavior(GTOCovers.POWER_AMPLIFIERS[5])))
             .register();
 
-    public static final ItemEntry<ComponentItem> CREATIVE_POWER_AMPLIFIER = item("creative_power_amplifier", "创造模式功率增幅器", ComponentItem::create)
+    public static final ItemEntry<ComponentItem> CREATIVE_POWER_AMPLIFIER = item("creative_power_amplifier", "创造功率增幅器", ComponentItem::create)
             .tab(CreativeModeTabs.CREATIVE_TAB.getKey())
             .model((ctx, prov) -> prov.generated(ctx, GTOCore.id("item/power_amplifiers/creative_power_amplifier")))
             .onRegister(attach(new TooltipBehavior(lines -> {
-                lines.add(Component.translatable("gtmthings.creative_tooltip"));
                 lines.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_DURATION_MULTIPLIER)));
                 lines.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_ENERGY_MULTIPLIER)));
                 lines.add(Component.translatable("gtocore.cover.creative_power_amplifier.tooltip").withStyle(ChatFormatting.GRAY));
+                GTMachines.CREATIVE_TOOLTIPS.accept(null,lines);
             }), new CoverPlaceBehavior(GTOCovers.CREATIVE_POWER_AMPLIFIER)))
             .register();
 
