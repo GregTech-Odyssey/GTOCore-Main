@@ -133,7 +133,9 @@ final class RocketMapHost extends UIElement implements ILocalUI, ILayoutHost {
     private Popup createDetails(int index) {
         if (catalog.isRealm(index)) return Popup.of(() -> catalog.name(index), column -> RocketDetails.buildRealm(column, this, index));
         if (index < 0 || index >= catalog.bodyCount()) return null;
-        return Popup.of(() -> catalog.name(index), column -> RocketDetails.build(column, this, index));
+        var popup = Popup.of(() -> catalog.name(index), column -> RocketDetails.build(column, this, index));
+        if (catalog.isStellar(index)) popup.setContentWidth(RocketDetails.dysonContentWidth());
+        return popup;
     }
 
     void land(int body) {

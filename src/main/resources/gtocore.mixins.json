@@ -55,6 +55,7 @@
     "mc.client.ClientPacketListenerMixin",
     "mc.client.FogRendererMixin",
     "mc.client.LevelRendererMixin",
+    "mc.client.LightTextureMixin",
     "merequester.NumberFieldMixin",
     "mousetweaks.GuiContainerHandlerMixin",
     "renderblender.WrappedItemModelMixin",

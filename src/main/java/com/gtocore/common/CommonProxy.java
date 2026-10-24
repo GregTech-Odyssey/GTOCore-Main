@@ -133,6 +133,7 @@ public class CommonProxy {
         RecipeEditorUIFactory.init();
         Manager.init();
         StarMapCommand.init();
+        StarMapDysonSync.init();
         TesseractTargetMarker.init();
         TravelEvents.init();
         PendingItemRewardDelivery.Events.init();
