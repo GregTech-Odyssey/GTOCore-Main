@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.slotMachine;
+package com.gtocore.common.machine.noenergy.game.slotMachine;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;

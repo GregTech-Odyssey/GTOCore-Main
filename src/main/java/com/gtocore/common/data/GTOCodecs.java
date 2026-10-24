@@ -6,8 +6,8 @@ import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineResult;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineState;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineResult;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineState;
 
 import com.gtolib.api.recipe.crafting.CraftingCodecs;
 
