@@ -150,7 +150,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
                 recipe.duration = recipe.duration * GTOUtils.getGeneratorEfficiency(recipe.definition.recipeType, getTier()) / 100;
                 if (isw) {
                     recipe.setEUt(0);
-                    recipe.data.put(GTORecipeDataKeys.WIRELESS_EUT, EUt * recipe.parallels);
+                    recipe.mutableData().put(GTORecipeDataKeys.WIRELESS_EUT, EUt * recipe.parallels);
                 }
                 return recipe;
             }
