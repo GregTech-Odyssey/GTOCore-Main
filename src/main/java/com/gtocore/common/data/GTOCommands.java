@@ -46,6 +46,7 @@ import appeng.api.stacks.GenericStack;
 
 import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
 
@@ -77,7 +78,11 @@ public final class GTOCommands {
                             return 1;
                         })))))
                         .then(Commands.literal("dyson").then(Commands.literal("info").executes(ctx -> {
-                            DysonSphereSavaedData.INSTANCE.getDysonLaunchData().forEach((g, p) -> ctx.getSource().sendSuccess(() -> Component.literal("\nGalaxy: ").append(g.getName()).append("\nCount: " + p).append("\nDamage: " + DysonSphereSavaedData.INSTANCE.getDysonDamageData().getOrDefault(g, 0)).append("\nIn use: " + DysonSphereSavaedData.INSTANCE.getDysonUse().getOrDefault(g, false)), false));
+                            DysonSphereSavaedData.INSTANCE.getDysonLaunchData().forEach((g, p) -> ctx.getSource().sendSuccess(() -> Component.literal("\nGalaxy: ")
+                                    .append(g.getName())
+                                    .append("\nCount: " + p)
+                                    .append("\nDamage: " + DysonSphereSavaedData.INSTANCE.getDysonDamageData().getOrDefault(g, 0))
+                                    .append("\nIn use: " + DysonSphereSavaedData.INSTANCE.getDysonUse().getOrDefault(g, false)), false));
                             return 1;
                         })).then(Commands.literal("clean").requires(source -> source.hasPermission(2)).executes(ctx -> {
                             DysonSphereSavaedData.INSTANCE.getDysonLaunchData().clear();
@@ -85,7 +90,12 @@ public final class GTOCommands {
                             DysonSphereSavaedData.INSTANCE.getDysonUse().clear();
                             DysonSphereSavaedData.INSTANCE.setDirty();
                             return 1;
-                        }))))
+                        })).then(Commands.literal("add").requires(source -> source.hasPermission(2)).then(Commands.argument("count", IntegerArgumentType.integer(1)).executes(ctx -> {
+                            var galaxy = GTODimensions.getGalaxy(ctx.getSource().getLevel().dimension());
+                            DysonSphereSavaedData.INSTANCE.getDysonLaunchData().addTo(galaxy, IntegerArgumentType.getInteger(ctx, "count"));
+                            DysonSphereSavaedData.INSTANCE.setDirty();
+                            return 1;
+                        })))))
                 .then(Commands.literal("void")
                         .executes(GTOCommands::toggleVoidWorldTime)
                         .then(Commands.literal("time")

@@ -3,6 +3,7 @@ package com.gtocore.mixin.mc.client;
 import com.gtocore.client.renderer.fx.SolarStormFX;
 import com.gtocore.client.renderer.item.ItemCountRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
+import com.gtocore.common.data.DysonSphereEffects;
 import com.gtocore.utils.StxckUtil;
 
 import net.minecraft.client.Camera;
@@ -14,15 +15,36 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
+
+    @WrapOperation(method = "renderSky",
+                   at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V"),
+                   slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;"),
+                                  to = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;MOON_LOCATION:Lnet/minecraft/resources/ResourceLocation;")))
+    private void renderDysonSun(BufferBuilder.RenderedBuffer sun, Operation<Void> original,
+                                @Local(argsOnly = true) PoseStack poseStack, @Local(argsOnly = true) float partialTick) {
+        if (!CelestialSkyRenderer.renderVanillaSun(sun, poseStack, partialTick)) original.call(sun);
+    }
+
+    @ModifyExpressionValue(method = "renderSky",
+                           at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F"))
+    private float[] dimDysonSunrise(float[] color, @Local(argsOnly = true) float partialTick) {
+        if (color != null) color[3] *= DysonSphereEffects.transmission(Minecraft.getInstance().level, partialTick);
+        return color;
+    }
 
     @Inject(method = { "renderSnowAndRain", "tickRain" }, at = @At("HEAD"), cancellable = true)
     private void replaceSolarRain(CallbackInfo ci) {

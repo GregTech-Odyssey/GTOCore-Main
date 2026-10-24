@@ -525,14 +525,14 @@ public final class FuelRecipe {
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil")
                 .inputFluids(Oil, 2)
                 .inputFluids(Air, 5)
-                .duration(20)
+                .duration(14)
                 .EUt(-V[ULV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_light")
                 .inputFluids(OilLight, 2)
                 .inputFluids(Air, 5)
-                .duration(20)
+                .duration(12)
                 .EUt(-V[ULV])
                 .save();
 
@@ -546,21 +546,21 @@ public final class FuelRecipe {
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_heavy")
                 .inputFluids(OilHeavy, 2)
                 .inputFluids(Air, 8)
-                .duration(30)
+                .duration(18)
                 .EUt(-V[ULV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_medium")
                 .inputFluids(RawOil, 2)
                 .inputFluids(Air, 8)
-                .duration(30)
+                .duration(18)
                 .EUt(-V[ULV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("coal_tar")
                 .inputFluids(CoalTar, 6)
                 .inputFluids(Air, 6)
-                .duration(24)
+                .duration(20)
                 .EUt(-V[ULV])
                 .save();
 
@@ -581,7 +581,7 @@ public final class FuelRecipe {
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("heavy_fuel")
                 .inputFluids(HeavyFuel, 1)
                 .inputFluids(Air, 22)
-                .duration(90)
+                .duration(80)
                 .EUt(-V[ULV])
                 .save();
 
