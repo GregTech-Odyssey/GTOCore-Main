@@ -5,11 +5,12 @@ import com.gtocore.common.data.GTOBlockEntities;
 import com.gtocore.common.pipe.mana.LevelManaPipeNet;
 import com.gtocore.common.pipe.mana.ManaPipeProperties;
 import com.gtocore.common.pipe.mana.ManaPipeType;
+import com.gtocore.common.pipe.mana.ManaRoutePath;
+import com.gtocore.utils.ManaUnification;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.PipeBlock;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.model.PipeModel;
 import com.gregtechceu.gtceu.client.renderer.block.PipeBlockRenderer;
@@ -28,10 +29,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.api.BotaniaForgeCapabilities;
 
 import java.util.List;
 
@@ -59,12 +60,15 @@ public class ManaPipeBlock extends PipeBlock<ManaPipeType, ManaPipeProperties, L
         return LevelManaPipeNet.getOrCreate(level);
     }
 
-    /** 与 GT 流体管道同款：把本档的每秒流量写在工具提示里。 */
+    /** 与 GT 流体管道同款：把本档的每秒流量写在工具提示里；魔源按 4 魔源 = 1 魔力折算。 */
     @Override
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Tips.stat(Component.translatable("gtocore.mana_pipe.transfer_rate",
                 FormattingUtil.formatNumbers(pipeType.properties.manaPerSecond()), pipeType.poolsPerSecond())));
+        tooltip.add(Tips.stat(Component.translatable("gtocore.mana_pipe.source_rate",
+                FormattingUtil.formatNumbers(ManaUnification.manaToSource(pipeType.properties.manaPerSecond())))));
+        tooltip.add(Tips.feature(Component.translatable("gtocore.mana_pipe.conversion")));
     }
 
     @Override
@@ -119,6 +123,8 @@ public class ManaPipeBlock extends PipeBlock<ManaPipeType, ManaPipeProperties, L
 
     @Override
     public boolean canPipeConnectToBlock(PipeBlockEntity<ManaPipeType, ManaPipeProperties> selfTile, Direction side, @Nullable BlockEntity tile) {
-        return GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, tile, side.getOpposite()) != null;
+        // 魔源没有 Forge 能力，按方块实体判定（与 IManaMachine#findSourceJar 一致）
+        return tile instanceof ISourceTile ||
+                ManaRoutePath.receiverOf(tile, side.getOpposite()) != null;
     }
 }

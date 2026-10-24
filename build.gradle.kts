@@ -4,6 +4,7 @@ import org.gradle.plugins.ide.eclipse.model.SourceFolder
 import org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.zip.ZipFile
 
 plugins {
     idea
@@ -39,8 +40,13 @@ val parchment_mappings_version = prop("parchment_mappings_version")
 val mixinextras_version = prop("mixinextras_version")
 val taffy_version = prop("taffy_version")
 val ae2_version = prop("ae2_version")
+val emi_version = prop("emi_version")
+val botania_version = prop("botania_version")
+val ars_nouveau_version = prop("ars_nouveau_version")
 val gtceu_version = prop("gtceu_version")
 val datasynclib_version = prop("datasynclib_version")
+val gtoutils_version = prop("gtoutils_version")
+val gtorenders_version = prop("gtorenders_version")
 val recipeSearch_version = prop("recipeSearch_version")
 val architectury_version = prop("architectury_version")
 val resourcefullib_version = prop("resourcefullib_version")
@@ -48,7 +54,6 @@ val resourcefulconfig_version = prop("resourcefulconfig_version")
 val botarium_version = prop("botarium_version")
 val ad_astra_version = prop("ad_astra_version")
 val jei_version = prop("jei_version")
-val emi_version = prop("emi_version")
 val curiosVersion = prop("curiosVersion")
 
 version = mod_version
@@ -189,10 +194,6 @@ repositories {
         forRepository { maven("https://cursemaven.com") }
         filter { includeGroup("curse.maven") }
     }
-    exclusiveContent { // EMI
-        forRepository { maven("https://maven.terraformersmc.com/releases/") }
-        filter { includeGroup("dev.emi") }
-    }
     exclusiveContent { // Xaero's
         forRepository { maven("https://chocolateminecraft.com/maven/") }
         filter { includeGroupAndSubgroups("xaero") }
@@ -216,7 +217,6 @@ repositories {
     maven("https://mvnrepository.com/artifact/com.hollingsworth.ars_nouveau")
     maven("https://maven.bawnorton.com/releases")
     maven("https://maven.enjarai.dev/mirrors")
-    maven("https://maven.blamejared.com/vazkii/botania/Botania/")
     maven("https://maven.twelveiterations.com/repository/maven-public/") { content { includeGroup("net.blay09.mods") } }
     maven("https://neoforged.forgecdn.net/releases")
     maven("https://neoforged.forgecdn.net/mojang-meta")
@@ -270,11 +270,13 @@ dependencies {
 
     // jarJar 内嵌依赖
     "org.apache.commons:commons-math3:3.6.1".let { implementation(it); jarJar(it) }
-    "appeng:appliedenergistics2-forge-1.20.1:$ae2_version".let { modImplementation(it); jarJar(it) }
-    "com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$gtceu_version".let { modImplementation(it); jarJar(it) }
 
     // 全局运行范围
+    modImplementation("appeng:appliedenergistics2-forge-1.20.1:$ae2_version")
+    modImplementation("com.gregtechceu.gtceu:gtceu-1.20.1-forge-1.20.1:$gtceu_version")
     modImplementation("com.gto:datasynclib-forge-1.20.1:$datasynclib_version")
+    modImplementation("com.gto:gtoutils-forge-1.20.1:$gtoutils_version")
+    modImplementation("com.gto:gtorenders-forge-1.20.1:$gtorenders_version")
     modImplementation("curse.maven:fast-recipe-search-1406509:8737025")
     modCompileOnly("com.gto.recipesearch:RecipeSearch:$recipeSearch_version")
     implementation("com.gto.fastcollection:FastCollection:26.8.7")
@@ -286,8 +288,6 @@ dependencies {
     // Applied Energistics 2
     modImplementation("org.appliedenergistics:guideme:20.1.13")
     modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
-    modImplementation("curse.maven:applied-botanics-addon-610632:7024180")
-    modImplementation("curse.maven:ars-energistique-905641:5504444")
     modImplementation("curse.maven:ex-pattern-provider-892005:8918777")
     modImplementation("curse.maven:merequester-688367:5689932")
     modImplementation("curse.maven:ae2-toggleable-view-cell-1141472:8054118")
@@ -303,14 +303,14 @@ dependencies {
     modImplementation("curse.maven:ad-astra-rocketed-996980:5245376")
 
     // JEI / EMI
+    modImplementation("dev.emi:emi-forge-1.20.1:$emi_version")
     modCompileOnly("mezz.jei:jei-$minecraft_version-forge-api:$jei_version") { isTransitive = false }
     modCompileOnly("mezz.jei:jei-$minecraft_version-common-api:$jei_version") { isTransitive = false }
     modImplementation("mezz.jei:jei-$minecraft_version-forge:$jei_version") { isTransitive = false }
-    modImplementation("dev.emi:emi-forge:$emi_version")
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
-    modImplementation("vazkii.botania:Botania:$minecraft_version-455-FORGE")
+    modImplementation("vazkii.botania:Botania-forge-1.20.1:$botania_version")
     modImplementation("vazkii.patchouli:Patchouli:$minecraft_version-84.1-FORGE")
     modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
     modImplementation("curse.maven:event-wrapper-1256971:7182179")
@@ -344,10 +344,17 @@ dependencies {
     modImplementation("curse.maven:pipez-443900:6945379")
     modImplementation("curse.maven:jumbo-furnace-390880:4685578")
     modImplementation("curse.maven:easy-villagers-400514:6831415")
+    modImplementation("curse.maven:ae2-import-export-card-982512:5551629")
+    modImplementation("curse.maven:ae2-toogleable-view-cell-1141472:8054118")
+    modImplementation("curse.maven:ae2-network-analyser-961856:5107131")
+    modImplementation("curse.maven:explorers-compass-491794:7892927")
+    modImplementation("curse.maven:natures-compass-252848:7892948")
+    modImplementation("curse.maven:foodvariations-1109288:8832188")
+    modImplementation("curse.maven:spice-of-life-carrot-edition-277616:4888575")
 
     // Ars Nouveau
-    modCompileOnly("com.hollingsworth.ars_nouveau:ars_nouveau-$minecraft_version:4.12.6.256")
-    modRuntimeOnly("curse.maven:ars-nouveau-401955:5894609")
+    modImplementation("com.hollingsworth.ars_nouveau:ars_nouveau-1.20.1-forge-1.20.1:$ars_nouveau_version")
+    modRuntimeOnly("curse.maven:geckolib-388172:8285794")
     modImplementation("curse.maven:ars-meteorites-1278083:7125271")
 
     runtimeMod("curse.maven:open-parties-and-claims-636608:8690609")
@@ -356,16 +363,19 @@ dependencies {
     // 只在运行时需要（无源码引用）
     modRuntimeOnly("curse.maven:cloth-config-348521:5729105")
     modRuntimeOnly("curse.maven:more-red-387638:4691333")
-    modRuntimeOnly("curse.maven:torchmaster-254268:5849456")
+    runtimeMod("curse.maven:torchmaster-254268:5849456")
+    modRuntimeOnly("curse.maven:xtones-reworked-694231:5907303")
 
     // 客户端与服务端
     sidedMod("curse.maven:ftb-quests-forge-289412:8078538")
-    sidedMod("curse.maven:ftb-teams-forge-404468:7499810")
     sidedMod("curse.maven:ftb-xmod-compat-889915:6402486")
+    sidedMod("curse.maven:ftb-teams-forge-404468:7499810")
     sidedMod("curse.maven:sophisticated-backpacks-422301:9083935")
     sidedMod("curse.maven:sophisticated-core-618298:9112479")
     sidedMod("curse.maven:sophisticated-storage-619320:9083978")
     sidedMod("curse.maven:tool-belt-260262:5929061")
+    sidedMod("curse.maven:immersive-aircraft-666014:8865821")
+    sidedMod("curse.maven:factory-blocks-640001:6267781")
     listOf("curse.maven:spark-361579:4738952", "curse.maven:modern-ui-352491:5977000").forEach {
         "modClientRuntimeOnly"(it)
         "modServerRuntimeOnly"(it)
@@ -382,7 +392,6 @@ dependencies {
     clientMod("curse.maven:embeddium-908741:5681725")
     clientMod("curse.maven:moremorelang-1444917:8673054")
     "modClientRuntimeOnly"("curse.maven:fzzy-config-1005914:7085017")
-    "modClientRuntimeOnly"("curse.maven:ae2-network-analyser-961856:5107131")
     "modClientRuntimeOnly"("curse.maven:imblocker-483760:6922546")
 
     // 只编译（含 gtolib mixin 目标）
@@ -396,8 +405,7 @@ dependencies {
     modCompileOnly("curse.maven:Shimmer-forge-627824:5685940")
     modCompileOnly("curse.maven:chisel-reborn-551763:6266130")
     modCompileOnly("curse.maven:biomes-o-plenty-220318:6028852")
-    modCompileOnly("curse.maven:oh-the-biomes-weve-gone-1070751:6337823")
-    modCompileOnly("curse.maven:emi-trades-villager-trading-emi-plugin-735523:4901194")
+    modCompileOnly("curse.maven:oh-the-biomes-weve-gone-1070751:8255932")
     modCompileOnly("curse.maven:athena-841890:5176879")
     modCompileOnly("curse.maven:inventory-essentials-368825:6977231")
     modCompileOnly("curse.maven:balm-531761:6978679")
@@ -620,14 +628,27 @@ publishing {
 gtoPublish {
     publishMaven = true
     publishGithub = false
-    publishCurseforge = false
     mavenRepoName = "gtodysseyRepository"
     mavenRepoUrl = "releases" // 可选 releases / private
     minecraftVersion = "1.20.1"
     modLoader = "Forge"
     githubRepo = "owner/repo-name" // 启用 GitHub 发布时必填
-    curseforgeProjectId = "123456" // 启用 CurseForge 时必填
+    curseforgeProjectId = "1756992"
     curseforgeJavaVersion = "Java 21" // 运行时最低 Java（GTCEu 等依赖要求 21+）
+    curseforgeEnvironment = "both"
+    curseforgeRelations.putAll(
+        mapOf(
+            "gregtech-modern-gto-edition" to "required",
+            "applied-energistics-2-gto-edition" to "required",
+            "ars-nouveau-gto-edition" to "required",
+            "botania-gto-edition" to "required",
+            "gtoutils" to "required",
+            "gtorender" to "required",
+            "gto-seal-runtime" to "required",
+            "data-sync-lib" to "required",
+            "ad-astra" to "required",
+        ),
+    )
 }
 
 // ---------- IDE ----------

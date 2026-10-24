@@ -58,6 +58,15 @@ final class BiochemicaReaction {
                 .duration(1600)
                 .save();
 
+        BIOCHEMICAL_REACTION_RECIPES.builder("wandering_trader_spawn_egg")
+                .inputItems(Items.VILLAGER_SPAWN_EGG.asItem())
+                .inputItems(GTOItems.GLACIO_SPIRIT)
+                .outputItems(Items.WANDERING_TRADER_SPAWN_EGG)
+                .inputFluids(GTMaterials.Mutagen, 1000)
+                .EUt(7680L)
+                .duration(1600)
+                .save();
+
         BIOCHEMICAL_REACTION_RECIPES.builder("succinic_acid_dust")
                 .inputItems(dust, GTMaterials.Sugar, 24)
                 .inputItems(dust, GTOMaterials.EschericiaColi)

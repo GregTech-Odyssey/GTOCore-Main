@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
+import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -21,12 +22,12 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.common.item.BotaniaItems;
 
 import java.util.List;
-import java.util.Map;
 
 public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultiblockMachine implements IManaMultiblock {
 
@@ -38,15 +39,16 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
         return c;
     }
 
-    private static final Map<Integer, Item> RUNES = Map.of(
-            1, BotaniaItems.runeWater,
-            2, BotaniaItems.runeFire,
-            3, BotaniaItems.runeAir,
-            4, BotaniaItems.runeEarth,
-            5, BotaniaItems.runeSpring,
-            6, BotaniaItems.runeSummer,
-            7, BotaniaItems.runeAutumn,
-            8, BotaniaItems.runeWinter);
+    private static final Int2ObjectOpenHashMap<Item> RUNES = Util.make(new Int2ObjectOpenHashMap<>(), map -> {
+        map.put(1, BotaniaItems.runeWater);
+        map.put(2, BotaniaItems.runeFire);
+        map.put(3, BotaniaItems.runeAir);
+        map.put(4, BotaniaItems.runeEarth);
+        map.put(5, BotaniaItems.runeSpring);
+        map.put(6, BotaniaItems.runeSummer);
+        map.put(7, BotaniaItems.runeAutumn);
+        map.put(8, BotaniaItems.runeWinter);
+    });
 
     @SaveToDisk(defaultValue = "0")
     private int tick;

@@ -59,11 +59,6 @@ public final class Sophisticated {
             VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("auto_smelting_upgrade"), RegistriesUtils.getItem("sophisticatedbackpacks:auto_smelting_upgrade"),
                     RegistriesUtils.getItem("sophisticatedbackpacks:smelting_upgrade"),
                     GTItems.CONVEYOR_MODULE_LV.asItem());
-            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("tool_swapper_upgrade"), RegistriesUtils.getItem("sophisticatedbackpacks:tool_swapper_upgrade"),
-                    "ABA",
-                    "CDE",
-                    "FGF",
-                    'A', new MaterialEntry(TagPrefix.dust, GTMaterials.Redstone), 'B', RegistriesUtils.getItem("gtceu:flint_sword"), 'C', RegistriesUtils.getItem("gtceu:flint_pickaxe"), 'D', RegistriesUtils.getItem("sophisticatedbackpacks:upgrade_base"), 'E', RegistriesUtils.getItem("gtceu:flint_axe"), 'F', new MaterialEntry(TagPrefix.ingot, GTMaterials.Iron), 'G', RegistriesUtils.getItem("gtceu:flint_shovel"));
             ASSEMBLER_RECIPES.builder("ender_linker")
                     .inputItems(TagPrefix.plate, GTMaterials.EnderPearl, 2)
                     .inputItems("ars_nouveau:relay_warp")
@@ -74,6 +69,36 @@ public final class Sophisticated {
                     .EUt(120L)
                     .duration(200)
                     .save();
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_1_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_1_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.SUPER_CHEST[GTValues.MV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_2_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_2_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.SUPER_CHEST[GTValues.HV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_3_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_3_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.SUPER_CHEST[GTValues.EV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_starter_tier_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_starter_tier_to_tier_4_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1_to_tier_2_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1_to_tier_2_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.SUPER_CHEST[GTValues.HV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1_to_tier_3_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1_to_tier_3_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.SUPER_CHEST[GTValues.EV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_1_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_1_to_tier_4_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_2_to_tier_3_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_2_to_tier_3_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.SUPER_CHEST[GTValues.EV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_2_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_2_to_tier_4_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
+            VanillaRecipeHelper.addShapelessRecipe(GTOCore.id("stack_upgrade_tier_3_to_tier_4_conversion"), RegistriesUtils.getItem("sophisticatedbackpacks:stack_upgrade_tier_3_to_tier_4_conversion"),
+                    Items.LEATHER.asItem(),
+                    GTMachines.QUANTUM_CHEST[GTValues.IV].asItem());
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("backpack"), RegistriesUtils.getItemStack("sophisticatedbackpacks:backpack"),
                     "ABA",
                     "BCB",
@@ -782,8 +807,9 @@ public final class Sophisticated {
             filters.add(RLUtils.sp("iron_backpack"));
             filters.add(RLUtils.sp("iron_backpack_from_copper"));
             filters.add(RLUtils.sp("stack_upgrade_starter_tier_to_tier_1_conversion"));
-            add(filters, "sophisticatedcore:ender_link");
+            add(filters, "sophisticatedcore:ender_linker");
             filters.add(RLUtils.sp("tool_swapper_upgrade"));
+            filters.add(RLUtils.sp("advanced_tool_swapper_upgrade"));
             for (int i = 1; i <= 3; i++) {
                 for (int j = i + 1; j <= 4; j++) {
                     filters.add(RLUtils.sp("stack_upgrade_tier_%s_to_tier_%s_conversion".formatted(i, j)));

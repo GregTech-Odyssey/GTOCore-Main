@@ -68,7 +68,7 @@ public final class ArsNouveauRecipes {
             ImbuementRecipe("spirit_fuel", Ingredient.of(ExtraBotanyItems.nightmareFuel), new ItemStack(ExtraBotanyItems.spiritFuel), 2000,
                     new Ingredient[] { Ingredient.of(Blocks.PLAYER_HEAD) });
 
-            ImbuementRecipe("arseng_me_source_jar", Ingredient.of(GTOBlocks.LAURERIL_JAR), RegistriesUtils.getItemStack("arseng:me_source_jar"), 10000,
+            ImbuementRecipe("arseng_me_source_jar", Ingredient.of(GTOBlocks.STANDARD_LAURERIL_JAR), RegistriesUtils.getItemStack("ars_nouveau:me_source_jar"), 10000,
                     new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(TagUtils.createItemTag(RLUtils.ae("interface"))) });
 
         }
@@ -405,13 +405,13 @@ public final class ArsNouveauRecipes {
 
         // Ars Energistique 灌注核心
         {
-            MultiblockImbuementRecipe(5, true, "arseng_me_source_jar", Ingredient.of(GTOBlocks.LAURERIL_JAR), RegistriesUtils.getItemStack("arseng:me_source_jar"), 10000,
+            MultiblockImbuementRecipe(5, true, "arseng_me_source_jar", Ingredient.of(GTOBlocks.STANDARD_LAURERIL_JAR), RegistriesUtils.getItemStack("ars_nouveau:me_source_jar"), 10000,
                     new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(TagUtils.createItemTag(RLUtils.ae("interface"))) }, new FluidStack[0]);
-            MultiblockImbuementRecipe(5, true, "arseng_source_acceptor", Ingredient.of(RegistriesUtils.getItem("ae2:energy_acceptor")), RegistriesUtils.getItemStack("arseng:source_acceptor"), 10000,
+            MultiblockImbuementRecipe(5, true, "arseng_source_acceptor", Ingredient.of(RegistriesUtils.getItem("ae2:energy_acceptor")), RegistriesUtils.getItemStack("ars_nouveau:source_acceptor"), 10000,
                     new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem_block")),
                             Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK), Ingredient.of(Items.GOLD_BLOCK) },
                     new FluidStack[0]);
-            MultiblockImbuementRecipe(5, true, "arseng_source_cell_housing", Ingredient.of(RegistriesUtils.getItem("ae2:item_cell_housing")), RegistriesUtils.getItemStack("arseng:source_cell_housing"), 10000,
+            MultiblockImbuementRecipe(5, true, "arseng_source_cell_housing", Ingredient.of(RegistriesUtils.getItem("ae2:item_cell_housing")), RegistriesUtils.getItemStack("ars_nouveau:source_cell_housing"), 10000,
                     new Ingredient[] { Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:manipulation_essence")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem")), Ingredient.of(RegistriesUtils.getItem("ars_nouveau:source_gem")),
                             Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT), Ingredient.of(Items.GOLD_INGOT) },
                     new FluidStack[0]);
@@ -552,6 +552,24 @@ public final class ArsNouveauRecipes {
                     "AAA",
                     'A', RegistriesUtils.getItemStack("ars_nouveau:archwood_slab"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ManaGlass));
 
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_source_jar"), RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"),
+                    "ABA",
+                    "CDC",
+                    "ABA",
+                    'A', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ElfGlass), 'C', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'D', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
+
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("standard_laureril_source_jar"), GTOBlocks.STANDARD_LAURERIL_JAR.asItem(),
+                    "AAA",
+                    "ABA",
+                    "AAA",
+                    'A', new MaterialEntry(TagPrefix.plate, GTOMaterials.Laureril), 'B', RegistriesUtils.getItemStack("ars_nouveau:source_jar"));
+
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_laureril_source_jar"), GTOBlocks.LARGE_LAURERIL_JAR.asItem(),
+                    "AAA",
+                    "ABA",
+                    "AAA",
+                    'A', new MaterialEntry(TagPrefix.plateDouble, GTOMaterials.Laureril), 'B', RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"));
+
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("relay"), RegistriesUtils.getItemStack("ars_nouveau:relay"),
                     "A A",
                     "ABA",
@@ -611,6 +629,24 @@ public final class ArsNouveauRecipes {
                     "B B",
                     "BBB",
                     'A', RegistriesUtils.getItemStack("ars_nouveau:archwood_slab"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ManaGlass));
+
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_source_jar"), RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"),
+                    "ABA",
+                    "CDC",
+                    "ABA",
+                    'A', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ElfGlass), 'C', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'D', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
+
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("standard_laureril_source_jar"), GTOBlocks.STANDARD_LAURERIL_JAR.asItem(),
+                    "AAA",
+                    "ABA",
+                    "AAA",
+                    'A', new MaterialEntry(TagPrefix.plate, GTOMaterials.Laureril), 'B', RegistriesUtils.getItemStack("ars_nouveau:source_jar"));
+
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_laureril_source_jar"), GTOBlocks.LARGE_LAURERIL_JAR.asItem(),
+                    "AAA",
+                    "ABA",
+                    "AAA",
+                    'A', new MaterialEntry(TagPrefix.plateDouble, GTOMaterials.Laureril), 'B', RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"));
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("repository"), RegistriesUtils.getItemStack("ars_nouveau:repository"),
                     "ABA",

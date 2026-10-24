@@ -5,156 +5,106 @@ import com.gtocore.api.research.ResearchTag;
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RegistriesUtils;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.SwitchedContent;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.elements.ae.PhantomAEKeySlot;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import appeng.api.client.AEKeyRendering;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
-import com.gto.datasynclib.util.ByteBufCodecExtends;
-import com.gto.fastcollection.fastutil.OpenCacheHashSet;
-import com.lowdragmc.lowdraglib.gui.ingredient.IGhostIngredientTarget;
-import com.lowdragmc.lowdraglib.gui.ingredient.Target;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.SelectorWidget;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.utils.Position;
-import dev.emi.emi.api.stack.EmiStack;
-import org.jetbrains.annotations.NotNull;
+import dev.vfyjxf.taffy.style.FlexWrap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.Locale;
 
-final class DataScanningEditorWidget extends DraggableScrollableWidgetGroup {
+/** 扫描编辑草稿只保存在当前界面的服务端实例里，控件值和可变长结构均由 uipro 同步。 */
+final class DataScanningEditorWidget extends UIElement {
 
-    private static final int WIDTH = 300;
-    private static final int HEIGHT = 166;
-    private static final int LABEL_X = 6;
-    private static final int INPUT_X = 96;
-    private static final int INPUT_WIDTH = 190;
-    private static final int ROW_HEIGHT = 20;
+    private static final int WIDTH = 2 * UISizes.SLOT_ROW_WIDTH;
 
-    private static final int ACTION_SET_TARGET = 20;
-
-    private final EditorState state = new EditorState();
+    private final ObjectArrayList<AEKey> targets = new ObjectArrayList<>();
+    private final ObjectArrayList<PointEntry> points = new ObjectArrayList<>();
+    private final ResearchTag[] tags = new ResearchTag[ResearchTag.TAGS.keys().size()];
 
     DataScanningEditorWidget() {
-        super(0, 0, WIDTH, HEIGHT);
-        setYScrollBarWidth(4);
-        rebuildWidgets();
+        layout(l -> l.column().width(WIDTH));
+        for (int i = 0; i < tags.length; i++) tags[i] = ResearchTag.TAGS.get(i);
+
+        var page = Form.page().layout(l -> l.width(WIDTH));
+        page.addChild(section("Scan targets", new SwitchedContent(targets::size, (count, remote) -> targetSlots(count))));
+
+        var add = Button.of(LayoutStyle.AUTO).bindClientText(() -> "Add research points")
+                .setOnServerClick(this::addResearchPoint).disabled(() -> points.size() >= tags.length, null);
+        page.addChild(section("Research points", add, new SwitchedContent(points::size, (count, remote) -> pointRows(count))));
+        page.addChild(Button.of(LayoutStyle.AUTO).bindClientText(() -> "Export Java to log")
+                .setVariant(UITheme.ButtonVariant.CONFIRM).setOnServerClick(this::exportToLog));
+        addChild(page);
     }
 
-    private void rebuildWidgets() {
-        clearAllWidgets();
-        int y = 5;
+    private static UIElement section(String title, Widget... children) {
+        return UIElement.section().addChild(TextLine.constant(LayoutStyle.AUTO, Component.literal(title))).addChildren(children);
+    }
 
-        addLabel(y, "Scan target");
-        addWidget(new IngredientGhostSlot(INPUT_X, y, () -> state.target, this::setTargetFromClient));
-        addWidget(button(INPUT_X + 21, y, 18, 18, "X", ignored -> {
-            state.target = null;
-            rebuildWidgets();
-        }));
-        addWidget(rollingText(INPUT_X + 44, y, INPUT_WIDTH - 44, displayIngredient(state.target)));
-        y += ROW_HEIGHT;
-
-        addLabel(y, "Research points");
-        addWidget(button(INPUT_X + INPUT_WIDTH - 18, y, 18, 18, "+", ignored -> addResearchPoint()));
-        y += ROW_HEIGHT;
-
-        List<String> tagNames = tagNames();
-        for (int index = 0; index < state.points.size(); index++) {
-            int row = index;
-            PointEntry point = state.points.get(index);
-            SelectorWidget tagSelector = new SelectorWidget(INPUT_X, y, 105, 18, tagNames, -1)
-                    .setButtonBackground(GuiTextures.BUTTON)
-                    .setMaxCount(8)
-                    .setValue(point.tagName)
-                    .setOnChanged(value -> point.tagName = value);
-            addWidget(tagSelector);
-            TextFieldWidget amountField = new TextFieldWidget(INPUT_X + 109, y, 59, 18,
-                    () -> Long.toString(point.amount),
-                    value -> point.amount = parseLong(value, point.amount))
-                    .setCurrentString(point.amount)
-                    .setMaxStringLength(20)
-                    .setNumbersOnly(1L, Long.MAX_VALUE);
-            addWidget(amountField);
-            addWidget(button(INPUT_X + INPUT_WIDTH - 18, y, 18, 18, "X", ignored -> {
-                state.points.remove(row);
-                rebuildWidgets();
-            }));
-            y += ROW_HEIGHT;
+    private UIElement targetSlots(int count) {
+        var slots = new UIElement().layout(l -> l.row().flexWrap(FlexWrap.WRAP));
+        // 最后一个槽永远为空；清空已有槽时从列表删除，后续槽位按顺序补齐。
+        for (int i = 0; i <= count; i++) {
+            int index = i;
+            slots.addChild(PhantomAEKeySlot.of(() -> index < targets.size() ? targets.get(index) : null,
+                    key -> setTarget(index, key), key -> true).xeiPhantom());
         }
-
-        y += 2;
-        addWidget(button(INPUT_X, y, INPUT_WIDTH, 20, "Export Java to log", click -> {
-            if (!click.isRemote) {
-                exportToLog();
-            }
-        }));
-        y += 25;
-
-        addWidget(new Widget(0, y, WIDTH - 5, 1));
+        return slots;
     }
 
-    private void addLabel(int y, String text) {
-        addWidget(new LabelWidget(LABEL_X, y + 5, text));
+    private void setTarget(int index, @Nullable AEKey key) {
+        if (index < targets.size()) {
+            if (key == null) targets.remove(index);
+            else targets.set(index, key);
+        } else if (key != null) {
+            targets.add(key);
+        }
     }
 
-    private ButtonWidget button(int x, int y, int width, int height, String text, Consumer<com.lowdragmc.lowdraglib.gui.util.ClickData> action) {
-        return new ButtonWidget(x, y, width, height,
-                new GuiTextureGroup(GuiTextures.BUTTON, new TextTexture(text)), action);
-    }
-
-    private ImageWidget rollingText(int x, int y, int width, String text) {
-        return new ImageWidget(x, y, width, 18,
-                new TextTexture(text, -1).setWidth(width).setType(TextTexture.TextType.ROLL));
+    private UIElement pointRows(int count) {
+        var rows = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));
+        for (int i = 0; i < count; i++) {
+            int index = i;
+            var row = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
+            var tag = new ResearchTagSelector(tags, () -> index < points.size() ? points.get(index).tag : tags[0], value -> {
+                if (index < points.size()) points.get(index).tag = value;
+            });
+            var amount = NumberField.ofLong(LayoutStyle.AUTO, () -> index < points.size() ? points.get(index).amount : 1,
+                    value -> {
+                        if (index < points.size()) points.get(index).amount = value;
+                    }, 1, Long.MAX_VALUE).layout(l -> l.flex(1));
+            var remove = Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER).setOnServerClick(() -> {
+                if (index < points.size()) points.remove(index);
+            });
+            rows.addChild(row.addChildren(tag, amount, remove));
+        }
+        return rows;
     }
 
     private void addResearchPoint() {
-        for (String tag : tagNames()) {
-            boolean used = state.points.stream().anyMatch(entry -> entry.tagName.equals(tag));
-            if (!used) {
-                state.points.add(new PointEntry(tag, 1L));
-                rebuildWidgets();
+        var used = new ReferenceOpenHashSet<ResearchTag>(points.size());
+        for (int i = 0; i < points.size(); i++) used.add(points.get(i).tag);
+        for (var tag : tags) {
+            if (!used.contains(tag)) {
+                points.add(new PointEntry(tag));
                 return;
-            }
-        }
-    }
-
-    private void setTargetFromClient(IngredientValue value) {
-        state.target = value;
-        rebuildWidgets();
-        writeClientAction(ACTION_SET_TARGET, buffer -> writeIngredient(buffer, value));
-    }
-
-    @Override
-    public void handleClientAction(int id, FriendlyByteBuf buffer) {
-        super.handleClientAction(id, buffer);
-        if (id == ACTION_SET_TARGET) {
-            IngredientValue value = readIngredient(buffer);
-            if (isRegistered(value)) {
-                state.target = value;
-                rebuildWidgets();
             }
         }
     }
@@ -169,181 +119,56 @@ final class DataScanningEditorWidget extends DraggableScrollableWidgetGroup {
     }
 
     private @Nullable String validate() {
-        if (state.target == null || !isRegistered(state.target)) {
-            return "an item or fluid scan target is required";
-        }
-        if (state.points.isEmpty()) {
-            return "at least one ResearchPoint entry is required";
-        }
-        var tags = new OpenCacheHashSet<String>();
-        for (PointEntry point : state.points) {
-            if (!ResearchTag.TAGS.containsKey(point.tagName)) {
-                return "unknown ResearchTag: " + point.tagName;
-            }
-            if (!tags.add(point.tagName)) {
-                return "duplicate ResearchTag: " + point.tagName;
-            }
-            if (point.amount <= 0) {
-                return "ResearchPoint amounts must be positive";
-            }
+        if (targets.isEmpty()) return "at least one scan target is required";
+        if (points.isEmpty()) return "at least one ResearchPoint entry is required";
+        var used = new ReferenceOpenHashSet<ResearchTag>(points.size());
+        for (int i = 0; i < points.size(); i++) {
+            var point = points.get(i);
+            if (!used.add(point.tag)) return "duplicate ResearchTag: " + point.tag.getName();
+            if (point.amount <= 0) return "ResearchPoint amounts must be positive";
         }
         return null;
     }
 
     private String generateCode() {
-        StringBuilder code = new StringBuilder("DataScanningManager.registerDataScanning(")
-                .append(ingredientExpression(state.target))
-                .append(", ResearchPoints.of(");
-        for (PointEntry point : state.points) {
-            code.append("ResearchTag.")
-                    .append(escape(point.tagName).toUpperCase())
-                    .append(", ")
-                    .append(point.amount)
-                    .append("L, ");
+        var researchPoints = new StringBuilder("ResearchPoints.of(");
+        for (int i = 0; i < points.size(); i++) {
+            if (i > 0) researchPoints.append(", ");
+            var point = points.get(i);
+            researchPoints.append("ResearchTag.").append(point.tag.getName().toUpperCase(Locale.ROOT))
+                    .append(", ").append(point.amount).append('L');
         }
-        return code.delete(code.length() - 2, code.length()).append("));").toString();
-    }
-
-    private static String ingredientExpression(IngredientValue value) {
-        String method = value.kind == IngredientKind.ITEM ? "getItem" : "getFluid";
-        return "RegistriesUtils." + method + "(\"" + escape(value.id.toString()) + "\")";
-    }
-
-    private static String displayIngredient(@Nullable IngredientValue value) {
-        return value == null ? "None" : value.id.toString();
-    }
-
-    private static List<String> tagNames() {
-        return ResearchTag.TAGS.keys().stream().sorted().toList();
-    }
-
-    private static long parseLong(String value, long fallback) {
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException ignored) {
-            return fallback;
+        researchPoints.append(')');
+        var code = new StringBuilder();
+        for (int i = 0; i < targets.size(); i++) {
+            if (i > 0) code.append('\n');
+            code.append("DataScanningManager.registerDataScanning(").append(ingredientExpression(targets.get(i)))
+                    .append(", ").append(researchPoints).append(");");
         }
+        return code.toString();
+    }
+
+    private static String ingredientExpression(AEKey key) {
+        if (key instanceof AEItemKey item && !item.hasTag()) {
+            return "RegistriesUtils.getItem(\"" + escape(RegistriesUtils.getIdLocation(item.getItem()).toString()) + "\")";
+        }
+        if (key instanceof AEFluidKey fluid && !fluid.hasTag()) {
+            return "RegistriesUtils.getFluid(\"" + escape(RegistriesUtils.getIdLocation(fluid.getFluid()).toString()) + "\")";
+        }
+        return "AEKey.fromTagGeneric(RecipeEditorBehavior.parseTemplateTag(\"" + escape(key.toTagGeneric().toString()) + "\"))";
     }
 
     private static String escape(String value) {
-        return value.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n");
-    }
-
-    private static void writeIngredient(FriendlyByteBuf buffer, IngredientValue value) {
-        buffer.writeEnum(value.kind);
-        ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.encode(buffer, value.id);
-    }
-
-    private static IngredientValue readIngredient(FriendlyByteBuf buffer) {
-        return new IngredientValue(buffer.readEnum(IngredientKind.class), ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.decode(buffer));
-    }
-
-    private final class IngredientGhostSlot extends Widget implements IGhostIngredientTarget {
-
-        private final java.util.function.Supplier<IngredientValue> valueSupplier;
-        private final Consumer<IngredientValue> valueConsumer;
-
-        private IngredientGhostSlot(int x, int y, java.util.function.Supplier<IngredientValue> valueSupplier,
-                                    Consumer<IngredientValue> valueConsumer) {
-            super(x, y, 18, 18);
-            this.valueSupplier = valueSupplier;
-            this.valueConsumer = valueConsumer;
-            setBackground(GuiTextures.SLOT);
-            IngredientValue value = valueSupplier.get();
-            setHoverTooltips(Component.literal(value == null ? "Drop an item or fluid from EMI" : value.id.toString()));
-        }
-
-        @Override
-        public List<Target> getPhantomTargets(Object ingredient) {
-            IngredientValue value = ingredientValue(ingredient);
-            if (value == null) {
-                return Collections.emptyList();
-            }
-            return List.of(new Target() {
-
-                @Override
-                public @NotNull Rect2i getArea() {
-                    return toRectangleBox();
-                }
-
-                @Override
-                public void accept(Object ignored) {
-                    valueConsumer.accept(value);
-                }
-            });
-        }
-
-        @Override
-        public void drawInBackground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-            Position position = getPosition();
-            AEKey key = toAEKey(valueSupplier.get());
-            if (key != null) {
-                AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, position.x + 1, position.y + 1, key);
-            } else {
-                graphics.drawString(Minecraft.getInstance().font, "+", position.x + 6, position.y + 5, 0xFFFFFFFF, false);
-            }
-        }
-    }
-
-    private static @Nullable IngredientValue ingredientValue(Object ingredient) {
-        if (!(ingredient instanceof EmiStack stack)) {
-            return null;
-        }
-        if (stack.getKey() instanceof Item item) {
-            ResourceLocation id = RegistriesUtils.getIdLocation(item);
-            return new IngredientValue(IngredientKind.ITEM, id);
-        }
-        if (stack.getKey() instanceof Fluid fluid) {
-            ResourceLocation id = RegistriesUtils.getIdLocation(fluid);
-            return new IngredientValue(IngredientKind.FLUID, id);
-        }
-        return null;
-    }
-
-    private static @Nullable AEKey toAEKey(@Nullable IngredientValue value) {
-        if (value == null) {
-            return null;
-        }
-        if (value.kind == IngredientKind.ITEM) {
-            Item item = ForgeRegistries.ITEMS.getValue(value.id);
-            return item == null ? null : AEItemKey.of(item);
-        }
-        Fluid fluid = ForgeRegistries.FLUIDS.getValue(value.id);
-        return fluid == null ? null : AEFluidKey.of(fluid);
-    }
-
-    private static boolean isRegistered(IngredientValue value) {
-        if (value.kind == IngredientKind.ITEM) {
-            return ForgeRegistries.ITEMS.containsKey(value.id);
-        }
-        return ForgeRegistries.FLUIDS.containsKey(value.id);
-    }
-
-    private enum IngredientKind {
-        ITEM,
-        FLUID
-    }
-
-    private static final class EditorState {
-
-        private @Nullable IngredientValue target;
-        private final List<PointEntry> points = new ArrayList<>();
+        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", "\\r").replace("\n", "\\n");
     }
 
     private static final class PointEntry {
 
-        private String tagName;
-        private long amount;
+        private ResearchTag tag;
+        private long amount = 1;
 
-        private PointEntry(String tagName, long amount) {
-            this.tagName = tagName;
-            this.amount = amount;
+        private PointEntry(ResearchTag tag) {
+            this.tag = tag;
         }
     }
-
-    private record IngredientValue(IngredientKind kind, ResourceLocation id) {}
 }

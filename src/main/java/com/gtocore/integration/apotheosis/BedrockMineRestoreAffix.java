@@ -3,8 +3,7 @@ package com.gtocore.integration.apotheosis;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
-import com.gregtechceu.gtceu.api.data.worldgen.bedrockfluid.BedrockFluidVeinSavedData;
-import com.gregtechceu.gtceu.api.data.worldgen.bedrockore.BedrockOreVeinSavedData;
+import com.gregtechceu.gtceu.api.data.worldgen.bedrock.BedrockVeinKind;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
@@ -27,7 +26,7 @@ import lombok.Getter;
 
 import java.util.Map;
 
-import static com.gregtechceu.gtceu.api.data.worldgen.bedrockore.BedrockOreVeinSavedData.MAXIMUM_VEIN_OPERATIONS;
+import static com.gregtechceu.gtceu.api.data.worldgen.bedrock.BedrockVeinEntry.MAX_OPERATIONS;
 import static net.minecraftforge.common.Tags.Blocks.ORES;
 
 @DataGeneratorScanned
@@ -73,21 +72,9 @@ public class BedrockMineRestoreAffix extends NumeralStatsAffix {
             float efficiency = (player instanceof FakePlayer) ? 0.05f : 1.0f;
             ChunkPos chunkPos = new ChunkPos(pos);
             float maxBuff = this.getBuff(rarity, level);
-            var maxRestore = MAXIMUM_VEIN_OPERATIONS * Math.max(1.0f, maxBuff * 0.035f);
-
-            if (this.isFluidMode) {
-                var data = BedrockFluidVeinSavedData.getOrCreate(serverLevel);
-                if (data.getFluidVeinWorldEntry(chunkPos.x, chunkPos.z).getDefinition() != null &&
-                        data.getFluidVeinWorldEntry(chunkPos.x, chunkPos.z).getOperationsRemaining() < maxRestore) {
-                    data.depleteVein(chunkPos.x, chunkPos.z, -Math.round(this.getBuff(rarity, level) * efficiency), true);
-                }
-            } else {
-                var data = BedrockOreVeinSavedData.getOrCreate(serverLevel);
-                if (data.getOreVeinWorldEntry(chunkPos.x, chunkPos.z).getDefinition() != null &&
-                        data.getOreVeinWorldEntry(chunkPos.x, chunkPos.z).getOperationsRemaining() < maxRestore) {
-                    data.depleteVein(chunkPos.x, chunkPos.z, -Math.round(this.getBuff(rarity, level) * efficiency), true);
-                }
-            }
+            var maxRestore = MAX_OPERATIONS * Math.max(1.0f, maxBuff * 0.035f);
+            var kind = this.isFluidMode ? BedrockVeinKind.FLUID : BedrockVeinKind.ORE;
+            kind.data(serverLevel).restore(chunkPos.x, chunkPos.z, Math.round(maxBuff * efficiency), maxRestore);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.gtocore.client.renderer;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.data.Galaxy;
 
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -9,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -30,6 +32,15 @@ public final class GTORenderTypes extends RenderType {
     private static final ShaderStateShard DIMENSIONALLY_TRANSCENDENT_OVERLAY_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(dimensionallyTranscendentOverlayShader, "Dimensionally transcendent overlay shader not loaded"));
     private static final ShaderStateShard STELLAR_FORGE_VORTEX_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(stellarForgeVortexShader, "Stellar forge vortex shader not loaded"));
     private static final ShaderStateShard SOLAR_SURFACE_VORTEX_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(solarSurfaceVortexShader, "Solar surface vortex shader not loaded"));
+    // Match the shader JSON on every draw, including when ShaderInstance reuses its blend-state cache.
+    private static final TransparencyStateShard DYSON_FORCE_FIELD_TRANSPARENCY = new TransparencyStateShard("dyson_force_field_transparency", () -> {
+        RenderSystem.enableBlend();
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+    }, () -> {
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
+    });
 
     public static final RenderType LIGHT_CYLINDER = RenderType.create("light_cylinder",
             DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, 256, false, false,
@@ -111,6 +122,25 @@ public final class GTORenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
+    public static final RenderType DYSON_FORCE_FIELD = RenderType.create("dyson_force_field",
+            DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES, 256, false, false,
+            RenderType.CompositeState.builder()
+                    .setTransparencyState(DYSON_FORCE_FIELD_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setShaderState(new ShaderStateShard(() -> getShader(GTORenderTypes.DYSON_FORCE_FIELD_SHADER_LOCATION)))
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
+    public static final RenderType SOLAR_ORBIT_SUN = RenderType.create("solar_orbit_sun",
+            DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLES, 256, false, false,
+            RenderType.CompositeState.builder()
+                    .setTextureState(new TextureStateShard(Galaxy.SOLAR.getStar(), false, false))
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setCullState(NO_CULL)
+                    .setShaderState(POSITION_TEX_SHADER)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
     public static final RenderType SOLAR_GLOBE = RenderType.create("solar_globe",
             DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false,
             RenderType.CompositeState.builder()
@@ -146,6 +176,41 @@ public final class GTORenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
+    public static final RenderType FROST_COAT = frostCoat("");
+    public static final RenderType FROST_GLINT_A = frostGlint("_a");
+    public static final RenderType FROST_GLINT_B = frostGlint("_b");
+    public static final RenderType FROST_COAT_ENDERMAN = frostCoat("_enderman");
+    public static final RenderType FROST_GLINT_ENDERMAN_A = frostGlint("_enderman_a");
+    public static final RenderType FROST_GLINT_ENDERMAN_B = frostGlint("_enderman_b");
+
+    private static RenderType frostCoat(String variant) {
+        return RenderType.create("gtocore_frost_coat" + variant,
+                DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                        .setTextureState(new TextureStateShard(GTOCore.id("textures/entity/frost_coat" + variant + ".png"), false, false))
+                        .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                        .setCullState(NO_CULL)
+                        .setLightmapState(LIGHTMAP)
+                        .setOverlayState(OVERLAY)
+                        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .createCompositeState(true));
+    }
+
+    private static RenderType frostGlint(String variant) {
+        return RenderType.create("gtocore_frost_glint" + variant,
+                DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(RENDERTYPE_EYES_SHADER)
+                        .setTextureState(new TextureStateShard(GTOCore.id("textures/entity/frost_glint" + variant + ".png"), false, false))
+                        .setTransparencyState(ADDITIVE_TRANSPARENCY)
+                        .setCullState(NO_CULL)
+                        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .createCompositeState(false));
+    }
+
     private GTORenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
                            boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
         super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
@@ -180,6 +245,8 @@ public final class GTORenderTypes extends RenderType {
     public static final ResourceLocation STELLAR_FORGE_VORTEX_SHADER_LOCATION = GTOCore.id("stellar_forge_vortex");
     public static final ResourceLocation SOLAR_SURFACE_VORTEX_SHADER_LOCATION = GTOCore.id("solar_surface_vortex");
     public static final ResourceLocation SOLAR_STORM_HEAT_SHADER_LOCATION = GTOCore.id("solar_storm_heat");
+    public static final ResourceLocation DYSON_FORCE_FIELD_SHADER_LOCATION = GTOCore.id("dyson_force_field");
+    public static final ResourceLocation DYSON_SKY_SHELL_SHADER_LOCATION = GTOCore.id("dyson_sky_shell");
     public static final ResourceLocation SOLAR_STORM_REACTOR_SHADER_LOCATION = GTOCore.id("solar_storm_reactor");
     public static final ResourceLocation SOLAR_STORM_REACTOR_RINGS_SHADER_LOCATION = GTOCore.id("solar_storm_reactor_rings");
     public static final ResourceLocation SOLAR_GLOBE_SHADER_LOCATION = GTOCore.id("solar_globe");

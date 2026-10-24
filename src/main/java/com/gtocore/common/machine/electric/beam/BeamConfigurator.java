@@ -49,6 +49,19 @@ final class BeamConfigurator implements IFancyConfigurator {
                         labeled(PHI, angleField(phi, setPhi, -90.0D, 90.0D))));
     }
 
+    static BeamConfigurator normal(Supplier<Float> theta, Consumer<Float> setTheta,
+                                   Supplier<Float> phi, Consumer<Float> setPhi) {
+        return new BeamConfigurator(Component.translatable(NORMAL), () -> UIElement.column(NumberSettingPage.COMPACT_WIDTH)
+                .layout(l -> l.gapAll(UISizes.SECTION_GAP))
+                .addChildren(labeled(THETA, angleField(theta, setTheta, -180.0D, 180.0D)),
+                        labeled(PHI, angleField(phi, setPhi, -90.0D, 90.0D))));
+    }
+
+    static BeamConfigurator status(Supplier<Component> value) {
+        return new BeamConfigurator(Component.translatable(STATUS), () -> UIElement.column(NumberSettingPage.COMPACT_WIDTH)
+                .addChild(TextLine.of(LayoutStyle.AUTO, value)));
+    }
+
     static BeamConfigurator reflectivity(Supplier<Float> value, Consumer<Float> setter) {
         return new BeamConfigurator(Component.translatable(SEMI_REFLECTOR), () -> UIElement.column(NumberSettingPage.COMPACT_WIDTH)
                 .addChild(labeled(REFLECTIVITY, PercentField.of(NumberSettingPage.COMPACT_WIDTH, value::get, v -> setter.accept((float) v),
@@ -96,4 +109,22 @@ final class BeamConfigurator implements IFancyConfigurator {
     public static final String REFLECTIVITY = "gtocore.machine.ray_beam.reflectivity";
     @RegisterLanguage(cn = "半透镜", en = "Semi-reflector")
     public static final String SEMI_REFLECTOR = "gtocore.machine.ray_beam.semi_reflector";
+    @RegisterLanguage(cn = "镜面法线方向", en = "Mirror surface normal")
+    public static final String NORMAL = "gtocore.machine.ray_beam.normal";
+    @RegisterLanguage(cn = "光路状态", en = "Optical path status")
+    public static final String STATUS = "gtocore.machine.ray_beam.status";
+    @RegisterLanguage(cn = "光路就绪", en = "Optical path ready")
+    public static final String READY = "gtocore.machine.ray_beam.ready";
+    @RegisterLanguage(cn = "检测到光路闭环，已停止供光", en = "Optical loop detected; output disabled")
+    public static final String LOOP = "gtocore.machine.ray_beam.loop";
+    @RegisterLanguage(cn = "已截断回返支路，其余光路继续工作", en = "Returning branch truncated; remaining paths stay active")
+    public static final String BRANCH_LOOP = "gtocore.machine.ray_beam.branch_loop";
+    @RegisterLanguage(cn = "光路超过计算预算，已截断后续光路", en = "Optical path exceeds its work budget; further tracing truncated")
+    public static final String LIMIT = "gtocore.machine.ray_beam.limit";
+    @RegisterLanguage(cn = "光路在未加载区块边界停止", en = "Optical path stops at an unloaded chunk boundary")
+    public static final String UNLOADED = "gtocore.machine.ray_beam.unloaded";
+    @RegisterLanguage(cn = "光路等待重建", en = "Optical path waiting for rebuild")
+    public static final String PENDING = "gtocore.machine.ray_beam.pending";
+    @RegisterLanguage(cn = "光源未发射", en = "Light source inactive")
+    public static final String INACTIVE = "gtocore.machine.ray_beam.inactive";
 }

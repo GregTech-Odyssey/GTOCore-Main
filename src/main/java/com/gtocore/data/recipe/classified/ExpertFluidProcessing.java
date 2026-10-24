@@ -1,15 +1,21 @@
 package com.gtocore.data.recipe.classified;
 
+import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.ChanceBoostFunction;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
 
+import static com.gregtechceu.gtceu.api.GTValues.ULV;
+import static com.gregtechceu.gtceu.api.GTValues.V;
+import static com.gregtechceu.gtceu.api.recipe.content.ContentList.MAX_CHANCE;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Helium;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.NaturalGas;
@@ -20,6 +26,8 @@ import static com.gtocore.common.data.GTORecipeTypes.*;
 public class ExpertFluidProcessing {
 
     public static void init() {
+        fuel();
+        oneStepProcess();
         CENTRIFUGE_RECIPES.builder("sand1")
                 .chancedOutput(Items.SAND, 3090, 100)
                 .inputFluids(LightOilWithSand, 1000)
@@ -446,5 +454,536 @@ public class ExpertFluidProcessing {
             c.chancedOutput(TagPrefix.dust, m, 1500, 500);
         }
         c.save();
+    }
+
+    private static void fuel() {
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_heavy_sand")
+                .inputFluids(HeavyOilWithSand, 3)
+                .inputFluids(Air, 12)
+                .duration(22)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_h6eavy_sand")
+                .inputFluids(HeavyOilSuspension, 3)
+                .inputFluids(Air, 12)
+                .duration(24)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_ligh1t_sand")
+                .inputFluids(LightOilWithSand, 3)
+                .inputFluids(Air, 8)
+                .duration(14)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_light_sand")
+                .inputFluids(LightOilWithSand, 3)
+                .inputFluids(Air, 8)
+                .duration(14)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_lig2ht_sand")
+                .inputFluids(ShaleOil, 3)
+                .inputFluids(Air, 14)
+                .duration(24)
+                .EUt(-V[ULV])
+                .save();
+
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_lig1ht4_sand")
+                .inputFluids(RetortedShaleOil, 3)
+                .inputFluids(Air, 14)
+                .duration(25)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_lig3ht4_sand")
+                .inputFluids(TightOilCrudeOil, 3)
+                .inputFluids(Air, 14)
+                .duration(18)
+                .EUt(-V[ULV])
+                .save();
+        SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_light24_sand")
+                .inputFluids(ProcessedTightOilCrudeOil, 3)
+                .inputFluids(Air, 14)
+                .duration(20)
+                .EUt(-V[ULV])
+                .save();
+        GAS_TURBINE_FUELS.recipeBuilder("oil_l3ght_sa4nd")
+                .inputFluids(ShaleGas, 3)
+                .inputFluids(Air, 6)
+                .duration(8)
+                .EUt(-V[ULV])
+                .save();
+    }
+
+    // Compound chances retain the overclock bonus of each stage before multiplication.
+    private static int oneStepChance(int chance, int boost, int recipeTier, int chanceTier) {
+        int overclocks = Math.max(0, chanceTier - recipeTier - (recipeTier == ULV ? 1 : 0));
+        return switch (chance) {
+            case 62 -> combinedChance(overclocks, 1500, 500, 7500, 700, 550, 55);
+            case 93 -> combinedChance(overclocks, 1500, 500, 7500, 700, 825, 80);
+            case 125 -> combinedChance(overclocks, 1500, 500, 7500, 700, 1111, 0);
+            case 188 -> combinedChance(overclocks, 1500, 500, 1250, 125, 10000, 0);
+            case 206 -> combinedChance(overclocks, 5000, 100, 7500, 700, 550, 55);
+            case 250 -> combinedChance(overclocks, 1500, 500, 7500, 700, 2222, 0);
+            case 281 -> combinedChance(overclocks, 1500, 500, 7500, 700, 2500, 0);
+            case 300 -> combinedChance(overclocks, 1500, 500, 2000, 100, 10000, 0);
+            case 309 -> combinedChance(overclocks, 5000, 100, 7500, 700, 825, 80);
+            case 375 -> combinedChance(overclocks, 1500, 500, 2500, 0, 10000, 0);
+            case 417 -> combinedChance(overclocks, 5000, 100, 7500, 700, 1111, 0);
+            case 833 -> combinedChance(overclocks, 5000, 100, 7500, 700, 2222, 0);
+            case 938 -> combinedChance(overclocks, 5000, 100, 7500, 700, 2500, 0);
+            case 1125 -> combinedChance(overclocks, 1500, 500, 7500, 700, 10000, 0);
+            case 3750 -> combinedChance(overclocks, 5000, 100, 7500, 700, 10000, 0);
+            default -> ChanceBoostFunction.OVERCLOCK.getBoostedChance(chance, boost, recipeTier, chanceTier);
+        };
+    }
+
+    private static int combinedChance(int overclocks, int firstChance, int firstBoost, int secondChance, int secondBoost, int thirdChance, int thirdBoost) {
+        long first = Math.min(MAX_CHANCE, firstChance + (long) firstBoost * overclocks);
+        long second = Math.min(MAX_CHANCE, secondChance + (long) secondBoost * overclocks);
+        long third = Math.min(MAX_CHANCE, thirdChance + (long) thirdBoost * overclocks);
+        long scale = (long) MAX_CHANCE * MAX_CHANCE;
+        return (int) ((first * second * third + scale / 2) / scale);
+    }
+
+    private static void oneStepProcess() {
+        // Carry the probability of each processing path; omit asphalt oil slag and uncommon residues.
+        PETROCHEMICAL_PLANT_RECIPES.builder("light_oil_with_sand")
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(LightOilWithSand, 80000)
+                .chancedOutput(Items.SAND, 80, 3090, 100)
+                .chancedOutput(TagPrefix.dust, Barite, 60, 400, 50)
+                .chancedOutput(TagPrefix.dust, Clay, 60, 5000, 100)
+                .chancedOutput(TagPrefix.dust, Calcite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, RockSalt, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Apatite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Goethite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Lepidolite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, GreenSapphire, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Hematite, 60, 938, 0)
+                .chancedOutput(TagPrefix.dust, Bauxite, 60, 938, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 60, 833, 0)
+                .chancedOutput(TagPrefix.dust, Barite, 60, 417, 0)
+                .chancedOutput(TagPrefix.dust, Chromite, 60, 309, 0)
+                .chancedOutput(TagPrefix.dust, Ilmenite, 60, 206, 0)
+                .chancedOutput(TagPrefix.dust, Graphite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Calcium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Zinc, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Copper, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Gallium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Beryllium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Tin, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Sodium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Potassium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Magnesium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Titanium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Vanadium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Manganese, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Iron, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Nickel, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Cobalt, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Cassiterite, 60, 3750, 0)
+                .outputFluids(OilLight, 60000)
+                .EUt(7680L)
+                .duration(3200)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        PETROCHEMICAL_PLANT_RECIPES.builder("heavy_oil_with_sand")
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(HeavyOilWithSand, 80000)
+                .chancedOutput(Items.SAND, 80, 3090, 100)
+                .chancedOutput(TagPrefix.dust, Barite, 60, 400, 50)
+                .chancedOutput(TagPrefix.dust, Clay, 60, 5000, 100)
+                .chancedOutput(TagPrefix.dust, Calcite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, RockSalt, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Apatite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Goethite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Lepidolite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, GreenSapphire, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Hematite, 60, 938, 0)
+                .chancedOutput(TagPrefix.dust, Bauxite, 60, 938, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 60, 833, 0)
+                .chancedOutput(TagPrefix.dust, Barite, 60, 417, 0)
+                .chancedOutput(TagPrefix.dust, Chromite, 60, 309, 0)
+                .chancedOutput(TagPrefix.dust, Ilmenite, 60, 206, 0)
+                .chancedOutput(TagPrefix.dust, Graphite, 60, 3750, 0)
+                .chancedOutput(TagPrefix.dust, Calcium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Zinc, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Copper, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Gallium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Beryllium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Tin, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Sodium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Potassium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Magnesium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Titanium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Vanadium, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Manganese, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Iron, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Nickel, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Cobalt, 3, 938, 0)
+                .chancedOutput(TagPrefix.dust, Cassiterite, 60, 3750, 0)
+                .outputFluids(OilHeavy, 60000)
+                .EUt(7680L)
+                .duration(200)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        PETROCHEMICAL_PLANT_RECIPES.builder("aromatic_hydrocarbon_mixture")
+                .inputFluids(AromaticHydrocarbonMixture, 1000)
+                .outputFluids(Naphthalene, 140)
+                .outputFluids(Dimethylbenzene, 12)
+                .outputFluids(Styrene, 12)
+                .outputFluids(Toluene, 120)
+                .outputFluids(Benzene, 500)
+                .outputFluids(Ethylbenzene, 100)
+                .outputFluids(Cumene, 10)
+                .EUt(7680L)
+                .duration(200)
+                .save();
+
+        // Use the integer batch count nearest 1 kB at 10x throughput.
+        // Silica gel and nanites remain per-operation costs.
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("easy_to_escape_mixed_gas")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(EasyToEscapeMixedGas, 1000000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dustSmall, Clay, 5000, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Calcite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, RockSalt, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Apatite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Goethite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dustTiny, Diatomite, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, GnomeCrystal, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, SylphCrystal, 1000, 1500, 500)
+                .outputFluids(Helium, 649350)
+                .chancedOutput(Helium.getFluid(349650), 5000, 500)
+                .chancedOutput(Helium.getFluid(249750), 3000, 500)
+                .outputFluids(Helium3, 650)
+                .chancedOutput(Helium3.getFluid(350), 5000, 500)
+                .chancedOutput(Helium3.getFluid(250), 3000, 500)
+                .EUt(7680L)
+                .duration(1000)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("easy_to_escape_mixed_isotope_gas")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(EasyToEscapeMixedIsotopeGas, 1000000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dustSmall, Clay, 5000, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Calcite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, RockSalt, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Apatite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Goethite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dustTiny, Diatomite, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, GnomeCrystal, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, SylphCrystal, 1000, 1500, 500)
+                .outputFluids(Helium, 406250)
+                .chancedOutput(Helium.getFluid(218750), 5000, 500)
+                .chancedOutput(Helium.getFluid(156250), 3000, 500)
+                .outputFluids(Helium3, 243750)
+                .chancedOutput(Helium3.getFluid(131250), 5000, 500)
+                .chancedOutput(Helium3.getFluid(93750), 3000, 500)
+                .EUt(7680L)
+                .duration(1000)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("mixed_neon")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(MixedNeon, 1008000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dustSmall, Clay, 1260, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, Diatomite, 1260, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, GnomeCrystal, 1260, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, SylphCrystal, 1260, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Iron, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Nickel, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Cobalt, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Sodium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Potassium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Magnesium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Titanium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Vanadium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Manganese, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Dysprosium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Ilmenite, 1008, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Monazite, 1008, 1125, 0)
+                .chancedOutput(TagPrefix.dust, GarnetRed, 1008, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Lepidolite, 1008, 1125, 0)
+                .chancedOutput(TagPrefix.dust, BasalticMineralSand, 1008, 1125, 0)
+                .chancedOutput(TagPrefix.dust, ZirconiumOxide, 1008, 300, 0)
+                .outputFluids(Neon, 655200)
+                .chancedOutput(Neon.getFluid(352800), 5000, 500)
+                .chancedOutput(Neon.getFluid(252000), 3000, 500)
+                .EUt(7680L)
+                .duration(1008)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("mixed_krypton")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(MixedKrypton, 1000000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dustSmall, Clay, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, Diatomite, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, GnomeCrystal, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, SylphCrystal, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Quartzite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Spessartine, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Pollucite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Opal, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Borax, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Ilmenite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Monazite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, GarnetRed, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Lepidolite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, BasalticMineralSand, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, ZirconiumOxide, 1000, 300, 0)
+                .outputFluids(Krypton, 650000)
+                .chancedOutput(Krypton.getFluid(350000), 5000, 500)
+                .chancedOutput(Krypton.getFluid(250000), 3000, 500)
+                .EUt(7680L)
+                .duration(1000)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("mixed_xenon")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(MixedXenon, 1000000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dustSmall, Clay, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, Diatomite, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, GnomeCrystal, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, SylphCrystal, 1000, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Quartzite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Spessartine, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Pollucite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Opal, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Borax, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Lepidolite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, GreenSapphire, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Hematite, 1000, 281, 0)
+                .chancedOutput(TagPrefix.dust, Bauxite, 1000, 281, 0)
+                .chancedOutput(TagPrefix.dust, Pyrolusite, 1000, 250, 0)
+                .chancedOutput(TagPrefix.dust, Barite, 1000, 125, 0)
+                .chancedOutput(TagPrefix.dust, Chromite, 1000, 93, 0)
+                .chancedOutput(TagPrefix.dust, Ilmenite, 1000, 62, 0)
+                .chancedOutput(TagPrefix.dust, Graphite, 1000, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Calcium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Zinc, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Copper, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Gallium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Beryllium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Tin, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Sodium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Potassium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Magnesium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Titanium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Vanadium, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Manganese, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Iron, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Nickel, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Cobalt, 50, 281, 0)
+                .chancedOutput(TagPrefix.dust, Cassiterite, 1000, 1125, 0)
+                .outputFluids(Xenon, 650000)
+                .chancedOutput(Xenon.getFluid(350000), 5000, 500)
+                .chancedOutput(Xenon.getFluid(250000), 3000, 500)
+                .EUt(7680L)
+                .duration(1000)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("high_radiation_gas")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(HighRadiationGas, 1005000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, Iron58Source, 67, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Technetium, 67, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Chromium54Source, 268, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Lead, 335, 1500, 500)
+                .chancedOutput(TagPrefix.dust, BlueTopaz, 67, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Zinc70Source, 67, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Quicklime, 1005, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Calcite, 1005, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Pyrite, 1005, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Magnesite, 1005, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Gypsum, 1005, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Clay, 1005, 1125, 0)
+                .outputFluids(Radon, 653250)
+                .chancedOutput(Radon.getFluid(351750), 5000, 500)
+                .chancedOutput(Radon.getFluid(251250), 3000, 500)
+                .chancedOutput(Radon.getFluid(67000), 1500, 500)
+                .chancedOutput(Titanium50Tetrafluoride.getFluid(67000), 1500, 500)
+                .EUt(7680L)
+                .duration(1005)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("bleaching_gas")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(BleachingGas, 1002000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, CalciumChloride, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, FullersEarth, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, CalciumCarbonate, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, MagnesiumChloride, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Quicklime, 1002, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Calcite, 1002, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Pyrite, 1002, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Magnesite, 1002, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Gypsum, 1002, 1125, 0)
+                .chancedOutput(TagPrefix.dust, Clay, 1002, 1125, 0)
+                .outputFluids(Chlorine, 651300)
+                .chancedOutput(Chlorine.getFluid(350700), 5000, 500)
+                .chancedOutput(Chlorine.getFluid(250500), 3000, 500)
+                .chancedOutput(Chlorine.getFluid(167000), 1500, 500)
+                .EUt(7680L)
+                .duration(1002)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("heavy_flash_explosion_gas")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(HeavyFlashExplosionGas, 1008000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, Iron, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Nickel, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Cobalt, 42, 375, 0)
+                .chancedOutput(TagPrefix.dustSmall, Clay, 252, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, Diatomite, 252, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, GnomeCrystal, 252, 1500, 500)
+                .chancedOutput(TagPrefix.dustTiny, SylphCrystal, 252, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Sodium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Potassium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Magnesium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Titanium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Vanadium, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Manganese, 42, 375, 0)
+                .chancedOutput(TagPrefix.dust, Dysprosium, 42, 375, 0)
+                .outputFluids(TritiumHydride, 36400)
+                .chancedOutput(TritiumHydride.getFluid(19600), 5000, 500)
+                .chancedOutput(TritiumHydride.getFluid(14000), 3000, 500)
+                .outputFluids(HydrogenDeuterium, 436800)
+                .chancedOutput(HydrogenDeuterium.getFluid(235200), 5000, 500)
+                .chancedOutput(HydrogenDeuterium.getFluid(168000), 3000, 500)
+                .outputFluids(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 145600))
+                .chancedOutput(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 78400), 5000, 500)
+                .chancedOutput(RegistriesUtils.getFluidStack("ad_astra:hydrogen", 56000), 3000, 500)
+                .outputFluids(Deuterium, 36400)
+                .chancedOutput(Deuterium.getFluid(19600), 5000, 500)
+                .chancedOutput(Deuterium.getFluid(14000), 3000, 500)
+                .EUt(7680L)
+                .duration(1008)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("mixed_fluorine")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(MixedFluorine, 986000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, AluminiumTrifluoride, 408, 1500, 500)
+                .chancedOutput(TagPrefix.dust, NaquadahContainRareEarthFluoride, 34, 1500, 500)
+                .chancedOutput(TagPrefix.dust, TitaniumTrifluoride, 136, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Fluorite, 374, 1500, 500)
+                .chancedOutput(TagPrefix.dust, TriniumTetrafluoride, 34, 188, 0)
+                .outputFluids(Fluorine, 640900)
+                .chancedOutput(Fluorine.getFluid(345100), 5000, 500)
+                .chancedOutput(Fluorine.getFluid(246500), 3000, 500)
+                .EUt(7680L)
+                .duration(986)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .chanceFunction(ExpertFluidProcessing::oneStepChance)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("impure_sulfuric_acid")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(ImpureSulfuricAcid, 999000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, Uvarovite, 111, 1500, 500)
+                .chancedOutput(TagPrefix.dust, TricalciumPhosphate, 111, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Borax, 111, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Gypsum, 555, 1500, 500)
+                .outputFluids(SulfuricAcid, 649350)
+                .chancedOutput(SulfuricAcid.getFluid(349650), 5000, 500)
+                .chancedOutput(SulfuricAcid.getFluid(249750), 3000, 500)
+                .chancedOutput(DilutedSulfuricAcid.getFluid(111000), 1500, 500)
+                .EUt(7680L)
+                .duration(999)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("impure_nitric_acid")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(ImpureNitricAcid, 1002000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, ChromiumTrioxide, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Alumina, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, PhosphorusPentoxide, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, SiliconDioxide, 167, 1500, 500)
+                .outputFluids(NitricAcid, 651300)
+                .chancedOutput(NitricAcid.getFluid(350700), 5000, 500)
+                .chancedOutput(NitricAcid.getFluid(250500), 3000, 500)
+                .chancedOutput(NitricAcid.getFluid(167000), 1500, 500)
+                .chancedOutput(Iron3Chloride.getFluid(167000), 1500, 500)
+                .EUt(7680L)
+                .duration(1002)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .save();
+
+        NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.builder("mixed_hydrochloric_acid")
+                .inputItems(GTOTagPrefix.NANITES, Iron)
+                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
+                .inputFluids(MixedHydrochloricAcid, 1002000)
+                .outputItems(GTOTagPrefix.CONTAMINABLE_NANITES, Iron)
+                .chancedOutput(TagPrefix.dust, ChromiumTrioxide, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, Alumina, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, PhosphorusPentoxide, 167, 1500, 500)
+                .chancedOutput(TagPrefix.dust, SiliconDioxide, 167, 1500, 500)
+                .outputFluids(HydrochloricAcid, 651300)
+                .chancedOutput(HydrochloricAcid.getFluid(350700), 5000, 500)
+                .chancedOutput(HydrochloricAcid.getFluid(250500), 3000, 500)
+                .chancedOutput(NitricAcid.getFluid(167000), 1500, 500)
+                .chancedOutput(Iron3Chloride.getFluid(167000), 1500, 500)
+                .EUt(7680L)
+                .duration(1002)
+                .blastFurnaceTemp(7777)
+                .addData(GTORecipeDataKeys.MODULE, 1)
+                .save();
     }
 }

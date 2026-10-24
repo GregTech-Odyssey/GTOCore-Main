@@ -1,10 +1,13 @@
 name: "Build and Sign"
 
 # 触发（官方仓 GregTech-Odyssey/GTOCore-Main）：
-# 1) push：commit message 含 -b / --build / -build
+# 1) push：commit message 含 -b / --build / -build；含 -p 时构建并只发布到 Maven；含 -cf 时构建并发布到 Maven 与 CurseForge
+#    （-p / -cf 仅发布者账号生效，其他账号的一律忽略）
 # 2) pull_request_target opened：PR 由组织成员提起 → 自动构建一次（无需标记）
 # 3) pull_request_target synchronize：最新 head commit 含构建标记才构建
 # 4) issue_comment：组织成员在 PR 下评论，且第一行精确为 /build → 构建 PR head
+# 5) workflow_dispatch：在 Actions 页手动运行，选分支和模式（build / publish / publish-cf），构建所选分支的最新提交
+#    （publish / publish-cf 仅发布者账号可选，其他账号选了直接失败）
 #
 # 使用 pull_request_target：工作流文件始终取 base 分支，PR 无法篡改本文件。
 # 安全：只构建本仓分支（fork 来源的 PR 一律跳过），且仅组织成员（或写权限
@@ -16,6 +19,13 @@ on:
     types: [opened, synchronize]
   issue_comment:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "build：只构建；publish：构建并只发 Maven（同 -p）；publish-cf：构建并发 Maven 与 CurseForge（同 -cf）"
+        type: choice
+        options: [build, publish, publish-cf]
+        default: build
 
 concurrency:
   group: build-sign-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
@@ -34,7 +44,13 @@ jobs:
             contains(github.event.head_commit.message, '-build') ||
             contains(github.event.head_commit.message, ' -b') ||
             endsWith(github.event.head_commit.message, '-b') ||
-            startsWith(github.event.head_commit.message, '-b ')
+            startsWith(github.event.head_commit.message, '-b ') ||
+            contains(github.event.head_commit.message, ' -p') ||
+            endsWith(github.event.head_commit.message, '-p') ||
+            startsWith(github.event.head_commit.message, '-p ') ||
+            contains(github.event.head_commit.message, ' -cf') ||
+            endsWith(github.event.head_commit.message, '-cf') ||
+            startsWith(github.event.head_commit.message, '-cf ')
           )
         ) ||
         (
@@ -45,7 +61,8 @@ jobs:
           github.event_name == 'issue_comment' &&
           github.event.issue.pull_request &&
           startsWith(github.event.comment.body, '/build')
-        )
+        ) ||
+        github.event_name == 'workflow_dispatch'
       )
     runs-on: ubuntu-latest
     permissions:
@@ -57,6 +74,8 @@ jobs:
       checkout_ref: ${{ steps.resolve.outputs.checkout_ref }}
       reason: ${{ steps.resolve.outputs.reason }}
       pr_number: ${{ steps.resolve.outputs.pr_number }}
+      publish: ${{ steps.resolve.outputs.publish }}
+      publish_cf: ${{ steps.resolve.outputs.publish_cf }}
     steps:
       - name: Resolve trigger, ref, membership
         id: resolve
@@ -65,6 +84,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_ACTION: ${{ github.event.action }}
           ACTOR: ${{ github.actor }}
+          ACTOR_ID: ${{ github.actor_id }}
           REPO: ${{ github.repository }}
           # push
           PUSH_SHA: ${{ github.sha }}
@@ -78,15 +98,29 @@ jobs:
           COMMENT_USER: ${{ github.event.comment.user.login || '' }}
           IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || 'false' }}
           HEAD_COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
+          # workflow_dispatch
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
         run: |
           set -euo pipefail
           ORG="GregTech-Odyssey"
+          # 只有这个账号（xinxinsuried，按不可变的用户 ID 判断）推送的 -p / -cf 才会发布
+          PUBLISHER_ID="76897393"
           API="https://api.github.com"
           HDR=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28")
 
           has_build_marker() {
             local msg="$1"
             [[ "$msg" =~ (^|[[:space:]])(--build|-build|-b)($|[[:space:]]) ]]
+          }
+
+          has_publish_marker() {
+            local msg="$1"
+            [[ "$msg" =~ (^|[[:space:]])-p($|[[:space:]]) ]]
+          }
+
+          has_curseforge_marker() {
+            local msg="$1"
+            [[ "$msg" =~ (^|[[:space:]])-cf($|[[:space:]]) ]]
           }
 
           has_pr_build_command() {
@@ -183,6 +217,8 @@ jobs:
             echo "checkout_ref=" >> "$GITHUB_OUTPUT"
             echo "reason=$1" >> "$GITHUB_OUTPUT"
             echo "pr_number=" >> "$GITHUB_OUTPUT"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "publish_cf=false" >> "$GITHUB_OUTPUT"
             echo "SKIP: $1"
             exit 0
           }
@@ -196,16 +232,33 @@ jobs:
           OUT_PR=""
           # push / 评论 / 同步带标记：非成员应失败或 skip；opened 外部贡献 soft skip
           MEMBER_MODE="hard"
+          PUBLISH="false"
+          PUBLISH_CF="false"
 
           case "$EVENT_NAME" in
             push)
-              if ! has_build_marker "$HEAD_COMMIT_MSG"; then
+              if has_publish_marker "$HEAD_COMMIT_MSG" || has_curseforge_marker "$HEAD_COMMIT_MSG"; then
+                if [ "$ACTOR_ID" = "$PUBLISHER_ID" ]; then
+                  PUBLISH="true"
+                  if has_curseforge_marker "$HEAD_COMMIT_MSG"; then
+                    PUBLISH_CF="true"
+                  fi
+                else
+                  echo "Publish marker from @${ACTOR} ignored (not the publisher account)"
+                fi
+              fi
+              if [ "$PUBLISH" != "true" ] && ! has_build_marker "$HEAD_COMMIT_MSG"; then
                 skip "push without build marker"
               fi
               CHECK_USER="$ACTOR"
               CHECKOUT_REPO="$REPO"
               CHECKOUT_REF="$PUSH_SHA"
               REASON="push with build marker"
+              if [ "$PUBLISH_CF" = "true" ]; then
+                REASON="push with CurseForge publish marker"
+              elif [ "$PUBLISH" = "true" ]; then
+                REASON="push with publish marker"
+              fi
               MEMBER_MODE="hard"
               # 若该 commit 关联打开中的 PR，也在 PR 下发状态评论
               OUT_PR=$(curl -sS -f \
@@ -267,6 +320,31 @@ jobs:
               MEMBER_MODE="soft"
               ;;
 
+            workflow_dispatch)
+              case "$DISPATCH_MODE" in
+                build) ;;
+                publish|publish-cf)
+                  if [ "$ACTOR_ID" != "$PUBLISHER_ID" ]; then
+                    echo "::error::Only the publisher account may run mode=${DISPATCH_MODE}; @${ACTOR} may only use mode=build."
+                    exit 1
+                  fi
+                  PUBLISH="true"
+                  if [ "$DISPATCH_MODE" = "publish-cf" ]; then
+                    PUBLISH_CF="true"
+                  fi
+                  ;;
+                *)
+                  echo "::error::Unknown mode '${DISPATCH_MODE}'"
+                  exit 1
+                  ;;
+              esac
+              CHECK_USER="$ACTOR"
+              CHECKOUT_REPO="$REPO"
+              CHECKOUT_REF="$PUSH_SHA"
+              REASON="manual run (mode=${DISPATCH_MODE})"
+              MEMBER_MODE="hard"
+              ;;
+
             *)
               skip "unsupported event ${EVENT_NAME}"
               ;;
@@ -301,8 +379,10 @@ jobs:
             echo "checkout_ref=${CHECKOUT_REF}"
             echo "reason=${REASON}"
             echo "pr_number=${OUT_PR}"
+            echo "publish=${PUBLISH}"
+            echo "publish_cf=${PUBLISH_CF}"
           } >> "$GITHUB_OUTPUT"
-          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF} pr=${OUT_PR:-none}"
+          echo "BUILD: $REASON → ${CHECKOUT_REPO}@${CHECKOUT_REF} pr=${OUT_PR:-none} publish=${PUBLISH} publish_cf=${PUBLISH_CF}"
 
   build:
     needs: gate
@@ -438,8 +518,12 @@ jobs:
             exit 1
           fi
           chmod +x ./gradlew
+          # 格式化依赖 Eclipse 的 p2 站点，站点停服时只告警、不拦签名构建；apply 成功时 check 必然通过，故 build 里跳过 check
+          if ! ./gradlew spotlessApply --no-daemon --stacktrace; then
+            echo "::warning::spotlessApply failed (formatter download unavailable?); building without formatting"
+          fi
           # 发行：gtocore（无 Seal SPI）+ 独立 gto-seal-runtime，均签名（密码只经 env 注入 signJar）
-          ./gradlew spotlessApply build --no-daemon --stacktrace \
+          ./gradlew build -x spotlessCheck --no-daemon --stacktrace \
             -Dorg.gradle.java.installations.auto-download=true
 
       - name: Verify gtocore packaging
@@ -555,6 +639,58 @@ jobs:
           path: build/libs/gto-seal-runtime-1.0.jar
           if-no-files-found: error
           retention-days: 7
+
+      # 发布已验证的签名 jar：排除打包任务，只生成 pom/元数据并上传 build/libs 里现有的文件，
+      # 不重新编译或重做代码保护（发行字典每次构建都会重新打乱，重建会和上面验证、归档的映射对不上）
+      - name: Publish to Maven
+        if: needs.gate.outputs.publish == 'true'
+        env:
+          ORG_GRADLE_PROJECT_gtodysseyRepositoryUsername: ${{ secrets.GTODYSSEY_MAVEN_USERNAME }}
+          ORG_GRADLE_PROJECT_gtodysseyRepositoryPassword: ${{ secrets.GTODYSSEY_MAVEN_PASSWORD }}
+          ORG_GRADLE_PROJECT_gtoCurseforgeToken: ${{ secrets.CURSEFORGE_TOKEN }}
+          PUBLISH_CF: ${{ needs.gate.outputs.publish_cf }}
+        run: |
+          set -euo pipefail
+          REQUIRED="ORG_GRADLE_PROJECT_gtodysseyRepositoryUsername ORG_GRADLE_PROJECT_gtodysseyRepositoryPassword"
+          if [ "$PUBLISH_CF" = "true" ]; then
+            REQUIRED="$REQUIRED ORG_GRADLE_PROJECT_gtoCurseforgeToken"
+          fi
+          for v in $REQUIRED; do
+            if [ -z "${!v:-}" ]; then
+              echo "::error::Missing secret for ${v#ORG_GRADLE_PROJECT_} (org secrets GTODYSSEY_MAVEN_USERNAME / GTODYSSEY_MAVEN_PASSWORD / CURSEFORGE_TOKEN)"
+              exit 1
+            fi
+          done
+          GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
+          BEFORE=$(sha256sum "$GTO" | cut -d' ' -f1)
+          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=${PUBLISH_CF}             -x jar -x reobfJar -x sourcesJar -x signJar -x spotlessCheck --no-daemon --stacktrace
+          AFTER=$(sha256sum "$GTO" | cut -d' ' -f1)
+          [ "$BEFORE" = "$AFTER" ] || { echo "::error::$GTO 在发布过程中被改写"; exit 1; }
+          NAME=$(basename "$GTO")
+          VER=${NAME#gtocore-forge-1.20.1-}
+          VER=${VER%.jar}
+          URL="https://gtodyssey.com/maven/releases/com/gto/gtocore-forge-1.20.1/${VER}/${NAME}"
+          REMOTE=$(curl -sSfL --retry 3 "$URL" | sha256sum | cut -d' ' -f1)
+          [ "$REMOTE" = "$BEFORE" ] || { echo "::error::Maven 上的 $NAME 与本次验证的 jar 不一致"; exit 1; }
+          echo "OK: Maven ${VER} = verified jar (${BEFORE})"
+
+      - name: Publish to CurseForge
+        if: needs.gate.outputs.publish_cf == 'true'
+        env:
+          ORG_GRADLE_PROJECT_gtoCurseforgeToken: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: |
+          set -euo pipefail
+          ./gradlew gtoPublishCurseforge -PgtoPublishCurseforge=true -x spotlessCheck --no-daemon --stacktrace
+          cat build/gtoPublish/curseforge.json
+
+      # 整合包按这个文件里的项目 ID、文件 ID 和 SHA-1 引用本次上传的 CurseForge 文件（审核通过前接口查不到）
+      - name: Upload CurseForge result
+        if: needs.gate.outputs.publish_cf == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtocore-curseforge
+          path: build/gtoPublish/curseforge.json
+          if-no-files-found: error
 
       - name: Update PR status (final)
         if: always() && steps.pr_status.outputs.comment_id != ''

@@ -327,6 +327,20 @@ final class StellarForge {
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 3)
                 .save();
 
+        STELLAR_FORGE_RECIPES.recipeBuilder("enderium_plasma_uev")
+                .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
+                .inputItems(GTOItems.VIBRANT_CRYSTAL, 4)
+                .inputFluids(GTMaterials.EnderEye, 2304)
+                .inputFluids(GTMaterials.Lead, 2304)
+                .inputFluids(GTMaterials.Bismuth, 2304)
+                .inputFluids(GTMaterials.Platinum, 1152)
+                .inputFluids(GTMaterials.LiquidEnderAir, 100000)
+                .outputFluids(GTOMaterials.Enderium.getFluid(FluidStorageKeys.PLASMA, 1152))
+                .EUt(7864320)
+                .duration(400)
+                .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
+                .save();
+
         STELLAR_FORGE_RECIPES.recipeBuilder("enderium_plasma")
                 .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
                 .inputItems(GTOItems.ENDER_CRYSTAL)
@@ -439,9 +453,9 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.builder("soul_infusion_solvent")
                 .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
                 .inputFluids(GTMaterials.EchoShard, 5000)
-                .inputFluids(GTMaterials.EnderEye, 5000)
-                .inputFluids(GTOMaterials.Aether, 5000)
-                .outputFluids(GTOMaterials.SoulInfusionSolvent, 5000)
+                .inputFluids(GTMaterials.EnderEye, 40000)
+                .inputFluids(GTOMaterials.Aether, 25000)
+                .outputFluids(GTOMaterials.SoulInfusionSolvent, 60000)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
                 .EUt(16777000)
                 .duration(400)

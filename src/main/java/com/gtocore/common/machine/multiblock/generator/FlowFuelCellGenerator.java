@@ -101,7 +101,11 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
 
     @Override
     protected GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (!isGenerator()) return ParallelLogic.accurateParallel(this, unit, recipe, ParallelLogic.MAX_PARALLEL);
+        if (!isGenerator()) {
+            // Pair coefficients scale the batch, not the one-second absorption cycle.
+            recipe.duration = Math.max(1, (int) (20 * IonMembrane.of(membraneStack()).durationMultiplier()));
+            return ParallelLogic.accurateParallel(this, unit, recipe, ParallelLogic.MAX_PARALLEL);
+        }
         var membrane = IonMembrane.of(membraneStack());
         if (membrane == null) {
             setIdleReason(IdleReason.ELECTROCHEMICAL_MEMBRANE_MISSING);
@@ -118,7 +122,7 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
     @Override
     public void beforeWorking(RecipeHandlerUnit unit, GTRecipe recipe) {
         super.beforeWorking(unit, recipe);
-        if (isGenerator()) reserveMembraneUses(recipe.parallels);
+        if (isGenerator()) consumeMembraneUses(recipe.parallels);
     }
 
     @Override
@@ -135,12 +139,12 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
         public static final Reference2LongOpenHashMap<Material> ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET = new Reference2LongOpenHashMap<>(6);
 
         static {
-            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.IronChromiumRedoxFlowBatteryElectrolyte, V[UEV] * 2 / 1000);
-            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.VanadiumRedoxFlowBatteryElectrolyte, V[UIV] * 3 / 1000);
-            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.ZincIodideFlowBatteryElectrolyte, V[UXV] * 6 / 1000);
-            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.OrganicMoleculeRedoxFlowBatteryElectrolyte, V[MAX] * 2 / 1000);
-            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 16 / 1000);
-            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 160 / 1000);
+            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.IronChromiumRedoxFlowBatteryElectrolyte, V[UEV] / 50);
+            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.VanadiumRedoxFlowBatteryElectrolyte, V[UIV] * 3 / 50);
+            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.ZincIodideFlowBatteryElectrolyte, V[UXV] * 9 / 50);
+            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.OrganicMoleculeRedoxFlowBatteryElectrolyte, V[OpV] * 20 / 50);
+            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.SuperconductingIonRedoxFlowBatteryElectrolyte, V[MAX] * 80 / 50);
+            ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.put(GTOMaterials.AntimatterRedoxFlowBatteryElectrolyte, V[MAX] * 900 / 50);
         }
     }
 }

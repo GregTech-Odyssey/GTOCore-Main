@@ -28,14 +28,14 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 
-import appbot.ae2.ManaKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.hollingsworth.arsnouveau.common.compat.ae2.SourceKey;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import gripe._90.arseng.me.key.SourceKey;
 import lombok.Getter;
 import lombok.Setter;
+import vazkii.botania.forge.integration.ae2.ManaKey;
 
 import java.util.List;
 

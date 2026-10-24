@@ -2,14 +2,16 @@ package com.gtocore.common.data.translation;
 
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
-import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.block.ChargeBomb;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.integration.Mods;
 import com.gtocore.integration.ae.AccelerationRates;
 
 import com.gtolib.api.item.IItem;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
@@ -24,7 +26,6 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import appeng.block.crafting.ICraftingUnitType;
@@ -41,7 +42,6 @@ import earth.terrarium.adastra.common.registry.ModBlocks;
 import java.util.List;
 
 import static com.direwolf20.buildinggadgets2.setup.Registration.TemplateManager;
-import static vazkii.botania.common.block.BotaniaBlocks.fabulousPool;
 
 public final class GTOItemTooltips {
 
@@ -167,6 +167,12 @@ public final class GTOItemTooltips {
 
         setTips(EPPItemAndBlock.PATTERN_MODIFIER.asItem(), PatternModifierTooltips);
 
+        var toolSwapper = GTOTips.of("tool_swapper_upgrade", t -> t.warning(t.tr("已禁用：存在卡服问题", "Disabled: causes server hangs")));
+        if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
+            setTips(RegistriesUtils.getItem("sophisticatedbackpacks:tool_swapper_upgrade"), toolSwapper);
+            setTips(RegistriesUtils.getItem("sophisticatedbackpacks:advanced_tool_swapper_upgrade"), toolSwapper);
+        }
+
         for (Item item : List.of(EPPItemAndBlock.TAG_STORAGE_BUS.asItem(), EPPItemAndBlock.MOD_STORAGE_BUS.asItem(), EPPItemAndBlock.PRECISE_STORAGE_BUS)) {
             setTips(item, GTOTips.of("pattern_modifier", t -> {
                 t.heading(t.tr("与存储设备进行交互", "Interact with storage devices"));
@@ -203,25 +209,17 @@ public final class GTOItemTooltips {
         craftingStorageTips(AEBlocks.CRAFTING_UNIT.asItem(), AEBlocks.CRAFTING_UNIT.block().type);
         craftingStorageTips(AEBlocks.CRAFTING_MONITOR.asItem(), AEBlocks.CRAFTING_MONITOR.block().type);
 
-        bomb(GTOBlocks.NAQUADRIA_CHARGE.get(), GTItems.QUANTUM_STAR.asItem());
-        bomb(GTOBlocks.LEPTONIC_CHARGE.get(), GTItems.GRAVI_STAR.asItem());
-        bomb(GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.get(), GTOItems.UNSTABLE_STAR.asItem());
+        for (ChargeBomb bomb : ChargeBomb.values()) bomb(bomb);
 
         for (Item item : List.of(AEItems.ITEM_CELL_256K.asItem(), AEItems.FLUID_CELL_256K.asItem())) {
             setTips(item, GTOTips.of("me_storage_cell", t -> {
                 t.bonus(t.tr("存储容量最高是原来的二倍", "Storage capacity is doubled compared to the original"));
                 t.feature(t.tr("你走到了单个存储元件的尽头", "You've reached the end of a single storage cell"));
                 t.bonus(Tx.join(ComponentSlang.RecommendedToUsePrefix, Tx.gold(t.tr("ME存储器 (多方块结构)", "ME Storage (MultiBlock)"))));
-                t.bonus(t.tr("他最高可以实现不限类型的无限存储", "It can even store unlimited amounts of items and fluids without type limit"));
+                t.bonus(t.tr("它最高可以实现不限类型的无限存储", "It can even store unlimited amounts of items and fluids without type limit"));
                 t.edition();
             }));
         }
-
-        setTips(fabulousPool.asItem(), GTOTips.of("fabulous_pool", t -> {
-            t.feature(t.tr("能存一千普通池子的魔力", "Can hold the mana of one thousand regular pools"));
-            t.edition();
-        }));
-        setTips(GTOBlocks.LAURERIL_JAR.asItem(), GTOTips.of("laureril_jar", t -> t.feature(t.tr("能存一千普通罐子的魔源", "Can hold the source of one thousand regular jars"))));
 
         for (Item item : List.of(AEItems.CERTUS_QUARTZ_KNIFE.asItem(), AEItems.NETHER_QUARTZ_KNIFE.asItem())) {
             setTips(item, GTOTips.of(t -> {
@@ -319,11 +317,13 @@ public final class GTOItemTooltips {
         }));
     }
 
-    private static void bomb(Block block, Item activateItem) {
-        setTips(block.asItem(), GTOTips.of("charge_bomb", t -> {
+    private static void bomb(ChargeBomb bomb) {
+        setTips(bomb.block().asItem(), GTOTips.of("charge_bomb", t -> {
             if (GTCEu.isDataGen() || !GTOConfig.INSTANCE.gamePlay.disableChargeBomb) {
-                t.feature(Component.translatable("gtocore.tooltip.item.activate_by", activateItem.getDescription()));
-                t.feature(t.tr("也可以把它喂给热爆花...", "It can also be fed to entropinnyum flowers..."));
+                t.rightClick(t.tr("手持%s右键此方块即可引爆", "Right-click this block while holding %s to detonate", bomb.activator().getDescription()));
+                t.statText(t.tr("爆炸半径：%s 格", "Blast radius: %s blocks", FormattingUtil.formatNumbers(bomb.radius)));
+                t.warning(t.tr("直接抹除半径内所有方块，包括基岩，方块不掉落", "Erases every block within the radius, bedrock included, without drops"));
+                t.detail(t.tr("引爆时 12 格内若有魔力为空的热爆花，爆弹会被它吸收并产出 %s 魔力，不会爆炸", "If an entropinnyum with no mana is within 12 blocks, it absorbs the bomb for %s mana instead of exploding", FormattingUtil.formatNumbers(bomb.absorbedMana)));
             } else {
                 t.unsupported(Component.translatable("gtocore.tooltip.item.charge_bomb.disabled"));
             }

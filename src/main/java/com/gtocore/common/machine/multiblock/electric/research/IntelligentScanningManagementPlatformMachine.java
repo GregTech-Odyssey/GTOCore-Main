@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
+import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
@@ -34,7 +35,6 @@ import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -51,15 +51,12 @@ import static com.gtocore.api.research.scanning.DataScanningManager.hasScanned;
 public class IntelligentScanningManagementPlatformMachine extends ElectricMultiblockMachine implements ScanningInfoProvider, ICustomRecipeLogicHolder {
 
     @SaveToDisk(defaultValue = "SCAN_SELECTED_ONLY")
-    @SyncToClient
     @Getter
     private WorkMode workMode = WorkMode.SCAN_SELECTED_ONLY;
     @SaveToDisk
-    @SyncToClient
     @Getter
     private final ReferenceOpenHashSet<AEKey> selectedAEKeys = new ReferenceOpenHashSet<>();
     @SaveToDisk
-    @SyncToClient
     private final Queue<AEKey> scanQueue = new LinkedList<>();
 
     public IntelligentScanningManagementPlatformMachine(MetaMachineBlockEntity holder) {
@@ -279,6 +276,19 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
         if ((workMode == WorkMode.SCAN_UNLEARNED_ONCE || workMode == WorkMode.SCAN_SELECTED_ONCE) && scanQueue.isEmpty()) {
             getRecipeLogic().setSuspendAfterFinish(true);
         }
+    }
+
+    @Override
+    public void regressRecipe(RecipeLogic recipeLogic) {
+        var recipe = recipeLogic.getLastRecipe();
+        if (GTORules.POWER_LOSS_SHUTDOWN.get() && recipe != null && (workMode == WorkMode.SCAN_UNLEARNED_ONCE || workMode == WorkMode.SCAN_SELECTED_ONCE)) {
+            var data = recipe.data.getData(ScanningRecipeExtion.INSTANCE);
+            if (data != null) {
+                for (var entry : data.aeKeys()) scanQueue.offer(entry.getKey());
+                recipeLogic.setSuspendAfterFinish(false);
+            }
+        }
+        super.regressRecipe(recipeLogic);
     }
 
     private static long eut(long bytesScanned) {

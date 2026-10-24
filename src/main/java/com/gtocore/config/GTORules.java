@@ -138,8 +138,8 @@ public final class GTORules {
             .name("gtocore.rule.steam.solar_boiler_rate", "大型太阳能锅炉单集热管产率", "Large Solar Boiler Steam per Tube")
             .tooltip("gtocore.rule.steam.solar_boiler_rate.tooltip", "单集热管产率 : %s / t", "Steam production per tube : %s / t")
             .register();
-    public static final IntRule STEAM_TANK_CAPACITY = Rules.intRule("steam.storage_tank_capacity").group(STEAM)
-            .defaults(1296000000, 864000000, 648000000).range(1, Integer.MAX_VALUE)
+    public static final LongRule STEAM_TANK_CAPACITY = Rules.longRule("steam.storage_tank_capacity").group(STEAM)
+            .defaults(12960000000L, 8640000000L, 6480000000L).range(1, Integer.MAX_VALUE * 10L)
             .name("gtocore.rule.steam.storage_tank_capacity", "大型蒸汽储存罐容量", "Large Steam Storage Tank Capacity")
             .tooltip("gtocore.rule.steam.storage_tank_capacity.tooltip", "容量", "Capacity")
             .tooltipLine("gtocore.rule.steam.storage_tank_capacity.tooltip.0", "大型蒸汽储存罐的容量，单位为mB", "The capacity of the large steam storage tank in mB")
@@ -247,15 +247,15 @@ public final class GTORules {
             .register();
     public static final FloatRule CONFIGURABLE_MAINTENANCE_MAX = Rules.floatRule("machines.configurable_maintenance_max").group(MACHINES)
             .defaults(1.3F, 1.2F, 1.1F).range(0.01F, 100)
-            .name("gtocore.rule.machines.configurable_maintenance_max", "可配置维护仓速度乘数上限", "Configurable Maintenance Speed Multiplier Maximum")
-            .tooltip("gtocore.rule.machines.configurable_maintenance_max.tooltip", "配方处理速度乘数上限 : %s", "Configurable Recipe Speed Multiplier Maximum : %s Multiplier")
-            .tooltipLine("gtocore.rule.machines.configurable_maintenance_max.tooltip.0", "不计超频，配方处理速度乘数的最高值", "Ignore overclocking, the recipe processing speed is the highest multiplier for normal speed")
+            .name("gtocore.rule.machines.configurable_maintenance_max", "负荷调节自动维护仓耗时倍率上限", "Load Regulating Auto Maintenance Duration Multiplier Maximum")
+            .tooltip("gtocore.rule.machines.configurable_maintenance_max.tooltip", "处理耗时倍率上限：%s", "Duration Multiplier Maximum: %s")
+            .tooltipLine("gtocore.rule.machines.configurable_maintenance_max.tooltip.0", "负荷调节自动维护仓允许的最高配方耗时倍率", "Highest recipe duration multiplier allowed on load regulating auto maintenance hatches")
             .register();
     public static final FloatRule CONFIGURABLE_MAINTENANCE_MIN = Rules.floatRule("machines.configurable_maintenance_min").group(MACHINES)
             .defaults(0.7F, 0.8F, 0.9F).range(0.01F, 100)
-            .name("gtocore.rule.machines.configurable_maintenance_min", "可配置维护仓速度乘数下限", "Configurable Maintenance Speed Multiplier Minimum")
-            .tooltip("gtocore.rule.machines.configurable_maintenance_min.tooltip", "配方处理速度乘数下限 : %s", "Configurable Recipe Speed Multiplier Minimum : %s Multiplier")
-            .tooltipLine("gtocore.rule.machines.configurable_maintenance_min.tooltip.0", "不计超频，配方处理速度乘数的最低值", "Ignore overclocking, the recipe processing speed is the lowest multiplier for normal speed")
+            .name("gtocore.rule.machines.configurable_maintenance_min", "负荷调节自动维护仓耗时倍率下限", "Load Regulating Auto Maintenance Duration Multiplier Minimum")
+            .tooltip("gtocore.rule.machines.configurable_maintenance_min.tooltip", "处理耗时倍率下限：%s", "Duration Multiplier Minimum: %s")
+            .tooltipLine("gtocore.rule.machines.configurable_maintenance_min.tooltip.0", "负荷调节自动维护仓允许的最低配方耗时倍率", "Lowest recipe duration multiplier allowed on load regulating auto maintenance hatches")
             .register();
     public static final TierRule MUFFLER_TIER = Rules.tierRule("machines.muffler").group(MACHINES)
             .name("gtocore.rule.machines.muffler", "消声仓机制", "Muffler Mechanics")
@@ -342,6 +342,10 @@ public final class GTORules {
             .desc("gtocore.rule.research.space_data_module_works.desc", "工程数据模块每产出一份数据需要完成的工作次数。", "Number of works the engineering data module needs for each piece of data.")
             .register();
 
+    public static final TierRule QUEST_SUBSIDY = Rules.tierRule("survival.quest_subsidy").group(SURVIVAL)
+            .name("gtocore.rule.survival.quest_subsidy", "任务补助", "Quest Subsidy")
+            .desc("gtocore.rule.survival.quest_subsidy.desc", "决定任务书中补助任务发放哪一档奖励。简单档补助最多，普通档适量，专家档只有象征性奖励；当前档没有奖励的补助任务不会显示。", "Sets which tier of rewards the quest book's subsidy quests hand out. Easy gives the most, normal a moderate amount and expert only token rewards; subsidy quests with no rewards for the current tier are hidden.")
+            .register();
     public static final BoolRule MOB_ENHANCEMENT = Rules.boolRule("survival.mob_enhancement").group(SURVIVAL)
             .defaults(false, true, true)
             .name("gtocore.rule.survival.mob_enhancement", "怪物强化", "Mob Enhancement")

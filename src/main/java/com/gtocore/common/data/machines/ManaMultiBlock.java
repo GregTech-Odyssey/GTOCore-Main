@@ -271,6 +271,7 @@ public final class ManaMultiBlock {
             .perfectOCTooltips()
             .recipeTypes(GTORecipeTypes.GREENHOUSE_RECIPES)
             .block(GTOBlocks.MANASTEEL_CASING)
+            .recipeModifier(GTORecipeModifiers.PARALLELIZABLE_PERFECT_OVERCLOCK)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("mana_greenhouse").build())
                     .symbols(Symbols.create()

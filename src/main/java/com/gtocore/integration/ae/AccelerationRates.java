@@ -49,10 +49,8 @@ public final class AccelerationRates {
     public static final String HEADING = "gtocore.acceleration.heading";
     @RegisterLanguage(cn = "无加速卡", en = "No cards")
     public static final String NONE = "gtocore.acceleration.none";
-    @RegisterLanguage(cn = "加速卡 ×%s", en = "Acceleration Card x%s")
+    @RegisterLanguage(cn = "加速卡(%s) ×%s", en = "Acceleration Card (%s) x%s")
     public static final String SPEED = "gtocore.acceleration.speed";
-    @RegisterLanguage(cn = "超级加速卡 ×%s", en = "Super Acceleration Card x%s")
-    public static final String SUPER = "gtocore.acceleration.super";
     @RegisterLanguage(cn = "%s：%s 物品/秒，%s B 流体/秒", en = "%s: %s items/s, %s B fluid/s")
     public static final String TRANSFER = "gtocore.acceleration.transfer";
     @RegisterLanguage(cn = "%s：丢出 %s 物品/秒", en = "%s: drops %s items/s")
@@ -97,16 +95,14 @@ public final class AccelerationRates {
         return Mth.positiveCeilDiv(TileCircuitCutter.MAX_PROGRESS, FCUtil.speedCardMap(speedCards)) * TickRates.Inscriber.getMin();
     }
 
-    public static double busOperationsPerSecond(IOBusPart part, int superCards, int speedCards) {
-        var upgrades = part.getUpgrades();
-        int multiplier = part.getOperationsPerWorkCall() / SuperSpeedCard.busOperations(upgrades);
-        long operations = SuperSpeedCard.scale(IOBusPart::getOperationsForSpeedCards, upgrades.getMaxInstalled(AEItems.SPEED_CARD), superCards, speedCards);
-        return (double) operations * multiplier * part.getWorkRepeats() * TICKS_PER_SECOND / part.getTickRates().getMin();
+    public static double busOperationsPerSecond(IOBusPart part, int tier, int cards) {
+        int multiplier = part.getOperationsPerWorkCall() / SpeedCards.busOperations(part.getUpgrades());
+        long operations = SpeedCards.scale(IOBusPart::getOperationsForSpeedCards, tier, cards);
+        return (double) operations * multiplier * TICKS_PER_SECOND / part.getTickRates().getMin();
     }
 
-    public static double ioPortOperationsPerSecond(IntToLongFunction table, ItemLike machine, int superCards, int speedCards) {
-        long operations = SuperSpeedCard.scale(table, Upgrades.getMaxInstallable(AEItems.SPEED_CARD, machine), superCards, speedCards);
-        return operations * TICKS_PER_SECOND / TickRates.IOPort.getMin();
+    public static double ioPortOperationsPerSecond(IntToLongFunction table, int tier, int cards) {
+        return SpeedCards.scale(table, tier, cards) * TICKS_PER_SECOND / TickRates.IOPort.getMin();
     }
 
     public static void init() {
@@ -139,29 +135,32 @@ public final class AccelerationRates {
         Component line(int cards);
     }
 
+    private interface TierRow {
+
+        double operationsPerSecond(int tier, int cards);
+    }
+
     private static void bus(IPartItem<?> item, Component note) {
         var rows = new Lazy(() -> {
             var part = (IOBusPart) item.createPart();
-            var lines = new ArrayList<Component>();
-            int maxSpeed = Upgrades.getMaxInstallable(AEItems.SPEED_CARD, item);
-            int maxSuper = Upgrades.getMaxInstallable(SuperSpeedCard.ITEM.get(), item);
-            for (int c = 0; c <= maxSpeed; c++) lines.add(transfer(0, c, busOperationsPerSecond(part, 0, c)));
-            for (int c = 1; c <= maxSuper; c++) lines.add(transfer(c, 0, busOperationsPerSecond(part, c, 0)));
-            return new Rows(lines, maxSpeed, maxSuper);
+            return tieredRows(item, (tier, cards) -> busOperationsPerSecond(part, tier, cards));
         });
         register(item, rows, note);
     }
 
     private static void ioPort(ItemLike item, IntToLongFunction table) {
-        var rows = new Lazy(() -> {
-            var lines = new ArrayList<Component>();
-            int maxSpeed = Upgrades.getMaxInstallable(AEItems.SPEED_CARD, item);
-            int maxSuper = Upgrades.getMaxInstallable(SuperSpeedCard.ITEM.get(), item);
-            for (int c = 0; c <= maxSpeed; c++) lines.add(transfer(0, c, ioPortOperationsPerSecond(table, item, 0, c)));
-            for (int c = 1; c <= maxSuper; c++) lines.add(transfer(c, 0, ioPortOperationsPerSecond(table, item, c, 0)));
-            return new Rows(lines, maxSpeed, maxSuper);
-        });
-        register(item, rows, null);
+        register(item, new Lazy(() -> tieredRows(item, (tier, cards) -> ioPortOperationsPerSecond(table, tier, cards))), null);
+    }
+
+    private static Rows tieredRows(ItemLike item, TierRow row) {
+        int max = Upgrades.getMaxInstallable(AEItems.SPEED_CARD, item);
+        boolean tiered = Upgrades.getMaxInstallable(SpeedCards.card(1), item) > 0;
+        var lines = new ArrayList<Component>(max + SpeedCards.TIERS);
+        for (int c = 0; c <= max; c++) lines.add(transfer(0, c, row.operationsPerSecond(0, c)));
+        if (tiered) {
+            for (int tier = 1; tier < SpeedCards.TIERS; tier++) lines.add(transfer(tier, max, row.operationsPerSecond(tier, max)));
+        }
+        return new Rows(lines, max, tiered);
     }
 
     private static void machine(ItemLike item, Row row) {
@@ -169,7 +168,7 @@ public final class AccelerationRates {
             var lines = new ArrayList<Component>();
             int max = Upgrades.getMaxInstallable(AEItems.SPEED_CARD, item);
             for (int c = 0; c <= max; c++) lines.add(row.line(c));
-            return new Rows(lines, max, 0);
+            return new Rows(lines, max, false);
         });
         register(item, rows, null);
     }
@@ -185,19 +184,14 @@ public final class AccelerationRates {
         ((IItem) item.asItem()).gtolib$setTips(spec);
     }
 
-    private static Component transfer(int speedCards, double operationsPerSecond) {
-        return transfer(0, speedCards, operationsPerSecond);
-    }
-
-    private static Component transfer(int superCards, int speedCards, double operationsPerSecond) {
-        return Component.translatable(TRANSFER, label(superCards, speedCards),
+    private static Component transfer(int tier, int cards, double operationsPerSecond) {
+        return Component.translatable(TRANSFER, label(tier, cards),
                 number(operationsPerSecond * AEKeyType.items().getAmountPerOperation()),
                 number(operationsPerSecond * AEKeyType.fluids().getAmountPerOperation() / AEKeyType.fluids().getAmountPerUnit()));
     }
 
-    private static Component label(int superCards, int speedCards) {
-        if (superCards > 0) return Component.translatable(SUPER, superCards);
-        if (speedCards > 0) return Component.translatable(SPEED, speedCards);
+    private static Component label(int tier, int cards) {
+        if (cards > 0) return Component.translatable(SPEED, SpeedCards.roman(tier), cards);
         return Component.translatable(NONE);
     }
 
@@ -207,14 +201,14 @@ public final class AccelerationRates {
 
     private record Rows(List<Component> summary, List<Component> details) {
 
-        Rows(List<Component> all, int maxSpeed, int maxSuper) {
-            this(summaryOf(all, maxSpeed, maxSuper), detailsOf(all));
+        Rows(List<Component> all, int maxSpeed, boolean tiered) {
+            this(summaryOf(all, maxSpeed, tiered), detailsOf(all));
         }
 
-        private static List<Component> summaryOf(List<Component> all, int maxSpeed, int maxSuper) {
+        private static List<Component> summaryOf(List<Component> all, int maxSpeed, boolean tiered) {
             var out = new ArrayList<Component>(2);
             out.add(Tips.stat(all.get(maxSpeed)));
-            if (maxSuper > 0) out.add(Tips.stat(all.get(all.size() - 1)));
+            if (tiered) out.add(Tips.stat(all.get(all.size() - 1)));
             return List.copyOf(out);
         }
 

@@ -4,6 +4,7 @@ import com.gtocore.common.machine.multiblock.part.HugeBusPartMachine;
 import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IAssemblyLine;
@@ -15,10 +16,12 @@ import com.gregtechceu.gtceu.api.recipe.content.ContentRoll;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.PlanScratch;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.api.recipe.info.ItemRecipeInfo;
+import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
@@ -32,6 +35,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import lombok.Generated;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 
@@ -56,26 +60,62 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
      * 检查给定配方的物品输入是否与机器的物品存储区有序匹配。
      */
     private boolean checkItemInputs(GTRecipe recipe) {
-        return checkOrderedInputs(itemStackTransfers, recipe.itemInputs);
+        return checkOrderedInputs(itemStackTransfers, recipe, recipe.itemInputs);
     }
 
     /**
      * 检查给定配方的流体输入是否与机器的流体存储区有序匹配。
      */
     private boolean checkFluidInputs(GTRecipe recipe) {
-        return checkOrderedInputs(fluidTankTransfers, recipe.fluidInputs);
+        return checkOrderedInputs(fluidTankTransfers, recipe, recipe.fluidInputs);
     }
 
-    private static boolean checkOrderedInputs(ReferenceArrayList<? extends KeyInventory<?>> machineInputs, ContentList inputs) {
+    private static boolean checkOrderedInputs(ReferenceArrayList<? extends KeyInventory<?>> machineInputs, GTRecipe recipe, ContentList inputs) {
         int n = inputs.size();
         if (n == 0) return true;
         if (machineInputs.size() < n) return false;
         for (int i = 0; i < n; i++) {
             if (inputs.amount(i) > 0) {
-                if (!matchSingleKind(machineInputs.get(i), inputs.ingredient(i))) return false;
+                var storage = machineInputs.get(i);
+                if (!matchSingleKind(storage, inputs.ingredient(i))) return false;
+                if (inputs.isConsumable(i) && totalAmount(storage) < inputs.effective(i, recipe.scale)) return false;
             }
         }
         return true;
+    }
+
+    @Nullable
+    public static GTRecipe orderedParallel(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipe recipe) {
+        if (holder instanceof AdvancedAssemblyLineMachine machine) {
+            var config = ConfigHolder.INSTANCE.machines;
+            var parallelHatch = machine.getParallelHatch();
+            long parallel = parallelHatch == null ? 1 : parallelHatch.getCurrentParallel();
+            if (config.orderedAssemblyLineItems) parallel = Math.min(parallel, orderedLimit(machine.itemStackTransfers, recipe, recipe.itemInputs));
+            if (config.orderedAssemblyLineFluids) parallel = Math.min(parallel, orderedLimit(machine.fluidTankTransfers, recipe, recipe.fluidInputs));
+            return ParallelLogic.accurateParallel(holder, unit, recipe, Math.max(1, parallel));
+        }
+        return GTORecipeModifiers.parallel(holder, unit, recipe);
+    }
+
+    private static long orderedLimit(ReferenceArrayList<? extends KeyInventory<?>> machineInputs, GTRecipe recipe, ContentList inputs) {
+        long limit = Long.MAX_VALUE;
+        int n = Math.min(inputs.size(), machineInputs.size());
+        for (int i = 0; i < n; i++) {
+            if (!inputs.isConsumable(i)) continue;
+            long each = inputs.effective(i, recipe.scale);
+            if (each > 0) limit = Math.min(limit, totalAmount(machineInputs.get(i)) / each);
+        }
+        return limit;
+    }
+
+    private static long totalAmount(KeyInventory<?> storage) {
+        long total = 0;
+        int size = storage.size();
+        for (int slot = 0; slot < size; slot++) {
+            long amount = storage.amountAt(slot);
+            if (amount > 0) total = total > Long.MAX_VALUE - amount ? Long.MAX_VALUE : total + amount;
+        }
+        return total;
     }
 
     /**
@@ -183,29 +223,34 @@ public final class AdvancedAssemblyLineMachine extends ElectricMultiblockMachine
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static <K extends AEKey> boolean consumeOrderedInputs(ReferenceArrayList<KeyInventory<K>> machineInputs, GTRecipe recipe, ContentList inputs, boolean testOnce) {
         int n = inputs.size();
         if (n == 0) return true;
         if (machineInputs.size() < n) return false;
+        var needs = new long[n];
         for (int i = 0; i < n; i++) {
-            long need = ContentRoll.rolled(recipe, inputs, i, ContentRoll.RNG);
-            if (need <= 0) continue;
-            var inputSlot = machineInputs.get(i);
-            var ingredient = inputs.ingredient(i);
-            boolean tested = false;
-            int size = inputSlot.size();
-            for (int j = 0; j < size; j++) {
-                if (inputSlot.amountAt(j) <= 0) continue;
-                var key = (K) inputSlot.rawKeyAt(j);
-                if (!tested && !KeyIngredient.accepts(ingredient, inputSlot.uidAt(j), key)) continue;
-                if (testOnce) tested = true;
-                need -= inputSlot.extract(j, key, need, false);
-                if (need <= 0) break;
-            }
-            if (need > 0) return false;
+            needs[i] = ContentRoll.rolled(recipe, inputs, i, ContentRoll.RNG);
+            if (needs[i] > 0 && !extractOrdered(machineInputs.get(i), inputs.ingredient(i), needs[i], testOnce, true)) return false;
+        }
+        for (int i = 0; i < n; i++) {
+            if (needs[i] > 0) extractOrdered(machineInputs.get(i), inputs.ingredient(i), needs[i], testOnce, false);
         }
         return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K extends AEKey> boolean extractOrdered(KeyInventory<K> inputSlot, KeyIngredient ingredient, long need, boolean testOnce, boolean simulate) {
+        boolean tested = false;
+        int size = inputSlot.size();
+        for (int j = 0; j < size; j++) {
+            if (inputSlot.amountAt(j) <= 0) continue;
+            var key = (K) inputSlot.rawKeyAt(j);
+            if (!tested && !KeyIngredient.accepts(ingredient, inputSlot.uidAt(j), key)) continue;
+            if (testOnce) tested = true;
+            need -= inputSlot.extract(j, key, need, simulate);
+            if (need <= 0) return true;
+        }
+        return false;
     }
 
     @Override

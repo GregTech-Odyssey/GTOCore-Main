@@ -69,6 +69,7 @@ import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.AEKeyFilter;
 import appeng.api.storage.MEStorage;
 import appeng.api.storage.StorageHelper;
+import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
@@ -265,6 +266,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     @Override
     public boolean patternFilter(ItemStack stack) {
+        if (stack.is(AEItems.BLANK_PATTERN.asItem())) return true;
         if (!isRemote() && stack.getOrCreateTag().tags.get("recipe") instanceof StringTag stringTag) {
             var recipe = RecipeBuilder.get(RLUtils.parse(stringTag.getAsString()));
             if (recipe != null) {
@@ -412,8 +414,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     private void reloadPatternRecipe(int index) {
+        if (hasIncompleteEditorPattern(index)) return;
         var stack = getInternalPatternInventory().getStackInSlot(index);
-        if (!stack.isEmpty()) MEPatternVirtualInputHelper.readRecipeTag(stack, getInternalInventory()[index]::setRecipe);
+        if (stack.getItem() instanceof ProcessingPatternItem) MEPatternVirtualInputHelper.readRecipeTag(stack, getInternalInventory()[index]::setRecipe);
     }
 
     @Override
@@ -458,10 +461,11 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @Nullable
     public ResourceLocation getSlotRecipeId(int slot) {
         if (slot < 0 || slot >= getMaxPatternCount()) return null;
+        var stack = getPatternInventory().getStackInSlot(slot);
+        if (!(stack.getItem() instanceof ProcessingPatternItem)) return null;
         var recipe = getInternalInventory()[slot].recipe;
         if (recipe != null) return recipe.id;
-        var stack = getPatternInventory().getStackInSlot(slot);
-        if (stack.isEmpty() || stack.getTag() == null) return null;
+        if (stack.getTag() == null) return null;
         var recipeId = stack.getTag().getString("recipe");
         // 空串会被解析成 "minecraft:"
         return recipeId.isEmpty() ? null : ResourceLocation.tryParse(recipeId);
@@ -471,7 +475,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     public void setSlotRecipeId(int slot, @Nullable ResourceLocation recipeId) {
         if (slot < 0 || slot >= getMaxPatternCount()) return;
         var stack = getPatternInventory().getStackInSlot(slot);
-        if (stack.isEmpty()) return;
+        if (!(stack.getItem() instanceof ProcessingPatternItem)) return;
         var recipe = recipeId == null ? null : RecipeBuilder.get(recipeId);
         if (recipe == null) stack.getOrCreateTag().remove("recipe");
         else stack.getOrCreateTag().putString("recipe", recipe.id.toString());
@@ -482,6 +486,11 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     @Override
     protected boolean supportsSlotConfig() {
+        return true;
+    }
+
+    @Override
+    protected boolean supportsPatternEditor() {
         return true;
     }
 
@@ -513,9 +522,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         }, text -> setSlotRecipeId(index, ResourceLocation.tryParse(text))).setRightClickClear(true);
         recipeField.layout(l -> l.flexGrow(1));
         recipeField.setHoverTooltips(Component.translatable(ADD_RECIPE_MSG));
-        // 样板槽为空时整行只读（没有样板物品可写配方）：查看、输入、清除三个控件一起叠斜纹，悬停说明原因
+        // 没有已编码样板时整行只读：查看、输入、清除三个控件一起叠斜纹，悬停说明原因
         recipe.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).layout(l -> l.width(recipe.getContentWidth()))
-                .disabled(() -> getPatternInventory().getStackInSlot(index).isEmpty(), PATTERN_REQUIRED).addChildren(
+                .disabled(() -> !(getPatternInventory().getStackInSlot(index).getItem() instanceof ProcessingPatternItem), PATTERN_REQUIRED).addChildren(
                         Button.glyph("?")
                                 .bindTooltip(() -> Component.translatable(getSlotRecipeId(index) != null ? VIEW_RECIPE : NO_RECIPE))
                                 .setOnClientClick(() -> {
@@ -525,7 +534,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
                         recipeField,
                         Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER)
                                 .setOnServerClick(() -> {
-                                    if (getPatternInventory().getStackInSlot(index).isEmpty()) return;
+                                    if (!(getPatternInventory().getStackInSlot(index).getItem() instanceof ProcessingPatternItem)) return;
                                     slot.setRecipe(null);
                                     onChanged();
                                 })

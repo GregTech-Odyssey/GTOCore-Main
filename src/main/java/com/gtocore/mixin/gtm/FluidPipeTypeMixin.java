@@ -42,7 +42,7 @@ public class FluidPipeTypeMixin {
      */
     @Overwrite(remap = false)
     public FluidPipeProperties modifyProperties(FluidPipeProperties fluidPipeData) {
-        return new FluidPipeProperties(GTORules.FLUID_PIPE_THROUGHPUT.get() * fluidPipeData.getThroughput() * capacityMultiplier * channels);
+        return new FluidPipeProperties(GTORules.FLUID_PIPE_THROUGHPUT.get() * fluidPipeData.getThroughput() * capacityMultiplier * channels, fluidPipeData.getMaxTemp(), fluidPipeData.isGasProof(), fluidPipeData.isCryoProof(), fluidPipeData.isPlasmaProof());
     }
 
     /**

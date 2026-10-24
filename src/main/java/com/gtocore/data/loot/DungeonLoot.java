@@ -25,6 +25,9 @@ public final class DungeonLoot {
         ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.MYSTERIOUS_BOOST_DRINK[GTValues.ULV].asStack(), 1, 4, 5);
         ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.MYSTERIOUS_BOOST_DRINK[GTValues.LV].asStack(), 1, 3, 4);
         ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.MYSTERIOUS_BOOST_DRINK[GTValues.MV].asStack(), 1, 2, 3);
+        ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.LARGE_MYSTERIOUS_BOOST_DRINK[GTValues.ULV].asStack(), 1, 4, 3);
+        ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.LARGE_MYSTERIOUS_BOOST_DRINK[GTValues.LV].asStack(), 1, 3, 2);
+        ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.LARGE_MYSTERIOUS_BOOST_DRINK[GTValues.MV].asStack(), 1, 2, 1);
         ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.RUNE1_REWARD_BAG.asStack(), 1, 1, 3);
 
         ChestGenHooks.addItem(BuiltInLootTables.SIMPLE_DUNGEON, GTOItems.RANDOM_POSITIVE_FOOD_1.asStack(), 1, 2, 6);
@@ -44,5 +47,8 @@ public final class DungeonLoot {
         ChestGenHooks.addItem(BuiltInLootTables.JUNGLE_TEMPLE, GTOItems.MYSTERIOUS_BOOST_DRINK[GTValues.ULV].asStack(), 1, 4, 4);
         ChestGenHooks.addItem(BuiltInLootTables.JUNGLE_TEMPLE, GTOItems.MYSTERIOUS_BOOST_DRINK[GTValues.LV].asStack(), 1, 3, 3);
         ChestGenHooks.addItem(BuiltInLootTables.JUNGLE_TEMPLE, GTOItems.MYSTERIOUS_BOOST_DRINK[GTValues.MV].asStack(), 1, 2, 2);
+        ChestGenHooks.addItem(BuiltInLootTables.JUNGLE_TEMPLE, GTOItems.LARGE_MYSTERIOUS_BOOST_DRINK[GTValues.ULV].asStack(), 1, 4, 2);
+        ChestGenHooks.addItem(BuiltInLootTables.JUNGLE_TEMPLE, GTOItems.LARGE_MYSTERIOUS_BOOST_DRINK[GTValues.LV].asStack(), 1, 3, 2);
+        ChestGenHooks.addItem(BuiltInLootTables.JUNGLE_TEMPLE, GTOItems.LARGE_MYSTERIOUS_BOOST_DRINK[GTValues.MV].asStack(), 1, 2, 1);
     }
 }

@@ -130,7 +130,7 @@ public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomPa
                     if (entity instanceof LivingEntity) {
                         entity.hurt(GTODamageTypes.getBlastFurnaceDamageSource(entity), recipe.parallels * 5);
                     } else {
-                        entity.kill();
+                        entity.discard();
                     }
                 }
             }

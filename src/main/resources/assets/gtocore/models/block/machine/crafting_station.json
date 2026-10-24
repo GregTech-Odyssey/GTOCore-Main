@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "gtocore:block/machines/crafting_station_side2",
+    "side": "gtocore:block/machines/crafting_station_side",
+    "top": "gtocore:block/machines/crafting_station_top"
+  }
+}

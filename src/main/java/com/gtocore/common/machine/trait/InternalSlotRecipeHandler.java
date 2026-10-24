@@ -69,6 +69,9 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         public @Nullable GTRecipeType effectiveRecipeType(GTRecipeType machineType) {
+            if (slot.isEmpty()) return null;
+            var cachedRecipe = getCachedRecipe();
+            if (cachedRecipe != null && isCachedRecipeAvailable(cachedRecipe)) return cachedRecipe.recipeType;
             return getEffectiveRecipeType(machineType);
         }
 
@@ -147,7 +150,8 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         protected void onRecipeHandled(GTRecipe recipe) {
-            slot.setRecipe(recipe.definition);
+            // Transient recipes must not clear the pattern's registered recipe and mode.
+            if (recipe.definition.registered) slot.setRecipe(recipe.definition);
         }
 
         @Override

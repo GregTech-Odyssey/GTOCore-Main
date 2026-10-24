@@ -356,145 +356,149 @@ public final class FuelRecipe {
                 .EUt(-V[LV])
                 .save();
 
-        // plasma turbine
+        // plasma turbine：按"时长"给等离子配方分级——所有配方时长压到 100 tick 以内，每抬一挡电压（x4）就把时长 ÷4，
+        // 单份燃料的总能量（EUt × 时长）保持不变，只是高级燃料天生跑在更高电压上、磁流体发电机要补的超频更少
+        // IV 挡（x4，8,192 EU/t）：氦 38、硼 47、氧 53、氩 59、钙 61、硫 62、氮 64
+        // LuV 挡（x16，32,768 EU/t）：锡 26、铌 29、氙 31、钛 33、锌 34、铁 35、镍 42、银 44、镅 45、钍 62、山铜 24、秘银 28
+        // 山铜 / 秘银的热值按需求单独加强，仍落在 LuV 挡
         PLASMA_GENERATOR_FUELS.recipeBuilder("helium")
                 .inputFluids(Helium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Helium.getFluid(4))
-                .duration(150)
-                .EUt(-V[EV])
+                .duration(38)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("oxygen")
                 .inputFluids(Oxygen.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Oxygen.getFluid(4))
-                .duration(212)
-                .EUt(-V[EV])
+                .duration(53)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("nitrogen")
                 .inputFluids(Nitrogen.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Nitrogen.getFluid(4))
-                .duration(256)
-                .EUt(-V[EV])
+                .duration(64)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("iron")
                 .inputFluids(Iron.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Iron.getFluid(4))
-                .duration(564)
-                .EUt(-V[EV])
+                .duration(35)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("nickel")
                 .inputFluids(Nickel.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Nickel.getFluid(4))
-                .duration(668)
-                .EUt(-V[EV])
+                .duration(42)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("orichalcum")
                 .inputFluids(GTOMaterials.Orichalcum.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(GTOMaterials.Orichalcum, 4)
-                .duration(64)
-                .EUt(-V[EV])
+                .duration(24)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("mithril")
                 .inputFluids(GTOMaterials.Mithril.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(GTOMaterials.Mithril, 4)
-                .duration(72)
-                .EUt(-V[EV])
+                .duration(28)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("silver")
                 .inputFluids(Silver.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Silver.getFluid(4))
-                .duration(698)
-                .EUt(-V[EV])
+                .duration(44)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("sulfur")
                 .inputFluids(Sulfur.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Sulfur.getFluid(4))
-                .duration(248)
-                .EUt(-V[EV])
+                .duration(62)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("boron")
                 .inputFluids(Boron.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Boron.getFluid(4))
-                .duration(186)
-                .EUt(-V[EV])
+                .duration(47)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("calcium")
                 .inputFluids(Calcium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Calcium.getFluid(4))
-                .duration(244)
-                .EUt(-V[EV])
+                .duration(61)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("zinc")
                 .inputFluids(Zinc.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Zinc.getFluid(4))
-                .duration(544)
-                .EUt(-V[EV])
+                .duration(34)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("niobium")
                 .inputFluids(Niobium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Niobium.getFluid(4))
-                .duration(462)
-                .EUt(-V[EV])
+                .duration(29)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("tin")
                 .inputFluids(Tin.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Tin.getFluid(4))
-                .duration(416)
-                .EUt(-V[EV])
+                .duration(26)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("neon")
                 .inputFluids(Neon.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Neon.getFluid(4))
-                .duration(542)
-                .EUt(-V[EV])
+                .duration(34)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("xenon")
                 .inputFluids(Xenon.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Xenon.getFluid(4))
-                .duration(492)
-                .EUt(-V[EV])
+                .duration(31)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("argon")
                 .inputFluids(Argon.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Argon.getFluid(4))
-                .duration(234)
-                .EUt(-V[EV])
+                .duration(59)
+                .EUt(-V[IV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("titanium")
                 .inputFluids(Titanium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Titanium.getFluid(4))
-                .duration(532)
-                .EUt(-V[EV])
+                .duration(33)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("americium")
                 .inputFluids(Americium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Americium.getFluid(4))
-                .duration(716)
-                .EUt(-V[EV])
+                .duration(45)
+                .EUt(-V[LuV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("thorium")
                 .inputFluids(Thorium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Thorium.getFluid(4))
-                .duration(986)
-                .EUt(-V[EV])
+                .duration(62)
+                .EUt(-V[LuV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("seed_oil")
@@ -521,14 +525,14 @@ public final class FuelRecipe {
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil")
                 .inputFluids(Oil, 2)
                 .inputFluids(Air, 5)
-                .duration(20)
+                .duration(14)
                 .EUt(-V[ULV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_light")
                 .inputFluids(OilLight, 2)
                 .inputFluids(Air, 5)
-                .duration(20)
+                .duration(12)
                 .EUt(-V[ULV])
                 .save();
 
@@ -542,21 +546,21 @@ public final class FuelRecipe {
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_heavy")
                 .inputFluids(OilHeavy, 2)
                 .inputFluids(Air, 8)
-                .duration(30)
+                .duration(18)
                 .EUt(-V[ULV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("oil_medium")
                 .inputFluids(RawOil, 2)
                 .inputFluids(Air, 8)
-                .duration(30)
+                .duration(18)
                 .EUt(-V[ULV])
                 .save();
 
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("coal_tar")
                 .inputFluids(CoalTar, 6)
                 .inputFluids(Air, 6)
-                .duration(24)
+                .duration(20)
                 .EUt(-V[ULV])
                 .save();
 
@@ -577,7 +581,7 @@ public final class FuelRecipe {
         SEMI_FLUID_GENERATOR_FUELS.recipeBuilder("heavy_fuel")
                 .inputFluids(HeavyFuel, 1)
                 .inputFluids(Air, 22)
-                .duration(90)
+                .duration(80)
                 .EUt(-V[ULV])
                 .save();
 

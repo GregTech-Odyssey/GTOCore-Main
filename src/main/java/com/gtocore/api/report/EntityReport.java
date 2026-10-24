@@ -35,6 +35,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -95,8 +95,8 @@ public class EntityReport {
 
             // 生物 → 生物蛋，以及生物蛋 → 生物（Forge 的 TYPE_MAP 同时覆盖原版与模组生物蛋）
             // 非生物类型 fromEntityType 返回 null，因此无需预先过滤
-            Map<EntityType<?>, SpawnEggItem> eggsByType = new IdentityHashMap<>();
-            Map<SpawnEggItem, EntityType<?>> typesByEgg = new IdentityHashMap<>();
+            Map<EntityType<?>, SpawnEggItem> eggsByType = new Reference2ReferenceOpenHashMap<>();
+            Map<SpawnEggItem, EntityType<?>> typesByEgg = new Reference2ReferenceOpenHashMap<>();
             for (EntityType<?> entityType : BuiltInRegistries.ENTITY_TYPE) {
                 SpawnEggItem egg = ForgeSpawnEggItem.fromEntityType(entityType);
                 if (egg == null) continue;
@@ -190,7 +190,7 @@ public class EntityReport {
      * 实体类型标签：实体 → 标签 ID 列表（已排序）。
      */
     private static Map<EntityType<?>, List<String>> collectEntityTags() {
-        Map<EntityType<?>, List<String>> tagsByType = new IdentityHashMap<>();
+        Map<EntityType<?>, List<String>> tagsByType = new Reference2ReferenceOpenHashMap<>();
         for (var tagEntry : BuiltInRegistries.ENTITY_TYPE.getTags().toList()) {
             String tagId = tagEntry.getFirst().location().toString();
             for (Holder<EntityType<?>> holder : tagEntry.getSecond()) {
@@ -211,7 +211,7 @@ public class EntityReport {
         for (Biome biome : biomes) sortedBiomes.add(biome);
         sortedBiomes.sort(Comparator.comparing(a -> biomes.getKey(a).toString()));
 
-        Map<EntityType<?>, List<JsonObject>> spawnsByType = new IdentityHashMap<>();
+        Map<EntityType<?>, List<JsonObject>> spawnsByType = new Reference2ReferenceOpenHashMap<>();
         for (Biome biome : sortedBiomes) {
             ResourceLocation biomeId = biomes.getKey(biome);
             MobSpawnSettings settings = biome.getMobSettings();
@@ -233,7 +233,7 @@ public class EntityReport {
             }
         }
 
-        Map<EntityType<?>, JsonArray> result = new IdentityHashMap<>();
+        Map<EntityType<?>, JsonArray> result = new Reference2ReferenceOpenHashMap<>();
         for (Map.Entry<EntityType<?>, List<JsonObject>> entry : spawnsByType.entrySet()) {
             entry.getValue().sort(BIOME_SPAWN_ORDER);
             JsonArray array = new JsonArray();

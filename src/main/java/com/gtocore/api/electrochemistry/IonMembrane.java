@@ -47,6 +47,10 @@ public record IonMembrane(Material material,
                     1024, 1.35, 1.25,
                     1.1, 1.1,
                     MembraneType.CATION, 60);
+            register(PolyacrylicAcid,
+                    1024, 1.25, 1.15,
+                    1.0, 0.9,
+                    MembraneType.PROTON, 50);
 
             // luv
             register(PerfluorosulfonicAcidPolytetrafluoroethyleneCopolymer,

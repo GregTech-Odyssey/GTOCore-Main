@@ -1,10 +1,12 @@
 package com.gtocore.integration.emi;
 
+import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.chisel.ChiselRecipe;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
@@ -31,9 +33,11 @@ import com.gtolib.api.emi.stack.EmiSearchTextStack;
 import com.gtolib.api.emi.stack.EmiSearchTextStackSerializer;
 import com.gtolib.api.emi.stack.EmiTagprefixStack;
 import com.gtolib.api.emi.stack.EmiTagprefixStackSerializer;
+import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.gtm.recipe.editor.CraftAction;
 import com.gtolib.gtm.recipe.editor.GTEmiRecipeHandler;
 import com.gtolib.utils.GTOUtils;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTCEuAPI;
@@ -46,6 +50,7 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.fluid.potion.PotionFluid;
 import com.gregtechceu.gtceu.integration.emi.circuit.GTProgrammedCircuitCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockFluidEmiCategory;
+import com.gregtechceu.gtceu.integration.emi.orevein.GTBedrockOreEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.orevein.GTOreVeinEmiCategory;
 import com.gregtechceu.gtceu.integration.emi.recipe.FrontLitEmiStack;
 import com.gregtechceu.gtceu.integration.emi.recipe.GTRecipeEMICategory;
@@ -55,7 +60,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.level.material.Fluid;
 
 import appeng.core.AppEng;
 import appeng.integration.modules.emi.AppEngEmiPlugin;
@@ -78,6 +86,7 @@ import dev.emi.emi.VanillaPlugin;
 import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
+import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
@@ -107,7 +116,7 @@ import java.util.function.Consumer;
 
 public final class GTEMIPlugin implements EmiPlugin {
 
-    private static final ResourceLocation SCRY_RITUAL = new ResourceLocation("ars_nouveau", "scry_ritual");
+    private static final ResourceLocation SCRY_RITUAL = RLUtils.ars("scry_ritual");
 
     public static void init() {
         RecipeTierPreview.register(ManaTierPreview::of);
@@ -172,9 +181,7 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     private static void addEMIPlugin(Consumer<EmiPluginContainer> list) {
         list.accept(new EmiPluginContainer(new VanillaPlugin(), "emi"));
-        if (GTCEu.isProd()) {
-            list.accept(new EmiPluginContainer(new EMITradesPlugin(), "emitrades"));
-        }
+        list.accept(new EmiPluginContainer(new EMITradesPlugin(), "emitrades"));
         if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
             list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.emi.BackpackEmiPlugin(), "backpack"));
         }
@@ -204,12 +211,21 @@ public final class GTEMIPlugin implements EmiPlugin {
 
     @Override
     public void register(EmiRegistry registry) {
+        if (!GTORules.FLUID_TIER.isExpert()) {
+            registry.removeEmiStacks(stack -> switch (stack.getKey()) {
+                case BucketItem bucket -> ChemicalHelper.getMaterial(bucket.getFluid()).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                case Item item -> ChemicalHelper.getMaterialEntry(item).material().hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                case Fluid fluid -> ChemicalHelper.getMaterial(fluid).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                default -> false;
+            });
+        }
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
         registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
 
         registry.addCategory(OreProcessingEmiCategory.CATEGORY);
         registry.addCategory(GTOreVeinEmiCategory.CATEGORY);
         registry.addCategory(GTBedrockFluidEmiCategory.CATEGORY);
+        registry.addCategory(GTBedrockOreEmiCategory.CATEGORY);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.ORE_EXTRACTION_MODULE);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.BIOENGINEERING_MODULE);
         registry.addCategory(NanitesIntegratedProcessingEmiCategory.POLYMER_TWISTING_MODULE);
@@ -220,6 +236,7 @@ public final class GTEMIPlugin implements EmiPlugin {
             }
         });
         registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
+        registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTPatternEditorRecipeHandler());
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
         registry.addRecipeHandler(Wireless.TYPE, ME2in1Helper.createEMIWireless());
@@ -235,6 +252,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         OreProcessingEmiCategory.registerDisplays(registry);
         GTOreVeinEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
         GTBedrockFluidEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
+        GTBedrockOreEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);
         GTProgrammedCircuitCategory.registerDisplays(registry);
 
         PrimordialReconstructorDisassemblyEmiCategory.register(registry);
@@ -245,9 +263,10 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTRecipeEMICategory.registerWorkStations(registry);
         GTOreVeinEmiCategory.registerWorkStations(registry);
         GTBedrockFluidEmiCategory.registerWorkStations(registry);
+        GTBedrockOreEmiCategory.registerWorkStations(registry);
         NanitesIntegratedProcessingEmiCategory.registerWorkstations(registry);
-        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.compareNbt());
-        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.compareNbt());
+        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.COMPARE_STACK_KEY);
+        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.COMPARE_STACK_KEY);
         registerDimensionDataVariants(registry);
 
         Comparison potionComparison = Comparison.compareData(stack -> PotionUtils.getPotion(stack.getNbt()));
@@ -255,8 +274,11 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.setDefaultComparison(potionFluid.getSource(), potionComparison);
         registry.setDefaultComparison(potionFluid.getFlowing(), potionComparison);
 
-        GTCEuAPI.materialManager.getRegisteredMaterials().stream().filter(m -> GTOUtils.isGeneration(TagPrefix.turbineBlade, m)).forEach(
-                m -> registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, m), Comparison.compareNbt()));
+        for (var material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+            if (GTOUtils.isGeneration(TagPrefix.turbineBlade, material)) {
+                registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, material), Comparison.COMPARE_STACK_KEY);
+            }
+        }
 
         registry.addGenericDragDropHandler(new EmiDragDropHandler<>() {
 
@@ -337,6 +359,16 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addRecipe(new AlfheimEntryRequirements());
 
         CraftAction.startReloadRegistration();
+        CraftAction.registerSupportsRecipe(recipe -> recipe instanceof EmiCraftingRecipe);
+        CraftAction.registerCanCraftOverride(
+                (recipe, context, simulate) -> {
+                    if (!(context.getScreenHandler().getModularUI().holder instanceof CraftingStationMachine machine)) return false;
+                    if (recipe.getId() == null) return false;
+                    if (!(recipe instanceof EmiCraftingRecipe)) return false;
+                    if (simulate) return true;
+                    machine.requestImport(recipe.getId());
+                    return true;
+                });
         CraftAction.registerCanCraftOverride(
                 (recipe, context, simulate) -> {
                     if (context.getScreenHandler().getModularUI().holder instanceof MEPatternBufferPartMachine patternBuffer) {

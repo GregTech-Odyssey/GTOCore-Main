@@ -59,6 +59,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.function.ObjLongConsumer;
 
 @DataGeneratorScanned
 public abstract class StorageAccessPartMachine extends AmountConfigurationPartMachine implements IMachineLife, MEStorage, IGridConnectedMachine, IStorageProvider {
@@ -263,7 +264,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             var dirty = this.dirty;
             if (dirty) {
                 this.dirty = false;
-                getCellStorage().setDirty();
+                getCellStorage().setSaveDirty();
             }
             if (uuid == null || capacity == 0 || !isOnline) return;
             if (!check) {
@@ -306,6 +307,18 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
+        public long getChangeVersion() {
+            return getCellStorage().cache.getVersion();
+        }
+
+        @Override
+        public boolean drainChanges(Object reader, ObjLongConsumer<AEKey> changed) {
+            var data = getCellStorage();
+            var map = data.getStoredMap();
+            return data.cache.drainChanges(reader, key -> changed.accept(key, map == null ? 0 : map.getAmount(key)));
+        }
+
+        @Override
         public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
             return isInfinite || capacity > getCellStorage().getBytes();
         }
@@ -327,6 +340,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     data.setStoredMap(map);
                 }
                 map.insert(what, amount);
+                data.markChanged(what);
                 dirty = true;
             }
             return amount;
@@ -340,7 +354,10 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (map == null) return 0;
             if (mode == Actionable.MODULATE) {
                 var extract = map.extract(what, amount);
-                if (extract > 0) dirty = true;
+                if (extract > 0) {
+                    data.markChanged(what);
+                    dirty = true;
+                }
                 return extract;
             } else {
                 return Math.min(amount, map.getAmount(what));
@@ -542,7 +559,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             var dirty = this.dirty;
             if (dirty) {
                 this.dirty = false;
-                getCellStorage().setDirty();
+                getCellStorage().setSaveDirty();
             }
             if (uuid == null || capacity == 0 || !isOnline) return;
             if (!check) {
@@ -606,6 +623,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     data.setStoredMap(map);
                 }
                 map.insert(what, BigInteger.valueOf(amount));
+                data.markChanged(what);
                 dirty = true;
             }
             return amount;
@@ -619,11 +637,26 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (map == null) return 0;
             if (mode == Actionable.MODULATE) {
                 amount = map.extractLong(what, amount);
-                if (amount > 0) dirty = true;
+                if (amount > 0) {
+                    data.markChanged(what);
+                    dirty = true;
+                }
                 return amount;
             } else {
                 return Math.min(amount, map.getLongAmount(what));
             }
+        }
+
+        @Override
+        public long getChangeVersion() {
+            return getCellStorage().cache.getVersion();
+        }
+
+        @Override
+        public boolean drainChanges(Object reader, ObjLongConsumer<AEKey> changed) {
+            var data = getCellStorage();
+            var map = data.getStoredMap();
+            return data.cache.drainChanges(reader, key -> changed.accept(key, map == null ? 0 : map.getLongAmount(key)));
         }
 
         @Override
@@ -758,6 +791,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                 data.setStoredMap(map);
             }
             long inserted = map.insert(what, amount, limit);
+            if (inserted > 0) data.markChanged(what);
             if (inserted < 1) return 0;
             dirty = true;
             return inserted;
@@ -798,7 +832,10 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (map == null) return 0;
             if (mode == Actionable.MODULATE) {
                 var extract = map.extract(what, amount, limit);
-                if (extract > 0) dirty = true;
+                if (extract > 0) {
+                    data.markChanged(what);
+                    dirty = true;
+                }
                 return extract;
             } else {
                 return Math.clamp(map.getAmount(what) - limit, 0L, amount);

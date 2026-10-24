@@ -1,0 +1,8 @@
+{
+  "parent": "ars_nouveau:block/large_source_jar/bottom",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "jar": "gtocore:block/large_laureril_source_jar",
+    "particle": "gtocore:block/large_laureril_source_jar"
+  }
+}

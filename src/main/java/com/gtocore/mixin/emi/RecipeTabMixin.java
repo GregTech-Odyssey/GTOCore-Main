@@ -6,6 +6,7 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.screen.RecipeDisplay;
 import dev.emi.emi.screen.RecipeTab;
 import dev.emi.emi.screen.WidgetGroup;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -13,13 +14,14 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Mixin(value = RecipeTab.class, remap = false)
 public abstract class RecipeTabMixin implements LazyRecipeTab {
@@ -27,7 +29,7 @@ public abstract class RecipeTabMixin implements LazyRecipeTab {
     @Shadow
     @Final
     @Mutable
-    private List<RecipeDisplay> displays;
+    private ObjectArrayList<RecipeDisplay> displays;
 
     @Shadow
     @Final
@@ -49,11 +51,16 @@ public abstract class RecipeTabMixin implements LazyRecipeTab {
     @Shadow
     public abstract void bakePages(int height);
 
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/util/List;stream()Ljava/util/stream/Stream;", ordinal = 0))
-    private Stream<EmiRecipe> gtocore$deferDisplays(List<EmiRecipe> recipes) {
+    @ModifyArg(method = "<init>", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectArrayList;<init>(I)V"), index = 0)
+    private int gtocore$deferDisplayCapacity(int capacity) {
+        return 0;
+    }
+
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;", ordinal = 0))
+    private Iterator<EmiRecipe> gtocore$deferDisplays(List<EmiRecipe> recipes) {
         gtocore$recipes = recipes;
         gtocore$lazy = true;
-        return Stream.empty();
+        return Collections.emptyIterator();
     }
 
     @Override
@@ -65,7 +72,7 @@ public abstract class RecipeTabMixin implements LazyRecipeTab {
     private void gtocore$realize() {
         if (!gtocore$lazy) return;
         gtocore$lazy = false;
-        var list = new ArrayList<RecipeDisplay>(gtocore$recipes.size());
+        var list = new ObjectArrayList<RecipeDisplay>(gtocore$recipes.size());
         int maxWidth = 0;
         for (var recipe : gtocore$recipes) {
             RecipeDisplay display;

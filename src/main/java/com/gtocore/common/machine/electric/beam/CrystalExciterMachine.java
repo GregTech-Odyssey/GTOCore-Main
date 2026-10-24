@@ -1,15 +1,15 @@
 package com.gtocore.common.machine.electric.beam;
 
 import com.gtolib.api.beam.BeamManager;
+import com.gtolib.api.beam.IBeamEnergySource;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
 
-public class CrystalExciterMachine extends SimpleTieredMachine {
+public class CrystalExciterMachine extends SimpleTieredMachine implements IBeamEnergySource {
 
     public CrystalExciterMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier, t -> 0);
@@ -29,15 +29,16 @@ public class CrystalExciterMachine extends SimpleTieredMachine {
         }
     }
 
-    public boolean tryConsumeRayEnergy(long intensity) {
-        long cost = energyCost(intensity);
-        if (cost <= 0) return true;
-        NotifiableEnergyContainer energy = getEnergyContainer();
-        return energy.getInputAmperage() * energy.getInputVoltage() >= cost && energy.getEnergyStored() >= cost && energy.removeEnergy(cost) == cost;
+    @Override
+    public long availableBeamEnergy() {
+        var energy = getEnergyContainer();
+        double input = (double) energy.getInputAmperage() * energy.getInputVoltage() * BeamManager.STEP_TICKS;
+        return Math.min(energy.getEnergyStored(), com.gtolib.api.beam.BeamSignal.toLong(input));
     }
 
-    private static long energyCost(long intensity) {
-        return intensity > (Long.MAX_VALUE >> 12) ? Long.MAX_VALUE : Math.max(0L, intensity << 12);
+    @Override
+    public void consumeBeamEnergy(long amount) {
+        if (getEnergyContainer().removeEnergy(amount) != amount) throw new IllegalStateException("Optical energy reservation changed during commit");
     }
 
     @Override

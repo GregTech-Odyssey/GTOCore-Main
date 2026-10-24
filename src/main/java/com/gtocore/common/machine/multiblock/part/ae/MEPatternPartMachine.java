@@ -12,6 +12,7 @@ import com.gtolib.api.ae2.MyPatternDetailsHelper;
 import com.gtolib.api.ae2.pattern.IParallelPatternDetails;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
@@ -44,6 +45,7 @@ import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -53,6 +55,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
+import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.implementations.blockentities.PatternContainerGroup;
@@ -62,7 +65,11 @@ import appeng.api.networking.IGridNodeListener;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
+import appeng.core.definitions.AEItems;
+import appeng.crafting.pattern.AEProcessingPattern;
+import appeng.crafting.pattern.ProcessingPatternItem;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -77,6 +84,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -171,7 +179,13 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         if (maxPatternCount > 500) throw new IllegalArgumentException("maxPatternCount " + maxPatternCount + " > 500");
         this.maxPatternCount = maxPatternCount;
         this.detailsSlotMap = HashBiMap.create(maxPatternCount);
-        this.patternInventory = new StackInventory(maxPatternCount);
+        this.patternInventory = new StackInventory(maxPatternCount) {
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return 1;
+            }
+        };
         this.patternInventory.setFilter(this::patternFilter);
         this.internalInventory = createInternalSlotArray();
         for (int i = 0; i < internalInventory.length; i++) {
@@ -222,6 +236,9 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     public void onPatternChange(int index) {
         if (isRemote()) return;
+        if (internalInventory[index] instanceof AbstractRecipeInternalSlot slot && !slot.writingEditorPattern) {
+            slot.resetEditorTemplate();
+        }
         onChanged();
         var internalSlot = getInternalInventory()[index];
         var newPatternDetails = decodePattern(patternInventory.getStackInSlot(index), index);
@@ -238,9 +255,173 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     @Nullable
     public IPatternDetails decodePattern(ItemStack stack, int index) {
+        if (hasIncompleteEditorPattern(index)) return null;
         var pattern = MyPatternDetailsHelper.decodePattern(stack, holder, getGrid());
         if (pattern == null) return null;
         return IParallelPatternDetails.of(convertPattern(pattern, index), getLevel(), 1);
+    }
+
+    // ==================== 处理样板编辑 ====================
+
+    protected boolean supportsPatternEditor() {
+        return false;
+    }
+
+    boolean canEditPattern(int index) {
+        var stack = patternInventory.getStackInSlot(index);
+        if (!stack.isEmpty()) return stack.is(AEItems.BLANK_PATTERN.asItem()) || stack.getItem() instanceof ProcessingPatternItem;
+        if (!isOnline()) return false;
+        var grid = getGrid();
+        return grid != null && grid.getStorageService().getInventory().extract(AEItemKey.of(AEItems.BLANK_PATTERN), 1, Actionable.SIMULATE, getActionSource()) == 1;
+    }
+
+    protected final boolean hasIncompleteEditorPattern(int index) {
+        return internalInventory[index] instanceof AbstractRecipeInternalSlot slot && slot.hasIncompleteEditorPattern();
+    }
+
+    private AbstractRecipeInternalSlot editorSlot(int index) {
+        return (AbstractRecipeInternalSlot) internalInventory[index];
+    }
+
+    private void ensureEditorTemplate(int index) {
+        var slot = editorSlot(index);
+        if (slot.editingPattern || isRemote() || !canEditPattern(index)) return;
+        var stack = patternInventory.getStackInSlot(index);
+        var pattern = stack.getItem() instanceof ProcessingPatternItem item ? item.decode(stack, getLevel(), false) : null;
+        slot.setEditorTemplate(pattern == null ? AbstractRecipeInternalSlot.EMPTY_EDITOR_STACKS : pattern.getSparseInputs().clone(),
+                pattern == null ? AbstractRecipeInternalSlot.EMPTY_EDITOR_STACKS : pattern.getSparseOutputs().clone());
+        onChanged();
+    }
+
+    @Nullable
+    GenericStack getEditorStack(int patternIndex, boolean output, int index) {
+        ensureEditorTemplate(patternIndex);
+        var slot = editorSlot(patternIndex);
+        var stacks = output ? slot.editorOutputs : slot.editorInputs;
+        return index < stacks.length ? stacks[index] : null;
+    }
+
+    int getEditorState(int index) {
+        if (!canEditPattern(index)) return 0;
+        if (patternInventory.getStackInSlot(index).isEmpty()) return 3;
+        ensureEditorTemplate(index);
+        return hasIncompleteEditorPattern(index) ? 1 : 2;
+    }
+
+    /** 空槽首次编辑时从网络取入一张空白样板，只按实际提取结果安装。 */
+    private boolean ensureEditorPattern(int index) {
+        if (!patternInventory.getStackInSlot(index).isEmpty()) return true;
+        if (!isOnline()) return false;
+        var grid = getGrid();
+        if (grid == null || grid.getStorageService().getInventory().extract(AEItemKey.of(AEItems.BLANK_PATTERN), 1, Actionable.MODULATE, getActionSource()) != 1) return false;
+        patternInventory.setStackInSlot(index, AEItems.BLANK_PATTERN.stack());
+        return true;
+    }
+
+    void setEditorStack(int patternIndex, boolean output, int index, @Nullable GenericStack value) {
+        if (isRemote() || !canEditPattern(patternIndex) || index < 0 || index >= (output ? AEProcessingPattern.MAX_OUTPUT_SLOTS : AEProcessingPattern.MAX_INPUT_SLOTS)) return;
+        if (value != null && (value.amount() <= 0 || value.amount() > getEditorAmountLimit(patternIndex, output, index, value.what()))) return;
+        ensureEditorTemplate(patternIndex);
+        var slot = editorSlot(patternIndex);
+        var stacks = output ? slot.editorOutputs : slot.editorInputs;
+        var previous = index < stacks.length ? stacks[index] : null;
+        if (Objects.equals(previous, value)) return;
+        if (!ensureEditorPattern(patternIndex)) return;
+        if (index >= stacks.length) stacks = Arrays.copyOf(stacks, index + 1);
+        stacks[index] = value;
+        if (output) slot.editorOutputs = stacks;
+        else slot.editorInputs = stacks;
+        if (!slot.hasIncompleteEditorPattern()) {
+            var outputs = compactEditorStacks(slot.editorOutputs);
+            if (hasDuplicateEditorOutput(patternIndex, outputs[0].what())) {
+                stacks[index] = previous;
+                return;
+            }
+            writeEditorPattern(patternIndex, compactEditorStacks(slot.editorInputs), outputs, null);
+        }
+        notifyEditorPatternChanged(patternIndex);
+    }
+
+    /** EMI 填充整份模板，只写回和刷新一次，不经过逐格修改的中间状态。 */
+    boolean fillEditorPattern(int patternIndex, List<GenericStack> inputs, List<GenericStack> outputs, @Nullable ResourceLocation recipeId) {
+        if (isRemote() || !canEditPattern(patternIndex) || !validEditorStacks(inputs, AEProcessingPattern.MAX_INPUT_SLOTS) || !validEditorStacks(outputs, AEProcessingPattern.MAX_OUTPUT_SLOTS) || hasDuplicateEditorOutput(patternIndex, outputs.getFirst().what()) || !ensureEditorPattern(patternIndex)) return false;
+        var inputStacks = inputs.toArray(GenericStack[]::new);
+        var outputStacks = outputs.toArray(GenericStack[]::new);
+        writeEditorPattern(patternIndex, inputStacks, outputStacks, recipeId);
+        editorSlot(patternIndex).setEditorTemplate(inputStacks, outputStacks);
+        notifyEditorPatternChanged(patternIndex);
+        return true;
+    }
+
+    static boolean validEditorStacks(List<GenericStack> stacks, int limit) {
+        if (stacks.isEmpty() || stacks.size() > limit) return false;
+        for (int i = 0; i < stacks.size(); i++) {
+            var stack = stacks.get(i);
+            if (stack == null || stack.what() == null || stack.amount() <= 0) return false;
+            long available = Long.MAX_VALUE;
+            for (int j = 0; j < i; j++) {
+                var previous = stacks.get(j);
+                if (previous.what() == stack.what()) available -= previous.amount();
+            }
+            if (stack.amount() > available) return false;
+        }
+        return true;
+    }
+
+    private void writeEditorPattern(int patternIndex, GenericStack[] inputs, GenericStack[] outputs, @Nullable ResourceLocation recipeId) {
+        var encoded = PatternDetailsHelper.encodeProcessingPattern(inputs, outputs);
+        var stack = patternInventory.getStackInSlot(patternIndex);
+        var installed = stack.is(AEItems.BLANK_PATTERN.asItem()) ? encoded : stack.copy();
+        if (installed != encoded) installed.getOrCreateTag().merge(encoded.getOrCreateTag());
+        if (recipeId != null && RecipeBuilder.get(recipeId) != null) installed.getOrCreateTag().putString("recipe", recipeId.toString());
+        else installed.getOrCreateTag().remove("recipe");
+        patternInventory.setStackInSlot(patternIndex, installed);
+    }
+
+    private void notifyEditorPatternChanged(int patternIndex) {
+        var slot = editorSlot(patternIndex);
+        slot.markAsChanged();
+        slot.writingEditorPattern = true;
+        onPatternChange(patternIndex);
+        slot.writingEditorPattern = false;
+        onEditorPatternChanged();
+    }
+
+    /** 通配符总成在写回后立即刷新扫描；普通总成沿用样板变化通知。 */
+    protected void onEditorPatternChanged() {}
+
+    private boolean hasDuplicateEditorOutput(int index, AEKey output) {
+        for (int i = 0; i < maxPatternCount; i++) {
+            if (i == index) continue;
+            var stack = patternInventory.getStackInSlot(i);
+            if (!(stack.getItem() instanceof ProcessingPatternItem item)) continue;
+            var pattern = item.decode(stack, getLevel(), false);
+            if (pattern != null && pattern.getPrimaryOutput().what() == output) return true;
+        }
+        return false;
+    }
+
+    /** AE 会合并同 key 的槽位，数量之和不能溢出 long。 */
+    long getEditorAmountLimit(int patternIndex, boolean output, int index, @Nullable AEKey key) {
+        if (key == null) return Long.MAX_VALUE;
+        ensureEditorTemplate(patternIndex);
+        var slot = editorSlot(patternIndex);
+        var stacks = output ? slot.editorOutputs : slot.editorInputs;
+        long available = Long.MAX_VALUE;
+        for (int i = 0; i < stacks.length; i++) {
+            var stack = stacks[i];
+            if (i != index && stack != null && stack.what() == key) available -= stack.amount();
+        }
+        return Math.max(0, available);
+    }
+
+    private static GenericStack[] compactEditorStacks(GenericStack[] stacks) {
+        int size = 0;
+        for (var stack : stacks) if (stack != null) size++;
+        var result = new GenericStack[size];
+        int index = 0;
+        for (var stack : stacks) if (stack != null) result[index++] = stack;
+        return result;
     }
 
     private void updatePatterns() {
@@ -501,7 +682,10 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @Nullable
     private Popup slotConfigPopup(int index) {
         if (index < 0 || index >= maxPatternCount) return null;
-        return Popup.of(() -> Component.translatable(SLOT_CONFIG_TITLE, index + 1), column -> buildSlotConfig(column, index));
+        return Popup.of(() -> Component.translatable(SLOT_CONFIG_TITLE, index + 1), column -> {
+            if (supportsPatternEditor()) PatternEditor.buildSection(this, index, column);
+            buildSlotConfig(column, index);
+        });
     }
 
     @Override
@@ -671,6 +855,11 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         @Override
         public int size() {
             return machine.maxPatternCount;
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return machine.patternInventory.getSlotLimit(slot);
         }
 
         @Override

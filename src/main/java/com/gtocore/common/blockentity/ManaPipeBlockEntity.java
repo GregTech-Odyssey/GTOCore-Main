@@ -1,11 +1,11 @@
 package com.gtocore.common.blockentity;
 
 import com.gtocore.common.pipe.mana.*;
+import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -17,6 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
+import com.gto.fastcollection.LoopIterator;
+import com.hollingsworth.arsnouveau.api.source.ISourceTile;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
@@ -28,10 +31,11 @@ import vazkii.botania.api.mana.spark.SparkAttachable;
 
 import java.lang.ref.WeakReference;
 
-public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, ManaPipeProperties> implements ManaCollector {
+public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, ManaPipeProperties> implements ManaCollector, ISourceTile {
 
     private WeakReference<ManaPipeNet> currentPipeNet = new WeakReference<>(null);
-    /** 本秒已经过手的魔力量，用来限流（按游戏刻每 20 tick 清零）。 */
+    private final SideReceiver[] sideReceivers = new SideReceiver[GTUtil.DIRECTIONS.length];
+
     private long transferredMana;
     private int transferTimer;
 
@@ -44,7 +48,8 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
             if ((side == null || isConnected(side)) && getManaPipeNet() != null) {
-                return BotaniaForgeCapabilities.MANA_RECEIVER.orEmpty(cap, LazyOptional.of(() -> this));
+                ManaReceiver receiver = side == null ? this : sideReceiver(side);
+                return BotaniaForgeCapabilities.MANA_RECEIVER.orEmpty(cap, LazyOptional.of(() -> receiver));
             }
             return LazyOptional.empty();
         }
@@ -81,21 +86,30 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         boolean hasHandler = false;
         autoTransfer = true;
         for (var facing : GTUtil.DIRECTIONS) {
-            if (facing != blockedSide && isConnected(facing)) {
-                var be = getNeighborBlockEntity(facing);
-                if (be == null || be instanceof PipeBlockEntity<?, ?>) continue;
-                if (GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, be, facing.getOpposite()) instanceof ManaPool pool) {
-                    hasHandler = true;
-                    var self = this;
-                    var manaInPool = pool.getCurrentMana();
-                    if (manaInPool > 0 && !self.isFull()) {
-                        int manaMissing = self.getMaxMana() - self.getCurrentMana();
-                        // 先按本秒剩余额度算能抽多少，免得额度不够时把池里的魔力抽出来又送不掉
-                        int manaToRemove = (int) Math.min(Math.min(manaInPool, manaMissing), self.availableMana());
-                        if (manaToRemove > 0) {
-                            pool.receiveMana(-manaToRemove);
-                            self.receiveMana(manaToRemove);
-                        }
+            if (facing == blockedSide || !isConnected(facing)) continue;
+            var be = getNeighborBlockEntity(facing);
+            if (be == null || be instanceof PipeBlockEntity<?, ?>) continue;
+            var opposite = facing.getOpposite();
+            if (ManaRoutePath.receiverOf(be, opposite) instanceof ManaPool pool) {
+                hasHandler = true;
+                var manaInPool = pool.getCurrentMana();
+                if (manaInPool > 0 && !isFull()) {
+                    int manaMissing = getMaxMana() - getCurrentMana();
+                    int manaToRemove = (int) Math.min(Math.min(manaInPool, manaMissing), availableMana());
+                    long taken = manaToRemove > 0 ? pool.removeMana(manaToRemove, false) : 0;
+                    if (taken > 0) {
+                        receiveMana((int) taken);
+                    }
+                }
+            } else if (be instanceof ISourceTile sourceTile) {
+                hasHandler = true;
+                var sourceInTile = sourceTile.getSourceLong();
+                var sourceMissing = getMaxSourceLong() - getSourceLong();
+                if (sourceInTile > 0 && sourceMissing > 0) {
+                    long sourceToRemove = Math.min(Math.min(sourceInTile, sourceMissing), ManaUnification.manaToSource(availableMana()));
+                    long taken = sourceToRemove > 0 ? sourceTile.removeSource(sourceToRemove, false) : 0;
+                    if (taken > 0) {
+                        addSourceLong(taken);
                     }
                 }
             }
@@ -139,56 +153,357 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
 
     @Override
     public int getCurrentMana() {
+        return getCurrentMana(null);
+    }
+
+    private int getCurrentMana(@Nullable Direction entry) {
         var net = getManaPipeNet();
         if (net == null) return 0;
+        return currentMana(net, MathUtil.saturatedCast(acceptableMana(net, entry)), entry);
+    }
+
+    private int currentMana(ManaPipeNet net, int acceptable, @Nullable Direction entry) {
         long mana = 0;
         for (var path : net.getNetData(longPos, worldPosition)) {
-            if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
             mana += handler.getCurrentMana();
         }
-        return MathUtil.saturatedCast(mana);
+        for (var path : net.getSourceNetData(longPos, worldPosition)) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
+            var handler = path.getHandler(level);
+            if (handler == null) continue;
+            mana += ManaUnification.sourceToMana(handler.getSourceLong());
+        }
+        return (int) Math.min(mana, Integer.MAX_VALUE - acceptable);
     }
 
     @Override
     public boolean isFull() {
-        var net = getManaPipeNet();
-        if (net == null) return true;
-        for (var path : net.getNetData(longPos, worldPosition)) {
-            if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
-            var handler = path.getHandler(level);
-            if (handler == null) continue;
-            if (!handler.isFull()) return false;
-        }
-        return true;
+        return isFull(null);
     }
 
-    /** 进料口：本档每秒能过手的魔力有上限，超出的部分送不出去（与 GT 物品管道按秒计额度同一套写法）。 */
+    private boolean isFull(@Nullable Direction entry) {
+        var net = getManaPipeNet();
+        return net == null || acceptableMana(net, entry) <= 0;
+    }
+
     @Override
     public void receiveMana(int mana) {
+        receiveMana(mana, null);
+    }
+
+    private void receiveMana(int mana, @Nullable Direction entry) {
         if (mana <= 0) return;
         var net = getManaPipeNet();
         if (net == null) return;
         long left = availableMana();
         if (left <= 0) return;
         if (mana > left) mana = (int) left;
-        int incoming = mana;
+        var delivered = mana - routeMana(net.getNetData(longPos, worldPosition), mana, entry);
+        var undelivered = mana - delivered;
+        if (undelivered > 0) {
+            var source = ManaUnification.manaToSource(undelivered);
+            if (source > 0) {
+                var deliveredSource = source - routeSource(net.getSourceNetData(longPos, worldPosition), source, entry);
+                delivered += MathUtil.saturatedCast(ManaUnification.sourceToMana(deliveredSource));
+            }
+        }
+        addTransferredMana(delivered);
+    }
+
+    @Override
+    public boolean canReceiveManaFromBursts() {
+        return canReceiveManaFromBursts(null);
+    }
+
+    private boolean canReceiveManaFromBursts(@Nullable Direction entry) {
+        var net = getManaPipeNet();
+        if (net == null) return false;
         for (var path : net.getNetData(longPos, worldPosition)) {
-            if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
+            var handler = path.getHandler(level);
+            if (handler != null && handler.canReceiveManaFromBursts()) return true;
+        }
+        for (var path : net.getSourceNetData(longPos, worldPosition)) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
+            var handler = path.getHandler(level);
+            if (handler != null && canAcceptSource(handler)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int getMaxMana() {
+        return getMaxMana((Direction) null);
+    }
+
+    private int getMaxMana(@Nullable Direction entry) {
+        var net = getManaPipeNet();
+        if (net == null) return 0;
+        int acceptable = MathUtil.saturatedCast(acceptableMana(net, entry));
+        return currentMana(net, acceptable, entry) + acceptable;
+    }
+
+    private static int getMaxMana(@Nullable ManaReceiver receiver) {
+        if (receiver instanceof ManaCollector collector) return collector.getMaxMana();
+        if (receiver instanceof ManaPool pool) return pool.getMaxMana();
+        if (receiver instanceof SparkAttachable attachable) return attachable.getAvailableSpaceForMana();
+        return receiver == null || receiver.isFull() ? 0 : 10000000;
+    }
+
+    @Override
+    public long getTransferRateLong() {
+        return ManaUnification.manaToSource(getNodeData().manaPerSecond());
+    }
+
+    @Override
+    public int getTransferRate() {
+        return ISourceTile.clampToInt(getTransferRateLong());
+    }
+
+    @Override
+    public boolean canAcceptSource() {
+        var net = getManaPipeNet();
+        return net != null && acceptableSource(net) > 0;
+    }
+
+    @Override
+    public int getSource() {
+        return ISourceTile.clampToInt(getSourceLong());
+    }
+
+    @Override
+    public long getSourceLong() {
+        var net = getManaPipeNet();
+        if (net == null) return 0;
+        long source = 0;
+        for (var path : net.getSourceNetData(longPos, worldPosition)) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), null)) continue;
+            var handler = path.getHandler(level);
+            if (handler == null) continue;
+            source += handler.getSourceLong();
+        }
+        return source;
+    }
+
+    @Override
+    public int getMaxSource() {
+        return ISourceTile.clampToInt(getMaxSourceLong());
+    }
+
+    @Override
+    public long getMaxSourceLong() {
+        var net = getManaPipeNet();
+        if (net == null) return 0;
+        return saturatedAdd(getSourceLong(), acceptableSource(net));
+    }
+
+    @Override
+    public void setMaxSource(int maxSource) {}
+
+    @Override
+    public int setSource(int source) {
+        return ISourceTile.clampToInt(setSourceLong(source));
+    }
+
+    @Override
+    public long setSourceLong(long source) {
+        var current = getSourceLong();
+        if (source > current) addSourceLong(source - current);
+        return getSourceLong();
+    }
+
+    @Override
+    public int addSource(int source) {
+        return ISourceTile.clampToInt(addSourceLong(source));
+    }
+
+    @Override
+    public long addSourceLong(long source) {
+        if (source <= 0) return getSourceLong();
+        var net = getManaPipeNet();
+        if (net == null) return getSourceLong();
+        long affordable = ManaUnification.manaToSource(availableMana());
+        if (affordable <= 0) return getSourceLong();
+        if (source > affordable) source = affordable;
+        var delivered = source - routeSource(net.getSourceNetData(longPos, worldPosition), source, null);
+        var undelivered = source - delivered;
+        if (undelivered > 0) {
+            var mana = MathUtil.saturatedCast(ManaUnification.sourceToMana(undelivered));
+            if (mana > 0) {
+                var deliveredMana = mana - routeMana(net.getNetData(longPos, worldPosition), mana, null);
+                delivered += ManaUnification.manaToSource(deliveredMana);
+            }
+        }
+        addTransferredMana(ManaUnification.sourceToMana(delivered));
+        return getSourceLong();
+    }
+
+    @Override
+    public int removeSource(int amount) {
+        return ISourceTile.clampToInt(removeSourceLong(amount));
+    }
+
+    @Override
+    public long removeSourceLong(long amount) {
+        if (amount <= 0) return getSourceLong();
+        var net = getManaPipeNet();
+        if (net == null) return 0;
+        var left = amount;
+        for (var path : net.getSourceNetData(longPos, worldPosition)) {
+            if (left <= 0) break;
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), null)) continue;
+            var handler = path.getHandler(level);
+            if (handler == null) continue;
+            left -= handler.removeSource(left, false);
+        }
+        return getSourceLong();
+    }
+
+    private long acceptableMana(ManaPipeNet net, @Nullable Direction entry) {
+        long space = saturatedAdd(manaRouteSpace(net, entry), ManaUnification.sourceToMana(sourceRouteSpace(net, entry)));
+        return Math.max(0, Math.min(availableMana(), space));
+    }
+
+    private long acceptableSource(ManaPipeNet net) {
+        long space = saturatedAdd(sourceRouteSpace(net, null), ManaUnification.manaToSource(manaRouteSpace(net, null)));
+        return Math.max(0, Math.min(ManaUnification.manaToSource(Math.max(0, availableMana())), space));
+    }
+
+    private long manaRouteSpace(ManaPipeNet net, @Nullable Direction entry) {
+        var routes = net.getNetData(longPos, worldPosition);
+        var seen = routes.size > 1 ? new ReferenceOpenHashSet<ManaReceiver>(routes.size) : null;
+        long space = 0;
+        for (var path : routes) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
+            var handler = path.getHandler(level);
+            if (handler == null || handler.isFull() || !handler.canReceiveManaFromBursts()) continue;
+            if (seen != null && !seen.add(handler)) continue;
+            space = saturatedAdd(space, Math.max(0, getMaxMana(handler) - handler.getCurrentMana()));
+        }
+        return space;
+    }
+
+    private long sourceRouteSpace(ManaPipeNet net, @Nullable Direction entry) {
+        var routes = net.getSourceNetData(longPos, worldPosition);
+        var seen = routes.size > 1 ? new ReferenceOpenHashSet<ISourceTile>(routes.size) : null;
+        long space = 0;
+        for (var path : routes) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
+            var handler = path.getHandler(level);
+            if (handler == null || !canAcceptSource(handler)) continue;
+            if (seen != null && !seen.add(handler)) continue;
+            space = saturatedAdd(space, handler.getMaxSourceLong() - handler.getSourceLong());
+        }
+        return space;
+    }
+
+    private static long saturatedAdd(long a, long b) {
+        long r = a + b;
+        return r < 0 ? Long.MAX_VALUE : r;
+    }
+
+    private int routeMana(LoopIterator<ManaRoutePath> routes, int mana, @Nullable Direction entry) {
+        for (var path : routes) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
             var handler = path.getHandler(level);
             if (handler == null || handler.isFull() || !handler.canReceiveManaFromBursts()) continue;
             var canReceive = Math.min(mana, getMaxMana(handler) - handler.getCurrentMana());
             if (canReceive > 0) {
-                handler.receiveMana(canReceive);
-                mana -= canReceive;
-                if (mana <= 0) break;
+                mana -= (int) handler.addMana(canReceive, false);
+                if (mana <= 0) return 0;
             }
         }
-        addTransferredMana(incoming - mana);
+        return Math.max(0, mana);
     }
 
-    /** 每秒（20 tick）额度重置一次。 */
+    private long routeSource(LoopIterator<SourceRoutePath> routes, long source, @Nullable Direction entry) {
+        for (var path : routes) {
+            if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
+            var handler = path.getHandler(level);
+            if (handler == null || !canAcceptSource(handler)) continue;
+            var canReceive = Math.min(source, handler.getMaxSourceLong() - handler.getSourceLong());
+            if (canReceive > 0) {
+                source -= handler.addSource(canReceive, false);
+                if (source <= 0) return 0;
+            }
+        }
+        return Math.max(0, source);
+    }
+
+    private boolean skipRoute(ManaPipeBlockEntity targetPipe, Direction targetFacing, @Nullable Direction entry) {
+        if (targetPipe != this) return false;
+        return this.autoTransfer ? this.blockedSide != targetFacing : targetFacing == entry;
+    }
+
+    private SideReceiver sideReceiver(Direction side) {
+        var receiver = sideReceivers[side.ordinal()];
+        if (receiver == null) {
+            receiver = new SideReceiver(side);
+            sideReceivers[side.ordinal()] = receiver;
+        }
+        return receiver;
+    }
+
+    /// 从某一面送进来的魔力不再从同一面送回去，避免送出方（如超级魔力缸）把魔力绕一圈送回自己
+    private final class SideReceiver implements ManaCollector {
+
+        private final Direction side;
+
+        private SideReceiver(Direction side) {
+            this.side = side;
+        }
+
+        @Override
+        public Level getManaReceiverLevel() {
+            return level;
+        }
+
+        @Override
+        public BlockPos getManaReceiverPos() {
+            return worldPosition;
+        }
+
+        @Override
+        public int getCurrentMana() {
+            return ManaPipeBlockEntity.this.getCurrentMana(side);
+        }
+
+        @Override
+        public boolean isFull() {
+            return ManaPipeBlockEntity.this.isFull(side);
+        }
+
+        @Override
+        public void receiveMana(int mana) {
+            ManaPipeBlockEntity.this.receiveMana(mana, side);
+        }
+
+        @Override
+        public boolean canReceiveManaFromBursts() {
+            return ManaPipeBlockEntity.this.canReceiveManaFromBursts(side);
+        }
+
+        @Override
+        public void onClientDisplayTick() {}
+
+        @Override
+        public float getManaYieldMultiplier(ManaBurst burst) {
+            return 1;
+        }
+
+        @Override
+        public int getMaxMana() {
+            return ManaPipeBlockEntity.this.getMaxMana(side);
+        }
+    }
+
+    private static boolean canAcceptSource(ISourceTile sourceTile) {
+        return sourceTile.canAcceptSource() && sourceTile.getSourceLong() < sourceTile.getMaxSourceLong();
+    }
+
     private void updateTransferredState() {
         int time = getOffsetTimer();
         int dif = time - transferTimer;
@@ -198,7 +513,6 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         }
     }
 
-    /** 本秒还剩多少魔力额度。 */
     private long availableMana() {
         updateTransferredState();
         return getNodeData().manaPerSecond() - transferredMana;
@@ -207,37 +521,5 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     private void addTransferredMana(long amount) {
         updateTransferredState();
         transferredMana += amount;
-    }
-
-    @Override
-    public boolean canReceiveManaFromBursts() {
-        var net = getManaPipeNet();
-        if (net == null) return false;
-        for (var path : net.getNetData(longPos, worldPosition)) {
-            if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
-            var handler = path.getHandler(level);
-            if (handler == null) continue;
-            if (handler.canReceiveManaFromBursts()) return true;
-        }
-        return false;
-    }
-
-    @Override
-    public int getMaxMana() {
-        var net = getManaPipeNet();
-        if (net == null) return 0;
-        long mana = 0;
-        for (var path : net.getNetData(longPos, worldPosition)) {
-            if (this.autoTransfer && path.getTargetPipe() == this && this.blockedSide != path.getTargetFacing()) continue;
-            mana += getMaxMana(path.getHandler(level));
-        }
-        return MathUtil.saturatedCast(mana);
-    }
-
-    private static int getMaxMana(@Nullable ManaReceiver receiver) {
-        if (receiver instanceof ManaCollector collector) return collector.getMaxMana();
-        if (receiver instanceof ManaPool pool) return pool.getMaxMana();
-        if (receiver instanceof SparkAttachable attachable) return attachable.getAvailableSpaceForMana();
-        return receiver == null || receiver.isFull() ? 0 : 10000000;
     }
 }

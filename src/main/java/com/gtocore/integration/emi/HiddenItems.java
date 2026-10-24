@@ -1,5 +1,6 @@
 package com.gtocore.integration.emi;
 
+import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.biomeswevegone.BYGWoodTypes;
 
@@ -31,6 +32,8 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
         deprecate(RegistriesUtils.getItem("guideme:guide"));
         deprecate(RegistriesUtils.getItem("ars_nouveau:ritual_flight"));
+        deprecate(GTOBlocks.LAURERIL_JAR.asItem());
+        deprecate(RegistriesUtils.getItem("extrabotany:mana_reader"));
 
         if (Mods.EFFORTLESS.isLoaded()) {
             deprecate(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));
@@ -44,6 +47,11 @@ public class HiddenItems {
             deprecate(RegistriesUtils.getItem("mythicbotany:raw_elementium"));
             deprecate(RegistriesUtils.getItem("mythicbotany:raw_elementium_block"));
             deprecate(RegistriesUtils.getItem("mythicbotany:elementium_ore"));
+        }
+
+        if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
+            hide(RegistriesUtils.getItem("sophisticatedbackpacks:tool_swapper_upgrade"));
+            hide(RegistriesUtils.getItem("sophisticatedbackpacks:advanced_tool_swapper_upgrade"));
         }
 
         if (Mods.BIOMESWEVEGONE.isLoaded()) {

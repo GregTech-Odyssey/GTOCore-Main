@@ -1,0 +1,9 @@
+{
+  "parent": "ae2:part/interface_base",
+  "textures": {
+    "front": "gtocore:part/me_interface_iii",
+    "sides": "gtocore:part/me_interface_iii_sides",
+    "back": "gtocore:part/me_interface_iii_back",
+    "particle": "gtocore:part/me_interface_iii_back"
+  }
+}

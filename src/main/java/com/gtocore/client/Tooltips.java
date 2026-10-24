@@ -67,6 +67,9 @@ public final class Tooltips {
             }
 
             var material = ChemicalHelper.getMaterial(fluid);
+            if (!material.isNull()) {
+                tooltips.accept(MaterialTypeTooltips.of(material));
+            }
             if (FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.containsKey(material)) {
                 long euPerMb = FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.getLong(material);
                 tooltips.accept(Tips.stat(Component.translatable("gtocore.tooltip.fluid.electrolyte_energy_density",

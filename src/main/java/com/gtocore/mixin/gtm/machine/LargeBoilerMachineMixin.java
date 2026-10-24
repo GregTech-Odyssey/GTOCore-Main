@@ -1,6 +1,7 @@
 package com.gtocore.mixin.gtm.machine;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
+import com.gtocore.common.machine.multiblock.steam.LargeBoilerFuel;
 import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.capability.IHeatContainer;
@@ -49,7 +50,7 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
 
     @Inject(method = "<init>", at = @org.spongepowered.asm.mixin.injection.At("RETURN"), remap = false)
     private void init(MetaMachineBlockEntity holder, int maxTemperature, int heatSpeed, Object[] args, CallbackInfo ci) {
-        gto$heatContainer = new MultiblockHeatHandler(holder, this, maxTemperature, 2, heatSpeed / 4f, 0);
+        gto$heatContainer = new MultiblockHeatHandler(holder, this, maxTemperature + 274L, 2, heatSpeed / 4f, 0);
         gto$heatContainer.setAllowExplosion(false);
     }
 
@@ -96,17 +97,18 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
                 IdleReason.INSUFFICIENT_TEMPERATURE.setReason(machine, recipe.data.getInt(GTORecipeDataKeys.TEMPERATURE), largeBoilerMachine.getCurrentTemperature() + 274);
                 return null;
             }
-            double duration = recipe.duration * 1600.0D / largeBoilerMachine.maxTemperature;
-            if (duration < 1) {
+            double duration = recipe.duration * LargeBoilerFuel.durationScale(largeBoilerMachine);
+            long batch = LargeBoilerFuel.batch(duration);
+            if (batch > 1) {
                 long parallels = recipe.parallels;
-                recipe = ParallelLogic.accurateParallel(machine, unit, recipe, (long) (1 / duration));
+                recipe = ParallelLogic.accurateParallel(machine, unit, recipe, batch);
                 if (recipe == null) return null;
                 duration = duration * recipe.parallels / parallels;
             }
             if (largeBoilerMachine.getThrottle() < 100) {
                 duration = duration * 100 / largeBoilerMachine.getThrottle();
             }
-            recipe.duration = Math.max(1, (int) duration);
+            recipe.duration = Math.max(1, (int) Math.round(duration));
             return recipe;
         }
         IdleReason.NOT_APPLICABLE.setReason(machine);

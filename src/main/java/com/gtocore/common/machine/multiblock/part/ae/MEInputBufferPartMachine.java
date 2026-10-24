@@ -54,6 +54,7 @@ import appeng.api.stacks.*;
 import appeng.api.storage.AEKeyFilter;
 import appeng.api.storage.MEStorage;
 import appeng.client.gui.me.common.StackSizeRenderer;
+import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
@@ -191,6 +192,11 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
     }
 
     @Override
+    protected boolean supportsPatternEditor() {
+        return true;
+    }
+
+    @Override
     protected void buildSlotConfig(@NotNull UIElement column, int index) {
         MEInputBufferPartMachineUI.buildSlotConfig(column, this, index);
     }
@@ -280,7 +286,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
     @Override
     public boolean patternFilter(@NotNull ItemStack stack) {
-        return stack.getItem() instanceof ProcessingPatternItem &&
+        return stack.is(AEItems.BLANK_PATTERN.asItem()) || stack.getItem() instanceof ProcessingPatternItem &&
                 checkDuplicatedPattern(this, stack);
     }
 
@@ -502,14 +508,10 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
             }
             var newPattern = machine.getInternalPatternInventory().getStackInSlot(index);
             var details = machine.decodePattern(newPattern, index);
+            // 编辑样板可减少输入项，先清掉旧配置，避免尾部继续请求已移除的原料。
+            clearConfig();
             if (details == null) {
                 reportingKey = null;
-                for (var slot : exportOnlyItemList.getInventory()) {
-                    slot.setConfig(null);
-                }
-                for (var slot : exportOnlyFluidList.getInventory()) {
-                    slot.setConfig(null);
-                }
                 return;
             }
             if (details instanceof AEProcessingPattern aeProcessingPattern) {

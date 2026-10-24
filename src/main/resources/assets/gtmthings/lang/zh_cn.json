@@ -3,6 +3,8 @@
   "block.gtmthings.creative_laser_hatch": "§r创造模式激光靶仓",
   "block.gtmthings.creative_fluid_input_hatch": "创造模式输入仓",
   "block.gtmthings.creative_item_input_bus": "创造模式输入总线",
+  "block.gtmthings.creative_input_assembly": "创造模式输入总成",
+  "gtmthings.machine.creative_input_assembly.tooltip": "%s 个物品与流体通用幽灵槽，无限供应配置的原料，可设置电路。",
   "block.gtmthings.wireless_energy_monitor": "无线能源监视器",
   "block.gtmthings.wireless_energy_interface": "无线能源接口",
   "block.gtmthings.lv_digital_miner": "数字型采矿机",

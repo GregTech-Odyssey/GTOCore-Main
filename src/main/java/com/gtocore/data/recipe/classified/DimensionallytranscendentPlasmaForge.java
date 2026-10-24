@@ -189,6 +189,27 @@ final class DimensionallytranscendentPlasmaForge {
                 .blastFurnaceTemp(26000)
                 .save();
 
+        DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_RECIPES.recipeBuilder("spacetime_continuum")
+                .notConsumable(GTOItems.SPACETIME_CATALYST.asItem())
+                .inputFluids(GTOMaterials.SpaceTime, 1000)
+                .inputFluids(GTOMaterials.RawStarMatter.getFluid(FluidStorageKeys.PLASMA, 4000))
+                .inputFluids(GTOMaterials.TranscendentMetal, 9216)
+                .outputFluids(GTOMaterials.SpacetimeContinuum, 64000)
+                .EUt(2013265920)
+                .duration(1200)
+                .blastFurnaceTemp(36000)
+                .save();
+
+        DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_RECIPES.recipeBuilder("dimension_allyshifted_super_fluid")
+                .inputFluids(GTOMaterials.StableBaryonicMatter, 4000)
+                .inputFluids(GTOMaterials.DimensionallyTranscendentResidue, 2000)
+                .inputFluids(GTOMaterials.ExcitedDtsc, 1000)
+                .outputFluids(GTOMaterials.DimensionAllyshiftedSuperFluid, 64000)
+                .EUt(2013265920)
+                .duration(1200)
+                .blastFurnaceTemp(36000)
+                .save();
+
         DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_RECIPES.recipeBuilder("transcendent_metal")
                 .notConsumable(GTOItems.SPACETIME_CATALYST.asItem())
                 .inputItems(GTOItems.HYPERCUBE)
@@ -250,11 +271,11 @@ final class DimensionallytranscendentPlasmaForge {
                 .inputItems(GTOItems.CHAOS_SHARD)
                 .inputFluids(GTOMaterials.Infinity, 1000)
                 .inputFluids(GTOMaterials.Chaos, 1000)
-                .outputFluids(GTOMaterials.ChaosInfinityAlloy, 1000)
+                .outputFluids(GTOMaterials.ChaosInfinityAlloy, 4000)
                 .outputFluids(GTOMaterials.DimensionallyTranscendentResidue, 100)
                 .EUt(2222222222L)
                 .blastFurnaceTemp(66666)
-                .duration(4444)
+                .duration(1200)
                 .save();
     }
 }

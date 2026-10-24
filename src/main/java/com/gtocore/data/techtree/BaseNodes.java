@@ -47,12 +47,9 @@ import static com.gtocore.api.research.ResearchTag.BIOLOGY;
 import static com.gtocore.api.research.ResearchTag.COMPUTATION;
 import static com.gtocore.api.research.ResearchTag.DATA_STORAGE;
 import static com.gtocore.api.research.ResearchTag.ENERGY;
-import static com.gtocore.api.research.ResearchTag.EXOTIC;
 import static com.gtocore.api.research.ResearchTag.MATERIAL;
 import static com.gtocore.api.research.ResearchTag.MECHANICS;
 import static com.gtocore.api.research.ResearchTag.OPTICS;
-import static com.gtocore.api.research.ResearchTag.QUANTUM;
-import static com.gtocore.api.research.ResearchTag.SUPRACAUSAL;
 import static com.gtocore.api.research.techtree.TechNode.OTHER_REWARD_LABEL;
 
 public final class BaseNodes {
@@ -605,7 +602,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 4800L)
-                            .addMaterialNeeded(EXOTIC, 16)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:exotic_chip"), 0.7F)
                             .build())
             .tier(4)
@@ -644,7 +640,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 4800L)
-                            .addMaterialNeeded(EXOTIC, 16)
                             .setEurekaItem(GTOItems.COSMIC_PROCESSING_UNIT_CORE, 0.7F)
                             .build())
             .tier(4)
@@ -722,7 +717,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(2048 * 20 * 7200L)
-                            .addMaterialNeeded(SUPRACAUSAL, 1)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:relativistic_spinorial_memory_system"), 0.8F)
                             .build())
             .tier(5)
@@ -761,7 +755,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(2048 * 20 * 28800L)
-                            .addMaterialNeeded(EXOTIC, 4)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:draconic_core"), 0.8F)
                             .build())
             .tier(5)
@@ -791,8 +784,6 @@ public final class BaseNodes {
                             .addMaterialNeeded(ENERGY, 65536)
                             .addMaterialNeeded(BIOLOGY, 16536)
                             .addMaterialNeeded(OPTICS, 6536)
-                            .addMaterialNeeded(QUANTUM, 100)
-                            .addMaterialNeeded(EXOTIC, 40)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:recursively_folded_negative_space"), 0.7F)
                             .build())
             .tier(6)
@@ -805,7 +796,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 28800L)
-                            .addMaterialNeeded(SUPRACAUSAL, 1)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:wyvern_core"), 0.8F)
                             .build())
             .tier(6)
@@ -818,7 +808,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 28800L)
-                            .addMaterialNeeded(SUPRACAUSAL, 2)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:awakened_core"), 0.8F)
                             .build())
             .tier(7)
@@ -831,7 +820,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 28800L)
-                            .addMaterialNeeded(SUPRACAUSAL, 16)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:chaotic_core"), 0.8F)
                             .build())
             .tier(7)
@@ -844,7 +832,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 28800L)
-                            .addMaterialNeeded(SUPRACAUSAL, 16)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:supracausal_mainframe"), 0.8F)
                             .build())
             .tier(7)
@@ -857,7 +844,6 @@ public final class BaseNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(65536 * 20 * 28800L)
-                            .addMaterialNeeded(SUPRACAUSAL, 4)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:mega_max_battery"), 0.4F)
                             .build())
             .tier(7)

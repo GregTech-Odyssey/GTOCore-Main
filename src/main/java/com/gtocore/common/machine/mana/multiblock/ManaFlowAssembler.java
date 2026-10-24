@@ -198,8 +198,9 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
     @Override
     protected @Nullable GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, GTRecipe recipe) {
-        if (maxRate == 0) {
-            IdleReason.MANA_FLOW_TOO_WEAK.setReason(this, (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200, 0);
+        if (recipe.eut != 0 || maxRate == 0) {
+            if (recipe.eut != 0) IdleReason.NOT_APPLICABLE.setReason(this);
+            else IdleReason.MANA_FLOW_TOO_WEAK.setReason(this, (recipe.duration * MANATRecipeExtension.getMANAt(recipe) + 199) / 200, 0);
             return null;
         }
         int duration = Math.toIntExact(recipe.duration * MANATRecipeExtension.getMANAt(recipe) / maxRate);
@@ -417,11 +418,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                 if (mana <= 0) break;
                 var pool = poolRef.get();
                 if (pool == null || pool.isRemoved()) continue;
-                var currentMana = Math.max(0, pool.getCurrentMana());
-                var toRemove = (int) Math.min(mana, currentMana);
-                if (toRemove == 0) continue;
-                pool.receiveMana(-toRemove);
-                mana -= Math.max(0, currentMana - pool.getCurrentMana());
+                mana -= pool.removeMana(mana, false);
             }
         }
 
@@ -430,12 +427,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                 if (mana <= 0) break;
                 var pool = poolRef.get();
                 if (pool == null || pool.isRemoved()) continue;
-                var currentMana = Math.max(0, pool.getCurrentMana());
-                var availableSpace = Math.max(0, pool.getMaxMana() - currentMana);
-                var toAdd = (int) Math.min(mana, availableSpace);
-                if (toAdd == 0) continue;
-                pool.receiveMana(toAdd);
-                mana -= Math.max(0, pool.getCurrentMana() - currentMana);
+                mana -= pool.addMana(mana, false);
             }
         }
 

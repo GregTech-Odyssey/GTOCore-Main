@@ -5,18 +5,22 @@ import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.part.research.ResearchHolderMachine;
+import com.gtocore.config.GTORules;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
+import com.gtolib.api.recipe.extension.IPowerLossRefund;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockDisplayText;
+import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
@@ -37,8 +41,15 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
     @SaveToDisk
     private ResearchPoints researchPoints;
 
+    @SaveToDisk(defaultValueGetter = "emptyCrystal")
+    private ItemStack consumedCrystal = ItemStack.EMPTY;
+
     public ScanningStationMachine(MetaMachineBlockEntity holder) {
         super(holder);
+    }
+
+    private ItemStack emptyCrystal() {
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -84,6 +95,24 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
     }
 
     @Override
+    public void regressRecipe(RecipeLogic recipeLogic) {
+        var recipe = recipeLogic.getLastRecipe();
+        if (GTORules.POWER_LOSS_SHUTDOWN.get() && recipe != null && researchPoints != null) {
+            var crystal = consumedCrystal;
+            if (crystal.isEmpty() && !recipe.itemInputs.isEmpty() && recipe.itemInputs.ingredient(0).displayKey() instanceof AEItemKey key) {
+                crystal = key.toStack(1);
+                DataCrystalItem.addResearchData(crystal, researchPoints);
+            }
+            if (objectHolder != null) crystal = objectHolder.getAsHandler().storage.insertItem(ResearchHolderMachine.EMPTY_SLOT, crystal, false);
+            IPowerLossRefund.giveBack(this, crystal);
+            researchPoints = null;
+            consumedCrystal = ItemStack.EMPTY;
+            if (objectHolder != null) objectHolder.setLocked(false);
+        }
+        super.regressRecipe(recipeLogic);
+    }
+
+    @Override
     public void addDisplayText(List<Component> textList) {
         MultiblockDisplayText.builder(textList, isFormed())
                 .setWorkingStatus(recipeLogic.isWorkingEnabled(), recipeLogic.isActive())
@@ -119,6 +148,7 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
             }
             researchPoints = null;
         }
+        consumedCrystal = ItemStack.EMPTY;
         objectHolder.setLocked(false);
         return true;
     }
@@ -129,7 +159,9 @@ public class ScanningStationMachine extends ElectricMultiblockMachine {
         if (crystal instanceof AEItemKey crystalKey && crystalKey.getItem() instanceof DataCrystalItem item0) {
             unit.forEachKey(AEKeyTypes.ITEMS, false, (key, amount) -> {
                 if (!(key instanceof AEItemKey itemKey) || itemKey.getItem() != item0) return false;
-                researchPoints = DataCrystalItem.getResearchData(itemKey.toStack(1));
+                var stack = itemKey.toStack(1);
+                researchPoints = DataCrystalItem.getResearchData(stack);
+                consumedCrystal = stack;
                 return !researchPoints.isEmpty();
             });
         }

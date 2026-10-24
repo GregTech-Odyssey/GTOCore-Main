@@ -6,8 +6,10 @@ import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineResult;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineState;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineResult;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineState;
+
+import com.gtolib.api.recipe.crafting.CraftingCodecs;
 
 import com.gregtechceu.gtceu.api.transfer.key.KeyCodecs;
 
@@ -154,5 +156,7 @@ public class GTOCodecs {
         ResonanceFlowerMachine.addCodec();
         SlotMachineResult.addCodec();
         SlotMachineState.addCodec();
+        // 合成站那套（图案 / 配方样板 / 配方库）；必须早于机器注册，否则 @SaveToDisk 的字段定义建不起来
+        CraftingCodecs.init();
     }
 }

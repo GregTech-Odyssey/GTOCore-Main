@@ -914,7 +914,7 @@ public final class GTOOres {
             materialMap.forEach((material, amount) -> materialIntegerMap.mergeInt(material, amount, Math::max));
             ALL_ORES.put(dimension, materialIntegerMap);
         }
-        BedrockOreDefinition.builder(id).size(9).dimensions(definition.dimensionFilter()).weight(definition.weight()).materials(materials).yield(2, 8).depletedYield(1).depletionAmount(1).depletionChance(100).register();
+        BedrockOreDefinition.builder(id).nameKey("gtceu.jei.ore_vein." + name).size(9).dimensions(definition.dimensionFilter()).weight(definition.weight()).materials(materials).yield(2, 8).depletedYield(1).depletionAmount(1).depletionChance(100).register();
         definition.register(GTOCore.id("ores/" + name));
         return definition;
     }
