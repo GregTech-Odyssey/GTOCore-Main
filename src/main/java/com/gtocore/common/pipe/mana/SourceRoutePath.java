@@ -36,6 +36,8 @@ public final class SourceRoutePath implements IRoutePath<ISourceTile> {
     @Nullable
     @Override
     public ISourceTile getHandler(Level world) {
+        // a paused pipe must not push source into its neighbours
+        if (!targetPipe.isWorkingEnabled()) return null;
         return targetPipe.getNeighborBlockEntity(targetFacing) instanceof ISourceTile sourceTile ? sourceTile : null;
     }
 

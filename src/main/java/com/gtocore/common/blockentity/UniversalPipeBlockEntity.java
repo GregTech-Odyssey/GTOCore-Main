@@ -3,7 +3,9 @@ package com.gtocore.common.blockentity;
 import com.gtocore.common.pipe.universal.*;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
+import com.gregtechceu.gtceu.api.machine.feature.IAutoOutput;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -132,30 +134,42 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
     @Override
     public void clearRemoved() {
         super.clearRemoved();
-        if (blockedSide != null && isBlocked(blockedSide)) {
-            updateTransferTick(true, this::autoTransfer);
-        }
+        updateAutoTransferTick();
     }
 
     @Override
     protected void blockedChanged(boolean isBlocked) {
-        updateTransferTick(isBlocked && blockedSide != null, this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     protected void updateNetworkConnection(Direction side, boolean connected) {
         super.updateNetworkConnection(side, connected);
         invalidateCapabilityCache();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     public void onNeighborChanged() {
         super.onNeighborChanged();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
+    }
+
+    @Override
+    protected void onWorkingEnabledChanged() {
+        updateAutoTransferTick();
+    }
+
+    private void updateAutoTransferTick() {
+        updateTransferTick(isWorkingEnabled() && blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
     }
 
     private void autoTransfer() {
+        if (!isWorkingEnabled()) {
+            // a paused pipe releases its tick, it is restarted once the pipe is resumed
+            updateTransferTick(false, this::autoTransfer);
+            return;
+        }
         if (getUniversalPipeNet() == null) return;
         boolean hasSource = false;
         autoTransfer = true;
@@ -164,7 +178,12 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
             if (facing == blockedSide || !isConnected(facing)) continue;
             var neighbour = getNeighborBlockEntity(facing);
             if (neighbour == null || neighbour instanceof PipeBlockEntity<?, ?>) continue;
-            var source = UniversalStorages.getStorage(neighbour, facing.getOpposite(), StorageAccess.EXTRACT);
+            // the neighbour pushes into the pipe on its own, so do not pull from it as well
+            var opposite = facing.getOpposite();
+            if ((neighbour instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity instanceof IAutoOutput autoOutput) && (autoOutput.isAutoOutputtingItems(opposite) || autoOutput.isAutoOutputtingFluids(opposite))) {
+                continue;
+            }
+            var source = UniversalStorages.getStorage(neighbour, opposite, StorageAccess.EXTRACT);
             if (source == null) continue;
             var target = handler(facing);
             if (target == null) continue;
@@ -235,6 +254,8 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         @Override
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (amount <= 0) return 0;
+            // a paused pipe accepts nothing, no matter whether a machine or the net itself inserts
+            if (!pipe.isWorkingEnabled()) return 0;
             if (pipe.isInValid() || pipe.routing || pipe.isBlocked(facing)) return 0;
             boolean fluid = what.getType() == AEKeyTypes.FLUIDS;
             long allowed = Math.min(amount, pipe.available(fluid));

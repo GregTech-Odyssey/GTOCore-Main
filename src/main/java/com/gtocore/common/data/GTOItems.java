@@ -1,6 +1,5 @@
 package com.gtocore.common.data;
 
-import com.gregtechceu.gtceu.common.data.*;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.OffsetGradientColor;
@@ -46,6 +45,7 @@ import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.ArmorLogicSuite;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
+import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.item.*;
 import com.gregtechceu.gtceu.common.item.armor.*;
 import com.gregtechceu.gtceu.config.ConfigHolder;
@@ -354,7 +354,7 @@ public final class GTOItems {
                 lines.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_DURATION_MULTIPLIER)));
                 lines.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_ENERGY_MULTIPLIER)));
                 lines.add(Component.translatable("gtocore.cover.creative_power_amplifier.tooltip").withStyle(ChatFormatting.GRAY));
-                GTMachines.CREATIVE_TOOLTIPS.accept(null,lines);
+                GTMachines.CREATIVE_TOOLTIPS.accept(null, lines);
             }), new CoverPlaceBehavior(GTOCovers.CREATIVE_POWER_AMPLIFIER)))
             .register();
 
