@@ -542,20 +542,51 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
 
     // ==================== 盘面方块 ====================
 
-    /** 只把盘面方块拆掉：显示方块与边框；机器自己不动。按「实际铺开时的尺寸」收，尺寸改过也收得干净。 */
+    /**
+     * 只拆属于自己的盘面，机器自己不动：
+     * <ul>
+     * <li>显示方块按方块实体里记的核心位置认领（{@link MinesweeperDisplayBlockEntity#getCore()}），别人的盘一格都不碰；</li>
+     * <li>边框只收自己这一圈——铺盘时整块矩形必须先是空的，别的机器铺不进这一圈，所以那一圈里只可能是自己铺的；</li>
+     * <li>从没铺过盘的机器一个方块都不动；旧存档没记下铺开尺寸的机器按最大盘面扫一遍，也只认领自己的显示方块
+     * （边框没有归属信息，只能留着让玩家自己打掉）。</li>
+     * </ul>
+     */
     private void removeLayout() {
         if (!(getLevel() instanceof ServerLevel serverLevel)) return;
-        int width = boardWidth > 0 ? boardWidth : rules.width();
-        int height = boardHeight > 0 ? boardHeight : rules.height();
+        if (boardWidth > 0 && boardHeight > 0) {
+            removeBlocks(serverLevel, boardWidth, boardHeight, true);
+        } else if (unfolded) {
+            removeBlocks(serverLevel, MinesweeperRules.CUSTOM_MAX_SIDE, MinesweeperRules.CUSTOM_MAX_SIDE, false);
+        }
+    }
+
+    /**
+     * 扫 {@code width × height} 盘面连外圈边框：显示方块一律按核心位置认领，边框只清外圈那一圈。
+     *
+     * @param frames 是否连边框一起收；旧存档认不出边框归属时传 {@code false}
+     */
+    private void removeBlocks(ServerLevel level, int width, int height, boolean frames) {
+        BlockPos core = getPos();
         for (int x = 0; x <= width + 1; x++) {
             for (int z = 0; z <= height + 1; z++) {
                 BlockPos pos = gridPos(x, z);
-                Block block = serverLevel.getBlockState(pos).getBlock();
-                if (block instanceof MinesweeperDisplayBlock || block instanceof MinesweeperFrameBlock) {
-                    serverLevel.removeBlock(pos, false);
+                if (pos.equals(core)) continue;
+                Block block = level.getBlockState(pos).getBlock();
+                if (block instanceof MinesweeperDisplayBlock) {
+                    if (level.getBlockEntity(pos) instanceof MinesweeperDisplayBlockEntity display &&
+                            core.equals(display.getCore())) {
+                        level.removeBlock(pos, false);
+                    }
+                } else if (frames && block instanceof MinesweeperFrameBlock && onRing(x, z, width, height)) {
+                    level.removeBlock(pos, false);
                 }
             }
         }
+    }
+
+    /** 是否位于盘面外圈那一圈边框上（{@code 0} 与 {@code width + 1} / {@code height + 1} 是边框）。 */
+    private static boolean onRing(int x, int z, int width, int height) {
+        return x == 0 || x == width + 1 || z == 0 || z == height + 1;
     }
 
     /** 把一次落子改动过的显示方块刷成新状态（{@link #touched} 里可能有重复，重复刷同一个格子无害）。 */
@@ -687,12 +718,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         };
     }
 
-    /** 按钮背后要的玩家：界面的持有者，服务端才拿得到。 */
-    private static @Nullable ServerPlayer playerOf(Widget source) {
-        var gui = source.getGui();
-        return gui != null && gui.entityPlayer instanceof ServerPlayer player ? player : null;
-    }
-
+    /** 按钮背后要的玩家由 {@code AbstractGameMachine#playerOf(Widget)} 提供。 */
     private static void send(@Nullable ServerPlayer player, Component message) {
         if (player != null) player.displayClientMessage(message, true);
     }

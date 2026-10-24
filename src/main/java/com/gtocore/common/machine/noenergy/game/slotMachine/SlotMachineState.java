@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.slotMachine;
+package com.gtocore.common.machine.noenergy.game.slotMachine;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.RandomSource;
@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * 单台老虎机的运行状态：余额、下注、滚动倒计时、预生成的待结算结果和上一局结果。
- * 是否在滚动只看待结算结果是否存在。
+ * 单台老虎机的运行状态：下注、滚动倒计时、预生成的待结算结果和上一局结果。是否在滚动只看待结算结果是否存在。
+ * 余额不在这里：它挂在 {@code AbstractGameMachine} 上，由机器负责加减（下注、中奖、投币入账）。
  *
  * <p>
  * 状态是自定义元素：{@link #CODEC} 把整份状态编解码成一个值，{@link #addCodec()} 在 {@code GTOCodecs.init()}
@@ -23,6 +23,10 @@ import java.util.Objects;
  * 拆除时余额由机器换成硬币掉回世界）。
  * 不要再改成嵌套 holder（编码规范第 27 条）：那样状态会自己维护一套字段管理器，多出一条持久化路径，
  * 还得靠 {@code listener} 字符串回调。读回来的数值统一在解码构造里校验，不需要「读盘完成」回调。
+ *
+ * <p>
+ * 余额搬走之后，{@code CODEC} 的第一个分量留着原来的位置不删：它是旧存档里的余额，读档时由机器用
+ * {@link #takeLegacyBalance()} 搬到基类的余额字段上，新存档一律写 0。分量顺序就是存档布局，改动要连着旧档一起考虑。
  *
  * <p>
  * 开奖用的规则由机器在构造时注入（{@link #startSpin} 的 {@code rules} 参数，不参与存档）：卷轴带与赔付表
@@ -67,14 +71,15 @@ public final class SlotMachineState {
 
     /** 整份状态的编解码器；分量顺序就是存档布局，改动要连着旧档一起考虑。 */
     private static final DataSyncCodec<SlotMachineState> CODEC = CombinedCodec.composite(
-            DataSyncCodec.LONG_CODEC, SlotMachineState::balance,
+            DataSyncCodec.LONG_CODEC, SlotMachineState::legacyBalance,
             DataSyncCodec.INT_CODEC, SlotMachineState::bet,
             DataSyncCodec.INT_CODEC, SlotMachineState::spinTicksRemaining,
             OPTIONAL_RESULT_CODEC, SlotMachineState::pendingResult,
             OPTIONAL_RESULT_CODEC, SlotMachineState::lastResult,
             SlotMachineState::new);
 
-    private long balance;
+    /** 旧存档里的余额：读档时由机器搬到基类的余额字段上，新存档一律写 0。 */
+    private long legacyBalance;
     private int bet;
     /** 只给 {@link #CODEC} 存取。 */
     @Getter(AccessLevel.PRIVATE)
@@ -89,8 +94,9 @@ public final class SlotMachineState {
     }
 
     /** 解码专用构造：夹紧存下来的数值（没有待结算结果就没有在滚动），已保存的盘面与奖励不重算。 */
-    private SlotMachineState(long balance, int bet, int spinTicksRemaining, SlotMachineResult pendingResult, SlotMachineResult lastResult) {
-        this.balance = Math.max(0L, balance);
+    private SlotMachineState(long legacyBalance, int bet, int spinTicksRemaining, SlotMachineResult pendingResult,
+                             SlotMachineResult lastResult) {
+        this.legacyBalance = Math.max(0L, legacyBalance);
         this.bet = SlotMachineRules.clampBet(bet);
         this.pendingResult = pendingResult;
         this.spinTicksRemaining = pendingResult == null ? 0 : Math.max(0, spinTicksRemaining);
@@ -106,49 +112,43 @@ public final class SlotMachineState {
         return pendingResult != null;
     }
 
+    /** 取出旧存档里的余额并清零：余额已经搬到机器上，留着会在下次读档时被重复加上。 */
+    public long takeLegacyBalance() {
+        long legacy = legacyBalance;
+        legacyBalance = 0L;
+        return legacy;
+    }
+
     /** 滚动中不接受改下注，避免结果已预生成后结算基准被改。 */
     public void setBet(int bet) {
         if (isSpinning()) return;
         this.bet = SlotMachineRules.clampBet(bet);
     }
 
-    /** 机器按硬币面额折算后调用；余额接近 long 上限时按剩余额度夹紧。 */
-    public void addCredits(long amount) {
-        if (amount <= 0) return;
-        long added = Math.min(Long.MAX_VALUE - balance, amount);
-        balance += added;
-    }
-
-    /** 滚动中不接受取出，避免本局扣费后余额被提前抽走。 */
-    public void removeCredits(long amount) {
-        if (amount <= 0 || isSpinning()) return;
-        long removed = Math.min(amount, balance);
-        balance -= removed;
-    }
-
-    public boolean canStart() {
+    /** 现在能不能开一局：没在滚动，且余额够这一注（余额在机器上，由调用方传进来判定）。 */
+    public boolean canStart(long balance) {
         return !isSpinning() && balance >= bet;
     }
 
-    /** 立即扣下注并按传入规则预生成待结算结果（有待结算结果即滚动中）；结果先落地，动画中途卸载或存档也不会丢或重随机。 */
+    /**
+     * 按传入规则预生成待结算结果（有待结算结果即滚动中）；结果先落地，动画中途卸载或存档也不会丢或重随机。
+     * 下注由机器在调用前扣好，这里只管盘面与倒计时。
+     */
     public boolean startSpin(RandomSource random, SlotMachineRules rules) {
         Objects.requireNonNull(random, "random");
-        if (!canStart()) return false;
-        balance -= bet;
+        if (isSpinning()) return false;
         pendingResult = rules.spin(random, bet);
         spinTicksRemaining = rules.spinTicks();
         return true;
     }
 
-    /** 每 tick 推进一次倒计时；返回本 tick 是否刚好结束并完成结算。 */
+    /** 每 tick 推进一次倒计时；返回本 tick 是否刚好结束并完成结算（奖励由机器按 {@link #lastResult()} 入账）。 */
     public boolean tickSpin() {
         if (!isSpinning()) return false;
         if (--spinTicksRemaining > 0) return false;
-        SlotMachineResult result = pendingResult;
+        lastResult = pendingResult;
         pendingResult = null;
         spinTicksRemaining = 0;
-        addCredits(result.reward());
-        lastResult = result;
         return true;
     }
 }
