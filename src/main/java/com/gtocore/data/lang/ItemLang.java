@@ -224,7 +224,7 @@ final class ItemLang {
 
         addCNEN("gtocore.cover.creative_power_amplifier.duration", "耗时乘数", "Duration Multiplier");
         addCNEN("gtocore.cover.creative_power_amplifier.energy", "耗能乘数", "Energy Multiplier");
-        addCNEN("gtocore.cover.creative_power_amplifier.title", "创造模式功率增幅器", "Creative Power Amplifier");
+        addCNEN("gtocore.cover.creative_power_amplifier.title", "创造功率增幅器", "Creative Power Amplifier");
         addCNEN("gtocore.cover.creative_power_amplifier.tooltip", "安装后使用螺丝刀打开界面调整乘数", "Use a screwdriver after installation to configure multipliers");
 
         addCNEN("gtocore.cover.advanced_wireless_transfer.status", "状态", "Status");

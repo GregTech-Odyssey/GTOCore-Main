@@ -1,5 +1,6 @@
 package com.gtocore.common.data;
 
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.client.renderer.machine.*;
@@ -873,6 +874,7 @@ public final class GTOMachines {
     public static final MachineDefinition CREATIVE_RADIATION_HATCH = machine("creative_radiation_hatch", "创造放射仓", CreativeRadiationHatch::new)
             .tier(MAX)
             .tips(GTOMachineTooltips.RadiationHatchTooltips)
+            .tooltipBuilder(GTMachines.CREATIVE_TOOLTIPS)
             .notAllowSharedTooltips()
             .recipeType(GTORecipeTypes.RADIATION_HATCH_RECIPES)
             .allRotation()
@@ -885,6 +887,7 @@ public final class GTOMachines {
             .tier(MAX)
             .allRotation()
             .overlayTieredHullRenderer("radiation_hatch")
+            .tooltipBuilder(GTMachines.CREATIVE_TOOLTIPS)
             .allowCoverOnFront(false)
             .register();
 
