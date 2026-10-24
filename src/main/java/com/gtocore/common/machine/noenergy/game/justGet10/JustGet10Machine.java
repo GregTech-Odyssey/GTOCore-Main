@@ -118,9 +118,6 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     /** 规则实例；临时容器跟着它复用。 */
     private final JustGet10Rules rules = JustGet10Rules.create();
 
-    @SaveToDisk(defaultValue = "true")
-    @SyncToClient(scheduleUpdate = true)
-    private boolean enabled = true;
     /** 服务端权威盘面，按行优先存 {@code size * size} 格，空格为 -1。 */
     @SaveToDisk
     private int[] board = NO_BOARD;
@@ -266,9 +263,9 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         setIdle();
     }
 
-    /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用；停用时不响应。 */
+    /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用。 */
     private void restartRoundOnServer(@Nullable ServerPlayer player) {
-        if (isRemote() || !enabled || !guard(player)) return;
+        if (isRemote() || !guard(player)) return;
         settleRound();
         startRound();
         beginSession(player);
@@ -292,7 +289,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
      * 不可合并时直接返回、状态不变。
      */
     private void clickCell(int index, @Nullable ServerPlayer player) {
-        if (isRemote() || !enabled || !isPlaying() || !guard(player)) return;
+        if (isRemote() || !isPlaying() || !guard(player)) return;
         int size = rules.size();
         if (index < 0 || index >= board.length) {
             selection = NO_SELECTION;

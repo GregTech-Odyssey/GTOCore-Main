@@ -36,6 +36,8 @@ import java.util.UUID;
 public final class GameMilestones extends SavedData {
 
     public static final String DATA_NAME = "gtocore_game_milestones";
+    /** 最高分/最大合成榜的最低积分：不超过这个分数的局不进入里程碑。 */
+    public static final int MIN_MILESTONE_SCORE = 1000;
 
     /** 游戏名（存盘分区与榜单标识）。 */
     public static final String SLOT_MACHINE = "slot_machine";
@@ -141,10 +143,10 @@ public final class GameMilestones extends SavedData {
         touch();
     }
 
-    /** 合成十 / 2048：一局结账 —— 分数与最大合成数字各取更优值，各自记住达成时间。 */
+    /** 合成十 / 2048：一局结账 —— 分数与最大合成数字各取更优值，各自记住达成时间；不超过 {@link #MIN_MILESTONE_SCORE} 的局不记录。 */
     public void recordScore(String game, @Nullable UUID player, int score, int merged, long gameTime) {
         var stats = scoreStats(game);
-        if (stats == null || player == null) return;
+        if (stats == null || player == null || score <= MIN_MILESTONE_SCORE) return;
         var old = stats.get(player);
         int bestScore = old == null ? 0 : old.bestScore();
         long bestScoreTime = old == null ? 0L : old.bestScoreTime();

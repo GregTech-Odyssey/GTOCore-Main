@@ -227,12 +227,12 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         drawRange = range.ordinal();
         if (numbers.length != Game24Rules.NUMBER_COUNT) {
             startPuzzle();
-            return;
-        }
-        for (int value : numbers) {
-            if (value < range.min() || value > range.max()) {
-                startPuzzle();
-                return;
+        } else {
+            for (int value : numbers) {
+                if (value < range.min() || value > range.max()) {
+                    startPuzzle();
+                    break;
+                }
             }
         }
         if (tokens.length > Game24Rules.MAX_TOKENS) {
@@ -355,6 +355,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
 
     /** 起一轮：起点、进度清零，并把「这一轮算不算」置位；发起者用开界面的人（没有就等第一个开界面的人）。 */
     private void startRun(@Nullable ServerPlayer player) {
+        // 提示过的题不开启新一轮：否则关掉界面再打开时 ensureStarted 会把已经作废的一轮重新计时。
+        if (hinted) return;
         runStart = gameTime();
         runSolved = 0;
         runValid = true;
@@ -391,6 +393,11 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
 
     /** 榜单那一半：连解满一轮就按本轮用时记一次（单人局且用时正常才算），然后重开一轮。 */
     private void recordRunTime() {
+        // 用过提示的题不算连解；即使界面重开把 runValid 又置回来，这里也要把这一轮停掉。
+        if (hinted) {
+            voidRun();
+            return;
+        }
         if (!runValid) return;
         runSolved++;
         if (runSolved < RUN_PUZZLES) return;

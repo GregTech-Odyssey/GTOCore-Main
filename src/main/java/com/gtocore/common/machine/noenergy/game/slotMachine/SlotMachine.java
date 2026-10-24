@@ -51,7 +51,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.DynamicTexture;
@@ -165,10 +164,6 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     @SaveToDisk
     private final KeyInventory<AEItemKey> depositInventory = KeyInventory.items(1);
     private final Runnable machineTick = this::tickMachine;
-
-    @SaveToDisk(defaultValue = "true")
-    @SyncToClient(scheduleUpdate = true)
-    private boolean enabled = true;
 
     @Nullable
     private TickableSubscription tickSubs;
@@ -338,7 +333,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     private void startSpin(@Nullable ServerPlayer player) {
         var level = getLevel();
-        if (level == null || isRemote() || !enabled || !slotMachineEnabled() || !guard(player)) return;
+        if (level == null || isRemote() || !slotMachineEnabled() || !guard(player)) return;
         if (!canStart()) return;
         // 先预生成结果再扣注：canStart 已经拦过滚动中与余额不足，这里不会再失败
         if (!state.startSpin(level.getRandom(), rules)) return;
@@ -497,7 +492,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         status.addLine(LINE_LAST_REWARD, this::lastRewardText);
 
         var spinButton = Button.translatable(LayoutStyle.AUTO, BUTTON_SPIN)
-                .disabled(() -> !slotMachineEnabled() || !enabled || !canStart(),
+                .disabled(() -> !slotMachineEnabled() || !canStart(),
                         slotMachineEnabled() ? REASON_CANNOT_START : REASON_DISABLED);
         spinButton.setOnServerClick(() -> startSpin(playerOf(spinButton)));
 

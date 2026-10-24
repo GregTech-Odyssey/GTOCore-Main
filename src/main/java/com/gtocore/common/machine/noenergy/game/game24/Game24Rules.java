@@ -225,16 +225,35 @@ public final class Game24Rules {
         };
     }
 
-    /** 与 {@link #combine} 对应的表达式片段：加减套括号，乘除不套（两边若本身带括号也仍然正确）。 */
+    /**
+     * 与 {@link #combine} 对应的表达式片段：加减套括号；除法的除数若本身是顶层乘除式，
+     * 必须再括一层——除法左结合，不括就会改变原表达式的值。
+     */
     private static String combineText(String leftText, String rightText, int combination) {
         return switch (combination) {
             case 0 -> "(" + leftText + " + " + rightText + ")";
             case 1 -> "(" + leftText + " − " + rightText + ")";
             case 2 -> "(" + rightText + " − " + leftText + ")";
             case 3 -> leftText + " × " + rightText;
-            case 4 -> leftText + " ÷ " + rightText;
-            default -> rightText + " ÷ " + leftText;
+            case 4 -> leftText + " ÷ " + asDivisor(rightText);
+            default -> rightText + " ÷ " + asDivisor(leftText);
         };
+    }
+
+    /** 只给除法用的除数片段：数字或已经整体括起来的式子原样保留，顶层乘除式补一层括号。 */
+    private static String asDivisor(String text) {
+        int depth = 0;
+        for (int index = 0; index < text.length(); index++) {
+            char current = text.charAt(index);
+            if (current == '(') {
+                depth++;
+            } else if (current == ')') {
+                depth--;
+            } else if (depth == 0 && (current == '×' || current == '÷')) {
+                return "(" + text + ")";
+            }
+        }
+        return text;
     }
 
     /** 中缀转后缀求值；结构或除零有问题时返回 {@code null}。 */
