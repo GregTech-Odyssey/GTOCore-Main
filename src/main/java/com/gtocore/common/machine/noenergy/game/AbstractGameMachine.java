@@ -55,6 +55,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 /**
  * 游戏机的公共底座：钱、下发通道、游玩权限与「这一局是谁在玩」，玩法、局面字段、界面排版与配置页都写在各自的机器里。
@@ -233,6 +235,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
         if (player instanceof FakePlayer) return;
         viewerUUID = player.getUUID();
         pendingOpener = player.getUUID();
+        onViewerChanged();
         if (sessionStarter == null) {
             // 读档后直接开界面：这一局还没人认领，第一个进来的人就是发起者
             sessionStarter = player.getUUID();
@@ -265,6 +268,14 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
         var server = server();
         return server == null || viewerUUID == null ? null : server.getPlayerList().getPlayer(viewerUUID);
     }
+
+    /** 最近打开界面的玩家 UUID（可能离线）；按查看者构造快照的机器用它。 */
+    protected final @Nullable UUID viewerId() {
+        return viewerUUID;
+    }
+
+    /** 界面查看者变化时回调；需要按查看者重建快照的机器覆盖它。 */
+    protected void onViewerChanged() {}
 
     protected final @Nullable MinecraftServer server() {
         return getLevel() instanceof ServerLevel level ? level.getServer() : null;
@@ -378,6 +389,8 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     protected final void withdrawAll(Widget source) {
         var gui = source.getGui();
         if (isRemote() || gui == null || !(gui.entityPlayer instanceof ServerPlayer player)) return;
+        // allowOthers 关闭后只有主人能取出；拆机器时的 cashOut/掉币不走这里，不受影响。
+        if (!guard(player)) return;
         var inventory = player.getInventory();
         long remaining = balance;
         if (remaining == 0) return;
@@ -469,6 +482,11 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
             return new MilestoneCell(text, Component.empty());
         }
 
+        /** 带自定义悬停提示的格子。 */
+        public static MilestoneCell of(Component text, Component hint) {
+            return new MilestoneCell(text, hint);
+        }
+
         /** 成绩格：字是成绩本身，达成时间放进悬停提示，表格就不用为时间单开一列。 */
         public static MilestoneCell achieved(Component value, long gameTime) {
             return new MilestoneCell(value, Component.translatable(TOOLTIP_ACHIEVED, dayTime(gameTime)));
@@ -496,7 +514,16 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
      */
     protected final ScrollerView milestoneTable(String id, MilestoneColumn[] columns,
                                                 BiFunction<GameMilestones, MinecraftServer, List<MilestoneCell[]>> builder) {
-        var table = new MilestoneTable(columns, builder);
+        return milestoneTable(id, columns, this::gameMilestonesVersion, () -> gameMilestoneRows(builder));
+    }
+
+    /**
+     * 里程碑表格的可复用版本：数据源不一定 {@link GameMilestones}（扫雷用自己的存档），
+     * 但表格外观、排名、悬停与滚动都与其他游戏机器保持一致。
+     */
+    protected final ScrollerView milestoneTable(String id, MilestoneColumn[] columns, IntSupplier version,
+                                                Supplier<List<MilestoneCell[]>> builder) {
+        var table = new MilestoneTable(columns, version, builder);
         var scroller = new ScrollerView(id,
                 table.width() + 2 * UISizes.PANEL_PADDING + ScrollerView.SCROLL_BAR_SPACE, MILESTONE_HEIGHT)
                 .contentLayout(layout -> layout.paddingAll(UISizes.PANEL_PADDING));
@@ -505,18 +532,32 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
         return scroller.setAdaptiveHeight(MILESTONE_MAX_HEIGHT);
     }
 
+    private int gameMilestonesVersion() {
+        var store = milestones();
+        return store == null ? Integer.MIN_VALUE : store.modCount();
+    }
+
+    private List<MilestoneCell[]> gameMilestoneRows(
+                                                    BiFunction<GameMilestones, MinecraftServer, List<MilestoneCell[]>> builder) {
+        var store = milestones();
+        var server = server();
+        return store == null || server == null ? List.of() : builder.apply(store, server);
+    }
+
     /** 一张表格的行缓存：数据版本没变就复用上次构建的行，不让每个格子各自重建一遍。 */
     private final class MilestoneTable {
 
         private final MilestoneColumn[] columns;
-        private final BiFunction<GameMilestones, MinecraftServer, List<MilestoneCell[]>> builder;
+        private final IntSupplier version;
+        private final Supplier<List<MilestoneCell[]>> builder;
         private final int width;
-        private int mod = -1;
+        private int mod = Integer.MIN_VALUE;
         private List<MilestoneCell[]> rows = List.of();
 
-        private MilestoneTable(MilestoneColumn[] columns,
-                               BiFunction<GameMilestones, MinecraftServer, List<MilestoneCell[]>> builder) {
+        private MilestoneTable(MilestoneColumn[] columns, IntSupplier version,
+                               Supplier<List<MilestoneCell[]>> builder) {
             this.columns = columns;
+            this.version = version;
             this.builder = builder;
             int sum = MILESTONE_RANK_WIDTH + MILESTONE_GAP * columns.length;
             for (var column : columns) {
@@ -531,11 +572,10 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         /** 服务端：数据版本变了就重建行；返回人数，表格按它决定建几行。 */
         private int rowCount() {
-            var store = milestones();
-            var server = server();
-            if (store != null && server != null && mod != store.modCount()) {
-                mod = store.modCount();
-                rows = builder.apply(store, server);
+            int current = version.getAsInt();
+            if (mod != current) {
+                mod = current;
+                rows = builder.get();
             }
             return rows.size();
         }
