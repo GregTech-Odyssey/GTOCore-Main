@@ -335,6 +335,11 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     }
 
     @Override
+    public boolean saveBreak() {
+        return !keyMap.isEmpty();
+    }
+
+    @Override
     public void loadFromItem(CompoundTag tag) {
         if (tag.get("keymap") instanceof ByteArrayTag byteArrayTag) {
             getFieldDataManager().readFieldFromValue(JavaValueOps.INSTANCE.fromBytes(byteArrayTag.getAsByteArray()), JavaValueOps.INSTANCE, "keyMap");

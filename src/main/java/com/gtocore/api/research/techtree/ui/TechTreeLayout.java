@@ -2,9 +2,10 @@ package com.gtocore.api.research.techtree.ui;
 
 import com.gtocore.api.research.techtree.TechNode;
 
+import appeng.api.identity.IdentityKeyObjectMap;
+
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,7 @@ public final class TechTreeLayout {
     public record RoutedEdge(TechNode from, TechNode to, float[] points) {}
 
     private final List<TechNode> orderedNodes;
-    private final Map<TechNode, NodePlacement> placements;
+    private final IdentityKeyObjectMap<TechNode, NodePlacement> placements;
     private final List<TierRegion> tierRegions;
     private final IntArrayList tierSeparators;
     private final List<RoutedEdge> edges;
@@ -43,7 +44,7 @@ public final class TechTreeLayout {
                    int maxX,
                    int maxY) {
         this.orderedNodes = List.copyOf(orderedNodes);
-        this.placements = new IdentityHashMap<>(placements);
+        this.placements = new IdentityKeyObjectMap<>(placements);
         this.tierRegions = List.copyOf(tierRegions);
         this.tierSeparators = tierSeparators;
         this.edges = List.copyOf(edges);

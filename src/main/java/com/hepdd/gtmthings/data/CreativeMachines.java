@@ -23,8 +23,8 @@ import com.gto.registrate.providers.ProviderType;
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeEnergyHatchPartMachine;
-import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputDualHatchPartMachine;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputBusPartMachine;
+import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputDualHatchPartMachine;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeInputHatchPartMachine;
 import com.hepdd.gtmthings.common.block.machine.multiblock.part.CreativeLaserHatchPartMachine;
 import com.hepdd.gtmthings.common.item.CreativeFluidStats;
@@ -88,7 +88,7 @@ public class CreativeMachines {
     public static ItemEntry<ComponentItem> CREATIVE_ENERGY_COVER = GTMTHINGS_REGISTRATE
             .item("creative_energy_cover", ComponentItem::create)
             .onRegister(attach(new CoverPlaceBehavior(GTMTCovers.CREATIVE_ENERGY),
-                    new TooltipBehavior(lines-> GTMachines.CREATIVE_TOOLTIPS.accept(null,lines))))
+                    new TooltipBehavior(lines -> GTMachines.CREATIVE_TOOLTIPS.accept(null, lines))))
             .register();
 
     public static ItemEntry<ComponentItem> CREATIVE_FLUID_CELL = GTMTHINGS_REGISTRATE

@@ -1,6 +1,5 @@
 package com.hepdd.gtmthings.common.item;
 
-import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
@@ -12,6 +11,7 @@ import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -59,14 +59,13 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
 
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-
-            FluidUtil.getFluidContained(stack).ifPresent(
-                    tank -> tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip1", tank.getDisplayName()))));
-            if (getAccurate(stack)) {
-                tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip3", getCapacity(stack))));
-            }
-            tooltipComponents.add(Tips.rightClick(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip2")));
-        GTMachines.CREATIVE_TOOLTIPS.accept(stack,tooltipComponents);
+        FluidUtil.getFluidContained(stack).ifPresent(
+                tank -> tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip1", tank.getDisplayName()))));
+        if (getAccurate(stack)) {
+            tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip3", getCapacity(stack))));
+        }
+        tooltipComponents.add(Tips.rightClick(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip2")));
+        GTMachines.CREATIVE_TOOLTIPS.accept(stack, tooltipComponents);
     }
 
     @Override

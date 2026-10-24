@@ -38,6 +38,8 @@ public final class ManaRoutePath implements IRoutePath<ManaReceiver> {
     @Nullable
     @Override
     public ManaReceiver getHandler(Level world) {
+        // a paused pipe must not push mana into its neighbours
+        if (!targetPipe.isWorkingEnabled()) return null;
         var blockEntity = targetPipe.getNeighborBlockEntity(targetFacing);
         return receiverOf(blockEntity, targetFacing.getOpposite());
     }

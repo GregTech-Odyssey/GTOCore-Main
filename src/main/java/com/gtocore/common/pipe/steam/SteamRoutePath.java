@@ -36,6 +36,8 @@ public final class SteamRoutePath implements IRoutePath<MEStorage> {
     @Nullable
     @Override
     public MEStorage getHandler(Level world) {
+        // a paused pipe must not push anything into its neighbours
+        if (!targetPipe.isWorkingEnabled()) return null;
         return SteamStorages.getStorage(targetPipe.getNeighborBlockEntity(targetFacing), targetFacing.getOpposite());
     }
 

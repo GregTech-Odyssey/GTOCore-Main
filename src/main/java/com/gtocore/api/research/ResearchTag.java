@@ -9,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.RandomSource;
 
+import appeng.api.identity.IdentityKey;
+
 import com.gto.datasynclib.datastream.codec.ValueCodec;
 import com.gto.datasynclib.util.Registry;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
@@ -17,7 +19,7 @@ import lombok.Getter;
 import java.util.Map;
 
 @Getter
-public final class ResearchTag {
+public final class ResearchTag extends IdentityKey {
 
     private final String name;
     private final int color;

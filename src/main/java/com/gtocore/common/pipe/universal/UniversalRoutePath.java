@@ -41,6 +41,8 @@ public final class UniversalRoutePath implements IRoutePath<MEStorage> {
 
     @Override
     public @Nullable MEStorage getHandler(Level world) {
+        // a paused pipe must not push anything into its neighbours
+        if (!targetPipe.isWorkingEnabled()) return null;
         return UniversalStorages.getStorage(targetPipe.getNeighborBlockEntity(targetFacing), targetFacing.getOpposite(), StorageAccess.INSERT);
     }
 }

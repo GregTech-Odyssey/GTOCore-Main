@@ -17,6 +17,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 
+import appeng.api.identity.IdentityKeySet;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
@@ -67,7 +68,7 @@ public final class ResearchRequirements {
     private ResearchRequirements() {}
 
     public static synchronized void registerEurekaRequirement(AEKey key, TechNode node) {
-        EUREKA_REQUIREMENTS.computeIfAbsent(key, ignored -> new ReferenceOpenHashSet<>()).add(node);
+        EUREKA_REQUIREMENTS.computeIfAbsent(key, ignored -> new IdentityKeySet<>()).add(node);
     }
 
     public static Set<TechNode> getEurekaRequirements(AEKey key) {
