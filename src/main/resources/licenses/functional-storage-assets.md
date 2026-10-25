@@ -46,3 +46,7 @@ Included directory: `assets/gtocore/textures/block/wooden_super_storage/`. Each 
 | `cherry_side.png` | `1cc7d2374835b63edbc5807dc444fa8f9a85fcd074c8a8db0fa76d8ad340442b` |
 | `cherry_front_1.png` | `0ec770e2866844296723aa84a7052148c955dc3a4e6d4750a67640927fbc0651` |
 | `fluid_front.png` | `8630fc667550b07f88b1c04f827a5b0152c80797be084f0bcc5c1f34f5baa756` |
+
+## Partitioned storage models / 分格存储模型
+
+`models/block/compartment_storage/wood_2.json` and `metal_2.json` derive from `models/block/fluid_2.json`; `wood_4.json` and `metal_4.json` derive from `models/block/fluid_4.json`, all at the pinned revision above. The 1x2 layout uses two rows; 2x2 uses four independent windows. Static lock elements and unused groups are removed. Glass is a front-only plane recessed by one pixel; frames, dividers and inner walls use the original wood or voltage casing texture with projected UVs. The metal 2x2 front reuses GTCEu screen glass. The 1x2 fronts use the project-supplied `textures/block/overlay/machine/overlay_screen_glass_16_32.png`, `overlay_qchest_emissive16_32.png` and `overlay_qtank_emissive16_32.png`; each 32x16 emissive frame supplies an 8x8 mark drawn separately from the glass. / 两格上下排列、四格为2x2。移除静态锁图标和未使用的分组；玻璃仅保留内凹一像素的正面平面，外框、分隔条和内壁沿用原木材或电压外壳材质，UV 按实际坐标投影。金属 2x2 版沿用 GTCEu 玻璃；1x2 版使用项目提供的上述三张纹理，从每个 32x16 发光帧截取 8x8 图案并独立绘制。
