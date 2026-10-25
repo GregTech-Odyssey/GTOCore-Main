@@ -464,6 +464,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 4A Energy Hatch")
                     .allRotation()
                     .abilities(PartAbility.INPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.IN, 4))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.input_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.input_4a")))
                     .register(),
@@ -475,6 +476,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 4A Dynamo Hatch")
                     .allRotation()
                     .abilities(PartAbility.OUTPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.OUT, 4))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.output_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.output_4a")))
                     .register(),
@@ -486,6 +488,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 16A Energy Hatch")
                     .allRotation()
                     .abilities(PartAbility.INPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.IN, 16))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.input_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.input_16a")))
                     .register(),
@@ -497,6 +500,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 16A Dynamo Hatch")
                     .allRotation()
                     .abilities(PartAbility.OUTPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.OUT, 16))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.output_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.output_16a")))
                     .register(),

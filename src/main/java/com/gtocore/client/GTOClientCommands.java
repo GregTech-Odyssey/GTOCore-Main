@@ -62,6 +62,10 @@ public final class GTOClientCommands {
                 .then(Commands.literal("rules").executes((ctx) -> {
                     Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(RulesScreen.view(null, RuleManager.current())));
                     return 1;
+                }))
+                .then(Commands.literal("questreload").requires(source -> QuestHotReload.isEnabled()).executes((ctx) -> {
+                    QuestHotReload.reloadAll();
+                    return 1;
                 })));
     }
 

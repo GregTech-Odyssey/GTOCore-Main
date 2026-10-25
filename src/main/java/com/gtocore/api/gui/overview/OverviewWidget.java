@@ -40,6 +40,7 @@ import com.lowdragmc.lowdraglib.utils.Size;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.function.Consumer;
 
 @DataGeneratorScanned
@@ -93,10 +94,12 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
         buf.writeEnum(request.front());
         buf.writeEnum(request.up());
         buf.writeVarInt(request.upload());
+        buf.writeBoolean(request.network());
     }, buf -> new BuildRequest(buf.readVarInt(), ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.decode(buf), buf.readVarIntArray(MAX_VALUES), buf.readBlockPos(),
-            buf.readEnum(Direction.class), buf.readEnum(Direction.class), buf.readVarInt()));
+            buf.readEnum(Direction.class), buf.readEnum(Direction.class), buf.readVarInt(), buf.readBoolean()));
 
-    private record BuildRequest(int anchor, ResourceLocation definition, int[] values, BlockPos port, Direction front, Direction up, int upload) {}
+    private record BuildRequest(int anchor, ResourceLocation definition, int[] values, BlockPos port, Direction front, Direction up, int upload,
+                                boolean network) {}
 
     @Getter
     private final MultiblockControllerMachine host;
@@ -200,8 +203,8 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
         if (sink != null) sink.accept(next);
     }
 
-    public void requestBuild(int anchor, MultiblockMachineDefinition definition, int[] values, OverviewDocking.DockPose pose, int upload) {
-        buildRequest.send(new BuildRequest(anchor, definition.getId(), values, pose.port(), pose.front(), pose.up(), upload));
+    public void requestBuild(int anchor, MultiblockMachineDefinition definition, int[] values, OverviewDocking.DockPose pose, int upload, boolean network) {
+        buildRequest.send(new BuildRequest(anchor, definition.getId(), values, pose.port(), pose.front(), pose.up(), upload, network));
     }
 
     public void requestBack() {
@@ -216,10 +219,12 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
     private void serverBuild(@Nullable Player player, BuildRequest request) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
         if (!BUILD_THROTTLE.tryAcquire(serverPlayer) || !serverPlayer.mayBuild()) return;
-        build(serverPlayer, request.anchor(), request.definition(), request.values(), request.port(), request.front(), request.up(), request.upload());
+        build(serverPlayer, request.anchor(), request.definition(), request.values(), request.port(), request.front(), request.up(), request.upload(),
+                request.network());
     }
 
-    private void build(ServerPlayer player, int anchorIndex, ResourceLocation id, int[] values, BlockPos port, Direction front, Direction up, int upload) {
+    private void build(ServerPlayer player, int anchorIndex, ResourceLocation id, int[] values, BlockPos port, Direction front, Direction up, int upload,
+                       boolean network) {
         var level = player.serverLevel();
         if (level != host.getLevel()) return;
         var current = scan().snapshot();
@@ -249,8 +254,12 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
             return;
         }
         var controllerItem = definition.asItem();
-        var supply = player.isCreative() ? null : PlayerSupply.of(player, true);
-        if (supply != null && supply.count().getLong(controllerItem) <= 0) {
+        if (network && !player.isCreative() && !PlayerSupply.hasNetwork(player)) {
+            player.sendSystemMessage(Component.translatable(StructureBuild.NO_NETWORK));
+            network = false;
+        }
+        var supply = player.isCreative() ? null : PlayerSupply.of(player, true, network);
+        if (supply != null && available(supply, controllerItem) <= 0) {
             player.sendSystemMessage(Component.translatable(LANG_NO_CONTROLLER, definition.asStack().getHoverName()));
             return;
         }
@@ -282,8 +291,15 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
         state.getBlock().setPlacedBy(level, port, state, player, new ItemStack(controllerItem));
         scan().invalidate();
         if (MetaMachine.getMachine(level, port) instanceof IMultiController controller) {
-            StructureBuild.build(player, controller, layout, choices);
+            StructureBuild.build(player, controller, layout, choices,
+                    (controller.self().isFlipped() ? StructureBuild.FLAG_MIRROR : 0) | (network ? StructureBuild.FLAG_NETWORK : 0));
         }
+    }
+
+    private static long available(PlayerSupply supply, Item item) {
+        var counts = supply.count();
+        supply.countNetwork(counts, Collections.singletonList(item));
+        return counts.getLong(item);
     }
 
     private static void restrictToCandidates(Layout layout, Item[] choices) {

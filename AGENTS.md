@@ -20,6 +20,7 @@
 | 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
+| 新写或修改任务章节（`data/quest`）、任务书热加载/热修改/编辑模式 | [任务书热加载与热修改](docs/quest-hot-edit.md)；章节写法不合规时开发环境启动直接崩溃 |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 

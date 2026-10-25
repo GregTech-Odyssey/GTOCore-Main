@@ -464,6 +464,9 @@
     "com/gtocore/mixin/mc/client/LightTextureMixin": {
       "updateLightTexture": "Lnet/minecraft/client/renderer/LightTexture;m_109881_(F)V",
       "Lnet/minecraft/client/renderer/LightTexture;getBrightness(Lnet/minecraft/world/level/dimension/DimensionType;I)F": "Lnet/minecraft/client/renderer/LightTexture;m_234316_(Lnet/minecraft/world/level/dimension/DimensionType;I)F"
+    },
+    "com/gtolib/mixin/mc/entity/FoodDataMixin": {
+      "addExhaustion": "Lnet/minecraft/world/food/FoodData;m_38703_(F)V"
     }
   },
   "data": {
@@ -932,6 +935,9 @@
       "com/gtocore/mixin/mc/client/LightTextureMixin": {
         "updateLightTexture": "Lnet/minecraft/client/renderer/LightTexture;m_109881_(F)V",
         "Lnet/minecraft/client/renderer/LightTexture;getBrightness(Lnet/minecraft/world/level/dimension/DimensionType;I)F": "Lnet/minecraft/client/renderer/LightTexture;m_234316_(Lnet/minecraft/world/level/dimension/DimensionType;I)F"
+      },
+      "com/gtolib/mixin/mc/entity/FoodDataMixin": {
+        "addExhaustion": "Lnet/minecraft/world/food/FoodData;m_38703_(F)V"
       }
     }
   }

@@ -138,6 +138,7 @@ public final class ClientProxy extends CommonProxy {
         TravelEvents.Client.init();
         TravelParticleHandler.init();
         IMoveableHUD.EventHandler.init();
+        QuestHotReload.init();
         ClientForge.init();
         ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
         GTDynamicResourcePack.EVENT.addListener(ClientProxy.class, () -> {
