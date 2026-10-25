@@ -19,11 +19,17 @@ public abstract class FogRendererMixin {
 
     @ModifyExpressionValue(method = "setupColor",
                            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F"))
-    private static float[] disableSpaceSunriseFog(float[] color, @Local(argsOnly = true) ClientLevel level, @Local(argsOnly = true, ordinal = 0) float partialTick) {
+    private static float[] disableSpaceSunriseFog(float[] color, @Local(argsOnly = true) ClientLevel level) {
         // Directional sunrise fog can turn a black space background yellow, especially with night vision.
         if (PlanetApi.API.isSpace(level)) return null;
-        if (color != null) color[3] *= DysonSphereEffects.transmission(level, partialTick);
         return color;
+    }
+
+    // 衰减朝向太阳的雾色混合权重，不修改 DimensionSpecialEffects 复用的颜色数组。
+    @ModifyExpressionValue(method = "setupColor",
+                           at = @At(value = "INVOKE", target = "Lorg/joml/Vector3f;dot(Lorg/joml/Vector3fc;)F", remap = false))
+    private static float dimDysonSunriseFog(float alignment, @Local(argsOnly = true) ClientLevel level) {
+        return alignment * DysonSphereEffects.sunlightTransmission(level);
     }
 
     @ModifyExpressionValue(method = "setupColor",

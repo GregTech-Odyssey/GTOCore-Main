@@ -24,8 +24,8 @@ import java.util.UUID;
 @Mixin(PendingCraftingJobs.class)
 public class PendingCraftingJobsMixin {
 
-    @Inject(method = "jobStatus", at = @At(value = "INVOKE", target = "Lappeng/core/AEConfig;isNotifyForFinishedCraftingJobs()Z"), remap = false)
-    private static void notify(UUID id, AEKey what, long requestedAmount, long remainingAmount, CraftingJobStatusPacket.Status status, CallbackInfo ci) {
+    @Inject(method = "jobStatus(Ljava/util/UUID;Lappeng/api/stacks/AEKey;JJLappeng/core/sync/packets/CraftingJobStatusPacket$Status;JZ)V", at = @At(value = "INVOKE", target = "Lappeng/core/AEConfig;isNotifyForFinishedCraftingJobs()Z"), remap = false)
+    private static void notify(UUID id, AEKey what, long requestedAmount, long remainingAmount, CraftingJobStatusPacket.Status status, long elapsedTimeNanos, boolean followJob, CallbackInfo ci) {
         if (!GTOConfig.INSTANCE.client.craftingJobFinishedNotification || Minecraft.getInstance().isWindowActive()) return;
         GTOUtils.asyncExecute(() -> NotificationUtils.notify(
                 GuiText.ToastCraftingJobFinishedTitle.text().getString(),

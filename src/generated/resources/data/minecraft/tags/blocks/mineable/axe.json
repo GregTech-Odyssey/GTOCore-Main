@@ -3,6 +3,26 @@
     "gtocore:nuke_bomb",
     "gtocore:variation_wood",
     "gtocore:barnarda_c_log",
-    "gtocore:barnarda_c_leaves"
+    "gtocore:barnarda_c_leaves",
+    "gtceu:oak_super_chest",
+    "gtceu:oak_super_tank",
+    "gtceu:spruce_super_chest",
+    "gtceu:spruce_super_tank",
+    "gtceu:birch_super_chest",
+    "gtceu:birch_super_tank",
+    "gtceu:jungle_super_chest",
+    "gtceu:jungle_super_tank",
+    "gtceu:acacia_super_chest",
+    "gtceu:acacia_super_tank",
+    "gtceu:dark_oak_super_chest",
+    "gtceu:dark_oak_super_tank",
+    "gtceu:crimson_super_chest",
+    "gtceu:crimson_super_tank",
+    "gtceu:warped_super_chest",
+    "gtceu:warped_super_tank",
+    "gtceu:mangrove_super_chest",
+    "gtceu:mangrove_super_tank",
+    "gtceu:cherry_super_chest",
+    "gtceu:cherry_super_tank"
   ]
 }
