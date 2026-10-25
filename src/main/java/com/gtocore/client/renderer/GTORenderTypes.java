@@ -33,14 +33,18 @@ public final class GTORenderTypes extends RenderType {
     private static final ShaderStateShard STELLAR_FORGE_VORTEX_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(stellarForgeVortexShader, "Stellar forge vortex shader not loaded"));
     private static final ShaderStateShard SOLAR_SURFACE_VORTEX_SHADER = new ShaderStateShard(() -> Objects.requireNonNull(solarSurfaceVortexShader, "Solar surface vortex shader not loaded"));
     // Match the shader JSON on every draw, including when ShaderInstance reuses its blend-state cache.
-    private static final TransparencyStateShard DYSON_FORCE_FIELD_TRANSPARENCY = new TransparencyStateShard("dyson_force_field_transparency", () -> {
+    private static final TransparencyStateShard DYSON_FORCE_FIELD_TRANSPARENCY = new TransparencyStateShard("dyson_force_field_transparency", GTORenderTypes::setupDysonForceFieldBlend, GTORenderTypes::clearDysonForceFieldBlend);
+
+    private static void setupDysonForceFieldBlend() {
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-    }, () -> {
+    }
+
+    private static void clearDysonForceFieldBlend() {
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
-    });
+    }
 
     public static final RenderType LIGHT_CYLINDER = RenderType.create("light_cylinder",
             DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, 256, false, false,
