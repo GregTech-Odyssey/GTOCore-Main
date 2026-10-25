@@ -6,16 +6,20 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
-import com.gtolib.api.data.CompartmentStorageRegistration;
-import com.gtolib.api.data.SuperStorageRegistration;
-import com.gtolib.api.data.WoodenSuperStorageRegistration;
+import com.gtolib.api.data.storage.CompartmentStorageRegistration;
+import com.gtolib.api.data.storage.SuperStorageRegistration;
+import com.gtolib.api.data.storage.SuperStorageReplacerRegistration;
+import com.gtolib.api.data.storage.WoodenSuperStorageRegistration;
+import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
+import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -29,6 +33,7 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -37,6 +42,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.crafting.StrictNBTIngredient;
 
+import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.entry.ItemProviderEntry;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -50,17 +56,22 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 
 public final class MetaTileEntityLoader {
 
+    public static final TagKey<Item> INGOT = TagUtils.createItemTag(RLUtils.c("ingot"));
+
     public static void init() {
-        CompartmentStorageRegistration.recipes();
+        for (int tier = GTValues.ULV; tier <= GTValues.MAX; tier++) {
+            superChestReplacer(SuperStorageReplacerRegistration.CHESTS[tier], CompartmentStorageRegistration.NORMAL_CHESTS[tier]);
+            superChestReplacer(SuperStorageReplacerRegistration.TANKS[tier], CompartmentStorageRegistration.NORMAL_TANKS[tier]);
+        }
 
         for (int layout = 0; layout < 2; layout++) {
             for (int tier = 0; tier < GTValues.TIER_COUNT; tier++) {
-                if (CompartmentStorageRegistration.CHESTS[layout][tier] != null) recipe(CompartmentStorageRegistration.CHESTS[layout][tier], layout == 0 ? GTMachines.SUPER_CHEST[tier] : CompartmentStorageRegistration.CHESTS[0][tier]);
-                if (CompartmentStorageRegistration.TANKS[layout][tier] != null) recipe(CompartmentStorageRegistration.TANKS[layout][tier], layout == 0 ? GTMachines.SUPER_TANK[tier] : CompartmentStorageRegistration.TANKS[0][tier]);
+                if (CompartmentStorageRegistration.CHESTS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.CHESTS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_CHESTS[tier] : CompartmentStorageRegistration.CHESTS[0][tier]);
+                if (CompartmentStorageRegistration.TANKS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.TANKS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_TANKS[tier] : CompartmentStorageRegistration.TANKS[0][tier]);
             }
             for (int wood = 0; wood < CompartmentStorageRegistration.WOODEN_CHESTS[layout].length; wood++) {
-                recipe(CompartmentStorageRegistration.WOODEN_CHESTS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.CHESTS[wood] : CompartmentStorageRegistration.WOODEN_CHESTS[0][wood]);
-                recipe(CompartmentStorageRegistration.WOODEN_TANKS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.TANKS[wood] : CompartmentStorageRegistration.WOODEN_TANKS[0][wood]);
+                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_CHESTS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.CHESTS[wood] : CompartmentStorageRegistration.WOODEN_CHESTS[0][wood]);
+                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_TANKS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.TANKS[wood] : CompartmentStorageRegistration.WOODEN_TANKS[0][wood]);
             }
         }
         for (var wood : WoodenSuperStorageRegistration.Wood.values()) {
@@ -1216,7 +1227,11 @@ public final class MetaTileEntityLoader {
         return recipe;
     }
 
-    private static void recipe(MachineDefinition result, MachineDefinition source) {
+    private static void compartmentSuperChest(MachineDefinition result, MachineDefinition source) {
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id(result.getId().getPath()), result.asStack(), " G ", " C ", " G ", 'G', Items.GLASS_PANE, 'C', StrictNBTIngredient.of(source.asStack()));
+    }
+
+    private static void superChestReplacer(ItemEntry<ComponentItem> item, MachineDefinition machine) {
+        if (item != null) VanillaRecipeHelper.addShapelessRecipe(item.getId(), item.asStack(), StrictNBTIngredient.of(machine.asStack()), INGOT);
     }
 }

@@ -41,7 +41,7 @@ import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
-import com.gtolib.api.data.SuperStorageRegistration;
+import com.gtolib.api.data.storage.SuperStorageRegistration;
 import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
