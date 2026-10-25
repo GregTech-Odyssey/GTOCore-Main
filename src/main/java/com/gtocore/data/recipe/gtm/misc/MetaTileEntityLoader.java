@@ -1,9 +1,12 @@
 package com.gtocore.data.recipe.gtm.misc;
 
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.data.CompartmentStorageRegistration;
 import com.gtolib.api.data.SuperStorageRegistration;
 import com.gtolib.api.data.WoodenSuperStorageRegistration;
 import com.gtolib.utils.RegistriesUtils;
@@ -32,6 +35,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.crafting.StrictNBTIngredient;
 
 import com.gto.registrate.util.entry.ItemProviderEntry;
 import org.apache.commons.lang3.ArrayUtils;
@@ -47,12 +51,34 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 public final class MetaTileEntityLoader {
 
     public static void init() {
+        CompartmentStorageRegistration.recipes();
+
+        for (int layout = 0; layout < 2; layout++) {
+            for (int tier = 0; tier < GTValues.TIER_COUNT; tier++) {
+                if (CompartmentStorageRegistration.CHESTS[layout][tier] != null) recipe(CompartmentStorageRegistration.CHESTS[layout][tier], layout == 0 ? GTMachines.SUPER_CHEST[tier] : CompartmentStorageRegistration.CHESTS[0][tier]);
+                if (CompartmentStorageRegistration.TANKS[layout][tier] != null) recipe(CompartmentStorageRegistration.TANKS[layout][tier], layout == 0 ? GTMachines.SUPER_TANK[tier] : CompartmentStorageRegistration.TANKS[0][tier]);
+            }
+            for (int wood = 0; wood < CompartmentStorageRegistration.WOODEN_CHESTS[layout].length; wood++) {
+                recipe(CompartmentStorageRegistration.WOODEN_CHESTS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.CHESTS[wood] : CompartmentStorageRegistration.WOODEN_CHESTS[0][wood]);
+                recipe(CompartmentStorageRegistration.WOODEN_TANKS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.TANKS[wood] : CompartmentStorageRegistration.WOODEN_TANKS[0][wood]);
+            }
+        }
         for (var wood : WoodenSuperStorageRegistration.Wood.values()) {
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id(wood.getId() + "_super_chest"), WoodenSuperStorageRegistration.CHESTS[wood.ordinal()].asStack(),
                     "PPP", "PCP", "PPP", 'P', wood.getPlanks(), 'C', Items.CHEST);
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id(wood.getId() + "_super_tank"), WoodenSuperStorageRegistration.TANKS[wood.ordinal()].asStack(),
                     "PPP", "PGP", "PBP", 'P', wood.getPlanks(), 'G', GTMachines.STEEL_DRUM.asItem(), 'B', new MaterialEntry(TagPrefix.pipeLargeFluid, GTMaterials.Steel));
         }
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("ulv_super_tank"), GTMachines.SUPER_TANK[GTValues.ULV].asItem(),
+                "ABA",
+                "BCB",
+                "ADA",
+                'A', CustomTags.ULV_CIRCUITS, 'B', new MaterialEntry(TagPrefix.plate, GTMaterials.WroughtIron), 'C', GTOBlocks.HERMETIC_CASING_ULV.asItem(), 'D', GTOItems.ULV_ELECTRIC_PUMP.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("ulv_super_chest"), GTMachines.SUPER_CHEST[GTValues.ULV].asItem(),
+                "ABA",
+                "BCB",
+                "ABA",
+                'A', CustomTags.ULV_CIRCUITS, 'B', new MaterialEntry(TagPrefix.plate, GTMaterials.WroughtIron), 'C', GTMachines.BRONZE_CRATE.asItem());
         VanillaRecipeHelper.addShapedRecipe(true, "super_chest_controller", SuperStorageRegistration.CONTROLLER.asItem(),
                 "ABA",
                 "CDC",
@@ -1188,5 +1214,9 @@ public final class MetaTileEntityLoader {
             }
         }
         return recipe;
+    }
+
+    private static void recipe(MachineDefinition result, MachineDefinition source) {
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id(result.getId().getPath()), result.asStack(), " G ", " C ", " G ", 'G', Items.GLASS_PANE, 'C', StrictNBTIngredient.of(source.asStack()));
     }
 }
