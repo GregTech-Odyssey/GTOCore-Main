@@ -43,7 +43,7 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
 
     @RegisterLanguage(cn = "处理耗时倍率", en = "Duration Multiplier")
     private static final String DURATION = "gtocore.machine.maintenance_hatch.duration_multiplier";
-    @RegisterLanguage(cn = "数值越低配方越快，自动维护不产生维护损耗", en = "Lower values mean faster recipes; automatic maintenance causes no wear")
+    @RegisterLanguage(cn = "数值越低配方越快，自动维护不累积损坏程度", en = "Lower values mean faster recipes; automatic maintenance accumulates no damage")
     private static final String DURATION_TOOLTIP = "gtocore.machine.maintenance_hatch.duration_multiplier.tooltip";
     @RegisterLanguage(cn = "洁净环境", en = "Cleanroom")
     protected static final String READ_CLEANROOM = "gtocore.machine.maintenance_hatch.read.cleanroom";
@@ -144,7 +144,7 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
     private static final String TIP_DURATION_HEADING = "gtocore.machine.configurable_maintenance.duration_heading";
     @RegisterLanguage(cn = "在难度规则的上下限内调节", en = "Adjustable within the difficulty rule limits")
     private static final String TIP_DURATION_FREE = "gtocore.machine.configurable_maintenance.duration_free";
-    @RegisterLanguage(cn = "高负荷不产生维护损耗", en = "High load causes no maintenance wear")
+    @RegisterLanguage(cn = "高负荷不累积损坏程度", en = "High load accumulates no damage")
     private static final String TIP_NO_COST = "gtocore.machine.configurable_maintenance.no_cost";
     @RegisterLanguage(cn = "作用于超频前的基础耗时，功率不变", en = "Applied to the base duration before overclocking; power draw is unchanged")
     private static final String TIP_BEFORE_OVERCLOCK = "gtocore.machine.configurable_maintenance.before_overclock";

@@ -10,7 +10,6 @@ import com.gtolib.api.misc.Drone;
 import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.MathUtil;
 
-import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMaintenanceMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
@@ -37,8 +36,6 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
 
     @Shadow(remap = false)
     protected int timeActive;
-    @Unique
-    private static final float gto$FAILURE_ONSET = 0.7F;
     @Unique
     private IDroneControlCenterMachine gtolib$cache;
     @Unique
@@ -73,7 +70,7 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
 
     @Override
     public void calculateMaintenance(IMaintenanceMachine maintenanceMachine, int duration) {
-        if (maintenanceMachine.isFullAuto()) return;
+        if (maintenanceMachine.isFullAuto() || !GTORules.MAINTENANCE_FAILURES.get()) return;
         // Structure may unform mid-recipe; getController() can be null (issue #1755).
         var controller = getController();
         if (controller == null) return;
@@ -81,17 +78,11 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
         if (parts == null || parts.length == 0) return;
         var pa = parts.length;
         timeActive = MathUtil.saturatedCast((long) (timeActive + (duration * getTimeMultiplier() * GTORules.MAINTENANCE_WEAR.get() * pa)));
-        var value = ((float) timeActive / MINIMUM_MAINTENANCE_TIME) - gto$FAILURE_ONSET;
-        if (GTValues.RNG.nextFloat() <= value && GTORules.MAINTENANCE_FAILURES.get()) {
+        if (timeActive >= MINIMUM_MAINTENANCE_TIME) {
             timeActive = 0;
             causeRandomMaintenanceProblems();
             maintenanceMachine.setTaped(false);
         }
-    }
-
-    @Override
-    public float getFailureOnset() {
-        return gto$FAILURE_ONSET;
     }
 
     @Inject(method = "fixMaintenanceProblems", at = @At("HEAD"), remap = false)

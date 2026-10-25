@@ -41,6 +41,10 @@ public final class SteamRoutePath implements IRoutePath<MEStorage> {
         return SteamStorages.getStorage(targetPipe.getNeighborBlockEntity(targetFacing), targetFacing.getOpposite());
     }
 
+    public @NotNull SteamPipeBlockEntity getTargetPipe() {
+        return this.targetPipe;
+    }
+
     public @NotNull Direction getTargetFacing() {
         return this.targetFacing;
     }
