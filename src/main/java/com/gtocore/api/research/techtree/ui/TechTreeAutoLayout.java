@@ -2,19 +2,20 @@ package com.gtocore.api.research.techtree.ui;
 
 import com.gtocore.api.research.techtree.TechNode;
 
+import appeng.api.identity.IdentityKeyIntMap;
+import appeng.api.identity.IdentityKeyObjectMap;
+
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -68,8 +69,8 @@ public final class TechTreeAutoLayout {
         List<TechNode> nodes = new ArrayList<>(definitions);
         nodes.sort(NAME_ORDER);
 
-        Reference2ObjectOpenHashMap<TechNode, List<TechNode>> children = new Reference2ObjectOpenHashMap<>(nodes.size());
-        Reference2IntOpenHashMap<TechNode> indegrees = new Reference2IntOpenHashMap<>(nodes.size());
+        IdentityKeyObjectMap<TechNode, List<TechNode>> children = new IdentityKeyObjectMap<>(nodes.size());
+        IdentityKeyIntMap<TechNode> indegrees = new IdentityKeyIntMap<>(nodes.size());
         for (var node : nodes) {
             children.put(node, new ArrayList<>());
             indegrees.put(node, 0);
@@ -94,7 +95,7 @@ public final class TechTreeAutoLayout {
     // ==================== 分列 ====================
 
     private static List<TechNode> topologicalSort(List<TechNode> nodes, Reference2IntOpenHashMap<TechNode> indegrees,
-                                                  Reference2ObjectOpenHashMap<TechNode, List<TechNode>> children) {
+                                                  IdentityKeyObjectMap<TechNode, List<TechNode>> children) {
         PriorityQueue<TechNode> queue = new PriorityQueue<>(NAME_ORDER);
         for (var node : nodes) {
             if (indegrees.getInt(node) == 0) queue.add(node);
@@ -121,8 +122,8 @@ public final class TechTreeAutoLayout {
     }
 
     /** 块内深度：只数同一数据等级里的前置（别的等级的前置在别的块里，不影响本块的列）。 */
-    private static Reference2IntOpenHashMap<TechNode> assignTierDepths(List<TechNode> topoOrder) {
-        Reference2IntOpenHashMap<TechNode> depths = new Reference2IntOpenHashMap<>();
+    private static IdentityKeyIntMap<TechNode> assignTierDepths(List<TechNode> topoOrder) {
+        IdentityKeyIntMap<TechNode> depths = new IdentityKeyIntMap<>();
         for (var node : topoOrder) {
             int depth = 0;
             for (var prerequisite : node.prerequisites) {
@@ -136,7 +137,7 @@ public final class TechTreeAutoLayout {
     }
 
     /** 按数据等级分块、块内按深度分列；返回各列的节点（按名称排好的初始顺序）与各块的列范围。 */
-    private static TierColumns buildTierColumns(List<TechNode> topoOrder, Reference2IntOpenHashMap<TechNode> depths) {
+    private static TierColumns buildTierColumns(List<TechNode> topoOrder, IdentityKeyIntMap<TechNode> depths) {
         Int2ObjectRBTreeMap<List<TechNode>> nodesByTier = new Int2ObjectRBTreeMap<>();
         for (var node : topoOrder) nodesByTier.computeIfAbsent(node.getTier(), ignored -> new ArrayList<>()).add(node);
 
@@ -190,7 +191,7 @@ public final class TechTreeAutoLayout {
             var byColumn = tierColumns.nodesByColumn();
             columnCount = byColumn.size();
             layers = new IntArrayList[columnCount];
-            Reference2IntOpenHashMap<TechNode> index = new Reference2IntOpenHashMap<>();
+            IdentityKeyIntMap<TechNode> index = new IdentityKeyIntMap<>();
             index.defaultReturnValue(-1);
             for (int c = 0; c < columnCount; c++) {
                 layers[c] = new IntArrayList(byColumn.get(c).size());
@@ -774,7 +775,7 @@ public final class TechTreeAutoLayout {
             }
 
             // 节点位置
-            Map<TechNode, TechTreeLayout.NodePlacement> placements = new IdentityHashMap<>(n);
+            Map<TechNode, TechTreeLayout.NodePlacement> placements = new IdentityKeyObjectMap<>(n);
             List<TechNode> orderedNodes = new ArrayList<>(n);
             int half = NODE_SIZE / 2;
             int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;

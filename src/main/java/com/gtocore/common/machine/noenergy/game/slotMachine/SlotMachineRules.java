@@ -1,7 +1,7 @@
-package com.gtocore.common.machine.noenergy.slotMachine;
+package com.gtocore.common.machine.noenergy.game.slotMachine;
 
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineLayout.Payline;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineResult.WinningLine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineLayout.Payline;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineResult.WinningLine;
 
 import net.minecraft.util.RandomSource;
 

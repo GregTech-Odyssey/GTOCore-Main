@@ -1,6 +1,6 @@
-package com.gtocore.common.machine.noenergy.slotMachine;
+package com.gtocore.common.machine.noenergy.game.slotMachine;
 
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineLayout.Payline;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineLayout.Payline;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;

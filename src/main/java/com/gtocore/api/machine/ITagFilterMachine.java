@@ -30,6 +30,11 @@ public interface ITagFilterMachine extends IDropSaveMachine {
     void setTagBlack(String tagBlack);
 
     @Override
+    default boolean saveBreak() {
+        return !getTagWhite().isBlank() || !getTagBlack().isBlank();
+    }
+
+    @Override
     default void saveToItem(CompoundTag tag) {
         IDropSaveMachine.super.saveToItem(tag);
         tag.putString("TagWhite", getTagWhite());

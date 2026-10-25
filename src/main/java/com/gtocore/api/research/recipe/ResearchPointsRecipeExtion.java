@@ -46,8 +46,7 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
         if (!simulate) {
             var points = recipe.data.getData(INSTANCE);
             if (points != null) {
-                for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-                    var entry = it.next();
+                for (var entry : points) {
                     var researchTag = entry.getKey();
                     var amount = entry.getLongValue();
                     if (holder instanceof IResearchPointsOperation machine) {
@@ -76,8 +75,7 @@ public class ResearchPointsRecipeExtion extends RecipeExtension<ResearchPoints> 
         var points = recipe.data.getData(INSTANCE);
         if (points == null) return;
         info.sentence(() -> Component.translatable(RESEARCH_POINTS));
-        for (var it = points.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
+        for (var entry : points) {
             var researchTag = entry.getKey();
             var amount = entry.getLongValue();
             info.slot(() -> new ResearchTagSlot(new ResearchTagEmiStack(researchTag).setAmount(amount)));

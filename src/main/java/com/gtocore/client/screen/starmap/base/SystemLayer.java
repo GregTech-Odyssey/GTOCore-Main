@@ -1,5 +1,10 @@
 package com.gtocore.client.screen.starmap.base;
 
+import com.gtocore.common.data.StarMapDysonSync;
+
+import com.gtolib.api.data.GTODimensions;
+
+import com.gregtechceu.gtceu.uipro.animation.UIClock;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasItem;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLayer;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasPainter;
@@ -7,6 +12,7 @@ import com.gregtechceu.gtceu.uipro.canvas.CanvasRect;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.view.PlanarView;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -29,6 +35,7 @@ public final class SystemLayer implements CanvasLayer {
     private final PixelPen pen;
     private final PlanarView canvas;
     private final float[] box = new float[4];
+    private final DysonShell dyson = new DysonShell();
 
     public SystemLayer(StarGeometry geometry, BodyDecorator decorator, BodyLayer bodies, PixelPen pen, PlanarView canvas) {
         this.geometry = geometry;
@@ -46,6 +53,10 @@ public final class SystemLayer implements CanvasLayer {
         geometry.update(painter.scale());
         pen.begin(painter.graphics(), canvas);
         float scale = pen.scale();
+        var level = Minecraft.getInstance().level;
+        var galaxy = level == null ? null : GTODimensions.getGalaxy(level.dimension());
+        long millis = UIClock.millis();
+        int launched = level == null ? 0 : StarMapDysonSync.launched(level);
         boolean lights = decorator.litOrbits();
         int hoveredBody = lights ? bodies.bodyOf(hovered) : -1, selectedBody = lights ? bodies.selectedBody() : -1;
         float margin = CULL_MARGIN / scale;
@@ -59,7 +70,13 @@ public final class SystemLayer implements CanvasLayer {
                         decorator.orbitColor(s, order, scale < StarGeometry.FOLD_SCALE ? UITheme.MAP_ORBIT_FAR : UITheme.MAP_ORBIT);
                 pen.ellipse(cx, cy, catalog.ringRadius(s, order) * scale, StarGeometry.TILT, orbit, lit ? 2 : 3);
             }
+            boolean shell = galaxy != null && catalog.systems.get(s).galaxy == galaxy && launched > 0;
+            if (shell) {
+                dyson.prepare(launched, millis);
+                dyson.draw(pen, cx, cy, geometry.starPixels(), true);
+            }
             pen.sprite(StarSprites.system(catalog, s), cx, cy, geometry.starPixels(), StarSprites.NO_TINT);
+            if (shell) dyson.draw(pen, cx, cy, geometry.starPixels(), false);
             int top = cy - Math.round(catalog.systemRadius(s) * StarGeometry.TILT * scale) - 22;
             pen.text(catalog.systemName(s), cx, top, color);
             var subtitle = scale >= StarGeometry.FOLD_SCALE ? decorator.systemSubtitle(s) : null;

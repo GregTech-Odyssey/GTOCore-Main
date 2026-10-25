@@ -12,9 +12,9 @@ import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Rules;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperRules;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotSymbol;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotSymbol;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.utils.NumberUtils;
@@ -109,46 +109,27 @@ public final class GTOMachineTooltips {
 
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("老虎机", "Slot Machine")));
         t.heading(t.tr("三列卷轴，五条中奖线", "Three reels, five paylines"));
-        t.heading(t.tr("赔付表", "Pay Table"));
-        t.feature(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
+
+        t.heading(t.tr("赔付表（单线倍率，×0 不赔）", "Pay table (per-line multipliers; ×0 pays nothing)"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
             if (symbol.wild()) continue;
-            t.feature(t.tr("%s：左侧二连 ×%s / 三连 ×%s", "%s: Left pair ×%s / Triple ×%s",
+            t.feature(t.tr("%s：二连 ×%s / 三连 ×%s", "%s: pair ×%s / triple ×%s",
                     GTCEu.isDataGen() ? Component.empty() : SlotSymbol.symbolName(symbol),
                     SlotMachineRules.CLASSIC.multiplier(symbol, 2),
                     SlotMachineRules.CLASSIC.multiplier(symbol, 3)));
         }
-        t.feature(t.tr("%s：百搭符号；三个%s连成一线时按%s三连赔付，奖励 ×%s", "%s: wild symbol; when three %s line up, they pay as a %s triple, ×%s",
-                wildName,
-                wildName,
-                topName,
-                SlotSymbol.SYMBOL7.threeMatchMultiplier()));
+        t.feature(t.tr("%s：百搭，可替代任意符号；三个%s连成一线按%s三连赔 ×%s",
+                "%s: wild, substitutes for any symbol; three %s in a line pay as a %s triple, ×%s",
+                wildName, wildName, topName, SlotSymbol.SYMBOL7.threeMatchMultiplier()));
 
         t.heading(t.tr("中奖规则", "Winning Rules"));
-        t.feature(t.tr("五条中奖线为上、中、下三条横线及两条对角线，竖列不计奖", "The five paylines are the top, middle and bottom rows and both diagonals; vertical columns do not pay"));
-        t.requirement(t.tr("沿中奖线从最左列连续匹配，只有右侧二连不中奖", "Matches must start at the leftmost reel along a payline; a pair made of the right two reels alone does not pay"));
-        t.feature(t.tr("同一条线三连优先，不叠加该线的二连奖励；不同中奖线的奖励相加", "A triple takes priority over a pair on the same line and the pair is not added on top; payouts from different paylines add together"));
-        t.feature(t.tr("%s可替代任何普通符号：一个%s配两个相同符号，或两个%s配一个符号，都按该符号的三连赔付",
-                "%s substitutes for any regular symbol: one %s with two matching symbols, or two %s with one symbol, both pay that symbol's triple",
-                wildName,
-                wildName,
-                wildName));
-        t.formula(t.tr("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还", "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately"));
+        t.feature(t.tr("五条中奖线：上、中、下三条横线与两条对角线（竖向三格不赔）；只认从最左列开始的连续匹配，右起两格不赔",
+                "Five paylines: the top, middle and bottom rows plus both diagonals (a vertical column does not pay). Matches must start at the leftmost reel; the two right reels alone pay nothing"));
+        t.feature(t.tr("一条线只按最长的连中结算（三连不叠加它自己的二连）；不同线的奖励相加",
+                "A line pays its longest run only (a triple does not also pay its pair); payouts from different paylines add up"));
+        t.formula(t.tr("总奖励 = 下注 × 各线倍率之和，本金不返还", "Total payout = bet × sum of line multipliers; the bet is not returned"));
 
-        t.heading(t.tr("货币与下注", "Currency and Bets"));
-        t.feature(t.tr("下注与余额都用技术员币：往硬币槽投入硬币即兑换入账，点「取出全部」按面额取回实体币",
-                "Bets and credits both use Tech Operator Coins: insert coins into the slot to convert them into credits, and click \"Withdraw all\" to take the coins back by denomination"));
-        t.feature(t.tr("下注范围 %s ~ %s", "Bet range %s to %s",
-                FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_BET),
-                FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_MAX_BET)));
-        t.heading(t.tr("中奖附赠", "Bonus on Wins"));
-        t.feature(t.tr("每次中奖有 %s%% 概率附赠「机械之神降临」：带着它跳跃会推进附近工作中的单方块机器的配方进度，代价是消耗效果剩余时长",
-                "%s%% of wins also grant Descent of the Machine God: while it lasts, jumping advances the recipe progress of nearby working single-block machines, spending the effect's remaining time",
-                (int) (SlotMachine.BOOST_CHANCE * 100)));
-        t.feature(t.tr("倍率越高、下注越大，效果越好：可加速的配方电压上限最高到 %s 档，时长最长 %s 分钟；档位过半时换成范围版（周围 5×5×5）",
-                "Higher multipliers and bigger bets give a better result: the boostable recipe voltage reaches tier %s and the effect lasts up to %s minutes; past the halfway point it becomes the area version (5×5×5)",
-                GTValues.VNF[SlotMachine.BOOST_MAX_AMPLIFIER], SlotMachine.BOOST_MAX_DURATION / (20 * 60)));
-        t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the remaining credits back into the world"));
+        slotCurrencyTips(t);
     });
 
     public static final TipSpec WideSlotMachineTooltips = GTOTips.of("wide_slot_machine", t -> {
@@ -157,46 +138,47 @@ public final class GTOMachineTooltips {
 
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("宽幅老虎机", "Wide Slot Machine")));
         t.heading(t.tr("五列卷轴，九条中奖线", "Five reels, nine paylines"));
-        t.heading(t.tr("赔付表", "Pay Table"));
-        t.feature(t.tr("以下为单条中奖线的奖励倍率，×0 表示该线不中奖", "Multipliers below apply to one payline; ×0 means that line pays nothing"));
+
+        t.heading(t.tr("赔付表（单线倍率，×0 不赔）", "Pay table (per-line multipliers; ×0 pays nothing)"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
             if (symbol.wild()) continue;
-            t.feature(t.tr("%s：三连 ×%s / 四连 ×%s / 五连 ×%s", "%s: Triple ×%s / Four ×%s / Five ×%s",
+            t.feature(t.tr("%s：三连 ×%s / 四连 ×%s / 五连 ×%s", "%s: triple ×%s / four ×%s / five ×%s",
                     GTCEu.isDataGen() ? Component.empty() : SlotSymbol.symbolName(symbol),
                     SlotMachineRules.WIDE.multiplier(symbol, 3),
                     SlotMachineRules.WIDE.multiplier(symbol, 4),
                     SlotMachineRules.WIDE.multiplier(symbol, 5)));
         }
-        t.feature(t.tr("%s：百搭符号；五格全为%s时按%s五连赔付，奖励 ×%s", "%s: wild symbol; when all five are %s, they pay as a %s five-of-a-kind, ×%s",
-                wildName,
-                wildName,
-                topName,
-                SlotMachineRules.WIDE.multiplier(SlotSymbol.SYMBOL7, 5)));
+        t.feature(t.tr("%s：百搭，可替代任意符号；五格全为%s时按%s五连赔 ×%s",
+                "%s: wild, substitutes for any symbol; five %s pay as a %s five-of-a-kind, ×%s",
+                wildName, wildName, topName, SlotMachineRules.WIDE.multiplier(SlotSymbol.SYMBOL7, 5)));
 
         t.heading(t.tr("中奖规则", "Winning Rules"));
-        t.feature(t.tr("九条中奖线为三条横线、两条折线与四条带缺口的折线，竖列不计奖", "The nine paylines are three rows, two zigzags and four notched zigzags; vertical columns do not pay"));
-        t.requirement(t.tr("沿中奖线从最左列连续匹配，只赔三连及以上，二连不中奖", "Matches must start at the leftmost reel along a payline; three or more pay, a pair pays nothing"));
-        t.feature(t.tr("同一条线按最长连中结算，不叠加该线较短连中的奖励；不同中奖线的奖励相加", "A line pays for its longest run only and shorter runs on it are not added on top; payouts from different paylines add together"));
-        t.feature(t.tr("%s可替代任何普通符号：只要连成三格及以上，就按该符号对应长度的倍率赔付",
-                "%s substitutes for any regular symbol: as long as three or more connect, the line pays that symbol's multiplier for its length",
-                wildName));
-        t.formula(t.tr("总奖励 = 本局下注 × 各中奖线倍率之和，本金不另行返还", "Total payout = bet × sum of winning-line multipliers; the bet is not returned separately"));
+        t.feature(t.tr("九条中奖线：三条横线、V 形与倒 V 形各一条、四条中间列或两端错位的折线（竖向不计奖）；只认从最左列开始的三连及以上",
+                "Nine paylines: three rows, one V and one inverted V, and four lines that step on the middle reel or at the ends (vertical columns do not pay). Matches must start at the leftmost reel; three or more pay"));
+        t.feature(t.tr("一条线只按最长的连中结算（不叠加它较短的连中）；不同线的奖励相加",
+                "A line pays its longest run only (shorter runs on it are not added on top); payouts from different paylines add up"));
+        t.formula(t.tr("总奖励 = 下注 × 各线倍率之和，本金不返还", "Total payout = bet × sum of line multipliers; the bet is not returned"));
 
+        slotCurrencyTips(t);
+    });
+
+    /** 两台老虎机共用的一段：币种与下注、中奖附赠、拆除掉落。 */
+    private static void slotCurrencyTips(GTOTips t) {
         t.heading(t.tr("货币与下注", "Currency and Bets"));
-        t.feature(t.tr("下注与余额都用技术员币：往硬币槽投入硬币即兑换入账，点「取出全部」按面额取回实体币",
-                "Bets and credits both use Tech Operator Coins: insert coins into the slot to convert them into credits, and click \"Withdraw all\" to take the coins back by denomination"));
-        t.feature(t.tr("下注范围 %s ~ %s", "Bet range %s to %s",
+        t.feature(t.tr("下注与余额都是技术员币：往硬币槽投币即入账，「取出全部」按面额取回实体币；下注范围 %s ~ %s",
+                "Bets and credits are Tech Operator Coins: insert coins into the slot to convert them, and Withdraw all takes them back by denomination; bets range from %s to %s",
                 FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_BET),
                 FormattingUtil.formatNumbers(SlotMachineRules.DEFAULT_MAX_BET)));
+
         t.heading(t.tr("中奖附赠", "Bonus on Wins"));
-        t.feature(t.tr("每次中奖有 %s%% 概率附赠「机械之神降临」：带着它跳跃会推进附近工作中的单方块机器的配方进度，代价是消耗效果剩余时长",
-                "%s%% of wins also grant Descent of the Machine God: while it lasts, jumping advances the recipe progress of nearby working single-block machines, spending the effect's remaining time",
+        t.feature(t.tr("每次中奖有 %s%% 概率获得「机械之神降临」：带着它跳跃会推进附近工作中单方块机器的配方进度，并按推进量扣掉效果剩余时长",
+                "%s%% of wins grant Descent of the Machine God: jumping advances the recipe progress of nearby working single-block machines and spends that much of the effect's remaining time",
                 (int) (SlotMachine.BOOST_CHANCE * 100)));
-        t.feature(t.tr("倍率越高、下注越大，效果越好：可加速的配方电压上限最高到 %s 档，时长最长 %s 分钟；档位过半时换成范围版（周围 5×5×5）",
-                "Higher multipliers and bigger bets give a better result: the boostable recipe voltage reaches tier %s and the effect lasts up to %s minutes; past the halfway point it becomes the area version (5×5×5)",
+        t.feature(t.tr("效果最高能加速 %s 档的配方、最长 %s 分钟；档位过半时换成范围版（周围 5×5×5）",
+                "The effect boosts recipes up to tier %s and lasts at most %s minutes; past the halfway point it becomes the area version (5×5×5)",
                 GTValues.VNF[SlotMachine.BOOST_MAX_AMPLIFIER], SlotMachine.BOOST_MAX_DURATION / (20 * 60)));
-        t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the remaining credits back into the world"));
-    });
+        t.detail(t.tr("拆除机器时，硬币槽里的硬币与余额会掉回世界", "Breaking the machine drops the coins in its slot and the balance back into the world"));
+    }
 
     // 合成十 - 玩法与计分说明
     public static final TipSpec JustGet10MachineTooltips = GTOTips.of("just_get_10", t -> {
@@ -204,14 +186,15 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("5×5 盘面，提起整组后合并", "5×5 board; lift a group, then merge it"));
 
         t.heading(t.tr("玩法", "How to play"));
-        t.feature(t.tr("点一格提起相连的相同数字整组（两格及以上才成组），再点组内格把它合并成「该数字 + 1」",
-                "Click a cell to lift the connected group of identical numbers (two or more), then click it again to merge the group into that number plus one"));
-        t.feature(t.tr("盘面再没有相邻同数字时这一局结束，随时可以重新开始或提前兑现重开",
-                "The round ends when no two adjacent numbers match; restart or cash out early at any time"));
+        t.feature(t.tr("点一格提起四向相连、数字相同的一整组（两格及以上），再点组内格把整组合并成「该数字 + 1」",
+                "Click a cell to lift the whole four-way connected group of the same number (two or more), then click inside it to merge the group into that number plus one"));
+        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；每个 10 及以上的数字首次合出时另给一次加分",
+                "A merge scores the merged number × group size; each number of 10 or more also pays a one-time bonus the first time it is made"));
+        t.feature(t.tr("盘面再没有相邻同数字时这一局结束，随时可以重开", "The round ends when no two adjacent numbers match; restart at any time"));
 
         t.heading(t.tr("计分与兑现", "Scoring and payout"));
-        t.feature(t.tr("合并得分 = 合并后的数字 × 组内格数；本局结束或重开时，超过 %s 分的部分每 %s 分折 1 枚游戏币，达不到门槛不给",
-                "A merge scores the merged number × group size; when the round ends or you restart, the points above %s pay 1 Game Coin per %s points, and a round below the threshold pays nothing",
+        t.feature(t.tr("一局超过 %s 分的部分每 %s 分折 1 枚游戏币，达不到门槛不给；余额可用「取出全部」按面额换成硬币",
+                "Points above %s pay 1 Game Coin per %s points, and a round below the threshold pays nothing; Withdraw all turns the balance into coins by denomination",
                 FormattingUtil.formatNumbers(JustGet10Machine.REDEMPTION_BASELINE),
                 JustGet10Rules.POINTS_PER_COIN));
     });
@@ -222,14 +205,14 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("4×4 盘面，键盘推格合并", "4×4 board; push and merge with the keyboard"));
 
         t.heading(t.tr("玩法", "How to play"));
-        t.feature(t.tr("W A S D 与四个方向键各推一次：整盘往该方向推到底，相邻同值两两合并（每块一回合只合并一次），并在空位补一个新数字",
-                "W A S D and the four arrow keys each push once: tiles slide as far as they go, equal neighbours merge (once per tile per move), and one new tile appears"));
-        t.feature(t.tr("没有空格也没有相邻同值时这一局结束，随时可以重新开始或提前兑现重开",
-                "The round ends when the board is full with no equal neighbours; restart or cash out early at any time"));
+        t.feature(t.tr("W A S D 或四个方向键各推一次：整盘推到边，相邻同值两两合并（每块每回合只并一次），空位补一个新数字",
+                "W A S D or the arrow keys each push once: tiles slide to the edge, equal neighbours merge (once per tile per move), and one new tile appears"));
+        t.feature(t.tr("首次合出 1024 及以上的数字另给一次加分", "Each tile of 1024 or more pays a one-time bonus the first time it is made"));
+        t.feature(t.tr("满盘且没有相邻同值时这一局结束，随时可以重开", "The round ends when the board is full with no equal neighbours; restart at any time"));
 
         t.heading(t.tr("计分与兑现", "Scoring and payout"));
-        t.feature(t.tr("每次合并得分就是合并出的数字；本局结束或重开时，超过 %s 分的部分每 %s 分折 1 枚游戏币",
-                "Each merge scores the tile it creates; when the round ends or you restart, above %s points it pays 1 Game Coin per %s points",
+        t.feature(t.tr("每次合并的得分就是合并出的数字；一局超过 %s 分的部分每 %s 分折 1 枚游戏币，余额可用「取出全部」换成硬币",
+                "Each merge scores the tile it creates; points above %s pay 1 Game Coin per %s points, and Withdraw all turns the balance into coins by denomination",
                 FormattingUtil.formatNumbers(Game2048Machine.REDEMPTION_BASELINE),
                 FormattingUtil.formatNumbers(Game2048Rules.POINTS_PER_COIN)));
     });
@@ -240,34 +223,35 @@ public final class GTOMachineTooltips {
         t.heading(t.tr("4 张数字牌，拼出 24", "Four number cards; make 24"));
 
         t.heading(t.tr("玩法", "How to play"));
-        t.feature(t.tr("点牌、运算符与括号往表达式尾巴上追加 token，出过的牌变灰不能再点；「撤回」「清空」可改，「提交」判定",
-                "Click cards, operators and brackets to append tokens; a used card greys out. Undo and Clear revise the expression and Submit checks it"));
-        t.feature(t.tr("答对要求：语法正确、4 张牌各用一次、结果精确等于 24；答错不扣钱，改完再提交",
+        t.feature(t.tr("点牌、运算符与括号往表达式尾巴追加 token，出过的牌变灰；「撤回」「清空」可改，「提交」判定",
+                "Click cards, operators and brackets to append tokens; a used card greys out. Undo and Clear revise, Submit checks"));
+        t.feature(t.tr("提交要求：语法正确、4 张牌各用一次、结果正好 24；答错不扣钱，改完再提交",
                 "A submission needs valid syntax, every card used exactly once, and exactly 24; a wrong answer costs nothing"));
-        t.feature(t.tr("每题保证有解；卡住可点「提示」看一个解法（用过提示本题只给 %s 币），「换一题」随时可换",
-                "Every puzzle is solvable; Hint shows one solution (this puzzle then pays %s) and New puzzle deals another at any time",
-                FormattingUtil.formatNumbers(Game24Machine.HINTED_SOLVE_REWARD)));
-        t.feature(t.tr("「配置」页可切换抽牌范围：1~10 或 1~13（A~K）",
-                "The Config page switches the card range: 1 to 10, or 1 to 13 (A to K)"));
+        t.feature(t.tr("每题都有解；「提示」直接给一个解法（这题不计奖励、连解作废），「换一题」随时可换；「配置」页切换 1~10 / 1~13 牌",
+                "Every puzzle is solvable; Hint gives one solution (that puzzle pays nothing and voids the streak) and New puzzle deals another at any time; the Config page switches the card range between 1 to 10 and 1 to 13"));
 
         t.heading(t.tr("计分与兑现", "Scoring and payout"));
-        t.feature(t.tr("答对一题给币，范围越大给得越多：1~10 是 %s 枚、1~13 是 %s 枚；余额可以用「取出全部」按面额换成硬币",
-                "A correct answer pays coins, more for a wider range: %s for 1 to 10 and %s for 1 to 13; \"Withdraw all\" turns the balance back into coins by denomination",
-                FormattingUtil.formatNumbers(Game24Rules.DrawRange.ONE_TO_TEN.solveReward()),
-                FormattingUtil.formatNumbers(Game24Rules.DrawRange.ONE_TO_THIRTEEN.solveReward())));
+        t.feature(t.tr("每解出 %s 题结一次奖励，提示过的那题不算，换题与多人同局不影响，换牌范围会清零；1~10 给 %s 枚、1~13 给 %s 枚",
+                "Payout is settled every %s solved puzzles, hinted puzzles excluded; switching puzzles and multiplayer do not affect it, while changing the range resets it. 1 to 10 pays %s and 1 to 13 pays %s",
+                Game24Machine.RUN_PUZZLES,
+                FormattingUtil.formatNumbers(Game24Rules.DrawRange.ONE_TO_TEN.runReward()),
+                FormattingUtil.formatNumbers(Game24Rules.DrawRange.ONE_TO_THIRTEEN.runReward())));
+        t.feature(t.tr("连解 %s 题的一轮会按用时记进「%s」榜；余额可用「取出全部」按面额换成硬币",
+                "A streak of %s puzzles also records its time on the \"%s\" board; Withdraw all turns the balance into coins by denomination",
+                Game24Machine.RUN_PUZZLES,
+                Component.translatable("gtocore.machine.game.section.milestones")));
     });
 
     // 扫雷 - 玩法与计分说明
     public static final TipSpec MinesweeperCoreTooltips = GTOTips.of("minesweeper_core", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("扫雷", "Minesweeper")));
-        t.heading(t.tr("盘面铺在机器旁边，右击打开配置界面", "The board is laid out next to the machine; right-click it for the control panel"));
+        t.heading(t.tr("盘面铺在机器旁边，右击机器打开界面；难度在「配置」页切换", "The board is laid out next to the machine; right-click it to open the control panel, where the Config page switches difficulty"));
 
         t.heading(t.tr("玩法", "How to play"));
-        t.feature(t.tr("界面里「展开盘面」把棋盘铺到机器旁边的空地，一格一个显示方块；「收起盘面」把棋盘收回机器",
-                "Unfold board in the interface lays the grid out on the free ground next to the machine, one block per cell; Pack up board puts it back"));
-        t.feature(t.tr("右击方块翻开，潜行右击插旗；旗子最多插到雷数。数字格周围旗数对上了就会连开一圈",
-                "Right-click a block to open it, sneak-right-click to flag it, up to the number of mines; a numbered cell whose neighbours are all flagged opens them at once"));
-        t.feature(t.tr("第一下翻开的格子连同周围 3×3 保证没有雷", "The first opened cell and its 3×3 surroundings are always free of mines"));
+        t.feature(t.tr("「展开盘面」把棋盘铺到机器旁边的空地，「收起盘面」收回；右击方块翻开，潜行右击插旗（最多插到雷数）",
+                "Unfold board lays the grid on the free ground next to the machine and Pack up board puts it away; right-click a block to open it, sneak-right-click to flag it (up to the mine count)"));
+        t.feature(t.tr("数字格周围旗数对上时一次掀开一圈；第一下翻开连同周围 3×3 保证没有雷",
+                "A numbered cell whose neighbours are all flagged opens them at once; the first opened cell and its 3×3 surroundings are always free of mines"));
 
         t.heading(t.tr("难度与奖励", "Difficulty and payout"));
         for (var preset : MinesweeperRules.Difficulty.ALL) {
@@ -284,13 +268,11 @@ public final class GTOMachineTooltips {
                     FormattingUtil.formatNumbers(preset.mineCount()),
                     FormattingUtil.formatNumbers(preset.maxReward())));
         }
-        t.feature(t.tr("只有整局通关（所有非雷格翻开，或雷全部插旗）才给奖励；中途重开、收起盘面、换难度、拆机器都拿不到币",
+        t.feature(t.tr("只有整局通关（非雷格全部翻开，或雷全部插旗）才给币；重开、收起盘面、换难度、拆机器都拿不到",
                 "Only a fully cleared round pays (every safe cell opened, or every mine flagged); restarting, packing up, switching difficulty or breaking the machine pays nothing"));
-        t.feature(t.tr("踩到雷会连环引爆盘上的雷（落点必炸，其余按间隔抽到最多 %s 处，不破坏方块），本局没有奖励",
-                "Hitting a mine sets off a chain of explosions across the board (the clicked mine always, the rest sampled up to %s in total, without breaking blocks) and the round pays nothing",
+        t.detail(t.tr("踩雷会连环引爆盘上的雷（最多 %s 处，不破坏方块）；奖励进余额，「取出全部」换成硬币，拆机器时余额掉回世界",
+                "Hitting a mine sets off a chain of explosions (up to %s in total, without breaking blocks); the payout goes into the balance, Withdraw all turns it into coins, and breaking the machine drops the balance back into the world",
                 MinesweeperCoreMachine.MAX_EXPLOSIONS));
-        t.feature(t.tr("奖励记进余额，用「取出全部」按面额换成硬币；拆除机器时余额会掉回世界",
-                "Payout goes into the balance; Withdraw all turns it into coins by denomination, and breaking the machine drops the balance back into the world"));
     });
 
     public static final TipSpec PatternContentAccessTerminalTooltips = GTOTips.of("pattern_content_access_terminal", t -> {
@@ -1809,7 +1791,7 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
         t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
         t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
-        t.formula(t.tr("总反应的时间=两侧半反应（时间×功率）之和/总反应功率", "Total reaction time = sum of both half-reaction (time × power) / total reaction power"));
+        t.formula(t.tr("储能基础耗时=1秒×膜的耗时乘数；", "Base storage duration = 1 second × membrane time multiplier;"));
         t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
         t.feature(t.tr("且提供的燃料效率乘数会与转化的热值相乘，影响总反应的能量储存", "And the provided fuel efficiency multiplier will multiply with the converted heat value, affecting the total energy storage of the reaction"));
         t.penalty(t.tr("每次总反应消耗膜耐久：普通仓为⌈√(总反应并行数)⌉，高级仓为⌈(总反应并行数)^0.25⌉", "Membrane durability consumed per total reaction: ceil(sqrt(total reaction parallels)) with a basic hatch, or ceil((total reaction parallels)^0.25) with an advanced hatch"));

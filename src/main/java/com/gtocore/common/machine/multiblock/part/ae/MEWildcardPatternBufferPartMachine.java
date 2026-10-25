@@ -53,6 +53,7 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.*;
 import appeng.api.stacks.AEItemKey;
+import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
@@ -133,6 +134,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
 
     @Override
     public boolean patternFilter(@NotNull ItemStack stack) {
+        if (stack.is(AEItems.BLANK_PATTERN.asItem())) return true;
         var f = stack.getItem() instanceof ProcessingPatternItem;
         if (!f) return false;
         return checkDuplicatedPattern(this, stack);
@@ -752,7 +754,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                         toolPanelButton(root, MATERIALS_PANEL),
                         LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC),
                 MEPatternPartUI.labeledRow(inner, PatternEditor.TITLE,
-                        toolPanelButton(root, EDITOR_PANEL),
+                        toolPanelButton(root, EDITOR_PANEL).disabled(() -> !canEditPattern(0), PatternEditor.INSERT_PATTERN),
                         PatternEditor.HINT));
     }
 

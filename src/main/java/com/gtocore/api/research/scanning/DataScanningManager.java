@@ -25,6 +25,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
 
+import appeng.api.identity.IdentityKeyObjectMap;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
@@ -45,7 +46,7 @@ public class DataScanningManager {
 
     private static final Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
     private static final Reference2ObjectOpenHashMap<Material, ResearchPoints> materialDataScanningMap = new Reference2ObjectOpenHashMap<>();
-    private static final Reference2ReferenceOpenHashMap<ResearchTag, ObjectOpenCustomHashSet<AEKey>> dataScanningSources = new Reference2ReferenceOpenHashMap<>();
+    private static final IdentityKeyObjectMap<ResearchTag, ObjectOpenCustomHashSet<AEKey>> dataScanningSources = new IdentityKeyObjectMap<>();
     private static ObjectArrayList<DataScanningEntry> dataScanningEntries = new ObjectArrayList<>();
 
     private static Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> regMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);

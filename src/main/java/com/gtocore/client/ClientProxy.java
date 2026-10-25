@@ -6,6 +6,7 @@ import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.client.guide.ItemGuides;
 import com.gtocore.client.hud.AdAstraHUD;
 import com.gtocore.client.hud.IMoveableHUD;
+import com.gtocore.client.hud.MedicalConditionHUD;
 import com.gtocore.client.hud.ResearchPointsHUD;
 import com.gtocore.client.hud.WirelessEnergyHUD;
 import com.gtocore.client.hud.attribute.PlayerAttrHUD;
@@ -17,6 +18,7 @@ import com.gtocore.client.renderer.GTORenderTypes;
 import com.gtocore.client.renderer.HappyWaterGodStatueRenderer;
 import com.gtocore.client.renderer.SolarGlobeGlowShader;
 import com.gtocore.client.renderer.entity.FrostCoatLayer;
+import com.gtocore.client.renderer.fx.DysonForceFieldRenderer;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
@@ -127,6 +129,7 @@ public final class ClientProxy extends CommonProxy {
         DebugScreenInspector.init();
         MonitorRenderer.RenderedCacheClearer.init();
         CelestialSkyRenderer.init();
+        DysonForceFieldRenderer.init();
         HappyWaterGodStatueRenderer.Late.init();
         TravelTargetsClientHandler.init();
         TesseractClientHandler.init();
@@ -246,6 +249,7 @@ public final class ClientProxy extends CommonProxy {
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
         registerHUD(event, "wireless_energy_hud", WirelessEnergyHUD.INSTANCE);
         registerHUD(event, "research_points_hud", ResearchPointsHUD.INSTANCE);
+        registerHUD(event, "medical_condition_hud", MedicalConditionHUD.INSTANCE);
         registerHUD(event, "adastra_hud", AdAstraHUD.gto$INSTANCE);
         registerHUD(event, "client_property_hud", PlayerAttrHUD.INSTANCE);
         registerHUD(event, "quest_pinned_hud", QuestPinnedHud.INSTANCE);
@@ -327,6 +331,8 @@ public final class ClientProxy extends CommonProxy {
                     com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX), GTORenderTypes::setSolarSurfaceVortexShader);
             registerCustomItemShader(event, GTORenderTypes.CRUPTIX);
             registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_HEAT_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.DYSON_FORCE_FIELD_SHADER_LOCATION);
+            registerCustomItemShader(event, GTORenderTypes.DYSON_SKY_SHELL_SHADER_LOCATION);
             registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_REACTOR_SHADER_LOCATION);
             registerCustomItemShader(event, GTORenderTypes.SOLAR_STORM_REACTOR_RINGS_SHADER_LOCATION);
             registerCustomItemShader(event, GTORenderTypes.ITEM_RESONANCE_WAVE);

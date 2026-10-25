@@ -39,6 +39,8 @@ public final class MufflerRoutePath implements IRoutePath<IMufflerConduction> {
     @Nullable
     @Override
     public IMufflerConduction getHandler(Level world) {
+        // a paused pipe must not conduct exhaust into its neighbours
+        if (!targetPipe.isWorkingEnabled()) return null;
         return GTCapabilityHelper.getBlockEntityGTCapability(
                 IMufflerConduction.class,
                 targetPipe.getNeighborBlockEntity(targetFacing),

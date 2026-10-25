@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.game24;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -15,6 +16,7 @@ import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -22,6 +24,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -30,6 +34,8 @@ import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.AlignContent;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -66,8 +72,10 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     private static final String REASON_HINTED = "gtocore.machine.game_24.reason.hinted";
     @RegisterLanguage(cn = "结果不是 24，再改改", en = "That is not 24 — try again")
     private static final String TEXT_WRONG = "gtocore.machine.game_24.text.wrong";
-    @RegisterLanguage(cn = "答对了！+%s 游戏币", en = "Correct! +%s Game Coins")
+    @RegisterLanguage(cn = "答对了！", en = "Correct!")
     private static final String TEXT_SOLVED = "gtocore.machine.game_24.text.solved";
+    @RegisterLanguage(cn = "完成 %s 题！+%s 游戏币", en = "%s puzzles done! +%s Game Coins")
+    private static final String TEXT_REWARD = "gtocore.machine.game_24.text.reward";
     @RegisterLanguage(cn = "%s = 24", en = "%s = 24")
     private static final String TEXT_HINT = "gtocore.machine.game_24.text.hint";
     @RegisterLanguage(cn = "抽牌范围", en = "Card range")
@@ -76,14 +84,32 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     private static final String RANGE_TEN = "gtocore.machine.game_24.range.ten";
     @RegisterLanguage(cn = "1 ~ 13", en = "1 to 13")
     private static final String RANGE_THIRTEEN = "gtocore.machine.game_24.range.thirteen";
-    @RegisterLanguage(cn = "%s 币 / 题", en = "%s coins per puzzle")
+    @RegisterLanguage(cn = "%s 币 / %s 题", en = "%s coins per %s puzzles")
     private static final String TEXT_RANGE_REWARD = "gtocore.machine.game_24.text.range_reward";
+    @RegisterLanguage(cn = "连解 %s / %s 题", en = "Run %s / %s puzzles")
+    private static final String TEXT_RUN = "gtocore.machine.game_24.text.run";
+    @RegisterLanguage(cn = "奖励 %s / %s 题", en = "Reward %s / %s puzzles")
+    private static final String TEXT_REWARD_PROGRESS = "gtocore.machine.game_24.text.reward_progress";
+    @RegisterLanguage(cn = "用过提示：这一题不计入奖励，连解榜单那一轮也作废",
+                      en = "Hint used — this puzzle does not count towards the reward, and the streak no longer counts")
+    private static final String MSG_RUN_VOID = "gtocore.machine.game_24.msg.run_void";
+    @RegisterLanguage(cn = "1~10 榜", en = "1 to 10 board")
+    private static final String SECTION_TEN_BOARD = "gtocore.machine.game_24.section.ten_board";
+    @RegisterLanguage(cn = "1~13 榜", en = "1 to 13 board")
+    private static final String SECTION_THIRTEEN_BOARD = "gtocore.machine.game_24.section.thirteen_board";
+
+    /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 10 题用时，达成时间放在用时格的悬停提示里。 */
+    private static final MilestoneColumn[] MILESTONE_COLUMNS = {
+            MilestoneColumn.left(COLUMN_PLAYER, 70),
+            MilestoneColumn.center(COLUMN_DURATION, 56) };
+
+    /** 一轮里程碑的题数：连解这么多题才算一次用时，也才结一次奖励。 */
+    public static final int RUN_PUZZLES = 10;
+    /** 每张榜单的可见高度：四行。 */
 
     /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
     private static final String[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
 
-    /** 用过提示的答对奖励；题目奖励随抽牌范围变（见 {@link Game24Rules.DrawRange#solveReward()}）。 */
-    public static final long HINTED_SOLVE_REWARD = 0;
     private static final int CARD_WIDTH = 36;
     private static final int TOKEN_WIDTH = 23;
     private static final int ACTION_WIDTH = 48;
@@ -92,6 +118,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     private static final int RESULT_NONE = 0;
     private static final int RESULT_SOLVED = 1;
     private static final int RESULT_WRONG = 2;
+    /** 刚答对的那题正好凑满 10 题、结了奖励：反馈显示结算，而不是「答对了」。 */
+    private static final int RESULT_REWARDED = 3;
 
     /** 「还没发牌」用空数组而不是 null；首次打开界面时会立刻发一局。 */
     private static final int[] NO_NUMBERS = new int[0];
@@ -109,31 +137,47 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     /** 玩家拼到一半的表达式，按 token 顺序存。 */
     @SaveToDisk
     private int[] tokens = NO_TOKENS;
-    /** 上一次提交的结果，只影响反馈文案与按钮禁用。 */
+    /** 上一次提交的结果：只影响反馈文案与按钮禁用。 */
     @SaveToDisk
     private int result = RESULT_NONE;
-    /** 本题是否用过提示（用过只给 {@link #HINTED_SOLVE_REWARD}）。 */
+    /** 本题是否用过提示（用过之后这一轮连解作废，这一题也不计入奖励进度）。 */
     @SaveToDisk
     private boolean hinted;
+    /** 这一轮连解算不算数（只管榜单用时）：用提示、没答对就换题、换范围或多人的一轮作废。 */
+    @SaveToDisk
+    private boolean runValid;
+    /** 本轮连解进度与起点（存档 gameTime，{@code 0} 表示这一轮已经收尾）。 */
+    @SaveToDisk
+    private int runSolved;
+    @SaveToDisk
+    private long runStart;
+    /**
+     * 奖励进度：单独累计「解出的题数」，不够十题也一直留着。用提示的那题不计，换题与多人同局都不影响，换抽牌范围会清零；
+     * 每满 {@link #RUN_PUZZLES} 题结一次 {@link Game24Rules.DrawRange#runReward()}。
+     */
+    @SaveToDisk
+    private int rewardProgress;
 
     public Game24Machine(MetaMachineBlockEntity holder) {
         super(holder);
     }
 
     /**
-     * 通道里下发的界面快照：牌面、表达式、以及答对/答错/用过提示三个标记。
+     * 通道里下发的界面快照：牌面、表达式、答对/答错/用过提示三个标记、连解进度与奖励进度。
      * 相等性只看版本号，省掉逐元素比数组。
      */
-    public record View(int revision, int[] numbers, int[] tokens, int flags) {
+    public record View(int revision, int[] numbers, int[] tokens, int flags, int run, int reward) {
 
         private static final int FLAG_SOLVED = 1;
         private static final int FLAG_HINTED = 1 << 1;
-        private static final View EMPTY = new View(-1, NO_NUMBERS, NO_TOKENS, 0);
+        private static final View EMPTY = new View(-1, NO_NUMBERS, NO_TOKENS, 0, 0, 0);
         private static final StreamCodec<FriendlyByteBuf, View> CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, View::revision,
                 ByteBufCodecs.VAR_INT_ARRAY, View::numbers,
                 ByteBufCodecs.VAR_INT_ARRAY, View::tokens,
                 ByteBufCodecs.VAR_INT, View::flags,
+                ByteBufCodecs.VAR_INT, View::run,
+                ByteBufCodecs.VAR_INT, View::reward,
                 View::new);
 
         boolean solved() {
@@ -201,18 +245,29 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
                 }
             }
         }
-        if (result != RESULT_SOLVED && result != RESULT_WRONG) result = RESULT_NONE;
+        if (!isSolved() && result != RESULT_WRONG) result = RESULT_NONE;
+        // 本轮进度与起点：进度夹回合法值，起点非法（0 或来自未来）就当这一轮没开始
+        runSolved = Math.clamp(runSolved, 0, RUN_PUZZLES);
+        if (runStart <= 0L || runStart > gameTime()) voidRun();
+        // 奖励进度只在结账时减一档，正常永远 < RUN_PUZZLES；坏档夹回合法范围
+        rewardProgress = Math.clamp(rewardProgress, 0, RUN_PUZZLES - 1);
     }
 
     @Override
     protected View createView() {
-        int flags = (result == RESULT_SOLVED ? View.FLAG_SOLVED : 0) | (hinted ? View.FLAG_HINTED : 0);
-        return new View(revision(), numbers, tokens, flags);
+        int flags = (isSolved() ? View.FLAG_SOLVED : 0) | (hinted ? View.FLAG_HINTED : 0);
+        return new View(revision(), numbers, tokens, flags, runSolved, rewardProgress);
     }
 
-    /** 首次打开界面时把没发的那一题发出来。 */
+    /** 这一题答对了吗（不论有没有凑满十题）。 */
+    private boolean isSolved() {
+        return result == RESULT_SOLVED || result == RESULT_REWARDED;
+    }
+
+    /** 首次打开界面时把没发的那一题发出来，并保证有一轮在计时。 */
     private void ensureStarted() {
         if (numbers.length != Game24Rules.NUMBER_COUNT) startPuzzle();
+        if (!runValid) startRun(null);
     }
 
     // ==================== 界面 ====================
@@ -246,10 +301,14 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return board;
     }
 
-    /** 状态面板：余额 + 反馈行 + 提示/换一题 + 取出全部。 */
+    /** 状态面板：余额 + 连解进度 + 奖励进度 + 反馈行 + 提示/换一题 + 取出全部。 */
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
+        status.addChild(TextLine.of(LayoutStyle.AUTO, () -> Component.translatable(TEXT_RUN, view().run(), RUN_PUZZLES))
+                .setTextAlign(Horizontal.CENTER));
+        status.addChild(TextLine.of(LayoutStyle.AUTO, () -> Component.translatable(TEXT_REWARD_PROGRESS, view().reward(), RUN_PUZZLES))
+                .setTextAlign(Horizontal.CENTER));
         status.addChild(TextLine.of(LayoutStyle.AUTO, this::feedbackText).setTextAlign(Horizontal.CENTER));
         status.addChild(createStatusActions());
         return status;
@@ -264,9 +323,10 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
 
     private UIElement createStatusActions() {
         var hint = Button.translatable(77, BUTTON_HINT)
-                .setOnServerClick(this::useHint)
                 .clientDisabled(() -> view().hinted() || view().solved(), REASON_HINTED);
-        var next = Button.translatable(77, BUTTON_NEXT).setOnServerClick(this::nextPuzzle);
+        hint.setOnServerClick(() -> useHint(playerOf(hint)));
+        var next = Button.translatable(77, BUTTON_NEXT);
+        next.setOnServerClick(() -> nextPuzzle(playerOf(next)));
 
         var actions = new UIElement();
         actions.layout(LayoutStyle::column);
@@ -293,6 +353,57 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         hinted = false;
     }
 
+    /** 起一轮：起点、进度清零，并把「这一轮算不算」置位；发起者用开界面的人（没有就等第一个开界面的人）。 */
+    private void startRun(@Nullable ServerPlayer player) {
+        runStart = gameTime();
+        runSolved = 0;
+        runValid = true;
+        beginSession(player);
+    }
+
+    /** 本轮作废：计时、进度与「算不算」一起清零，下一次发牌重新起表。 */
+    private void voidRun() {
+        runStart = 0L;
+        runSolved = 0;
+        runValid = false;
+    }
+
+    /**
+     * 答对一题：奖励与榜单各算各的。
+     *
+     * <ul>
+     * <li>奖励：单独累计「解出的题数」（{@link #rewardProgress}），每完成 {@link #RUN_PUZZLES} 题结一次
+     * {@link Game24Rules.DrawRange#runReward()}；用提示的那题不计，换题与多人同局都不影响，换抽牌范围清零；</li>
+     * <li>榜单：同一轮里连解 {@link #RUN_PUZZLES} 题才记一次用时，用提示、没答对就换题、换范围或多人的一轮作废
+     * （见 {@link #runValid}）。</li>
+     * </ul>
+     */
+    private void onPuzzleSolved() {
+        recordRunTime();
+        // 用提示的那题不计数：既不加奖励进度，也不会把已经攒的进度清掉
+        if (hinted) return;
+        rewardProgress++;
+        if (rewardProgress < RUN_PUZZLES) return;
+        rewardProgress -= RUN_PUZZLES;
+        addBalance(currentRange().runReward());
+        result = RESULT_REWARDED;
+    }
+
+    /** 榜单那一半：连解满一轮就按本轮用时记一次（单人局且用时正常才算），然后重开一轮。 */
+    private void recordRunTime() {
+        if (!runValid) return;
+        runSolved++;
+        if (runSolved < RUN_PUZZLES) return;
+        long elapsed = gameTime() - runStart;
+        if (sessionCounts() && elapsed > 0) {
+            var server = server();
+            if (server != null) {
+                GameMilestones.get(server).recordPuzzle(sessionStarter(), drawRange, elapsed, gameTime());
+            }
+        }
+        voidRun();
+    }
+
     /** 第 {@code index} 张牌是否已经拼进表达式。 */
     private boolean isCardUsed(int index) {
         for (int token : tokens) {
@@ -304,8 +415,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     // ==================== 服务端动作 ====================
 
     /** 点一张牌：没用过就接到表达式尾巴上；改表达式会把上一次「不是 24」的反馈抹掉。 */
-    private void appendCard(int index) {
-        if (isRemote() || result == RESULT_SOLVED) return;
+    private void appendCard(int index, @Nullable ServerPlayer player) {
+        if (isRemote() || isSolved() || !guard(player)) return;
         if (index < 0 || index >= numbers.length || isCardUsed(index)) return;
         if (tokens.length >= Game24Rules.MAX_TOKENS) return;
         tokens = append(tokens, index);
@@ -314,8 +425,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     /** 点一个运算符/括号：同样只追加 token，语法留到提交时判。 */
-    private void appendToken(int token) {
-        if (isRemote() || result == RESULT_SOLVED) return;
+    private void appendToken(int token, @Nullable ServerPlayer player) {
+        if (isRemote() || isSolved() || !guard(player)) return;
         if (!Game24Rules.isToken(token) || Game24Rules.isNumberToken(token)) return;
         if (tokens.length >= Game24Rules.MAX_TOKENS) return;
         tokens = append(tokens, token);
@@ -324,55 +435,65 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     /** 撤回最后一个 token。 */
-    private void undo() {
-        if (isRemote() || tokens.length == 0 || result == RESULT_SOLVED) return;
+    private void undo(@Nullable ServerPlayer player) {
+        if (isRemote() || tokens.length == 0 || isSolved() || !guard(player)) return;
         tokens = Arrays.copyOf(tokens, tokens.length - 1);
         result = RESULT_NONE;
         syncAndMarkChanged();
     }
 
     /** 清空整个表达式。 */
-    private void clearTokens() {
-        if (isRemote() || tokens.length == 0 || result == RESULT_SOLVED) return;
+    private void clearTokens(@Nullable ServerPlayer player) {
+        if (isRemote() || tokens.length == 0 || isSolved() || !guard(player)) return;
         tokens = NO_TOKENS;
         result = RESULT_NONE;
         syncAndMarkChanged();
     }
 
-    /** 提交：语法、用牌与数值全对才算解出，按是否用过提示发币；只是不对的话不扣钱，给一句反馈继续改。 */
-    private void submit() {
-        if (isRemote() || result == RESULT_SOLVED || tokens.length == 0) return;
+    /** 提交：语法、用牌与数值全对才算解出；答对不直接给币，攒满一轮才结算。只是不对的话不扣钱，给一句反馈继续改。 */
+    private void submit(@Nullable ServerPlayer player) {
+        if (isRemote() || isSolved() || tokens.length == 0 || !guard(player)) return;
         if (!rules.isSolution(tokens, numbers)) {
             result = RESULT_WRONG;
             syncAndMarkChanged();
             return;
         }
         result = RESULT_SOLVED;
-        addBalance(hinted ? HINTED_SOLVE_REWARD : currentRange().solveReward());
+        onPuzzleSolved();
         syncAndMarkChanged();
     }
 
-    /** 提示：显示一个解法，本题奖励降到 {@link #HINTED_SOLVE_REWARD}；同一题只给一次。 */
-    private void useHint() {
-        if (isRemote() || hinted || result == RESULT_SOLVED) return;
+    /** 提示：显示一个解法；同一题只给一次，这一轮连解作废（进度清零，重新发牌后从 0 开始）。 */
+    private void useHint(@Nullable ServerPlayer player) {
+        if (isRemote() || hinted || isSolved() || !guard(player)) return;
         hinted = true;
+        if (runValid) {
+            voidRun();
+            if (player != null) player.displayClientMessage(Component.translatable(MSG_RUN_VOID), true);
+        }
         syncAndMarkChanged();
     }
 
-    /** 换一题：放弃当前表达式重新发牌，答对后再点也是走这里。 */
-    private void nextPuzzle() {
-        if (isRemote()) return;
+    /** 换一题：放弃当前表达式重新发牌（没答对就换题的话本轮作废），答对后再点也是走这里。 */
+    private void nextPuzzle(@Nullable ServerPlayer player) {
+        if (isRemote() || !guard(player)) return;
+        if (!isSolved() && runValid) voidRun();
         startPuzzle();
+        if (!runValid) startRun(player);
         syncAndMarkChanged();
     }
 
-    /** 服务端：换抽牌范围。当前这一题是按旧范围抽的，直接作废重发（答对才给币，不涉及兑现）。 */
+    /** 服务端：换抽牌范围。当前这一题是按旧范围抽的，直接作废重发，本轮也重来。 */
     private void setDrawRange(int ordinal) {
-        if (isRemote() || ordinal == drawRange) return;
+        if (isRemote() || ordinal == drawRange || !guard(viewer())) return;
         var range = Game24Rules.DrawRange.of(ordinal);
         if (range == null) return;
         drawRange = range.ordinal();
+        // 换档等于换一套牌：奖励进度清零，免得攒够九题再切档挑更高的奖励
+        rewardProgress = 0;
+        voidRun();
         startPuzzle();
+        startRun(viewer());
         syncAndMarkChanged();
     }
 
@@ -400,13 +521,14 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     private Button createCard(int index) {
-        return Button.of(CARD_WIDTH)
+        var card = Button.of(CARD_WIDTH)
                 .bindClientText(() -> {
                     int[] cards = view().numbers();
                     return index < cards.length ? Integer.toString(cards[index]) : "";
                 })
-                .clientDisabled(() -> view().isUsed(index) || view().solved(), REASON_CARD_USED)
-                .setOnServerClick(() -> appendCard(index));
+                .clientDisabled(() -> view().isUsed(index) || view().solved(), REASON_CARD_USED);
+        card.setOnServerClick(() -> appendCard(index, playerOf(card)));
+        return card;
     }
 
     /** 运算符与括号按钮：字形就是 {@link Game24Rules#tokenText}，按钮上的字与表达式里显示的一致。 */
@@ -415,9 +537,10 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         for (int token = Game24Rules.ADD; token < Game24Rules.TOKEN_COUNT; token++) {
             // 循环变量不是有效 final，先拷一份给 lambda 用
             int code = token;
-            row.addChild(Button.translatable(TOKEN_WIDTH, Game24Rules.tokenText(code))
-                    .clientDisabled(() -> view().solved(), REASON_SOLVED)
-                    .setOnServerClick(() -> appendToken(code)));
+            var button = Button.translatable(TOKEN_WIDTH, Game24Rules.tokenText(code))
+                    .clientDisabled(() -> view().solved(), REASON_SOLVED);
+            button.setOnServerClick(() -> appendToken(code, playerOf(button)));
+            row.addChild(button);
         }
         return row;
     }
@@ -425,14 +548,14 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     /** 撤回 / 清空 / 提交：空表达式时前两个没得可动，答对后三个都锁上。 */
     private UIElement createActionRow() {
         var undo = Button.translatable(ACTION_WIDTH, BUTTON_UNDO)
-                .setOnServerClick(this::undo)
                 .clientDisabled(() -> view().tokens().length == 0 || view().solved(), REASON_EMPTY);
+        undo.setOnServerClick(() -> undo(playerOf(undo)));
         var clear = Button.translatable(ACTION_WIDTH, BUTTON_CLEAR)
-                .setOnServerClick(this::clearTokens)
                 .clientDisabled(() -> view().tokens().length == 0 || view().solved(), REASON_EMPTY);
+        clear.setOnServerClick(() -> clearTokens(playerOf(clear)));
         var submit = Button.translatable(ACTION_WIDTH, BUTTON_SUBMIT)
-                .setOnServerClick(this::submit)
                 .clientDisabled(() -> view().solved(), REASON_SOLVED);
+        submit.setOnServerClick(() -> submit(playerOf(submit)));
         return centeredRow().addChildren(undo, clear, submit);
     }
 
@@ -450,43 +573,55 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return text;
     }
 
-    /** 反馈行：答对 / 提示 / 上一次不是 24 / 待提交，四种文案全部由服务端状态推出来。 */
+    /** 反馈行：这一轮结算 / 答对 / 提示 / 上一次不是 24 / 待提交，全部由服务端状态推出来。 */
     private Component feedbackText() {
-        if (result == RESULT_SOLVED) {
-            return Component.translatable(TEXT_SOLVED, number(hinted ? HINTED_SOLVE_REWARD : currentRange().solveReward()))
+        if (result == RESULT_REWARDED) {
+            return Component.translatable(TEXT_REWARD, RUN_PUZZLES, number(currentRange().runReward()))
                     .withStyle(ChatFormatting.GREEN);
         }
-        if (hinted) {
-            return Component.translatable(TEXT_HINT, rules.hint(numbers), number(HINTED_SOLVE_REWARD))
-                    .withStyle(ChatFormatting.YELLOW);
-        }
+        if (result == RESULT_SOLVED) return Component.translatable(TEXT_SOLVED).withStyle(ChatFormatting.GREEN);
+        if (hinted) return Component.translatable(TEXT_HINT, rules.hint(numbers)).withStyle(ChatFormatting.YELLOW);
         if (result == RESULT_WRONG) return Component.translatable(TEXT_WRONG).withStyle(ChatFormatting.RED);
         return Component.literal("—").withStyle(ChatFormatting.GRAY);
     }
 
-    /** 配置页：只有抽牌范围，按钮上只写范围名，每题奖励放悬浮提示。 */
+    /** 配置页：游玩权限开关、抽牌范围，以及两个抽牌档各自的全服榜单（用时升序）。 */
     private final class ConfigPage implements IFancyUIProvider {
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
+            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
+                    Switch.of(Game24Machine.this::allowOthers, Game24Machine.this::setAllowOthers),
+                    TOOLTIP_ALLOW_OTHERS));
+
             var section = Form.section(SECTION_DRAW_RANGE);
             for (int ordinal = 0; ordinal < RANGE_NAMES.length; ordinal++) {
                 // 循环变量不是有效 final，先拷一份给 lambda 用
                 int index = ordinal;
                 var button = Button.translatable(LayoutStyle.AUTO, RANGE_NAMES[index]);
                 button.setHoverTooltips(Component.translatable(TEXT_RANGE_REWARD,
-                        number(Game24Rules.DrawRange.ALL[index].solveReward())));
+                        number(Game24Rules.DrawRange.ALL[index].runReward()), RUN_PUZZLES));
                 button.setOnServerClick(() -> setDrawRange(index));
                 button.setSelected(() -> drawRange == index);
                 section.addChild(button);
             }
             page.addChild(section);
 
+            page.addChild(milestoneSection(SECTION_TEN_BOARD, "game_milestones_game_24_ten", 0));
+            page.addChild(milestoneSection(SECTION_THIRTEEN_BOARD, "game_milestones_game_24_thirteen", 1));
+
             var status = panel();
             status.addLine(LINE_BALANCE, () -> number(balance()));
             page.addChild(status);
             return page;
+        }
+
+        private UIElement milestoneSection(String titleKey, String paneId, int rangeOrdinal) {
+            var section = Form.section(titleKey);
+            section.addChild(milestoneTable(paneId, MILESTONE_COLUMNS,
+                    (store, server) -> buildMilestoneRows(store, server, rangeOrdinal)));
+            return section;
         }
 
         @Override
@@ -508,5 +643,18 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         public boolean hasPlayerInventory() {
             return false;
         }
+    }
+
+    /** 里程碑表格的行（服务端构建）：某个抽牌档的用时榜，用时短的在前，名次由表格补，达成时间进悬停提示。 */
+    private List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server, int rangeOrdinal) {
+        var board = store.puzzleBoard(rangeOrdinal);
+        var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
+        for (var stat : board) {
+            long ticks = rangeOrdinal == 0 ? stat.tenTicks() : stat.thirteenTicks();
+            long time = rangeOrdinal == 0 ? stat.tenTime() : stat.thirteenTime();
+            rows.add(new MilestoneCell[] { MilestoneCell.of(Component.literal(GameMilestones.nameOf(server, stat.player()))),
+                    MilestoneCell.achieved(duration(ticks), time) });
+        }
+        return rows;
     }
 }

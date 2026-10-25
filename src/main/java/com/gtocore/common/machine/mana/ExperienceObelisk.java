@@ -326,6 +326,11 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     }
 
     @Override
+    public boolean saveBreak() {
+        return storedFluid() > 0;
+    }
+
+    @Override
     public void saveToItem(CompoundTag tag) {
         IDropSaveMachine.super.saveToItem(tag);
         tag.putInt("xp", storedFluid());

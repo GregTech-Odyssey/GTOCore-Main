@@ -28,9 +28,9 @@ import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.heat.*;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
@@ -69,6 +69,7 @@ import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.*;
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
@@ -873,6 +874,7 @@ public final class GTOMachines {
     public static final MachineDefinition CREATIVE_RADIATION_HATCH = machine("creative_radiation_hatch", "创造放射仓", CreativeRadiationHatch::new)
             .tier(MAX)
             .tips(GTOMachineTooltips.RadiationHatchTooltips)
+            .tooltipBuilder(GTMachines.CREATIVE_TOOLTIPS)
             .notAllowSharedTooltips()
             .recipeType(GTORecipeTypes.RADIATION_HATCH_RECIPES)
             .allRotation()
@@ -885,6 +887,7 @@ public final class GTOMachines {
             .tier(MAX)
             .allRotation()
             .overlayTieredHullRenderer("radiation_hatch")
+            .tooltipBuilder(GTMachines.CREATIVE_TOOLTIPS)
             .allowCoverOnFront(false)
             .register();
 

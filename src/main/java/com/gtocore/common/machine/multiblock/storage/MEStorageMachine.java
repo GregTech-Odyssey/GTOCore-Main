@@ -32,7 +32,7 @@ import appeng.api.stacks.AEKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -53,7 +53,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     @SaveToDisk(defaultValue = "false")
     protected boolean player = false;
     protected StorageAccessPartMachine accessPartMachine;
-    private final List<Reference2ReferenceMap.Entry<AEKey, BigInteger>> list = new ArrayList<>();
+    private final List<Reference2ObjectMap.Entry<AEKey, BigInteger>> list = new ArrayList<>();
 
     public MEStorageMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -173,7 +173,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
                 var map = data.getStoredMap();
                 if (map == null) return;
                 list.clear();
-                map.reference2ReferenceEntrySet().forEach(entry -> {
+                map.reference2ObjectEntrySet().forEach(entry -> {
                     var currentAmount = entry.getValue();
                     if (currentAmount.compareTo(BigIntegerUtils.BIG_INTEGER_MAX_LONG) > 0) {
                         list.add(entry);

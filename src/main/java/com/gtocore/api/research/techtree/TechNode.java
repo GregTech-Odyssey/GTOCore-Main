@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 
+import appeng.api.identity.IdentityKey;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
@@ -36,7 +37,7 @@ import java.util.UUID;
 import static com.gtocore.data.techtree.BaseNodes.TierItems;
 
 @DataGeneratorScanned
-public final class TechNode {
+public final class TechNode extends IdentityKey {
 
     @RegisterLanguage(cn = "前置：%s 未解锁", en = "Prerequisites: %s not unlocked")
     private static final String UNLOCKED = "gtocore.tech_node.unlocked";

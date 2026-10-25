@@ -32,10 +32,10 @@ com/gtolib/mixin/mc/recipe/RecipeManagerMixin byName f_199900_
 com/gtolib/mixin/mc/ReferenceMixin tags f_205749_
 com/gtolib/mixin/mc/TagLoaderMixin directory f_13449_
 com/gtolib/mixin/mc/world/ChunkMapMixin visibleChunkMap f_140130_
-com/gtolib/mixin/mc/world/ClientLevelMixin clientLevelData f_104563_
 com/gtolib/mixin/mc/world/LevelChunkMixin tickersInLevel f_156362_
 com/gtolib/mixin/mc/world/LevelChunkMixin NULL_TICKER f_156361_
 com/gtolib/mixin/mc/world/LevelMixin dimension f_46421_
+com/gtolib/mixin/mc/world/LevelMixin skyDarken f_46425_
 com/gtolib/mixin/mc/world/ServerChunkCacheMixin chunkMap f_8325_
 com/gtolib/mixin/mc/world/ServerChunkCacheMixin level f_8329_
 com/gtolib/mixin/mc/world/ServerLevelMixin entityManager f_143244_

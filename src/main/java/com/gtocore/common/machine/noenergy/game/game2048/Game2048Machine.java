@@ -2,20 +2,29 @@ package com.gtocore.common.machine.noenergy.game.game2048;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.RPC;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -24,8 +33,13 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.List;
 
 /**
  * 「2048」游戏机：4×4 盘面的推格合并玩法。
@@ -45,6 +59,12 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     private static final String LINE_SCORE = "gtocore.machine.game.line.score";
     @RegisterLanguage(cn = "重新开始", en = "Restart")
     private static final String BUTTON_RESTART = "gtocore.machine.game.button.restart";
+
+    /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 成绩，达成时间放在成绩格的悬停提示里。 */
+    private static final MilestoneColumn[] MILESTONE_COLUMNS = {
+            MilestoneColumn.left(COLUMN_PLAYER, 42),
+            MilestoneColumn.right(COLUMN_BEST_SCORE, 54),
+            MilestoneColumn.right(COLUMN_BEST_MERGED, 40) };
 
     /** 盘面区宽度：顶部图例 15 档 × {@link #LEGEND_ICON_SIZE} 正好铺满，4×4 的格子按它摊满整框。 */
     private static final int FRAME_SIZE = 156;
@@ -101,6 +121,9 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     /** 服务端权威盘面，按行优先存 {@code SIZE * SIZE} 格，空格为 0。 */
     @SaveToDisk
     private int[] board = NO_BOARD;
+    /** 本局出现过的最大方块：结账时拿去比里程碑。 */
+    @SaveToDisk
+    private int roundPeakValue = Game2048Rules.VALUE_MIN;
 
     public Game2048Machine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -177,7 +200,9 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         dealBoard();
         score = 0;
         settled = false;
+        roundPeakValue = Game2048Rules.maxValue(board);
         gameStatus = Status.PLAYING.ordinal();
+        beginSession(null);
     }
 
     /**
@@ -190,6 +215,16 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         settled = true;
         long reward = (score - REDEMPTION_BASELINE) / Game2048Rules.POINTS_PER_COIN;
         if (reward > 0) addBalance(reward);
+        recordRound();
+    }
+
+    /** 本局结账时记一次里程碑：只有单人局才写；分数/最大合成没有超过个人记录时不会真的落盘。 */
+    private void recordRound() {
+        if (!sessionCounts()) return;
+        var server = server();
+        if (server == null) return;
+        GameMilestones.get(server).recordScore(GameMilestones.GAME_2048, sessionStarter(), score, roundPeakValue,
+                gameTime());
     }
 
     /** 玩不动了：把这局积分兑现掉，再记下结束。先结账后改状态，任何顺序都不会漏给或重复给。 */
@@ -206,10 +241,11 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     }
 
     /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用。 */
-    private void restartRoundOnServer() {
-        if (isRemote()) return;
+    private void restartRoundOnServer(@Nullable ServerPlayer player) {
+        if (isRemote() || !guard(player)) return;
         settleRound();
         startRound();
+        beginSession(player);
         syncAndMarkChanged();
     }
 
@@ -227,8 +263,8 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
      * 推不动时 {@link Game2048Rules#move} 返回 {@code null}，状态一律不变。合并得分之外，本局首次合出的
      * {@link #SCORE_BONUS_MIN_VALUE} 及以上数字各再给一次 {@code (数字 / 1024) × SCORE_BONUS_BASE}。
      */
-    private void moveOnServer(int directionOrdinal) {
-        if (isRemote() || !isPlaying()) return;
+    private void moveOnServer(int directionOrdinal, @Nullable ServerPlayer player) {
+        if (isRemote() || !isPlaying() || !guard(player)) return;
         var direction = Game2048Rules.Direction.of(directionOrdinal);
         if (direction == null) return;
         var level = getLevel();
@@ -239,6 +275,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         board = move.board();
         int gained = move.gained();
         int reachedValue = Math.min(Game2048Rules.VALUE_MAX, Game2048Rules.maxValue(board));
+        roundPeakValue = Math.max(roundPeakValue, reachedValue);
         if (reachedValue > previousMax) {
             for (int value = Math.max(previousMax * 2, SCORE_BONUS_MIN_VALUE); value <= reachedValue; value *= 2) {
                 gained += value / SCORE_BONUS_MIN_VALUE * SCORE_BONUS_BASE;
@@ -272,15 +309,78 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         return page;
     }
 
+    /** 主页之外再挂一个「配置」子页：游玩权限开关 + 全服里程碑榜单。 */
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new ConfigPage());
+    }
+
     /** 状态面板：余额 + 本局积分 + 重新开始/取出全部。 */
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_SCORE, () -> number(score));
-        status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(
-                Button.translatable(77, BUTTON_RESTART).setOnServerClick(this::restartRoundOnServer),
-                createWithdrawButton(77)));
+        var restart = Button.translatable(77, BUTTON_RESTART);
+        restart.setOnServerClick(() -> restartRoundOnServer(playerOf(restart)));
+        status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));
         return status;
+    }
+
+    /** 配置页：游玩权限开关 + 里程碑榜单（最高分降序，文字由服务端整表下发）。 */
+    private final class ConfigPage implements IFancyUIProvider {
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
+                    Switch.of(Game2048Machine.this::allowOthers, Game2048Machine.this::setAllowOthers),
+                    TOOLTIP_ALLOW_OTHERS));
+
+            var section = Form.section(SECTION_MILESTONES);
+            section.addChild(milestoneTable("game_milestones_game_2048",
+                    MILESTONE_COLUMNS, Game2048Machine.this::buildMilestoneRows));
+            page.addChild(section);
+            return page;
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.SETTINGS;
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(PAGE_SETTINGS);
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
+        }
+
+        @Override
+        public boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    /** 里程碑表格的行（服务端构建）：最高分榜，一人一行，名次由表格补，达成时间进悬停提示。 */
+    private List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server) {
+        var board = store.game2048Board();
+        var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
+        for (var stat : board) {
+            rows.add(new MilestoneCell[] { MilestoneCell.of(Component.literal(GameMilestones.nameOf(server, stat.player()))),
+                    MilestoneCell.achieved(number(stat.bestScore()), stat.bestScoreTime()),
+                    MilestoneCell.achieved(tileName(stat.bestMerged()), stat.bestMergedTime()) });
+        }
+        return rows;
+    }
+
+    /** 最大合成按盘面上的电路电压显示（和格子里的图一致）：2 → ULV、2048 → UEV，顶到最高那档就停在 MAX。 */
+    private static Component tileName(int value) {
+        if (value < Game2048Rules.VALUE_MIN) return Component.literal("-");
+        return voltageName(Math.clamp(Integer.numberOfTrailingZeros(value) - 1, 0, TILE_STACKS.length - 1));
     }
 
     /** 带底图的面板，行距统一 2px；状态面板与游戏区都用它。 */
@@ -313,7 +413,8 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         private BoardInput() {
             layout(style -> style.size(FRAME_SIZE, LEGEND_HEIGHT + FRAME_SIZE));
             registerView(this, BoardSnapshot.EMPTY, BoardSnapshot.CODEC);
-            move = addRPC(ByteBufCodecs.VAR_INT, (player, direction) -> moveOnServer(direction));
+            move = addRPC(ByteBufCodecs.VAR_INT, (player, direction) -> moveOnServer(direction,
+                    player instanceof ServerPlayer serverPlayer ? serverPlayer : null));
         }
 
         /** 顶部图例：全部电压等级的电路按固定尺寸横排，底部一条横线跟盘面分开。 */

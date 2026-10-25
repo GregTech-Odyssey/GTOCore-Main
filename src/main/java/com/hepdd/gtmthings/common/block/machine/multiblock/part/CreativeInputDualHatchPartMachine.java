@@ -32,7 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CreativeInputAssemblyPartMachine extends WorkableTieredIOPartMachine implements IDistinctPart {
+public class CreativeInputDualHatchPartMachine extends WorkableTieredIOPartMachine implements IDistinctPart {
 
     private static final int GRID_SIZE = 6;
     public static final int SLOT_COUNT = GRID_SIZE * GRID_SIZE;
@@ -51,7 +51,7 @@ public class CreativeInputAssemblyPartMachine extends WorkableTieredIOPartMachin
     @SaveToDisk(defaultValue = "false")
     private boolean isDistinct;
 
-    public CreativeInputAssemblyPartMachine(MetaMachineBlockEntity holder) {
+    public CreativeInputDualHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.MAX, IO.IN);
         inventory = new NotifiableInfiniteSource<>(this, KeyInventory.items(SLOT_COUNT).setUniqueKeys(true), IO.IN, IO.IN, false);
         tank = new NotifiableInfiniteSource<>(this, KeyInventory.fluids(SLOT_COUNT, 1).setUniqueKeys(true), IO.IN, IO.IN, false);
@@ -84,8 +84,11 @@ public class CreativeInputAssemblyPartMachine extends WorkableTieredIOPartMachin
     @Override
     public Widget createUIWidget() {
         return Form.page().addChild(UIElement.centeredRow(GRID_SIZE * UISizes.SLOT_SIZE)
-                .addChild(SlotGrid.of(GRID_SIZE, SLOT_COUNT, index -> PhantomAEKeySlot.of(
-                        () -> getKey(index), key -> setKey(index, key), key -> acceptsKey(index, key)).xeiPhantom())));
+                .addChildren(
+                        UIElement.flexSpacer(),
+                        SlotGrid.of(GRID_SIZE, SLOT_COUNT, index -> PhantomAEKeySlot.of(
+                                () -> getKey(index), key -> setKey(index, key), key -> acceptsKey(index, key)).xeiPhantom()),
+                        UIElement.flexSpacer()));
     }
 
     @Nullable
