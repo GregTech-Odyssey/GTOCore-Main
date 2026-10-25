@@ -21,6 +21,7 @@ import com.gregtechceu.gtceu.uiwidgets.structure.StructureConfigView;
 import com.gregtechceu.gtceu.uiwidgets.structure.StructurePlans;
 import com.gregtechceu.gtceu.uiwidgets.structure.StructurePreviewScreen;
 import com.gregtechceu.gtceu.uiwidgets.structure.StructureProjection;
+import com.gregtechceu.gtceu.uiwidgets.structure.TerminalModes;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -158,6 +159,7 @@ final class OverviewBuildFlow {
             partsSection.addChild(TextLine.translatable(LayoutStyle.AUTO, StructurePreviewScreen.PARTS).setColor(UITheme.PANEL_TEXT));
             partsSection.addChild(current.parts);
             column.addChild(partsSection);
+            column.addChild(TerminalModes.networkRow());
             var project = Button.translatable(LayoutStyle.AUTO, StructurePreviewScreen.PROJECT).layout(l -> l.flex(1))
                     .disabled(() -> current.current() == null, OverviewWidget.LANG_BLOCKED).setOnClientClick(this::project);
             var build = Button.translatable(LayoutStyle.AUTO, StructurePreviewScreen.BUILD).layout(l -> l.flex(1))
@@ -242,7 +244,7 @@ final class OverviewBuildFlow {
         var listed = current.config.listLayout();
         if (pose == null || listed == null) return;
         var icon = current.definition.asStack();
-        var model = StructurePlans.modelBuilder(icon, listed, false).build(StructureBuildFlow.inventoryStock(player));
+        var model = StructurePlans.modelBuilder(icon, listed, false).build(StructureBuildFlow.layoutStock(player, listed));
         model.selectMinimum();
         current.model = model;
         current.modelLayout = listed;
@@ -253,7 +255,7 @@ final class OverviewBuildFlow {
         var panel = new PatternBuilderPanel(model, icon, icon.getHoverName(), Integer.MAX_VALUE, view.panelMaxHeight(), () -> {
             int upload = BuildUpload.send(current.definition, values, StructurePlans.assign(model, listed));
             if (upload < 0) player.sendSystemMessage(Component.translatable(StructureBuild.INVALID));
-            else owner.requestBuild(anchorIndex, current.definition, values, pose, upload);
+            else owner.requestBuild(anchorIndex, current.definition, values, pose, upload, TerminalModes.isNetwork());
             view.clearSelection();
         }, view::closeBuilder, new PatternBuilderPanel.Footer(StructureBuildFlow.BUILD_TITLE, StructureBuildFlow.BUILD, StructureBuildFlow.INCLUDE,
                 StructureBuildFlow.BLOCKED, false, true, view::closeBuilder));
