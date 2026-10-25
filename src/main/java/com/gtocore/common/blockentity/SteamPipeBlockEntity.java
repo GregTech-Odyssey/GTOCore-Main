@@ -143,7 +143,7 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
         if (mode == Actionable.SIMULATE) {
             for (var path : routes.array) {
                 if (remaining <= 0) break;
-                if (skipRoute(path.getTargetFacing(), from)) continue;
+                if (skipRoute(path, from)) continue;
                 var handler = path.getHandler(getLevel());
                 if (handler == null) continue;
                 var moved = handler.insert(what, remaining, Actionable.SIMULATE, actionSource);
@@ -155,7 +155,7 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
             routing = true;
             for (var path : routes) {
                 if (remaining <= 0) break;
-                if (skipRoute(path.getTargetFacing(), from)) continue;
+                if (skipRoute(path, from)) continue;
                 var handler = path.getHandler(getLevel());
                 if (handler == null) continue;
                 var moved = handler.insert(what, remaining, Actionable.MODULATE, actionSource);
@@ -168,9 +168,10 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
         return accepted;
     }
 
-    private boolean skipRoute(Direction targetFacing, @Nullable Direction from) {
-        if (from != null && targetFacing == from) return true;
-        return this.autoTransfer && this.blockedSide != null && targetFacing != this.blockedSide;
+    private boolean skipRoute(SteamRoutePath path, @Nullable Direction from) {
+        if (path.getTargetPipe() != this) return false;
+        var targetFacing = path.getTargetFacing();
+        return targetFacing == from || this.autoTransfer && targetFacing != this.blockedSide;
     }
 
     private void autoTransfer() {

@@ -237,13 +237,13 @@ public final class GTORules {
             .register();
     public static final IntRule MAINTENANCE_WEAR = Rules.intRule("machines.maintenance_wear").group(MACHINES)
             .defaults(1, 2, 3).range(0, 100)
-            .name("gtocore.rule.machines.maintenance_wear", "维护损耗速度", "Maintenance Wear Rate")
-            .desc("gtocore.rule.machines.maintenance_wear.desc", "多方块机器运行时，维护计时累积速度的倍率。", "How fast multiblocks accumulate maintenance time while running.")
+            .name("gtocore.rule.machines.maintenance_wear", "损坏速度", "Damage Rate")
+            .desc("gtocore.rule.machines.maintenance_wear.desc", "多方块机器运行时，损坏程度累积速度的倍率。", "How fast multiblocks accumulate damage while running.")
             .register();
     public static final BoolRule MAINTENANCE_FAILURES = Rules.boolRule("machines.maintenance_random_failures").group(MACHINES)
             .defaults(false, true, true)
-            .name("gtocore.rule.machines.maintenance_random_failures", "随机维护故障", "Random Maintenance Failures")
-            .desc("gtocore.rule.machines.maintenance_random_failures.desc", "开启后，维护计时累积到一定程度时机器会随机出现维护问题。", "Machines randomly develop maintenance problems once enough maintenance time accumulates.")
+            .name("gtocore.rule.machines.maintenance_random_failures", "维护故障", "Maintenance Failures")
+            .desc("gtocore.rule.machines.maintenance_random_failures.desc", "开启后，损坏程度累积到 100%% 时机器出现维护问题并停止工作。", "Machines develop maintenance problems and stop working once damage reaches 100%%.")
             .register();
     public static final FloatRule CONFIGURABLE_MAINTENANCE_MAX = Rules.floatRule("machines.configurable_maintenance_max").group(MACHINES)
             .defaults(1.3F, 1.2F, 1.1F).range(0.01F, 100)

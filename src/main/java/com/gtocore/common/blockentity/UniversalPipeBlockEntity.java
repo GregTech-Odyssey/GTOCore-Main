@@ -6,6 +6,10 @@ import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IAutoOutput;
+import com.gregtechceu.gtceu.common.cover.FluidFilterCover;
+import com.gregtechceu.gtceu.common.cover.ItemFilterCover;
+import com.gregtechceu.gtceu.common.cover.data.FilterMode;
+import com.gregtechceu.gtceu.common.cover.data.ManualIOMode;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -19,7 +23,10 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
@@ -91,6 +98,24 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         cached = LazyOptional.of(() -> handler);
         storageCache[side.ordinal()] = cached;
         return cached;
+    }
+
+    @Override
+    public boolean acceptsFilter(AEKeyType type) {
+        return type == AEKeyTypes.ITEMS || type == AEKeyTypes.FLUIDS;
+    }
+
+    private boolean coverAllows(Direction side, AEKey key, boolean intoPipe) {
+        var cover = getCoverContainer().getCoverAtSide(side);
+        if (cover instanceof ItemFilterCover filter && key instanceof AEItemKey item) {
+            if (filter.getFilterMode() == (intoPipe ? FilterMode.FILTER_EXTRACT : FilterMode.FILTER_INSERT)) return filter.getAllowFlow() == ManualIOMode.UNFILTERED;
+            return filter.getItemFilter().test(item.getReadOnlyStack());
+        }
+        if (cover instanceof FluidFilterCover filter && key instanceof AEFluidKey fluid) {
+            if (filter.getFilterMode() == (intoPipe ? FilterMode.FILTER_EXTRACT : FilterMode.FILTER_INSERT)) return filter.getAllowFlow() == ManualIOMode.UNFILTERED;
+            return filter.getFluidFilter().test(fluid.getReadOnlyStack());
+        }
+        return true;
     }
 
     @Override
@@ -256,7 +281,7 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
             if (amount <= 0) return 0;
             // a paused pipe accepts nothing, no matter whether a machine or the net itself inserts
             if (!pipe.isWorkingEnabled()) return 0;
-            if (pipe.isInValid() || pipe.routing || pipe.isBlocked(facing)) return 0;
+            if (pipe.isInValid() || pipe.routing || pipe.isBlocked(facing) || !pipe.coverAllows(facing, what, true)) return 0;
             boolean fluid = what.getType() == AEKeyTypes.FLUIDS;
             long allowed = Math.min(amount, pipe.available(fluid));
             if (allowed <= 0) return 0;
@@ -269,6 +294,7 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
                 long left = allowed - inserted;
                 if (left <= 0) break;
                 if (pipe.autoTransfer && route.getTargetPipe() == pipe && route.getTargetFacing() != pipe.blockedSide) continue;
+                if (!route.getTargetPipe().coverAllows(route.getTargetFacing(), what, false)) continue;
                 var target = route.getHandler(level);
                 if (target == null) continue;
                 inserted += target.insert(what, left, mode, source);
