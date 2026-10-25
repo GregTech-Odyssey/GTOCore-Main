@@ -8,3 +8,9 @@ https://github.com/GregTech-Odyssey/GregTech-Odyssey/blob/main/README.md#license
 
 Full license texts:
 https://github.com/GregTech-Odyssey/GTOCore-Main/tree/0.6.0/licenses
+
+Third-party wooden Super Chest / Super Tank models and textures:
+Functional Storage by Buuz135 and Rid (MIT License)
+https://github.com/Buuz135/FunctionalStorage
+License: licenses/functional-storage-MIT.txt
+Source revision, asset mapping and modifications: licenses/functional-storage-assets.md

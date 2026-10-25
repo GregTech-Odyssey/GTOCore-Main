@@ -1,6 +1,12 @@
 package com.gtocore.data.recipe.gtm.misc;
 
+import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.config.GTORules;
+
+import com.gtolib.GTOCore;
+import com.gtolib.api.data.SuperStorageRegistration;
+import com.gtolib.api.data.WoodenSuperStorageRegistration;
+import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -41,6 +47,27 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 public final class MetaTileEntityLoader {
 
     public static void init() {
+        for (var wood : WoodenSuperStorageRegistration.Wood.values()) {
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id(wood.getId() + "_super_chest"), WoodenSuperStorageRegistration.CHESTS[wood.ordinal()].asStack(),
+                    "PPP", "PCP", "PPP", 'P', wood.getPlanks(), 'C', Items.CHEST);
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id(wood.getId() + "_super_tank"), WoodenSuperStorageRegistration.TANKS[wood.ordinal()].asStack(),
+                    "PPP", "PGP", "PBP", 'P', wood.getPlanks(), 'G', GTMachines.STEEL_DRUM.asItem(), 'B', new MaterialEntry(TagPrefix.pipeLargeFluid, GTMaterials.Steel));
+        }
+        VanillaRecipeHelper.addShapedRecipe(true, "super_chest_controller", SuperStorageRegistration.CONTROLLER.asItem(),
+                "ABA",
+                "CDC",
+                "EBE",
+                'A', GTItems.CONVEYOR_MODULE_LV.asItem(), 'B', new MaterialEntry(TagPrefix.rod, GTOMaterials.PulsatingAlloy), 'C', GTItems.ROBOT_ARM_LV.asItem(), 'D', GTMachines.SUPER_CHEST[LV].asItem(), 'E', GTItems.FLUID_REGULATOR_LV.asItem());
+        VanillaRecipeHelper.addShapedRecipe(true, "super_chest_controller_extension", SuperStorageRegistration.EXTENSION.asItem(),
+                "ABA",
+                "CDC",
+                "EFE",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.EnderPearl), 'B', GTItems.FLUID_REGULATOR_MV.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Aluminium), 'D', RegistriesUtils.getItem("gtocore:super_chest_controller"), 'E', CustomTags.MV_CIRCUITS, 'F', GTItems.ROBOT_ARM_MV.asItem());
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("quantum_chest_configurator"), SuperStorageRegistration.TOOL.asItem(),
+                " AB",
+                "AC ",
+                "AA ",
+                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.WroughtIron), 'B', new MaterialEntry(TagPrefix.dust, GTMaterials.Redstone), 'C', new MaterialEntry(TagPrefix.gem, GTMaterials.EnderPearl));
         VanillaRecipeHelper.addShapedRecipe(true, "casing_ulv", GTBlocks.MACHINE_CASING_ULV.asItem(), "PPP",
                 "PwP", "PPP", 'P', new MaterialEntry(TagPrefix.plate, GTMaterials.WroughtIron));
         VanillaRecipeHelper.addShapedRecipe(true, "casing_lv", GTBlocks.MACHINE_CASING_LV.asItem(), "PPP",

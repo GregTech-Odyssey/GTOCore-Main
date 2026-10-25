@@ -370,6 +370,8 @@ final class MachineLang {
         addCNEN("gtocore.machine.resonance_flower.tier_max", "等级：Lv.%s  §a§lMAX§r", "Tier: Lv.%s  §a§lMAX§r");
         addCNEN("gtocore.machine.resonance_flower.tier_effect", "耗时：%s%% 并行：%s", "Duration: %s%% Parallel: %s");
 
+        addCNEN("block.gtceu.ulv_super_chest", "超级箱青春版", "Super Chest Lite");
+        addCNEN("block.gtceu.ulv_super_tank", "超级缸青春版", "Super Tank Lite");
         addSingleMachineTooltips();
 
         DisplayRegistry.registerLanguage();

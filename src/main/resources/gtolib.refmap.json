@@ -368,7 +368,8 @@
       "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109455_:Lnet/minecraft/resources/ResourceLocation;",
       "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V": "Lcom/mojang/blaze3d/vertex/BufferUploader;m_231202_(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V",
       "Lnet/minecraft/client/renderer/LevelRenderer;MOON_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109454_:Lnet/minecraft/resources/ResourceLocation;",
-      "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F"
+      "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F",
+      "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;": "Lcom/mojang/blaze3d/vertex/VertexConsumer;m_85950_(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;"
     },
     "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
       "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -835,7 +836,8 @@
         "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109455_:Lnet/minecraft/resources/ResourceLocation;",
         "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V": "Lcom/mojang/blaze3d/vertex/BufferUploader;m_231202_(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V",
         "Lnet/minecraft/client/renderer/LevelRenderer;MOON_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109454_:Lnet/minecraft/resources/ResourceLocation;",
-        "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F"
+        "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F",
+        "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;": "Lcom/mojang/blaze3d/vertex/VertexConsumer;m_85950_(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;"
       },
       "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
         "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"

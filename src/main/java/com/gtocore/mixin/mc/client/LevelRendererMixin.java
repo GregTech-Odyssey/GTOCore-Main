@@ -24,6 +24,7 @@ import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -39,11 +40,14 @@ public abstract class LevelRendererMixin {
         if (!CelestialSkyRenderer.renderVanillaSun(sun, poseStack, partialTick)) original.call(sun);
     }
 
-    @ModifyExpressionValue(method = "renderSky",
-                           at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F"))
-    private float[] dimDysonSunrise(float[] color, @Local(argsOnly = true) float partialTick) {
-        if (color != null) color[3] *= DysonSphereEffects.transmission(Minecraft.getInstance().level, partialTick);
-        return color;
+    // 原版还用颜色数组的 alpha 决定光晕顶点位置，只衰减绘制透明度，避免改变几何形状。
+    @ModifyArg(method = "renderSky",
+               at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;", ordinal = 0),
+               index = 3,
+               slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F"),
+                              to = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;")))
+    private float dimDysonSunrise(float alpha) {
+        return alpha * DysonSphereEffects.sunlightTransmission(Minecraft.getInstance().level);
     }
 
     @Inject(method = { "renderSnowAndRain", "tickRain" }, at = @At("HEAD"), cancellable = true)

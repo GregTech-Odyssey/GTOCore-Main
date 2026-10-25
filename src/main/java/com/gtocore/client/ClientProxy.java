@@ -53,6 +53,7 @@ import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
 import com.gtolib.quest.client.QuestPinnedHud;
 import com.gtolib.quest.client.book.QuestBookStyle;
+import com.gtolib.storage.SuperStorageClient;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -122,6 +123,7 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void init() {
+        SuperStorageClient.init();
         KeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
