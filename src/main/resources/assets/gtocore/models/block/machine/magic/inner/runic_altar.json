@@ -1,0 +1,53 @@
+{
+  "credit": "Made with Blockbench",
+  "ambientocclusion": false,
+  "render_type": "cutout",
+  "texture_size": [16, 16],
+  "textures": {
+    "0": "botania:block/runic_altar_side",
+    "1": "botania:block/runic_altar_top",
+    "2": "botania:block/runic_altar_bottom",
+    "3": "gtocore:block/machines/mechanized_magic_frame"
+  },
+  "elements": [
+    {
+      "name": "inner_runic_altar_0",
+      "from": [1.6, 6.4, 1.6],
+      "to": [14.4, 11.2, 14.4],
+      "faces": {
+        "north": { "uv": [0, 4, 16, 10], "texture": "#0" },
+        "east": { "uv": [0, 4, 16, 10], "texture": "#0" },
+        "south": { "uv": [0, 4, 16, 10], "texture": "#0" },
+        "west": { "uv": [0, 4, 16, 10], "texture": "#0" },
+        "up": { "uv": [0, 0, 16, 16], "texture": "#1" },
+        "down": { "uv": [0, 0, 16, 16], "texture": "#2" }
+      }
+    },
+    {
+      "name": "inner_runic_altar_1",
+      "from": [4.8, 4.8, 4.8],
+      "to": [11.2, 6.4, 11.2],
+      "faces": {
+        "north": { "uv": [4, 10, 12, 12], "texture": "#0" },
+        "east": { "uv": [4, 10, 12, 12], "texture": "#0" },
+        "south": { "uv": [4, 10, 12, 12], "texture": "#0" },
+        "west": { "uv": [4, 10, 12, 12], "texture": "#0" },
+        "up": { "uv": [0, 0, 0, 0], "texture": "#3" },
+        "down": { "uv": [0, 0, 0, 0], "texture": "#3" }
+      }
+    },
+    {
+      "name": "inner_runic_altar_2",
+      "from": [3.2, 1.6, 3.2],
+      "to": [12.8, 4.8, 12.8],
+      "faces": {
+        "north": { "uv": [2, 12, 14, 16], "texture": "#0" },
+        "east": { "uv": [2, 12, 14, 16], "texture": "#0" },
+        "south": { "uv": [2, 12, 14, 16], "texture": "#0" },
+        "west": { "uv": [2, 12, 14, 16], "texture": "#0" },
+        "up": { "uv": [2, 2, 14, 14], "texture": "#2" },
+        "down": { "uv": [2, 2, 14, 14], "texture": "#2" }
+      }
+    }
+  ]
+}

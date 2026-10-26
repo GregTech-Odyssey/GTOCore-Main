@@ -28,6 +28,7 @@ import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
+import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.heat.*;
@@ -1251,7 +1252,8 @@ public final class GTOMachines {
             .langValue("Just Get UHV Game Machine")
             .tips(GTOMachineTooltips.JustGet10MachineTooltips)
             .nonYAxisRotation()
-            .modelRenderer(() -> GTOCore.id("block/machine/just_get_10"))
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/just_get_10")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
@@ -1260,7 +1262,8 @@ public final class GTOMachines {
             .langValue("Circuit 2048 Game Machine")
             .tips(GTOMachineTooltips.Game2048MachineTooltips)
             .nonYAxisRotation()
-            .modelRenderer(() -> GTOCore.id("block/machine/game_2048"))
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/game_2048")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
@@ -1269,7 +1272,18 @@ public final class GTOMachines {
             .langValue("24 Game Machine")
             .tips(GTOMachineTooltips.Game24MachineTooltips)
             .nonYAxisRotation()
-            .modelRenderer(() -> GTOCore.id("block/machine/game_24"))
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/game_24")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition NUMBER_PUZZLE = machine("number_puzzle_machine", "数字华容道游戏机", NumberPuzzleMachine::new)
+            .langValue("Number Puzzle Game Machine")
+            .tips(GTOMachineTooltips.NumberPuzzleTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/number_puzzle")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

@@ -1,5 +1,4 @@
 {
-  "format_version": "26.3",
   "credit": "Made with Blockbench",
   "render_type": "translucent",
   "textures": {
@@ -11,7 +10,6 @@
     "6": "gtocore:block/machines/game/face",
     "7": "gtocore:block/machines/game/marquee",
     "9": "gtocore:block/machines/game/coin_slot",
-    "16": "gtocore:block/machines/game/just_get_10",
     "particle": "block/iron_block"
   },
   "elements": [
@@ -187,14 +185,6 @@
       }
     },
     {
-      "from": [2, 4, 0.15],
-      "to": [14, 16, 0.15],
-      "rotation": { "angle": 0, "axis": "y", "origin": [-0.25, 4, 0] },
-      "faces": {
-        "north": { "uv": [0, 0, 16, 16], "texture": "#16" }
-      }
-    },
-    {
       "name": "marqueeBody",
       "from": [1, 17, 1],
       "to": [15, 23, 15],
@@ -320,43 +310,6 @@
         "up": { "uv": [8, 7, 11, 8], "texture": "#2" },
         "down": { "uv": [8, 7, 11, 8], "texture": "#2" }
       }
-    }
-  ],
-  "groups": [
-    {
-      "name": "base",
-      "origin": [0, 0, 0],
-      "scope": 0,
-      "color": 0,
-      "children": [0, 1, 2, 3, 4]
-    },
-    {
-      "name": "cabinet",
-      "origin": [0, 0, 0],
-      "scope": 0,
-      "color": 0,
-      "children": [5, 6, 7, 8, 9, 10, 11, 12]
-    },
-    {
-      "name": "reels",
-      "origin": [0, 0, 0],
-      "scope": 0,
-      "color": 0,
-      "children": [13]
-    },
-    {
-      "name": "marquee",
-      "origin": [0, 0, 0],
-      "scope": 0,
-      "color": 0,
-      "children": [14, 15, 16, 17, 18, 19, 20]
-    },
-    {
-      "name": "controls",
-      "origin": [0, 0, 0],
-      "scope": 0,
-      "color": 0,
-      "children": [21, 22, 23]
     }
   ]
 }

@@ -1129,11 +1129,6 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.FIRE);
 
-    public static final RecipeType ELF_EXCHANGE_RECIPES = register("elf_exchange", "ELF Exchange", "精灵交易", MAGIC)
-            .setMaxIOSize(2, 1, 0, 0)
-            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
-            .setSound(GTSoundEntries.REPLICATOR);
-
     public static final RecipeType INDUSTRIAL_ALTAR_RECIPES = register("industrial_altar", "工业祭坛", MAGIC)
             .setMaxIOSize(18, 1, 3, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
@@ -1192,6 +1187,64 @@ public final class GTORecipeTypes {
                             .setHoverTooltips(Component.translatable("gtocore.elemental_resonance.1", fluidStack.getDisplayName(), fluidStack.getAmount() + "mB", resonance[1])));
                 }
             });
+
+    //////////////////////////////////////
+    // ****** 魔法站点（植物魔法 / 新生魔艺） ******//
+    //////////////////////////////////////
+
+    // 白雏菊：1 个方块 -> 1 个方块（映射到魔力灌注机时补白雏菊催化剂与 2 号电路）
+    public static final RecipeType PURE_DAISY_RECIPES = register("pure_daisy", "白雏菊", MAGIC)
+            .setMaxIOSize(1, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.COOLING);
+
+    // 魔力池：1 原料 + 1 可选催化剂（炼金 / 转化催化剂不消耗）-> 1
+    public static final RecipeType MANA_POOL_RECIPES = register("mana_pool", "Mana Pool", "魔力池", MAGIC)
+            .setMaxIOSize(2, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_BATH, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.BATH);
+
+    // 花药台：1 试剂 + 最多 16 花瓣 + 1 份水 + 2/3/4 号电路 -> 1（电路用于区分同输入配方）
+    public static final RecipeType PETAL_APOTHECARY_RECIPES = register("petal_apothecary", "Petal Apothecary", "花药台", MAGIC)
+            .setMaxIOSize(17, 1, 1, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_BATH, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.MIXER);
+
+    // 符文祭坛：最多 16 个符文 / 材料 + 催化剂 -> 1（映射到工业祭坛时补 1 号电路）
+    public static final RecipeType RUNIC_ALTAR_RECIPES = register("runic_altar", "Runic Altar", "符文祭坛", MAGIC)
+            .setMaxIOSize(17, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_CRYSTALLIZATION, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.ARC);
+
+    // 凝聚板（泰拉凝聚板）：最多 16 个材料 + 催化剂 -> 1
+    public static final RecipeType TERRA_PLATE_RECIPES = register("terra_plate", "Terrestrial Agglomeration Plate", "凝聚板", MAGIC)
+            .setMaxIOSize(18, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_CRYSTALLIZATION, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.ARC);
+
+    // 锻造祭坛（额外植物学基座）：1 原料 + 1 敲击工具 -> 1（映射到工业祭坛时补 5 号电路）
+    public static final RecipeType PEDESTAL_RECIPES = register("pedestal", "Pedestal", "锻造祭坛", MAGIC)
+            .setMaxIOSize(2, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.FORGE_HAMMER);
+
+    // 精灵门：输入 / 输出都是列表（数据里目前 1 -> 1，留出多输出余量）
+    public static final RecipeType ELVEN_PORTAL_RECIPES = register("elven_portal", "Alfheim Portal", "精灵门", MAGIC)
+            .setMaxIOSize(1, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.PORTAL_OPENING);
+
+    // 灌注室：1 原料 + 最多 5 个基座物 -> 1（映射到大型灌注装置时补 1 号电路）
+    public static final RecipeType IMBUEMENT_CHAMBER_RECIPES = register("imbuement_chamber", "Imbuement Chamber", "灌注室", MAGIC)
+            .setMaxIOSize(6, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_BATH, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.BATH);
+
+    // 附魔核心：1 试剂 + 最多 17 个基座物 + 5/6 号电路 -> 1（电路用于区分同输入配方）
+    public static final RecipeType ENCHANTING_APPARATUS_RECIPES = register("enchanting_apparatus", "Enchanting Apparatus", "附魔核心", MAGIC)
+            .setMaxIOSize(19, 1, 0, 0)
+            .setProgressBar(GuiTextures.PROGRESS_BAR_CRYSTALLIZATION, LEFT_TO_RIGHT)
+            .setSound(GTSoundEntries.REPLICATOR);
 
     public final static GTRecipeType DIGITAL_MINER_RECIPE = register("digital_miner", "数字采矿", ELECTRIC)
             .setMaxIOSize(0, 27, 0, 0).setEUIO(IO.IN)
