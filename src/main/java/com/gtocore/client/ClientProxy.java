@@ -22,6 +22,8 @@ import com.gtocore.client.renderer.fx.DysonForceFieldRenderer;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
+import com.gtocore.client.website.WebsiteAccount;
+import com.gtocore.client.website.WebsiteConsent;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.data.GTOAEParts;
@@ -103,6 +105,8 @@ public final class ClientProxy extends CommonProxy {
         super();
         init();
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        WebsiteConsent.init();
+        WebsiteAccount.init();
         ItemGuides.init(eventBus);
         eventBus.addListener(ClientProxy::clientSetup);
         eventBus.addListener(ClientProxy::registerItemDeco);
