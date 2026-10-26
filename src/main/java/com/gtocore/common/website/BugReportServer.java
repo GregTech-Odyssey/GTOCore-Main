@@ -30,6 +30,7 @@ public final class BugReportServer {
     public static final int STATE_DONE = 2;
     public static final int STATE_FAILED = 3;
     public static final int STATE_SKIPPED = 4;
+    public static final int PERMISSION_LEVEL = 2;
 
     private static final String USER_AGENT = "GTOCore-Bug-Server/1";
     private static final long UPLOAD_COOLDOWN_MS = 5 * 60 * 1000;
@@ -61,6 +62,7 @@ public final class BugReportServer {
     private static void onRequest(ServerPlayer player, FriendlyByteBuf buf) {
         var server = player.server;
         server.execute(() -> {
+            if (!allowed(player)) return;
             String version = packVersion();
             String environment = server.isDedicatedServer() || server.isPublished() ? "multi" : "single";
             String difficulty = difficulty();
@@ -81,7 +83,7 @@ public final class BugReportServer {
         String token = buf.readUtf(64);
         var server = player.server;
         server.execute(() -> {
-            if (!serverUploads(server) || !BugLogs.isLinkToken(token)) return;
+            if (!allowed(player) || !serverUploads(server) || !BugLogs.isLinkToken(token)) return;
             long now = System.currentTimeMillis();
             UUID id = player.getUUID();
             if (now - LAST_UPLOAD.getOrDefault(id, 0L) < UPLOAD_COOLDOWN_MS) {
@@ -134,6 +136,10 @@ public final class BugReportServer {
                 out.writeUtf(error.length() > 300 ? error.substring(0, 300) : error);
             }, player);
         });
+    }
+
+    private static boolean allowed(ServerPlayer player) {
+        return player.server.isSingleplayerOwner(player.getGameProfile()) || player.hasPermissions(PERMISSION_LEVEL);
     }
 
     private static boolean serverUploads(MinecraftServer server) {

@@ -99,6 +99,8 @@ public final class BugReportClient {
     static final String CHAT_CLICK = "gtocore.bug.chat.click";
     @RegisterLanguage(cn = "bug反馈未完成：%s", en = "The bug report could not be started: %s")
     static final String CHAT_ABORTED = "gtocore.bug.chat.aborted";
+    @RegisterLanguage(cn = "多人游戏中只有管理员（OP）可以使用/bug。", en = "In multiplayer, only operators can use /bug.")
+    static final String OP_ONLY = "gtocore.bug.op_only";
 
     private static final long INFO_TIMEOUT_MS = 10_000;
     private static final long SERVER_IDLE_TIMEOUT_MS = 120_000;
@@ -150,6 +152,10 @@ public final class BugReportClient {
 
     public static void run() {
         var minecraft = Minecraft.getInstance();
+        if (!minecraft.hasSingleplayerServer() && (minecraft.player == null || !minecraft.player.hasPermissions(BugReportServer.PERMISSION_LEVEL))) {
+            chat(Component.translatable(OP_ONLY).withStyle(ChatFormatting.RED));
+            return;
+        }
         if (!WebsiteConsent.granted()) {
             WebsiteConsent.open(null);
             return;
