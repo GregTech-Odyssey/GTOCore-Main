@@ -201,6 +201,15 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("每题都有解", "Every puzzle is solvable"));
     });
 
+    // 数字华容道 - 只保留滑块规则与奖励概览
+    public static final TipSpec NumberPuzzleTooltips = GTOTips.of("number_puzzle", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("数字华容道", "Number Puzzle")));
+        t.feature(t.tr("点击空格上下左右相邻的数字块滑动，把 1..N²-1 按行排好、空格留在右下",
+                "Click a tile next to the gap to slide it; order 1..N²-1 by row with the gap at the bottom-right"));
+        t.feature(t.tr("完成一局按尺寸发放 1/4/8/15/25/40 游戏币，并记录该尺寸的最快完成时间",
+                "Each clear pays 1/4/8/15/25/40 Game Coins by size and records the best time for that size"));
+    });
+
     // 扫雷 - 只保留方块操作与通关条件；难度、奖励、按钮等以机器界面为准
     public static final TipSpec MinesweeperCoreTooltips = GTOTips.of("minesweeper_core", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("扫雷", "Minesweeper")));

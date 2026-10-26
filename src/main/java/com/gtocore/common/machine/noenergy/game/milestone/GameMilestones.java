@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 四台游戏机的玩家里程碑：每个存档一份（`world/data/gtocore_game_milestones.dat`），按游戏分成四个列表。
+ * 游戏机的玩家里程碑：每个存档一份（`world/data/gtocore_game_milestones.dat`），按游戏分成多个列表。
  *
  * <p>
  * 存盘格式与 {@code WalletSavedData} 一致：{@code save(CompoundTag)} 把每张表写成 {@link ListTag}（每条一个
@@ -44,6 +44,7 @@ public final class GameMilestones extends SavedData {
     public static final String JUST_GET_10 = "just_get_10";
     public static final String GAME_2048 = "game_2048";
     public static final String GAME_24 = "game_24";
+    public static final String NUMBER_PUZZLE = "number_puzzle";
 
     private static final String NBT_SLOT_MACHINE = "slot_machine";
     private static final String NBT_JUST_GET_10 = "just_get_10";
@@ -61,6 +62,9 @@ public final class GameMilestones extends SavedData {
     private static final String NBT_TEN_TIME = "ten_time";
     private static final String NBT_THIRTEEN = "thirteen";
     private static final String NBT_THIRTEEN_TIME = "thirteen_time";
+    private static final String NBT_NUMBER_PUZZLE = "number_puzzle";
+    private static final String NBT_NUMBER_TICKS = "number_ticks";
+    private static final String NBT_NUMBER_TIMES = "number_times";
 
     // ==================== 表项 ====================
 
@@ -73,6 +77,9 @@ public final class GameMilestones extends SavedData {
     /** 24 点：两个抽牌档各自的「10 题最快用时」（tick，0 表示没记录）与达成时间。 */
     public record PuzzleStat(UUID player, long tenTicks, long tenTime, long thirteenTicks, long thirteenTime) {}
 
+    /** 数字华容道：六档尺寸各自的最快用时与达成时间；0 表示该尺寸没有记录。 */
+    public record NumberPuzzleStat(UUID player, long[] ticks, long[] times) {}
+
     /** 老虎机榜单：回报比降序 → 获得降序 → 次数降序。 */
     private static final Comparator<SlotStat> SLOT_ORDER = Comparator
             .comparingDouble(GameMilestones::slotRatio).reversed()
@@ -83,6 +90,11 @@ public final class GameMilestones extends SavedData {
             .comparingInt(ScoreStat::bestScore).reversed()
             .thenComparing(Comparator.comparingInt(ScoreStat::bestMerged).reversed())
             .thenComparingLong(ScoreStat::bestScoreTime);
+    /** 数字华容道榜单：完成尺寸数降序，其次总用时升序。 */
+    private static final Comparator<NumberPuzzleStat> NUMBER_PUZZLE_ORDER = Comparator
+            .comparingInt(GameMilestones::numberPuzzleCompleted).reversed()
+            .thenComparingLong(GameMilestones::numberPuzzleTotal)
+            .thenComparing(stat -> stat.player().toString());
 
     // ==================== 数据 ====================
 
@@ -90,6 +102,7 @@ public final class GameMilestones extends SavedData {
     private final O2OOpenCacheHashMap<UUID, ScoreStat> justGet10 = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, ScoreStat> game2048 = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles = new O2OOpenCacheHashMap<>();
 
     /** 写一次加一：界面靠它判断里程碑文字要不要重建（不存盘）。 */
     private int modCount;
@@ -109,6 +122,15 @@ public final class GameMilestones extends SavedData {
         }
         readScores(tag.getList(NBT_JUST_GET_10, Tag.TAG_COMPOUND), data.justGet10);
         readScores(tag.getList(NBT_GAME_2048, Tag.TAG_COMPOUND), data.game2048);
+        ListTag numberPuzzles = tag.getList(NBT_NUMBER_PUZZLE, Tag.TAG_COMPOUND);
+        for (int index = 0; index < numberPuzzles.size(); index++) {
+            var entry = numberPuzzles.getCompound(index);
+            var player = readPlayer(entry);
+            if (player == null) continue;
+            long[] ticks = normalizeTimes(entry.getLongArray(NBT_NUMBER_TICKS));
+            long[] times = normalizeTimes(entry.getLongArray(NBT_NUMBER_TIMES));
+            data.numberPuzzles.put(player, new NumberPuzzleStat(player, ticks, times));
+        }
         ListTag puzzles = tag.getList(NBT_GAME_24, Tag.TAG_COMPOUND);
         for (int index = 0; index < puzzles.size(); index++) {
             var entry = puzzles.getCompound(index);
@@ -189,6 +211,19 @@ public final class GameMilestones extends SavedData {
         touch();
     }
 
+    /** 数字华容道完成一局：该尺寸取更短用时，并记住达成时间。 */
+    public void recordNumberPuzzle(@Nullable UUID player, int sizeOrdinal, long ticks, long gameTime) {
+        if (player == null || sizeOrdinal < 0 || sizeOrdinal >= 6 || ticks <= 0L) return;
+        var old = numberPuzzles.get(player);
+        long[] bestTicks = old == null ? new long[6] : old.ticks().clone();
+        long[] bestTimes = old == null ? new long[6] : old.times().clone();
+        if (bestTicks[sizeOrdinal] > 0L && ticks >= bestTicks[sizeOrdinal]) return;
+        bestTicks[sizeOrdinal] = ticks;
+        bestTimes[sizeOrdinal] = gameTime;
+        numberPuzzles.put(player, new NumberPuzzleStat(player, bestTicks, bestTimes));
+        touch();
+    }
+
     /** 当前数据版本：变了说明有记录更新，界面该重建文字。 */
     public int modCount() {
         return modCount;
@@ -214,6 +249,26 @@ public final class GameMilestones extends SavedData {
 
     public List<ScoreStat> game2048Board() {
         return scoreBoard(game2048);
+    }
+
+    public List<NumberPuzzleStat> numberPuzzleBoard() {
+        var board = new ObjectArrayList<NumberPuzzleStat>(numberPuzzles.size());
+        board.addAll(numberPuzzles.values());
+        board.sort(NUMBER_PUZZLE_ORDER);
+        return board;
+    }
+
+    /** 单个尺寸的排行榜：只收该尺寸有成绩的玩家，按用时升序。 */
+    public List<NumberPuzzleStat> numberPuzzleBoard(int sizeOrdinal) {
+        int index = Math.clamp(sizeOrdinal, 0, 5);
+        var board = new ObjectArrayList<NumberPuzzleStat>();
+        for (var stat : numberPuzzles.values()) {
+            if (stat.ticks()[index] > 0L) board.add(stat);
+        }
+        board.sort(Comparator.comparingLong((NumberPuzzleStat stat) -> stat.ticks()[index])
+                .thenComparingLong(stat -> stat.times()[index])
+                .thenComparing(stat -> stat.player().toString()));
+        return board;
     }
 
     /** 24 点某个抽牌档的榜单（0 = 1~10，1 = 1~13）：用时升序，只收有这一档记录的人。 */
@@ -270,6 +325,16 @@ public final class GameMilestones extends SavedData {
             puzzles.add(entry);
         }
         tag.put(NBT_GAME_24, puzzles);
+
+        ListTag numberPuzzles = new ListTag();
+        for (var stat : this.numberPuzzles.values()) {
+            var entry = new CompoundTag();
+            entry.putUUID(NBT_PLAYER, stat.player());
+            entry.putLongArray(NBT_NUMBER_TICKS, stat.ticks());
+            entry.putLongArray(NBT_NUMBER_TIMES, stat.times());
+            numberPuzzles.add(entry);
+        }
+        tag.put(NBT_NUMBER_PUZZLE, numberPuzzles);
         return tag;
     }
 
@@ -315,6 +380,29 @@ public final class GameMilestones extends SavedData {
     @Nullable
     private O2OOpenCacheHashMap<UUID, ScoreStat> scoreStats(String game) {
         return JUST_GET_10.equals(game) ? justGet10 : GAME_2048.equals(game) ? game2048 : null;
+    }
+
+    private static int numberPuzzleCompleted(NumberPuzzleStat stat) {
+        int count = 0;
+        for (long ticks : stat.ticks()) {
+            if (ticks > 0L) count++;
+        }
+        return count;
+    }
+
+    private static long numberPuzzleTotal(NumberPuzzleStat stat) {
+        long total = 0L;
+        for (long ticks : stat.ticks()) {
+            if (ticks > 0L) total += ticks;
+        }
+        return total;
+    }
+
+    private static long[] normalizeTimes(long[] values) {
+        if (values.length == 6) return values;
+        long[] normalized = new long[6];
+        System.arraycopy(values, 0, normalized, 0, Math.min(values.length, normalized.length));
+        return normalized;
     }
 
     private static long addSaturated(long base, long add) {

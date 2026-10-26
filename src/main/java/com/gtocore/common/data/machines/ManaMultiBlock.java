@@ -211,7 +211,7 @@ public final class ManaMultiBlock {
             .perfectOCTooltips()
             .parallelizableManaOverclock()
             .tips(GTOMachineTooltips.ElfExchangeMachine)
-            .recipeTypes(GTORecipeTypes.ELF_EXCHANGE_RECIPES)
+            .recipeTypes(GTORecipeTypes.ELVEN_PORTAL_RECIPES)
             .block(GTOBlocks.MANASTEEL_CASING)
             .structure(definition -> Structure
                     .root(MultiBlockFileReader.piece("elf_exchange").build())
