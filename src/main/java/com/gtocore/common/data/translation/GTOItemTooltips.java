@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationElectricStimulator;
 import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtocore.config.GTOConfig;
+import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.ae.AccelerationRates;
 
@@ -234,6 +235,12 @@ public final class GTOItemTooltips {
         setTips(ModBlocks.OXYGEN_DISTRIBUTOR.get().asItem(), GTOTips.of(t -> {
             t.requirement(t.tr("直接通入氧气与电以工作", "Needs oxygen and power to work"));
             t.edition();
+        }));
+        setTips(ModBlocks.GRAVITY_NORMALIZER.get().asItem(), GTOTips.of(t -> {
+            if (GTORules.NO_SPACE_CHALLENGE.get()) {
+                t.requirement(Component.translatable("gtocore.tooltip.item.gravity_normalizer.challenge"));
+                t.edition();
+            }
         }));
 
         for (Item item : List.of(ModBlocks.OXYGEN_LOADER.get().asItem(), ModBlocks.NASA_WORKBENCH.get().asItem())) {

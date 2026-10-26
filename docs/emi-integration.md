@@ -54,6 +54,14 @@ EMI 加载/重载中的逐配方、逐原料、逐标签操作按局部高频路
 
 对外 EMI/JEI 协议保留必要的接口类型、Stream/Optional 返回值；内部使用具体容器、原始类型与显式循环。参数和空值约束通过 JetBrains `@NotNull`、`@Nullable`、`@Contract`、`@UnmodifiableView` 表达，直接共享只读缓存，不增加运行时防御检查或不可变包装。
 
+## 精妙系列兼容
+
+精妙核心的 `EmiGridMenuInfo` 仍以二进制方式访问 `dev.emi.emi.platform.EmiClient.onServer`。EMI-gto 保留该旧包名的兼容类，继承 `dev.emi.emi.EmiClient`，让旧、新调用共享服务器握手状态、断线复位和配方传输入口；不要在兼容类里另行声明同名静态字段。
+
+GTO 的 EMI 插件白名单分别注册 `BackpackEmiPlugin` 和 `StorageEmiPlugin`，按各自模组是否存在启用。精妙核心的 `CoreEmiPlugin` 当前为空，无需额外注册。
+
+EMI-gto 的 `SophisticatedEmiCompatibilityTest` 使用与主仓一致的精妙核心、背包、存储真实依赖，检查 EMI 字段/方法的二进制链接，并执行两个容器的实际 `EmiGridMenuInfo.craft`。测试覆盖客户端填充以及服务器传输的三种目标、单次/批量请求；Minecraft 界面与 Forge 网络边界使用 mock，游戏内的实际物品移动仍需客户端回归。
+
 ## 跨仓验证与交付
 
 各仓用 JDK 21。先在 EMI-gto 编译、跑单元测试并 `publishToMavenLocal`，再在 AE fork 编译、跑 `appeng.integration.modules.emi` 测试并 `publishToMavenLocal`，最后在主仓把 `emi_version`、`ae2_version` 改成同一版本号验证 `compileJava`、`compileKotlin`，修改 GTOLib 后必须完成 `buildGtolibProtected`。同时检查运行依赖里只有一份 `emi`（`dev.emi:emi-forge-1.20.1`）。

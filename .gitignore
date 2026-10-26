@@ -49,3 +49,4 @@ libs/gtonativelib*.jar
 /logs/
 /config/
 /outputs/
+/.playwright-mcp/

@@ -185,6 +185,9 @@ public final class GTEMIPlugin implements EmiPlugin {
         if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
             list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.emi.BackpackEmiPlugin(), "backpack"));
         }
+        if (Mods.SOPHISTICATEDSTORAGE.isLoaded()) {
+            list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin(), "sophisticatedstorage"));
+        }
         list.accept(new EmiPluginContainer(new BotaniaEmiPlugin(), BotaniaAPI.MODID));
         list.accept(new EmiPluginContainer(new EmiExtrabotanyPlugin(), ExtraBotanyAPI.MODID));
         list.accept(new EmiPluginContainer(new EMIPlugin(), LDLib.MOD_ID));
