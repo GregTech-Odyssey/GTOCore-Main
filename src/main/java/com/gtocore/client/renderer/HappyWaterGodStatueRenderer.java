@@ -88,7 +88,7 @@ public final class HappyWaterGodStatueRenderer implements BlockEntityRenderer<Ha
     private static final Component NAMEPLATE = Component.translatable(HappyWaterGodStatue.NAMEPLATE);
     private static final Map<String, Skin> SKINS = new ConcurrentHashMap<>();
     private static final Map<String, Boolean> BUNDLED_SKINS = Map.of("suriedxinxin", true, "powsdssag", true, "hophenby", true, "alcox233", true,
-            "maple197", true, "bnw_neurs", true, "qwerty54188", true, "ratonhagaton", false);
+            "maple197", true, "bnw_neurs", true, "qwerty54188", true, "ratonhagaton", false, "muuushin", true);
     private static final Component WARNING = Component.translatable(HappyWaterGodStatue.WARNING).withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
     private static final Component WARNING_DETAIL = Component.translatable(HappyWaterGodStatue.WARNING_DETAIL).withStyle(ChatFormatting.RED);
     private static final Component WARNING_HINT = Component.translatable(HappyWaterGodStatue.WARNING_HINT);

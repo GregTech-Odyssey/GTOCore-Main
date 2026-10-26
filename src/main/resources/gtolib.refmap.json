@@ -467,6 +467,9 @@
     },
     "com/gtolib/mixin/mc/entity/FoodDataMixin": {
       "addExhaustion": "Lnet/minecraft/world/food/FoodData;m_38703_(F)V"
+    },
+    "com/gtocore/mixin/mc/client/UtilOSMixin": {
+      "openUrl": "Lnet/minecraft/Util$OS;m_137650_(Ljava/net/URL;)V"
     }
   },
   "data": {
@@ -938,6 +941,9 @@
       },
       "com/gtolib/mixin/mc/entity/FoodDataMixin": {
         "addExhaustion": "Lnet/minecraft/world/food/FoodData;m_38703_(F)V"
+      },
+      "com/gtocore/mixin/mc/client/UtilOSMixin": {
+        "openUrl": "Lnet/minecraft/Util$OS;m_137650_(Ljava/net/URL;)V"
       }
     }
   }

@@ -416,6 +416,10 @@
     "gtocore:bismuth_bronze_universal_pipe",
     "gtocore:palladium_universal_pipe",
     "gtocore:rhodium_universal_pipe",
-    "gtocore:yttrium_barium_cuprate_universal_pipe"
+    "gtocore:yttrium_barium_cuprate_universal_pipe",
+    {
+      "id": "#ars_nouveau:machines",
+      "required": false
+    }
   ]
 }

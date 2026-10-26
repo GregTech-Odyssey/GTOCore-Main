@@ -149,7 +149,7 @@ public final class HappyWaterGodStatue extends HorizontalDirectionalBlock implem
     public static final int WARNING_EVERY = 40;
     public static final String LEAD = "suriedxinxin";
     public static final String[] DEVS = { "POWSDSSAG", "hophenby" };
-    public static final String[] HELPERS = { "Alcox233", "maple197", "bnw_neurs", "qwerty54188", "Armadillo", "ratonhagaton" };
+    public static final String[] HELPERS = { "Alcox233", "maple197", "bnw_neurs", "qwerty54188", "Armadillo", "ratonhagaton", "MuuuShin" };
     public static final String OFFLINE_HELPER = "Armadillo";
     @RegisterLanguage(cn = "犰狳", en = "Armadillo")
     public static final String OFFLINE_HELPER_NAME = "gtocore.happy_water_god_statue.armadillo";

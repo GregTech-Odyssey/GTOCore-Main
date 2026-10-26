@@ -1,5 +1,7 @@
 package com.gtocore.client.guide;
 
+import com.gtocore.utils.GTOWebsite;
+
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -89,7 +91,6 @@ public final class ItemGuides {
 
     public static final KeyMapping KEY = new KeyMapping(KEY_NAME, KeyConflictContext.GUI, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.keybinding.gtocore");
 
-    private static final String SITE = "https://gtodyssey.com";
     private static final String USER_AGENT = "GTOCore-ItemGuides/1";
     private static final int MAX_BYTES = 16 << 20;
     private static final int PROMPT_DELAY_TICKS = 60;
@@ -99,7 +100,6 @@ public final class ItemGuides {
             .thenComparing(Comparator.comparingLong((Ranked ranked) -> ranked.article().published()).reversed())
             .thenComparing(ranked -> ranked.article().id());
     @Nullable
-    private static final String ORIGIN = devProperty("gtocore.itemGuides.origin");
     private static final boolean NO_BROWSER = devProperty("gtocore.itemGuides.noBrowser") != null;
     private static final Path DIR = FMLPaths.GAMEDIR.get().resolve("gtocore").resolve("item-guides");
     private static final Path STATE = DIR.resolve("state.json");
@@ -211,7 +211,7 @@ public final class ItemGuides {
         var article = guide.article();
         String locale = siteLocale();
         if (!article.hasLocale(locale)) locale = article.sourceLocale();
-        return origin() + "/articles/" + locale + "/" + article.id();
+        return GTOWebsite.origin() + "/articles/" + locale + "/" + article.id();
     }
 
     static void openPage(Guide guide) {
@@ -386,7 +386,7 @@ public final class ItemGuides {
     private static void fetch() {
         long started = System.nanoTime();
         try {
-            var request = HttpRequest.newBuilder(URI.create(origin() + "/api/item-guides/v" + ItemGuideCatalogue.SCHEMA))
+            var request = HttpRequest.newBuilder(URI.create(GTOWebsite.origin() + "/api/item-guides/v" + ItemGuideCatalogue.SCHEMA))
                     .timeout(Duration.ofSeconds(10))
                     .header("User-Agent", USER_AGENT)
                     .header("Accept", "application/json")
@@ -460,10 +460,6 @@ public final class ItemGuides {
         var temp = target.resolveSibling(target.getFileName() + ".tmp");
         Files.writeString(temp, text, StandardCharsets.UTF_8);
         Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-    }
-
-    private static String origin() {
-        return ORIGIN != null ? ORIGIN : SITE;
     }
 
     @Nullable

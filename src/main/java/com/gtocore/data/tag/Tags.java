@@ -25,8 +25,6 @@ public final class Tags {
     public static final TagKey<Block> ALL_LAYER_STONE = TagUtils.createBlockTag(GTOCore.id("all_layer"));
     public static final TagKey<Item> HUMAN_EGG = TagUtils.createItemTag(GTOCore.id("human_egg"));
 
-    public static final TagKey<Block> ARCHWOOD_LOG = TagUtil.createBlockTag("logs/archwood_logs");
-
     public static final TagKey<Item> TAROT_ARCANUM = TagUtils.createItemTag(GTOCore.id("tarot_arcanum"));
 
     public static final TagKey<Item> STAR_STONE = TagUtils.createItemTag(GTOCore.id("star_stone"));

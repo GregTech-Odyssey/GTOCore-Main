@@ -5,7 +5,6 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.data.recipe.builder.botania.*;
-import com.gtocore.data.tag.Tags;
 
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.TagUtils;
@@ -27,6 +26,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import com.hollingsworth.arsnouveau.common.datagen.BlockTagProvider;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import com.kyanite.deeperdarker.content.DDBlocks;
@@ -88,7 +88,7 @@ public final class BotaniaRecipes {
         // 白雏菊
         {
             PureDaisyRecipe("livingclay", StateIngredientHelper.of(BlockTags.DIRT), ChemicalHelper.getBlock(block, Livingclay));
-            PureDaisyRecipe("livingwood", StateIngredientHelper.of(Tags.ARCHWOOD_LOG), BotaniaBlocks.livingwoodLog);
+            PureDaisyRecipe("livingwood", StateIngredientHelper.of(BlockTagProvider.ARCHWOOD_LOGS), BotaniaBlocks.livingwoodLog);
 
         }
 
