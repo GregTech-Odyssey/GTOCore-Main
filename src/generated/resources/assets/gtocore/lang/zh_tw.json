@@ -2940,6 +2940,7 @@
   "gtocore.bug.chat.ready": "反饋連結已就緒，%s，在官網補充剩餘資訊後提交。",
   "gtocore.bug.chat.truncated": "日誌%s太長，已截取到3MB以內上傳。",
   "gtocore.bug.close": "關閉",
+  "gtocore.bug.op_only": "多人遊戲中只有管理員（OP）可以使用/bug。",
   "gtocore.bug.open": "打開反饋頁面",
   "gtocore.bug.row.client": "本機%s",
   "gtocore.bug.row.done": "已上傳",

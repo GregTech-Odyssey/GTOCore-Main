@@ -2940,6 +2940,7 @@
   "gtocore.bug.chat.ready": "反馈链接已就绪，%s，在官网补充剩余信息后提交。",
   "gtocore.bug.chat.truncated": "日志%s太长，已截取到3MB以内上传。",
   "gtocore.bug.close": "关闭",
+  "gtocore.bug.op_only": "多人游戏中只有管理员（OP）可以使用/bug。",
   "gtocore.bug.open": "打开反馈页面",
   "gtocore.bug.row.client": "本机%s",
   "gtocore.bug.row.done": "已上传",

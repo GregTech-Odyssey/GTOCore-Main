@@ -2806,6 +2806,7 @@
   "gtocore.bug.chat.ready": "Your report link is ready. %s, fill in the rest on the website and submit it.",
   "gtocore.bug.chat.truncated": "The log %s was too long and was cut down to under 3 MB for upload.",
   "gtocore.bug.close": "Close",
+  "gtocore.bug.op_only": "In multiplayer, only operators can use /bug.",
   "gtocore.bug.open": "Open report page",
   "gtocore.bug.row.client": "This computer: %s",
   "gtocore.bug.row.done": "Uploaded",
