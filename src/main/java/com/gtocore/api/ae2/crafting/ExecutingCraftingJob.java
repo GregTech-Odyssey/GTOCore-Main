@@ -36,6 +36,7 @@ class ExecutingCraftingJob {
     private static final String NBT_TASKS = "tasks";
     private static final String NBT_CRAFTING_PROGRESS = "#craftingProgress";
     private static final String NBT_PAUSED = "paused";
+    private static final String NBT_FOLLOW_JOB = "followJob";
 
     final CraftingLink link;
     final ListCraftingInventory waitingFor;
@@ -47,6 +48,7 @@ class ExecutingCraftingJob {
     long remainingAmount;
     Integer playerId;
     boolean paused = false;
+    boolean followJob;
 
     final KeyCounter expectedOutputs = new KeyCounter();
     final AEKeySet<AEKey> defsToPurge = new AEKeySet<>();
@@ -125,6 +127,7 @@ class ExecutingCraftingJob {
             this.playerId = null;
         }
         this.paused = data.getBoolean(NBT_PAUSED);
+        this.followJob = data.getBoolean(NBT_FOLLOW_JOB);
 
         ListTag tasksTag = data.getList(NBT_TASKS, Tag.TAG_COMPOUND);
         for (int i = 0; i < tasksTag.size(); ++i) {
@@ -212,6 +215,9 @@ class ExecutingCraftingJob {
         }
 
         data.putBoolean(NBT_PAUSED, this.paused);
+        if (this.followJob) {
+            data.putBoolean(NBT_FOLLOW_JOB, true);
+        }
 
         return data;
     }
