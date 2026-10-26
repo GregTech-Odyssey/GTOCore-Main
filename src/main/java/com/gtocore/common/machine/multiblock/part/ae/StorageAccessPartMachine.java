@@ -91,9 +91,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     private static final String LANG_TRANSFER = "gtocore.machine.storage_transfer";
     private static final String LANG_TRANSFER_TOOLTIP = "gtocore.machine.storage_transfer.tooltip";
 
-    @Setter
-    boolean observe;
-
     int counter;
     @Setter
     boolean check;
@@ -159,8 +156,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         if (isRemote() || uuid == null || !isOnline) return;
         var grid = getMainNode().getGrid();
         if (grid == null) return;
-        double used = IndexedStorages.transferFromNetwork(grid, this, this, isInfinite ? Double.POSITIVE_INFINITY : capacity - getBytes(), IActionSource.ofMachine(this));
-        if (!isInfinite) addBytes(used);
+        IndexedStorages.transferFromNetwork(grid, this, this, isInfinite ? Double.POSITIVE_INFINITY : capacity - getBytes(), IActionSource.ofMachine(this));
         onChanged();
     }
 
@@ -199,8 +195,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     public abstract int getTypes();
 
     public abstract double getBytes();
-
-    abstract void addBytes(double bytes);
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
@@ -261,9 +255,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         void tickUpdate() {
-            var dirty = this.dirty;
             if (dirty) {
-                this.dirty = false;
+                dirty = false;
                 getCellStorage().setSaveDirty();
             }
             if (uuid == null || capacity == 0 || !isOnline) return;
@@ -276,27 +269,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     isInfinite = false;
                 }
             }
-            if (observe || (dirty && !isInfinite)) {
-                observe = false;
-                double totalAmount = 0;
-                var storage = getCellStorage();
-                if (storage == CellDataStorage.EMPTY) return;
-                var map = storage.getStoredMap();
-                if (map != null) {
-                    for (var entry : map) {
-                        totalAmount += (double) entry.getLongValue() / entry.getKey().getType().getAmountPerByte();
-                    }
-                }
-                storage.setBytes(totalAmount);
-            } else if (!isInfinite && getOffsetTimer() % 20 == 7) {
-                observe = true;
-            }
-        }
-
-        @Override
-        void addBytes(double bytes) {
-            var data = getCellStorage();
-            if (data != CellDataStorage.EMPTY) data.setBytes(data.getBytes() + bytes);
         }
 
         protected CellDataStorage getCellStorage() {
@@ -340,6 +312,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     data.setStoredMap(map);
                 }
                 map.insert(what, amount);
+                data.addBytes(what, amount);
                 data.markChanged(what);
                 dirty = true;
             }
@@ -355,6 +328,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (mode == Actionable.MODULATE) {
                 var extract = map.extract(what, amount);
                 if (extract > 0) {
+                    data.addBytes(what, -extract);
                     data.markChanged(what);
                     dirty = true;
                 }
@@ -556,9 +530,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         void tickUpdate() {
-            var dirty = this.dirty;
             if (dirty) {
-                this.dirty = false;
+                dirty = false;
                 getCellStorage().setSaveDirty();
             }
             if (uuid == null || capacity == 0 || !isOnline) return;
@@ -571,27 +544,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     isInfinite = false;
                 }
             }
-            if (observe || (dirty && !isInfinite)) {
-                observe = false;
-                double totalAmount = 0;
-                var data = getCellStorage();
-                if (data == BigCellDataStorage.EMPTY) return;
-                var map = data.getStoredMap();
-                if (map != null) {
-                    for (var entry : map) {
-                        totalAmount += entry.getValue().doubleValue() / entry.getKey().getType().getAmountPerByte();
-                    }
-                }
-                data.setBytes(totalAmount);
-            } else if (!isInfinite && getOffsetTimer() % 20 == 7) {
-                observe = true;
-            }
-        }
-
-        @Override
-        void addBytes(double bytes) {
-            var data = getCellStorage();
-            if (data != BigCellDataStorage.EMPTY) data.setBytes(data.getBytes() + bytes);
         }
 
         public BigCellDataStorage getCellStorage() {
@@ -622,7 +574,9 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     map = new AEKeyBigMap<>();
                     data.setStoredMap(map);
                 }
-                map.insert(what, BigInteger.valueOf(amount));
+                var value = BigInteger.valueOf(amount);
+                map.insert(what, value);
+                data.addBytes(what, value);
                 data.markChanged(what);
                 dirty = true;
             }
@@ -638,6 +592,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (mode == Actionable.MODULATE) {
                 amount = map.extractLong(what, amount);
                 if (amount > 0) {
+                    data.addBytes(what, -amount);
                     data.markChanged(what);
                     dirty = true;
                 }
@@ -791,7 +746,10 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                 data.setStoredMap(map);
             }
             long inserted = map.insert(what, amount, limit);
-            if (inserted > 0) data.markChanged(what);
+            if (inserted > 0) {
+                data.addBytes(what, inserted);
+                data.markChanged(what);
+            }
             if (inserted < 1) return 0;
             dirty = true;
             return inserted;
@@ -833,6 +791,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (mode == Actionable.MODULATE) {
                 var extract = map.extract(what, amount, limit);
                 if (extract > 0) {
+                    data.addBytes(what, -extract);
                     data.markChanged(what);
                     dirty = true;
                 }

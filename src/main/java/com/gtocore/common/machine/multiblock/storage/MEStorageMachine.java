@@ -164,7 +164,6 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     public void addDisplayText(List<Component> textList) {
         super.addDisplayText(textList);
         if (accessPartMachine != null) {
-            if (getOffsetTimer() % 10 == 0) accessPartMachine.setObserve(true);
             textList.add(Component.translatable("gui.ae2.BytesUsed", NumberUtils.numberText(accessPartMachine.getBytes()).append(" / ").append(accessPartMachine.isInfinite() ? StringUtils.full_color("infinity") : NumberUtils.formatDouble(accessPartMachine.getCapacity())).withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
             textList.add(Component.literal(String.valueOf(accessPartMachine.getTypes())).withStyle(ChatFormatting.AQUA).append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
             if (accessPartMachine instanceof StorageAccessPartMachine.Big machine) {

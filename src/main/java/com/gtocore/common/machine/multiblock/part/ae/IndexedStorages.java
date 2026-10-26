@@ -28,7 +28,8 @@ public final class IndexedStorages {
         return (long) Math.min(amount, freeBytes * perByte);
     }
 
-    public static double transferFromNetwork(IGrid grid, IStorageProvider self, MEStorage target, double freeBytes, IActionSource source) {
+    /// 把网络里其它真实存储的内容搬进 target；target 的 insert 会自己增量记账，调用方不需要再补字节
+    public static void transferFromNetwork(IGrid grid, IStorageProvider self, MEStorage target, double freeBytes, IActionSource source) {
         var identities = new ReferenceOpenHashSet<>();
         var own = target.getResourceIdentity();
         if (own != null) identities.add(own);
@@ -63,7 +64,6 @@ public final class IndexedStorages {
                 usedBytes += (double) inserted / perByte;
             }
         }
-        return usedBytes;
     }
 
     private static boolean isInfiniteSupply(MEStorage storage) {
