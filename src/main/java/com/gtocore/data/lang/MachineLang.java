@@ -148,6 +148,8 @@ final class MachineLang {
         for (int tier = 0; tier < GTOValues.MANA.length; tier++) {
             addCNEN("gtocore.recipe.info.mana_tier." + tier, GTOValues.MANACN[tier], GTOValues.MANAN[tier]);
         }
+        addCNEN("gtocore.machine.wood_quantum_tank.tooltip", "木头做的超级缸", "A super tank made of wood");
+        addCNEN("gtocore.machine.wood_quantum_chest.tooltip", "比储物抽屉好...一点点吧", "Better than a storage drawer... just a little bit");
         addCNEN("gtocore.machine.mana_eu", "支持电力配方，转换比1:1", "Supports EU recipes, conversion ratio 1:1");
         addCNEN("gtocore.machine.processing_array.tooltip.0", "玻璃等级限制了内部机器等级", "Tier is limited by glass grade");
         addCNEN("gtocore.machine.processing_array.tooltip.1", "并行数由内部机器数量决定", "Parallel are determined by the amount of internal machines");
