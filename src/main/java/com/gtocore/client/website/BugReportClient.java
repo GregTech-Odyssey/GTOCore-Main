@@ -71,7 +71,7 @@ public final class BugReportClient {
     static final String ROW_UPLOADING = "gtocore.bug.row.uploading";
     @RegisterLanguage(cn = "已上传", en = "Uploaded")
     static final String ROW_DONE = "gtocore.bug.row.done";
-    @RegisterLanguage(cn = "已上传（超过5MB，已截取到3MB以内）", en = "Uploaded (over 5 MB, cut down to under 3 MB)")
+    @RegisterLanguage(cn = "已上传（超过5MB，保留开头1MB与末尾2MB）", en = "Uploaded (over 5 MB, kept the first 1 MB and the last 2 MB)")
     static final String ROW_TRUNCATED = "gtocore.bug.row.truncated";
     @RegisterLanguage(cn = "上传失败：%s", en = "Upload failed: %s")
     static final String ROW_FAILED = "gtocore.bug.row.failed";
@@ -89,7 +89,7 @@ public final class BugReportClient {
     static final String CLOSE = "gtocore.bug.close";
     @RegisterLanguage(cn = "已有一次bug反馈正在进行。", en = "A bug report is already in progress.")
     static final String BUSY = "gtocore.bug.busy";
-    @RegisterLanguage(cn = "日志%s太长，已截取到3MB以内上传。", en = "The log %s was too long and was cut down to under 3 MB for upload.")
+    @RegisterLanguage(cn = "日志%s超过5MB，已保留开头1MB与末尾2MB上传。", en = "The log %s was over 5 MB; its first 1 MB and last 2 MB were uploaded.")
     static final String CHAT_TRUNCATED = "gtocore.bug.chat.truncated";
     @RegisterLanguage(cn = "%s上传失败：%s", en = "%s could not be uploaded: %s")
     static final String CHAT_FAILED = "gtocore.bug.chat.failed";

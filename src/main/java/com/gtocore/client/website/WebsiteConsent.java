@@ -7,8 +7,10 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -16,7 +18,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -48,33 +49,48 @@ public final class WebsiteConsent {
 
     @RegisterLanguage(cn = "官网联网功能", en = "Website features")
     static final String TITLE = "gtocore.website.consent.title";
-    @RegisterLanguage(cn = "以下功能需要连接GTO官网gtodyssey.com。启用即表示你同意下列内容；不启用时这些功能均不可用。",
-                      en = "The features below connect to the GTO website gtodyssey.com. Enabling them means you agree to what is described here; without it none of them are available.")
+    @RegisterLanguage(cn = "以下功能需连接GTO官网（gtodyssey.com），同意后方可使用。",
+                      en = "These features connect to the GTO website (gtodyssey.com) and need your consent.")
     static final String INTRO = "gtocore.website.consent.intro";
     @RegisterLanguage(cn = "物品攻略", en = "Item guides")
     static final String GUIDES_HEADING = "gtocore.website.consent.guides";
-    @RegisterLanguage(cn = "· 每次启动游戏时在后台获取一次攻略目录（标题、发布时间、关联物品，约30KB，不含正文）。悬停在已关联攻略的物品上时按%s选择攻略并在浏览器中打开。",
-                      en = "· Each time the game starts, the guide catalogue (titles, dates and linked items, about 30 KB, no article text) is fetched once in the background. Hovering an item with guides, press %s to choose one and open it in your browser.")
+    @RegisterLanguage(cn = "每次启动游戏时，在后台获取一次攻略目录（约30KB，不含正文）。",
+                      en = "Fetches the guide list once per launch (about 30 KB, no article text).")
     static final String GUIDES_1 = "gtocore.website.consent.guides.1";
-    @RegisterLanguage(cn = "bug反馈（/bug）", en = "Bug reports (/bug)")
+    @RegisterLanguage(cn = "悬停在已关联攻略的物品上时，按%s选择并在浏览器中打开攻略。",
+                      en = "Hover over an item with guides and press %s to open one in your browser.")
+    static final String GUIDES_2 = "gtocore.website.consent.guides.2";
+    @RegisterLanguage(cn = "问题反馈（/bug）", en = "Bug reports (/bug)")
     static final String BUG_HEADING = "gtocore.website.consent.bug";
-    @RegisterLanguage(cn = "· 登录官网账号后，输入/bug将以你的账号领取反馈链接，自动填写整合包版本、游戏环境与难度，并上传本机的日志与24小时内的崩溃报告。",
-                      en = "· After signing in with your website account, /bug opens a report link in your name, fills in the pack version, environment and difficulty, and uploads this computer's log and any crash report from the last 24 hours.")
+    @RegisterLanguage(cn = "使用前需登录官网账号；多人游戏中仅OP可以使用此指令。",
+                      en = "Needs a website account; in multiplayer, only operators can use it.")
     static final String BUG_1 = "gtocore.website.consent.bug.1";
-    @RegisterLanguage(cn = "· 在服务器中游玩时，服务器也会上传服务端日志（服主可关闭）。",
-                      en = "· When playing on a server, the server also uploads its log (the server owner can turn this off).")
+    @RegisterLanguage(cn = "以你的账号生成反馈链接，并自动填写整合包版本、游戏环境与难度。",
+                      en = "Creates a report link with the pack version, environment and difficulty.")
     static final String BUG_2 = "gtocore.website.consent.bug.2";
-    @RegisterLanguage(cn = "· 日志将随issue公开，可能包含玩家名与聊天内容；IP地址会自动打码。超过5MB的日志会截取到3MB以内再上传。",
-                      en = "· Logs are published with the issue and may contain player names and chat; IP addresses are masked. Logs over 5 MB are cut down to under 3 MB before upload.")
+    @RegisterLanguage(cn = "同时上传本机日志与24小时内的崩溃报告。",
+                      en = "Uploads this computer's log and any crash report from the last 24 hours.")
     static final String BUG_3 = "gtocore.website.consent.bug.3";
-    @RegisterLanguage(cn = "其他", en = "Otherwise")
+    @RegisterLanguage(cn = "在服务器中游玩时，服务端日志也会一并上传。",
+                      en = "On a server, the server log is uploaded as well.")
+    static final String BUG_4 = "gtocore.website.consent.bug.4";
+    @RegisterLanguage(cn = "日志随反馈公开，可能包含玩家名与聊天内容；IP地址会自动打码。",
+                      en = "Logs are public and may include player names and chat; IPs are masked.")
+    static final String BUG_5 = "gtocore.website.consent.bug.5";
+    @RegisterLanguage(cn = "单个日志超过5MB时，只上传开头1MB与末尾2MB。",
+                      en = "A log over 5 MB is cut to its first 1 MB and last 2 MB.")
+    static final String BUG_6 = "gtocore.website.consent.bug.6";
+    @RegisterLanguage(cn = "其他说明", en = "Notes")
     static final String OTHER_HEADING = "gtocore.website.consent.other";
-    @RegisterLanguage(cn = "· 除上述内容外，不发送存档、模组列表、设备信息或任何游戏内操作。攻略目录缓存与官网登录凭据保存在.minecraft/gtocore/，可随时删除。",
-                      en = "· Nothing else is sent: no save data, mod list, device information or in-game activity. The guide cache and the website sign-in are kept in .minecraft/gtocore/ and may be deleted at any time.")
+    @RegisterLanguage(cn = "除上述内容外，不发送存档、模组列表、设备信息或任何游戏内操作。",
+                      en = "Nothing else is sent: no saves, mod list, device information or in-game activity.")
     static final String OTHER_1 = "gtocore.website.consent.other.1";
-    @RegisterLanguage(cn = "· 输入/gtocorec website可重新打开本页；同意书内容更新后会再次询问。",
-                      en = "· Type /gtocorec website to open this page again. You will be asked again whenever this text changes.")
+    @RegisterLanguage(cn = "攻略缓存与登录凭据保存在.minecraft/gtocore/，可随时删除。",
+                      en = "Guide cache and sign-in are kept in .minecraft/gtocore/ (safe to delete).")
     static final String OTHER_2 = "gtocore.website.consent.other.2";
+    @RegisterLanguage(cn = "输入/gtocorec website可重新打开本页；内容更新后将再次询问。",
+                      en = "Use /gtocorec website to reopen; you will be asked again if this changes.")
+    static final String OTHER_3 = "gtocore.website.consent.other.3";
     @RegisterLanguage(cn = "当前状态：%s", en = "Current setting: %s")
     static final String STATE = "gtocore.website.consent.state";
     @RegisterLanguage(cn = "尚未选择", en = "Not chosen yet")
@@ -90,8 +106,10 @@ public final class WebsiteConsent {
     @RegisterLanguage(cn = "不启用", en = "Do not enable")
     static final String DISABLE = "gtocore.website.consent.disable";
 
-    private static final String[] TERMS = { INTRO, GUIDES_HEADING, GUIDES_1, BUG_HEADING, BUG_1, BUG_2, BUG_3, OTHER_HEADING, OTHER_1, OTHER_2 };
+    private static final String[] TERMS = { INTRO, GUIDES_HEADING, GUIDES_1, GUIDES_2, BUG_HEADING, BUG_1, BUG_2, BUG_3, BUG_4, BUG_5, BUG_6, OTHER_HEADING, OTHER_1, OTHER_2, OTHER_3 };
     private static final Path STATE_FILE = GTOWebsite.DIR.resolve("website").resolve("consent.json");
+    private static final int BULLET_WIDTH = 5;
+    private static final Component BULLET = Component.literal("·");
     private static final int PROMPT_DELAY_TICKS = 60;
     private static final int PROMPT_RETRY_TICKS = 20;
     private static final int PROMPT_RETRIES = 30;
@@ -170,9 +188,10 @@ public final class WebsiteConsent {
     private static void content(UIElement content, Runnable close) {
         int width = 2 * UISizes.CONTENT_WIDTH;
         content.addChild(Label.translatable(width, INTRO));
-        paragraph(content, width, Component.translatable(GUIDES_HEADING), Component.translatable(GUIDES_1, ItemGuides.keyName()));
-        paragraph(content, width, Component.translatable(BUG_HEADING), Component.translatable(BUG_1), Component.translatable(BUG_2), Component.translatable(BUG_3));
-        paragraph(content, width, Component.translatable(OTHER_HEADING), Component.translatable(OTHER_1), Component.translatable(OTHER_2));
+        content.addChild(section(width, GUIDES_HEADING, Component.translatable(GUIDES_1), Component.translatable(GUIDES_2, ItemGuides.keyName())));
+        content.addChild(section(width, BUG_HEADING, Component.translatable(BUG_1), Component.translatable(BUG_2), Component.translatable(BUG_3),
+                Component.translatable(BUG_4), Component.translatable(BUG_5), Component.translatable(BUG_6)));
+        content.addChild(section(width, OTHER_HEADING, Component.translatable(OTHER_1), Component.translatable(OTHER_2), Component.translatable(OTHER_3)));
         String state = !decided ? (changed ? STATE_CHANGED : STATE_UNSET) : granted ? STATE_ON : STATE_OFF;
         content.addChild(TextLine.constant(width, Component.translatable(STATE, Component.translatable(state))).bindClientColor(UITheme::textSecondary));
         int action = 2 * UISizes.BUTTON_WIDTH;
@@ -187,11 +206,15 @@ public final class WebsiteConsent {
         content.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(disable, UIElement.flexSpacer(), enable));
     }
 
-    private static void paragraph(UIElement content, int width, Component heading, Component... lines) {
-        var section = UIElement.column(width).layout(l -> l.gapAll(UISizes.GAP));
-        section.addChild(TextLine.constant(width, heading.copy().withStyle(ChatFormatting.BOLD)));
-        for (Component line : lines) section.addChild(Label.of(width, () -> line));
-        content.addChild(section);
+    private static UIElement section(int width, String heading, Component... items) {
+        var section = Form.section(heading).layout(l -> l.width(width));
+        int text = width - 2 * UISizes.PANEL_PADDING - BULLET_WIDTH - UISizes.GAP;
+        for (Component item : items) {
+            var row = UIElement.row(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));
+            row.addChildren(Label.of(BULLET_WIDTH, () -> BULLET).bindClientColor(UITheme::panelText), Label.of(text, () -> item).bindClientColor(UITheme::panelText));
+            section.addChild(row);
+        }
+        return section;
     }
 
     private static String termsHash() {

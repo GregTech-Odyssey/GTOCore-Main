@@ -26,13 +26,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * /bug 上传的日志：本端的 latest.log 与 24 小时内最新的崩溃报告，超出官网单文件上限时截到 3 MB 以内，IP 打码，带进度传到反馈链接。客户端与服务端共用。
+ * /bug 上传的日志：本端的 latest.log 与 24 小时内最新的崩溃报告，超出官网单文件上限时只留开头 1 MB 与末尾 2 MB，IP 打码，带进度传到反馈链接。客户端与服务端共用。
  */
 public final class BugLogs {
 
     public static final long SITE_LIMIT = 5L << 20;
-    public static final int TRUNCATED_LIMIT = 3 << 20;
     private static final int HEAD_BYTES = 1 << 20;
+    private static final int TAIL_BYTES = 2 << 20;
     private static final long CRASH_WINDOW_MS = 24L * 60 * 60 * 1000;
     private static final Pattern TOKEN = Pattern.compile("^[A-Za-z0-9_-]{43}$");
     private static final Pattern IPV4 = Pattern.compile("(?<![\\w.])(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(?!\\w|\\.\\d)");
@@ -97,7 +97,7 @@ public final class BugLogs {
     }
 
     private static String truncate(Path path, long size) throws IOException {
-        int tailBytes = TRUNCATED_LIMIT - HEAD_BYTES - 256;
+        int tailBytes = TAIL_BYTES;
         byte[] head = new byte[HEAD_BYTES];
         byte[] tail = new byte[tailBytes];
         try (var file = new RandomAccessFile(path.toFile(), "r")) {
@@ -109,7 +109,7 @@ public final class BugLogs {
         int tailStart = firstNewline(tail);
         long omitted = size - headEnd - (tailBytes - tailStart);
         return new String(head, 0, headEnd, StandardCharsets.UTF_8) +
-                "\n\n[GTO /bug: " + omitted + " bytes omitted to fit the 3 MB upload limit]\n\n" +
+                "\n\n[GTO /bug: " + omitted + " bytes omitted, kept the first 1 MB and the last 2 MB]\n\n" +
                 new String(tail, tailStart, tailBytes - tailStart, StandardCharsets.UTF_8);
     }
 
