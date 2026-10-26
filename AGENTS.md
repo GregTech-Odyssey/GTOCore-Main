@@ -24,11 +24,11 @@
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 
-GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，先判断是否应直接改对应 fork，不默认在 GTOCore 添加 Mixin；根据 [修改位置说明](docs/forked-dependencies.md) 权衡。
+GTM/AE2/EMI/Botania/Ars Nouveau 等模组均有本项目维护的 fork。修复涉及它们内部行为时，先判断是否应直接改对应 fork，不默认在 GTOCore 添加 Mixin；根据 [修改位置说明](docs/forked-dependencies.md) 权衡。
 
 ## 编码规范
 
-- **默认实现位置**：新增编写的代码逻辑默认在 `GTOLib/` 模块中实现；涉及 GTM/AE2 内部行为时，仍按 [修改位置说明](docs/forked-dependencies.md) 判断是否直接修改对应 fork。
+- **默认实现位置**：新增编写的代码逻辑默认在 `GTOLib/` 模块中实现；物品、方块、机器、配方等注册项在本体仓库实现；涉及 GTM/AE2/EMI/Botania 等已 fork 模组的内部行为时，仍按 [修改位置说明](docs/forked-dependencies.md) 判断是否直接修改对应 fork。
 - 首次编辑或审查 Java/Kotlin 代码前，必须打开 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 的相关章节；完成修改后按实际 diff 再检查一次。它是本仓性能与正确性约束，不是可选建议。
 - 集合、Map/Set、遍历、复制、热路径分配或并发改动：读取“术语”“容器规范”“非容器规范”。
 - 异常处理、同步执行的状态切换或公共方法/API 设计：读取“非容器规范”。

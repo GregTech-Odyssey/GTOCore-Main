@@ -51,9 +51,9 @@ import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
+import com.gtolib.api.machine.storage.SuperStorageClient;
 import com.gtolib.quest.client.QuestPinnedHud;
 import com.gtolib.quest.client.book.QuestBookStyle;
-import com.gtolib.storage.SuperStorageClient;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
