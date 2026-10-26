@@ -27,17 +27,16 @@ import net.minecraftforge.common.MinecraftForge;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.HexFormat;
 
 /**
@@ -196,34 +195,31 @@ public final class WebsiteConsent {
     }
 
     private static String termsHash() {
-        var fields = new ObjectArrayList<RegisterLanguage>();
-        var keys = new ObjectArrayList<String>();
-        for (Field field : WebsiteConsent.class.getDeclaredFields()) {
-            var language = field.getAnnotation(RegisterLanguage.class);
-            if (language == null || !Modifier.isStatic(field.getModifiers()) || field.getType() != String.class) continue;
-            try {
-                field.setAccessible(true);
-                String key = (String) field.get(null);
-                for (String term : TERMS) {
-                    if (term.equals(key)) {
-                        fields.add(language);
-                        keys.add(key);
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-        var order = new Integer[keys.size()];
-        for (int i = 0; i < order.length; i++) order[i] = i;
-        java.util.Arrays.sort(order, Comparator.comparing(keys::get));
+        var cn = langFile("zh_cn");
+        var en = langFile("en_us");
+        var keys = TERMS.clone();
+        Arrays.sort(keys);
         var text = new StringBuilder();
-        for (int i : order) text.append(keys.get(i)).append('\n').append(fields.get(i).cn()).append('\n').append(fields.get(i).en()).append('\n');
+        for (String key : keys) text.append(key).append('\n').append(langValue(cn, key)).append('\n').append(langValue(en, key)).append('\n');
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(text.toString().getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest, 0, 8);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static JsonObject langFile(String locale) {
+        try (var in = WebsiteConsent.class.getResourceAsStream("/assets/gtocore/lang/" + locale + ".json")) {
+            if (in == null) return new JsonObject();
+            return JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String langValue(JsonObject lang, String key) {
+        var value = lang.get(key);
+        return value == null ? "" : value.getAsString();
     }
 }
