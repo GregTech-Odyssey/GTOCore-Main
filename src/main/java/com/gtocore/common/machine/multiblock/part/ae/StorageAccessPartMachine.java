@@ -55,7 +55,6 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
@@ -574,9 +573,8 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                     map = new AEKeyBigMap<>();
                     data.setStoredMap(map);
                 }
-                var value = BigInteger.valueOf(amount);
-                map.insert(what, value);
-                data.addBytes(what, value);
+                amount = map.addTo(what, amount);
+                if (amount > 0) data.addBytes(what, amount);
                 data.markChanged(what);
                 dirty = true;
             }
