@@ -1,7 +1,8 @@
 package com.gtocore.client;
 
-import com.gtocore.client.guide.ItemGuides;
 import com.gtocore.client.screen.MessageListScreen;
+import com.gtocore.client.website.BugReportClient;
+import com.gtocore.client.website.WebsiteConsent;
 import com.gtocore.utils.NotificationUtils;
 
 import com.gtolib.GTOCore;
@@ -27,6 +28,10 @@ import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
 public final class GTOClientCommands {
 
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("bug").executes(ctx -> {
+            Minecraft.getInstance().tell(BugReportClient::run);
+            return 1;
+        }));
         dispatcher.register(Commands.literal(GTOCore.MOD_ID + "c")
                 .then(Commands.literal("spark").then(Commands.literal("start").executes(ctx -> {
                     SparkLaunchProfiler.start("all");
@@ -56,7 +61,11 @@ public final class GTOClientCommands {
                     return 1;
                 }))
                 .then(Commands.literal("guides").executes((ctx) -> {
-                    ItemGuides.openSettings();
+                    WebsiteConsent.open(null);
+                    return 1;
+                }))
+                .then(Commands.literal("website").executes((ctx) -> {
+                    WebsiteConsent.open(null);
                     return 1;
                 }))
                 .then(Commands.literal("rules").executes((ctx) -> {

@@ -1,11 +1,19 @@
 package com.gtocore.utils;
 
 import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Locale;
 
 /**
@@ -19,10 +27,39 @@ public final class GTOWebsite {
     private static final String MARK = "from=game";
     private static final String ORIGIN = FMLLoader.isProduction() ? null : System.getProperty("gtocore.website.origin");
 
+    public static final Path DIR = FMLPaths.GAMEDIR.get().resolve("gtocore");
+
+    private static volatile HttpClient http;
+
     private GTOWebsite() {}
 
     public static String origin() {
         return ORIGIN != null ? ORIGIN : SITE;
+    }
+
+    public static HttpClient http() {
+        var client = http;
+        if (client == null) {
+            synchronized (GTOWebsite.class) {
+                client = http;
+                if (client == null) {
+                    client = HttpClient.newBuilder()
+                            .version(HttpClient.Version.HTTP_1_1)
+                            .connectTimeout(Duration.ofSeconds(5))
+                            .followRedirects(HttpClient.Redirect.NORMAL)
+                            .build();
+                    http = client;
+                }
+            }
+        }
+        return client;
+    }
+
+    public static void writeAtomically(Path target, String text) throws IOException {
+        Files.createDirectories(target.getParent());
+        var temp = target.resolveSibling(target.getFileName() + ".tmp");
+        Files.writeString(temp, text, StandardCharsets.UTF_8);
+        Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }
 
     public static URL mark(URL url) {

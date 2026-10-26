@@ -572,6 +572,11 @@ public final class GTOConfig {
         @Configurable.Comment({ "一些机器内容会以服务器语言的翻译呈现", "Some machine contents will be presented in the server language translation" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Server language", cn = "服务器语言")
         public String serverLang = "en_us";
+
+        @Configurable
+        @Configurable.Comment({ "启用后，玩家在服务器中输入/bug时，服务器会把服务端日志（IP已打码）上传到该玩家的官网反馈链接，日志将随issue公开", "When enabled, a player's /bug on this server also uploads the server log (IP addresses masked) to that player's report link on the website; logs are published with the issue" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Upload Server Log on /bug", cn = "/bug时上传服务端日志")
+        public boolean bugReportServerLogs = true;
     }
 
     @DataGeneratorScanned
