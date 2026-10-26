@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.gtm;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
@@ -10,7 +11,6 @@ import com.gtolib.api.data.storage.CompartmentStorageRegistration;
 import com.gtolib.api.data.storage.SuperStorageRegistration;
 import com.gtolib.api.data.storage.SuperStorageReplacerRegistration;
 import com.gtolib.api.data.storage.WoodenSuperStorageRegistration;
-import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.TagUtils;
 
@@ -25,8 +25,6 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.crafting.StrictNBTIngredient;
 
@@ -36,7 +34,6 @@ import static com.gregtechceu.gtceu.api.GTValues.LV;
 
 public class SuperStorageAdditionalRecipe {
 
-    private static final TagKey<Item> INGOT = TagUtils.createItemTag(RLUtils.c("ingot"));
     private static final boolean easy = (GTORules.MOD_RECIPE_TIER.isEasy());
 
     public static void init() {
@@ -101,6 +98,12 @@ public class SuperStorageAdditionalRecipe {
                 "AC ",
                 "AA ",
                 'A', new MaterialEntry(TagPrefix.plate, GTMaterials.WroughtIron), 'B', new MaterialEntry(TagPrefix.dust, GTMaterials.Redstone), 'C', easy ? Items.PAPER.asItem() : new MaterialEntry(TagPrefix.gem, GTMaterials.EnderPearl));
+
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("drawer_storage"), MultiBlockG.DRAWER_STORAGE.asItem(),
+                "PDP",
+                "DCD",
+                "PDP",
+                'P', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'D', GTMachines.SUPER_CHEST[GTValues.ULV].asItem(), 'C', GTMachines.BRONZE_CRATE.asItem());
     }
 
     private static void compartmentSuperChest(MachineDefinition result, MachineDefinition source) {
@@ -108,6 +111,7 @@ public class SuperStorageAdditionalRecipe {
     }
 
     private static void superChestReplacer(ItemEntry<ComponentItem> item, MachineDefinition machine) {
-        if (item != null) VanillaRecipeHelper.addShapelessRecipe(item.getId(), item.asStack(), StrictNBTIngredient.of(machine.asStack()), INGOT);
+        if (item != null) VanillaRecipeHelper.addShapelessRecipe(item.getId(), item.asStack(), StrictNBTIngredient.of(machine.asStack()),
+                TagUtils.createTGItemTag("ingots"));
     }
 }

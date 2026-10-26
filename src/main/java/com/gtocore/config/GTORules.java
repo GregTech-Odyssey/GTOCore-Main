@@ -40,6 +40,7 @@ public final class GTORules {
     public static final RuleGroup SURVIVAL = Rules.group("survival", "gtocore.rule.group.survival", "生存与杂项", "Survival & Misc");
     public static final RuleGroup GTM_RECIPES = Rules.group("gtm_recipes", "gtocore.rule.group.gtm_recipes", "GTM 配方", "GTM Recipes");
     public static final RuleGroup GTM_MACHINES = Rules.group("gtm_machines", "gtocore.rule.group.gtm_machines", "GTM 机器与工具", "GTM Machines & Tools");
+    public static final RuleGroup SPECIAL = Rules.group("special", "gtocore.rule.group.special", "特殊挑战", "Special Challenges");
 
     public static final TierRule RECIPE_TIER = Rules.tierRule("recipes.tier").group(RECIPES)
             .name("gtocore.rule.recipes.tier", "配方难度", "Recipe Difficulty")
@@ -430,6 +431,12 @@ public final class GTORules {
             .desc("gtocore.rule.gtm.electric_tool_damage_chance.desc", "电动工具每次使用时真正损耗耐久的概率。", "Chance for electric tools to take actual damage on each use.")
             .register();
     public static final BoolRule GTM_DISABLE_HAZARDS = gtmMachine("gtm.disable_hazards", "gtocore.rule.gtm.disable_hazards", "gtocore.rule.gtm.disable_hazards.desc", false, false, false, "关闭材料危害", "Disable Material Hazards", "开启后关闭有害材料的危害效果；关闭时沿用 GTM 配置。", "Turns off hazardous material effects; when off, the GTM config decides.");
+
+    public static final BoolRule NO_SPACE_CHALLENGE = Rules.boolRule("research.no_space_challenge").group(SPECIAL)
+            .defaults(false, false, false).customizable()
+            .name("gtocore.rule.research.no_space_challenge", "不上天挑战", "No Space Challenge")
+            .desc("gtocore.rule.research.no_space_challenge.desc", "禁止乘坐火箭或打开星图。同时启用一些特殊的游戏机制", "Disables riding rockets and opening the star map. Also enables some special game mechanics.")
+            .register();
 
     private static BoolRule gtmRecipe(String id, String nameKey, String descKey, boolean easy, boolean normal, boolean expert, String cn, String en, String descCn, String descEn) {
         return Rules.boolRule(id).group(GTM_RECIPES).defaults(easy, normal, expert)
