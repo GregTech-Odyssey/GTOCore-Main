@@ -8,6 +8,7 @@
 
 | 任务或改动 | 开始工作前读取 |
 |---|---|
+| 新增功能、调整行为、移除内容、性能优化或修复问题（含 GTOLib 与依赖接入） | [更新记录维护](docs/changelog-maintenance.md)；同步维护 [更新记录](docs/changelog.md) 的当前周条目 |
 | 创建、修改或审查 Java/Kotlin 代码 | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节 |
 | 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
 | 修改 GTORules 的世界创建、读取或持久化流程 | [世界规则只读约定](docs/world-rules.md)；规则仅在创建世界时确定，已有世界禁止补写、迁移回写或修复改写 |
@@ -96,6 +97,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 
 ## 收尾
 
+- **实时维护更新记录**：功能、行为、内容、性能或修复发生变化时，必须在实现过程中同步更新 [docs/changelog.md](docs/changelog.md)，与对应改动在同一任务中完成，不得拖到提交、推送或用户提醒时补写；具体范围、周次和合并规则见 [更新记录维护](docs/changelog-maintenance.md)。
 - 保留用户已有和无关改动，只处理当前任务范围内的文件。
 - 提交只带自己的路径（`git commit --only <paths>` 或 `git commit -F msg -- <paths>`）：同一工作区里可能有别人并行 `git add`，不带路径的 `git commit` 与 `git commit --amend` 会把对方的暂存一起提交。误提交后用 `git reset --mixed <上一个好提交>` 重做，再把对方原本暂存的文件原样 `git add` 回去。
 - 推送前先 `git fetch` 并用 `git rev-list --left-right --count origin/<branch>...HEAD` 看差距：远端可能已有内容等价的提交，这种情况不要 force，reset 到远端后只补真正的增量。详细流程与其它坑见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
