@@ -284,15 +284,13 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             return null;
         }
         var cwuAvailable = requestCWU(getCWUInputLimit(), true);
-        if (TechTreeSavedData.isUnlocked(getOwnerUUID(), DataCenterOverclocking)) {
+        if (cwuAvailable > 0 && TechTreeSavedData.isUnlocked(getOwnerUUID(), DataCenterOverclocking)) {
             var cwuTotalAvailable = requestCWU(Long.MAX_VALUE, true);
             var oc = 0;
             var cwuOC = cwuAvailable;
-            while (true) {
+            // 先比较再乘，避免算力接近 long 上限时溢出。
+            while (cwuOC <= cwuTotalAvailable / 3L) {
                 cwuOC *= 3L;
-                if (cwuOC > cwuTotalAvailable) {
-                    break;
-                }
                 oc++;
             }
             cwuAvailable <<= oc;
