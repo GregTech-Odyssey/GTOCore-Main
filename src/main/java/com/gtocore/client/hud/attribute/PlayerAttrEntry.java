@@ -1,7 +1,10 @@
 package com.gtocore.client.hud.attribute;
 
+import com.gtolib.api.gui.HudUIStyle;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.*;
+
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -24,9 +27,7 @@ public abstract class PlayerAttrEntry {
 
     private static List<PlayerAttrEntry> ENTRIES;
 
-    protected static final int ROW_HEIGHT = 24;
-    protected static final int TEXT_COLOR = 0xFFFFFFFF;
-    protected static final int MUTED_TEXT_COLOR = 0xFFB8C2CC;
+    protected static final int ROW_HEIGHT = UISizes.TEXT_HEIGHT + UISizes.CONTROL_HEIGHT + UISizes.GAP;
 
     private final Component label;
 
@@ -188,29 +189,17 @@ public abstract class PlayerAttrEntry {
             Font font = font();
             float currentValue = getDisplayedValue();
             String valueText = formatValue(currentValue);
+            var style = HudUIStyle.get();
 
-            guiGraphics.drawString(font, getLabel(), bounds.getX(), bounds.getY(), TEXT_COLOR, false);
+            guiGraphics.drawString(font, getLabel(), bounds.getX(), bounds.getY(), style.text, false);
             guiGraphics.drawString(font, valueText,
                     bounds.getX() + bounds.getWidth() - font.width(valueText),
-                    bounds.getY(), MUTED_TEXT_COLOR, false);
+                    bounds.getY(), style.secondary, false);
 
             Rect2i trackBounds = getTrackBounds(bounds);
             int fillWidth = getFillWidth(trackBounds, currentValue);
-            int trackColor = 0xFF2B3640;
-            int fillColor = 0xFF7FDBFF;
-            int knobColor = sliding ? 0xFFFFFFFF : 0xFFB8D8FF;
-            guiGraphics.fill(trackBounds.getX(), trackBounds.getY(),
-                    trackBounds.getX() + trackBounds.getWidth(),
-                    trackBounds.getY() + trackBounds.getHeight(),
-                    trackColor);
-            guiGraphics.fill(trackBounds.getX(), trackBounds.getY(),
-                    trackBounds.getX() + fillWidth,
-                    trackBounds.getY() + trackBounds.getHeight(),
-                    fillColor);
-
             int knobX = getKnobX(trackBounds, currentValue);
-            guiGraphics.fill(knobX, trackBounds.getY() - 2, knobX + KNOB_WIDTH, trackBounds.getY() + TRACK_HEIGHT + 2,
-                    knobColor);
+            style.slider(guiGraphics, trackBounds, fillWidth, knobX, KNOB_WIDTH, sliding || contains(getTrackHotspotBounds(bounds), mouseX, mouseY));
         }
 
         @Override
@@ -424,9 +413,8 @@ public abstract class PlayerAttrEntry {
 
     public static final class BooleanEntry extends PlayerAttrEntry {
 
-        private static final int TOGGLE_WIDTH = 30;
-        private static final int TOGGLE_HEIGHT = 14;
-        private static final int KNOB_SIZE = 10;
+        private static final int TOGGLE_WIDTH = UISizes.SWITCH_WIDTH;
+        private static final int TOGGLE_HEIGHT = UISizes.CONTROL_HEIGHT;
 
         private final BooleanAttribute attribute;
 
@@ -457,19 +445,11 @@ public abstract class PlayerAttrEntry {
             }
             Font font = font();
             boolean value = getCurrentValue(attribute);
-            guiGraphics.drawString(font, getLabel(), bounds.getX(), bounds.getY() + 3, TEXT_COLOR, false);
+            var style = HudUIStyle.get();
+            guiGraphics.drawString(font, getLabel(), bounds.getX(), bounds.getY() + (bounds.getHeight() - font.lineHeight) / 2, style.text, false);
 
             Rect2i toggleBounds = getToggleBounds(bounds);
-            int background = value ? 0xFF2E8B57 : 0xFF444444;
-            int knobColor = 0xFFFFFFFF;
-            guiGraphics.fill(toggleBounds.getX(), toggleBounds.getY(),
-                    toggleBounds.getX() + toggleBounds.getWidth(),
-                    toggleBounds.getY() + toggleBounds.getHeight(),
-                    background);
-
-            int knobX = value ? toggleBounds.getX() + toggleBounds.getWidth() - KNOB_SIZE - 2 : toggleBounds.getX() + 2;
-            guiGraphics.fill(knobX, toggleBounds.getY() + 2, knobX + KNOB_SIZE, toggleBounds.getY() + 2 + KNOB_SIZE,
-                    knobColor);
+            style.toggle(guiGraphics, toggleBounds, value, contains(toggleBounds, mouseX, mouseY));
         }
 
         @Override

@@ -442,6 +442,13 @@ public final class GTOConfig {
             public boolean wirelessEnergyHUDEnabled = false;
 
             @Configurable
+            @Configurable.Comment({ "1：按电塔最高输出电压显示安时；2：按容量 EU ÷ 72000 向下选择安时显示档位；3：显示 EU 数量；数字使用可读简写", "1: tower output voltage; 2: amp-hour tier from capacity EU / 72000, rounded down; 3: EU amount; numbers use readable abbreviations" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Display Format", cn = "无线能量 HUD 显示格式")
+            @Configurable.Range(min = 1, max = 3)
+            @Configurable.Gui.Slider
+            public int wirelessEnergyHUDDisplayFormat = 1;
+
+            @Configurable
             @Configurable.Comment({ "无线能量 HUD 的默认 X 相对位置", "0意味着屏幕左侧，100意味着屏幕右侧", "The default X relative position of the Wireless Energy HUD", "0.0 means the left side of the screen, 1.0 means the right side of the screen" })
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Default X", cn = "无线能量 HUD 默认 X 位置")
             @Configurable.Range(min = 0, max = 100)

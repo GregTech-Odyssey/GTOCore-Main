@@ -2,6 +2,13 @@ package com.gtocore.client.hud;
 
 import com.gtocore.utils.GuiHelper;
 
+import com.gtolib.api.gui.HudUIStyle;
+import com.gtolib.api.gui.WirelessEnergyFormatControl;
+
+import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -10,26 +17,28 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class HUDScreen extends Screen {
 
-    private static final int BUTTON_SIZE = 20;
-    private static final int BUTTON_MARGIN = 6;
-    private static final int DROPDOWN_GAP = 4;
-    private static final int DROPDOWN_ENTRY_HEIGHT = 18;
-    private static final int DROPDOWN_TEXT_PADDING = 6;
+    private static final int BUTTON_SIZE = UISizes.DOCK_BUTTON_SIZE;
+    private static final int BUTTON_MARGIN = UISizes.WINDOW_PADDING_X;
+    private static final int DROPDOWN_GAP = UISizes.SECTION_GAP;
+    private static final int DROPDOWN_ENTRY_HEIGHT = UISizes.SLOT_SIZE;
+    private static final int DROPDOWN_TEXT_PADDING = UISizes.TEXT_PADDING;
     private static final int DROPDOWN_MIN_WIDTH = 110;
 
+    private final ObjectArrayList<IMoveableHUD> enabledHuds = new ObjectArrayList<>();
+    private final ObjectArrayList<IMoveableHUD> hiddenHuds = new ObjectArrayList<>();
     private IMoveableHUD activeHud;
     private IMoveableHUD selectedHud;
     private HudAnchor activeHudOrigin;
     private int activeMouseButton = -1;
     private boolean dropdownOpen = false;
+    private WirelessEnergyFormatControl wirelessEnergyFormat;
+    private boolean stylePushed;
 
     public HUDScreen() {
         super(Component.literal("HUD Editor"));
@@ -38,29 +47,40 @@ public class HUDScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        if (!stylePushed) {
+            UIStyleManager.pushOverride(UIStyleManager.STARFIELD_ID, UIStyleManager.STARFIELD_ID);
+            stylePushed = true;
+        }
         ensureSelectedHud();
+        wirelessEnergyFormat = addRenderableWidget(new WirelessEnergyFormatControl());
+        updateWirelessEnergyFormat();
     }
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        List<IMoveableHUD> hiddenHuds = getHiddenHuds();
+        refreshHuds();
         if (hiddenHuds.isEmpty()) {
             dropdownOpen = false;
         }
 
-        for (IMoveableHUD hud : getEnabledHuds()) {
+        for (IMoveableHUD hud : enabledHuds) {
             hud.render(guiGraphics, mouseX, mouseY, partialTick);
         }
 
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0, 0, 2000);
         if (selectedHud != null && selectedHud.isEnabled()) {
-            IMoveableHUD.drawOutline(guiGraphics, selectedHud.getPropertyAnchorBounds(width, height), 0xFF7FDBFF);
+            var bounds = selectedHud.getPropertyAnchorBounds(width, height);
+            UIDraw.strokeRoundRect(guiGraphics, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), HudUIStyle.get().accent);
         }
 
         renderCornerButton(guiGraphics, mouseX, mouseY, hiddenHuds);
         if (dropdownOpen) {
             renderHiddenHudDropdown(guiGraphics, mouseX, mouseY, hiddenHuds);
         }
+        guiGraphics.pose().popPose();
 
+        updateWirelessEnergyFormat();
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
@@ -69,8 +89,9 @@ public class HUDScreen extends Screen {
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
+        if (wirelessEnergyFormat.visible && wirelessEnergyFormat.isMouseOver(mouseX, mouseY)) return true;
 
-        List<IMoveableHUD> hiddenHuds = getHiddenHuds();
+        refreshHuds();
         Rect2i buttonBounds = getCornerButtonBounds();
 
         if (!isPositionDragActive() && button == 0 && dropdownOpen) {
@@ -96,7 +117,6 @@ public class HUDScreen extends Screen {
             dropdownOpen = false;
         }
 
-        List<IMoveableHUD> enabledHuds = getEnabledHuds();
         for (int i = enabledHuds.size() - 1; i >= 0; i--) {
             IMoveableHUD hud = enabledHuds.get(i);
             if (hud.mouseClicked(mouseX, mouseY, button)) {
@@ -142,6 +162,10 @@ public class HUDScreen extends Screen {
         releaseActiveHudAtCursor();
         dropdownOpen = false;
         super.removed();
+        if (stylePushed) {
+            UIStyleManager.popOverride();
+            stylePushed = false;
+        }
     }
 
     @Override
@@ -186,49 +210,41 @@ public class HUDScreen extends Screen {
         clearHudInteraction();
     }
 
-    private void renderCornerButton(GuiGraphics guiGraphics, int mouseX, int mouseY, List<IMoveableHUD> hiddenHuds) {
+    private void renderCornerButton(GuiGraphics guiGraphics, int mouseX, int mouseY, ObjectArrayList<IMoveableHUD> hiddenHuds) {
         Rect2i buttonBounds = getCornerButtonBounds();
         boolean positionDragging = isPositionDragActive();
         boolean enabled = positionDragging || !hiddenHuds.isEmpty();
         boolean hovered = contains(buttonBounds, mouseX, mouseY);
-        int background = positionDragging ? 0xCC7A1C1C : enabled ? 0xCC1F1F1F : 0x88202020;
-        int border = positionDragging ? 0xFFFFB0B0 : hovered && enabled ? 0xFFFFFFFF : 0xFF909090;
-        int textColor = enabled ? 0xFFFFFFFF : 0xFF777777;
+        var style = HudUIStyle.get();
+        int textColor = enabled ? style.text : style.disabledText;
         String label = positionDragging ? "\uE21E" : "+";
 
-        guiGraphics.fill(buttonBounds.getX(), buttonBounds.getY(),
-                buttonBounds.getX() + buttonBounds.getWidth(),
-                buttonBounds.getY() + buttonBounds.getHeight(),
-                background);
-        IMoveableHUD.drawOutline(guiGraphics, buttonBounds, border);
+        style.button(guiGraphics, buttonBounds, hovered, enabled, positionDragging);
         guiGraphics.drawCenteredString(font, label,
                 buttonBounds.getX() + buttonBounds.getWidth() / 2,
                 buttonBounds.getY() + (buttonBounds.getHeight() - font.lineHeight) / 2,
                 textColor);
     }
 
-    private void renderHiddenHudDropdown(GuiGraphics guiGraphics, int mouseX, int mouseY, List<IMoveableHUD> hiddenHuds) {
+    private void renderHiddenHudDropdown(GuiGraphics guiGraphics, int mouseX, int mouseY, ObjectArrayList<IMoveableHUD> hiddenHuds) {
         if (hiddenHuds.isEmpty()) {
             return;
         }
         Rect2i dropdownBounds = getDropdownBounds(hiddenHuds);
-        guiGraphics.fill(dropdownBounds.getX(), dropdownBounds.getY(),
-                dropdownBounds.getX() + dropdownBounds.getWidth(),
-                dropdownBounds.getY() + dropdownBounds.getHeight(),
-                0xD0101010);
-        IMoveableHUD.drawOutline(guiGraphics, dropdownBounds, 0xFFFFFFFF);
+        var style = HudUIStyle.get();
+        style.window(guiGraphics, dropdownBounds);
 
         for (int i = 0; i < hiddenHuds.size(); i++) {
             Rect2i entryBounds = getDropdownEntryBounds(dropdownBounds, i);
             boolean hovered = contains(entryBounds, mouseX, mouseY);
-            guiGraphics.fill(entryBounds.getX(), entryBounds.getY(),
-                    entryBounds.getX() + entryBounds.getWidth(),
-                    entryBounds.getY() + entryBounds.getHeight(),
-                    hovered ? 0x60FFFFFF : 0x00000000);
+            if (hovered) {
+                UIDraw.fillRect(guiGraphics, entryBounds.getX(), entryBounds.getY(),
+                        entryBounds.getWidth(), entryBounds.getHeight(), 0x20000000 | style.accent & 0xFFFFFF);
+            }
             guiGraphics.drawString(font, hiddenHuds.get(i).getDisplayName(),
                     entryBounds.getX() + DROPDOWN_TEXT_PADDING,
                     entryBounds.getY() + (entryBounds.getHeight() - font.lineHeight) / 2,
-                    0xFFFFFFFF,
+                    hovered ? style.accent : style.text,
                     false);
         }
     }
@@ -241,34 +257,41 @@ public class HUDScreen extends Screen {
         if (selectedHud != null && selectedHud.isEnabled()) {
             return;
         }
-        selectedHud = getEnabledHuds().stream().findFirst().orElse(null);
+        selectedHud = null;
+        for (IMoveableHUD hud : IMoveableHUD.REGISTERED_HUDS.values()) {
+            if (hud.isEnabled()) {
+                selectedHud = hud;
+                break;
+            }
+        }
     }
 
     private void setSelectedHud(IMoveableHUD hud) {
         selectedHud = hud;
     }
 
-    private List<IMoveableHUD> getEnabledHuds() {
-        List<IMoveableHUD> huds = new ArrayList<>();
+    private void updateWirelessEnergyFormat() {
+        wirelessEnergyFormat.visible = selectedHud == WirelessEnergyHUD.INSTANCE && selectedHud.isEnabled() &&
+                !isPositionDragActive() && !dropdownOpen;
+        wirelessEnergyFormat.active = wirelessEnergyFormat.visible;
+        if (wirelessEnergyFormat.visible) {
+            wirelessEnergyFormat.position(selectedHud.getPropertyAnchorBounds(width, height), width, height);
+        }
+    }
+
+    private void refreshHuds() {
+        enabledHuds.clear();
+        hiddenHuds.clear();
         for (IMoveableHUD hud : IMoveableHUD.REGISTERED_HUDS.values()) {
             if (hud.isEnabled()) {
-                huds.add(hud);
+                enabledHuds.add(hud);
+            } else {
+                hiddenHuds.add(hud);
             }
         }
-        return huds;
     }
 
-    private List<IMoveableHUD> getHiddenHuds() {
-        List<IMoveableHUD> huds = new ArrayList<>();
-        for (IMoveableHUD hud : IMoveableHUD.REGISTERED_HUDS.values()) {
-            if (!hud.isEnabled()) {
-                huds.add(hud);
-            }
-        }
-        return huds;
-    }
-
-    private IMoveableHUD getHiddenHudAt(double mouseX, double mouseY, List<IMoveableHUD> hiddenHuds) {
+    private IMoveableHUD getHiddenHudAt(double mouseX, double mouseY, ObjectArrayList<IMoveableHUD> hiddenHuds) {
         if (hiddenHuds.isEmpty()) {
             return null;
         }
@@ -288,21 +311,21 @@ public class HUDScreen extends Screen {
         return new Rect2i(width - BUTTON_MARGIN - BUTTON_SIZE, BUTTON_MARGIN, BUTTON_SIZE, BUTTON_SIZE);
     }
 
-    private Rect2i getDropdownBounds(List<IMoveableHUD> hiddenHuds) {
+    private Rect2i getDropdownBounds(ObjectArrayList<IMoveableHUD> hiddenHuds) {
         Rect2i buttonBounds = getCornerButtonBounds();
         int dropdownWidth = DROPDOWN_MIN_WIDTH;
         for (IMoveableHUD hud : hiddenHuds) {
-            dropdownWidth = Math.max(dropdownWidth, font.width(hud.getDisplayName()) + (DROPDOWN_TEXT_PADDING * 2));
+            dropdownWidth = Math.max(dropdownWidth, font.width(hud.getDisplayName()) + 2 * (DROPDOWN_TEXT_PADDING + UISizes.PANEL_PADDING));
         }
         int dropdownX = buttonBounds.getX() + buttonBounds.getWidth() - dropdownWidth;
         int dropdownY = buttonBounds.getY() + buttonBounds.getHeight() + DROPDOWN_GAP;
-        return new Rect2i(dropdownX, dropdownY, dropdownWidth, hiddenHuds.size() * DROPDOWN_ENTRY_HEIGHT);
+        return new Rect2i(dropdownX, dropdownY, dropdownWidth, hiddenHuds.size() * DROPDOWN_ENTRY_HEIGHT + 2 * UISizes.PANEL_PADDING);
     }
 
     private Rect2i getDropdownEntryBounds(Rect2i dropdownBounds, int index) {
-        return new Rect2i(dropdownBounds.getX(),
-                dropdownBounds.getY() + (index * DROPDOWN_ENTRY_HEIGHT),
-                dropdownBounds.getWidth(),
+        return new Rect2i(dropdownBounds.getX() + UISizes.PANEL_PADDING,
+                dropdownBounds.getY() + UISizes.PANEL_PADDING + (index * DROPDOWN_ENTRY_HEIGHT),
+                dropdownBounds.getWidth() - 2 * UISizes.PANEL_PADDING,
                 DROPDOWN_ENTRY_HEIGHT);
     }
 

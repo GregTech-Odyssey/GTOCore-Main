@@ -488,7 +488,7 @@ public final class ArsNouveauRecipes {
                     .save();
             ENCHANTING_APPARATUS_RECIPES.builder("botania_" + string + "_mystical_flower")
                     .inputItems(RegistriesUtils.getItemStack("botania:" + string + "_mystical_flower").getItem())
-                    .inputItems(BotaniaItems.fertilizer,4)
+                    .inputItems(BotaniaItems.fertilizer, 4)
                     .outputItems(RegistriesUtils.getItemStack("botania:" + string + "_mystical_flower", 32))
                     .duration(30)
                     .MANAt(32)
