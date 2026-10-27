@@ -8,7 +8,7 @@
 
 | 任务或改动 | 开始工作前读取 |
 |---|---|
-| 新增功能、调整行为、移除内容、性能优化或修复问题（含 GTOLib 与依赖接入） | [更新记录维护](docs/changelog-maintenance.md)；同步维护 [更新记录](docs/changelog.md) 的当前周条目 |
+| 新增功能、调整行为、移除内容、性能优化或修复问题（含 GTOLib、各 fork 模组与依赖接入） | [更新记录维护](docs/changelog-maintenance.md)；同步维护 [更新记录](docs/changelog.md) 的当前周条目 |
 | 创建、修改或审查 Java/Kotlin 代码 | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节 |
 | 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
 | 修改 GTORules 的世界创建、读取或持久化流程 | [世界规则只读约定](docs/world-rules.md)；规则仅在创建世界时确定，已有世界禁止补写、迁移回写或修复改写 |
