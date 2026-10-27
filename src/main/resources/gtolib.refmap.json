@@ -332,7 +332,9 @@
       "Lnet/minecraft/world/level/Level;playLocalSound(DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FFZ)V": "Lnet/minecraft/world/level/Level;m_7785_(DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FFZ)V",
       "aiStep": "Lnet/minecraft/client/player/LocalPlayer;m_8107_()V",
       "isUnderWater": "Lnet/minecraft/client/player/LocalPlayer;m_5842_()Z",
-      "playSound": "Lnet/minecraft/client/player/LocalPlayer;m_5496_(Lnet/minecraft/sounds/SoundEvent;FF)V"
+      "playSound": "Lnet/minecraft/client/player/LocalPlayer;m_5496_(Lnet/minecraft/sounds/SoundEvent;FF)V",
+      "hasEnoughImpulseToStartSprinting": "Lnet/minecraft/client/player/LocalPlayer;m_108733_()Z",
+      "Lnet/minecraft/client/player/LocalPlayer;isUnderWater()Z": "Lnet/minecraft/client/player/LocalPlayer;m_5842_()Z"
     },
     "com/gtolib/mixin/mc/recipe/IngredientMixin": {
       "of([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;": "Lnet/minecraft/world/item/crafting/Ingredient;m_43929_([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;",
@@ -368,7 +370,8 @@
       "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109455_:Lnet/minecraft/resources/ResourceLocation;",
       "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V": "Lcom/mojang/blaze3d/vertex/BufferUploader;m_231202_(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V",
       "Lnet/minecraft/client/renderer/LevelRenderer;MOON_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109454_:Lnet/minecraft/resources/ResourceLocation;",
-      "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F"
+      "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F",
+      "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;": "Lcom/mojang/blaze3d/vertex/VertexConsumer;m_85950_(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;"
     },
     "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
       "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -463,6 +466,12 @@
     "com/gtocore/mixin/mc/client/LightTextureMixin": {
       "updateLightTexture": "Lnet/minecraft/client/renderer/LightTexture;m_109881_(F)V",
       "Lnet/minecraft/client/renderer/LightTexture;getBrightness(Lnet/minecraft/world/level/dimension/DimensionType;I)F": "Lnet/minecraft/client/renderer/LightTexture;m_234316_(Lnet/minecraft/world/level/dimension/DimensionType;I)F"
+    },
+    "com/gtolib/mixin/mc/entity/FoodDataMixin": {
+      "addExhaustion": "Lnet/minecraft/world/food/FoodData;m_38703_(F)V"
+    },
+    "com/gtocore/mixin/mc/client/UtilOSMixin": {
+      "openUrl": "Lnet/minecraft/Util$OS;m_137650_(Ljava/net/URL;)V"
     }
   },
   "data": {
@@ -799,7 +808,9 @@
         "Lnet/minecraft/world/level/Level;playLocalSound(DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FFZ)V": "Lnet/minecraft/world/level/Level;m_7785_(DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;FFZ)V",
         "aiStep": "Lnet/minecraft/client/player/LocalPlayer;m_8107_()V",
         "isUnderWater": "Lnet/minecraft/client/player/LocalPlayer;m_5842_()Z",
-        "playSound": "Lnet/minecraft/client/player/LocalPlayer;m_5496_(Lnet/minecraft/sounds/SoundEvent;FF)V"
+        "playSound": "Lnet/minecraft/client/player/LocalPlayer;m_5496_(Lnet/minecraft/sounds/SoundEvent;FF)V",
+        "hasEnoughImpulseToStartSprinting": "Lnet/minecraft/client/player/LocalPlayer;m_108733_()Z",
+        "Lnet/minecraft/client/player/LocalPlayer;isUnderWater()Z": "Lnet/minecraft/client/player/LocalPlayer;m_5842_()Z"
       },
       "com/gtolib/mixin/mc/recipe/IngredientMixin": {
         "of([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;": "Lnet/minecraft/world/item/crafting/Ingredient;m_43929_([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/item/crafting/Ingredient;",
@@ -835,7 +846,8 @@
         "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109455_:Lnet/minecraft/resources/ResourceLocation;",
         "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V": "Lcom/mojang/blaze3d/vertex/BufferUploader;m_231202_(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V",
         "Lnet/minecraft/client/renderer/LevelRenderer;MOON_LOCATION:Lnet/minecraft/resources/ResourceLocation;": "Lnet/minecraft/client/renderer/LevelRenderer;f_109454_:Lnet/minecraft/resources/ResourceLocation;",
-        "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F"
+        "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F": "Lnet/minecraft/client/renderer/DimensionSpecialEffects;m_7518_(FF)[F",
+        "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;": "Lcom/mojang/blaze3d/vertex/VertexConsumer;m_85950_(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;"
       },
       "com/gtocore/mixin/modernfix/SimpleItemModelViewMixin": {
         "getQuads": "Lorg/embeddedt/modernfix/render/SimpleItemModelView;m_213637_(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/util/RandomSource;)Ljava/util/List;"
@@ -930,6 +942,12 @@
       "com/gtocore/mixin/mc/client/LightTextureMixin": {
         "updateLightTexture": "Lnet/minecraft/client/renderer/LightTexture;m_109881_(F)V",
         "Lnet/minecraft/client/renderer/LightTexture;getBrightness(Lnet/minecraft/world/level/dimension/DimensionType;I)F": "Lnet/minecraft/client/renderer/LightTexture;m_234316_(Lnet/minecraft/world/level/dimension/DimensionType;I)F"
+      },
+      "com/gtolib/mixin/mc/entity/FoodDataMixin": {
+        "addExhaustion": "Lnet/minecraft/world/food/FoodData;m_38703_(F)V"
+      },
+      "com/gtocore/mixin/mc/client/UtilOSMixin": {
+        "openUrl": "Lnet/minecraft/Util$OS;m_137650_(Ljava/net/URL;)V"
       }
     }
   }

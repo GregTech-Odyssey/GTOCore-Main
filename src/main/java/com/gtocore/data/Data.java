@@ -2,6 +2,7 @@ package com.gtocore.data;
 
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.data.*;
+import com.gtocore.common.quest.hot.QuestHot;
 import com.gtocore.config.GTORules;
 import com.gtocore.data.quest.QuestBookContents;
 import com.gtocore.data.recipe.*;
@@ -9,6 +10,7 @@ import com.gtocore.data.recipe.ae2.AE2;
 import com.gtocore.data.recipe.ae2.Ae2wtlibRecipes;
 import com.gtocore.data.recipe.classified.$ClassifiedRecipe;
 import com.gtocore.data.recipe.generated.*;
+import com.gtocore.data.recipe.gtm.SuperStorageAdditionalRecipe;
 import com.gtocore.data.recipe.gtm.chemistry.ChemistryRecipes;
 import com.gtocore.data.recipe.gtm.configurable.RecipeAddition;
 import com.gtocore.data.recipe.gtm.misc.*;
@@ -83,6 +85,7 @@ public final class Data {
         GTRegistries.BEDROCK_ORE_DEFINITIONS.unfreeze();
         BaseNodes.init();
         QuestBookContents.init();
+        QuestHot.validateAtStartup();
         GTOOres.init();
         MeteoriteRecipe.init();
 
@@ -115,6 +118,7 @@ public final class Data {
 
         CircuitRecipes.init();
         MetaTileEntityLoader.init();
+        SuperStorageAdditionalRecipe.init();
 
         GCYMRecipes.init();
         RecipeAddition.init();
@@ -151,7 +155,6 @@ public final class Data {
         AE2.init();
         Ae2wtlibRecipes.init();
         ImmersiveAircraft.init();
-        FunctionalStorage.init();
         ComputerCraft.init();
         ModularRouters.init();
         SuperFactoryManager.init();

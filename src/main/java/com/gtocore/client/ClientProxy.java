@@ -22,6 +22,8 @@ import com.gtocore.client.renderer.fx.DysonForceFieldRenderer;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
+import com.gtocore.client.website.WebsiteAccount;
+import com.gtocore.client.website.WebsiteConsent;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.data.GTOAEParts;
@@ -51,6 +53,7 @@ import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
+import com.gtolib.api.machine.storage.SuperStorageClient;
 import com.gtolib.quest.client.QuestPinnedHud;
 import com.gtolib.quest.client.book.QuestBookStyle;
 
@@ -102,6 +105,8 @@ public final class ClientProxy extends CommonProxy {
         super();
         init();
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        WebsiteConsent.init();
+        WebsiteAccount.init();
         ItemGuides.init(eventBus);
         eventBus.addListener(ClientProxy::clientSetup);
         eventBus.addListener(ClientProxy::registerItemDeco);
@@ -122,6 +127,7 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void init() {
+        SuperStorageClient.init();
         KeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
@@ -136,6 +142,7 @@ public final class ClientProxy extends CommonProxy {
         TravelEvents.Client.init();
         TravelParticleHandler.init();
         IMoveableHUD.EventHandler.init();
+        QuestHotReload.init();
         ClientForge.init();
         ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
         GTDynamicResourcePack.EVENT.addListener(ClientProxy.class, () -> {

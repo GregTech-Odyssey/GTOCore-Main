@@ -45,4 +45,19 @@ class DysonSphereEffectsTest {
         assertEquals(15, DysonSphereEffects.skyDarken(5, fullShell));
         assertEquals(15, DysonSphereEffects.skyDarken(9, fullShell));
     }
+
+    @ParameterizedTest
+    @CsvSource({ "1", "0.5", "0.1", "0" })
+    void completeShellBlocksTwilightGlowEvenAsDaylightFades(float daylight) {
+        assertEquals(0, DysonSphereEffects.sunlightTransmission(StarMapDysonSync.COMPLETE));
+        assertEquals(1 - daylight, DysonSphereEffects.transmission(StarMapDysonSync.COMPLETE, daylight), 0.000001f);
+    }
+
+    @Test
+    void partialShellKeepsTwilightGlowAtTheSameCoverageOnBothSidesOfTheHorizon() {
+        int launched = StarMapDysonSync.COMPLETE / 2;
+        assertEquals(0.5f, DysonSphereEffects.sunlightTransmission(launched));
+        assertEquals(0.75f, DysonSphereEffects.transmission(launched, 0.5f));
+        assertEquals(1, DysonSphereEffects.transmission(launched, 0));
+    }
 }

@@ -4,7 +4,6 @@ import com.gtocore.config.GTORules;
 import com.gtocore.data.recipe.ae2.AE2;
 import com.gtocore.data.recipe.generated.DyeRecipes;
 import com.gtocore.data.recipe.misc.SpaceStationRecipes;
-import com.gtocore.data.recipe.mod.FunctionalStorage;
 import com.gtocore.data.recipe.mod.ImmersiveAircraft;
 import com.gtocore.data.recipe.mod.ModularRouters;
 import com.gtocore.data.recipe.mod.Sophisticated;
@@ -66,6 +65,7 @@ public final class RecipeFilter {
     private static void initModFilter(Set<String> filters) {
         filters.add("itemfilters");
         if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
+        if (Mods.FUNCTIONALSTORAGE.isLoaded()) filters.add("functionalstorage");
         if (Mods.COMPUTERCRAFT.isLoaded()) filters.add("computercraft");
         if (Mods.SFM.isLoaded()) filters.add("sfm");
         if (Mods.PIPEZ.isLoaded()) filters.add("pipez");
@@ -73,7 +73,6 @@ public final class RecipeFilter {
 
     private static void initIdFilter(Set<ResourceLocation> filters) {
         ImmersiveAircraft.initJsonFilter(filters);
-        FunctionalStorage.initJsonFilter(filters);
         ModularRouters.initJsonFilter(filters);
         AE2.initJsonFilter(filters);
         SpaceStationRecipes.initJsonFilter(filters);

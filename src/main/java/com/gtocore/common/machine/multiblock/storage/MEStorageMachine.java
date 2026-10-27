@@ -28,14 +28,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.U126;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.capability.IBindable;
-import com.hepdd.gtmthings.utils.BigIntegerUtils;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +52,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     @SaveToDisk(defaultValue = "false")
     protected boolean player = false;
     protected StorageAccessPartMachine accessPartMachine;
-    private final List<Reference2ObjectMap.Entry<AEKey, BigInteger>> list = new ArrayList<>();
+    private final List<Reference2ObjectMap.Entry<AEKey, U126>> list = new ArrayList<>();
 
     public MEStorageMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -164,7 +163,6 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     public void addDisplayText(List<Component> textList) {
         super.addDisplayText(textList);
         if (accessPartMachine != null) {
-            if (getOffsetTimer() % 10 == 0) accessPartMachine.setObserve(true);
             textList.add(Component.translatable("gui.ae2.BytesUsed", NumberUtils.numberText(accessPartMachine.getBytes()).append(" / ").append(accessPartMachine.isInfinite() ? StringUtils.full_color("infinity") : NumberUtils.formatDouble(accessPartMachine.getCapacity())).withStyle(ChatFormatting.GREEN)).withStyle(ChatFormatting.GRAY));
             textList.add(Component.literal(String.valueOf(accessPartMachine.getTypes())).withStyle(ChatFormatting.AQUA).append(Component.literal(" ").append(Component.translatable("gui.ae2.Types").withStyle(ChatFormatting.GRAY))));
             if (accessPartMachine instanceof StorageAccessPartMachine.Big machine) {
@@ -174,8 +172,8 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
                 if (map == null) return;
                 list.clear();
                 map.reference2ObjectEntrySet().forEach(entry -> {
-                    var currentAmount = entry.getValue();
-                    if (currentAmount.compareTo(BigIntegerUtils.BIG_INTEGER_MAX_LONG) > 0) {
+                    // 只看超过 long 的那些，值本身是表内的 126 位视图
+                    if (entry.getValue().isAboveLong()) {
                         list.add(entry);
                     }
                 });

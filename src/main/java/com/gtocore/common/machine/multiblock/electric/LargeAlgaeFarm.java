@@ -90,7 +90,6 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
     @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
-        if (algaeAccessHatch != null) algaeAccessHatch.setObserve(true);
         if (MultiblockPage.isScreenText()) return;
         for (Algae algae : Algae.values()) {
             long amount = algaeAccessHatch != null ? algaeAccessHatch.getAvailableStacks().get(algae.aeKey()) : 0;

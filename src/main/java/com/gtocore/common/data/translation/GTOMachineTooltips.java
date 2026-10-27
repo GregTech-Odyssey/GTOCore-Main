@@ -430,18 +430,18 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
-        t.line(TipRole.SUMMARY, t.tr("用功能存储的抽屉作存储介质的多方块仓库", "Multiblock storage that uses Functional Storage drawers as its medium"));
+        t.line(TipRole.SUMMARY, t.tr("用超级箱/缸作存储介质的多方块仓库", "Multiblock storage that uses Super Chests/Tanks as its medium"));
 
         t.heading(t.tr("怎么用", "Setup"));
         t.requirement(t.tr("主机槽放超级箱或超级缸（最多 64 个）：超级箱存物品，超级缸存流体", "Put Super Chests or Super Tanks in the controller slot (up to 64): chests store items, tanks store fluids"));
-        t.requirement(t.tr("输入总线放抽屉和存储升级；只有与主机同类的抽屉生效（超级箱配物品抽屉，超级缸配流体抽屉）", "Put drawers and storage upgrades in the input buses; only drawers matching the controller count (item drawers for chests, fluid drawers for tanks)"));
-        t.unsupported(t.tr("压缩抽屉、末影抽屉不算", "Compacting and ender drawers do not count"));
+        t.detail(t.tr("主机等级：木质按 0.25，青春版按 0.5，其余按电压等级计算", "Controller level: wooden units count as 0.25, Lite units as 0.5, and other units use their voltage tier"));
+        t.requirement(t.tr("输入总线放超级箱/缸；只有与主机同类的箱缸生效（箱配箱，缸配缸），支持木质及量子系列", "Put Super Chests/Tanks in the input buses; only the controller's kind counts (chests with chests, tanks with tanks), including wooden and quantum variants"));
+        t.unsupported(t.tr("功能存储的抽屉和存储升级不再提供收益", "Functional Storage drawers and storage upgrades no longer provide benefits"));
 
         t.heading(t.tr("容量", "Capacity"));
-        t.feature(t.tr("能存的种类数：生效抽屉的格数之和，1x 抽屉算 1 种、2x 算 2 种、4x 算 4 种", "Type count: the slot total of the counted drawers; 1x drawers give 1 type, 2x give 2, 4x give 4"));
-        t.feature(t.tr("每种能存的数量：抽屉单格容量 × √(超级箱/缸等级 × 数量 × 密封等级) × 升级倍率", "Amount per type: drawer slot capacity x sqrt(chest/tank tier x count x hermetic tier) x upgrade multiplier"));
-        t.detail(t.tr("混放不同抽屉时，按单格容量最小的抽屉算", "With mixed drawers, the smallest slot capacity is used"));
-        t.detail(t.tr("升级倍率：所有升级的倍率相乘后平均到每个抽屉，每个抽屉最多算 4 个；存流体时每个升级的倍率减半；最大存储升级不计", "Upgrade multiplier: all upgrade multipliers multiplied and averaged per drawer, at most 4 per drawer; halved per upgrade for fluids; max storage upgrades do not count"));
+        t.feature(t.tr("能存的种类数：生效箱缸的格数之和，普通、1x2、2x2 每个分别提供 1、2、4 种", "Type count: the slot total of the counted storage units; normal, 1x2 and 2x2 units provide 1, 2 and 4 types each"));
+        t.feature(t.tr("每种能存的数量：√(主机等级 × 主机数量 × 密封等级) × 最低级箱缸容量 × √(输入箱缸总数量 ÷ 该箱缸格数)", "Amount per type: sqrt(controller tier x controller count x hermetic tier) x lowest storage capacity x sqrt(total input unit count / that unit's slots)"));
+        t.detail(t.tr("混放时取容量最低的箱缸；同容量取格数最多的布局，数量按全部同类箱缸合计", "With mixed units, use the lowest total capacity and, for equal capacities, the layout with the most slots; count all matching storage units"));
         t.feature(t.tr("不限总量，只限每种的上限", "No overall limit, only a per-type cap"));
 
         t.heading(t.tr("其他", "Other"));
