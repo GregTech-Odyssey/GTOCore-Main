@@ -1,6 +1,6 @@
 # 更新记录维护
 
-[changelog.md](changelog.md) 是 GTOCore 的长期更新记录，GTOCore 与 GTOLib 的同一项变化合并记录。新增功能、调整行为、移除内容、性能优化、修复问题或接入影响游戏体验的依赖改动时，按本文同步维护。
+[changelog.md](changelog.md) 是 GTOCore 的长期更新记录，GTOCore 与所有 fork 模组、 submodule 的同一项变化合并记录。新增功能、调整行为、移除内容、性能优化、修复问题或接入影响游戏体验的依赖改动时，按本文同步维护。
 
 ## 更新时机
 
