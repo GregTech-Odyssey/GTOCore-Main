@@ -90,6 +90,7 @@ public final class GTOItems {
         GTOOrganItems.init();
         GTOAEParts.init();
         SpeedCards.init();
+        SuperStorageUpgrades.init();
         TieredInterfaces.init();
         ComponentSlang.init();
         MultiblockSlang.init();

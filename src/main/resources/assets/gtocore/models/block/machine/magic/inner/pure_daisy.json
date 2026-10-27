@@ -12,7 +12,12 @@
       "name": "inner_pure_daisy_0",
       "from": [2.24, 1.6, 8],
       "to": [13.76, 14.4, 8],
-      "rotation": { "angle": 45, "axis": "y", "origin": [8, 8, 8], "rescale": true },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [8, 8, 8],
+        "rescale": true
+      },
       "faces": {
         "north": { "uv": [0, 0, 16, 16], "texture": "#0" },
         "east": { "uv": [0, 0, 0, 0], "texture": "#1" },
@@ -26,7 +31,12 @@
       "name": "inner_pure_daisy_1",
       "from": [8, 1.6, 2.24],
       "to": [8, 14.4, 13.76],
-      "rotation": { "angle": 45, "axis": "y", "origin": [8, 8, 8], "rescale": true },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [8, 8, 8],
+        "rescale": true
+      },
       "faces": {
         "north": { "uv": [0, 0, 0, 0], "texture": "#1" },
         "east": { "uv": [0, 0, 16, 16], "texture": "#0" },

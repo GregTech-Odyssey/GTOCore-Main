@@ -68,6 +68,10 @@ public final class GTORules {
             .name("gtocore.rule.resources.fluid", "流体资源难度", "Fluid Resource Difficulty")
             .desc("gtocore.rule.resources.fluid.desc", "专家档下，基岩流体矿脉和油砂离心会产出含杂质的流体，需要额外的化工流程提纯。", "On the expert tier, bedrock fluid veins and oil sand centrifuging yield impure fluids that need extra chemical processing.")
             .register();
+    public static final TierRule LOOT = Rules.tierRule("resources.loot").group(RESOURCES)
+            .name("gtocore.rule.resources.loot", "战利品难度", "Loot Difficulty")
+            .desc("gtocore.rule.resources.loot.desc", "更高的难度下，搜刮战利品的质量与数量会降低。", "On higher tiers, the quality and quantity of loot scavenging is reduced.")
+            .register();
     public static final FloatRule GTM_RUBBER_TREE = Rules.floatRule("gtm.rubber_tree_chance").group(RESOURCES)
             .defaults(1.5F, 1.0F, 0.5F).range(0, 10)
             .name("gtocore.rule.gtm.rubber_tree_chance", "橡胶树生成率", "Rubber Tree Spawn Chance")
