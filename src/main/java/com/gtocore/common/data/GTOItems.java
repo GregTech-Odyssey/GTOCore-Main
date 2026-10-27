@@ -685,10 +685,10 @@ public final class GTOItems {
     public static final ItemEntry<Item> DEPLETED_REACTOR_NAQUADAH_DUAL = register("depleted_reactor_naquadah_dual", "枯竭二联硅岩燃料棒");
     public static final ItemEntry<Item> DEPLETED_REACTOR_NAQUADAH_QUAD = register("depleted_reactor_naquadah_quad", "枯竭四联硅岩燃料棒");
 
-    public static final ItemEntry<Item> NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("neutronium_antimatter_fuel_rod", "中子反物质燃料棒", "antimatter_fuel_rod");
-    public static final ItemEntry<Item> DRACONIUM_ANTIMATTER_FUEL_ROD = registerTexture("draconium_antimatter_fuel_rod", "龙反物质燃料棒", "antimatter_fuel_rod");
-    public static final ItemEntry<Item> COSMIC_NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("cosmic_neutronium_antimatter_fuel_rod", "宇宙中子反物质燃料棒", "antimatter_fuel_rod");
-    public static final ItemEntry<Item> INFINITY_ANTIMATTER_FUEL_ROD = registerTexture("infinity_antimatter_fuel_rod", "无尽反物质燃料棒", "antimatter_fuel_rod");
+    public static final ItemEntry<Item> NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("neutronium_antimatter_fuel_rod", "中子反物质燃料棒", "neutronium_antimatter_fuel_rod");
+    public static final ItemEntry<Item> DRACONIUM_ANTIMATTER_FUEL_ROD = registerTexture("draconium_antimatter_fuel_rod", "龙反物质燃料棒", "draconium_antimatter_fuel_rod");
+    public static final ItemEntry<Item> COSMIC_NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("cosmic_neutronium_antimatter_fuel_rod", "宇宙中子反物质燃料棒", "cosmic_neutronium_antimatter_fuel_rod");
+    public static final ItemEntry<Item> INFINITY_ANTIMATTER_FUEL_ROD = registerTexture("infinity_antimatter_fuel_rod", "无尽反物质燃料棒", "infinity_antimatter_fuel_rod");
 
     public static final ItemEntry<Item> SPACE_ESSENCE = register("space_essence", "宇宙精华");
     public static final ItemEntry<Item> BEDROCK_DESTROYER = register("bedrock_destroyer", "基岩破坏者");
