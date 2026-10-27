@@ -7,6 +7,7 @@ import com.gtolib.api.wireless.energy.GridClock;
 import com.gtolib.api.wireless.energy.WirelessGrid;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -86,6 +87,12 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
 
     public MonitorEU(MetaMachineBlockEntity holder) {
         super(holder);
+    }
+
+    @Override
+    protected TickableSubscription subscribe(Runnable runnable) {
+        // 吞吐读取会清理到期预约，必须与配方结算在服务端线程串行执行。
+        return this.subscribeServerTick(tickableSubscription, runnable, 10);
     }
 
     @Override
