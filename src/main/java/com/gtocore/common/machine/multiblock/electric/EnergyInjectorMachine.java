@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.item.capability.ElectricItem;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
@@ -97,7 +98,7 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
                 }
             }
 
-            if (!processed && output.getDamageValue() > 0) {
+            if (output.getDamageValue() > 0) {
                 eu.value = eu.value.add(BigInteger.valueOf((long) output.getDamageValue() << 7).multiply(BigInteger.valueOf(count)));
                 output.setDamageValue(0);
                 processed = true;
@@ -117,7 +118,7 @@ public final class EnergyInjectorMachine extends ElectricMultiblockMachine imple
 
             if (processed) {
                 builder.outputItems(output);
-                builder.inputItems(itemKey.getItem(), count);
+                builder.inputItems(KeyIngredient.exact(itemKey), (long) count);
             }
             return false;
         });
