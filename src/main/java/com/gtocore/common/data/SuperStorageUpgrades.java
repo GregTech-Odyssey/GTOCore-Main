@@ -24,7 +24,8 @@ public final class SuperStorageUpgrades {
     public static final ItemEntry<StorageUpgradeItem> TITANIUM = upgrade("titanium", "钛升级", "Titanium Upgrade", 16);
     public static final ItemEntry<StorageUpgradeItem> TUNGSTEN_STEEL = upgrade("tungsten_steel", "钨钢升级", "Tungsten Steel Upgrade", 32);
 
-    public static final ItemEntry[] UPGRADES = new ItemEntry[] { BRONZE, STEEL, ALUMINIUM, TITANIUM, TUNGSTEN_STEEL };
+    @SuppressWarnings("unchecked")
+    public static final ItemEntry<StorageUpgradeItem>[] UPGRADES = new ItemEntry[] { BRONZE, STEEL, ALUMINIUM, TITANIUM, TUNGSTEN_STEEL };
 
     private SuperStorageUpgrades() {}
 

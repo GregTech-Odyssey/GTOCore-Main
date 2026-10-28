@@ -49,12 +49,13 @@ import snownee.jade.api.config.IPluginConfig;
 import java.util.List;
 
 /**
- * 抽屉存储器：输入总线与主机槽都放超级箱或超级缸。
+ * 抽屉存储器：主机槽放超级箱或超级缸，输入总线放同类箱缸与超级存储升级。
  * <ul>
  * <li>主机槽（一格、最多 {@link #CONTROLLER_LIMIT} 个）决定能存哪一大类：超级箱只能存物品、超级缸只能存流体，
  * 并按「等级 × 数量」给容量额外加成；</li>
  * <li>可存种类数 = 与主机同类别的箱缸格数 × 数量（普通=1、1x2=2、2x2=4）；</li>
- * <li>每种类容量 = √(密封等级 × 主机等级 × 主机数量) × 同类箱缸最低容量 × √(同类箱缸总数量 ÷ 最低容量箱缸格数)。</li>
+ * <li>每种类容量 = √(密封等级 × 主机等级 × 主机数量) × 同类箱缸最低容量 ÷ 同类箱缸最大格数 × √(同类箱缸总数量) × 升级倍率。</li>
+ * <li>升级倍率为所有升级倍率的乘积按同类箱缸数量均分，每个箱缸最多计入 4 个升级。</li>
  * <li>显示窗里可以开关「溢出销毁」：开启后，超过每种类容量或种类已满时放不下的内容会被直接销毁，
  * 调用方不会把放不下的部分收回去。</li>
  * </ul>
@@ -76,8 +77,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public static final String NO_CONTROLLER = "gtocore.machine.drawer_storage.no_controller";
     @RegisterLanguage(cn = "容量加成：√(主机 %s × 密封 %s) = ×%s", en = "Capacity bonus: sqrt(controller %s x hermetic %s) = x%s")
     public static final String BONUS = "gtocore.machine.drawer_storage.bonus";
-    @RegisterLanguage(cn = "输入箱缸 %s 个：基准格数 %s，数量收益 ×%s", en = "Input storage units: %s, base slots %s, count bonus x%s")
+    @RegisterLanguage(cn = "输入箱缸 %s 个：最大格数 %s，数量收益 ×%s", en = "Input storage units: %s, maximum slots %s, count bonus x%s")
     public static final String STORAGE_COUNT = "gtocore.machine.drawer_storage.storage_count";
+    @RegisterLanguage(cn = "升级 %s 个：按 %s 个箱缸均分，每个最多计入 4 个，倍率 ×%s", en = "Upgrades: %s, shared over %s storage units, at most 4 per unit, multiplier x%s")
+    public static final String UPGRADES = "gtocore.machine.drawer_storage.upgrades";
     @RegisterLanguage(cn = "超级箱 %s 种：每种类容量 %s", en = "Super chests %s types: %s per type")
     public static final String ITEM_DRAWERS = "gtocore.machine.drawer_storage.item_drawers";
     @RegisterLanguage(cn = "超级缸 %s 种：每种类容量 %s", en = "Super tanks %s types: %s per type")
@@ -107,8 +110,12 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     /// 输入总线中同类箱缸的总数量
     @Getter
     private long drawerCount;
-    /// 最低容量箱缸的格数；同容量混放时取最多格数
+    /// 同类箱缸的最大格数，与最低容量分别取值
     private int drawerSlots = 1;
+    @Getter
+    private long upgradeCount;
+    @Getter
+    private double upgradeMultiplier = 1;
     /// 主机等级 × 数量
     @Getter
     private double controllerMultiplier;
@@ -121,7 +128,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Getter
     private boolean voidOverflow;
 
-    /// 输入总线：放超级箱/缸
+    /// 输入总线：放超级箱/缸与超级存储升级
     private final StorageBusListener drawerBuses = new StorageBusListener();
 
     public DrawerStorageMachine(MetaMachineBlockEntity holder) {
@@ -148,7 +155,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         return Long.MAX_VALUE;
     }
 
-    /// 重扫输入总线与主机槽里的超级箱缸，算出种类数与每种类容量
+    /// 重扫输入总线里的箱缸/升级与主机槽，算出种类数与每种类容量
     private void refreshDrawers() {
         hermeticLevel = getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
         var controller = getStorageStack();
@@ -157,27 +164,42 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         controllerLevel = definition == null ? 0 : definition.controllerLevel();
         controllerMultiplier = controllerLevel * controller.getCount();
 
-        DrawerStorageCapacity.StorageType minimum = null;
+        long minimumCapacity = Long.MAX_VALUE;
+        int maximumSlots = 1;
         int types = 0;
         long drawers = 0;
+        long upgrades = 0;
+        double upgradeLog2 = 0;
         for (var bus : drawerBuses.buses()) {
             var inv = bus.storage;
             for (int i = 0, slots = inv.size(); i < slots; i++) {
                 var key = inv.keyAt(i);
                 if (key == null) continue;
-                var storage = DrawerStorageCapacity.get(key.getItem());
-                if (storage == null || storage.fluid() != fluidKind) continue;
                 long count = inv.amountAt(i);
                 if (count < 1) continue;
-                types = Keys.saturatedInt(types + (long) storage.slots() * Keys.saturatedInt(count));
-                drawers = Keys.add(drawers, count);
-                minimum = DrawerStorageCapacity.minimum(minimum, storage);
+                var item = key.getItem();
+                var storage = DrawerStorageCapacity.get(item);
+                if (storage != null) {
+                    if (storage.fluid() != fluidKind) continue;
+                    types = Keys.saturatedInt(types + (long) storage.slots() * Keys.saturatedInt(count));
+                    drawers = Keys.add(drawers, count);
+                    minimumCapacity = Math.min(minimumCapacity, storage.capacity());
+                    maximumSlots = Math.max(maximumSlots, storage.slots());
+                } else {
+                    double log2 = DrawerStorageCapacity.upgradeLog2(item);
+                    if (log2 <= 0) continue;
+                    upgrades = Keys.add(upgrades, count);
+                    upgradeLog2 += count * log2;
+                }
             }
         }
         this.types = types;
         this.drawerCount = drawers;
-        this.drawerSlots = minimum == null ? 1 : minimum.slots();
-        this.perTypeCapacity = DrawerStorageCapacity.capacityOf(minimum, drawers, hermeticLevel, controllerMultiplier);
+        this.drawerSlots = maximumSlots;
+        this.upgradeCount = upgrades;
+        this.upgradeMultiplier = DrawerStorageCapacity.averageUpgrade(upgradeLog2, upgrades, drawers);
+        this.perTypeCapacity = DrawerStorageCapacity.capacityOf(minimumCapacity, maximumSlots, drawers,
+                hermeticLevel, controllerMultiplier, upgradeMultiplier);
     }
 
     /// 主机决定的大类：超级箱只收物品、超级缸只收流体
@@ -238,6 +260,8 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         types = 0;
         drawerCount = 0;
         drawerSlots = 1;
+        upgradeCount = 0;
+        upgradeMultiplier = 1;
         perTypeCapacity = 0;
         controllerMultiplier = 0;
         controllerLevel = 0;
@@ -264,8 +288,12 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         int oldTypes = types;
         long oldDrawers = drawerCount;
         int oldSlots = drawerSlots;
+        long oldUpgrades = upgradeCount;
+        double oldMultiplier = upgradeMultiplier;
         refreshCapacity();
-        if (oldCapacity == perTypeCapacity && oldTypes == types && oldDrawers == drawerCount && oldSlots == drawerSlots) return;
+        if (oldCapacity == perTypeCapacity && oldTypes == types && oldDrawers == drawerCount && oldSlots == drawerSlots &&
+                oldUpgrades == upgradeCount && oldMultiplier == upgradeMultiplier)
+            return;
         refreshHatches();
         onChanged();
     }
@@ -314,8 +342,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
                     NumberUtils.formatDouble(capacityBonus())).withStyle(ChatFormatting.GRAY));
         }
         textList.add(Component.translatable(STORAGE_COUNT, FormattingUtil.formatNumbers(drawerCount),
-                FormattingUtil.formatNumbers(drawerSlots), NumberUtils.formatDouble(Math.sqrt(drawerCount / (double) drawerSlots)))
+                FormattingUtil.formatNumbers(drawerSlots), NumberUtils.formatDouble(Math.sqrt(drawerCount)))
                 .withStyle(ChatFormatting.GRAY));
+        textList.add(Component.translatable(UPGRADES, FormattingUtil.formatNumbers(upgradeCount),
+                FormattingUtil.formatNumbers(drawerCount), NumberUtils.formatDouble(upgradeMultiplier)).withStyle(ChatFormatting.GRAY));
         if (types < 1) {
             textList.add(Component.translatable(NO_DRAWER).withStyle(ChatFormatting.GRAY));
         } else {
@@ -345,6 +375,8 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         compoundTag.putLong("perTypeCapacity", perTypeCapacity);
         compoundTag.putLong("drawerCount", drawerCount);
         compoundTag.putInt("drawerSlots", drawerSlots);
+        compoundTag.putLong("upgradeCount", upgradeCount);
+        compoundTag.putDouble("upgradeMultiplier", upgradeMultiplier);
         compoundTag.putDouble("controllerMultiplier", controllerMultiplier);
         compoundTag.putInt("hermeticLevel", hermeticLevel);
         compoundTag.putBoolean("fluidKind", fluidKind);
@@ -365,7 +397,9 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         int drawerSlots = Math.max(1, compoundTag.getInt("drawerSlots"));
         iTooltip.add(Component.translatable(STORAGE_COUNT,
                 FormattingUtil.formatNumbers(drawerCount),
-                FormattingUtil.formatNumbers(drawerSlots), NumberUtils.formatDouble(Math.sqrt(drawerCount / (double) drawerSlots))));
+                FormattingUtil.formatNumbers(drawerSlots), NumberUtils.formatDouble(Math.sqrt(drawerCount))));
+        iTooltip.add(Component.translatable(UPGRADES, FormattingUtil.formatNumbers(compoundTag.getLong("upgradeCount")),
+                FormattingUtil.formatNumbers(drawerCount), NumberUtils.formatDouble(compoundTag.getDouble("upgradeMultiplier"))));
         iTooltip.add(Component.translatable(BONUS,
                 NumberUtils.formatDouble(compoundTag.getDouble("controllerMultiplier")),
                 FormattingUtil.formatNumbers(compoundTag.getInt("hermeticLevel")),
