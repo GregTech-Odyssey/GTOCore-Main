@@ -3,12 +3,11 @@ package com.gtocore.client.overlay;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
-import com.gtocore.common.machine.tesseract.DirectedTesseractMachine;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -41,9 +40,6 @@ public class TesseractClientHandler {
             var faces = TesseractTargetMarker.getOrderedTargets(item);
             onRenderDirected(event, faces);
         }
-        if (!DirectedTesseractMachine.HIGHLIGHTS.isEmpty()) {
-            DirectedTesseractMachine.HIGHLIGHTS.elementSet().forEach(faces -> onRenderDirected(event, List.copyOf(faces)));
-        }
         if (!AdvancedTesseractMachine.HIGHLIGHTS.isEmpty()) {
             AdvancedTesseractMachine.HIGHLIGHTS.elementSet().forEach(faces -> onRenderBlocks(event, List.copyOf(faces)));
         }
@@ -51,7 +47,6 @@ public class TesseractClientHandler {
 
     public static void clientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            List.copyOf(DirectedTesseractMachine.HIGHLIGHTS.elementSet()).forEach(DirectedTesseractMachine.HIGHLIGHTS::remove);
             List.copyOf(AdvancedTesseractMachine.HIGHLIGHTS.elementSet()).forEach(AdvancedTesseractMachine.HIGHLIGHTS::remove);
         }
     }
@@ -107,7 +102,7 @@ public class TesseractClientHandler {
         poseStack.popPose();
     }
 
-    public static void onRenderBlocks(RenderLevelStageEvent event, List<Long> packedPositions) {
+    public static void onRenderBlocks(RenderLevelStageEvent event, List<GlobalPos> packedPositions) {
         if (packedPositions.isEmpty()) return;
         var level = getClientLevel();
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
@@ -115,7 +110,9 @@ public class TesseractClientHandler {
             poseStack.pushPose();
             {
                 for (int i = 0; i < packedPositions.size(); i++) {
-                    var blockPos = BlockPos.of(packedPositions.get(i));
+                    var globalPos = packedPositions.get(i);
+                    if (globalPos.dimension() != level.dimension()) continue;
+                    var blockPos = globalPos.pos();
                     if (!level.isLoaded(blockPos)) continue;
                     var order = i + 1;
                     var color = Color.getHSBColor(lerpHue(order / (float) (packedPositions.size() * 2)), 1.0f, 1.0f);

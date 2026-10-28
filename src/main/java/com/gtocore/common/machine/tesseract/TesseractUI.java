@@ -231,7 +231,7 @@ public final class TesseractUI {
     private static final String MARKER_HELP_WRITE = "gtocore.tesseract.marker.help.write";
     @RegisterLanguage(cn = "中键超立方体：读取其配置", en = "Pick-block on a Tesseract: read its configuration")
     private static final String MARKER_HELP_READ = "gtocore.tesseract.marker.help.read";
-    @RegisterLanguage(cn = "写入有向超立方体后为第 %s 个目标，对应样板第 %s 种原料", en = "Becomes target %s of a Directed Tesseract, receiving ingredient %s")
+    @RegisterLanguage(cn = "目标顺序：%s", en = "Target order: %s")
     private static final String MARKER_BADGE = "gtocore.tesseract.marker.badge";
     @RegisterLanguage(cn = "金色序号为左键添加的目标，固定排在末尾", en = "Gold numbers were added by left-click and stay at the end")
     private static final String MARKER_BADGE_TAIL = "gtocore.tesseract.marker.badge.tail";
@@ -263,7 +263,7 @@ public final class TesseractUI {
     private static final String PREVIEW_NONE = "gtocore.tesseract.marker.preview.none";
     @RegisterLanguage(cn = "按列表顺序绑定全部目标，记录的面与维度都生效", en = "Binds every target in list order, using the recorded sides and dimensions")
     private static final String PREVIEW_DIRECTED_DETAIL = "gtocore.tesseract.marker.preview.directed.detail";
-    @RegisterLanguage(cn = "最多 20 个，每个目标消耗 1 张坐标信息卡；记录的面不生效，当前维度以外的目标被跳过", en = "Up to 20, one coordinate card per target; recorded sides are ignored and targets outside the current dimension are skipped")
+    @RegisterLanguage(cn = "最多 20 个，每个目标消耗 1 张坐标信息卡，支持跨维度；记录的面不生效", en = "Up to 20 targets across dimensions, one coordinate card per target; recorded sides are ignored")
     private static final String PREVIEW_ADVANCED_DETAIL = "gtocore.tesseract.marker.preview.advanced.detail";
     @RegisterLanguage(cn = "只绑定当前维度中的第 1 个目标，消耗 1 张坐标信息卡", en = "Binds only the first target in the current dimension, using one coordinate card")
     private static final String PREVIEW_BASIC_DETAIL = "gtocore.tesseract.marker.preview.basic.detail";
@@ -556,9 +556,7 @@ public final class TesseractUI {
         var list = UIElement.section().addChildren(header, rows);
 
         var preview = new StatusPanel();
-        preview.addLine(PREVIEW_DIRECTED, () -> Component.translatable(PREVIEW_TARGETS, TesseractTargetMarker.count(held.get())))
-                .tooltips(PREVIEW_DIRECTED_DETAIL);
-        preview.addLine(PREVIEW_ADVANCED, () -> advancedPreview(holder)).bindLevel(() -> skipped(holder) > 0 ? com.gregtechceu.gtceu.uipro.Level.WARNING : com.gregtechceu.gtceu.uipro.Level.NORMAL)
+        preview.addLine(PREVIEW_ADVANCED, () -> Component.translatable(PREVIEW_TARGETS, Math.min(AdvancedTesseractMachine.MAX_TARGETS, TesseractTargetMarker.count(held.get()))))
                 .tooltips(PREVIEW_ADVANCED_DETAIL);
         preview.addLine(PREVIEW_BASIC, () -> Component.translatable(sameDimension(holder) > 0 ? PREVIEW_FIRST : PREVIEW_NONE))
                 .tooltips(PREVIEW_BASIC_DETAIL);
@@ -572,7 +570,7 @@ public final class TesseractUI {
         var badge = index(() -> {
             var number = Component.literal(String.valueOf(index + 1));
             return TesseractTargetMarker.isTail(held.get(), index) ? number.withStyle(style -> style.withColor(tail)) : number;
-        }, Component.translatable(MARKER_BADGE, index + 1, index + 1), Component.translatable(MARKER_BADGE_TAIL));
+        }, Component.translatable(MARKER_BADGE, index + 1), Component.translatable(MARKER_BADGE_TAIL));
         var face = face(targets, index);
         bindFacePopup(face, window, index);
         var up = Button.icon(UITheme.ARROW_UP).setOnServerClick(() -> TesseractTargetMarker.move(held.get(), index, -1))
@@ -619,15 +617,5 @@ public final class TesseractUI {
             if (target.pos().dimension() == dimension) count++;
         }
         return count;
-    }
-
-    private static int skipped(HeldItemUIFactory.HeldItemHolder holder) {
-        return TesseractTargetMarker.count(holder.getHeld()) - sameDimension(holder);
-    }
-
-    private static Component advancedPreview(HeldItemUIFactory.HeldItemHolder holder) {
-        int bound = Math.min(AdvancedTesseractMachine.MAX_TARGETS, sameDimension(holder));
-        int skipped = skipped(holder);
-        return skipped > 0 ? Component.translatable(PREVIEW_SKIPPED, bound, skipped) : Component.translatable(PREVIEW_TARGETS, bound);
     }
 }

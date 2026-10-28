@@ -583,7 +583,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
 
     @RegisterLanguage(cn = "线圈等级: %s，转子启动增速 %s%%", en = "Coil Tier: %s, Rotor Launch Speed Bonus %s%%")
     public static final String COIL_BONUS = "gtocore.machine.mega_turbine.coil_tier";
-    @RegisterLanguage(cn = "玻璃等级: %s，转子损坏乘数加成：%s", en = "Glass Tier: %s, Rotor Damage Multiplier Bonus: %s")
+    @RegisterLanguage(cn = "玻璃等级: %s，转子损坏乘数基数：%s", en = "Glass Tier: %s, Rotor Damage Multiplier Base: %s")
     public static final String GLASS_BONUS = "gtocore.machine.mega_turbine.glass_tier";
     @RegisterLanguage(cn = "高速模式乘数调节：", en = "High Speed Mode Multiplier Adjustment:")
     public static final String ADJUSTMENT1 = "gtocore.machine.mega_turbine.expert.adjustment.1";
@@ -605,7 +605,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     private static final String COIL_TIER = "gtocore.machine.mega_turbine.coil_tier.value";
     @RegisterLanguage(cn = "转子启动增速", en = "Rotor Launch Speed Bonus")
     private static final String LAUNCH_SPEED_BONUS = "gtocore.machine.mega_turbine.launch_speed_bonus";
-    @RegisterLanguage(cn = "转子损坏乘数加成", en = "Rotor Damage Multiplier Bonus")
+    @RegisterLanguage(cn = "转子损坏乘数基数", en = "Rotor Damage Multiplier Base")
     private static final String DAMAGE_BASE = "gtocore.machine.mega_turbine.damage_base";
     @RegisterLanguage(cn = "专家模式下，允许调节高速模式下的输出乘数。", en = "In Expert Mode, allows adjustment of the output multiplier in High Speed Mode.")
     public static final String DESC1 = "gtocore.machine.mega_turbine.expert.desc.1";

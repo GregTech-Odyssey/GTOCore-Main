@@ -107,7 +107,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
                 WidgetIcons.HIGHLIGHT, WidgetIcons.HIGHLIGHT, () -> false,
                 (clickData, pressed) -> {
                     if (clickData.isRemote && getLevel() != null && pos != null) {
-                        AdvancedTesseractMachine.HIGHLIGHTS.add(ImmutableList.of(pos.asLong()), 200);
+                        AdvancedTesseractMachine.HIGHLIGHTS.add(ImmutableList.of(GlobalPos.of(getLevel().dimension(), pos)), 200);
                     }
                 })
                 .setTooltipsSupplier(pressed -> Collections.singletonList(Component.translatable(HIGHLIGHT_TEXT))));

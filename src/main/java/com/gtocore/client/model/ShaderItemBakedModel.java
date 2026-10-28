@@ -65,6 +65,8 @@ public class ShaderItemBakedModel extends WrappedItemModel {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
+        // Capturing the mask clears the render layer's depth-test state.
+        RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.setShader(() -> shader);
         RenderSystem.setShaderTexture(0, runtimeMask.textureId());
@@ -80,6 +82,7 @@ public class ShaderItemBakedModel extends WrappedItemModel {
         tesselator.end();
 
         RenderSystem.depthMask(true);
+        RenderSystem.disableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

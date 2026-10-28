@@ -121,6 +121,7 @@ final class ItemLang {
         addCNEN("metaitem.tool.tooltip.rotor.coating", "镀层材料：%s", "Coating Material: %s");
         addCNEN("metaitem.tool.tooltip.rotor.coating.ench.unbreaking", "耐久附魔减免耐久损耗：%s%%", "Durability Enchantment Reduction: %s%%");
         addCNEN("metaitem.tool.tooltip.rotor.coating.ench.efficiency", "效率附魔加成：%s%%", "Efficiency Enchantment Bonus: %s%%");
+        addCNEN("metaitem.tool.tooltip.rotor.coating.ench.power", "力量附魔加成：%s%%", "Power Enchantment Bonus: %s%%");
         addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.0", "§6镀层机制：", "§6Coating Mechanism:");
         addCNEN("metaitem.tool.tooltip.rotor.coating.tooltip.1", "§b镀层会提供一道吸收转子损耗的屏障，当转子A有镀层B，镀层B的耐久为§d4 * max(B/10, min(B-A, B/2))",
                 "§bThe coating provides a barrier that absorbs rotor wear. When rotor A has coating B, the durability of coating B is §d4 * max(B/10, min(B-A, B/2))");

@@ -8,8 +8,12 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -19,7 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -33,19 +36,17 @@ public class CoordinateCardBehavior implements IInteractionItem, IAddInformation
         if (context.getPlayer() != null) {
             BlockPos blockPos = context.getClickedPos();
             ItemStack card = context.getPlayer().getMainHandItem();
-            BlockState blockState = level.getBlockState(blockPos);
-            if (blockState.hasBlockEntity()) {
-                card.setTag(new CompoundTag());
-                CompoundTag tag = card.getOrCreateTag();
-                tag.putInt("x", blockPos.getX());
-                tag.putInt("y", blockPos.getY());
-                tag.putInt("z", blockPos.getZ());
-                MetaMachine machine = MetaMachine.getMachine(level, blockPos);
-                if (machine instanceof WorkableTieredMachine || machine instanceof IMultiController) {
-                    tag.putBoolean("machine", true);
-                }
-                return InteractionResult.CONSUME;
+            card.setTag(new CompoundTag());
+            CompoundTag tag = card.getOrCreateTag();
+            tag.putString("dimension", level.dimension().location().toString());
+            tag.putInt("x", blockPos.getX());
+            tag.putInt("y", blockPos.getY());
+            tag.putInt("z", blockPos.getZ());
+            MetaMachine machine = MetaMachine.getMachine(level, blockPos);
+            if (machine instanceof WorkableTieredMachine || machine instanceof IMultiController) {
+                tag.putBoolean("machine", true);
             }
+            return InteractionResult.CONSUME;
         }
 
         return InteractionResult.PASS;
@@ -66,7 +67,17 @@ public class CoordinateCardBehavior implements IInteractionItem, IAddInformation
         CompoundTag tag = itemStack.getTag();
         if (tag != null) {
             list.add(Tips.stat(Component.translatable("gtocore.tooltip.item.machine_coordinate_card.tooltip.2", Component.translatable("config.jade.plugin_jade.coordinates"), "§5" + tag.getInt("x"), "§d" + tag.getInt("y"), "§e" + tag.getInt("z"))));
+            list.add(Tips.stat(Component.translatable("gtceu.recipe.dimensions", tag.getString("dimension"))));
         }
+    }
+
+    @Nullable
+    public static GlobalPos getStoredGlobalPos(ItemStack stack, ResourceKey<Level> fallback) {
+        var pos = getStoredCoordinates(stack);
+        if (pos == null) return null;
+        var tag = stack.getTag();
+        var id = tag.contains("dimension") ? ResourceLocation.tryParse(tag.getString("dimension")) : null;
+        return GlobalPos.of(id == null ? fallback : ResourceKey.create(Registries.DIMENSION, id), pos);
     }
 
     @Nullable

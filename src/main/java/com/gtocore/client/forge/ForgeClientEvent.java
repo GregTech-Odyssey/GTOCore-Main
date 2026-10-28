@@ -39,6 +39,7 @@ import com.gtolib.utils.RegistriesUtils;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.item.SuperStorageItem;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
@@ -153,6 +154,9 @@ public final class ForgeClientEvent {
             }
         }
         Item item = stack.getItem();
+        if (item instanceof SuperStorageItem) {
+            event.getToolTip().add(Tips.feature(Component.translatable("gtocore.super_storage.upgrade.tip")));
+        }
         var materialEntry = ChemicalHelper.getMaterialEntry(item);
         if (!materialEntry.isEmpty()) {
             event.getToolTip().add(MaterialTypeTooltips.of(materialEntry.material()));

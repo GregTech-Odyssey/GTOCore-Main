@@ -488,8 +488,13 @@ public final class ForgeCommonEvent {
         ElectrochemistryMigration.remap(event);
         SpeedCards.remap(event);
         TieredInterfaces.remap(event);
+        event.getMappings(Registries.BLOCK_ENTITY_TYPE, GTOCore.MOD_ID).forEach(mapping -> {
+            if (mapping.getKey().equals(GTOCore.id("directed_tesseract_generator"))) mapping.remap(GTOMachines.ADVANCED_TESSERACT_GENERATOR.getBlockEntityType());
+        });
         event.getMappings(Registries.BLOCK, GTOCore.MOD_ID).forEach(mapping -> {
-            if (mapping.getKey().equals(GTOCore.id("abs_rad_casing"))) {
+            if (mapping.getKey().equals(GTOCore.id("directed_tesseract_generator"))) {
+                mapping.remap(GTOMachines.ADVANCED_TESSERACT_GENERATOR.get());
+            } else if (mapping.getKey().equals(GTOCore.id("abs_rad_casing"))) {
                 mapping.remap(GTOBlocks.ABS_RED_CASING.get());
             } else if (mapping.getKey().equals(GTOCore.id("spacetimecontinuumripper"))) {
                 mapping.remap(GTOBlocks.SPACETIME_CONTINUUM_RIPPER.get());
@@ -500,7 +505,9 @@ public final class ForgeCommonEvent {
             }
         });
         event.getMappings(Registries.ITEM, GTOCore.MOD_ID).forEach(mapping -> {
-            if (mapping.getKey().equals(GTOCore.id("abs_rad_casing"))) {
+            if (mapping.getKey().equals(GTOCore.id("directed_tesseract_generator"))) {
+                mapping.remap(GTOMachines.ADVANCED_TESSERACT_GENERATOR.asItem());
+            } else if (mapping.getKey().equals(GTOCore.id("abs_rad_casing"))) {
                 mapping.remap(GTOBlocks.ABS_RED_CASING.asItem());
             } else if (mapping.getKey().equals(GTOCore.id("spacetimecontinuumripper"))) {
                 mapping.remap(GTOBlocks.SPACETIME_CONTINUUM_RIPPER.asItem());
