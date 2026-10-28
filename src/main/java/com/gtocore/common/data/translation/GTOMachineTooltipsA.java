@@ -338,6 +338,12 @@ public final class GTOMachineTooltipsA {
         t.requirement(t.tr("超频模块仅允许安装一个", "Only one overclock module is allowed to be installed"));
         t.control(t.tr("可在结构配置中选择要预览或搭建的模块", "Modules to preview or build can be selected in the structure configuration"));
     });
+    public static TipSpec solarStormAggregationReactorTooltips = GTOTips.of("solar_storm_aggregation_reactor", t -> {
+        t.heading(TipSlot.REQUIREMENTS, RunningRequirements);
+        t.requirement(t.tr("只能在太阳表面工作", "Can only operate on the surface of the sun"));
+        t.requirement(t.tr("只有在太阳风暴期间，聚合才能运行", "The reactor can only operate during solar storms"));
+        t.control(t.tr("（暂时）当太阳风暴时，其他星球表现为下雨，太阳风暴结束后，其他星球表现为晴天", "(Temporarily) During solar storms, other planets appear to be raining, and after the solar storm ends, other planets appear to be sunny"));
+    });
 
     public static final TipSpec KuangbiaoGiantNuclearFusionReactorEnergyStorageTooltip(long eut) {
         return GTOTips.of("kuangbiao_giant_nuclear_fusion_reactor_energy_storage", t -> t.statText(Tx.join(

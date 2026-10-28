@@ -1056,7 +1056,7 @@ public final class GTORecipeTypes {
             });
 
     public static final RecipeType SOLAR_STORM_AGGREGATION_REACTOR_RECIPES = register("solar_storm_aggregation_reactor", "风暴聚合", MULTIBLOCK)
-            .setMaxIOSize(6, 2, 6, 2)
+            .setMaxIOSize(16, 1, 6, 1)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.ARC);
 

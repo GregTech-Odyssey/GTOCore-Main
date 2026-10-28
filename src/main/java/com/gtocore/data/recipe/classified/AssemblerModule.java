@@ -12,8 +12,6 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
-import net.minecraft.world.item.Items;
-
 import appeng.core.definitions.AEItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -459,32 +457,6 @@ final class AssemblerModule {
                 .EUt(2097152)
                 .duration(1000)
                 .addData(GTORecipeDataKeys.POWER_MODULE_TIER, 2)
-                .save();
-
-        ASSEMBLER_MODULE_RECIPES.recipeBuilder("obsidian_matrix")
-                .inputItems(GTOItems.COSMIC_PRINTED_CIRCUIT_BOARD, 8)
-                .inputItems(GTOItems.COSMIC_PROCESSING_CORE, 32)
-                .inputItems(GTOItems.DARK_MATTER)
-                .inputItems(GTOItems.PROTO_MATTER)
-                .inputItems(GTOItems.HUI_CIRCUIT_5)
-                .inputItems(GTOItems.STABILIZED_WORMHOLE_GENERATOR)
-                .inputItems(GTOItems.RELATIVISTIC_SPINORIAL_MEMORY_SYSTEM)
-                .inputItems(GTOItems.NUCLEAR_CLOCK)
-                .inputItems(TagPrefix.plateDense, GTOMaterials.NaquadriaticTaranium, 32)
-                .inputItems(GTOItems.FULLERENE_POLYMER_MATRIX_FINE_TUBING, 64)
-                .inputItems(TagPrefix.rock, GTMaterials.Obsidian, 65536)
-                .inputItems(Items.CRYING_OBSIDIAN, 65536)
-                .inputItems(GTOBlocks.SHINING_OBSIDIAN.asItem(), 65536)
-                .inputItems(GTOBlocks.ENDER_OBSIDIAN.asItem(), 65536)
-                .inputItems(GTOBlocks.INFUSED_OBSIDIAN.asItem(), 65536)
-                .inputItems(GTOBlocks.REINFORCED_OBSIDIAN.asItem(), 65536)
-                .outputItems(GTOItems.OBSIDIAN_MATRIX)
-                .inputFluids(GTOMaterials.Haderoth, L * 8)
-                .inputFluids(GTOMaterials.CosmicComputingMixture, 16000)
-                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 32000)
-                .EUt(62914560)
-                .duration(1600)
-                .addData(GTORecipeDataKeys.POWER_MODULE_TIER, 4)
                 .save();
 
         ASSEMBLER_MODULE_RECIPES.builder("mega_se_mining")
