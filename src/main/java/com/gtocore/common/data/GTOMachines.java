@@ -31,6 +31,7 @@ import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachi
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
+import com.gtocore.common.machine.noenergy.game.sudoku.SudokuMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
@@ -1275,6 +1276,16 @@ public final class GTOMachines {
             .nonYAxisRotation()
             .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
                     GTOCore.id("block/machine/game/number_puzzle")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition SUDOKU = machine("sudoku_machine", "数独游戏机", SudokuMachine::new)
+            .langValue("Sudoku Game Machine")
+            .tips(GTOMachineTooltips.SudokuTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/sudoku")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

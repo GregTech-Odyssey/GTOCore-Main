@@ -9,7 +9,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -17,7 +16,6 @@ import com.gregtechceu.gtceu.uipro.data.RPC;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,7 +31,6 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -309,11 +306,12 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         return page;
     }
 
-    /** 主页之外再挂一个「配置」子页：游玩权限开关 + 全服里程碑榜单。 */
+    /** 主页之外挂「配置」与「排行榜」两个子页。 */
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
         sideTabs.attachSubTab(new ConfigPage());
+        sideTabs.attachSubTab(new LeaderboardPage());
     }
 
     /** 状态面板：余额 + 本局积分 + 重新开始/取出全部。 */
@@ -327,41 +325,35 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         return status;
     }
 
-    /** 配置页：游玩权限开关 + 里程碑榜单（最高分降序，文字由服务端整表下发）。 */
-    private final class ConfigPage implements IFancyUIProvider {
+    /** 配置页：游玩权限开关 + 余额；排行榜单独一页。 */
+    private final class ConfigPage extends GamePage {
+
+        private ConfigPage() {
+            super(WidgetIcons.SETTINGS, PAGE_SETTINGS, PAGE_SETTINGS_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
-            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
-                    Switch.of(Game2048Machine.this::allowOthers, Game2048Machine.this::setAllowOthers),
-                    TOOLTIP_ALLOW_OTHERS));
+            page.addChild(allowOthersRow());
+            page.addChild(balancePanel());
+            return page;
+        }
+    }
 
+    /** 排行榜页：最高分榜（文字由服务端整表下发）。 */
+    private final class LeaderboardPage extends SingleLeaderboardPage {
+
+        private LeaderboardPage() {
+            super(PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
+        }
+
+        @Override
+        protected Widget boardContent() {
             var section = Form.section(SECTION_MILESTONES);
             section.addChild(milestoneTable("game_milestones_game_2048",
                     MILESTONE_COLUMNS, Game2048Machine.this::buildMilestoneRows));
-            page.addChild(section);
-            return page;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_SETTINGS);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
+            return section;
         }
     }
 
@@ -381,13 +373,6 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     private static Component tileName(int value) {
         if (value < Game2048Rules.VALUE_MIN) return Component.literal("-");
         return voltageName(Math.clamp(Integer.numberOfTrailingZeros(value) - 1, 0, TILE_STACKS.length - 1));
-    }
-
-    /** 带底图的面板，行距统一 2px；状态面板与游戏区都用它。 */
-    private static StatusPanel panel() {
-        var panel = new StatusPanel();
-        panel.getLayoutStyle().gapAll(2);
-        return panel;
     }
 
     /** 盘面区：外层面板当底并把盘面居中，盘面本体是 {@link BoardInput}。 */

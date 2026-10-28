@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.milestone;
 
+import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
+
 import com.gtolib.GTOCore;
 
 import net.minecraft.nbt.CompoundTag;
@@ -45,6 +47,7 @@ public final class GameMilestones extends SavedData {
     public static final String GAME_2048 = "game_2048";
     public static final String GAME_24 = "game_24";
     public static final String NUMBER_PUZZLE = "number_puzzle";
+    public static final String SUDOKU = "sudoku";
 
     private static final String NBT_SLOT_MACHINE = "slot_machine";
     private static final String NBT_JUST_GET_10 = "just_get_10";
@@ -65,6 +68,9 @@ public final class GameMilestones extends SavedData {
     private static final String NBT_NUMBER_PUZZLE = "number_puzzle";
     private static final String NBT_NUMBER_TICKS = "number_ticks";
     private static final String NBT_NUMBER_TIMES = "number_times";
+    private static final String NBT_SUDOKU = "sudoku";
+    private static final String NBT_SUDOKU_TICKS = "sudoku_ticks";
+    private static final String NBT_SUDOKU_TIMES = "sudoku_times";
 
     // ==================== 表项 ====================
 
@@ -79,6 +85,9 @@ public final class GameMilestones extends SavedData {
 
     /** 数字华容道：六档尺寸各自的最快用时与达成时间；0 表示该尺寸没有记录。 */
     public record NumberPuzzleStat(UUID player, long[] ticks, long[] times) {}
+
+    /** 数独：六档难度各自的最快完成用时与达成时间；0 表示该难度没有记录。 */
+    public record SudokuStat(UUID player, long[] ticks, long[] times) {}
 
     /** 老虎机榜单：回报比降序 → 获得降序 → 次数降序。 */
     private static final Comparator<SlotStat> SLOT_ORDER = Comparator
@@ -103,6 +112,7 @@ public final class GameMilestones extends SavedData {
     private final O2OOpenCacheHashMap<UUID, ScoreStat> game2048 = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, SudokuStat> sudokus = new O2OOpenCacheHashMap<>();
 
     /** 写一次加一：界面靠它判断里程碑文字要不要重建（不存盘）。 */
     private int modCount;
@@ -138,6 +148,15 @@ public final class GameMilestones extends SavedData {
             if (player == null) continue;
             data.puzzles.put(player, new PuzzleStat(player, entry.getLong(NBT_TEN), entry.getLong(NBT_TEN_TIME),
                     entry.getLong(NBT_THIRTEEN), entry.getLong(NBT_THIRTEEN_TIME)));
+        }
+        ListTag sudokus = tag.getList(NBT_SUDOKU, Tag.TAG_COMPOUND);
+        for (int index = 0; index < sudokus.size(); index++) {
+            var entry = sudokus.getCompound(index);
+            var player = readPlayer(entry);
+            if (player == null) continue;
+            long[] ticks = normalizeTimes(entry.getLongArray(NBT_SUDOKU_TICKS), SudokuRules.Difficulty.ALL.length);
+            long[] times = normalizeTimes(entry.getLongArray(NBT_SUDOKU_TIMES), SudokuRules.Difficulty.ALL.length);
+            data.sudokus.put(player, new SudokuStat(player, ticks, times));
         }
         return data;
     }
@@ -224,6 +243,20 @@ public final class GameMilestones extends SavedData {
         touch();
     }
 
+    /** 数独完成一局：该难度取更短用时，并记住达成时间。 */
+    public void recordSudoku(@Nullable UUID player, int difficultyOrdinal, long ticks, long gameTime) {
+        int difficulties = SudokuRules.Difficulty.ALL.length;
+        if (player == null || difficultyOrdinal < 0 || difficultyOrdinal >= difficulties || ticks <= 0L) return;
+        var old = sudokus.get(player);
+        long[] bestTicks = old == null ? new long[difficulties] : old.ticks().clone();
+        long[] bestTimes = old == null ? new long[difficulties] : old.times().clone();
+        if (bestTicks[difficultyOrdinal] > 0L && ticks >= bestTicks[difficultyOrdinal]) return;
+        bestTicks[difficultyOrdinal] = ticks;
+        bestTimes[difficultyOrdinal] = gameTime;
+        sudokus.put(player, new SudokuStat(player, bestTicks, bestTimes));
+        touch();
+    }
+
     /** 当前数据版本：变了说明有记录更新，界面该重建文字。 */
     public int modCount() {
         return modCount;
@@ -266,6 +299,19 @@ public final class GameMilestones extends SavedData {
             if (stat.ticks()[index] > 0L) board.add(stat);
         }
         board.sort(Comparator.comparingLong((NumberPuzzleStat stat) -> stat.ticks()[index])
+                .thenComparingLong(stat -> stat.times()[index])
+                .thenComparing(stat -> stat.player().toString()));
+        return board;
+    }
+
+    /** 数独某个难度的排行榜：只收该难度有成绩的玩家，按用时升序。 */
+    public List<SudokuStat> sudokuBoard(int difficultyOrdinal) {
+        int index = Math.clamp(difficultyOrdinal, 0, SudokuRules.Difficulty.ALL.length - 1);
+        var board = new ObjectArrayList<SudokuStat>();
+        for (var stat : sudokus.values()) {
+            if (stat.ticks()[index] > 0L) board.add(stat);
+        }
+        board.sort(Comparator.comparingLong((SudokuStat stat) -> stat.ticks()[index])
                 .thenComparingLong(stat -> stat.times()[index])
                 .thenComparing(stat -> stat.player().toString()));
         return board;
@@ -335,6 +381,16 @@ public final class GameMilestones extends SavedData {
             numberPuzzles.add(entry);
         }
         tag.put(NBT_NUMBER_PUZZLE, numberPuzzles);
+
+        ListTag sudokus = new ListTag();
+        for (var stat : this.sudokus.values()) {
+            var entry = new CompoundTag();
+            entry.putUUID(NBT_PLAYER, stat.player());
+            entry.putLongArray(NBT_SUDOKU_TICKS, stat.ticks());
+            entry.putLongArray(NBT_SUDOKU_TIMES, stat.times());
+            sudokus.add(entry);
+        }
+        tag.put(NBT_SUDOKU, sudokus);
         return tag;
     }
 
@@ -399,8 +455,12 @@ public final class GameMilestones extends SavedData {
     }
 
     private static long[] normalizeTimes(long[] values) {
-        if (values.length == 6) return values;
-        long[] normalized = new long[6];
+        return normalizeTimes(values, 6);
+    }
+
+    private static long[] normalizeTimes(long[] values, int size) {
+        if (values.length == size) return values;
+        long[] normalized = new long[size];
         System.arraycopy(values, 0, normalized, 0, Math.min(values.length, normalized.length));
         return normalized;
     }

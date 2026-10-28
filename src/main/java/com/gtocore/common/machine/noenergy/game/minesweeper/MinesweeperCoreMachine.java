@@ -123,21 +123,17 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "位置被挡住了，先把机器旁边的空地清出来", en = "The area is obstructed — clear the ground next to the machine first")
     private static final String MSG_OBSTRUCTED = "gtocore.machine.minesweeper.msg.obstructed";
 
-    @RegisterLanguage(cn = "经典模式", en = "Classic mode")
-    private static final String PAGE_CLASSIC = "gtocore.machine.minesweeper.page.classic";
-    @RegisterLanguage(cn = "扫雷经典模式", en = "Minesweeper classic mode")
-    private static final String PAGE_CLASSIC_TOOLTIP = "gtocore.machine.minesweeper.page.classic.tooltip";
     @RegisterLanguage(cn = "战役", en = "Campaign")
     private static final String PAGE_CAMPAIGN = "gtocore.machine.minesweeper.page.campaign";
     @RegisterLanguage(cn = "扫雷战役", en = "Minesweeper campaign")
     private static final String PAGE_CAMPAIGN_TOOLTIP = "gtocore.machine.minesweeper.page.campaign.tooltip";
-    @RegisterLanguage(cn = "基础里程碑", en = "Base milestones")
+    @RegisterLanguage(cn = "基础排行榜", en = "Base leaderboard")
     private static final String PAGE_RECORDS = "gtocore.machine.minesweeper.page.records";
-    @RegisterLanguage(cn = "扫雷基础模式里程碑", en = "Minesweeper base-mode milestones")
+    @RegisterLanguage(cn = "基础模式各难度的最快通关榜", en = "Fastest clears for each classic difficulty")
     private static final String PAGE_RECORDS_TOOLTIP = "gtocore.machine.minesweeper.page.records.tooltip";
-    @RegisterLanguage(cn = "战役里程碑", en = "Campaign milestones")
+    @RegisterLanguage(cn = "战役排行榜", en = "Campaign leaderboard")
     private static final String PAGE_CAMPAIGN_RECORDS = "gtocore.machine.minesweeper.page.campaign_records";
-    @RegisterLanguage(cn = "扫雷战役里程碑", en = "Minesweeper campaign milestones")
+    @RegisterLanguage(cn = "战役各章节的总用时与完成进度", en = "Total time and progress for each campaign chapter")
     private static final String PAGE_CAMPAIGN_RECORDS_TOOLTIP = "gtocore.machine.minesweeper.page.campaign_records.tooltip";
     @RegisterLanguage(cn = "新手", en = "Novice")
     private static final String TIER_NOVICE = "gtocore.machine.minesweeper.tier.novice";
@@ -977,13 +973,6 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         return status;
     }
 
-    /** 带底图的面板，行距统一 2px；局面面板、状态面板与配置页都用它。 */
-    private static StatusPanel panel() {
-        var panel = new StatusPanel();
-        panel.getLayoutStyle().gapAll(2);
-        return panel;
-    }
-
     /** 难度行：档位、盘面尺寸、雷数与全找到时的奖励；自定义档换成「不计奖励」。 */
     private Component difficultyText() {
         var snapshot = view();
@@ -1020,8 +1009,19 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         if (player != null) player.displayClientMessage(message, true);
     }
 
-    /** 配置页：六个难度（按钮上只写档位名，尺寸/雷数/奖励放悬浮提示）+ 自定义盘面的宽/高/雷数，最后是余额面板。 */
-    private final class BoardConfigPage implements IFancyUIProvider {
+    /** 服务端：难度页里这一档是不是当前选中的难度（自定义档单列，和预设档互斥）。 */
+    private boolean isDifficultySelected(int ordinal) {
+        var preset = MinesweeperRules.Difficulty.ALL[ordinal];
+        if (preset.custom()) return mode == MinesweeperRules.Mode.CUSTOM.ordinal();
+        return mode == MinesweeperRules.Mode.PRESET.ordinal() && difficulty == ordinal;
+    }
+
+    /** 难度页：六个难度（按钮上只写档位名，选中的那个两端带绿色 > <；尺寸/雷数/奖励放悬浮提示）+ 自定义盘面的宽/高/雷数。 */
+    private final class BoardConfigPage extends GamePage {
+
+        private BoardConfigPage() {
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
@@ -1032,7 +1032,8 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
                 // 循环变量不是有效 final，先拷一份给 lambda 用
                 int index = ordinal;
                 var preset = MinesweeperRules.Difficulty.ALL[index];
-                var button = Button.translatable(LayoutStyle.AUTO, DIFFICULTY_NAMES[index]);
+                var button = choiceButton(LayoutStyle.AUTO, Component.translatable(DIFFICULTY_NAMES[index]),
+                        () -> isDifficultySelected(index));
                 if (preset.custom()) {
                     button.setHoverTooltips(Component.translatable(TEXT_CUSTOM_DETAIL),
                             Component.translatable(TEXT_CUSTOM_HINT, MinesweeperRules.CUSTOM_MIN_SIDE,
@@ -1043,9 +1044,6 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
                             FormattingUtil.formatNumbers(preset.maxReward())));
                 }
                 button.setOnServerClick(() -> switchDifficulty(index));
-                boolean customButton = preset.custom();
-                button.setSelected(() -> customButton ? view().isCustom() :
-                        view().isPreset() && view().preset().ordinal() == index);
                 difficulties.addChild(button);
             }
             page.addChild(difficulties);
@@ -1063,30 +1061,8 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
             custom.addChild(TextLine.of(LayoutStyle.AUTO, MinesweeperCoreMachine.this::customShapeText).styled());
             page.addChild(custom);
 
-            var status = panel();
-            status.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(status);
+            page.addChild(balancePanel());
             return page;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_CLASSIC);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_CLASSIC_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
         }
     }
 
@@ -1223,7 +1199,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
 
         @Override
         public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
+            return WidgetIcons.MAP_LIGHT;
         }
 
         @Override
@@ -1242,87 +1218,57 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         }
     }
 
-    /** 和其它游戏机器一样，把余额放在里程碑页面底部。 */
-    private StatusPanel balancePanel() {
-        var status = panel();
-        status.addLine(LINE_BALANCE, () -> number(balance()));
-        return status;
-    }
+    /** 基础排行榜页：顶上一排难度选项，下面只显示选中的那张表。 */
+    private final class BaseMilestonePage extends LeaderboardTabPage {
 
-    /** 基础模式里程碑页：五个基础模式各一张表，表格沿用公共里程碑样式。 */
-    private final class BaseMilestonePage implements IFancyUIProvider {
-
-        @Override
-        public Widget createMainPage(FancyMachineUIWidget widget) {
-            var page = Form.page();
-            for (int mode = 0; mode < MinesweeperRules.Difficulty.CUSTOM.ordinal(); mode++) {
-                final int difficulty = mode;
-                var section = Form.section(difficultyName(MinesweeperRules.Difficulty.ALL[mode]));
-                section.addChild(milestoneTable("minesweeper_base_" + mode, BASE_RECORD_COLUMNS,
-                        MinesweeperCoreMachine.this::minesweeperMilestonesVersion, () -> baseRows(difficulty)));
-                page.addChild(section);
-            }
-            page.addChild(balancePanel());
-            return page;
+        private BaseMilestonePage() {
+            super(PAGE_RECORDS, PAGE_RECORDS_TOOLTIP);
         }
 
         @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.INFO;
+        protected int boardCount() {
+            return MinesweeperRules.Difficulty.CUSTOM.ordinal();
         }
 
         @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_RECORDS);
+        protected Component boardName(int index) {
+            return Component.translatable(DIFFICULTY_NAMES[index]);
         }
 
         @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_RECORDS_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
+        protected Widget boardContent(int difficulty) {
+            var section = Form.section(difficultyName(MinesweeperRules.Difficulty.ALL[difficulty]));
+            section.addChild(milestoneTable("minesweeper_base_" + difficulty, BASE_RECORD_COLUMNS,
+                    MinesweeperCoreMachine.this::minesweeperMilestonesVersion, () -> baseRows(difficulty)));
+            return section;
         }
     }
 
-    /** 战役里程碑页：三个章节各一张表，显示总用时/完成进度。 */
-    private final class CampaignMilestonePage implements IFancyUIProvider {
+    /** 战役排行榜页：顶上一排章节选项，下面只显示选中的那张表。 */
+    private final class CampaignMilestonePage extends LeaderboardTabPage {
 
-        @Override
-        public Widget createMainPage(FancyMachineUIWidget widget) {
-            var page = Form.page();
-            for (int tier = 0; tier < MinesweeperCampaign.TIER_COUNT; tier++) {
-                final int start = MinesweeperCampaign.tierStart(tier);
-                final int size = MinesweeperCampaign.tierSize(tier);
-                var section = Form.section(TIER_NAMES[tier]);
-                section.addChild(milestoneTable("minesweeper_campaign_" + start, CAMPAIGN_RECORD_COLUMNS,
-                        MinesweeperCoreMachine.this::minesweeperMilestonesVersion, () -> campaignRows(start, size)));
-                page.addChild(section);
-            }
-            page.addChild(balancePanel());
-            return page;
+        private CampaignMilestonePage() {
+            super(PAGE_CAMPAIGN_RECORDS, PAGE_CAMPAIGN_RECORDS_TOOLTIP);
         }
 
         @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.INFO;
+        protected int boardCount() {
+            return MinesweeperCampaign.TIER_COUNT;
         }
 
         @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_CAMPAIGN_RECORDS);
+        protected Component boardName(int index) {
+            return Component.translatable(TIER_NAMES[index]);
         }
 
         @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_CAMPAIGN_RECORDS_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
+        protected Widget boardContent(int tier) {
+            int start = MinesweeperCampaign.tierStart(tier);
+            int size = MinesweeperCampaign.tierSize(tier);
+            var section = Form.section(TIER_NAMES[tier]);
+            section.addChild(milestoneTable("minesweeper_campaign_" + start, CAMPAIGN_RECORD_COLUMNS,
+                    MinesweeperCoreMachine.this::minesweeperMilestonesVersion, () -> campaignRows(start, size)));
+            return section;
         }
     }
 

@@ -11,6 +11,7 @@ import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Rules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotSymbol;
+import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.utils.NumberUtils;
@@ -208,6 +209,22 @@ public final class GTOMachineTooltips {
                 "Click a tile next to the gap to slide it; order 1..N²-1 by row with the gap at the bottom-right"));
         t.feature(t.tr("完成一局按尺寸发放 1/4/8/15/25/40 游戏币，并记录该尺寸的最快完成时间",
                 "Each clear pays 1/4/8/15/25/40 Game Coins by size and records the best time for that size"));
+    });
+
+    // 数独 - 只保留盘面规则与奖励概览
+    public static final TipSpec SudokuTooltips = GTOTips.of("sudoku", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("数独", "Sudoku")));
+        t.feature(t.tr("标准 9×9 数独：每行、每列、每个 3×3 宫都填 1~9 各一次，提示数字不能修改",
+                "Classic 9×9 Sudoku: fill 1 to 9 once in every row, column and 3×3 box; clue digits are fixed"));
+        t.feature(t.tr("点格子选中，点 1~9 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
+                "Select a cell and press 1 to 9; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes"));
+        var rewards = new StringBuilder();
+        for (var difficulty : SudokuRules.Difficulty.ALL) {
+            if (rewards.length() > 0) rewards.append('/');
+            rewards.append(difficulty.reward());
+        }
+        t.feature(t.tr("六档难度，完成奖励分别为 " + rewards + " 游戏币，并记录该难度的最快完成时间",
+                "Six difficulties pay " + rewards + " Game Coins and record the best clear time for each"));
     });
 
     // 扫雷 - 只保留方块操作与通关条件；难度、奖励、按钮等以机器界面为准

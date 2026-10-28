@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.noenergy.game;
 
+import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.common.machine.noenergy.game.milestone.GameAccess;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 import com.gtocore.data.transaction.data.CoinExchange;
@@ -11,6 +12,8 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -19,17 +22,23 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.SwitchedContent;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +48,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
@@ -50,11 +61,15 @@ import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import dev.vfyjxf.taffy.style.AlignContent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -67,8 +82,10 @@ import java.util.function.Supplier;
  * <li>余额：{@link #balance()} / {@link #addBalance(long)}，拆除时先 {@link #cashOut()} 兑现再按面额掉回世界；</li>
  * <li>取出：{@link #createWithdrawButton(int)} 那块「取出全部」按钮与它背后的取币逻辑；</li>
  * <li>界面快照：{@link #registerView} 在界面上注册一项同步值，子类给 {@link #createView()}，版本号没变就复用实例；</li>
- * <li>里程碑榜单：{@link #registerBoard} 把服务端构建好的全服榜单挂到界面上；</li>
- * <li>游玩权限：{@link #allowOthers()} 开关与 {@link #canPlay} 判定，锁上后非主人打不开也玩不了；</li>
+ * <li>选项与页签：{@link #choiceButton} / {@link #optionStrip} / {@link #optionRow} 拼选项条与绿色选中标记，
+ * {@link GamePage} / {@link LeaderboardTabPage} / {@link SingleLeaderboardPage} 统一子页的图标、标题与排行榜页骨架；</li>
+ * <li>里程碑表格：{@link #milestoneTable} 把服务端构建好的全服榜单挂到界面上；</li>
+ * <li>游玩权限：{@link #allowOthers()} 开关与 {@link GameAccess#canPlay} 判定，锁上后非主人打不开也玩不了；</li>
  * <li>会话：{@link #beginSession} 记发起者、{@link #noteOpener} 记参与者，多人局用 {@link #sessionCounts()} 挡掉记录；</li>
  * <li>共用的文案与小工具：{@link #random()}、{@link #number(long)}、{@link #dayTime(long)}、{@link #duration(long)}。</li>
  * </ul>
@@ -94,6 +111,18 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     protected static final String PAGE_SETTINGS = "gtocore.machine.game.page.settings";
     @RegisterLanguage(cn = "游戏设置", en = "Game settings")
     protected static final String PAGE_SETTINGS_TOOLTIP = "gtocore.machine.game.page.settings.tooltip";
+    /** 难度页：有档位的游戏共用同一个标题，图标统一用齿轮。 */
+    @RegisterLanguage(cn = "难度", en = "Difficulty")
+    protected static final String PAGE_DIFFICULTY = "gtocore.machine.game.page.difficulty";
+    @RegisterLanguage(cn = "选择本局难度", en = "Choose the difficulty for this game")
+    protected static final String PAGE_DIFFICULTY_TOOLTIP = "gtocore.machine.game.page.difficulty.tooltip";
+    /** 排行榜页：所有游戏共用同一个标题，图标统一用信息图标。 */
+    @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
+    protected static final String PAGE_LEADERBOARD = "gtocore.machine.game.page.leaderboard";
+    @RegisterLanguage(cn = "全服排行榜", en = "Global leaderboards")
+    protected static final String PAGE_LEADERBOARD_TOOLTIP = "gtocore.machine.game.page.leaderboard.tooltip";
+    /** 排行榜页签图标：金银铜三色柱，放在 GTOCore 自己的小组件图集里。 */
+    protected static final IGuiTexture LEADERBOARD_ICON = GTOGuiTextures.LEADERBOARD;
     @RegisterLanguage(cn = "允许其他玩家游玩", en = "Allow other players")
     protected static final String LINE_ALLOW_OTHERS = "gtocore.machine.game.allow_others";
     @RegisterLanguage(cn = "关闭后只有机器主人（含同队、好友与管理员）能打开并游玩这台机器",
@@ -374,6 +403,112 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
         return value < 10L ? "0" + value : Long.toString(value);
     }
 
+    // ==================== 页面 ====================
+
+    /** 带底图的面板，行距 2px；各游戏机的主页、设置页与排行榜页共用。 */
+    protected static StatusPanel panel() {
+        var panel = new StatusPanel();
+        panel.getLayoutStyle().gapAll(2);
+        return panel;
+    }
+
+    /** 标准余额面板：各游戏机的设置页、难度页与排行榜页都把它放在最下面，样子统一。 */
+    protected final StatusPanel balancePanel() {
+        var panel = panel();
+        panel.addLine(LINE_BALANCE, () -> number(balance()));
+        return panel;
+    }
+
+    /** 「允许其他玩家游玩」那一行；各设置/难度页共用。 */
+    protected final Widget allowOthersRow() {
+        return Form.controlRow(LINE_ALLOW_OTHERS, Switch.of(this::allowOthers, this::setAllowOthers), TOOLTIP_ALLOW_OTHERS);
+    }
+
+    /**
+     * 游戏机子页的公共外壳：图标、标题、页签提示在构造时定下，子类只写 {@link #createMainPage}。
+     */
+    protected abstract static class GamePage implements IFancyUIProvider {
+
+        private final IGuiTexture icon;
+        private final String titleKey;
+        private final String tooltipKey;
+
+        protected GamePage(IGuiTexture icon, String titleKey, String tooltipKey) {
+            this.icon = icon;
+            this.titleKey = titleKey;
+            this.tooltipKey = tooltipKey;
+        }
+
+        @Override
+        public final IGuiTexture getTabIcon() {
+            return icon;
+        }
+
+        @Override
+        public final Component getTitle() {
+            return Component.translatable(titleKey);
+        }
+
+        @Override
+        public final List<Component> getTabTooltips() {
+            return List.of(Component.translatable(tooltipKey));
+        }
+
+        @Override
+        public final boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    /**
+     * 多榜排行榜页：顶上一排横向选项（滚轮横滚），下面只显示选中的那张榜，最后是余额。
+     * 子类只回答「有几张榜、每张叫什么、第 i 张怎么建」。
+     */
+    protected abstract class LeaderboardTabPage extends GamePage {
+
+        /** 当前选中的榜；服务端改动后由 SwitchedContent 下发给客户端。 */
+        private int board;
+
+        protected LeaderboardTabPage(String titleKey, String tooltipKey) {
+            super(LEADERBOARD_ICON, titleKey, tooltipKey);
+        }
+
+        @Override
+        public final Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            page.addChild(optionRow(optionStrip(boardCount(), this::boardName, () -> board, index -> board = index)));
+            page.addChild(new SwitchedContent(() -> board, (index, remote) -> boardContent(index)));
+            return page;
+        }
+
+        /** 榜的数量。 */
+        protected abstract int boardCount();
+
+        /** 第 {@code index} 张榜的名称。 */
+        protected abstract Component boardName(int index);
+
+        /** 第 {@code index} 张榜的区块。 */
+        protected abstract Widget boardContent(int index);
+    }
+
+    /** 单榜排行榜页：一张表。 */
+    protected abstract class SingleLeaderboardPage extends GamePage {
+
+        protected SingleLeaderboardPage(String titleKey, String tooltipKey) {
+            super(LEADERBOARD_ICON, titleKey, tooltipKey);
+        }
+
+        @Override
+        public final Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            page.addChild(boardContent());
+            return page;
+        }
+
+        /** 这张榜的区块。 */
+        protected abstract Widget boardContent();
+    }
+
     // ==================== 取出 ====================
 
     /** 「取出全部」按钮：余额为 0 时禁用；点一下把余额按面额从大到小塞进玩家背包，塞不下的留在余额里。 */
@@ -645,6 +780,101 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
                 }
                 setHoverTooltips(hint);
             }
+        }
+    }
+
+    // ==================== 选项按钮 ====================
+
+    /** 选中项两侧的绿色符号：比状态灯那档深，按钮面上看得清。 */
+    private static final Style CHOICE_MARK_STYLE = Style.EMPTY.withColor(TextColor.fromRgb(UITheme.STATUS_TEXT_GOOD & 0xFFFFFF));
+
+    /**
+     * 列表里的一个选项按钮：选中的那项文字两端各带一个绿色 {@code > <}，按钮本身不画选中高光。
+     *
+     * <p>
+     * 服务端只下发「选没选中」这一个布尔（{@link SyncValue#ofBool}），文字在客户端按它现拼。选中标记不能写进按钮的
+     * 静态文字——{@link Button} 的标签会被 {@code FittedText} 拍平成纯字符串，绿色样式会丢——所以这里自己画。
+     *
+     * @param width    按钮宽度；{@link LayoutStyle#AUTO} 表示由布局拉伸
+     * @param text     未选中时的文字（两端各建一次，翻译键由客户端解析）
+     * @param selected 服务端：这一项是不是当前选中项
+     */
+    protected static Button choiceButton(int width, Component text, BooleanSupplier selected) {
+        return new ChoiceButton(width, text, selected);
+    }
+
+    /**
+     * 横向选项条：{@code count} 个按钮，选中的那个带绿色 {@code > <}；点击在服务端把选中项改成该下标。
+     */
+    protected static HorizontalScroller optionStrip(int count, IntFunction<Component> name,
+                                                    IntSupplier selected, IntConsumer select) {
+        var strip = new HorizontalScroller(UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING);
+        for (int index = 0; index < count; index++) {
+            final int option = index;
+            var label = name.apply(option);
+            var button = choiceButton(optionWidth(label), label, () -> selected.getAsInt() == option);
+            button.setOnServerClick(() -> select.accept(option));
+            strip.addOption(button);
+        }
+        return strip;
+    }
+
+    /** 把横向选项条居中放进一行，和区块内容左右对齐。 */
+    protected static UIElement optionRow(HorizontalScroller strip) {
+        return UIElement.row(HorizontalScroller.HEIGHT)
+                .layout(l -> l.justifyContent(AlignContent.CENTER))
+                .addChild(strip);
+    }
+
+    /** 横向选项按钮的宽度：文字估宽 + 两侧留白 + 选中时两端绿色 {@code > <} 的宽度。 */
+    protected static int optionWidth(Component label) {
+        return UISizes.widthFor(label.getString()) + 2 * UISizes.TEXT_PADDING + 2 * UISizes.widthFor("> ");
+    }
+
+    /** 选项按钮本体：按钮底照常画，文字按同步来的选中状态拼好，居中画在按钮面上。 */
+    private static final class ChoiceButton extends Button {
+
+        private final Component plain;
+        private final SyncValue<Boolean> selected;
+        /** 上次拼好的文字；选中状态没变就复用，不每帧重新拼。 */
+        private Component cached;
+        private boolean cachedSelected;
+
+        private ChoiceButton(int width, Component plain, BooleanSupplier selected) {
+            super(width, HEIGHT, null, null);
+            this.plain = plain;
+            this.selected = addSyncValue(SyncValue.ofBool(selected));
+            cached = plain;
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private Component currentText() {
+            boolean on = selected.getValue();
+            if (on != cachedSelected) {
+                cachedSelected = on;
+                cached = on ? marked(plain) : plain;
+            }
+            return cached;
+        }
+
+        private static Component marked(Component text) {
+            // 根必须是空样式：样式会向 siblings 继承，把绿色挂在根上会把中间的文字也染绿
+            return Component.empty()
+                    .append(Component.literal("> ").withStyle(CHOICE_MARK_STYLE))
+                    .append(text)
+                    .append(Component.literal(" <").withStyle(CHOICE_MARK_STYLE));
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+            var text = currentText();
+            int textWidth = UIText.width(text);
+            if (textWidth <= 0 || textWidth > getSizeWidth() - 2 * UISizes.TEXT_PADDING) return;
+            int faceHeight = getSizeHeight() - UISizes.BUTTON_LIP_HEIGHT;
+            UIText.drawLeft(graphics, text, getPositionX() + (getSizeWidth() - textWidth) / 2,
+                    UIText.centerY(getPositionY(), faceHeight), getTextColor(isMouseOverElement(mouseX, mouseY), true));
         }
     }
 

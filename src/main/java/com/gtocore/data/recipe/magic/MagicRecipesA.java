@@ -753,7 +753,7 @@ public final class MagicRecipesA {
                     .inputItems(GTItems.FIELD_GENERATOR_EV)
                     .outputItems(ManaMachine.PURE_DAISY_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("mana_pool_station")
@@ -763,7 +763,7 @@ public final class MagicRecipesA {
                     .inputItems(GTItems.FIELD_GENERATOR_EV)
                     .outputItems(ManaMachine.MANA_POOL_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("petal_apothecary_station")
@@ -773,7 +773,7 @@ public final class MagicRecipesA {
                     .inputItems(GTItems.FIELD_GENERATOR_EV)
                     .outputItems(ManaMachine.PETAL_APOTHECARY_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("runic_altar_station")
@@ -783,7 +783,7 @@ public final class MagicRecipesA {
                     .inputItems(GTItems.FIELD_GENERATOR_EV)
                     .outputItems(ManaMachine.RUNIC_ALTAR_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("terra_plate_station")
@@ -793,7 +793,7 @@ public final class MagicRecipesA {
                     .inputItems(GTItems.FIELD_GENERATOR_EV)
                     .outputItems(ManaMachine.TERRA_PLATE_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("pedestal_station")
@@ -803,7 +803,7 @@ public final class MagicRecipesA {
                     .inputItems(GTItems.FIELD_GENERATOR_EV)
                     .outputItems(ManaMachine.PEDESTAL_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("elven_portal_station")
@@ -814,7 +814,7 @@ public final class MagicRecipesA {
                     .inputItems(BotaniaBlocks.naturaPylon, 2)
                     .outputItems(ManaMachine.ELVEN_PORTAL_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("imbuement_chamber_station")
@@ -825,7 +825,7 @@ public final class MagicRecipesA {
                     .inputItems(BlockRegistry.ARCANE_PEDESTAL, 8)
                     .outputItems(ManaMachine.IMBUEMENT_CHAMBER_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("enchanting_apparatus_station")
@@ -837,7 +837,7 @@ public final class MagicRecipesA {
                     .inputItems(BlockRegistry.ARCANE_CORE_BLOCK)
                     .outputItems(ManaMachine.ENCHANTING_APPARATUS_STATION.asItem())
                     .duration(3000)
-                    .MANAt(8)
+                    .EUt(VA[IV])
                     .save();
         }
 

@@ -1,0 +1,18 @@
+{
+  "credit": "Made with Blockbench",
+  "render_type": "translucent",
+  "textures": {
+    "0": "gtocore:block/machines/game/sudoku"
+  },
+  "elements": [
+    {
+      "name": "screen",
+      "from": [2, 4, 0.15],
+      "to": [14, 16, 0.15],
+      "rotation": { "angle": 0, "axis": "y", "origin": [-0.25, 4, 0] },
+      "faces": {
+        "north": { "uv": [0, 0, 16, 16], "texture": "#0" }
+      }
+    }
+  ]
+}

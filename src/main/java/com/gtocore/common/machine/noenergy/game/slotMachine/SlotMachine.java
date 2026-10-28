@@ -14,7 +14,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
@@ -30,7 +29,6 @@ import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -520,51 +518,43 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         return Form.page().addChildren(reels, status);
     }
 
-    /** 主页之外再挂一个「配置」子页：游玩权限开关 + 全服里程碑榜单。 */
+    /** 主页之外挂「配置」与「排行榜」两个子页。 */
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
         sideTabs.attachSubTab(new ConfigPage());
+        sideTabs.attachSubTab(new LeaderboardPage());
     }
 
-    /** 配置页：游玩权限开关 + 里程碑榜单（按回报比降序，文字由服务端整表下发）。 */
-    private final class ConfigPage implements IFancyUIProvider {
+    /** 配置页：游玩权限开关 + 余额；排行榜单独一页。 */
+    private final class ConfigPage extends GamePage {
+
+        private ConfigPage() {
+            super(WidgetIcons.SETTINGS, PAGE_SETTINGS, PAGE_SETTINGS_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
-            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
-                    Switch.of(SlotMachine.this::allowOthers, SlotMachine.this::setAllowOthers), TOOLTIP_ALLOW_OTHERS));
+            page.addChild(allowOthersRow());
+            page.addChild(balancePanel());
+            return page;
+        }
+    }
 
+    /** 排行榜页：回报比榜（按回报比降序，文字由服务端整表下发）。 */
+    private final class LeaderboardPage extends SingleLeaderboardPage {
+
+        private LeaderboardPage() {
+            super(PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
+        }
+
+        @Override
+        protected Widget boardContent() {
             var section = Form.section(SECTION_MILESTONES);
             section.addChild(milestoneTable("game_milestones_slot_machine", MILESTONE_COLUMNS,
                     SlotMachine::buildMilestoneRows));
-            page.addChild(section);
-
-            var status = new StatusPanel();
-            status.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(status);
-            return page;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_SETTINGS);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
+            return section;
         }
     }
 

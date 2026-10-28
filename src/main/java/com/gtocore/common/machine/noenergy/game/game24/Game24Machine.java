@@ -8,7 +8,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -16,7 +15,6 @@ import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -31,7 +29,6 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.AlignContent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -282,11 +279,12 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return page;
     }
 
-    /** 主页之外再挂一个「配置」子页，抽牌范围的选择都在里面。 */
+    /** 主页之外挂「难度」（抽牌范围）与「排行榜」两个子页。 */
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
-        sideTabs.attachSubTab(new ConfigPage());
+        sideTabs.attachSubTab(new DifficultyPage());
+        sideTabs.attachSubTab(new LeaderboardPage());
     }
 
     /** 答题区：表达式一行 + 数字牌一行 + 运算符一行 + 撤回/清空/提交一行。 */
@@ -312,13 +310,6 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         status.addChild(TextLine.of(LayoutStyle.AUTO, this::feedbackText).setTextAlign(Horizontal.CENTER));
         status.addChild(createStatusActions());
         return status;
-    }
-
-    /** 带底图的面板，行距统一 2px；状态面板、配置页的余额面板与答题区都用它。 */
-    private static StatusPanel panel() {
-        var panel = new StatusPanel();
-        panel.getLayoutStyle().gapAll(2);
-        return panel;
     }
 
     private UIElement createStatusActions() {
@@ -592,36 +583,56 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return Component.literal("—").withStyle(ChatFormatting.GRAY);
     }
 
-    /** 配置页：游玩权限开关、抽牌范围，以及两个抽牌档各自的全服榜单（用时升序）。 */
-    private final class ConfigPage implements IFancyUIProvider {
+    /** 难度页：游玩权限开关 + 抽牌范围；排行榜单独一页。 */
+    private final class DifficultyPage extends GamePage {
+
+        private DifficultyPage() {
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
-            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
-                    Switch.of(Game24Machine.this::allowOthers, Game24Machine.this::setAllowOthers),
-                    TOOLTIP_ALLOW_OTHERS));
+            page.addChild(allowOthersRow());
 
             var section = Form.section(SECTION_DRAW_RANGE);
             for (int ordinal = 0; ordinal < RANGE_NAMES.length; ordinal++) {
                 // 循环变量不是有效 final，先拷一份给 lambda 用
                 int index = ordinal;
-                var button = Button.translatable(LayoutStyle.AUTO, RANGE_NAMES[index]);
+                var button = choiceButton(LayoutStyle.AUTO, Component.translatable(RANGE_NAMES[index]),
+                        () -> drawRange == index);
                 button.setHoverTooltips(Component.translatable(TEXT_RANGE_REWARD,
                         number(Game24Rules.DrawRange.ALL[index].runReward()), RUN_PUZZLES));
                 button.setOnServerClick(() -> setDrawRange(index));
-                button.setSelected(() -> drawRange == index);
                 section.addChild(button);
             }
             page.addChild(section);
-
-            page.addChild(milestoneSection(SECTION_TEN_BOARD, "game_milestones_game_24_ten", 0));
-            page.addChild(milestoneSection(SECTION_THIRTEEN_BOARD, "game_milestones_game_24_thirteen", 1));
-
-            var status = panel();
-            status.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(status);
+            page.addChild(balancePanel());
             return page;
+        }
+    }
+
+    /** 排行榜页：顶上一排抽牌档选项，下面只显示选中的那张表。 */
+    private final class LeaderboardPage extends LeaderboardTabPage {
+
+        private LeaderboardPage() {
+            super(PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
+        }
+
+        @Override
+        protected int boardCount() {
+            return RANGE_NAMES.length;
+        }
+
+        @Override
+        protected Component boardName(int index) {
+            return Component.translatable(RANGE_NAMES[index]);
+        }
+
+        @Override
+        protected Widget boardContent(int index) {
+            return index == 0 ? milestoneSection(SECTION_TEN_BOARD, "game_milestones_game_24_ten", 0) :
+                    milestoneSection(SECTION_THIRTEEN_BOARD, "game_milestones_game_24_thirteen", 1);
         }
 
         private UIElement milestoneSection(String titleKey, String paneId, int rangeOrdinal) {
@@ -629,26 +640,6 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
             section.addChild(milestoneTable(paneId, MILESTONE_COLUMNS,
                     (store, server) -> buildMilestoneRows(store, server, rangeOrdinal)));
             return section;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_SETTINGS);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
         }
     }
 

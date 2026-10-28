@@ -8,17 +8,14 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.SwitchedContent;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -29,7 +26,6 @@ import net.minecraft.server.level.ServerPlayer;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -62,14 +58,6 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
 
     @RegisterLanguage(cn = "尺寸", en = "Size")
     private static final String SECTION_SIZE = "gtocore.machine.number_puzzle.section.size";
-    @RegisterLanguage(cn = "尺寸", en = "Sizes")
-    private static final String PAGE_SIZE = "gtocore.machine.number_puzzle.page.sizes";
-    @RegisterLanguage(cn = "数字华容道尺寸", en = "Number puzzle sizes")
-    private static final String PAGE_SIZE_TOOLTIP = "gtocore.machine.number_puzzle.page.sizes.tooltip";
-    @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
-    private static final String PAGE_LEADERBOARD = "gtocore.machine.number_puzzle.page.leaderboard";
-    @RegisterLanguage(cn = "数字华容道排行榜", en = "Number puzzle leaderboard")
-    private static final String PAGE_LEADERBOARD_TOOLTIP = "gtocore.machine.number_puzzle.page.leaderboard.tooltip";
     @RegisterLanguage(cn = "步数", en = "Moves")
     private static final String LINE_MOVES = "gtocore.machine.number_puzzle.line.moves";
     @RegisterLanguage(cn = "用时", en = "Time")
@@ -302,104 +290,57 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         return rows;
     }
 
-    private static StatusPanel panel() {
-        var panel = new StatusPanel();
-        panel.getLayoutStyle().gapAll(2);
-        return panel;
-    }
+    /** 难度页：六个尺寸纵向排列，选中的那个两端带绿色 > <，切换后立即开新局。 */
+    private final class SizePage extends GamePage {
 
-    /** 尺寸页：六个难度纵向排列，切换后立即开新局。 */
-    private final class SizePage implements IFancyUIProvider {
+        private SizePage() {
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
-            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
-                    Switch.of(NumberPuzzleMachine.this::allowOthers, NumberPuzzleMachine.this::setAllowOthers),
-                    TOOLTIP_ALLOW_OTHERS));
+            page.addChild(allowOthersRow());
 
             var section = Form.section(SECTION_SIZE);
             for (int ordinal = 0; ordinal < NumberPuzzleRules.SIZE_COUNT; ordinal++) {
                 final int index = ordinal;
-                var button = Button.translatable(120, SIZE_NAMES[ordinal]);
-                button.setSelected(() -> view().sizeOrdinal() == index);
+                var button = choiceButton(120, Component.translatable(SIZE_NAMES[index]), () -> sizeOrdinal == index);
                 button.setHoverTooltips(Component.translatable(TEXT_SIZE_REWARD,
-                        NumberPuzzleRules.Difficulty.ALL[ordinal].reward()));
+                        NumberPuzzleRules.Difficulty.ALL[index].reward()));
                 button.setOnServerClick(() -> selectSize(index, playerOf(button)));
                 section.addChild(button);
             }
             page.addChild(section);
 
-            var balancePanel = panel();
-            balancePanel.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(balancePanel);
+            page.addChild(balancePanel());
             return page;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_SIZE);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SIZE_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
         }
     }
 
-    /** 排行榜页：六档尺寸各一张两列表，按两列三排摆放。 */
-    private final class LeaderboardPage implements IFancyUIProvider {
+    /** 排行榜页：顶上一排尺寸选项，下面只显示选中的那张表。 */
+    private final class LeaderboardPage extends LeaderboardTabPage {
 
-        @Override
-        public Widget createMainPage(FancyMachineUIWidget widget) {
-            var page = Form.page();
-            for (int rowIndex = 0; rowIndex < 3; rowIndex++) {
-                var row = new UIElement().layout(style -> style.row().gapAll(UISizes.SECTION_GAP));
-                for (int col = 0; col < 2; col++) {
-                    int ordinal = rowIndex * 2 + col;
-                    var section = Form.section(SIZE_NAMES[ordinal]);
-                    section.addChild(milestoneTable("game_milestones_number_puzzle_" + ordinal,
-                            LEADERBOARD_COLUMNS,
-                            (store, server) -> buildLeaderboardRows(store, server, ordinal)));
-                    row.addChild(section);
-                }
-                page.addChild(row);
-            }
-
-            var balancePanel = panel();
-            balancePanel.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(balancePanel);
-            return page;
+        private LeaderboardPage() {
+            super(PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
         }
 
         @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.INFO;
+        protected int boardCount() {
+            return NumberPuzzleRules.SIZE_COUNT;
         }
 
         @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_LEADERBOARD);
+        protected Component boardName(int index) {
+            return Component.translatable(SIZE_NAMES[index]);
         }
 
         @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_LEADERBOARD_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
+        protected Widget boardContent(int index) {
+            var section = Form.section(SIZE_NAMES[index]);
+            section.addChild(milestoneTable("game_milestones_number_puzzle_" + index, LEADERBOARD_COLUMNS,
+                    (store, server) -> buildLeaderboardRows(store, server, index)));
+            return section;
         }
     }
 
