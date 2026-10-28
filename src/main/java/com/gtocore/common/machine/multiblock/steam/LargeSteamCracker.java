@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.steam;
 import com.gtocore.api.machine.part.IHeatContainerPart;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.capability.IHeatContainer;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -11,6 +12,7 @@ import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -58,6 +60,12 @@ public class LargeSteamCracker extends BaseSteamMultiblockMachine {
                 break;
             }
         }
+    }
+
+    @Override
+    public @Nullable <T> Object getGTCapability(@NotNull Class<T> cap, @Nullable Direction side) {
+        if (cap == IHeatContainer.class && side == null && heatHatch != null) return heatHatch.getHeatContainer();
+        return super.getGTCapability(cap, side);
     }
 
     @Override

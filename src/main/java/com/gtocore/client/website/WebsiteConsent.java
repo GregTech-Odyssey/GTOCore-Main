@@ -68,8 +68,8 @@ public final class WebsiteConsent {
     @RegisterLanguage(cn = "以你的账号生成反馈链接，并自动填写整合包版本、游戏环境与难度。",
                       en = "Creates a report link with the pack version, environment and difficulty.")
     static final String BUG_2 = "gtocore.website.consent.bug.2";
-    @RegisterLanguage(cn = "同时上传本机日志与24小时内的崩溃报告。",
-                      en = "Uploads this computer's log and any crash report from the last 24 hours.")
+    @RegisterLanguage(cn = "同时上传本机日志，以及24小时内的崩溃报告和崩溃那一局的日志。",
+                      en = "Uploads your log, and any crash report from the last 24 h with its log.")
     static final String BUG_3 = "gtocore.website.consent.bug.3";
     @RegisterLanguage(cn = "在服务器中游玩时，服务端日志也会一并上传。",
                       en = "On a server, the server log is uploaded as well.")

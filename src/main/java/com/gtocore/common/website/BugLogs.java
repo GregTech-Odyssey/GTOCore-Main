@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
@@ -21,12 +22,14 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
- * /bug 上传的日志：本端的 latest.log 与 24 小时内最新的崩溃报告，超出官网单文件上限时只留开头 1 MB 与末尾 2 MB，IP 打码，带进度传到反馈链接。客户端与服务端共用。
+ * /bug 上传的日志：本端的 latest.log、24 小时内最新的崩溃报告及崩溃那一局的日志，超出官网单文件上限时只留开头 1 MB 与末尾 2 MB，IP 打码，带进度传到反馈链接。客户端与服务端共用。
  */
 public final class BugLogs {
 
@@ -34,6 +37,7 @@ public final class BugLogs {
     private static final int HEAD_BYTES = 1 << 20;
     private static final int TAIL_BYTES = 2 << 20;
     private static final long CRASH_WINDOW_MS = 24L * 60 * 60 * 1000;
+    private static final Pattern ROTATED_LOG = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}-\\d+\\.log\\.gz$");
     private static final Pattern TOKEN = Pattern.compile("^[A-Za-z0-9_-]{43}$");
     private static final Pattern IPV4 = Pattern.compile("(?<![\\w.])(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(?!\\w|\\.\\d)");
     private static final Pattern IPV6 = Pattern.compile("(?<![\\w:.])(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(?![\\w:.])");
@@ -57,13 +61,44 @@ public final class BugLogs {
     }
 
     public static List<Source> sources(String side) {
-        var out = new ObjectArrayList<Source>(2);
+        var out = new ObjectArrayList<Source>(3);
         Path game = FMLPaths.GAMEDIR.get();
-        Path latest = game.resolve("logs").resolve("latest.log");
+        Path logs = game.resolve("logs");
+        Path latest = logs.resolve("latest.log");
         if (Files.isRegularFile(latest)) out.add(new Source(latest, side + "-latest.log"));
         Path crash = newestCrash(game.resolve("crash-reports"));
-        if (crash != null) out.add(new Source(crash, side + "-" + crash.getFileName()));
+        if (crash != null) {
+            out.add(new Source(crash, side + "-" + crash.getFileName()));
+            Path previous = crashedSessionLog(logs, crash);
+            if (previous != null) {
+                String name = previous.getFileName().toString();
+                out.add(new Source(previous, side + "-previous-" + name.substring(0, name.length() - 3)));
+            }
+        }
         return out;
+    }
+
+    @Nullable
+    private static Path crashedSessionLog(Path logs, Path crash) {
+        try {
+            long crashTime = Files.getLastModifiedTime(crash).toMillis();
+            if (crashTime >= ManagementFactory.getRuntimeMXBean().getStartTime() || !Files.isDirectory(logs)) return null;
+            Path best = null;
+            long bestTime = Long.MAX_VALUE;
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(logs, "*.log.gz")) {
+                for (Path file : stream) {
+                    if (!ROTATED_LOG.matcher(file.getFileName().toString()).matches()) continue;
+                    long time = Files.getLastModifiedTime(file).toMillis();
+                    if (time >= crashTime && time < bestTime) {
+                        best = file;
+                        bestTime = time;
+                    }
+                }
+            }
+            return best;
+        } catch (IOException ignored) {
+            return null;
+        }
     }
 
     @Nullable
@@ -85,6 +120,7 @@ public final class BugLogs {
     }
 
     public static Prepared prepare(Source source) throws IOException {
+        if (source.path().getFileName().toString().endsWith(".gz")) return prepareGzip(source);
         long size = Files.size(source.path());
         String text;
         boolean truncated = size > SITE_LIMIT;
@@ -96,15 +132,47 @@ public final class BugLogs {
         return new Prepared(source.name(), mask(text).getBytes(StandardCharsets.UTF_8), truncated);
     }
 
+    private static Prepared prepareGzip(Source source) throws IOException {
+        byte[] head;
+        byte[] tail = new byte[TAIL_BYTES];
+        long size;
+        int oldest = 0;
+        try (var in = new GZIPInputStream(Files.newInputStream(source.path()), 64 << 10)) {
+            byte[] start = in.readNBytes((int) SITE_LIMIT + 1);
+            if (start.length <= SITE_LIMIT) {
+                return new Prepared(source.name(), mask(new String(start, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8), false);
+            }
+            head = Arrays.copyOf(start, HEAD_BYTES);
+            System.arraycopy(start, start.length - TAIL_BYTES, tail, 0, TAIL_BYTES);
+            size = start.length;
+            int read;
+            while ((read = in.read(tail, oldest, TAIL_BYTES - oldest)) > 0) {
+                oldest = (oldest + read) % TAIL_BYTES;
+                size += read;
+            }
+        }
+        if (oldest != 0) {
+            byte[] ordered = new byte[TAIL_BYTES];
+            System.arraycopy(tail, oldest, ordered, 0, TAIL_BYTES - oldest);
+            System.arraycopy(tail, 0, ordered, TAIL_BYTES - oldest, oldest);
+            tail = ordered;
+        }
+        return new Prepared(source.name(), mask(join(head, tail, size)).getBytes(StandardCharsets.UTF_8), true);
+    }
+
     private static String truncate(Path path, long size) throws IOException {
-        int tailBytes = TAIL_BYTES;
         byte[] head = new byte[HEAD_BYTES];
-        byte[] tail = new byte[tailBytes];
+        byte[] tail = new byte[TAIL_BYTES];
         try (var file = new RandomAccessFile(path.toFile(), "r")) {
             file.readFully(head);
-            file.seek(size - tailBytes);
+            file.seek(size - TAIL_BYTES);
             file.readFully(tail);
         }
+        return join(head, tail, size);
+    }
+
+    private static String join(byte[] head, byte[] tail, long size) {
+        int tailBytes = tail.length;
         int headEnd = lastNewline(head);
         int tailStart = firstNewline(tail);
         long omitted = size - headEnd - (tailBytes - tailStart);

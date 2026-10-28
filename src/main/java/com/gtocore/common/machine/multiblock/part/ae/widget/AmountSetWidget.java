@@ -31,24 +31,33 @@ class AmountSetWidget extends PageOverlay {
 
     /// 调节器宽：按钮放得下 "±512"（Ctrl+Shift），输入框放得下约 10 位数字
     private static final int FIELD_WIDTH = 134;
+    private static final int WIDE_STEP_EXTRA_WIDTH = 2 * 3 * 6;
+    private static final long[] STEP_MULTIPLIERS = { 1, 8, 64, 512 };
     /// 窗口外框的内边距：左右、上 4，下 6（外框底部是厚边）
     private static final int PADDING = 4;
     private static final int PADDING_BOTTOM = 6;
-    static final int WIDTH = FIELD_WIDTH + 2 * PADDING;
     static final int HEIGHT = NumberField.HEIGHT + PADDING + PADDING_BOTTOM;
 
     private final ConfigWidget parentWidget;
+    final int width;
     /// 面板对应的格号，-1 为未打开；两端各自记，服务端的值经校验
     private int index = -1;
     /// 尖角中线相对面板左边的位置（对准所属格子的中心）
-    private int notchX = WIDTH / 2;
+    private int notchX;
     private final RPC<Integer> slotIndexRequest;
 
     AmountSetWidget(ConfigWidget widget) {
         this.parentWidget = widget;
         this.slotIndexRequest = addRPC(ByteBufCodecs.VAR_INT, (player, slotIndex) -> setSlotIndex(slotIndex)).allowWhenDisabled();
-        layout(l -> l.row().size(WIDTH, HEIGHT).paddingAll(PADDING).paddingBottom(PADDING_BOTTOM));
-        var field = NumberField.ofLong(FIELD_WIDTH, this::getAmount, this::setAmount, parentWidget::getMinAmount, () -> Long.MAX_VALUE);
+        long unit = widget.amountStepUnit();
+        int fieldWidth = unit > 1 ? FIELD_WIDTH + WIDE_STEP_EXTRA_WIDTH : FIELD_WIDTH;
+        this.width = fieldWidth + 2 * PADDING;
+        this.notchX = width / 2;
+        layout(l -> l.row().size(width, HEIGHT).paddingAll(PADDING).paddingBottom(PADDING_BOTTOM));
+        var field = NumberField.ofLong(fieldWidth, this::getAmount, this::setAmount, parentWidget::getMinAmount, () -> Long.MAX_VALUE);
+        var steps = new long[STEP_MULTIPLIERS.length];
+        for (int i = 0; i < steps.length; i++) steps[i] = STEP_MULTIPLIERS[i] * unit;
+        field.setSteps(steps);
         // 两层禁用（原因不同）：自动拉取时整个面板禁用；格子没有配置时调节器禁用（打开空格子时，配置随后才到）
         disabled(parentWidget::isAutoPull, AEConfigSlotWidget.CONFIG_MANAGED);
         field.disabled(() -> parentWidget.isValidIndex(index) && parentWidget.getConfig(index).getConfig() == null, AEConfigSlotWidget.NO_CONFIG);
