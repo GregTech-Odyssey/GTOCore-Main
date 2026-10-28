@@ -168,27 +168,27 @@ public class SuperStorageAdditionalRecipe {
             }
             case EASY -> {
 
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronze_super_storage_upgrade"), RegistriesUtils.getItem("gtocore:bronze_super_storage_upgrade"),
+                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronze_super_storage_upgrade"), SuperStorageUpgrades.BRONZE.asItem(),
                         "A A",
                         " B ",
                         "A A",
-                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.BismuthBronze), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Bronze));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronzee_super_storage_upgrade"), RegistriesUtils.getItem("gtocore:bronzee_super_storage_upgrade"),
+                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Bronze), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Bronze));
+                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronzee_super_storage_upgrade"), SuperStorageUpgrades.STEEL.asItem(),
                         "A A",
                         " B ",
                         "A A",
                         'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Steel));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), RegistriesUtils.getItem("gtocore:steel_super_storage_upgrade"),
+                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), SuperStorageUpgrades.ALUMINIUM.asItem(),
                         "A A",
                         " B ",
                         "A A",
                         'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Aluminium), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Aluminium));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("titanium_super_storage_upgrade"), RegistriesUtils.getItem("gtocore:titanium_super_storage_upgrade"),
+                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("titanium_super_storage_upgrade"), SuperStorageUpgrades.TITANIUM.asItem(),
                         "A A",
                         " B ",
                         "A A",
                         'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Titanium), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Titanium));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("tungstensteel_super_storage_upgrade"), RegistriesUtils.getItem("gtocore:tungstensteel_super_storage_upgrade"),
+                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("tungstensteel_super_storage_upgrade"), SuperStorageUpgrades.TUNGSTEN_STEEL.asItem(),
                         "A A",
                         " B ",
                         "A A",
