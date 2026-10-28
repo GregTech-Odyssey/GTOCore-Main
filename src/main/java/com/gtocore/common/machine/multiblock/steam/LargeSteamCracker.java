@@ -3,8 +3,8 @@ package com.gtocore.common.machine.multiblock.steam;
 import com.gtocore.api.machine.part.IHeatContainerPart;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.capability.IHeatContainer;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.capability.IHeatContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
