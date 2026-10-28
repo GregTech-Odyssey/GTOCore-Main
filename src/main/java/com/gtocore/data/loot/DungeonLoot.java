@@ -77,7 +77,7 @@ public final class DungeonLoot {
 
     private static void weightedAdd(@NotNull ResourceLocation lootTable, @NotNull ItemStack stack, int minAmount, int maxAmount, int weight) {
         if (GTORules.LOOT.get() == RulePreset.EASY) {
-            weight *= 2;
+            weight *= 3;
             minAmount *= 2;
             maxAmount *= 2;
         }
@@ -112,7 +112,7 @@ public final class DungeonLoot {
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, treasure ? 12 : 6))));
         for (int i = 0; i < SuperStorageUpgrades.UPGRADES.length; i++) {
             if (upgWeights[i] <= 0) continue;
-            StorageUpgradeItem upgi = (StorageUpgradeItem) SuperStorageUpgrades.UPGRADES[i].get();
+            StorageUpgradeItem upgi = SuperStorageUpgrades.UPGRADES[i].get();
             pool.add(LootItem.lootTableItem(upgi)
                     .setWeight(upgWeights[i])
                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, treasure ? (GTORules.LOOT.get() == RulePreset.EXPERT ? 3 : 8) : 2))));
