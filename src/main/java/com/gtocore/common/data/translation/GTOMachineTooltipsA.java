@@ -227,18 +227,6 @@ public final class GTOMachineTooltipsA {
         t.requirement(t.tr("安装到对应的机器上以生效", "Install it on the corresponding machine to take effect"));
     });
 
-    public static final TipSpec directedHyperCubeMachineTooltips = GTOTips.of("directed_hyper_cube_machine", t -> {
-        t.heading(MainFunction);
-        t.feature(t.tr("代理多个流体或物品存储器，且指定代理方向", "Proxy (a or multi) (fluid or item or both)storage with directed sides"));
-        t.control(t.tr("使用§b坐标标签枪§r按照分配顺序绑定方块", "Use the §bTesseract Target Marker§r to bind blocks in allocation order"));
-
-        t.heading(t.tr("被样板供应器推送时", "When being pushed by the Pattern Provider"));
-        t.feature(t.tr("将样板供应器的样板内容按照编写顺序依次输出到多个方块的多个面", "Outputs the pattern contents of the Pattern Provider to multiple sides of multiple blocks in the order written"));
-        t.requirement(t.tr("原料在样板中对应的编号严格对应绑定方块的编号", "The number corresponding to the raw material in the pattern strictly corresponds to the number of the bound block"));
-        t.requirement(t.tr("若样板内容的长度大于绑定的方块数量，则该样板将拒绝被推送", "If the length of the pattern content is greater than the number of bound blocks, the pattern will refuse to be pushed"));
-        t.feature(t.tr("适用于一些较为复杂的自动化场景（如新生魔艺的附魔装置自动化）", "Suitable for some more complex automation scenarios (such as Ars Nouveau's Enchanting Apparatus)"));
-    });
-
     public static final TipSpec meEnergySubstationTooltips = GTOTips.of("me_energy_substation", t -> {
         t.heading(MainFunction);
         t.keepOrder();

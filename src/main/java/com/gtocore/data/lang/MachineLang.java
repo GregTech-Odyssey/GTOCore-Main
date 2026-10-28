@@ -13,6 +13,7 @@ import static com.gtocore.data.lang.LangHandler.addCNEN;
 final class MachineLang {
 
     static void init() {
+        addCNEN("gtocore.super_storage.upgrade.tip", "可插入升级提升容量", "Insert upgrades to increase capacity");
         addCNEN("gtocore.structure.deprecated", "该结构已弃用", "This structure has been deprecated");
         addCNEN("gui.tooltips.redstone_mode.enabled", "启用红石模式，机器接收红石信号", "Enable redstone mode, the machine will receive redstone signals");
         addCNEN("gui.tooltips.redstone_mode.disabled", "禁用红石模式，机器无视红石信号", "Disable redstone mode, the machine will ignore redstone signals");

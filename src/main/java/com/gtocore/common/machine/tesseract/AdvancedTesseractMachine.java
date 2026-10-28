@@ -21,11 +21,11 @@ import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -62,12 +62,15 @@ import java.util.function.Supplier;
 
 public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ICustomCraftingMachine, ITesseractMarkerInteractable, TesseractCapCache.Holder {
 
-    public static final Multiset<ImmutableList<Long>> HIGHLIGHTS = HashMultiset.create();
+    public static final Multiset<ImmutableList<GlobalPos>> HIGHLIGHTS = HashMultiset.create();
     public static final int MAX_TARGETS = 20;
 
+    // Reads the target list saved by the removed directed generator.
     @SaveToDisk
+    private final List<TesseractDirectedTarget> targets = new ArrayList<>();
+
     @SyncToClient(autoDetect = false)
-    public final List<BlockPos> poss = new ArrayList<>(MAX_TARGETS);
+    private final List<TesseractDirectedTarget> locations = new ArrayList<>(MAX_TARGETS);
 
     @SaveToDisk
     protected NotifiableInventory<AEItemKey> inventory;
@@ -88,41 +91,67 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     public AdvancedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
         inventory = NotifiableInventory.items(this, MAX_TARGETS, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
-        inventory.storage.setOnChanged(() -> {
-            onChanged();
-            called = false;
-            poss.clear();
-            for (int i = 0; i < MAX_TARGETS; i++) {
-                var card = inventory.storage.keyAt(i);
-                if (card == null) continue;
-                CompoundTag posTags = card.getTag();
-                if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z"))
-                    continue;
-                var pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
-                if (pos.equals(getPos())) continue;
-                if (!poss.contains(pos)) {
-                    poss.add(pos);
+        inventory.storage.setOnChanged(this::refreshTargets);
+    }
+
+    private void refreshTargets() {
+        var level = getLevel();
+        if (level == null) return;
+        onChanged();
+        called = false;
+        locations.clear();
+        for (int i = 0; i < MAX_TARGETS; i++) {
+            var card = inventory.storage.keyAt(i);
+            var pos = card == null ? null : CoordinateCardBehavior.getStoredGlobalPos(card.getReadOnlyStack(), level.dimension());
+            if (pos == null || (pos.dimension() == level.dimension() && pos.pos().equals(getPos()))) continue;
+            boolean duplicate = false;
+            for (var existing : locations) {
+                if (existing.pos().equals(pos)) {
+                    duplicate = true;
+                    break;
                 }
             }
-            bindTargets();
-            notifyExposureChanged();
-            markFieldsForSync("poss");
-        });
+            if (!duplicate) locations.add(new TesseractDirectedTarget(pos, Direction.NORTH, i));
+        }
+        bindTargets();
+        notifyExposureChanged();
+        markFieldsForSync("locations");
     }
 
     private void bindTargets() {
-        int size = poss.size();
-        remotes.resize(size);
+        remotes.resize(locations.size());
         var level = getLevel();
-        for (int i = 0; i < size; i++) {
-            remotes.bind(i, level, poss.get(i));
+        for (int i = 0; i < locations.size(); i++) {
+            var pos = locations.get(i).pos();
+            var remoteLevel = level.dimension() == pos.dimension() ? level : level.getServer() == null ? null : level.getServer().getLevel(pos.dimension());
+            remotes.bind(i, remoteLevel, pos.pos());
         }
+    }
+
+    private void migrateTargets() {
+        if (targets.isEmpty()) return;
+        targets.sort(TesseractDirectedTarget.SORTER);
+        for (int i = 0; i < Math.min(MAX_TARGETS, targets.size()); i++) {
+            var pos = targets.get(i).pos();
+            var card = GTOItems.COORDINATE_CARD.asItem().getDefaultInstance();
+            var tag = card.getOrCreateTag();
+            tag.putString("dimension", pos.dimension().location().toString());
+            tag.putInt("x", pos.pos().getX());
+            tag.putInt("y", pos.pos().getY());
+            tag.putInt("z", pos.pos().getZ());
+            inventory.storage.set(i, AEItemKey.of(card), 1);
+        }
+        targets.clear();
+        onChanged();
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
-        bindTargets();
+        if (getLevel() instanceof ServerLevel) {
+            migrateTargets();
+            refreshTargets();
+        }
         remotes.subscribe(!isRemote());
     }
 
@@ -149,7 +178,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                 WidgetIcons.HIGHLIGHT, WidgetIcons.HIGHLIGHT, () -> false,
                 (clickData, pressed) -> {
                     if (clickData.isRemote && getLevel() != null) {
-                        HIGHLIGHTS.add(poss.stream().map(BlockPos::asLong).collect(ImmutableList.toImmutableList()), 200);
+                        HIGHLIGHTS.add(locations.stream().map(TesseractDirectedTarget::pos).collect(ImmutableList.toImmutableList()), 200);
                     }
                 })
                 .setTooltipsSupplier(pressed -> Collections.singletonList(Component.translatable(HIGHLIGHT_TEXT))));
@@ -163,13 +192,13 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     @Override
     public Widget createUIWidget() {
-        var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, poss::hashCode, Component.translatable(TesseractUI.ROW_EMPTY));
+        var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, locations::hashCode, Component.translatable(TesseractUI.ROW_EMPTY));
         var rows = new ArrayList<Widget>(MAX_TARGETS);
         for (int i = 0; i < MAX_TARGETS; i++) {
             rows.add(TesseractUI.row(ItemSlot.of(inventory.storage, i), targets, i, TesseractUI.face(targets, i)));
         }
         return TesseractUI.page(
-                TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_BOUND, poss.size(), MAX_TARGETS), false, false),
+                TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_BOUND, locations.size(), MAX_TARGETS), false, false),
                 TesseractUI.listSection(TesseractUI.SECTION_TARGETS, TesseractUI.column(rows), TesseractUI.TARGETS_TOOLTIP, TesseractUI.TARGETS_MARKER_TOOLTIP),
                 TesseractUI.roundRobinSection(() -> roundRobin, this::setRoundRobin));
     }
@@ -179,8 +208,8 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
         var result = new ArrayList<TesseractUI.Target>(MAX_TARGETS);
         for (int i = 0; i < MAX_TARGETS; i++) {
             var card = inventory.storage.keyAt(i);
-            var cardPos = level == null || card == null ? null : CoordinateCardBehavior.getStoredCoordinates(card.getReadOnlyStack());
-            result.add(cardPos == null ? null : new TesseractUI.Target(GlobalPos.of(level.dimension(), cardPos), null));
+            var cardPos = level == null || card == null ? null : CoordinateCardBehavior.getStoredGlobalPos(card.getReadOnlyStack(), level.dimension());
+            result.add(cardPos == null ? null : new TesseractUI.Target(cardPos, null));
         }
         return result;
     }
@@ -269,16 +298,11 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
         inventory.storage.clear();
         var iterator = targets.iterator();
         int i = 0;
-        int skipped = 0;
         while (iterator.hasNext()) {
             var target = iterator.next();
             if (i >= MAX_TARGETS) break;
-            if (target.pos().dimension() != getLevel().dimension()) {
-                skipped++;
-                continue;
-            }
             var pos = target.pos().pos();
-            if (pos.equals(getPos())) {
+            if (target.pos().dimension() == getLevel().dimension() && pos.equals(getPos())) {
                 continue;
             }
             ItemStack card = ItemStack.EMPTY;
@@ -311,6 +335,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                 return true;
             }
             CompoundTag posTags = card.getOrCreateTag();
+            posTags.putString("dimension", target.pos().dimension().location().toString());
             posTags.putInt("x", pos.getX());
             posTags.putInt("y", pos.getY());
             posTags.putInt("z", pos.getZ());
@@ -322,26 +347,27 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                 Block.popResource(getLevel(), getPos(), GTOItems.COORDINATE_CARD.asItem().getDefaultInstance());
             }
         }
-        player.displayClientMessage(skipped > 0 ? Component.translatable(WRITE_SKIPPED_TEXT, skipped) : Component.translatable(WRITE_SUCCESS_TEXT), true);
+        player.displayClientMessage(Component.translatable(WRITE_SUCCESS_TEXT), true);
         return true;
     }
 
     @Override
     public List<TesseractDirectedTarget> getMarkerTargets() {
         ImmutableList.Builder<TesseractDirectedTarget> builder = ImmutableList.builder();
-        var levelKey = getLevel().dimension();
-        for (int i = 0; i < poss.size(); i++) {
-            var pos = poss.get(i);
-            if (pos == null) continue;
+        var level = getLevel();
+        for (int i = 0; i < locations.size(); i++) {
+            var global = locations.get(i).pos();
+            var targetLevel = global.dimension() == level.dimension() ? level : level.getServer() == null ? null : level.getServer().getLevel(global.dimension());
             var exposedInAirFace = Direction.NORTH;
-            for (var face : Direction.values()) {
-                var offsetPos = pos.relative(face);
-                if (getLevel().getBlockState(offsetPos).isAir()) {
-                    exposedInAirFace = face;
-                    break;
+            if (targetLevel != null && targetLevel.isLoaded(global.pos())) {
+                for (var face : Direction.values()) {
+                    if (targetLevel.getBlockState(global.pos().relative(face)).isAir()) {
+                        exposedInAirFace = face;
+                        break;
+                    }
                 }
             }
-            builder.add(new TesseractDirectedTarget(GlobalPos.of(levelKey, pos), exposedInAirFace, i));
+            builder.add(new TesseractDirectedTarget(global, exposedInAirFace, i));
         }
         return builder.build();
     }

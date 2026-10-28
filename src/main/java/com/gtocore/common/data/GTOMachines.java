@@ -35,7 +35,6 @@ import com.gtocore.common.machine.noenergy.heat.*;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
-import com.gtocore.common.machine.tesseract.DirectedTesseractMachine;
 import com.gtocore.common.machine.tesseract.TesseractMachine;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
@@ -1168,14 +1167,6 @@ public final class GTOMachines {
     public static final MachineDefinition ADVANCED_TESSERACT_GENERATOR = blockEntityMachine("advanced_tesseract_generator", "进阶超立方体发生器", AdvancedTesseractMachine::new, TesseractBlockEntity::new)
             .allRotation()
             .tips(GTOMachineTooltips.AdvancedHyperCubeMachineTooltips)
-            .modelRenderer(() -> GTOCore.id("block/machine/tesseract_generator"))
-            .tier(IV)
-            .allowCoverOnFront(true)
-            .register();
-
-    public static final MachineDefinition DIRECTED_TESSERACT_GENERATOR = blockEntityMachine("directed_tesseract_generator", "有向超立方体发生器", DirectedTesseractMachine::new, TesseractBlockEntity::new)
-            .allRotation()
-            .tips(GTOMachineTooltipsA.directedHyperCubeMachineTooltips)
             .modelRenderer(() -> GTOCore.id("block/machine/tesseract_generator"))
             .tier(IV)
             .allowCoverOnFront(true)

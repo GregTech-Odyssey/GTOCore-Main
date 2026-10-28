@@ -584,6 +584,7 @@ public final class GTOMachineTooltips {
         t.control(t.tr("使用§b坐标信息卡§r绑定方块", "Use the §bCoordinate Card§r to bind a storage block"));
         t.feature(t.tr("绑定某方块后，对此机器进行物品或流体操作视同对被绑定的方块操作", "Bind a storage to this machine to operate it as if it were the bound storage"));
         t.feature(t.tr("若绑定多个方块，则依序对它们操作", "Operate them in order if bind multiple storages"));
+        t.supported(t.tr("支持跨维度连接", "Works across dimensions"));
         t.rightClick(t.tr("右键点击以打开界面", "Right click to open the interface"));
         t.feature(t.tr("对装配线自动化很好用", "Good for assembly line automation"));
     });

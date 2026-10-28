@@ -133,13 +133,15 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
     @SuppressWarnings("MathClampMigration")
     private void HeatUpdate() {
         HeatSubs.updateSubscription();
+        // Repair temperatures left below ambient by the old cooling calculation.
+        heat = Math.max(298, heat);
         if (getRecipeLogic().isWorking()) {
             boolean isCooler = false;
-            int required = recipeHeat * parallel * heat / 1500;
+            double required = (double) recipeHeat * parallel * heat / 1500;
             if (required > 0) {
                 long[] a = getFluidAmount(true, DistilledWater, SodiumPotassium);
                 int capacity = (int) Math.min(Math.max(a[0] / 800, a[1] / 20), (cooler - (coolerAdjacent / 3L)) << 3);
-                if (capacity - required >= 0) {
+                if (capacity >= required) {
                     if (inputFluid(DistilledWater, capacity * 800L)) {
                         isCooler = outputFluid(Steam, (int) (capacity * 800 * (heat > 373 ? 160 : 160 / Math.pow(1.4, 373 - heat))));
                     } else if (inputFluid(SodiumPotassium, capacity * 20L)) {
@@ -149,13 +151,13 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
                     }
                 }
                 if (isCooler) {
-                    int progress = getProgress() + 20 * capacity / required;
-                    int surplusProgress = progress - getMaxProgress();
+                    double progress = getProgress() + 20.0 * capacity / required;
+                    double surplusProgress = progress - getMaxProgress();
                     if (surplusProgress > 0) {
-                        if (heat > 298) heat -= surplusProgress / 20;
+                        heat -= (int) Math.min(heat - 298, surplusProgress / 20);
                         getRecipeLogic().setProgress(getMaxProgress());
                     } else {
-                        getRecipeLogic().setProgress(progress);
+                        getRecipeLogic().setProgress((int) progress);
                     }
                 }
             }

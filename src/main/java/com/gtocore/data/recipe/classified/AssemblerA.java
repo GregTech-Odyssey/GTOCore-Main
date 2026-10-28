@@ -856,15 +856,6 @@ final class AssemblerA {
                 .duration(2000)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("directed_tesseract_generator")
-                .inputItems(GTOMachines.ADVANCED_TESSERACT_GENERATOR.asItem())
-                .inputItems(GTItems.SENSOR_IV, 2)
-                .inputItems(GTItems.TOOL_DATA_STICK, 4)
-                .outputItems(GTOMachines.DIRECTED_TESSERACT_GENERATOR.asItem())
-                .EUt(480)
-                .duration(400)
-                .save();
-
         ASSEMBLER_RECIPES.builder("highly_concurrent_intensive_optical_computing_channel")
                 .inputItems(TagPrefix.plate, GTOMaterials.Shadowium, 4)
                 .inputItems(TagPrefix.foil, GTOMaterials.PhotonicKristallite, 2)
