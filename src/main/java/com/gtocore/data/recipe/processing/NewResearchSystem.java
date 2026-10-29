@@ -73,17 +73,6 @@ public final class NewResearchSystem {
                 .duration(1600)
                 .addData(GTORecipeDataKeys.POWER_MODULE_TIER, 4)
                 .save();
-        STELLAR_FORGE_RECIPES.builder("obsidian_matrix")
-                .inputItems(GTOBlocks.LEPTONIC_CHARGE.asItem())
-                .inputItems(TagPrefix.plateDense, GTMaterials.Obsidian, 1048576)
-                .inputItems(GTOItems.EXOTIC_PROCESSING_CORE, 256)
-                .chancedOutput(GTOItems.OBSIDIAN_MATRIX.asItem(), 7500, 0)
-                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 64000)
-                .EUt(7864320L)
-                .duration(4000)
-                .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 2)
-                .save();
-
         // 低相关度配方
         {
             CHEMICAL_RECIPES.recipeBuilder("make_carbon_tetrafluoride_1")
