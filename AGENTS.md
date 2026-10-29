@@ -6,22 +6,21 @@
 
 先按实际改动选择需要读取的说明。一个任务命中多项时合并读取；范围不明确时先检查相关文件和 diff，再决定是否加载专题文档。
 
-| 任务或改动 | 开始工作前读取 |
-|---|---|
-| 新增功能、调整行为、移除内容、性能优化或修复问题（含 GTOLib、各 fork 模组与依赖接入） | [更新记录维护](docs/changelog-maintenance.md)；同步维护 [更新记录](docs/changelog.md) 的当前周条目 |
-| 创建、修改或审查 Java/Kotlin 代码 | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节 |
-| 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
-| 修改 GTORules 的世界创建、读取或持久化流程 | [世界规则只读约定](docs/world-rules.md)；规则仅在创建世界时确定，已有世界禁止补写、迁移回写或修复改写 |
-| 定位或修复 GTM/AE2 行为、考虑在主仓增加 Mixin 或调整这两个依赖 | [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md) |
-| 修改 EMI 实现、AE/EMI 转换或 EMI 依赖 | [EMI 与 AE 的职责边界](docs/emi-integration.md) |
-| EMI 启动兼容性、配方/搜索性能基准或大规模目录回归 | [EMI benchmark](docs/emi-benchmark.md) |
-| 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖 | [本地 GTM 联调](docs/local-gtm.md) |
-| 操作 `GTOLib/`、`GTOSeal/`、GTOLib 构建缓存（`build/gtolib/`）、gitlink 或诊断 `M GTOLib` | [GTOLib 子模块与构建](docs/gtolib.md) |
-| 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
-| 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
-| 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
-| 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
-| 新写或修改任务章节（`data/quest`）、任务书热加载/热修改/编辑模式 | [任务书热加载与热修改](docs/quest-hot-edit.md)；章节写法不合规时开发环境启动直接崩溃 |
+| 任务或改动                                                                                 | 开始工作前读取                                                                                        |
+|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 新增功能、调整行为、移除内容、性能优化或修复问题（含 GTOLib、各 fork 模组与依赖接入）      | [更新记录维护](docs/changelog-maintenance.md)；同步维护 [更新记录](docs/changelog.md) 的当前周条目    |
+| 创建、修改或审查 Java/Kotlin 代码                                                          | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节                                       |
+| 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果                           | [生成资源](docs/generated-resources.md)                                                               |
+| 修改 GTORules 的世界创建、读取或持久化流程                                                 | [世界规则只读约定](docs/world-rules.md)；规则仅在创建世界时确定，已有世界禁止补写、迁移回写或修复改写 |
+| 定位或修复 GTM/AE2 行为、考虑在主仓增加 Mixin 或调整这两个依赖                             | [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md)                                             |
+| 修改 EMI 实现、AE/EMI 转换或 EMI 依赖                                                      | [EMI 与 AE 的职责边界](docs/emi-integration.md)                                                       |
+| 使用本地 GTM 源码联调、发布到 Maven Local 或刷新本地依赖                                   | [本地 GTM 联调](docs/local-gtm.md)                                                                    |
+| 操作 `GTOLib/`、`GTOSeal/`、GTOLib 构建缓存（`build/gtolib/`）、gitlink 或诊断 `M GTOLib`  | [GTOLib 子模块与构建](docs/gtolib.md)                                                                 |
+| 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物                              | [云端构建与签名](docs/build-signing.md)                                                               |
+| 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓）                        |
+| 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性               | [Agent 常见坑与协作约定](docs/agent-pitfalls.md)                                                      |
+| 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README                                      | [团队开发说明](docs/development.md)                                                                   |
+| 新写或修改任务章节（`data/quest`）、任务书热加载/热修改/编辑模式                           | [任务书热加载与热修改](docs/quest-hot-edit.md)；章节写法不合规时开发环境启动直接崩溃                  |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 
@@ -30,6 +29,7 @@ GTM/AE2/EMI/Botania/Ars Nouveau 等模组均有本项目维护的 fork。修复�
 ## 编码规范
 
 - **默认实现位置**：新增编写的代码逻辑默认在 `GTOLib/` 模块中实现；物品、方块、机器、配方等注册项在本体仓库实现；涉及 GTM/AE2/EMI/Botania 等已 fork 模组的内部行为时，仍按 [修改位置说明](docs/forked-dependencies.md) 判断是否直接修改对应 fork。
+- **特化功能局部实现**：新增功能时，不要在 `MetaMachine`、`MetaMachineItem`、`RecipeLogic` 等适用范围宽泛的共用父类或通用逻辑类中，通过 `if (this instanceof YourNewClass)` 等针对新类的特判实现特化功能。应将功能实现在对应的特化类或其他能限定适用范围的合适位置。
 - 首次编辑或审查 Java/Kotlin 代码前，必须打开 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 的相关章节；完成修改后按实际 diff 再检查一次。它是本仓性能与正确性约束，不是可选建议。
 - 集合、Map/Set、遍历、复制、热路径分配或并发改动：读取“术语”“容器规范”“非容器规范”。
 - 异常处理、同步执行的状态切换或公共方法/API 设计：读取“非容器规范”。
