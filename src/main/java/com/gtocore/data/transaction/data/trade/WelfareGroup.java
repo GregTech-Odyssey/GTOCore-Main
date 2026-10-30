@@ -7,26 +7,32 @@ import com.gtocore.data.transaction.manager.TradeEntry;
 import com.gtocore.data.transaction.manager.TradingManager;
 import com.gtocore.integration.Mods;
 
+import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
+import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
-import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.fluids.FluidStack;
 
 import appeng.core.definitions.AEItems;
 
+import dev.shadowsoffire.apotheosis.ench.Ench;
+import earth.terrarium.adastra.common.registry.ModFluids;
+import earth.terrarium.adastra.common.registry.ModItems;
 import vazkii.botania.common.item.BotaniaItems;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import static com.gregtechceu.gtceu.api.GTValues.LV;
@@ -38,7 +44,6 @@ import static com.gtocore.data.transaction.data.GTOTrade.*;
 import static com.gtocore.data.transaction.data.TradeLang.TECH_OPERATOR_COIN;
 import static com.gtocore.data.transaction.data.TradeLang.addTradeLang;
 import static com.gtocore.data.transaction.data.trade.UnlockTrade.UNLOCK_BASE;
-import static com.gtocore.utils.PlayerHeadUtils.itemStackAddNbtString;
 
 public final class WelfareGroup {
 
@@ -93,7 +98,7 @@ public final class WelfareGroup {
                                 lotteryItem(60530, ChemicalHelper.get(COIN, Copper, 16)))));
 
         {
-            ItemStack stack = itemStackAddNbtString(GTOItems.PROSPECTOR_MANA_ULV.asStack(), "{mana:500000}");
+            ItemStack stack = QuestStacks.mana(GTOItems.PROSPECTOR_MANA_ULV, 500000);
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     new TradeEntry.Builder()
                             .texture(new StackTexture(stack))
@@ -136,13 +141,13 @@ public final class WelfareGroup {
                 simpleItemTrading(true, UNLOCK_BASE, GTItems.STICKY_RESIN.asStack(128), TECH_OPERATOR_COIN, 16));
 
         {
-            ItemStack stack = itemStackAddNbtString(AEItems.PORTABLE_ITEM_CELL16K.stack(), "{internalCurrentPower:20000.0d}");
+            ItemStack stack = QuestStacks.aeCharged(AEItems.PORTABLE_ITEM_CELL16K, 20000.0d);
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     simpleItemTrading(true, UNLOCK_BASE, stack, TECH_OPERATOR_COIN, 128));
         }
 
         {
-            ItemStack stack = itemStackAddNbtString(AEItems.PORTABLE_FLUID_CELL16K.stack(), "{internalCurrentPower:20000.0d}");
+            ItemStack stack = QuestStacks.aeCharged(AEItems.PORTABLE_FLUID_CELL16K, 20000.0d);
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     simpleItemTrading(true, UNLOCK_BASE, stack, TECH_OPERATOR_COIN, 128));
 
@@ -154,8 +159,7 @@ public final class WelfareGroup {
                 questGatedItemTrading(UNLOCK_BASE, GTMachines.SUPER_CHEST[LV].asStack(), TECH_OPERATOR_COIN, 16, LV_CIRCUIT_QUEST));
 
         {
-            ItemStack stack = itemStackAddNbtString(Objects.requireNonNull(GTMaterialItems.TOOL_ITEMS.get(DamascusSteel, GTToolType.MINING_HAMMER)).asStack(),
-                    "{DisallowContainerItem:0b,Enchantments:[{id:\"minecraft:unbreaking\",lvl:3s}],GT.Behaviours:{AoEColumn:1,AoELayer:0,AoERow:1},GT.Tool:{Damage:0},HideFlags:2}");
+            ItemStack stack = ToolHelper.get(GTToolType.MINING_HAMMER, DamascusSteel);
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     simpleItemTrading(true, UNLOCK_BASE, stack, TECH_OPERATOR_COIN, 48));
         }
@@ -200,29 +204,42 @@ public final class WelfareGroup {
                 simpleItemTrading(true, UNLOCK_BASE, new ItemStack(Blocks.CLAY, 64), TECH_OPERATOR_COIN, 16));
 
         {
-            ItemStack sword = RegistriesUtils.getItemStack("minecraft:netherite_sword", 1,
-                    "{Damage:0,Enchantments:[{id:\"minecraft:smite\",lvl:7s},{id:\"minecraft:looting\",lvl:3s},{id:\"minecraft:mending\",lvl:1s},{id:\"minecraft:sharpness\",lvl:7s}],RepairCost:31,display:{Name:'{\"text\":\"勇气之剑\"}'}}");
+            ItemStack sword = QuestStacks.enchanted(new ItemStack(Items.NETHERITE_SWORD),
+                    new EnchantmentInstance(Enchantments.SMITE, 7),
+                    new EnchantmentInstance(Enchantments.MOB_LOOTING, 3),
+                    new EnchantmentInstance(Enchantments.MENDING, 1),
+                    new EnchantmentInstance(Enchantments.SHARPNESS, 7))
+                    .setHoverName(Component.literal("勇气之剑"));
+            sword.setRepairCost(31);
+            ItemStack shield = QuestStacks.enchanted(new ItemStack(Items.SHIELD),
+                    new EnchantmentInstance(Enchantments.UNBREAKING, 5),
+                    new EnchantmentInstance(Ench.Enchantments.REFLECTIVE.get(), 7))
+                    .setHoverName(Component.literal("豪迈之盾"));
+            shield.setRepairCost(3);
+            ItemStack bow = QuestStacks.enchanted(new ItemStack(Items.BOW),
+                    new EnchantmentInstance(Enchantments.POWER_ARROWS, 8),
+                    new EnchantmentInstance(Enchantments.INFINITY_ARROWS, 1),
+                    new EnchantmentInstance(Enchantments.FLAMING_ARROWS, 1),
+                    new EnchantmentInstance(Enchantments.PUNCH_ARROWS, 3))
+                    .setHoverName(Component.literal("无畏之弓"));
+            bow.setRepairCost(15);
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                     new TradeEntry.Builder()
                             .texture(new StackTexture(sword))
                             .addDescription(Component.translatable(addTradeLang("地牢猎手套装", "Dungeon Hunter Set")))
                             .inputCurrency(TECH_OPERATOR_COIN, 64)
                             .outputItem(sword)
-                            .outputItem(RegistriesUtils.getItemStack("minecraft:shield", 1,
-                                    "{Damage:0,Enchantments:[{id:\"minecraft:unbreaking\",lvl:5s},{id:\"apotheosis:reflective\",lvl:7s}],RepairCost:3,display:{Name:'{\"text\":\"豪迈之盾\"}'}}"))
-                            .outputItem(RegistriesUtils.getItemStack("minecraft:bow", 1,
-                                    "{Damage:0,Enchantments:[{id:\"minecraft:power\",lvl:8s},{id:\"minecraft:infinity\",lvl:1s},{id:\"minecraft:flame\",lvl:1s},{id:\"minecraft:punch\",lvl:3s}],RepairCost:15,display:{Name:'{\"text\":\"无畏之弓\"}'}}"))
+                            .outputItem(shield)
+                            .outputItem(bow)
                             .outputItem(new ItemStack(Items.ARROW))
                             .build());
         }
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                simpleItemTrading(true, UNLOCK_BASE, RegistriesUtils.getItemStack("minecraft:enchanted_book", 1,
-                        "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}"), TECH_OPERATOR_COIN, 128));
+                simpleItemTrading(true, UNLOCK_BASE, QuestStacks.enchantedBook(Enchantments.MENDING, 1), TECH_OPERATOR_COIN, 128));
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                questGatedItemTrading(UNLOCK_BASE, RegistriesUtils.getItemStack("ad_astra:large_gas_tank", 1,
-                        "{BotariumData:{StoredFluids:[{Amount:3000L,Fluid:\"ad_astra:oxygen\"}]}}"), TECH_OPERATOR_COIN, 64, MOON_QUEST));
+                questGatedItemTrading(UNLOCK_BASE, QuestStacks.filled(ModItems.LARGE_GAS_TANK.get(), new FluidStack(ModFluids.OXYGEN.get(), 3000)), TECH_OPERATOR_COIN, 64, MOON_QUEST));
 
         for (String ore : List.of("iron", "copper", "tin", "coal")) {
             TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,

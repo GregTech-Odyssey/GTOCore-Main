@@ -30,7 +30,6 @@ import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -776,7 +775,7 @@ public final class HvChapter {
                     .line()
                     .line("最后着陆前注意提前{打开助推器减速}，否则在有不幸的事情发生前就会有{更不幸的事情发生}", YELLOW, DARK_RED))
             .task(Task.dimension(Dimension.MOON).title("造访月球").icon(ModItems.MOON_GLOBE.get()))
-            .reward(Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTItems.PROSPECTOR_HV), "{Charge:1600000L}"), 1))
+            .reward(Reward.stack(() -> QuestStacks.charged(GTItems.PROSPECTOR_HV, 1600000L), 1))
             .dependsOn(UNLOCK_MOON, ROCKET_FUEL_BUCKET, BeyondTheStarsChapter.FLESH_IS_WEAK_MACHINERY_ASCENDS, BeyondTheStarsChapter.BASIC_SPACE_SUIT));
 
     public static final Quest RAW_BAUXITE = CHAPTER.quest("raw_bauxite", q -> q
