@@ -37,6 +37,7 @@ import appeng.crafting.execution.ElapsedTimeTracker;
 import appeng.crafting.inv.ListCraftingInventory;
 import appeng.hooks.ticking.TickHandler;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
+import appeng.me.helpers.CraftingJobSource;
 import appeng.me.service.CraftingService;
 
 import com.google.common.collect.Multimaps;
@@ -98,6 +99,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         var craftId = UUID.randomUUID();
         var linkCpu = new CraftingLink(CraftingCpuHelper.generateLinkData(craftId, requester == null, false), cluster);
         this.job = new ExecutingCraftingJob(plan, this::postChange, linkCpu, playerId, missingIng);
+        this.job.followJob = src instanceof CraftingJobSource craftingSource && craftingSource.isFollowing();
         cluster.updateOutput(plan.finalOutput());
         cluster.markDirty();
         notifyJobOwner(job, CraftingJobStatusPacket.Status.STARTED);
@@ -678,7 +680,9 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
                             job.finalOutput.what(),
                             job.finalOutput.amount(),
                             job.remainingAmount,
-                            status),
+                            status,
+                            job.timeTracker.getElapsedTime(),
+                            job.followJob),
                     connectedPlayer);
         }
     }

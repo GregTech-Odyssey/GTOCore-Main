@@ -1,5 +1,7 @@
 package com.gtocore.client.screen;
 
+import com.gtocore.utils.GTOWebsite;
+
 import com.gtolib.GTOCore;
 
 import net.minecraft.Util;
@@ -31,7 +33,6 @@ public final class GTOTitleScreen extends TitleScreen {
     private static final ResourceLocation LOGO = GTOCore.id("textures/gui/title/logo.png");
     private static final ResourceLocation BUTTON = GTOCore.id("textures/gui/title/button.png");
     private static final ResourceLocation BUTTON_HOVERED = GTOCore.id("textures/gui/title/button_hovered.png");
-    private static final String WIKI_URL = "https://gtodyssey.com";
     private static final String LAUNCH_TIME = "Launch took " + ManagementFactory.getRuntimeMXBean().getUptime() / 1000 + "s";
     private static final int BACKGROUND_TEXTURE_WIDTH = 1920;
     private static final int BACKGROUND_TEXTURE_HEIGHT = 1080;
@@ -96,7 +97,7 @@ public final class GTOTitleScreen extends TitleScreen {
 
         var logo = new TextureButton(logoX, logoY, logoSize, logoSize,
                 Component.translatable("gtodyssey.com"), GTOTitleScreen::openWiki, LOGO, LOGO, false);
-        logo.setTooltip(Tooltip.create(Component.literal(WIKI_URL)));
+        logo.setTooltip(Tooltip.create(Component.literal(GTOWebsite.SITE)));
         addRenderableWidget(logo);
 
         int buttonWidth = Math.min(137, width);
@@ -163,7 +164,7 @@ public final class GTOTitleScreen extends TitleScreen {
 
     // A named callback avoids ART mapping this lambda to TitleScreen's private lambda$init$1.
     private static void openWiki(Button button) {
-        Util.getPlatform().openUri(WIKI_URL);
+        Util.getPlatform().openUri(GTOWebsite.SITE);
     }
 
     private record BrandingLine(String text, int x, int y) {}

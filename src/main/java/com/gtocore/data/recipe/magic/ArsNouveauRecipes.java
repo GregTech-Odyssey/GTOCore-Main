@@ -32,6 +32,7 @@ import com.hollingsworth.arsnouveau.common.datagen.RecipeDatagen;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.item.BotaniaItems;
 import vectorwing.farmersdelight.common.tag.CommonTags;
@@ -41,6 +42,8 @@ import static com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys.GAS;
 import static com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys.LIQUID;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTOMaterials.*;
+import static com.gtocore.common.data.GTORecipeTypes.ENCHANTING_APPARATUS_RECIPES;
+import static com.gtocore.common.data.GTORecipeTypes.IMBUEMENT_CHAMBER_RECIPES;
 import static com.gtocore.common.data.GTORecipeTypes.INFUSER_CORE_RECIPES;
 
 public final class ArsNouveauRecipes {
@@ -155,7 +158,7 @@ public final class ArsNouveauRecipes {
 
         }
 
-        // 多方块灌注室 + 附魔核心
+        // 灌注室 / 附魔核心（大型灌注装置 1 / 5 / 6 号电路）
         {
             // 灌注室
             MultiblockImbuementRecipe(1, false, "opal_gem", Ingredient.of(ChemicalHelper.getItem(gem, Opal)), new ItemStack(ItemsRegistry.SOURCE_GEM), 500, new Ingredient[0], new FluidStack[0]);
@@ -453,6 +456,16 @@ public final class ArsNouveauRecipes {
                     .addPedestalItem(RegistriesUtils.getItemStack("botania:" + string + "_double_flower").getItem())
                     .addPedestalItem(RegistriesUtils.getItemStack("botania:" + string + "_mushroom").getItem())
                     .save();
+            IMBUEMENT_CHAMBER_RECIPES.builder("botania_" + string + "_petal")
+                    .inputItems(BotaniaItems.fertilizer)
+                    .notConsumable(RegistriesUtils.getItemStack("botania:" + string + "_petal").getItem())
+                    .notConsumable(RegistriesUtils.getItemStack("botania:" + string + "_mystical_flower").getItem())
+                    .notConsumable(RegistriesUtils.getItemStack("botania:" + string + "_double_flower").getItem())
+                    .notConsumable(RegistriesUtils.getItemStack("botania:" + string + "_mushroom").getItem())
+                    .outputItems(RegistriesUtils.getItemStack("botania:" + string + "_petal", 24))
+                    .duration(50)
+                    .MANAt(8)
+                    .save();
             INFUSER_CORE_RECIPES.builder("botania_" + string + "_petal")
                     .inputItems(BotaniaItems.fertilizer, 8)
                     .circuitMeta(1)
@@ -472,6 +485,13 @@ public final class ArsNouveauRecipes {
                     .addPedestalItem(BotaniaItems.fertilizer)
                     .addPedestalItem(BotaniaItems.fertilizer)
                     .addPedestalItem(BotaniaItems.fertilizer)
+                    .save();
+            ENCHANTING_APPARATUS_RECIPES.builder("botania_" + string + "_mystical_flower")
+                    .inputItems(RegistriesUtils.getItemStack("botania:" + string + "_mystical_flower").getItem())
+                    .inputItems(BotaniaItems.fertilizer, 4)
+                    .outputItems(RegistriesUtils.getItemStack("botania:" + string + "_mystical_flower", 32))
+                    .duration(30)
+                    .MANAt(32)
                     .save();
             INFUSER_CORE_RECIPES.builder("botania_" + string + "_mystical_flower")
                     .inputItems(RegistriesUtils.getItemStack("botania:" + string + "_mystical_flower").getItem(), 8)
@@ -554,9 +574,9 @@ public final class ArsNouveauRecipes {
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_source_jar"), RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"),
                     "ABA",
-                    "BCB",
+                    "CDC",
                     "ABA",
-                    'A', new MaterialEntry(TagPrefix.block, GTOMaterials.ManaGlass), 'B', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'C', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
+                    'A', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ElfGlass), 'C', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'D', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("standard_laureril_source_jar"), GTOBlocks.STANDARD_LAURERIL_JAR.asItem(),
                     "AAA",
@@ -632,9 +652,9 @@ public final class ArsNouveauRecipes {
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("large_source_jar"), RegistriesUtils.getItemStack("ars_nouveau:large_source_jar"),
                     "ABA",
-                    "BCB",
+                    "CDC",
                     "ABA",
-                    'A', new MaterialEntry(TagPrefix.block, GTOMaterials.ManaGlass), 'B', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'C', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
+                    'A', RegistriesUtils.getItemStack("ars_nouveau:source_jar"), 'B', new MaterialEntry(TagPrefix.block, GTOMaterials.ElfGlass), 'C', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'D', RegistriesUtils.getItemStack("ars_nouveau:source_gem_block"));
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("standard_laureril_source_jar"), GTOBlocks.STANDARD_LAURERIL_JAR.asItem(),
                     "AAA",
@@ -721,27 +741,51 @@ public final class ArsNouveauRecipes {
                                                   int source,
                                                   Ingredient[] pedestal,
                                                   FluidStack[] inputFluid) {
-        var build = INFUSER_CORE_RECIPES.builder(id);
+        Reference2IntOpenHashMap<Ingredient> CountMap = new Reference2IntOpenHashMap<>();
+        for (Ingredient ingredient : pedestal) CountMap.addTo(ingredient, 1);
+        // 灌注室由映射补 1 号电路；附魔核心的 5/6 号电路写在配方里，用于区分同输入的配方
+        var build1 = (model ? ENCHANTING_APPARATUS_RECIPES : IMBUEMENT_CHAMBER_RECIPES).builder(id);
         if (!model) {
-            build
-                    .inputItems(input, 4)
-                    .outputItems(output.copyWithCount(output.getCount() << 2))
-                    .circuitMeta(circuitMeta)
-                    .duration(400)
-                    .MANAt(source / 25);
-            for (Ingredient ingredient : pedestal) build.notConsumable(ingredient);
-            for (FluidStack fluidStack : inputFluid) build.inputFluids(fluidStack);
+            build1
+                    .inputItems(input)
+                    .outputItems(output)
+                    .duration(source / 5)
+                    .MANAt(5);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build1.inputItems(entry.getKey(), entry.getIntValue()));
+            for (FluidStack fluidStack : inputFluid) build1.inputFluids(fluidStack);
         } else {
-            build
+            build1
                     .inputItems(input)
                     .outputItems(output)
                     .circuitMeta(circuitMeta)
+                    .duration(source / 100)
+                    .MANAt(100);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build1.inputItems(entry.getKey(), entry.getIntValue()));
+            for (FluidStack fluidStack : inputFluid) build1.inputFluids(fluidStack);
+        }
+        build1.save();
+
+        var build2 = INFUSER_CORE_RECIPES.builder(id);
+        if (!model) {
+            build2
+                    .inputItems(input, 4)
+                    .outputItems(output.copyWithCount(output.getCount() << 2))
+                    .circuitMeta(circuitMeta)
                     .duration(100)
                     .MANAt(source / 25);
-            for (Ingredient ingredient : pedestal) build.inputIngredient(ingredient);
-            for (FluidStack fluidStack : inputFluid) build.inputFluids(fluidStack);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build2.inputItems(entry.getKey(), entry.getIntValue()));
+            for (FluidStack fluidStack : inputFluid) build2.inputFluids(fluidStack);
+        } else {
+            build2
+                    .inputItems(input)
+                    .outputItems(output)
+                    .circuitMeta(circuitMeta)
+                    .duration(25)
+                    .MANAt(source / 25);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build2.inputItems(entry.getKey(), entry.getIntValue()));
+            for (FluidStack fluidStack : inputFluid) build2.inputFluids(fluidStack);
         }
-        build.save();
+        build2.save();
     }
 
     private static void MultiblockImbuementRecipe2(int circuitMeta,
@@ -752,24 +796,26 @@ public final class ArsNouveauRecipes {
                                                    int mana,
                                                    Ingredient[] pedestal,
                                                    FluidStack[] inputFluid) {
+        Reference2IntOpenHashMap<Ingredient> CountMap = new Reference2IntOpenHashMap<>();
+        for (Ingredient ingredient : pedestal) CountMap.addTo(ingredient, 1);
         var build = INFUSER_CORE_RECIPES.builder(id);
         if (!model) {
             build
                     .inputItems(input)
                     .outputItems(output.copyWithCount(output.getCount() << 2))
                     .circuitMeta(circuitMeta)
-                    .duration(400)
+                    .duration(80)
                     .MANAt(mana);
-            for (Ingredient ingredient : pedestal) build.notConsumable(ingredient);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build.inputItems(entry.getKey(), entry.getIntValue()));
             for (FluidStack fluidStack : inputFluid) build.inputFluids(fluidStack);
         } else {
             build
                     .inputItems(input)
                     .outputItems(output)
                     .circuitMeta(circuitMeta)
-                    .duration(100)
+                    .duration(20)
                     .MANAt(mana);
-            for (Ingredient ingredient : pedestal) build.inputIngredient(ingredient);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build.inputItems(entry.getKey(), entry.getIntValue()));
             for (FluidStack fluidStack : inputFluid) build.inputFluids(fluidStack);
         }
         build.save();

@@ -34,7 +34,8 @@ public enum Mods {
     RENDER_BLENDER("renderblender"),
     BALM("balm"),
     XAERO_WORLDMAP("xaeroworldmap"),
-    TOOLBELT("toolbelt");
+    TOOLBELT("toolbelt"),
+    CORPSE("corpse");
 
     @Getter
     private final boolean loaded;

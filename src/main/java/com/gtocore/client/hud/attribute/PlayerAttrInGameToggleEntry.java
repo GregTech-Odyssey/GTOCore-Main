@@ -4,6 +4,9 @@ import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.gui.HudUIStyle;
+
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
@@ -14,9 +17,8 @@ import net.minecraft.network.chat.Component;
 @DataGeneratorScanned
 public class PlayerAttrInGameToggleEntry extends PlayerAttrEntry {
 
-    private static final int TOGGLE_WIDTH = 30;
-    private static final int TOGGLE_HEIGHT = 14;
-    private static final int KNOB_SIZE = 10;
+    private static final int TOGGLE_WIDTH = UISizes.SWITCH_WIDTH;
+    private static final int TOGGLE_HEIGHT = UISizes.CONTROL_HEIGHT;
 
     @RegisterLanguage(en = "Hide in-game", cn = "游戏中隐藏")
     public static final String OPTION_INVISIBLE_IN_GAME = "gtocore.hud.client.attributes.option.invisible_in_game";
@@ -57,19 +59,11 @@ public class PlayerAttrInGameToggleEntry extends PlayerAttrEntry {
     public void renderEditor(GuiGraphics guiGraphics, Rect2i bounds, int mouseX, int mouseY) {
         Font font = font();
         boolean value = isHiddenInGame();
-        guiGraphics.drawString(font, getLabel(), bounds.getX(), bounds.getY() + 3, TEXT_COLOR, false);
+        var style = HudUIStyle.get();
+        guiGraphics.drawString(font, getLabel(), bounds.getX(), bounds.getY() + (bounds.getHeight() - font.lineHeight) / 2, style.text, false);
 
         Rect2i toggleBounds = getToggleBounds(bounds);
-        int background = value ? 0xFF2E8B57 : 0xFF444444;
-        int knobColor = 0xFFFFFFFF;
-        guiGraphics.fill(toggleBounds.getX(), toggleBounds.getY(),
-                toggleBounds.getX() + toggleBounds.getWidth(),
-                toggleBounds.getY() + toggleBounds.getHeight(),
-                background);
-
-        int knobX = value ? toggleBounds.getX() + toggleBounds.getWidth() - KNOB_SIZE - 2 : toggleBounds.getX() + 2;
-        guiGraphics.fill(knobX, toggleBounds.getY() + 2, knobX + KNOB_SIZE, toggleBounds.getY() + 2 + KNOB_SIZE,
-                knobColor);
+        style.toggle(guiGraphics, toggleBounds, value, contains(toggleBounds, mouseX, mouseY));
     }
 
     @Override

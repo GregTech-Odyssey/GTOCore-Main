@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gtocore:item/quantum_chest_configurator/quantum_chest_configurator_config_mode"
+  }
+}

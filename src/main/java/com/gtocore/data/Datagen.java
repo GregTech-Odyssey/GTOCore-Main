@@ -11,6 +11,7 @@ import com.gtolib.api.lang.SimplifiedChineseLanguageProvider;
 import com.gtolib.api.lang.TraditionalChineseLanguageProvider;
 
 import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -20,6 +21,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 
 import com.gto.registrate.providers.ProviderType;
+import com.hollingsworth.arsnouveau.common.datagen.BlockTagProvider;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -32,6 +34,7 @@ public final class Datagen {
     public static void init() {
         if (GTCEu.isDataGen()) {
             GTO.addDataGenerator(ProviderType.BLOCK_TAGS, p -> p.addTag(Tags.ALL_LAYER_STONE).addTag(BlockTags.STONE_ORE_REPLACEABLES).addTag(BlockTags.DEEPSLATE_ORE_REPLACEABLES).addTag(BlockTags.NETHER_CARVER_REPLACEABLES));
+            GTO.addDataGenerator(ProviderType.BLOCK_TAGS, p -> p.addTag(CustomTags.MINEABLE_WITH_WRENCH).addOptionalTag(BlockTagProvider.MACHINES.location()));
             GTO.addDataGenerator(ProviderType.LANG, LangHandler::enInitialize);
             GTO.addDataGenerator(SimplifiedChineseLanguageProvider.LANG, LangHandler::cnInitialize);
             GTO.addDataGenerator(TraditionalChineseLanguageProvider.LANG, LangHandler::twInitialize);

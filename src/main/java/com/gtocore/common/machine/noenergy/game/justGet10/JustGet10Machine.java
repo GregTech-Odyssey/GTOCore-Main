@@ -1,20 +1,29 @@
 package com.gtocore.common.machine.noenergy.game.justGet10;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.render.UIDraw;
+import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -26,6 +35,10 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * 「合成十」游戏机：5×5 盘面的合并玩法。
@@ -45,6 +58,12 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     private static final String LINE_SCORE = "gtocore.machine.game.line.score";
     @RegisterLanguage(cn = "重新开始", en = "Restart")
     private static final String BUTTON_RESTART = "gtocore.machine.game.button.restart";
+
+    /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 成绩，达成时间放在成绩格的悬停提示里。 */
+    private static final MilestoneColumn[] MILESTONE_COLUMNS = {
+            MilestoneColumn.left(COLUMN_PLAYER, 42),
+            MilestoneColumn.right(COLUMN_BEST_SCORE, 54),
+            MilestoneColumn.right(COLUMN_BEST_MERGED, 40) };
 
     /** 格子材质原尺寸（和数字材质一致）。 */
     private static final int CELL_SIZE = 24;
@@ -99,9 +118,6 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     /** 规则实例；临时容器跟着它复用。 */
     private final JustGet10Rules rules = JustGet10Rules.create();
 
-    @SaveToDisk(defaultValue = "true")
-    @SyncToClient(scheduleUpdate = true)
-    private boolean enabled = true;
     /** 服务端权威盘面，按行优先存 {@code size * size} 格，空格为 -1。 */
     @SaveToDisk
     private int[] board = NO_BOARD;
@@ -112,6 +128,9 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     /** 已提起的格子位图；提到的是「点中那格所在的整个连通组」，格数超过 64，所以用位图而不是位掩码。 */
     @SaveToDisk
     private long[] selection = NO_SELECTION;
+    /** 本局合成出的最大数字：结账时拿去比里程碑。 */
+    @SaveToDisk
+    private int roundPeakValue = JustGet10Rules.VALUE_MIN;
 
     public JustGet10Machine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -204,7 +223,9 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         dealBoard();
         score = 0;
         settled = false;
+        roundPeakValue = JustGet10Rules.maxValue(board);
         gameStatus = Status.PLAYING.ordinal();
+        beginSession(null);
     }
 
     /**
@@ -217,6 +238,16 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         settled = true;
         long reward = (score - REDEMPTION_BASELINE) / JustGet10Rules.POINTS_PER_COIN;
         if (reward > 0) addBalance(reward);
+        recordRound();
+    }
+
+    /** 本局结账时记一次里程碑：只有单人局才写；分数/最大合成没有超过个人记录时不会真的落盘。 */
+    private void recordRound() {
+        if (!sessionCounts()) return;
+        var server = server();
+        if (server == null) return;
+        GameMilestones.get(server).recordScore(GameMilestones.JUST_GET_10, sessionStarter(), score, roundPeakValue,
+                gameTime());
     }
 
     /** 玩不动了：把这局积分兑现掉，再记下结束。先结账后改状态，任何顺序都不会漏给或重复给。 */
@@ -232,11 +263,12 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         setIdle();
     }
 
-    /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用；停用时不响应。 */
-    private void restartRoundOnServer() {
-        if (isRemote() || !enabled) return;
+    /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用。 */
+    private void restartRoundOnServer(@Nullable ServerPlayer player) {
+        if (isRemote() || !guard(player)) return;
         settleRound();
         startRound();
+        beginSession(player);
         syncAndMarkChanged();
     }
 
@@ -256,8 +288,8 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
      * 然后按新盘面结算分数与「首次合出」里程碑。合并会清掉<b>所有</b>提起（盘面换了位置，留着旧高亮会指错格子）；
      * 不可合并时直接返回、状态不变。
      */
-    private void clickCell(int index) {
-        if (isRemote() || !enabled || !isPlaying()) return;
+    private void clickCell(int index, @Nullable ServerPlayer player) {
+        if (isRemote() || !isPlaying() || !guard(player)) return;
         int size = rules.size();
         if (index < 0 || index >= board.length) {
             selection = NO_SELECTION;
@@ -277,6 +309,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
             var merge = rules.merge(board, group, row, col, level.getRandom(), score);
             if (merge == null) return;
             int mergedValue = merge.mergedValue();
+            roundPeakValue = Math.max(roundPeakValue, mergedValue);
             int gained = mergedValue * group.size();
             board = merge.board();
             int reachedValue = Math.min(JustGet10Rules.VALUE_MAX, JustGet10Rules.maxValue(board));
@@ -321,15 +354,78 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         return page;
     }
 
+    /** 主页之外再挂一个「配置」子页：游玩权限开关 + 全服里程碑榜单。 */
+    @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new ConfigPage());
+    }
+
     /** 状态面板：余额 + 本局积分 + 重新开始/取出全部。 */
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_SCORE, () -> number(score));
-        status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(
-                Button.translatable(77, BUTTON_RESTART).setOnServerClick(this::restartRoundOnServer),
-                createWithdrawButton(77)));
+        var restart = Button.translatable(77, BUTTON_RESTART);
+        restart.setOnServerClick(() -> restartRoundOnServer(playerOf(restart)));
+        status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));
         return status;
+    }
+
+    /** 配置页：游玩权限开关 + 里程碑榜单（最高分降序，文字由服务端整表下发）。 */
+    private final class ConfigPage implements IFancyUIProvider {
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
+                    Switch.of(JustGet10Machine.this::allowOthers, JustGet10Machine.this::setAllowOthers),
+                    TOOLTIP_ALLOW_OTHERS));
+
+            var section = Form.section(SECTION_MILESTONES);
+            section.addChild(milestoneTable("game_milestones_just_get_10",
+                    MILESTONE_COLUMNS, JustGet10Machine.this::buildMilestoneRows));
+            page.addChild(section);
+            return page;
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.SETTINGS;
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(PAGE_SETTINGS);
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
+        }
+
+        @Override
+        public boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    /** 里程碑表格的行（服务端构建）：最高分榜，一人一行，名次由表格补，达成时间进悬停提示。 */
+    private List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server) {
+        var board = store.justGet10Board();
+        var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
+        for (var stat : board) {
+            rows.add(new MilestoneCell[] { MilestoneCell.of(Component.literal(GameMilestones.nameOf(server, stat.player()))),
+                    MilestoneCell.achieved(number(stat.bestScore()), stat.bestScoreTime()),
+                    MilestoneCell.achieved(tileName(stat.bestMerged()), stat.bestMergedTime()) });
+        }
+        return rows;
+    }
+
+    /** 最大合成按盘面上的电压字显示（和格子里的图一致）：1 → ULV，15 → MAX，再往上就是 MAX+1 往后排。 */
+    private static Component tileName(int value) {
+        if (value < JustGet10Rules.VALUE_MIN) return Component.literal("-");
+        return voltageName(Math.min(value, JustGet10Rules.VALUE_MAX) - 1);
     }
 
     /** 带底图的面板，行距统一 2px；状态面板与游戏区都用它。 */
@@ -388,7 +484,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
             super(cellSize, cellSize, null, null);
             this.cellSize = cellSize;
             this.index = index;
-            setOnServerClick(() -> clickCell(index));
+            setOnServerClick(() -> clickCell(index, playerOf(this)));
         }
 
         @Override

@@ -31,16 +31,14 @@ import snownee.jade.api.config.IPluginConfig;
 public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenanceMachine> {
 
     private static final String KEY_DAMAGE_MULTIPLIER = "damageMultiplier";
-    private static final String KEY_DAMAGE_CHANCE = "damageChance";
+    private static final String KEY_WEAR = "wear";
 
     @RegisterLanguage(cn = "损坏乘数: %s", en = "Damage Multiplier: %s")
     private static final String DAMAGE_MULTIPLIER = "gtocore.machine.maintenance_damage_multiplier.tooltip";
-    @RegisterLanguage(cn = "损坏概率: %s", en = "Damage Chance: %s")
-    private static final String DAMAGE_CHANCE = "gtocore.machine.maintenance_damage_chance.tooltip";
-    @RegisterLanguage(cn = "维护仓损坏概率：%s", en = "Maintenance Damage Chance: %s")
-    private static final String HATCH_DAMAGE_CHANCE = "gtocore.machine.maintenance_hatch_damage_chance.tooltip";
-    @RegisterLanguage(cn = "0%% (%s%% 阈值)", en = "0%% (%s%% threshold)")
-    private static final String DAMAGE_CHANCE_THRESHOLD = "gtocore.machine.maintenance_damage_chance.threshold";
+    @RegisterLanguage(cn = "损坏程度: %s", en = "Damage: %s")
+    private static final String WEAR = "gtocore.machine.maintenance_wear.tooltip";
+    @RegisterLanguage(cn = "维护仓损坏程度：%s", en = "Maintenance Hatch Damage: %s")
+    private static final String HATCH_WEAR = "gtocore.machine.maintenance_hatch_wear.tooltip";
 
     public MaintenanceParamProvider() {
         super(GTOCore.id("maintenance_param_provider"));
@@ -69,7 +67,7 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
             return;
         }
         tag.putFloat(KEY_DAMAGE_MULTIPLIER, getDamageMultiplier(machine));
-        tag.putFloat(KEY_DAMAGE_CHANCE, getDamageChance(machine));
+        tag.putFloat(KEY_WEAR, machine.getWear());
     }
 
     @Override
@@ -78,13 +76,14 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
             return;
         }
         boolean isPart = blockEntity instanceof MetaMachineBlockEntity machineBlockEntity && MetaMachine.getMachine(machineBlockEntity) instanceof IMaintenanceMachine;
-        var damageChance = Component.literal(formatDamageChance(data.getFloat(KEY_DAMAGE_CHANCE))).withStyle(ChatFormatting.GOLD);
+        float wear = data.getFloat(KEY_WEAR);
+        var wearText = Component.literal((int) Math.floor(wear * 100) + "%").withStyle(wear >= 1 ? ChatFormatting.RED : ChatFormatting.GOLD);
         if (isPart) {
             tooltip.add(Component.translatable(DAMAGE_MULTIPLIER,
                     Component.literal(formatMultiplier(data.getFloat(KEY_DAMAGE_MULTIPLIER))).withStyle(ChatFormatting.GOLD)));
-            tooltip.add(Component.translatable(DAMAGE_CHANCE, damageChance));
+            tooltip.add(Component.translatable(WEAR, wearText));
         } else {
-            tooltip.add(Component.translatable(HATCH_DAMAGE_CHANCE, damageChance));
+            tooltip.add(Component.translatable(HATCH_WEAR, wearText));
         }
     }
 
@@ -95,20 +94,8 @@ public class MaintenanceParamProvider extends CapabilityBlockProvider<IMaintenan
         return machine.getTimeMultiplier() * GTORules.MAINTENANCE_WEAR.get() * pa;
     }
 
-    static float getDamageChance(IMaintenanceMachine machine) {
-        return ((float) machine.getTimeActive() / IMaintenanceMachine.MINIMUM_MAINTENANCE_TIME) - 0.7F;
-    }
-
     static String formatMultiplier(float value) {
         String number = value == Math.round(value) ? FormattingUtil.formatNumbers(Math.round(value)) : FormattingUtil.formatNumber2Places(value);
         return number + "x";
-    }
-
-    static String formatDamageChance(float damageChance) {
-        if (damageChance < 0) {
-            float threshold = (damageChance + 0.7F) / 0.7F * 100.0F;
-            return Component.translatable(DAMAGE_CHANCE_THRESHOLD, FormattingUtil.formatNumber2Places(threshold)).getString();
-        }
-        return Math.round(damageChance * 100.0F) + "%";
     }
 }

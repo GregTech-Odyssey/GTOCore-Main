@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.network.chat.Component;
 
+import appeng.api.identity.IdentityKeySet;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
@@ -25,7 +26,6 @@ import appeng.api.stacks.AEKey;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.FlexWrap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -99,7 +99,7 @@ final class DataScanningEditorWidget extends UIElement {
     }
 
     private void addResearchPoint() {
-        var used = new ReferenceOpenHashSet<ResearchTag>(points.size());
+        var used = new IdentityKeySet<ResearchTag>(points.size());
         for (int i = 0; i < points.size(); i++) used.add(points.get(i).tag);
         for (var tag : tags) {
             if (!used.contains(tag)) {
@@ -121,7 +121,7 @@ final class DataScanningEditorWidget extends UIElement {
     private @Nullable String validate() {
         if (targets.isEmpty()) return "at least one scan target is required";
         if (points.isEmpty()) return "at least one ResearchPoint entry is required";
-        var used = new ReferenceOpenHashSet<ResearchTag>(points.size());
+        var used = new IdentityKeySet<ResearchTag>(points.size());
         for (int i = 0; i < points.size(); i++) {
             var point = points.get(i);
             if (!used.add(point.tag)) return "duplicate ResearchTag: " + point.tag.getName();

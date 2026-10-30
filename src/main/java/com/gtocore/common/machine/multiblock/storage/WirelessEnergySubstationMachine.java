@@ -219,6 +219,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private int towerTier = -1;
     private int glassLimit = -1;
     private long throughput;
+    private List<Provider.Unit> registeredUnits = List.of();
     private int storageMultiplierHalf;
     private String storageMultiplierExpression = "1";
     private Component throughputFormulaText = MultiblockPage.NO_VALUE;
@@ -352,8 +353,21 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         unitsText = describe(storagePositions, superStoragePositions);
         transferText = describe(transferPositions, superTransferPositions);
         unitsOverTier = overTier(storagePositions, glassTier) || overTier(transferPositions, glassTier) || overTier(superStoragePositions, glassTier) || overTier(superTransferPositions, glassTier);
+        registeredUnits = units;
         ProviderRegistry.registerTower(this, units, towerTier, throughput);
         WirelessEnergyUnitBlockEntity.absorb(this, storagePositions, glassTier);
+    }
+
+    @Override
+    protected void onOwnerChanged() {
+        super.onOwnerChanged();
+        if (isRemote() || !isFormed()) return;
+        if (getOwnerUUID() == null) {
+            ProviderRegistry.unregister(this);
+            return;
+        }
+        ProviderRegistry.registerTower(this, registeredUnits, towerTier, throughput);
+        WirelessEnergyUnitBlockEntity.absorb(this, storagePositions, glassLimit);
     }
 
     @Override
@@ -382,6 +396,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         towerTier = -1;
         glassLimit = -1;
         throughput = 0;
+        registeredUnits = List.of();
         storageMultiplierHalf = 0;
         storageMultiplierExpression = "1";
         throughputFormulaText = MultiblockPage.NO_VALUE;

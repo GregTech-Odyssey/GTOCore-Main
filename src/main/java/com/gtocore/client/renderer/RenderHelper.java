@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -306,27 +307,37 @@ public final class RenderHelper {
                                     double minX, double minY, double minZ,
                                     double maxX, double maxY, double maxZ) {
         Vec3 pos = camera.getPosition();
-        poseStack.pushPose();
-        poseStack.translate(-pos.x, -pos.y, -pos.z);
+        // Subtract in double precision before vertices are converted to floats.
+        minX -= pos.x;
+        minY -= pos.y;
+        minZ -= pos.z;
+        maxX -= pos.x;
+        maxY -= pos.y;
+        maxZ -= pos.z;
         RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         RenderSystem.disableCull();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buffer = tesselator.getBuilder();
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderBufferUtils.renderCubeFace(poseStack, buffer, (float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, fillR, fillG, fillB, fillAlpha, fillInside);
-        tesselator.end();
+        if (fillAlpha > 0) {
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderBufferUtils.renderCubeFace(poseStack, buffer, (float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, fillR, fillG, fillB, fillAlpha, fillInside);
+            tesselator.end();
+        }
         buffer.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
         RenderSystem.lineWidth(lineWidth);
-        RenderBufferUtils.drawCubeFrame(poseStack, buffer, (float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, frameR, frameG, frameB, frameAlpha);
+        // The line shader needs edge directions transformed by the same pose as the vertices.
+        LevelRenderer.renderLineBox(poseStack, buffer, minX, minY, minZ, maxX, maxY, maxZ, frameR, frameG, frameB, frameAlpha);
         tesselator.end();
+        RenderSystem.lineWidth(1);
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.enableDepthTest();
-        poseStack.popPose();
+        RenderSystem.depthMask(true);
     }
 
     public static void highlightSphere(Camera camera, PoseStack poseStack, BlockPos blockPos, float radius) {

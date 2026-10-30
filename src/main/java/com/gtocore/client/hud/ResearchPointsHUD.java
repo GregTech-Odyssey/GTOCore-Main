@@ -6,6 +6,7 @@ import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.gui.HudUIStyle;
 
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -68,20 +69,19 @@ public class ResearchPointsHUD implements IMoveableHUD {
         List<ResearchPointRow> rows = collectRows(mc);
         Rect2i bounds = getBounds(screenWidth, screenHeight, font, rows);
 
-        guiGraphics.fill(bounds.getX(), bounds.getY(),
-                bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight(), 0xA0101010);
-        IMoveableHUD.drawOutline(guiGraphics, bounds, 0xFF737A83);
+        var style = HudUIStyle.get();
+        style.window(guiGraphics, bounds);
 
         int contentX = bounds.getX() + PADDING;
         int cursorY = bounds.getY() + PADDING;
-        guiGraphics.drawString(font, getDisplayName(), contentX, cursorY, 0xFFFFFFFF, false);
+        guiGraphics.drawString(font, getDisplayName(), contentX, cursorY, style.text, false);
 
         cursorY += font.lineHeight + 2;
-        guiGraphics.hLine(contentX, bounds.getX() + bounds.getWidth() - PADDING - 1, cursorY, 0xFF555B63);
+        guiGraphics.hLine(contentX, bounds.getX() + bounds.getWidth() - PADDING - 1, cursorY, style.divider);
         cursorY += HEADER_GAP - 1;
 
         if (rows.isEmpty()) {
-            guiGraphics.drawString(font, Component.translatable(EMPTY_MESSAGE), contentX, cursorY, 0xFFADB5BF, false);
+            guiGraphics.drawString(font, Component.translatable(EMPTY_MESSAGE), contentX, cursorY, style.secondary, false);
             return;
         }
 
@@ -89,8 +89,8 @@ public class ResearchPointsHUD implements IMoveableHUD {
         for (ResearchPointRow row : rows) {
             int swatchY = cursorY + (font.lineHeight - SWATCH_SIZE) / 2;
             guiGraphics.fill(contentX, swatchY, contentX + SWATCH_SIZE, swatchY + SWATCH_SIZE, row.tag().getColor());
-            guiGraphics.drawString(font, row.tag.getDisplayName().withStyle(style -> style.withColor(row.tag.getColor())), contentX + SWATCH_SIZE + SWATCH_GAP, cursorY, 0xFFE7EBF0, false);
-            guiGraphics.drawString(font, row.formattedAmount(), valueRight - font.width(row.formattedAmount()), cursorY, 0xFFD5DCE5, false);
+            guiGraphics.drawString(font, row.tag.getDisplayName().withStyle(textStyle -> textStyle.withColor(row.tag.getColor())), contentX + SWATCH_SIZE + SWATCH_GAP, cursorY, style.text, false);
+            guiGraphics.drawString(font, row.formattedAmount(), valueRight - font.width(row.formattedAmount()), cursorY, style.text, false);
             cursorY += font.lineHeight + ROW_SPACING;
         }
     }

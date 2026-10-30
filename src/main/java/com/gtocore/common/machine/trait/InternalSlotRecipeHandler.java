@@ -89,7 +89,7 @@ public final class InternalSlotRecipeHandler {
                     return true;
                 } else if (isCachedRecipeAvailable(cachedRecipe)) {
                     // 缺电/输出满等暂时失败时保留缓存，也不按当前机器模式重搜，否则会串到别的配方
-                    return false;
+                    if (matchInputs(cachedRecipe.toRuntime())) return false;
                 } else {
                     clearCachedRecipe();
                 }

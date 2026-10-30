@@ -227,18 +227,6 @@ public final class GTOMachineTooltipsA {
         t.requirement(t.tr("安装到对应的机器上以生效", "Install it on the corresponding machine to take effect"));
     });
 
-    public static final TipSpec directedHyperCubeMachineTooltips = GTOTips.of("directed_hyper_cube_machine", t -> {
-        t.heading(MainFunction);
-        t.feature(t.tr("代理多个流体或物品存储器，且指定代理方向", "Proxy (a or multi) (fluid or item or both)storage with directed sides"));
-        t.control(t.tr("使用§b坐标标签枪§r按照分配顺序绑定方块", "Use the §bTesseract Target Marker§r to bind blocks in allocation order"));
-
-        t.heading(t.tr("被样板供应器推送时", "When being pushed by the Pattern Provider"));
-        t.feature(t.tr("将样板供应器的样板内容按照编写顺序依次输出到多个方块的多个面", "Outputs the pattern contents of the Pattern Provider to multiple sides of multiple blocks in the order written"));
-        t.requirement(t.tr("原料在样板中对应的编号严格对应绑定方块的编号", "The number corresponding to the raw material in the pattern strictly corresponds to the number of the bound block"));
-        t.requirement(t.tr("若样板内容的长度大于绑定的方块数量，则该样板将拒绝被推送", "If the length of the pattern content is greater than the number of bound blocks, the pattern will refuse to be pushed"));
-        t.feature(t.tr("适用于一些较为复杂的自动化场景（如新生魔艺的附魔装置自动化）", "Suitable for some more complex automation scenarios (such as Ars Nouveau's Enchanting Apparatus)"));
-    });
-
     public static final TipSpec meEnergySubstationTooltips = GTOTips.of("me_energy_substation", t -> {
         t.heading(MainFunction);
         t.keepOrder();
@@ -349,6 +337,12 @@ public final class GTOMachineTooltipsA {
         t.supported(t.tr("超频模块允许安装超频仓/线程仓", "Overclock modules allow the installation of overclocking chambers/thread chambers"));
         t.requirement(t.tr("超频模块仅允许安装一个", "Only one overclock module is allowed to be installed"));
         t.control(t.tr("可在结构配置中选择要预览或搭建的模块", "Modules to preview or build can be selected in the structure configuration"));
+    });
+    public static TipSpec solarStormAggregationReactorTooltips = GTOTips.of("solar_storm_aggregation_reactor", t -> {
+        t.heading(TipSlot.REQUIREMENTS, RunningRequirements);
+        t.requirement(t.tr("只能在太阳表面工作", "Can only operate on the surface of the sun"));
+        t.requirement(t.tr("只有在太阳风暴期间，聚合才能运行", "The reactor can only operate during solar storms"));
+        t.control(t.tr("（暂时）当太阳风暴时，其他星球表现为下雨，太阳风暴结束后，其他星球表现为晴天", "(Temporarily) During solar storms, other planets appear to be raining, and after the solar storm ends, other planets appear to be sunny"));
     });
 
     public static final TipSpec KuangbiaoGiantNuclearFusionReactorEnergyStorageTooltip(long eut) {

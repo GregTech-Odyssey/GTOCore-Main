@@ -38,7 +38,7 @@ public final class MufflerPipeBlockEntity extends PipeBlockEntity<MufflerPipeTyp
     @Override
     public @Nullable <T> Object getGTCapability(@NotNull Class<T> cap, @Nullable Direction side) {
         if (cap == IMufflerPipeConnection.class) {
-            if ((side == null || isConnected(side)) && !level.isClientSide && getMufflerPipeNet() != null) {
+            if ((side == null || isConnected(side)) && isWorkingEnabled() && !level.isClientSide && getMufflerPipeNet() != null) {
                 return this;
             }
             return GTCapability.EMPTY;
@@ -53,6 +53,8 @@ public final class MufflerPipeBlockEntity extends PipeBlockEntity<MufflerPipeTyp
 
     @Override
     public @Nullable IMufflerConduction getMufflerOutput() {
+        // a paused pipe must not conduct exhaust into its neighbours
+        if (!isWorkingEnabled()) return null;
         MufflerPipeNet pipeNet = getMufflerPipeNet();
         return pipeNet == null || level == null ? null : pipeNet.getMufflerOutput(level, getPipeLongPos(), getPipePos());
     }

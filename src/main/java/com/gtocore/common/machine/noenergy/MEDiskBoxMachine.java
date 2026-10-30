@@ -110,7 +110,6 @@ public final class MEDiskBoxMachine extends MetaMachine
     @Nullable
     private CellDataStorage dataStorage;
     private boolean dirty;
-    private boolean observe;
 
     public MEDiskBoxMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -209,28 +208,13 @@ public final class MEDiskBoxMachine extends MetaMachine
         if (!player && uuid == null) uuid = UUID.randomUUID();
     }
 
-    /// 每 20 tick 重算一次已用字节（照抄存储访问仓的 observe 口径）
+    /// 已用字节在插入/取出时增量维护，这里只把本 tick 的变更标记进存盘
     private void tickUpdate() {
         var data = cellStorage();
         if (data == CellDataStorage.EMPTY) return;
-        var dirty = this.dirty;
         if (dirty) {
-            this.dirty = false;
+            dirty = false;
             data.setDirty();
-        }
-        if (capacity == 0 || !isOnline) return;
-        if (dirty || observe) {
-            observe = false;
-            double totalAmount = 0;
-            var map = data.getStoredMap();
-            if (map != null) {
-                for (var entry : map) {
-                    totalAmount += (double) entry.getLongValue() / entry.getKey().getType().getAmountPerByte();
-                }
-            }
-            data.setBytes(totalAmount);
-        } else if (getOffsetTimer() % 20 == 7) {
-            observe = true;
         }
     }
 
@@ -284,6 +268,7 @@ public final class MEDiskBoxMachine extends MetaMachine
                 data.setStoredMap(map);
             }
             map.insert(what, amount);
+            data.addBytes(what, amount);
             dirty = true;
         }
         return amount;
@@ -297,7 +282,10 @@ public final class MEDiskBoxMachine extends MetaMachine
         if (map == null) return 0;
         if (mode == Actionable.MODULATE) {
             long extracted = map.extract(what, amount);
-            if (extracted > 0) dirty = true;
+            if (extracted > 0) {
+                data.addBytes(what, -extracted);
+                dirty = true;
+            }
             return extracted;
         }
         return Math.min(amount, map.getAmount(what));
@@ -329,8 +317,7 @@ public final class MEDiskBoxMachine extends MetaMachine
         if (data == CellDataStorage.EMPTY) return;
         var grid = getMainNode().getGrid();
         if (grid == null) return;
-        double used = IndexedStorages.transferFromNetwork(grid, this, this, capacity - data.getBytes(), IActionSource.ofMachine(this));
-        data.setBytes(data.getBytes() + used);
+        IndexedStorages.transferFromNetwork(grid, this, this, capacity - data.getBytes(), IActionSource.ofMachine(this));
         onChanged();
     }
 

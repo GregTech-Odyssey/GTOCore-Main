@@ -32,6 +32,7 @@ import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.mana.ManaCollector;
+import vazkii.botania.api.mana.ManaEndpoint;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
 import vazkii.botania.api.mana.spark.SparkAttachable;
@@ -68,6 +69,7 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
 
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
+    private final ManaEndpoint manaEndpoint;
     @SaveToDisk(defaultValue = "true")
     private boolean autoOutput = true;
     @Nullable
@@ -77,6 +79,7 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
         super(holder);
         // 上限给 long 最大值，但每秒 IO 上限只给 int 上限：容器算 rateMultiplier * maxIORate 时会溢出
         manaContainer = new NotifiableManaContainer(this, IO.BOTH, MAX_MANA, Integer.MAX_VALUE);
+        manaEndpoint = ManaUnification.of(manaContainer, 0);
     }
 
     @Override
@@ -150,24 +153,12 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
 
     private void outputMana(ManaReceiver receiver) {
         if (receiver == this || receiver.isFull() || !receiver.canReceiveManaFromBursts()) return;
-        long space = getMaxMana(receiver) - receiver.getCurrentMana();
-        long send = Math.min(manaContainer.getCurrentMana(), space);
-        if (send <= 0) return;
-        int amount = MathUtil.saturatedCast(send);
-        receiver.receiveMana(amount);
-        manaContainer.removeManaUnrestricted(amount, false);
+        ManaEndpoint.transfer(manaEndpoint, receiver, manaContainer.getCurrentMana());
     }
 
-    /** 输出魔源只送 4 的整数倍，这样扣掉的魔力与送出的魔源严格等价。 */
     private void outputSource(ISourceTile sourceTile) {
         if (sourceTile == this || !sourceTile.canAcceptSource()) return;
-        long space = sourceTile.getMaxSourceLong() - sourceTile.getSourceLong();
-        if (space <= 0) return;
-        long source = Math.min(space, ManaUnification.manaToSource(manaContainer.getCurrentMana()));
-        source -= source % ManaUnification.SOURCE_PER_MANA;
-        if (source <= 0) return;
-        sourceTile.addSourceLong(source);
-        manaContainer.removeManaUnrestricted(ManaUnification.sourceToMana(source), false);
+        ManaEndpoint.transfer(manaEndpoint, ManaUnification.of(sourceTile), manaContainer.getCurrentMana());
     }
 
     private static int getMaxMana(ManaReceiver receiver) {

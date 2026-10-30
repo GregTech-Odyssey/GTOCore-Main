@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -49,28 +50,22 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
     private static final String EMPTY = "gtocore.creative_fluid_cell.empty";
     @RegisterLanguage(cn = "精确输出", en = "Accurate output")
     private static final String ACCURATE = "gtocore.creative_fluid_cell.accurate";
-    @RegisterLanguage(cn = "开启后，单次抽取最多为下方设定的流体量；关闭时单次抽取不设上限", en = "When on, each drain is capped at the amount set below; when off, drains are not capped")
+    @RegisterLanguage(cn = "开启后，单次倾倒最多为下方设定的流体量；关闭时单次倾倒不设上限", en = "When on, each drain is capped at the amount set below; when off, drains are not capped")
     private static final String ACCURATE_TIP = "gtocore.creative_fluid_cell.accurate.tip";
-    @RegisterLanguage(cn = "单次抽取上限（mB）", en = "Drain cap (mB)")
+    @RegisterLanguage(cn = "单次倾倒上限（mB）", en = "Drain cap (mB)")
     private static final String CAPACITY = "gtocore.creative_fluid_cell.capacity";
     @RegisterLanguage(cn = "未开启精确输出", en = "Accurate output is off")
     private static final String ACCURATE_OFF = "gtocore.creative_fluid_cell.accurate_off";
 
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        tooltipComponents.add(Tips.plain(Component.translatable("gtmthings.creative_tooltip")));
-        if (stack.hasTag() && stack.getTag().contains("Fluid")) {
-            FluidUtil.getFluidContained(stack).ifPresent(tank -> {
-                tooltipComponents
-                        .add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip1", tank.getDisplayName())));
-            });
-            if (getAccurate(stack)) {
-                tooltipComponents
-                        .add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip3", getCapacity(stack))));
-            }
-        } else {
-            tooltipComponents.add(Tips.rightClick(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip2")));
+        FluidUtil.getFluidContained(stack).ifPresent(
+                tank -> tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip1", tank.getDisplayName()))));
+        if (getAccurate(stack)) {
+            tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip3", getCapacity(stack))));
         }
+        tooltipComponents.add(Tips.rightClick(Component.translatable("item.gtmthings.creative_fluid_cell.tooltip2")));
+        GTMachines.CREATIVE_TOOLTIPS.accept(stack, tooltipComponents);
     }
 
     @Override

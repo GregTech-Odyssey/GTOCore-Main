@@ -50,7 +50,7 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
 
     @Inject(method = "<init>", at = @org.spongepowered.asm.mixin.injection.At("RETURN"), remap = false)
     private void init(MetaMachineBlockEntity holder, int maxTemperature, int heatSpeed, Object[] args, CallbackInfo ci) {
-        gto$heatContainer = new MultiblockHeatHandler(holder, this, maxTemperature, 2, heatSpeed / 4f, 0);
+        gto$heatContainer = new MultiblockHeatHandler(holder, this, maxTemperature + 274L, 2, heatSpeed / 4f, 0);
         gto$heatContainer.setAllowExplosion(false);
     }
 

@@ -18,6 +18,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
+import appeng.api.identity.IdentityKeyLongMap;
 import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
@@ -33,7 +34,7 @@ import java.io.IOException;
 import java.util.Set;
 
 public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scannedItems,
-                                  Set<Material> scannedMaterials, Reference2LongOpenHashMap<TechNode> techNodeAccCWU, IntOpenHashSet unlockedDimensions) {
+                                  Set<Material> scannedMaterials, IdentityKeyLongMap<TechNode> techNodeAccCWU, IntOpenHashSet unlockedDimensions) {
 
     private static final int TECH_NODE_MANAGER_ID_FORMAT_MARKER = -1;
     @Deprecated(since = "0.6.0", forRemoval = true)
@@ -53,7 +54,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     private static final StreamCodec<FriendlyByteBuf, AEKey> AE_KEY_WRITE_CODEC = ByteBufCodecs.fromValueCodec(0, KeyCodecs.AE_KEY_DATA_CODEC).cast();
 
     public TeamResearchContext() {
-        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new Reference2LongOpenHashMap<>(), new IntOpenHashSet());
+        this(new ResearchPoints(), new ObjectOpenCustomHashSet<>(ResearchRequirements.AE_KEY_STRATEGY), new ReferenceOpenHashSet<>(), new IdentityKeyLongMap<>(), new IntOpenHashSet());
     }
 
     static void writeContext(FriendlyByteBuf buf, TeamResearchContext context) {
@@ -147,13 +148,13 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
 
     @Deprecated(since = "0.6.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
-    private static Reference2LongOpenHashMap<TechNode> readLegacyTechNodeAccCWU(FriendlyByteBuf buf) {
+    private static IdentityKeyLongMap<TechNode> readLegacyTechNodeAccCWU(FriendlyByteBuf buf) {
         int techNodeCount = buf.readInt();
         boolean hasManagerIds = techNodeCount == TECH_NODE_MANAGER_ID_FORMAT_MARKER;
         if (hasManagerIds) {
             techNodeCount = buf.readInt();
         }
-        Reference2LongOpenHashMap<TechNode> techNodeAccCWU = new Reference2LongOpenHashMap<>();
+        IdentityKeyLongMap<TechNode> techNodeAccCWU = new IdentityKeyLongMap<>();
         for (int i = 0; i < techNodeCount; i++) {
             TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(LegacyResearchIO.readUtf(buf)) : BaseNodes.MainTree;
             String nodeName = LegacyResearchIO.readUtf(buf);
@@ -177,10 +178,9 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return unlockedDimensions;
     }
 
-    static void writeResearchPoints(FriendlyByteBuf buf, Reference2LongOpenHashMap<ResearchTag> researchPoints) {
+    static void writeResearchPoints(FriendlyByteBuf buf, ResearchPoints researchPoints) {
         buf.writeInt(researchPoints.size());
-        for (ObjectIterator<Reference2LongMap.Entry<ResearchTag>> it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var researchEntry = it.next();
+        for (var researchEntry : researchPoints) {
             buf.writeUtf(researchEntry.getKey().getName());
             buf.writeLong(researchEntry.getLongValue());
         }
@@ -219,24 +219,23 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         return scannedItems;
     }
 
-    static void writeTechNodeAccCWU(FriendlyByteBuf buf, Reference2LongOpenHashMap<TechNode> techNodeAccCWU) {
+    static void writeTechNodeAccCWU(FriendlyByteBuf buf, IdentityKeyLongMap<TechNode> techNodeAccCWU) {
         buf.writeInt(TECH_NODE_MANAGER_ID_FORMAT_MARKER);
         buf.writeInt(techNodeAccCWU.size());
-        for (ObjectIterator<Reference2LongMap.Entry<TechNode>> it = techNodeAccCWU.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var techNodeEntry = it.next();
+        for (var techNodeEntry : techNodeAccCWU) {
             buf.writeUtf(techNodeEntry.getKey().getManager().getId());
             buf.writeUtf(techNodeEntry.getKey().name);
             buf.writeLong(techNodeEntry.getLongValue());
         }
     }
 
-    static Reference2LongOpenHashMap<TechNode> readTechNodeAccCWU(FriendlyByteBuf buf) {
+    static IdentityKeyLongMap<TechNode> readTechNodeAccCWU(FriendlyByteBuf buf) {
         int techNodeCount = buf.readInt();
         boolean hasManagerIds = techNodeCount == TECH_NODE_MANAGER_ID_FORMAT_MARKER;
         if (hasManagerIds) {
             techNodeCount = buf.readInt();
         }
-        Reference2LongOpenHashMap<TechNode> techNodeAccCWU = new Reference2LongOpenHashMap<>();
+        IdentityKeyLongMap<TechNode> techNodeAccCWU = new IdentityKeyLongMap<>();
         for (int i = 0; i < techNodeCount; i++) {
             TechTreeManager manager = hasManagerIds ? TechTreeManager.getManager(buf.readUtf()) : BaseNodes.MainTree;
             // todo remove datafix in future
@@ -288,8 +287,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     }
 
     public void addResearchPoints(ResearchPoints researchPoints) {
-        for (var it = researchPoints.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
+        for (var entry : researchPoints) {
             this.researchPoints.addTo(entry.getKey(), entry.getLongValue());
         }
         TeamResearchSavedData.INSTANCE.setDirty(true);

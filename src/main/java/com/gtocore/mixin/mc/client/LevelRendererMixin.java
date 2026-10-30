@@ -2,6 +2,7 @@ package com.gtocore.mixin.mc.client;
 
 import com.gtocore.client.renderer.item.ItemCountRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
+import com.gtocore.common.data.DysonSphereEffects;
 import com.gtocore.utils.StxckUtil;
 
 import net.minecraft.client.Camera;
@@ -12,15 +13,40 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
+
+    @WrapOperation(method = "renderSky",
+                   at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V"),
+                   slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;"),
+                                  to = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;MOON_LOCATION:Lnet/minecraft/resources/ResourceLocation;")))
+    private void renderDysonSun(BufferBuilder.RenderedBuffer sun, Operation<Void> original,
+                                @Local(argsOnly = true) PoseStack poseStack, @Local(argsOnly = true) float partialTick) {
+        if (!CelestialSkyRenderer.renderVanillaSun(sun, poseStack, partialTick)) original.call(sun);
+    }
+
+    // 原版还用颜色数组的 alpha 决定光晕顶点位置，只衰减绘制透明度，避免改变几何形状。
+    @ModifyArg(method = "renderSky",
+               at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/VertexConsumer;color(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;", ordinal = 0),
+               index = 3,
+               slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getSunriseColor(FF)[F"),
+                              to = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;")))
+    private float dimDysonSunrise(float alpha) {
+        return alpha * DysonSphereEffects.sunlightTransmission(Minecraft.getInstance().level);
+    }
 
     @Inject(method = "renderSky", at = @At("RETURN"))
     private void renderCelestialBodies(PoseStack poseStack, Matrix4f projectionMatrix, float partialTick, Camera camera, boolean isFoggy, Runnable skyFogSetup, CallbackInfo ci) {

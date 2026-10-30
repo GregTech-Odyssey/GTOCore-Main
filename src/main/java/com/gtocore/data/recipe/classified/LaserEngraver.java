@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color.Cyan;
 import static com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color.Gray;
+import static com.gregtechceu.gtceu.common.data.GTMaterials.NetherStar;
 import static com.gtocore.common.data.GTORecipeTypes.LASER_ENGRAVER_RECIPES;
 
 final class LaserEngraver {
@@ -176,7 +177,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("emerald_crystal_circuit")
                 .inputItems(GTOTagPrefix.ARTIFICIAL_GEM, GTMaterials.Emerald)
-                .notConsumable(TagPrefix.lens, GTOMaterials.ElfGlass)
+                .notConsumable(TagPrefix.lens, NetherStar)
                 .outputItems(GTOItems.EMERALD_CRYSTAL_CIRCUIT, 8)
                 .inputFluids(GTMaterials.DistilledWater, 800)
                 .EUt(1920)
@@ -185,7 +186,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ruby_crystal_circuit")
                 .inputItems(GTOTagPrefix.ARTIFICIAL_GEM, GTMaterials.Ruby)
-                .notConsumable(TagPrefix.lens, GTOMaterials.ElfGlass)
+                .notConsumable(TagPrefix.lens, NetherStar)
                 .outputItems(GTOItems.RUBY_CRYSTAL_CIRCUIT, 8)
                 .inputFluids(GTMaterials.DistilledWater, 800)
                 .EUt(1920)
@@ -194,7 +195,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("sapphire_crystal_circuit")
                 .inputItems(GTOTagPrefix.ARTIFICIAL_GEM, GTMaterials.Sapphire)
-                .notConsumable(TagPrefix.lens, GTOMaterials.ElfGlass)
+                .notConsumable(TagPrefix.lens, NetherStar)
                 .outputItems(GTOItems.SAPPHIRE_CRYSTAL_CIRCUIT, 8)
                 .inputFluids(GTMaterials.DistilledWater, 800)
                 .EUt(1920)
@@ -203,7 +204,7 @@ final class LaserEngraver {
         LASER_ENGRAVER_RECIPES.builder("cascade_mfpc_dustp")
                 .inputItems(TagPrefix.dust, GTOMaterials.ExtremeTemperatureInterfaceStabilizedMFPC)
                 .notConsumable(GTOItems.ULTRASHORT_PULSE_LASER.asItem())
-                .outputItems(TagPrefix.dust, GTOMaterials.CascadeMFPC)
+                .outputItems(TagPrefix.dust, NetherStar)
                 .cleanroom(1)
                 .EUt(129600)
                 .duration(20)

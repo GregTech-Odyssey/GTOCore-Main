@@ -1,12 +1,16 @@
 package com.gtocore.client.renderer.sky;
 
+import com.gtocore.client.renderer.GTORenderTypes;
+import com.gtocore.client.renderer.fx.ScreenSpaceMeshRenderer;
 import com.gtocore.common.data.CelestialOrbits;
+import com.gtocore.common.data.StarMapDysonSync;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.CelestialBody;
 import com.gtolib.api.data.Dimension;
 
 import com.gregtechceu.gtceu.GTCEu;
+import com.gregtechceu.gtceu.uipro.animation.UIClock;
 
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
@@ -18,12 +22,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -43,6 +50,8 @@ public final class CelestialSkyRenderer {
     private static final float HOME_HALF = 80;
     private static final double LATITUDE_SCALE = 4;
     private static final float VANILLA_MOON_HALF = 20;
+    // 原版 32×32 太阳贴图的亮色核心占中央 8×8；遮罩贴合核心，不包含外围光晕。
+    private static final float VANILLA_SUN_CORE_HALF = 30 * 8 / 32f;
     private static final double GLARE_FADE = Math.toRadians(6);
     private static final double MAX_LATITUDE = Math.toRadians(70);
     private static final int TEXELS = 16;
@@ -60,6 +69,8 @@ public final class CelestialSkyRenderer {
     private static final double[] TARGET = new double[3];
     private static final Object2ObjectOpenHashMap<ResourceLocation, ResourceLocation> RESAMPLED = new Object2ObjectOpenHashMap<>();
     private static final boolean OCULUS = GTCEu.isModLoaded("oculus");
+    private static final DysonSkyShell DYSON = new DysonSkyShell();
+    private static VertexBuffer solarSun;
 
     private CelestialSkyRenderer() {}
 
@@ -75,7 +86,9 @@ public final class CelestialSkyRenderer {
     }
 
     public static boolean replacesPlanetSky(@Nullable ClientLevel level) {
-        if (level == null || !CelestialOrbits.hasClientSeed()) return false;
+        if (level == null) return false;
+        if (level.dimension() == Dimension.SOLAR_SURFACE.getOrbit()) return true;
+        if (!CelestialOrbits.hasClientSeed()) return false;
         var body = observer(level);
         return body != null && (body != CelestialBody.EARTH || inOrbit(level));
     }
@@ -86,11 +99,20 @@ public final class CelestialSkyRenderer {
 
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         CelestialOrbits.clearClientSeed();
+        if (solarSun != null) {
+            solarSun.close();
+            solarSun = null;
+        }
     }
 
     public static void renderSky(PoseStack poseStack, float partialTick) {
         var level = Minecraft.getInstance().level;
-        if (level == null || !CelestialOrbits.hasClientSeed()) return;
+        if (level == null) return;
+        if (level.dimension() == Dimension.SOLAR_SURFACE.getOrbit()) {
+            renderSolarOrbitSun(poseStack);
+            return;
+        }
+        if (!CelestialOrbits.hasClientSeed()) return;
         var observer = observer(level);
         if (observer == null) return;
         boolean orbit = inOrbit(level);
@@ -99,10 +121,58 @@ public final class CelestialSkyRenderer {
         float daylight = environment != null && environment.oxygen() ? 1 - Math.min(1, level.getStarBrightness(partialTick) * 2) : 0;
         int count = collect(observer, orbit, level.getGameTime() + partialTick, daylight);
         if (count == 0) return;
+        int launched = StarMapDysonSync.launched(level);
+        if (launched > 0) DYSON.prepare(launched, UIClock.millis());
         var phase = OCULUS ? IrisPhase.enter() : null;
         draw(poseStack, count, level.getTimeOfDay(partialTick) * 360, (float) Math.toDegrees(observer.getObliquity()),
-                1 - level.getRainLevel(partialTick));
+                1 - level.getRainLevel(partialTick), launched);
         if (OCULUS) IrisPhase.exit(phase);
+    }
+
+    /** The Sun stays directly below the station at the same angular size as Earth viewed from orbit. */
+    private static void renderSolarOrbitSun(PoseStack poseStack) {
+        if (solarSun == null) {
+            var builder = Tesselator.getInstance().getBuilder();
+            builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
+            builder.vertex(-HOME_HALF, -SKY_DISTANCE, -HOME_HALF).uv(0, 0).endVertex();
+            builder.vertex(HOME_HALF, -SKY_DISTANCE, -HOME_HALF).uv(1, 0).endVertex();
+            builder.vertex(HOME_HALF, -SKY_DISTANCE, HOME_HALF).uv(1, 1).endVertex();
+            builder.vertex(-HOME_HALF, -SKY_DISTANCE, -HOME_HALF).uv(0, 0).endVertex();
+            builder.vertex(HOME_HALF, -SKY_DISTANCE, HOME_HALF).uv(1, 1).endVertex();
+            builder.vertex(-HOME_HALF, -SKY_DISTANCE, HOME_HALF).uv(0, 1).endVertex();
+            solarSun = new VertexBuffer(VertexBuffer.Usage.STATIC);
+            solarSun.bind();
+            solarSun.upload(builder.end());
+            VertexBuffer.unbind();
+        }
+        var phase = OCULUS ? IrisPhase.enter() : null;
+        ScreenSpaceMeshRenderer.render(poseStack, solarSun, GTORenderTypes.SOLAR_ORBIT_SUN, GameRenderer.getPositionTexShader(), 1, 1, 1, 1);
+        if (OCULUS) IrisPhase.exit(phase);
+    }
+
+    /** 主世界保留原版太阳贴图与轨迹，只在同一绘制位置叠加戴森球。 */
+    public static boolean renderVanillaSun(BufferBuilder.RenderedBuffer sun, PoseStack poseStack, float partialTick) {
+        var level = Minecraft.getInstance().level;
+        if (level == null || observer(level) != CelestialBody.EARTH || inOrbit(level)) return false;
+        int launched = StarMapDysonSync.launched(level);
+        if (launched <= 0) return false;
+        DYSON.prepare(launched, UIClock.millis());
+        float alpha = 1 - level.getRainLevel(partialTick);
+        var matrix = poseStack.last().pose();
+        RenderSystem.defaultBlendFunc();
+        DYSON.drawSky(matrix, SUN_HALF, VANILLA_SUN_CORE_HALF, SKY_DISTANCE, alpha, true);
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1, 1, 1, alpha * (1 - launched / (float) StarMapDysonSync.COMPLETE));
+        BufferUploader.drawWithShader(sun);
+        RenderSystem.defaultBlendFunc();
+        DYSON.drawSky(matrix, SUN_HALF, VANILLA_SUN_CORE_HALF, SKY_DISTANCE, alpha, false);
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1, 1, 1, alpha);
+        return true;
     }
 
     private static final class IrisPhase {
@@ -216,7 +286,7 @@ public final class CelestialSkyRenderer {
         return result;
     }
 
-    private static void draw(PoseStack poseStack, int count, float sunAngle, float obliquity, float alpha) {
+    private static void draw(PoseStack poseStack, int count, float sunAngle, float obliquity, float alpha, int launched) {
         for (int i = 0; i < count; i++) {
             int j = i;
             while (j > 0 && DISTANCES[ORDER[j - 1]] < DISTANCES[i]) {
@@ -233,8 +303,6 @@ public final class CelestialSkyRenderer {
         for (int k = 0; k < count; k++) {
             int i = ORDER[k];
             if (TEXTURES[i] == null || ALPHAS[i] <= 0.01f) continue;
-            RenderSystem.setShaderColor(1, 1, 1, alpha * ALPHAS[i]);
-            RenderSystem.setShaderTexture(0, TEXTURES[i]);
             poseStack.pushPose();
             poseStack.mulPose(Axis.YP.rotationDegrees(-90));
             if (FIXED[i]) {
@@ -248,12 +316,18 @@ public final class CelestialSkyRenderer {
             }
             var matrix = poseStack.last().pose();
             float half = HALVES[i];
+            boolean shell = i == 0 && launched > 0;
+            if (shell) DYSON.drawSky(matrix, half, half, SKY_DISTANCE, alpha, true);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderColor(1, 1, 1, alpha * ALPHAS[i] * (shell ? 1 - launched / (float) StarMapDysonSync.COMPLETE : 1));
+            RenderSystem.setShaderTexture(0, TEXTURES[i]);
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
             builder.vertex(matrix, -half, SKY_DISTANCE, -half).uv(0, 0).endVertex();
             builder.vertex(matrix, half, SKY_DISTANCE, -half).uv(1, 0).endVertex();
             builder.vertex(matrix, half, SKY_DISTANCE, half).uv(1, 1).endVertex();
             builder.vertex(matrix, -half, SKY_DISTANCE, half).uv(0, 1).endVertex();
             BufferUploader.drawWithShader(builder.end());
+            if (shell) DYSON.drawSky(matrix, half, half, SKY_DISTANCE, alpha, false);
             poseStack.popPose();
         }
         RenderSystem.setShaderColor(1, 1, 1, 1);

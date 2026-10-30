@@ -35,8 +35,10 @@ import appeng.core.definitions.AEItems;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
+import io.github.lounode.extrabotany.common.block.ExtraBotanyBlocks;
 import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
 import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.item.BotaniaItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -739,6 +741,103 @@ public final class MagicRecipesA {
                     .inputFluids(Aether.getFluid(LIQUID, 1000))
                     .duration(200)
                     .MANAt(32)
+                    .save();
+        }
+
+        // 魔法站点单方块：魔力流组装台（manaflow_assemble）用原魔法机器 + 魔力钢锭 + 魔力玻璃 + EV 力场发射器组装
+        {
+            ASSEMBLER_RECIPES.builder("pure_daisy_station")
+                    .inputItems(BotaniaFlowerBlocks.pureDaisy.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .outputItems(ManaMachine.PURE_DAISY_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("mana_pool_station")
+                    .inputItems(BotaniaBlocks.manaPool.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .outputItems(ManaMachine.MANA_POOL_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("petal_apothecary_station")
+                    .inputItems(BotaniaBlocks.defaultAltar.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .outputItems(ManaMachine.PETAL_APOTHECARY_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("runic_altar_station")
+                    .inputItems(BotaniaBlocks.runeAltar.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .outputItems(ManaMachine.RUNIC_ALTAR_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("terra_plate_station")
+                    .inputItems(BotaniaBlocks.terraPlate.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .outputItems(ManaMachine.TERRA_PLATE_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("pedestal_station")
+                    .inputItems(ExtraBotanyBlocks.livingrockPedestal.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .outputItems(ManaMachine.PEDESTAL_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("elven_portal_station")
+                    .inputItems(BotaniaBlocks.alfPortal.asItem())
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BotaniaBlocks.naturaPylon, 2)
+                    .outputItems(ManaMachine.ELVEN_PORTAL_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("imbuement_chamber_station")
+                    .inputItems(BlockRegistry.IMBUEMENT_BLOCK)
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BlockRegistry.ARCANE_PEDESTAL, 8)
+                    .outputItems(ManaMachine.IMBUEMENT_CHAMBER_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
+                    .save();
+
+            ASSEMBLER_RECIPES.builder("enchanting_apparatus_station")
+                    .inputItems(BlockRegistry.ENCHANTING_APP_BLOCK)
+                    .inputItems(rod, GTOMaterials.Manasteel, 8)
+                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
+                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BlockRegistry.ARCANE_PEDESTAL, 8)
+                    .inputItems(BlockRegistry.ARCANE_CORE_BLOCK)
+                    .outputItems(ManaMachine.ENCHANTING_APPARATUS_STATION.asItem())
+                    .duration(3000)
+                    .MANAt(8)
                     .save();
         }
 

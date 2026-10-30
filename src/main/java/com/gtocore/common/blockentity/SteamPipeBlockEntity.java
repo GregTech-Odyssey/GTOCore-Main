@@ -3,7 +3,9 @@ package com.gtocore.common.blockentity;
 import com.gtocore.common.pipe.steam.*;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
+import com.gregtechceu.gtceu.api.machine.feature.IAutoOutput;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -101,30 +103,37 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
     protected void updateNetworkConnection(Direction side, boolean connected) {
         super.updateNetworkConnection(side, connected);
         invalidateCapabilityCache();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     public void onNeighborChanged() {
         super.onNeighborChanged();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     public void clearRemoved() {
         super.clearRemoved();
-        if (blockedSide != null && isBlocked(blockedSide)) {
-            updateTransferTick(true, this::autoTransfer);
-        }
+        updateAutoTransferTick();
     }
 
     @Override
     protected void blockedChanged(boolean isBlocked) {
-        updateTransferTick(isBlocked && blockedSide != null, this::autoTransfer);
+        updateAutoTransferTick();
+    }
+
+    @Override
+    protected void onWorkingEnabledChanged() {
+        updateAutoTransferTick();
+    }
+
+    private void updateAutoTransferTick() {
+        updateTransferTick(isWorkingEnabled() && blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
     }
 
     public long insert(AEKey what, long amount, Actionable mode, @Nullable Direction from) {
-        if (amount <= 0 || isRemote() || routing || !SteamFluidFilter.isSteam(what)) return 0;
+        if (amount <= 0 || isRemote() || routing || !isWorkingEnabled() || !SteamFluidFilter.isSteam(what)) return 0;
         var net = getSteamPipeNet();
         if (net == null) return 0;
         var actionSource = IActionSource.empty();
@@ -134,7 +143,7 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
         if (mode == Actionable.SIMULATE) {
             for (var path : routes.array) {
                 if (remaining <= 0) break;
-                if (skipRoute(path.getTargetFacing(), from)) continue;
+                if (skipRoute(path, from)) continue;
                 var handler = path.getHandler(getLevel());
                 if (handler == null) continue;
                 var moved = handler.insert(what, remaining, Actionable.SIMULATE, actionSource);
@@ -146,7 +155,7 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
             routing = true;
             for (var path : routes) {
                 if (remaining <= 0) break;
-                if (skipRoute(path.getTargetFacing(), from)) continue;
+                if (skipRoute(path, from)) continue;
                 var handler = path.getHandler(getLevel());
                 if (handler == null) continue;
                 var moved = handler.insert(what, remaining, Actionable.MODULATE, actionSource);
@@ -159,12 +168,18 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
         return accepted;
     }
 
-    private boolean skipRoute(Direction targetFacing, @Nullable Direction from) {
-        if (from != null && targetFacing == from) return true;
-        return this.autoTransfer && this.blockedSide != null && targetFacing != this.blockedSide;
+    private boolean skipRoute(SteamRoutePath path, @Nullable Direction from) {
+        if (path.getTargetPipe() != this) return false;
+        var targetFacing = path.getTargetFacing();
+        return targetFacing == from || this.autoTransfer && targetFacing != this.blockedSide;
     }
 
     private void autoTransfer() {
+        if (!isWorkingEnabled()) {
+            // a paused pipe releases its tick, it is restarted once the pipe is resumed
+            updateTransferTick(false, this::autoTransfer);
+            return;
+        }
         if (getSteamPipeNet() == null) return;
         boolean hasStorage = false;
         autoTransfer = true;
@@ -172,7 +187,12 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
             if (facing == blockedSide || !isConnected(facing)) continue;
             var be = getNeighborBlockEntity(facing);
             if (be == null || be instanceof PipeBlockEntity<?, ?>) continue;
-            var storage = SteamStorages.getStorage(be, facing.getOpposite());
+            // the neighbour pushes into the pipe on its own, so do not pull from it as well
+            var opposite = facing.getOpposite();
+            if (be instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity instanceof IAutoOutput autoOutput && autoOutput.isAutoOutputtingFluids(opposite)) {
+                continue;
+            }
+            var storage = SteamStorages.getStorage(be, opposite);
             if (storage == null) continue;
             hasStorage = true;
             var target = handler(facing);

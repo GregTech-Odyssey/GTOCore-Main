@@ -1,0 +1,105 @@
+{
+  "credit": "Made with Blockbench",
+  "ambientocclusion": false,
+  "render_type": "cutout",
+  "texture_size": [16, 16],
+  "textures": {
+    "0": "botania:block/apothecary_default_side",
+    "1": "botania:block/apothecary_default_bottom",
+    "2": "gtocore:block/machines/mechanized_magic_frame",
+    "3": "botania:block/apothecary_default_top"
+  },
+  "elements": [
+    {
+      "name": "inner_base_0",
+      "from": [3.2, 1.6, 3.2],
+      "to": [12.8, 3.2, 12.8],
+      "faces": {
+        "north": { "uv": [2, 14, 14, 16], "texture": "#0" },
+        "east": { "uv": [2, 14, 14, 16], "texture": "#0" },
+        "south": { "uv": [2, 14, 14, 16], "texture": "#0" },
+        "west": { "uv": [2, 14, 14, 16], "texture": "#0" },
+        "up": { "uv": [2, 2, 14, 14], "texture": "#1" },
+        "down": { "uv": [2, 2, 14, 14], "texture": "#1" }
+      }
+    },
+    {
+      "name": "inner_pillar_1",
+      "from": [4.8, 3.2, 4.8],
+      "to": [11.2, 10.4, 11.2],
+      "faces": {
+        "north": { "uv": [4, 5, 12, 14], "texture": "#0" },
+        "east": { "uv": [4, 5, 12, 14], "texture": "#0" },
+        "south": { "uv": [4, 5, 12, 14], "texture": "#0" },
+        "west": { "uv": [4, 5, 12, 14], "texture": "#0" },
+        "up": { "uv": [0, 0, 0, 0], "texture": "#2" },
+        "down": { "uv": [0, 0, 0, 0], "texture": "#2" }
+      }
+    },
+    {
+      "name": "inner_goblet_base_2",
+      "from": [3.2, 10.4, 3.2],
+      "to": [12.8, 11.2, 12.8],
+      "faces": {
+        "north": { "uv": [2, 4, 14, 5], "texture": "#0" },
+        "east": { "uv": [2, 4, 14, 5], "texture": "#0" },
+        "south": { "uv": [2, 4, 14, 5], "texture": "#0" },
+        "west": { "uv": [2, 4, 14, 5], "texture": "#0" },
+        "up": { "uv": [2, 2, 14, 14], "texture": "#3" },
+        "down": { "uv": [2, 2, 14, 14], "texture": "#1" }
+      }
+    },
+    {
+      "name": "inner_goblet_south_3",
+      "from": [3.2, 11.2, 12],
+      "to": [12.8, 14.4, 12.8],
+      "faces": {
+        "north": { "uv": [2, 0, 14, 4], "texture": "#0" },
+        "east": { "uv": [2, 0, 3, 4], "texture": "#0" },
+        "south": { "uv": [2, 0, 14, 4], "texture": "#0" },
+        "west": { "uv": [13, 0, 14, 4], "texture": "#0" },
+        "up": { "uv": [2, 13, 14, 14], "texture": "#3" },
+        "down": { "uv": [2, 2, 14, 3], "texture": "#1" }
+      }
+    },
+    {
+      "name": "inner_goblet_north_4",
+      "from": [3.2, 11.2, 3.2],
+      "to": [12.8, 14.4, 4],
+      "faces": {
+        "north": { "uv": [2, 0, 14, 4], "texture": "#0" },
+        "east": { "uv": [13, 0, 14, 4], "texture": "#0" },
+        "south": { "uv": [2, 0, 14, 4], "texture": "#0" },
+        "west": { "uv": [2, 0, 3, 4], "texture": "#0" },
+        "up": { "uv": [2, 2, 14, 3], "texture": "#3" },
+        "down": { "uv": [2, 13, 14, 14], "texture": "#1" }
+      }
+    },
+    {
+      "name": "inner_goblet_west_5",
+      "from": [3.2, 11.2, 4],
+      "to": [4, 14.4, 12],
+      "faces": {
+        "north": { "uv": [0, 0, 0, 0], "texture": "#2" },
+        "east": { "uv": [3, 0, 13, 4], "texture": "#0" },
+        "south": { "uv": [0, 0, 0, 0], "texture": "#2" },
+        "west": { "uv": [3, 0, 13, 4], "texture": "#0" },
+        "up": { "uv": [2, 3, 3, 13], "texture": "#3" },
+        "down": { "uv": [2, 3, 3, 13], "texture": "#1" }
+      }
+    },
+    {
+      "name": "inner_goblet_east_6",
+      "from": [12, 11.2, 4],
+      "to": [12.8, 14.4, 12],
+      "faces": {
+        "north": { "uv": [0, 0, 0, 0], "texture": "#2" },
+        "east": { "uv": [3, 0, 13, 4], "texture": "#0" },
+        "south": { "uv": [0, 0, 0, 0], "texture": "#2" },
+        "west": { "uv": [3, 0, 13, 4], "texture": "#0" },
+        "up": { "uv": [13, 3, 14, 13], "texture": "#3" },
+        "down": { "uv": [13, 3, 14, 13], "texture": "#1" }
+      }
+    }
+  ]
+}

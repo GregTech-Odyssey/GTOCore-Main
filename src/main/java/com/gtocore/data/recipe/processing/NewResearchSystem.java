@@ -1,5 +1,8 @@
 package com.gtocore.data.recipe.processing;
 
+import com.gtocore.common.data.GTOBlocks;
+import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.recipe.condition.VacuumCondition;
 
@@ -7,11 +10,14 @@ import com.gtolib.api.item.MultiStepItemHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
@@ -42,6 +48,31 @@ public final class NewResearchSystem {
                 .circuitMeta(2)
                 .duration(480).EUt(96).save();
 
+        ASSEMBLER_MODULE_RECIPES.recipeBuilder("obsidian_matr1x")
+                .inputItems(GTOItems.COSMIC_PRINTED_CIRCUIT_BOARD, 8)
+                .inputItems(GTOItems.COSMIC_PROCESSING_CORE, 32)
+                .inputItems(GTOItems.DARK_MATTER)
+                .inputItems(GTOItems.PROTO_MATTER)
+                .inputItems(GTOItems.HUI_CIRCUIT_5)
+                .inputItems(GTOItems.STABILIZED_WORMHOLE_GENERATOR)
+                .inputItems(GTOItems.RELATIVISTIC_SPINORIAL_MEMORY_SYSTEM)
+                .inputItems(GTOItems.NUCLEAR_CLOCK)
+                .inputItems(TagPrefix.plateDense, GTOMaterials.NaquadriaticTaranium, 32)
+                .inputItems(GTOItems.FULLERENE_POLYMER_MATRIX_FINE_TUBING, 64)
+                .inputItems(TagPrefix.rock, GTMaterials.Obsidian, 65536)
+                .inputItems(Items.CRYING_OBSIDIAN, 65536)
+                .inputItems(GTOBlocks.SHINING_OBSIDIAN.asItem(), 65536)
+                .inputItems(GTOBlocks.ENDER_OBSIDIAN.asItem(), 65536)
+                .inputItems(GTOBlocks.INFUSED_OBSIDIAN.asItem(), 65536)
+                .inputItems(GTOBlocks.REINFORCED_OBSIDIAN.asItem(), 65536)
+                .outputItems(GTOItems.OBSIDIAN_MATRIX)
+                .inputFluids(GTOMaterials.Haderoth, L * 8)
+                .inputFluids(GTOMaterials.CosmicComputingMixture, 16000)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 32000)
+                .EUt(62914560)
+                .duration(1600)
+                .addData(GTORecipeDataKeys.POWER_MODULE_TIER, 4)
+                .save();
         // 低相关度配方
         {
             CHEMICAL_RECIPES.recipeBuilder("make_carbon_tetrafluoride_1")

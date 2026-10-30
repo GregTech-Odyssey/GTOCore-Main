@@ -5,7 +5,6 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.data.recipe.builder.botania.*;
-import com.gtocore.data.tag.Tags;
 
 import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.TagUtils;
@@ -26,7 +25,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.Tags;
 
+import com.hollingsworth.arsnouveau.common.datagen.BlockTagProvider;
+import com.hollingsworth.arsnouveau.common.datagen.RecipeDatagen;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import com.kyanite.deeperdarker.content.DDBlocks;
@@ -46,6 +48,8 @@ import vazkii.botania.common.crafting.StateIngredientHelper;
 import vazkii.botania.common.item.BotaniaItems;
 import vazkii.botania.common.lib.BotaniaTags;
 import vectorwing.farmersdelight.common.tag.CommonTags;
+
+import java.util.List;
 
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
@@ -88,7 +92,7 @@ public final class BotaniaRecipes {
         // 白雏菊
         {
             PureDaisyRecipe("livingclay", StateIngredientHelper.of(BlockTags.DIRT), ChemicalHelper.getBlock(block, Livingclay));
-            PureDaisyRecipe("livingwood", StateIngredientHelper.of(Tags.ARCHWOOD_LOG), BotaniaBlocks.livingwoodLog);
+            PureDaisyRecipe("livingwood", StateIngredientHelper.of(BlockTagProvider.ARCHWOOD_LOGS), BotaniaBlocks.livingwoodLog);
 
         }
 
@@ -114,7 +118,7 @@ public final class BotaniaRecipes {
 
         // 花药台
         {
-            ApothecaryRecipe("colorful_mystical_flower", Ingredient.of(CommonTags.Items.SEEDS), new ItemStack(COLORFUL_MYSTICAL_FLOWER),
+            ApothecaryRecipe("colorful_mystical_flower", Ingredient.of(CommonTags.Items.SEEDS), new ItemStack(COLORFUL_MYSTICAL_FLOWER, 4),
                     new Ingredient[] { Ingredient.of(BotaniaItems.whitePetal), Ingredient.of(BotaniaItems.lightGrayPetal), Ingredient.of(BotaniaItems.grayPetal), Ingredient.of(BotaniaItems.blackPetal),
                             Ingredient.of(BotaniaItems.brownPetal), Ingredient.of(BotaniaItems.redPetal), Ingredient.of(BotaniaItems.orangePetal), Ingredient.of(BotaniaItems.yellowPetal),
                             Ingredient.of(BotaniaItems.limePetal), Ingredient.of(BotaniaItems.greenPetal), Ingredient.of(BotaniaItems.cyanPetal), Ingredient.of(BotaniaItems.lightBluePetal),
@@ -130,12 +134,9 @@ public final class BotaniaRecipes {
                             Ingredient.of(BotaniaItems.runeMana), Ingredient.of(BotaniaItems.runeLust), Ingredient.of(BotaniaItems.runeGluttony), Ingredient.of(BotaniaItems.runeGreed),
                             Ingredient.of(BotaniaItems.runeSloth), Ingredient.of(BotaniaItems.runeWrath), Ingredient.of(BotaniaItems.runeEnvy), Ingredient.of(BotaniaItems.runePride) });
             RunicAltarRecipe("runerock_block_plas", 1000000, new ItemStack(ChemicalHelper.getItem(block, Runerock), 16), false,
-                    new Ingredient[] { Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:asgard_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:vanaheim_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:alfheim_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:midgard_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:joetunheim_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:muspelheim_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:niflheim_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:nidavellir_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:helheim_rune")) });
-
+                    new Ingredient[] { Ingredient.of(ModItems.asgardRune), Ingredient.of(ModItems.vanaheimRune), Ingredient.of(ModItems.alfheimRune), Ingredient.of(ModItems.midgardRune),
+                            Ingredient.of(ModItems.joetunheimRune), Ingredient.of(ModItems.muspelheimRune), Ingredient.of(ModItems.niflheimRune), Ingredient.of(ModItems.nidavellirRune),
+                            Ingredient.of(ModItems.helheimRune) });
             RunicAltarRecipe("transmutation_catalyst", 10000000, new ItemStack(GTOBlocks.TRANSMUTATION_CATALYST), false,
                     new Ingredient[] { Ingredient.of(GTOItems.PHILOSOPHERS_STONE), Ingredient.of(GTOItems.PHILOSOPHERS_STONE), Ingredient.of(GTOItems.PHILOSOPHERS_STONE),
                             Ingredient.of(GTOItems.PHILOSOPHERS_STONE), Ingredient.of(GTOItems.PHILOSOPHERS_STONE), Ingredient.of(GTOItems.PHILOSOPHERS_STONE) });
@@ -146,17 +147,19 @@ public final class BotaniaRecipes {
             TAgglomerationRecipe("thaumium_ingot", 500000, new ItemStack(ChemicalHelper.getItem(ingot, Thaumium)),
                     new Ingredient[] { Ingredient.of(ChemicalHelper.getItem(ingot, Livingsteel)), Ingredient.of(ItemsRegistry.SOURCE_GEM), Ingredient.of(ChemicalHelper.getItem(ingot, OriginalBronze)), Ingredient.of(ItemsRegistry.MANIPULATION_ESSENCE) });
             TAgglomerationRecipe("gaiasteel_ingot", 2500000, new ItemStack(ChemicalHelper.getItem(ingot, Gaiasteel), 3),
-                    new Ingredient[] { Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:asgard_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:vanaheim_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:alfheim_rune")), Ingredient.of(ChemicalHelper.getItem(ingot, Alfsteel)),
-                            Ingredient.of(ChemicalHelper.getItem(ingot, Runerock)), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:midgard_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:joetunheim_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:muspelheim_rune")),
+                    new Ingredient[] { Ingredient.of(ModItems.asgardRune), Ingredient.of(ModItems.vanaheimRune),
+                            Ingredient.of(ModItems.alfheimRune), Ingredient.of(ChemicalHelper.getItem(ingot, Alfsteel)),
+                            Ingredient.of(ChemicalHelper.getItem(ingot, Runerock)), Ingredient.of(ModItems.midgardRune),
+                            Ingredient.of(ModItems.joetunheimRune), Ingredient.of(ModItems.muspelheimRune),
                             Ingredient.of(ChemicalHelper.getItem(ingot, Alfsteel)), Ingredient.of(ChemicalHelper.getItem(ingot, Runerock)),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:niflheim_rune")), Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:nidavellir_rune")),
-                            Ingredient.of(RegistriesUtils.getItemStack("mythicbotany:helheim_rune")), Ingredient.of(ChemicalHelper.getItem(ingot, Alfsteel)),
+                            Ingredient.of(ModItems.niflheimRune), Ingredient.of(ModItems.nidavellirRune),
+                            Ingredient.of(ModItems.helheimRune), Ingredient.of(ChemicalHelper.getItem(ingot, Alfsteel)),
                             Ingredient.of(ChemicalHelper.getItem(ingot, Runerock)) });
             TAgglomerationRecipe("gaia_ingot", 5000000, new ItemStack(ChemicalHelper.getItem(ingot, Gaia), 2),
                     new Ingredient[] { Ingredient.of(ChemicalHelper.getItem(ingot, Gaiasteel)), Ingredient.of(BotaniaItems.lifeEssence), Ingredient.of(ChemicalHelper.getItem(ingot, Gaiasteel)), Ingredient.of(BotaniaItems.lifeEssence) });
 
+            TAgglomerationRecipe("alfsteel_ingot", 1500000, new ItemStack(ChemicalHelper.getItem(ingot, Alfsteel)),
+                    new Ingredient[] { Ingredient.of(BotaniaItems.elementium), Ingredient.of(BotaniaItems.pixieDust), Ingredient.of(BotaniaItems.dragonstone) });
         }
 
         // 精灵门
@@ -173,7 +176,7 @@ public final class BotaniaRecipes {
 
             ElvenTradeRecipeBuilder.builder("colorful_mystical_flower")
                     .addInput(BotaniaItems.fertilizer)
-                    .addOutput(COLORFUL_MYSTICAL_FLOWER)
+                    .addOutput(COLORFUL_MYSTICAL_FLOWER, 4)
                     .save();
         }
 
@@ -309,8 +312,7 @@ public final class BotaniaRecipes {
             ElfExchangeRecipe("elementium_quartz", new ItemStack(BotaniaItems.manaQuartz, 8), new ItemStack(ExtraBotanyItems.elementiumQuartz, 4));
 
             // GTO
-            ElfExchangeRecipe("colorful_mystical_flower", new ItemStack(BotaniaItems.fertilizer, 4), new ItemStack(COLORFUL_MYSTICAL_FLOWER, 4));
-
+            ElfExchangeRecipe("colorful_mystical_flower", new ItemStack(BotaniaItems.fertilizer, 4), new ItemStack(COLORFUL_MYSTICAL_FLOWER, 16));
         }
 
         // 神话植物学 符文支架
@@ -427,178 +429,178 @@ public final class BotaniaRecipes {
             InfusionManaPoolRecipe("hydroangeas_motif", BotaniaFlowerBlocks.hydroangeas.asItem(), new ItemStack(BotaniaBlocks.motifHydroangeas), 2500, null, null);
 
             // === 炼药配方 ===//
-            InfusionManaPoolRecipe("rotten_flesh_to_leather", Items.ROTTEN_FLESH, new ItemStack(Items.LEATHER), 600, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("chiseled_stone_bricks", Items.STONE_BRICKS, new ItemStack(Blocks.CHISELED_STONE_BRICKS), 150, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("ice", Items.SNOW_BLOCK, new ItemStack(Blocks.ICE), 2250, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("vine_to_lily_pad", Items.VINE, new ItemStack(Blocks.LILY_PAD), 320, BotaniaBlocks.alchemyCatalyst, "botania:vine_and_lily_pad_cycle");
-            InfusionManaPoolRecipe("lily_pad_to_vine", Items.LILY_PAD, new ItemStack(Blocks.VINE), 320, BotaniaBlocks.alchemyCatalyst, "botania:vine_and_lily_pad_cycle");
-            InfusionManaPoolRecipe("potato_unpoison", Items.POISONOUS_POTATO, new ItemStack(Items.POTATO), 1200, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("blaze_rod_to_nether_wart", Items.BLAZE_ROD, new ItemStack(Items.NETHER_WART), 4000, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("book_to_name_tag", Items.WRITABLE_BOOK, new ItemStack(Items.NAME_TAG), 6000, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("wool_deconstruct", Items.WHITE_WOOL, new ItemStack(Items.STRING, 3), 100, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("cactus_to_slime", Items.CACTUS, new ItemStack(Items.SLIME_BALL), 1200, BotaniaBlocks.alchemyCatalyst, "botania:cactus_and_slime_cycle");
-            InfusionManaPoolRecipe("slime_to_cactus", Items.SLIME_BALL, new ItemStack(Blocks.CACTUS), 1200, BotaniaBlocks.alchemyCatalyst, "botania:cactus_and_slime_cycle");
-            InfusionManaPoolRecipe("ender_pearl_from_ghast_tear", Items.GHAST_TEAR, new ItemStack(Items.ENDER_PEARL), 28000, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("cobble_to_sand", Items.COBBLESTONE, new ItemStack(Blocks.SAND), 50, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("terracotta_to_red_sand", Items.TERRACOTTA, new ItemStack(Blocks.RED_SAND), 50, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("coarse_dirt", Items.DIRT, new ItemStack(Blocks.COARSE_DIRT), 120, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("soul_soil", Items.SOUL_SAND, new ItemStack(Blocks.SOUL_SOIL), 120, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("stone_to_andesite", Items.STONE, new ItemStack(Blocks.ANDESITE), 200, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("dripleaf_shrinking", Items.BIG_DRIPLEAF, new ItemStack(Blocks.SMALL_DRIPLEAF), 500, BotaniaBlocks.alchemyCatalyst, null);
-            InfusionManaPoolRecipe("chorus_fruit_to_flower", Items.POPPED_CHORUS_FRUIT, new ItemStack(Blocks.CHORUS_FLOWER), 10000, BotaniaBlocks.alchemyCatalyst, null);
+            InfusionManaPoolRecipe("rotten_flesh_to_leather", Items.ROTTEN_FLESH, new ItemStack(Items.LEATHER), 600, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("chiseled_stone_bricks", Items.STONE_BRICKS, new ItemStack(Blocks.CHISELED_STONE_BRICKS), 150, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("ice", Items.SNOW_BLOCK, new ItemStack(Blocks.ICE), 2250, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("vine_to_lily_pad", Items.VINE, new ItemStack(Blocks.LILY_PAD), 320, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:vine_and_lily_pad_cycle");
+            InfusionManaPoolRecipe("lily_pad_to_vine", Items.LILY_PAD, new ItemStack(Blocks.VINE), 320, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:vine_and_lily_pad_cycle");
+            InfusionManaPoolRecipe("potato_unpoison", Items.POISONOUS_POTATO, new ItemStack(Items.POTATO), 1200, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("blaze_rod_to_nether_wart", Items.BLAZE_ROD, new ItemStack(Items.NETHER_WART), 4000, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("book_to_name_tag", Items.WRITABLE_BOOK, new ItemStack(Items.NAME_TAG), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("wool_deconstruct", Items.WHITE_WOOL, new ItemStack(Items.STRING, 3), 100, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("cactus_to_slime", Items.CACTUS, new ItemStack(Items.SLIME_BALL), 1200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:cactus_and_slime_cycle");
+            InfusionManaPoolRecipe("slime_to_cactus", Items.SLIME_BALL, new ItemStack(Blocks.CACTUS), 1200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:cactus_and_slime_cycle");
+            InfusionManaPoolRecipe("ender_pearl_from_ghast_tear", Items.GHAST_TEAR, new ItemStack(Items.ENDER_PEARL), 28000, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("cobble_to_sand", Items.COBBLESTONE, new ItemStack(Blocks.SAND), 50, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("terracotta_to_red_sand", Items.TERRACOTTA, new ItemStack(Blocks.RED_SAND), 50, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("coarse_dirt", Items.DIRT, new ItemStack(Blocks.COARSE_DIRT), 120, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("soul_soil", Items.SOUL_SAND, new ItemStack(Blocks.SOUL_SOIL), 120, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("stone_to_andesite", Items.STONE, new ItemStack(Blocks.ANDESITE), 200, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("dripleaf_shrinking", Items.BIG_DRIPLEAF, new ItemStack(Blocks.SMALL_DRIPLEAF), 500, BotaniaBlocks.alchemyCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("chorus_fruit_to_flower", Items.POPPED_CHORUS_FRUIT, new ItemStack(Blocks.CHORUS_FLOWER), 10000, BotaniaBlocks.alchemyCatalyst.asItem(), null);
 
             // === 方块分解 ===//
-            InfusionManaPoolRecipe("glowstone_deconstruct", Items.GLOWSTONE, new ItemStack(Items.GLOWSTONE_DUST, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("quartz_deconstruct", Items.QUARTZ_BLOCK, new ItemStack(Items.QUARTZ, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("dark_quartz_deconstruct", BotaniaBlocks.darkQuartz.asItem(), new ItemStack(BotaniaItems.darkQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("mana_quartz_deconstruct", BotaniaBlocks.manaQuartz.asItem(), new ItemStack(BotaniaItems.manaQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("blaze_quartz_deconstruct", BotaniaBlocks.blazeQuartz.asItem(), new ItemStack(BotaniaItems.blazeQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("lavender_quartz_deconstruct", BotaniaBlocks.lavenderQuartz.asItem(), new ItemStack(BotaniaItems.lavenderQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("red_quartz_deconstruct", BotaniaBlocks.redQuartz.asItem(), new ItemStack(BotaniaItems.redQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("elf_quartz_deconstruct", BotaniaBlocks.elfQuartz.asItem(), new ItemStack(BotaniaItems.elfQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("sunny_quartz_deconstruct", BotaniaBlocks.sunnyQuartz.asItem(), new ItemStack(BotaniaItems.sunnyQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("clay_deconstruct", Items.CLAY, new ItemStack(Items.CLAY_BALL, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
-            InfusionManaPoolRecipe("brick_deconstruct", Items.BRICKS, new ItemStack(Items.BRICK, 4), 25, BotaniaBlocks.alchemyCatalyst, "botania:block_deconstruction");
+            InfusionManaPoolRecipe("glowstone_deconstruct", Items.GLOWSTONE, new ItemStack(Items.GLOWSTONE_DUST, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("quartz_deconstruct", Items.QUARTZ_BLOCK, new ItemStack(Items.QUARTZ, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("dark_quartz_deconstruct", BotaniaBlocks.darkQuartz.asItem(), new ItemStack(BotaniaItems.darkQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("mana_quartz_deconstruct", BotaniaBlocks.manaQuartz.asItem(), new ItemStack(BotaniaItems.manaQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("blaze_quartz_deconstruct", BotaniaBlocks.blazeQuartz.asItem(), new ItemStack(BotaniaItems.blazeQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("lavender_quartz_deconstruct", BotaniaBlocks.lavenderQuartz.asItem(), new ItemStack(BotaniaItems.lavenderQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("red_quartz_deconstruct", BotaniaBlocks.redQuartz.asItem(), new ItemStack(BotaniaItems.redQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("elf_quartz_deconstruct", BotaniaBlocks.elfQuartz.asItem(), new ItemStack(BotaniaItems.elfQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("sunny_quartz_deconstruct", BotaniaBlocks.sunnyQuartz.asItem(), new ItemStack(BotaniaItems.sunnyQuartz, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("clay_deconstruct", Items.CLAY, new ItemStack(Items.CLAY_BALL, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
+            InfusionManaPoolRecipe("brick_deconstruct", Items.BRICKS, new ItemStack(Items.BRICK, 4), 25, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:block_deconstruction");
 
             // === 循环配方 ===//
             // 原木循环 (log_cycle)
-            InfusionManaPoolRecipe("oak_log_to_spruce_log", Items.OAK_LOG, new ItemStack(Blocks.SPRUCE_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("spruce_log_to_birch_log", Items.SPRUCE_LOG, new ItemStack(Blocks.BIRCH_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("birch_log_to_jungle_log", Items.BIRCH_LOG, new ItemStack(Blocks.JUNGLE_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("jungle_log_to_acacia_log", Items.JUNGLE_LOG, new ItemStack(Blocks.ACACIA_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("acacia_log_to_dark_oak_log", Items.ACACIA_LOG, new ItemStack(Blocks.DARK_OAK_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("dark_oak_log_to_mangrove_log", Items.DARK_OAK_LOG, new ItemStack(Blocks.MANGROVE_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("mangrove_log_to_cherry_log", Items.MANGROVE_LOG, new ItemStack(Blocks.CHERRY_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
-            InfusionManaPoolRecipe("cherry_log_to_oak_log", Items.CHERRY_LOG, new ItemStack(Blocks.OAK_LOG), 40, BotaniaBlocks.alchemyCatalyst, "botania:log_cycle");
+            InfusionManaPoolRecipe("oak_log_to_spruce_log", Items.OAK_LOG, new ItemStack(Blocks.SPRUCE_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("spruce_log_to_birch_log", Items.SPRUCE_LOG, new ItemStack(Blocks.BIRCH_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("birch_log_to_jungle_log", Items.BIRCH_LOG, new ItemStack(Blocks.JUNGLE_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("jungle_log_to_acacia_log", Items.JUNGLE_LOG, new ItemStack(Blocks.ACACIA_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("acacia_log_to_dark_oak_log", Items.ACACIA_LOG, new ItemStack(Blocks.DARK_OAK_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("dark_oak_log_to_mangrove_log", Items.DARK_OAK_LOG, new ItemStack(Blocks.MANGROVE_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("mangrove_log_to_cherry_log", Items.MANGROVE_LOG, new ItemStack(Blocks.CHERRY_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
+            InfusionManaPoolRecipe("cherry_log_to_oak_log", Items.CHERRY_LOG, new ItemStack(Blocks.OAK_LOG), 40, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:log_cycle");
 
             // 青蛙灯循环 (froglight_cycle)
-            InfusionManaPoolRecipe("ochre_froglight_to_verdant_froglight", Items.OCHRE_FROGLIGHT, new ItemStack(Blocks.VERDANT_FROGLIGHT), 120, BotaniaBlocks.alchemyCatalyst, "botania:froglight_cycle");
-            InfusionManaPoolRecipe("verdant_froglight_to_pearlescent_froglight", Items.VERDANT_FROGLIGHT, new ItemStack(Blocks.PEARLESCENT_FROGLIGHT), 120, BotaniaBlocks.alchemyCatalyst, "botania:froglight_cycle");
-            InfusionManaPoolRecipe("pearlescent_froglight_to_ochre_froglight", Items.PEARLESCENT_FROGLIGHT, new ItemStack(Blocks.OCHRE_FROGLIGHT), 120, BotaniaBlocks.alchemyCatalyst, "botania:froglight_cycle");
+            InfusionManaPoolRecipe("ochre_froglight_to_verdant_froglight", Items.OCHRE_FROGLIGHT, new ItemStack(Blocks.VERDANT_FROGLIGHT), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:froglight_cycle");
+            InfusionManaPoolRecipe("verdant_froglight_to_pearlescent_froglight", Items.VERDANT_FROGLIGHT, new ItemStack(Blocks.PEARLESCENT_FROGLIGHT), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:froglight_cycle");
+            InfusionManaPoolRecipe("pearlescent_froglight_to_ochre_froglight", Items.PEARLESCENT_FROGLIGHT, new ItemStack(Blocks.OCHRE_FROGLIGHT), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:froglight_cycle");
 
             // 树苗循环（sapling_cycle，共7种+红树和樱花）
-            InfusionManaPoolRecipe("oak_sapling_to_spruce_sapling", Items.OAK_SAPLING, new ItemStack(Blocks.SPRUCE_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("spruce_sapling_to_birch_sapling", Items.SPRUCE_SAPLING, new ItemStack(Blocks.BIRCH_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("birch_sapling_to_jungle_sapling", Items.BIRCH_SAPLING, new ItemStack(Blocks.JUNGLE_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("jungle_sapling_to_acacia_sapling", Items.JUNGLE_SAPLING, new ItemStack(Blocks.ACACIA_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("acacia_sapling_to_dark_oak_sapling", Items.ACACIA_SAPLING, new ItemStack(Blocks.DARK_OAK_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("dark_oak_sapling_to_mangrove_propagule", Items.DARK_OAK_SAPLING, new ItemStack(Blocks.MANGROVE_PROPAGULE), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("mangrove_propagule_to_cherry_sapling", Items.MANGROVE_PROPAGULE, new ItemStack(Blocks.CHERRY_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
-            InfusionManaPoolRecipe("cherry_sapling_to_oak_sapling", Items.CHERRY_SAPLING, new ItemStack(Blocks.OAK_SAPLING), 120, BotaniaBlocks.alchemyCatalyst, "botania:sapling_cycle");
+            InfusionManaPoolRecipe("oak_sapling_to_spruce_sapling", Items.OAK_SAPLING, new ItemStack(Blocks.SPRUCE_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("spruce_sapling_to_birch_sapling", Items.SPRUCE_SAPLING, new ItemStack(Blocks.BIRCH_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("birch_sapling_to_jungle_sapling", Items.BIRCH_SAPLING, new ItemStack(Blocks.JUNGLE_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("jungle_sapling_to_acacia_sapling", Items.JUNGLE_SAPLING, new ItemStack(Blocks.ACACIA_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("acacia_sapling_to_dark_oak_sapling", Items.ACACIA_SAPLING, new ItemStack(Blocks.DARK_OAK_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("dark_oak_sapling_to_mangrove_propagule", Items.DARK_OAK_SAPLING, new ItemStack(Blocks.MANGROVE_PROPAGULE), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("mangrove_propagule_to_cherry_sapling", Items.MANGROVE_PROPAGULE, new ItemStack(Blocks.CHERRY_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
+            InfusionManaPoolRecipe("cherry_sapling_to_oak_sapling", Items.CHERRY_SAPLING, new ItemStack(Blocks.OAK_SAPLING), 120, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:sapling_cycle");
 
             // 鱼类循环
-            InfusionManaPoolRecipe("cod_to_salmon", Items.COD, new ItemStack(Items.SALMON), 200, BotaniaBlocks.alchemyCatalyst, "botania:fish_cycle");
-            InfusionManaPoolRecipe("salmon_to_tropical_fish", Items.SALMON, new ItemStack(Items.TROPICAL_FISH), 200, BotaniaBlocks.alchemyCatalyst, "botania:fish_cycle");
-            InfusionManaPoolRecipe("tropical_fish_to_pufferfish", Items.TROPICAL_FISH, new ItemStack(Items.PUFFERFISH), 200, BotaniaBlocks.alchemyCatalyst, "botania:fish_cycle");
-            InfusionManaPoolRecipe("pufferfish_to_cod", Items.PUFFERFISH, new ItemStack(Items.COD), 200, BotaniaBlocks.alchemyCatalyst, "botania:fish_cycle");
+            InfusionManaPoolRecipe("cod_to_salmon", Items.COD, new ItemStack(Items.SALMON), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:fish_cycle");
+            InfusionManaPoolRecipe("salmon_to_tropical_fish", Items.SALMON, new ItemStack(Items.TROPICAL_FISH), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:fish_cycle");
+            InfusionManaPoolRecipe("tropical_fish_to_pufferfish", Items.TROPICAL_FISH, new ItemStack(Items.PUFFERFISH), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:fish_cycle");
+            InfusionManaPoolRecipe("pufferfish_to_cod", Items.PUFFERFISH, new ItemStack(Items.COD), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:fish_cycle");
 
             // 石头循环（stone_cycle）
-            InfusionManaPoolRecipe("diorite_to_granite", Items.DIORITE, new ItemStack(Blocks.GRANITE), 200, BotaniaBlocks.alchemyCatalyst, "botania:stone_cycle");
-            InfusionManaPoolRecipe("granite_to_andesite", Items.GRANITE, new ItemStack(Blocks.ANDESITE), 200, BotaniaBlocks.alchemyCatalyst, "botania:stone_cycle");
-            InfusionManaPoolRecipe("andesite_to_diorite", Items.ANDESITE, new ItemStack(Blocks.DIORITE), 200, BotaniaBlocks.alchemyCatalyst, "botania:stone_cycle");
+            InfusionManaPoolRecipe("diorite_to_granite", Items.DIORITE, new ItemStack(Blocks.GRANITE), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:stone_cycle");
+            InfusionManaPoolRecipe("granite_to_andesite", Items.GRANITE, new ItemStack(Blocks.ANDESITE), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:stone_cycle");
+            InfusionManaPoolRecipe("andesite_to_diorite", Items.ANDESITE, new ItemStack(Blocks.DIORITE), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:stone_cycle");
 
             // 1.17石头循环（117_stone_cycle）
-            InfusionManaPoolRecipe("tuff_to_calcite", Items.TUFF, new ItemStack(Blocks.CALCITE), 200, BotaniaBlocks.alchemyCatalyst, "botania:117_stone_cycle");
-            InfusionManaPoolRecipe("calcite_to_deepslate", Items.CALCITE, new ItemStack(Blocks.DEEPSLATE), 200, BotaniaBlocks.alchemyCatalyst, "botania:117_stone_cycle");
-            InfusionManaPoolRecipe("deepslate_to_tuff", Items.DEEPSLATE, new ItemStack(Blocks.TUFF), 200, BotaniaBlocks.alchemyCatalyst, "botania:117_stone_cycle");
+            InfusionManaPoolRecipe("tuff_to_calcite", Items.TUFF, new ItemStack(Blocks.CALCITE), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:117_stone_cycle");
+            InfusionManaPoolRecipe("calcite_to_deepslate", Items.CALCITE, new ItemStack(Blocks.DEEPSLATE), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:117_stone_cycle");
+            InfusionManaPoolRecipe("deepslate_to_tuff", Items.DEEPSLATE, new ItemStack(Blocks.TUFF), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:117_stone_cycle");
 
             // 花循环（flower_cycle）
-            InfusionManaPoolRecipe("dandelion_to_poppy", Items.DANDELION, new ItemStack(Blocks.POPPY), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("poppy_to_blue_orchid", Items.POPPY, new ItemStack(Blocks.BLUE_ORCHID), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("blue_orchid_to_allium", Items.BLUE_ORCHID, new ItemStack(Blocks.ALLIUM), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("allium_to_azure_bluet", Items.ALLIUM, new ItemStack(Blocks.AZURE_BLUET), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("azure_bluet_to_red_tulip", Items.AZURE_BLUET, new ItemStack(Blocks.RED_TULIP), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("red_tulip_to_orange_tulip", Items.RED_TULIP, new ItemStack(Blocks.ORANGE_TULIP), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("orange_tulip_to_white_tulip", Items.ORANGE_TULIP, new ItemStack(Blocks.WHITE_TULIP), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("white_tulip_to_pink_tulip", Items.WHITE_TULIP, new ItemStack(Blocks.PINK_TULIP), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("pink_tulip_to_oxeye_daisy", Items.PINK_TULIP, new ItemStack(Blocks.OXEYE_DAISY), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("oxeye_daisy_to_cornflower", Items.OXEYE_DAISY, new ItemStack(Blocks.CORNFLOWER), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("cornflower_to_lily_of_the_valley", Items.CORNFLOWER, new ItemStack(Blocks.LILY_OF_THE_VALLEY), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("lily_of_the_valley_to_sunflower", Items.LILY_OF_THE_VALLEY, new ItemStack(Blocks.SUNFLOWER), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("sunflower_to_lilac", Items.SUNFLOWER, new ItemStack(Blocks.LILAC), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("lilac_to_rose_bush", Items.LILAC, new ItemStack(Blocks.ROSE_BUSH), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("rose_bush_to_peony", Items.ROSE_BUSH, new ItemStack(Blocks.PEONY), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
-            InfusionManaPoolRecipe("peony_to_dandelion", Items.PEONY, new ItemStack(Blocks.DANDELION), 400, BotaniaBlocks.alchemyCatalyst, "botania:flower_cycle");
+            InfusionManaPoolRecipe("dandelion_to_poppy", Items.DANDELION, new ItemStack(Blocks.POPPY), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("poppy_to_blue_orchid", Items.POPPY, new ItemStack(Blocks.BLUE_ORCHID), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("blue_orchid_to_allium", Items.BLUE_ORCHID, new ItemStack(Blocks.ALLIUM), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("allium_to_azure_bluet", Items.ALLIUM, new ItemStack(Blocks.AZURE_BLUET), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("azure_bluet_to_red_tulip", Items.AZURE_BLUET, new ItemStack(Blocks.RED_TULIP), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("red_tulip_to_orange_tulip", Items.RED_TULIP, new ItemStack(Blocks.ORANGE_TULIP), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("orange_tulip_to_white_tulip", Items.ORANGE_TULIP, new ItemStack(Blocks.WHITE_TULIP), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("white_tulip_to_pink_tulip", Items.WHITE_TULIP, new ItemStack(Blocks.PINK_TULIP), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("pink_tulip_to_oxeye_daisy", Items.PINK_TULIP, new ItemStack(Blocks.OXEYE_DAISY), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("oxeye_daisy_to_cornflower", Items.OXEYE_DAISY, new ItemStack(Blocks.CORNFLOWER), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("cornflower_to_lily_of_the_valley", Items.CORNFLOWER, new ItemStack(Blocks.LILY_OF_THE_VALLEY), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("lily_of_the_valley_to_sunflower", Items.LILY_OF_THE_VALLEY, new ItemStack(Blocks.SUNFLOWER), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("sunflower_to_lilac", Items.SUNFLOWER, new ItemStack(Blocks.LILAC), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("lilac_to_rose_bush", Items.LILAC, new ItemStack(Blocks.ROSE_BUSH), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("rose_bush_to_peony", Items.ROSE_BUSH, new ItemStack(Blocks.PEONY), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
+            InfusionManaPoolRecipe("peony_to_dandelion", Items.PEONY, new ItemStack(Blocks.DANDELION), 400, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_cycle");
 
             // 种子循环（crop_cycle）
-            InfusionManaPoolRecipe("cocoa_beans_to_wheat_seeds", Items.COCOA_BEANS, new ItemStack(Items.WHEAT_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
-            InfusionManaPoolRecipe("wheat_seeds_to_potato", Items.WHEAT_SEEDS, new ItemStack(Items.POTATO), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
-            InfusionManaPoolRecipe("potato_to_carrot", Items.POTATO, new ItemStack(Items.CARROT), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
-            InfusionManaPoolRecipe("carrot_to_beetroot_seeds", Items.CARROT, new ItemStack(Items.BEETROOT_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
-            InfusionManaPoolRecipe("beetroot_seeds_to_melon_seeds", Items.BEETROOT_SEEDS, new ItemStack(Items.MELON_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
-            InfusionManaPoolRecipe("melon_seeds_to_pumpkin_seeds", Items.MELON_SEEDS, new ItemStack(Items.PUMPKIN_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
-            InfusionManaPoolRecipe("pumpkin_seeds_to_cocoa_beans", Items.PUMPKIN_SEEDS, new ItemStack(Items.COCOA_BEANS), 6000, BotaniaBlocks.alchemyCatalyst, "botania:crop_cycle");
+            InfusionManaPoolRecipe("cocoa_beans_to_wheat_seeds", Items.COCOA_BEANS, new ItemStack(Items.WHEAT_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
+            InfusionManaPoolRecipe("wheat_seeds_to_potato", Items.WHEAT_SEEDS, new ItemStack(Items.POTATO), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
+            InfusionManaPoolRecipe("potato_to_carrot", Items.POTATO, new ItemStack(Items.CARROT), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
+            InfusionManaPoolRecipe("carrot_to_beetroot_seeds", Items.CARROT, new ItemStack(Items.BEETROOT_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
+            InfusionManaPoolRecipe("beetroot_seeds_to_melon_seeds", Items.BEETROOT_SEEDS, new ItemStack(Items.MELON_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
+            InfusionManaPoolRecipe("melon_seeds_to_pumpkin_seeds", Items.MELON_SEEDS, new ItemStack(Items.PUMPKIN_SEEDS), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
+            InfusionManaPoolRecipe("pumpkin_seeds_to_cocoa_beans", Items.PUMPKIN_SEEDS, new ItemStack(Items.COCOA_BEANS), 6000, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:crop_cycle");
 
             // 萤石红石循环（glowstone_and_redstone_cycle）
-            InfusionManaPoolRecipe("redstone_to_glowstone_dust", Items.REDSTONE, new ItemStack(Items.GLOWSTONE_DUST), 300, BotaniaBlocks.alchemyCatalyst, "botania:glowstone_and_redstone_cycle");
-            InfusionManaPoolRecipe("glowstone_dust_to_redstone", Items.GLOWSTONE_DUST, new ItemStack(Items.REDSTONE), 300, BotaniaBlocks.alchemyCatalyst, "botania:glowstone_and_redstone_cycle");
+            InfusionManaPoolRecipe("redstone_to_glowstone_dust", Items.REDSTONE, new ItemStack(Items.GLOWSTONE_DUST), 300, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:glowstone_and_redstone_cycle");
+            InfusionManaPoolRecipe("glowstone_dust_to_redstone", Items.GLOWSTONE_DUST, new ItemStack(Items.REDSTONE), 300, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:glowstone_and_redstone_cycle");
 
             // 灌木循环（shrub_cycle）
-            InfusionManaPoolRecipe("fern_to_dead_bush", Items.FERN, new ItemStack(Blocks.DEAD_BUSH), 500, BotaniaBlocks.alchemyCatalyst, "botania:shrub_cycle");
-            InfusionManaPoolRecipe("dead_bush_to_grass", Items.DEAD_BUSH, new ItemStack(Blocks.GRASS), 500, BotaniaBlocks.alchemyCatalyst, "botania:shrub_cycle");
-            InfusionManaPoolRecipe("grass_to_fern", Items.GRASS, new ItemStack(Blocks.FERN), 500, BotaniaBlocks.alchemyCatalyst, "botania:shrub_cycle");
+            InfusionManaPoolRecipe("fern_to_dead_bush", Items.FERN, new ItemStack(Blocks.DEAD_BUSH), 500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:shrub_cycle");
+            InfusionManaPoolRecipe("dead_bush_to_grass", Items.DEAD_BUSH, new ItemStack(Blocks.GRASS), 500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:shrub_cycle");
+            InfusionManaPoolRecipe("grass_to_fern", Items.GRASS, new ItemStack(Blocks.FERN), 500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:shrub_cycle");
 
             // 浆果循环（berry_cycle）
-            InfusionManaPoolRecipe("apple_to_sweet_berries", Items.APPLE, new ItemStack(Items.SWEET_BERRIES), 240, BotaniaBlocks.alchemyCatalyst, "botania:berry_cycle");
-            InfusionManaPoolRecipe("sweet_berries_to_glow_berries", Items.SWEET_BERRIES, new ItemStack(Items.GLOW_BERRIES), 240, BotaniaBlocks.alchemyCatalyst, "botania:berry_cycle");
-            InfusionManaPoolRecipe("glow_berries_to_apple", Items.GLOW_BERRIES, new ItemStack(Items.APPLE), 240, BotaniaBlocks.alchemyCatalyst, "botania:berry_cycle");
+            InfusionManaPoolRecipe("apple_to_sweet_berries", Items.APPLE, new ItemStack(Items.SWEET_BERRIES), 240, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:berry_cycle");
+            InfusionManaPoolRecipe("sweet_berries_to_glow_berries", Items.SWEET_BERRIES, new ItemStack(Items.GLOW_BERRIES), 240, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:berry_cycle");
+            InfusionManaPoolRecipe("glow_berries_to_apple", Items.GLOW_BERRIES, new ItemStack(Items.APPLE), 240, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:berry_cycle");
 
             // 火药和燧石循环（gunpowder_and_flint_cycle）
-            InfusionManaPoolRecipe("gunpowder_to_flint", Items.GUNPOWDER, new ItemStack(Items.FLINT), 200, BotaniaBlocks.alchemyCatalyst, "gunpowder_and_flint_cycle");
-            InfusionManaPoolRecipe("flint_to_gunpowder", Items.FLINT, new ItemStack(Items.GUNPOWDER), 200, BotaniaBlocks.alchemyCatalyst, "gunpowder_and_flint_cycle");
+            InfusionManaPoolRecipe("gunpowder_to_flint", Items.GUNPOWDER, new ItemStack(Items.FLINT), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "gunpowder_and_flint_cycle");
+            InfusionManaPoolRecipe("flint_to_gunpowder", Items.FLINT, new ItemStack(Items.GUNPOWDER), 200, BotaniaBlocks.alchemyCatalyst.asItem(), "gunpowder_and_flint_cycle");
 
             // === 迷你花配方 ===//
-            InfusionManaPoolRecipe("agricarnation_chibi", BotaniaFlowerBlocks.agricarnation.asItem(), new ItemStack(BotaniaFlowerBlocks.agricarnationChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("clayconia_chibi", BotaniaFlowerBlocks.clayconia.asItem(), new ItemStack(BotaniaFlowerBlocks.clayconiaChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("bellethorn_chibi", BotaniaFlowerBlocks.bellethorn.asItem(), new ItemStack(BotaniaFlowerBlocks.bellethornChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("bubbell_chibi", BotaniaFlowerBlocks.bubbell.asItem(), new ItemStack(BotaniaFlowerBlocks.bubbellChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("hopperhock_chibi", BotaniaFlowerBlocks.hopperhock.asItem(), new ItemStack(BotaniaFlowerBlocks.hopperhockChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("jiyuulia_chibi", BotaniaFlowerBlocks.jiyuulia.asItem(), new ItemStack(BotaniaFlowerBlocks.jiyuuliaChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("tangleberrie_chibi", BotaniaFlowerBlocks.tangleberrie.asItem(), new ItemStack(BotaniaFlowerBlocks.tangleberrieChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("marimorphosis_chibi", BotaniaFlowerBlocks.marimorphosis.asItem(), new ItemStack(BotaniaFlowerBlocks.marimorphosisChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("rannuncarpus_chibi", BotaniaFlowerBlocks.rannuncarpus.asItem(), new ItemStack(BotaniaFlowerBlocks.rannuncarpusChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
-            InfusionManaPoolRecipe("solegnolia_chibi", BotaniaFlowerBlocks.solegnolia.asItem(), new ItemStack(BotaniaFlowerBlocks.solegnoliaChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
+            InfusionManaPoolRecipe("agricarnation_chibi", BotaniaFlowerBlocks.agricarnation.asItem(), new ItemStack(BotaniaFlowerBlocks.agricarnationChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("clayconia_chibi", BotaniaFlowerBlocks.clayconia.asItem(), new ItemStack(BotaniaFlowerBlocks.clayconiaChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("bellethorn_chibi", BotaniaFlowerBlocks.bellethorn.asItem(), new ItemStack(BotaniaFlowerBlocks.bellethornChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("bubbell_chibi", BotaniaFlowerBlocks.bubbell.asItem(), new ItemStack(BotaniaFlowerBlocks.bubbellChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("hopperhock_chibi", BotaniaFlowerBlocks.hopperhock.asItem(), new ItemStack(BotaniaFlowerBlocks.hopperhockChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("jiyuulia_chibi", BotaniaFlowerBlocks.jiyuulia.asItem(), new ItemStack(BotaniaFlowerBlocks.jiyuuliaChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("tangleberrie_chibi", BotaniaFlowerBlocks.tangleberrie.asItem(), new ItemStack(BotaniaFlowerBlocks.tangleberrieChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("marimorphosis_chibi", BotaniaFlowerBlocks.marimorphosis.asItem(), new ItemStack(BotaniaFlowerBlocks.marimorphosisChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("rannuncarpus_chibi", BotaniaFlowerBlocks.rannuncarpus.asItem(), new ItemStack(BotaniaFlowerBlocks.rannuncarpusChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
+            InfusionManaPoolRecipe("solegnolia_chibi", BotaniaFlowerBlocks.solegnolia.asItem(), new ItemStack(BotaniaFlowerBlocks.solegnoliaChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
 
             // === 复制配方 ===//
-            InfusionManaPoolRecipe("redstone_dupe", Items.REDSTONE, new ItemStack(Items.REDSTONE, 2), 5000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("glowstone_dupe", Items.GLOWSTONE_DUST, new ItemStack(Items.GLOWSTONE_DUST, 2), 5000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("quartz_dupe", Items.QUARTZ, new ItemStack(Items.QUARTZ, 2), 2500, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("coal_dupe", Items.COAL, new ItemStack(Items.COAL, 2), 2100, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("snowball_dupe", Items.SNOWBALL, new ItemStack(Items.SNOWBALL, 2), 200, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("netherrack_dupe", Items.NETHERRACK, new ItemStack(Blocks.NETHERRACK, 2), 200, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("soul_sand_dupe", Items.SOUL_SAND, new ItemStack(Blocks.SOUL_SAND, 2), 1500, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("gravel_dupe", Items.GRAVEL, new ItemStack(Blocks.GRAVEL, 2), 720, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("grass_dupe", Items.GRASS, new ItemStack(Blocks.GRASS, 2), 800, BotaniaBlocks.conjurationCatalyst, null);
+            InfusionManaPoolRecipe("redstone_dupe", Items.REDSTONE, new ItemStack(Items.REDSTONE, 2), 5000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("glowstone_dupe", Items.GLOWSTONE_DUST, new ItemStack(Items.GLOWSTONE_DUST, 2), 5000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("quartz_dupe", Items.QUARTZ, new ItemStack(Items.QUARTZ, 2), 2500, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("coal_dupe", Items.COAL, new ItemStack(Items.COAL, 2), 2100, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("snowball_dupe", Items.SNOWBALL, new ItemStack(Items.SNOWBALL, 2), 200, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("netherrack_dupe", Items.NETHERRACK, new ItemStack(Blocks.NETHERRACK, 2), 200, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("soul_sand_dupe", Items.SOUL_SAND, new ItemStack(Blocks.SOUL_SAND, 2), 1500, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("gravel_dupe", Items.GRAVEL, new ItemStack(Blocks.GRAVEL, 2), 720, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("grass_dupe", Items.GRASS, new ItemStack(Blocks.GRASS, 2), 800, BotaniaBlocks.conjurationCatalyst.asItem(), null);
 
             // 树叶复制
-            InfusionManaPoolRecipe("oak_leaves_dupe", Items.OAK_LEAVES, new ItemStack(Blocks.OAK_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("birch_leaves_dupe", Items.BIRCH_LEAVES, new ItemStack(Blocks.BIRCH_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("spruce_leaves_dupe", Items.SPRUCE_LEAVES, new ItemStack(Blocks.SPRUCE_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("jungle_leaves_dupe", Items.JUNGLE_LEAVES, new ItemStack(Blocks.JUNGLE_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("acacia_leaves_dupe", Items.ACACIA_LEAVES, new ItemStack(Blocks.ACACIA_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("dark_oak_leaves_dupe", Items.DARK_OAK_LEAVES, new ItemStack(Blocks.DARK_OAK_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("azalea_leaves_dupe", Items.AZALEA_LEAVES, new ItemStack(Blocks.AZALEA_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("flowering_azalea_leaves_dupe", Items.FLOWERING_AZALEA_LEAVES, new ItemStack(Blocks.FLOWERING_AZALEA_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("mangrove_leaves_dupe", Items.MANGROVE_LEAVES, new ItemStack(Blocks.MANGROVE_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
-            InfusionManaPoolRecipe("cherry_leaves_dupe", Items.CHERRY_LEAVES, new ItemStack(Blocks.CHERRY_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst, null);
+            InfusionManaPoolRecipe("oak_leaves_dupe", Items.OAK_LEAVES, new ItemStack(Blocks.OAK_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("birch_leaves_dupe", Items.BIRCH_LEAVES, new ItemStack(Blocks.BIRCH_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("spruce_leaves_dupe", Items.SPRUCE_LEAVES, new ItemStack(Blocks.SPRUCE_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("jungle_leaves_dupe", Items.JUNGLE_LEAVES, new ItemStack(Blocks.JUNGLE_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("acacia_leaves_dupe", Items.ACACIA_LEAVES, new ItemStack(Blocks.ACACIA_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("dark_oak_leaves_dupe", Items.DARK_OAK_LEAVES, new ItemStack(Blocks.DARK_OAK_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("azalea_leaves_dupe", Items.AZALEA_LEAVES, new ItemStack(Blocks.AZALEA_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("flowering_azalea_leaves_dupe", Items.FLOWERING_AZALEA_LEAVES, new ItemStack(Blocks.FLOWERING_AZALEA_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("mangrove_leaves_dupe", Items.MANGROVE_LEAVES, new ItemStack(Blocks.MANGROVE_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("cherry_leaves_dupe", Items.CHERRY_LEAVES, new ItemStack(Blocks.CHERRY_LEAVES, 2), 2000, BotaniaBlocks.conjurationCatalyst.asItem(), null);
 
             // 神话植物学
-            InfusionManaPoolRecipe("gjallar_horn_empty", BotaniaItems.grassHorn, RegistriesUtils.getItemStack("mythicbotany:gjallar_horn_empty"), 20000, null, null);
+            InfusionManaPoolRecipe("gjallar_horn_empty", BotaniaItems.grassHorn, new ItemStack(ModItems.gjallarHornEmpty), 20000, null, null);
 
             // 额外植物学
             InfusionManaPoolRecipe("nightmare_fuel", Items.COAL, new ItemStack(ExtraBotanyItems.nightmareFuel), 2000, null, null);
             InfusionManaPoolRecipe("fried_chicken", Items.COOKED_CHICKEN, new ItemStack(ExtraBotanyItems.friedChicken), 600, null, null);
-            InfusionManaPoolRecipe("snowball_to_ender_pearl", Items.SNOWBALL, new ItemStack(Items.ENDER_PEARL), 2000, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("diamond_horse_armor_to_shulker_shell", Items.DIAMOND_HORSE_ARMOR, new ItemStack(Items.SHULKER_SHELL), 20000, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("apple_to_chorus_fruit", Items.APPLE, new ItemStack(Items.CHORUS_FRUIT), 500, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("stone_to_end_stone", Items.STONE, new ItemStack(Items.END_STONE), 500, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("cobblestone_to_nether_rack", Items.COBBLESTONE, new ItemStack(Items.NETHERRACK), 500, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("sand_to_soul_sand", Items.SAND, new ItemStack(Items.SOUL_SAND), 500, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("iron_ore_to_quartz_ore", Items.IRON_ORE, new ItemStack(Items.NETHER_QUARTZ_ORE), 2000, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("blaze_rod_dupe", Items.BLAZE_ROD, new ItemStack(Items.BLAZE_ROD, 2), 2000, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("nether_star_to_totem_of_undying", Items.NETHER_STAR, new ItemStack(Items.TOTEM_OF_UNDYING), 50000, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("the_origin_to_elytra", ExtraBotanyItems.theOrigin, new ItemStack(Items.ELYTRA), 50000, ExtraBotanyBlocks.dimensionCatalyst, null);
-            InfusionManaPoolRecipe("necrofleur_chibi", ExtrabotanyFlowerBlocks.necrofleur.asItem(), new ItemStack(ExtrabotanyFlowerBlocks.necrofleurChibi), 2500, BotaniaBlocks.alchemyCatalyst, "botania:flower_shrinking");
+            InfusionManaPoolRecipe("snowball_to_ender_pearl", Items.SNOWBALL, new ItemStack(Items.ENDER_PEARL), 2000, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("diamond_horse_armor_to_shulker_shell", Items.DIAMOND_HORSE_ARMOR, new ItemStack(Items.SHULKER_SHELL), 20000, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("apple_to_chorus_fruit", Items.APPLE, new ItemStack(Items.CHORUS_FRUIT), 500, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("stone_to_end_stone", Items.STONE, new ItemStack(Items.END_STONE), 500, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("cobblestone_to_nether_rack", Items.COBBLESTONE, new ItemStack(Items.NETHERRACK), 500, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("sand_to_soul_sand", Items.SAND, new ItemStack(Items.SOUL_SAND), 500, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("iron_ore_to_quartz_ore", Items.IRON_ORE, new ItemStack(Items.NETHER_QUARTZ_ORE), 2000, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("blaze_rod_dupe", Items.BLAZE_ROD, new ItemStack(Items.BLAZE_ROD, 2), 2000, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("nether_star_to_totem_of_undying", Items.NETHER_STAR, new ItemStack(Items.TOTEM_OF_UNDYING), 50000, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("the_origin_to_elytra", ExtraBotanyItems.theOrigin, new ItemStack(Items.ELYTRA), 50000, ExtraBotanyBlocks.dimensionCatalyst.asItem(), null);
+            InfusionManaPoolRecipe("necrofleur_chibi", ExtrabotanyFlowerBlocks.necrofleur.asItem(), new ItemStack(ExtrabotanyFlowerBlocks.necrofleurChibi), 2500, BotaniaBlocks.alchemyCatalyst.asItem(), "botania:flower_shrinking");
 
             // GTO配方
             InfusionManaPoolRecipe("pulsating", ChemicalHelper.getItem(SUPERCONDUCTOR_BASE, PulsatingAlloy), new ItemStack(ChemicalHelper.getItem(wireGtSingle, PulsatingAlloy)), 400, null, null);
@@ -610,35 +612,17 @@ public final class BotaniaRecipes {
             InfusionManaPoolRecipe("infused_gold", Items.GOLD_INGOT, new ItemStack(ChemicalHelper.getItem(ingot, InfusedGold)), 8000, null, null);
             InfusionManaPoolRecipe("original_bronze_dust", ChemicalHelper.getItem(ingot, Bronze), new ItemStack(ChemicalHelper.getItem(ingot, OriginalBronze)), 6000, null, null);
 
-            InfusionManaPoolRecipe("life_essence", GTOItems.UNSTABLE_GAIA_SOUL.asItem(), new ItemStack(BotaniaItems.lifeEssence), 500000, ChemicalHelper.getBlock(block, Gaia), null);
+            InfusionManaPoolRecipe("life_essence", GTOItems.UNSTABLE_GAIA_SOUL.asItem(), new ItemStack(BotaniaItems.lifeEssence), 500000, ChemicalHelper.getItem(block, Gaia), null);
 
-            MANA_INFUSER_RECIPES.builder("mana_powder_dust")
-                    .notConsumable(BotaniaBlocks.livingrock.asItem())
-                    .inputItems(TagUtils.createTGItemTag("dusts"))
-                    .outputItems(BotaniaItems.manaPowder)
-                    .duration(20)
-                    .circuitMeta(1)
-                    .MANAt(1)
-                    .save();
-            MANA_INFUSER_RECIPES.builder("mana_powder_dye")
-                    .notConsumable(BotaniaBlocks.livingrock.asItem())
-                    .inputItems(net.minecraftforge.common.Tags.Items.DYES)
-                    .outputItems(BotaniaItems.manaPowder)
-                    .duration(20)
-                    .circuitMeta(1)
-                    .MANAt(1)
-                    .save();
-
+            InfusionManaPoolRecipe("mana_powder_dust", TagUtils.createTGItemTag("dusts"), new ItemStack(BotaniaItems.manaPowder), 20, null, null);
+            InfusionManaPoolRecipe("mana_powder_dye", Tags.Items.DYES, new ItemStack(BotaniaItems.manaPowder), 20, null, null);
         }
 
-        // 魔力灌注 - 白雏菊
+        // 白雏菊（魔力灌注机 2 号电路）
         {
             InfusionPureDaisyRecipe("livingclay", Items.DIRT, ChemicalHelper.getItem(block, Livingclay));
             InfusionPureDaisyRecipe("livingrock", Items.STONE, BotaniaBlocks.livingrock.asItem());
-            InfusionPureDaisyRecipe("livingwood1", BlockRegistry.BLAZING_LOG.asItem(), BotaniaBlocks.livingwoodLog.asItem());
-            InfusionPureDaisyRecipe("livingwood2", BlockRegistry.CASCADING_LOG.asItem(), BotaniaBlocks.livingwoodLog.asItem());
-            InfusionPureDaisyRecipe("livingwood3", BlockRegistry.VEXING_LOG.asItem(), BotaniaBlocks.livingwoodLog.asItem());
-            InfusionPureDaisyRecipe("livingwood4", BlockRegistry.FLOURISHING_LOG.asItem(), BotaniaBlocks.livingwoodLog.asItem());
+            InfusionPureDaisyRecipe("livingwood", RecipeDatagen.ARCHWOOD_LOG, BotaniaBlocks.livingwoodLog.asItem());
 
             InfusionPureDaisyRecipe("cobblestone", Items.NETHERRACK, Items.COBBLESTONE);
             InfusionPureDaisyRecipe("end_stone_to_cobbled_deepslate", Items.END_STONE, Items.COBBLED_DEEPSLATE);
@@ -649,222 +633,234 @@ public final class BotaniaRecipes {
 
         }
 
-        MANA_INFUSER_RECIPES.builder("bifrost_perm")
-                .notConsumable("botania:rainbow_rod")
-                .inputItems(BotaniaBlocks.elfGlass, 16)
-                .outputItems(BotaniaBlocks.bifrostPerm, 16)
-                .duration(200)
-                .MANAt(1)
-                .save();
-
-        MANA_INFUSER_RECIPES.builder("gjallar_horn_full")
-                .notConsumable("mythicbotany:yggdrasil_branch")
-                .inputItems("mythicbotany:gjallar_horn_empty", 16)
-                .outputItems("mythicbotany:gjallar_horn_full", 16)
-                .duration(400)
-                .MANAt(240)
-                .save();
-
-        // 工业祭坛 - 符文祭坛
+        // 符文祭坛（工业祭坛 1 号电路）
         {
-            IndustrialAltarRecipe1(1, "water_rune", 5200, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeWater, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.BONE_MEAL, Items.SUGAR_CANE, Items.FISHING_ROD });
-            IndustrialAltarRecipe1(1, "fire_rune", 5200, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeFire, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.GUNPOWDER, Items.NETHER_BRICK, Items.NETHER_WART });
-            IndustrialAltarRecipe1(1, "earth_rune", 5200, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeEarth, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.COAL_BLOCK, Items.STONE, Items.RED_MUSHROOM });
-            IndustrialAltarRecipe1(1, "air_rune", 5200, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeAir, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.WHITE_CARPET, Items.FEATHER, Items.STRING });
+            IndustrialAltarRecipe1("water_rune", 5200, new ItemStack(BotaniaItems.runeWater, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.BONE_MEAL, Items.SUGAR_CANE, Items.FISHING_ROD });
+            IndustrialAltarRecipe1("fire_rune", 5200, new ItemStack(BotaniaItems.runeFire, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.GUNPOWDER, Items.NETHER_BRICK, Items.NETHER_WART });
+            IndustrialAltarRecipe1("earth_rune", 5200, new ItemStack(BotaniaItems.runeEarth, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.COAL_BLOCK, Items.STONE, Items.RED_MUSHROOM });
+            IndustrialAltarRecipe1("air_rune", 5200, new ItemStack(BotaniaItems.runeAir, 2), new Item[] { BotaniaItems.manaPowder, BotaniaItems.manaSteel, Items.WHITE_CARPET, Items.FEATHER, Items.STRING });
 
-            IndustrialAltarRecipe1(1, "spring_rune", 8000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeSpring), new Item[] { BotaniaItems.runeWater, BotaniaItems.runeFire, Items.OAK_SAPLING, Items.OAK_SAPLING, Items.OAK_SAPLING, Items.WHEAT });
-            IndustrialAltarRecipe1(1, "summer_rune", 8000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeSummer), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeAir, Items.SAND, Items.SAND, Items.SLIME_BALL, Items.MELON_SLICE });
-            IndustrialAltarRecipe1(1, "autumn_rune", 8000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeAutumn), new Item[] { BotaniaItems.runeFire, BotaniaItems.runeAir, Items.OAK_LEAVES, Items.OAK_LEAVES, Items.OAK_LEAVES, Items.SPIDER_EYE });
-            IndustrialAltarRecipe1(1, "winter_rune", 8000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeWinter), new Item[] { BotaniaItems.runeWater, BotaniaItems.runeEarth, Items.SNOW_BLOCK, Items.SNOW_BLOCK, Items.WHITE_WOOL, Items.CAKE });
+            IndustrialAltarRecipe1("spring_rune", 8000, new ItemStack(BotaniaItems.runeSpring), new Item[] { BotaniaItems.runeWater, BotaniaItems.runeFire, Items.OAK_SAPLING, Items.OAK_SAPLING, Items.OAK_SAPLING, Items.WHEAT });
+            IndustrialAltarRecipe1("summer_rune", 8000, new ItemStack(BotaniaItems.runeSummer), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeAir, Items.SAND, Items.SAND, Items.SLIME_BALL, Items.MELON_SLICE });
+            IndustrialAltarRecipe1("autumn_rune", 8000, new ItemStack(BotaniaItems.runeAutumn), new Item[] { BotaniaItems.runeFire, BotaniaItems.runeAir, Items.OAK_LEAVES, Items.OAK_LEAVES, Items.OAK_LEAVES, Items.SPIDER_EYE });
+            IndustrialAltarRecipe1("winter_rune", 8000, new ItemStack(BotaniaItems.runeWinter), new Item[] { BotaniaItems.runeWater, BotaniaItems.runeEarth, Items.SNOW_BLOCK, Items.SNOW_BLOCK, Items.WHITE_WOOL, Items.CAKE });
 
-            IndustrialAltarRecipe1(1, "mana_rune", 8000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeMana), new Item[] { BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaPearl });
+            IndustrialAltarRecipe1("mana_rune", 8000, new ItemStack(BotaniaItems.runeMana), new Item[] { BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaSteel, BotaniaItems.manaPearl });
 
-            IndustrialAltarRecipe1(1, "lust_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeLust), new Item[] { BotaniaItems.runeSummer, BotaniaItems.runeAir, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
-            IndustrialAltarRecipe1(1, "gluttony_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeGluttony), new Item[] { BotaniaItems.runeWinter, BotaniaItems.runeFire, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
-            IndustrialAltarRecipe1(1, "greed_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeGreed), new Item[] { BotaniaItems.runeSpring, BotaniaItems.runeWater, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
-            IndustrialAltarRecipe1(1, "sloth_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeSloth), new Item[] { BotaniaItems.runeAutumn, BotaniaItems.runeAir, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
-            IndustrialAltarRecipe1(1, "wrath_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeWrath), new Item[] { BotaniaItems.runeWinter, BotaniaItems.runeEarth, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
-            IndustrialAltarRecipe1(1, "envy_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runeEnvy), new Item[] { BotaniaItems.runeWinter, BotaniaItems.runeWater, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
-            IndustrialAltarRecipe1(1, "pride_rune", 12000, BotaniaBlocks.livingrock.asItem(), new ItemStack(BotaniaItems.runePride), new Item[] { BotaniaItems.runeSummer, BotaniaItems.runeFire, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("lust_rune", 12000, new ItemStack(BotaniaItems.runeLust), new Item[] { BotaniaItems.runeSummer, BotaniaItems.runeAir, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("gluttony_rune", 12000, new ItemStack(BotaniaItems.runeGluttony), new Item[] { BotaniaItems.runeWinter, BotaniaItems.runeFire, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("greed_rune", 12000, new ItemStack(BotaniaItems.runeGreed), new Item[] { BotaniaItems.runeSpring, BotaniaItems.runeWater, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("sloth_rune", 12000, new ItemStack(BotaniaItems.runeSloth), new Item[] { BotaniaItems.runeAutumn, BotaniaItems.runeAir, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("wrath_rune", 12000, new ItemStack(BotaniaItems.runeWrath), new Item[] { BotaniaItems.runeWinter, BotaniaItems.runeEarth, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("envy_rune", 12000, new ItemStack(BotaniaItems.runeEnvy), new Item[] { BotaniaItems.runeWinter, BotaniaItems.runeWater, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
+            IndustrialAltarRecipe1("pride_rune", 12000, new ItemStack(BotaniaItems.runePride), new Item[] { BotaniaItems.runeSummer, BotaniaItems.runeFire, BotaniaItems.manaDiamond, BotaniaItems.manaDiamond });
 
             // 神话植物学
-            IndustrialAltarRecipe1(1, "midgar_runed", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:midgard_rune")), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeSpring, BotaniaItems.runeGreed, Items.GRASS_BLOCK, BotaniaItems.manaSteel });
-            IndustrialAltarRecipe1(1, "alfheim_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:alfheim_rune")), new Item[] { BotaniaItems.runeAir, BotaniaItems.runeSummer, BotaniaItems.runeLust, Items.OAK_LEAVES, BotaniaItems.elementium });
-            IndustrialAltarRecipe1(1, "muspelheim_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:muspelheim_rune")), new Item[] { BotaniaItems.runeFire, BotaniaItems.runeSummer, BotaniaItems.runeWrath, Items.MAGMA_BLOCK, Items.NETHER_BRICK });
-            IndustrialAltarRecipe1(1, "niflheim_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:niflheim_rune")), new Item[] { BotaniaItems.runeWater, BotaniaItems.runeWinter, BotaniaItems.runeWrath, Items.BLUE_ICE, Items.IRON_INGOT });
-            IndustrialAltarRecipe1(1, "asgard_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:asgard_rune")), new Item[] { BotaniaItems.runeAir, BotaniaItems.runeAutumn, BotaniaItems.runePride, BotaniaItems.rainbowRod, Items.NETHERITE_INGOT });
-            IndustrialAltarRecipe1(1, "vanaheim_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:vanaheim_rune")), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeSpring, BotaniaItems.runePride, BotaniaBlocks.alfPortal.asItem(), BotaniaItems.terrasteel });
-            IndustrialAltarRecipe1(1, "helheim_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:helheim_rune")), new Item[] { BotaniaItems.runeFire, BotaniaItems.runeAutumn, BotaniaItems.runeEnvy, Items.SKELETON_SKULL, Items.GOLD_INGOT });
-            IndustrialAltarRecipe1(1, "nidavellir_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:nidavellir_rune")), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeWinter, BotaniaItems.runeSloth, Items.IRON_BLOCK, Items.COPPER_INGOT });
-            IndustrialAltarRecipe1(1, "joetunheim_rune", 16000, BotaniaBlocks.livingrock.asItem(), new ItemStack(RegistriesUtils.getItem("mythicbotany:joetunheim_rune")), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeAutumn, BotaniaItems.runeGluttony, Items.BLACKSTONE, Items.BLACKSTONE });
+            IndustrialAltarRecipe1("midgar_runed", 16000, new ItemStack(ModItems.midgardRune), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeSpring, BotaniaItems.runeGreed, Items.GRASS_BLOCK, BotaniaItems.manaSteel });
+            IndustrialAltarRecipe1("alfheim_rune", 16000, new ItemStack(ModItems.alfheimRune), new Item[] { BotaniaItems.runeAir, BotaniaItems.runeSummer, BotaniaItems.runeLust, Items.OAK_LEAVES, BotaniaItems.elementium });
+            IndustrialAltarRecipe1("muspelheim_rune", 16000, new ItemStack(ModItems.muspelheimRune), new Item[] { BotaniaItems.runeFire, BotaniaItems.runeSummer, BotaniaItems.runeWrath, Items.MAGMA_BLOCK, Items.NETHER_BRICK });
+            IndustrialAltarRecipe1("niflheim_rune", 16000, new ItemStack(ModItems.niflheimRune), new Item[] { BotaniaItems.runeWater, BotaniaItems.runeWinter, BotaniaItems.runeWrath, Items.BLUE_ICE, Items.IRON_INGOT });
+            IndustrialAltarRecipe1("asgard_rune", 16000, new ItemStack(ModItems.asgardRune), new Item[] { BotaniaItems.runeAir, BotaniaItems.runeAutumn, BotaniaItems.runePride, BotaniaItems.rainbowRod, Items.NETHERITE_INGOT });
+            IndustrialAltarRecipe1("vanaheim_rune", 16000, new ItemStack(ModItems.vanaheimRune), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeSpring, BotaniaItems.runePride, BotaniaBlocks.alfPortal.asItem(), BotaniaItems.terrasteel });
+            IndustrialAltarRecipe1("helheim_rune", 16000, new ItemStack(ModItems.helheimRune), new Item[] { BotaniaItems.runeFire, BotaniaItems.runeAutumn, BotaniaItems.runeEnvy, Items.SKELETON_SKULL, Items.GOLD_INGOT });
+            IndustrialAltarRecipe1("nidavellir_rune", 16000, new ItemStack(ModItems.nidavellirRune), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeWinter, BotaniaItems.runeSloth, Items.IRON_BLOCK, Items.COPPER_INGOT });
+            IndustrialAltarRecipe1("joetunheim_rune", 16000, new ItemStack(ModItems.joetunheimRune), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeAutumn, BotaniaItems.runeGluttony, Items.BLACKSTONE, Items.BLACKSTONE });
 
             // 额外植物学
-            IndustrialAltarRecipe2(1, "zadkiel", 500000, BotaniaBlocks.livingrock.asItem(), new ItemStack(ExtraBotanyItems.zadkiel, 4), new Item[] { Items.ICE, Items.BLUE_ICE, Items.PACKED_ICE, Items.SNOW_BLOCK, Items.POWDER_SNOW_BUCKET, Items.TOTEM_OF_UNDYING });
-            IndustrialAltarRecipe2(1, "orichalcos_ingot", 150000, BotaniaBlocks.livingrock.asItem(), new ItemStack(ExtraBotanyItems.orichalcos, 8), new Item[] { ExtraBotanyItems.heroMedal, ExtraBotanyItems.gildedPotatoMashed, BotaniaItems.gaiaIngot, BotaniaItems.gaiaIngot, BotaniaItems.lifeEssence, BotaniaItems.lifeEssence, BotaniaItems.lifeEssence, BotaniaItems.lifeEssence });
-            IndustrialAltarRecipe2(1, "shadowium_ingot", 4200, BotaniaBlocks.livingrock.asItem(), new ItemStack(ExtraBotanyItems.shadowium, 8), new Item[] { BotaniaItems.elementium, ExtraBotanyItems.gildedPotatoMashed, ExtraBotanyItems.nightmareFuel, ExtraBotanyItems.nightmareFuel, ExtraBotanyItems.nightmareFuel });
-            IndustrialAltarRecipe2(1, "photonium_ingot", 4200, BotaniaBlocks.livingrock.asItem(), new ItemStack(ExtraBotanyItems.photonium, 8), new Item[] { BotaniaItems.elementium, ExtraBotanyItems.gildedPotatoMashed, ExtraBotanyItems.spiritFragment, ExtraBotanyItems.spiritFragment, ExtraBotanyItems.spiritFragment });
-            IndustrialAltarRecipe2(1, "gilded_potato", 800, BotaniaBlocks.livingrock.asItem(), new ItemStack(ExtraBotanyItems.gildedPotato, 4), new Item[] { Items.POTATO, Items.GOLD_NUGGET });
-            IndustrialAltarRecipe2(1, "orichalcos_hammer", 1000000, BotaniaBlocks.livingrock.asItem(), new ItemStack(ExtraBotanyItems.orichalcosHammer, 4), new Item[] { ExtraBotanyItems.orichalcos, ExtraBotanyItems.gildedPotatoMashed, ExtraBotanyItems.theChaos, ExtraBotanyItems.theOrigin, ExtraBotanyItems.theEnd });
+            IndustrialAltarRecipe2("zadkiel", 500000, new ItemStack(ExtraBotanyItems.zadkiel), new Item[] { Items.ICE, Items.BLUE_ICE, Items.PACKED_ICE, Items.SNOW_BLOCK, Items.POWDER_SNOW_BUCKET, Items.TOTEM_OF_UNDYING });
+            IndustrialAltarRecipe2("orichalcos_ingot", 150000, new ItemStack(ExtraBotanyItems.orichalcos, 2), new Item[] { ExtraBotanyItems.heroMedal, ExtraBotanyItems.gildedPotatoMashed, BotaniaItems.gaiaIngot, BotaniaItems.gaiaIngot, BotaniaItems.lifeEssence, BotaniaItems.lifeEssence, BotaniaItems.lifeEssence, BotaniaItems.lifeEssence });
+            IndustrialAltarRecipe2("shadowium_ingot", 4200, new ItemStack(ExtraBotanyItems.shadowium, 2), new Item[] { BotaniaItems.elementium, ExtraBotanyItems.gildedPotatoMashed, ExtraBotanyItems.nightmareFuel, ExtraBotanyItems.nightmareFuel, ExtraBotanyItems.nightmareFuel });
+            IndustrialAltarRecipe2("photonium_ingot", 4200, new ItemStack(ExtraBotanyItems.photonium, 2), new Item[] { BotaniaItems.elementium, ExtraBotanyItems.gildedPotatoMashed, ExtraBotanyItems.spiritFragment, ExtraBotanyItems.spiritFragment, ExtraBotanyItems.spiritFragment });
+            IndustrialAltarRecipe2("gilded_potato", 800, new ItemStack(ExtraBotanyItems.gildedPotato), new Item[] { Items.POTATO, Items.GOLD_NUGGET });
+            IndustrialAltarRecipe2("orichalcos_hammer", 1000000, new ItemStack(ExtraBotanyItems.orichalcosHammer), new Item[] { ExtraBotanyItems.orichalcos, ExtraBotanyItems.gildedPotatoMashed, ExtraBotanyItems.theChaos, ExtraBotanyItems.theOrigin, ExtraBotanyItems.theEnd });
 
-            INDUSTRIAL_ALTAR_RECIPES.builder("runerock_block")
-                    .inputItems(BotaniaBlocks.livingrock.asItem(), 32)
-                    .outputItems(block, Runerock, 32)
-                    .duration(1200)
-                    .MANAt(4000)
-                    .inputItems(BotaniaItems.runeEarth, 4)
-                    .inputItems(BotaniaItems.runeAir, 4)
-                    .inputItems(BotaniaItems.runeFire, 4)
-                    .inputItems(BotaniaItems.runeWater, 4)
-                    .inputItems(BotaniaItems.runeSpring, 4)
-                    .inputItems(BotaniaItems.runeSummer, 4)
-                    .inputItems(BotaniaItems.runeAutumn, 4)
-                    .inputItems(BotaniaItems.runeWinter, 4)
-                    .inputItems(BotaniaItems.runeMana, 4)
-                    .inputItems(BotaniaItems.runeLust, 4)
-                    .inputItems(BotaniaItems.runeGluttony, 4)
-                    .inputItems(BotaniaItems.runeGreed, 4)
-                    .inputItems(BotaniaItems.runeSloth, 4)
-                    .inputItems(BotaniaItems.runeWrath, 4)
-                    .inputItems(BotaniaItems.runeEnvy, 4)
-                    .inputItems(BotaniaItems.runePride, 4)
-                    .save();
+            IndustrialAltarRecipe2("runerock_block", 1000000, ChemicalHelper.get(block, Runerock, 8), new Item[] { BotaniaItems.runeEarth, BotaniaItems.runeAir, BotaniaItems.runeFire, BotaniaItems.runeWater, BotaniaItems.runeSpring, BotaniaItems.runeSummer, BotaniaItems.runeAutumn, BotaniaItems.runeWinter, BotaniaItems.runeMana, BotaniaItems.runeLust, BotaniaItems.runeGluttony, BotaniaItems.runeGreed, BotaniaItems.runeSloth, BotaniaItems.runeWrath, BotaniaItems.runeEnvy, BotaniaItems.runePride, });
+            IndustrialAltarRecipe2("runerock_block_plas", 1000000, ChemicalHelper.get(block, Runerock, 16), new Item[] { ModItems.asgardRune, ModItems.vanaheimRune, ModItems.alfheimRune, ModItems.midgardRune, ModItems.joetunheimRune, ModItems.muspelheimRune, ModItems.niflheimRune, ModItems.nidavellirRune, ModItems.helheimRune });
 
-            INDUSTRIAL_ALTAR_RECIPES.builder("runerock_block_plas")
-                    .inputItems(BotaniaBlocks.livingrock.asItem(), 64)
-                    .outputItems(block, Runerock, 64)
-                    .duration(1200)
-                    .MANAt(4000)
-                    .inputItems("mythicbotany:asgard_rune", 4)
-                    .inputItems("mythicbotany:vanaheim_rune", 4)
-                    .inputItems("mythicbotany:alfheim_rune", 4)
-                    .inputItems("mythicbotany:midgard_rune", 4)
-                    .inputItems("mythicbotany:joetunheim_rune", 4)
-                    .inputItems("mythicbotany:muspelheim_rune", 4)
-                    .inputItems("mythicbotany:niflheim_rune", 4)
-                    .inputItems("mythicbotany:nidavellir_rune", 4)
-                    .inputItems("mythicbotany:helheim_rune", 4)
-                    .save();
-
-            INDUSTRIAL_ALTAR_RECIPES.builder("transmutation_catalyst")
-                    .inputItems(BotaniaBlocks.livingrock.asItem())
-                    .outputItems(GTOBlocks.TRANSMUTATION_CATALYST)
-                    .duration(1200)
-                    .MANAt(40000)
-                    .inputItems(GTOItems.PHILOSOPHERS_STONE, 6)
-                    .save();
+            IndustrialAltarRecipe2("transmutation_catalyst", 50000000, new ItemStack(GTOBlocks.TRANSMUTATION_CATALYST), new Item[] { GTOItems.PHILOSOPHERS_STONE.asItem(), GTOItems.PHILOSOPHERS_STONE.asItem(), GTOItems.PHILOSOPHERS_STONE.asItem(), GTOItems.PHILOSOPHERS_STONE.asItem(), GTOItems.PHILOSOPHERS_STONE.asItem(), GTOItems.PHILOSOPHERS_STONE.asItem() });
         }
 
-        // 工业祭坛 - 花药台
+        // 花药台（工业祭坛 2/3/4/5 号电路）
         {
-            IndustrialAltarRecipe3(2, "pure_daisy_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.pureDaisy), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal });
-            IndustrialAltarRecipe3(2, "manastar_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.manastar), new Item[] { BotaniaItems.lightBluePetal, BotaniaItems.greenPetal, BotaniaItems.redPetal, BotaniaItems.cyanPetal });
-            IndustrialAltarRecipe3(2, "endoflame_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.endoflame), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.redPetal, BotaniaItems.lightGrayPetal });
-            IndustrialAltarRecipe3(2, "hydroangea_flowers", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.hydroangeas), new Item[] { BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal });
-            IndustrialAltarRecipe3(2, "thermalily_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.thermalily), new Item[] { BotaniaItems.redPetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.runeEarth, BotaniaItems.runeFire });
-            IndustrialAltarRecipe3(2, "rosa_arcana_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.rosaArcana), new Item[] { BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.limePetal, BotaniaItems.runeMana });
-            IndustrialAltarRecipe3(2, "munchdew_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.munchdew), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.greenPetal, BotaniaItems.runeGluttony });
-            IndustrialAltarRecipe3(3, "entropinnyum_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.entropinnyum), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.runeWrath, BotaniaItems.runeFire });
-            IndustrialAltarRecipe3(3, "kekimurus_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.kekimurus), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.runeGluttony, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "gourmaryllis_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.gourmaryllis), new Item[] { BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.redPetal, BotaniaItems.runeFire, BotaniaItems.runeSummer });
-            IndustrialAltarRecipe3(2, "narslimmus_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.narslimmus), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.blackPetal, BotaniaItems.runeSummer, BotaniaItems.runeWater });
-            IndustrialAltarRecipe3(3, "spectrolus_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.spectrolus), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.runeWinter, BotaniaItems.runeAir, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "rafflowsia_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.rafflowsia), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.blackPetal, BotaniaItems.runeEarth, BotaniaItems.runePride, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "shulk_me_not_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.shulkMeNot), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.lightGrayPetal, BotaniaItems.lifeEssence, BotaniaItems.runeEnvy, BotaniaItems.runeWrath });
-            IndustrialAltarRecipe3(2, "dandelifeon_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.dandelifeon), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.runeWater, BotaniaItems.runeFire, BotaniaItems.runeEarth, BotaniaItems.runeAir, BotaniaItems.redstoneRoot, BotaniaItems.lifeEssence });
-            IndustrialAltarRecipe3(2, "jaded_amaranthus_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.jadedAmaranthus), new Item[] { BotaniaItems.purplePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.runeSpring, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "bellethorn_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.bellethorn), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "dreadthorn_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.dreadthorn), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "heisei_dream_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.heiseiDream), new Item[] { BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.purplePetal, BotaniaItems.pinkPetal, BotaniaItems.runeWrath, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "tigerseye_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.tigerseye), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.brownPetal, BotaniaItems.orangePetal, BotaniaItems.limePetal, BotaniaItems.runeAutumn });
-            IndustrialAltarRecipe3(2, "orechid_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.orechid), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.yellowPetal, BotaniaItems.greenPetal, BotaniaItems.redPetal, BotaniaItems.runePride, BotaniaItems.runeGreed, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(3, "orechid_ignem_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.orechidIgnem), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.pinkPetal, BotaniaItems.runePride, BotaniaItems.runeGreed, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(3, "fallen_kanade_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.fallenKanade), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal, BotaniaItems.runeSpring });
-            IndustrialAltarRecipe3(2, "exoflame_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.exoflame), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeFire, BotaniaItems.runeSummer });
-            IndustrialAltarRecipe3(2, "agricarnation_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.agricarnation), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.yellowPetal, BotaniaItems.runeSpring, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "hopperhock_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.hopperhock), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeAir, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(3, "tangleberrie_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.tangleberrie), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeAir, BotaniaItems.runeEarth });
-            IndustrialAltarRecipe3(2, "jiyuulia_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.jiyuulia), new Item[] { BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.purplePetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeWater, BotaniaItems.runeAir });
-            IndustrialAltarRecipe3(2, "rannuncarpus_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.rannuncarpus), new Item[] { BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.yellowPetal, BotaniaItems.runeEarth, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "hyacidu_flowers", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.hyacidus), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.greenPetal, BotaniaItems.runeWater, BotaniaItems.runeAutumn, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "pollidisiac_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.pollidisiac), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.orangePetal, BotaniaItems.runeLust, BotaniaItems.runeFire });
-            IndustrialAltarRecipe3(2, "clayconia_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.clayconia), new Item[] { BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.grayPetal, BotaniaItems.cyanPetal, BotaniaItems.runeEarth });
-            IndustrialAltarRecipe3(2, "loonium_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.loonium), new Item[] { BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.grayPetal, BotaniaItems.runeSloth, BotaniaItems.runeGluttony, BotaniaItems.runeEnvy, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(3, "daffomill_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.daffomill), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.brownPetal, BotaniaItems.yellowPetal, BotaniaItems.runeAir, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "vinculotus_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.vinculotus), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.greenPetal, BotaniaItems.runeWater, BotaniaItems.runeSloth, BotaniaItems.runeLust, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(3, "spectranthemum_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.spectranthemum), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.cyanPetal, BotaniaItems.runeEnvy, BotaniaItems.runeWater, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "medumone_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.medumone), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.runeEarth, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "marimorphosis_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.marimorphosis), new Item[] { BotaniaItems.grayPetal, BotaniaItems.yellowPetal, BotaniaItems.greenPetal, BotaniaItems.redPetal, BotaniaItems.runeEarth, BotaniaItems.runeFire, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(3, "bubbell_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.bubbell), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.runeWater, BotaniaItems.runeSummer, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "solegnolia_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.solegnolia), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.redPetal, BotaniaItems.bluePetal, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "bergamute_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.bergamute), new Item[] { BotaniaItems.orangePetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(3, "labellia_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaFlowerBlocks.labellia), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.bluePetal, BotaniaItems.whitePetal, BotaniaItems.blackPetal, BotaniaItems.runeAutumn, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
-            IndustrialAltarRecipe3(2, "motif_daybloom_flower", 1, Items.WHEAT_SEEDS, new ItemStack(motifDaybloom), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal, BotaniaItems.lightBluePetal });
-            IndustrialAltarRecipe3(2, "motif_nightshade_flower", 1, Items.WHEAT_SEEDS, new ItemStack(BotaniaBlocks.motifNightshade), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.purplePetal, BotaniaItems.grayPetal });
+            IndustrialAltarRecipe3(3, "pure_daisy_flower", new ItemStack(BotaniaFlowerBlocks.pureDaisy), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal });
+            IndustrialAltarRecipe3(3, "manastar_flower", new ItemStack(BotaniaFlowerBlocks.manastar), new Item[] { BotaniaItems.lightBluePetal, BotaniaItems.greenPetal, BotaniaItems.redPetal, BotaniaItems.cyanPetal });
+            IndustrialAltarRecipe3(3, "endoflame_flower", new ItemStack(BotaniaFlowerBlocks.endoflame), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.redPetal, BotaniaItems.lightGrayPetal });
+            IndustrialAltarRecipe3(3, "hydroangea_flowers", new ItemStack(BotaniaFlowerBlocks.hydroangeas), new Item[] { BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal });
+            IndustrialAltarRecipe3(3, "thermalily_flower", new ItemStack(BotaniaFlowerBlocks.thermalily), new Item[] { BotaniaItems.redPetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.runeEarth, BotaniaItems.runeFire });
+            IndustrialAltarRecipe3(3, "rosa_arcana_flower", new ItemStack(BotaniaFlowerBlocks.rosaArcana), new Item[] { BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.limePetal, BotaniaItems.runeMana });
+            IndustrialAltarRecipe3(3, "munchdew_flower", new ItemStack(BotaniaFlowerBlocks.munchdew), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.greenPetal, BotaniaItems.runeGluttony });
+            IndustrialAltarRecipe3(4, "entropinnyum_flower", new ItemStack(BotaniaFlowerBlocks.entropinnyum), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.runeWrath, BotaniaItems.runeFire });
+            IndustrialAltarRecipe3(4, "kekimurus_flower", new ItemStack(BotaniaFlowerBlocks.kekimurus), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.runeGluttony, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "gourmaryllis_flower", new ItemStack(BotaniaFlowerBlocks.gourmaryllis), new Item[] { BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.redPetal, BotaniaItems.runeFire, BotaniaItems.runeSummer });
+            IndustrialAltarRecipe3(3, "narslimmus_flower", new ItemStack(BotaniaFlowerBlocks.narslimmus), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.blackPetal, BotaniaItems.runeSummer, BotaniaItems.runeWater });
+            IndustrialAltarRecipe3(4, "spectrolus_flower", new ItemStack(BotaniaFlowerBlocks.spectrolus), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.runeWinter, BotaniaItems.runeAir, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "rafflowsia_flower", new ItemStack(BotaniaFlowerBlocks.rafflowsia), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.blackPetal, BotaniaItems.runeEarth, BotaniaItems.runePride, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "shulk_me_not_flower", new ItemStack(BotaniaFlowerBlocks.shulkMeNot), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.lightGrayPetal, BotaniaItems.lifeEssence, BotaniaItems.runeEnvy, BotaniaItems.runeWrath });
+            IndustrialAltarRecipe3(3, "dandelifeon_flower", new ItemStack(BotaniaFlowerBlocks.dandelifeon), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.runeWater, BotaniaItems.runeFire, BotaniaItems.runeEarth, BotaniaItems.runeAir, BotaniaItems.redstoneRoot, BotaniaItems.lifeEssence });
+            IndustrialAltarRecipe3(3, "jaded_amaranthus_flower", new ItemStack(BotaniaFlowerBlocks.jadedAmaranthus), new Item[] { BotaniaItems.purplePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.runeSpring, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "bellethorn_flower", new ItemStack(BotaniaFlowerBlocks.bellethorn), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "dreadthorn_flower", new ItemStack(BotaniaFlowerBlocks.dreadthorn), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "heisei_dream_flower", new ItemStack(BotaniaFlowerBlocks.heiseiDream), new Item[] { BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.purplePetal, BotaniaItems.pinkPetal, BotaniaItems.runeWrath, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "tigerseye_flower", new ItemStack(BotaniaFlowerBlocks.tigerseye), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.brownPetal, BotaniaItems.orangePetal, BotaniaItems.limePetal, BotaniaItems.runeAutumn });
+            IndustrialAltarRecipe3(3, "orechid_flower", new ItemStack(BotaniaFlowerBlocks.orechid), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.yellowPetal, BotaniaItems.greenPetal, BotaniaItems.redPetal, BotaniaItems.runePride, BotaniaItems.runeGreed, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(4, "orechid_ignem_flower", new ItemStack(BotaniaFlowerBlocks.orechidIgnem), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.pinkPetal, BotaniaItems.runePride, BotaniaItems.runeGreed, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(4, "fallen_kanade_flower", new ItemStack(BotaniaFlowerBlocks.fallenKanade), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal, BotaniaItems.runeSpring });
+            IndustrialAltarRecipe3(3, "exoflame_flower", new ItemStack(BotaniaFlowerBlocks.exoflame), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeFire, BotaniaItems.runeSummer });
+            IndustrialAltarRecipe3(3, "agricarnation_flower", new ItemStack(BotaniaFlowerBlocks.agricarnation), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.yellowPetal, BotaniaItems.runeSpring, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "hopperhock_flower", new ItemStack(BotaniaFlowerBlocks.hopperhock), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeAir, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(4, "tangleberrie_flower", new ItemStack(BotaniaFlowerBlocks.tangleberrie), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeAir, BotaniaItems.runeEarth });
+            IndustrialAltarRecipe3(3, "jiyuulia_flower", new ItemStack(BotaniaFlowerBlocks.jiyuulia), new Item[] { BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.purplePetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeWater, BotaniaItems.runeAir });
+            IndustrialAltarRecipe3(3, "rannuncarpus_flower", new ItemStack(BotaniaFlowerBlocks.rannuncarpus), new Item[] { BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.yellowPetal, BotaniaItems.runeEarth, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "hyacidu_flowers", new ItemStack(BotaniaFlowerBlocks.hyacidus), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.greenPetal, BotaniaItems.runeWater, BotaniaItems.runeAutumn, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "pollidisiac_flower", new ItemStack(BotaniaFlowerBlocks.pollidisiac), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.orangePetal, BotaniaItems.runeLust, BotaniaItems.runeFire });
+            IndustrialAltarRecipe3(3, "clayconia_flower", new ItemStack(BotaniaFlowerBlocks.clayconia), new Item[] { BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.grayPetal, BotaniaItems.cyanPetal, BotaniaItems.runeEarth });
+            IndustrialAltarRecipe3(3, "loonium_flower", new ItemStack(BotaniaFlowerBlocks.loonium), new Item[] { BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.grayPetal, BotaniaItems.runeSloth, BotaniaItems.runeGluttony, BotaniaItems.runeEnvy, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(4, "daffomill_flower", new ItemStack(BotaniaFlowerBlocks.daffomill), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.brownPetal, BotaniaItems.yellowPetal, BotaniaItems.runeAir, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "vinculotus_flower", new ItemStack(BotaniaFlowerBlocks.vinculotus), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.greenPetal, BotaniaItems.runeWater, BotaniaItems.runeSloth, BotaniaItems.runeLust, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(4, "spectranthemum_flower", new ItemStack(BotaniaFlowerBlocks.spectranthemum), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.lightGrayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.cyanPetal, BotaniaItems.runeEnvy, BotaniaItems.runeWater, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "medumone_flower", new ItemStack(BotaniaFlowerBlocks.medumone), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.runeEarth, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "marimorphosis_flower", new ItemStack(BotaniaFlowerBlocks.marimorphosis), new Item[] { BotaniaItems.grayPetal, BotaniaItems.yellowPetal, BotaniaItems.greenPetal, BotaniaItems.redPetal, BotaniaItems.runeEarth, BotaniaItems.runeFire, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(4, "bubbell_flower", new ItemStack(BotaniaFlowerBlocks.bubbell), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.runeWater, BotaniaItems.runeSummer, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "solegnolia_flower", new ItemStack(BotaniaFlowerBlocks.solegnolia), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.redPetal, BotaniaItems.bluePetal, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "bergamute_flower", new ItemStack(BotaniaFlowerBlocks.bergamute), new Item[] { BotaniaItems.orangePetal, BotaniaItems.greenPetal, BotaniaItems.greenPetal, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(4, "labellia_flower", new ItemStack(BotaniaFlowerBlocks.labellia), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.bluePetal, BotaniaItems.whitePetal, BotaniaItems.blackPetal, BotaniaItems.runeAutumn, BotaniaItems.redstoneRoot, BotaniaItems.pixieDust });
+            IndustrialAltarRecipe3(3, "motif_daybloom_flower", new ItemStack(motifDaybloom), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal, BotaniaItems.lightBluePetal });
+            IndustrialAltarRecipe3(3, "motif_nightshade_flower", new ItemStack(BotaniaBlocks.motifNightshade), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.purplePetal, BotaniaItems.grayPetal });
 
             // 神话植物学
-            IndustrialAltarRecipe3(2, "exoblaze_flower", 1, Items.WHEAT_SEEDS, RegistriesUtils.getItemStack("mythicbotany:exoblaze"), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeFire, Items.BLAZE_POWDER });
-            IndustrialAltarRecipe3(2, "wither_aconite_flower", 1, Items.WHEAT_SEEDS, RegistriesUtils.getItemStack("mythicbotany:wither_aconite"), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.runePride, Blocks.WITHER_ROSE.asItem() });
-            IndustrialAltarRecipe3(3, "aquapanthus_flower", 1, Items.WHEAT_SEEDS, RegistriesUtils.getItemStack("mythicbotany:aquapanthus"), new Item[] { BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.lightBluePetal, BotaniaItems.greenPetal, BotaniaItems.cyanPetal });
-            IndustrialAltarRecipe3(2, "hellebore_flower", 1, Items.WHEAT_SEEDS, RegistriesUtils.getItemStack("mythicbotany:hellebore"), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.purplePetal, BotaniaItems.cyanPetal, BotaniaItems.runeFire });
-            IndustrialAltarRecipe3(3, "raindeletia_flower", 1, Items.WHEAT_SEEDS, RegistriesUtils.getItemStack("mythicbotany:raindeletia"), new Item[] { BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.magentaPetal, BotaniaItems.whitePetal, BotaniaItems.runeWater });
-            IndustrialAltarRecipe3(2, "petrunia_flower", 1, Items.WHEAT_SEEDS, RegistriesUtils.getItemStack("mythicbotany:petrunia"), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.orangePetal, BotaniaItems.brownPetal, RegistriesUtils.getItem("mythicbotany:gjallar_horn_full"), BotaniaItems.phantomInk });
+            IndustrialAltarRecipe3(3, "exoblaze_flower", mythicbotany.register.ModBlocks.exoblaze.asItem().getDefaultInstance(), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.grayPetal, BotaniaItems.lightGrayPetal, BotaniaItems.runeFire, Items.BLAZE_POWDER });
+            IndustrialAltarRecipe3(3, "wither_aconite_flower", mythicbotany.register.ModBlocks.witherAconite.asItem().getDefaultInstance(), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.runePride, Blocks.WITHER_ROSE.asItem() });
+            IndustrialAltarRecipe3(4, "aquapanthus_flower", mythicbotany.register.ModBlocks.aquapanthus.asItem().getDefaultInstance(), new Item[] { BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.lightBluePetal, BotaniaItems.greenPetal, BotaniaItems.cyanPetal });
+            IndustrialAltarRecipe3(3, "hellebore_flower", mythicbotany.register.ModBlocks.hellebore.asItem().getDefaultInstance(), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.purplePetal, BotaniaItems.cyanPetal, BotaniaItems.runeFire });
+            IndustrialAltarRecipe3(4, "raindeletia_flower", mythicbotany.register.ModBlocks.raindeletia.asItem().getDefaultInstance(), new Item[] { BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.magentaPetal, BotaniaItems.whitePetal, BotaniaItems.runeWater });
+            IndustrialAltarRecipe3(3, "petrunia_flower", mythicbotany.register.ModBlocks.petrunia.asItem().getDefaultInstance(), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.orangePetal, BotaniaItems.brownPetal, ModItems.gjallarHornFull, BotaniaItems.phantomInk });
 
             // 额外植物学
-            IndustrialAltarRecipe3(2, "trade_orchid", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.tradeOrchid), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.brownPetal, BotaniaItems.runeGreed, BotaniaItems.runeLust, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(2, "woodienia", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.woodienia), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.grayPetal, ExtraBotanyItems.elementiumQuartz, BotaniaItems.runeGluttony, BotaniaItems.redstoneRoot });
-            IndustrialAltarRecipe3(3, "reikarlily", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.reikarlily), new Item[] { BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.bluePetal, BotaniaItems.runePride, BotaniaItems.runeEnvy, BotaniaItems.runeSloth, BotaniaItems.lifeEssence });
-            IndustrialAltarRecipe3(2, "bellflower", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.bellflower), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.limePetal, BotaniaItems.limePetal, ExtraBotanyItems.spiritFragment });
-            IndustrialAltarRecipe3(3, "annoyingflower", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.annoyingflower), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.greenPetal, BotaniaItems.runeMana, ExtraBotanyItems.spiritFragment });
-            IndustrialAltarRecipe3(2, "stonesia", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.stonesia), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.blackPetal, BotaniaItems.lifeEssence, BotaniaItems.runeAutumn, BotaniaItems.runeGluttony });
-            IndustrialAltarRecipe3(3, "edelweiss", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.edelweiss), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.manaPowder, BotaniaItems.runeMana, BotaniaItems.runeWinter });
-            IndustrialAltarRecipe3(2, "resoncund", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.resoncund), new Item[] { BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.runeLust, BotaniaItems.runeGluttony });
-            IndustrialAltarRecipe3(4, "sunshine_lily", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.sunshineLily), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal });
-            IndustrialAltarRecipe3(3, "moonlight_lily", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.moonlightLily), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.purplePetal, BotaniaItems.grayPetal });
-            IndustrialAltarRecipe3(2, "serenitian", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.serenitian), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.runeMana, BotaniaItems.runeSloth, BotaniaItems.runeGreed, BotaniaItems.lifeEssence, Items.WITHER_ROSE });
-            IndustrialAltarRecipe3(2, "twinstar", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.twinstar), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.manaPowder, BotaniaItems.manaPowder });
-            IndustrialAltarRecipe3(2, "omniviolet", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.omniviolet), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.runeSpring, BotaniaItems.runeMana, BotaniaItems.runeLust });
-            IndustrialAltarRecipe3(3, "tinkle", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.tinkle), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.greenPetal, BotaniaItems.limePetal, BotaniaItems.runeWater, BotaniaItems.runeEarth, BotaniaItems.manaPowder, ExtraBotanyItems.spiritFragment, ExtraBotanyItems.spiritFragment });
-            IndustrialAltarRecipe3(2, "blood_enchantress", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.bloodEnchantress), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.runeFire, BotaniaItems.runeSummer, BotaniaItems.runeWrath });
-            IndustrialAltarRecipe3(3, "mirrowtunia", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.mirrowtunia), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.runeWrath, BotaniaItems.runePride, BotaniaItems.runeAir, BotaniaItems.manaPowder });
-            IndustrialAltarRecipe3(2, "manalink", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.manalink), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.runeSloth, BotaniaItems.runeLust, BotaniaItems.lifeEssence });
-            IndustrialAltarRecipe3(2, "necrofleur", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.necrofleur), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.redPetal, BotaniaItems.runeWrath, BotaniaItems.manaPowder });
-            IndustrialAltarRecipe3(2, "enchanter", 1, Items.WHEAT_SEEDS, new ItemStack(ExtrabotanyFlowerBlocks.enchanter), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.runePride, BotaniaItems.runeGreed, BotaniaItems.runeGluttony, BotaniaItems.lifeEssence });
+            IndustrialAltarRecipe3(3, "trade_orchid", new ItemStack(ExtrabotanyFlowerBlocks.tradeOrchid), new Item[] { BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.brownPetal, BotaniaItems.runeGreed, BotaniaItems.runeLust, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(3, "woodienia", new ItemStack(ExtrabotanyFlowerBlocks.woodienia), new Item[] { BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.brownPetal, BotaniaItems.grayPetal, ExtraBotanyItems.elementiumQuartz, BotaniaItems.runeGluttony, BotaniaItems.redstoneRoot });
+            IndustrialAltarRecipe3(4, "reikarlily", new ItemStack(ExtrabotanyFlowerBlocks.reikarlily), new Item[] { BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.bluePetal, BotaniaItems.runePride, BotaniaItems.runeEnvy, BotaniaItems.runeSloth, BotaniaItems.lifeEssence });
+            IndustrialAltarRecipe3(3, "bellflower", new ItemStack(ExtrabotanyFlowerBlocks.bellflower), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.limePetal, BotaniaItems.limePetal, ExtraBotanyItems.spiritFragment });
+            IndustrialAltarRecipe3(4, "annoyingflower", new ItemStack(ExtrabotanyFlowerBlocks.annoyingflower), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.greenPetal, BotaniaItems.runeMana, ExtraBotanyItems.spiritFragment });
+            IndustrialAltarRecipe3(3, "stonesia", new ItemStack(ExtrabotanyFlowerBlocks.stonesia), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.blackPetal, BotaniaItems.lifeEssence, BotaniaItems.runeAutumn, BotaniaItems.runeGluttony });
+            IndustrialAltarRecipe3(4, "edelweiss", new ItemStack(ExtrabotanyFlowerBlocks.edelweiss), new Item[] { BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.whitePetal, BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.manaPowder, BotaniaItems.runeMana, BotaniaItems.runeWinter });
+            IndustrialAltarRecipe3(3, "resoncund", new ItemStack(ExtrabotanyFlowerBlocks.resoncund), new Item[] { BotaniaItems.magentaPetal, BotaniaItems.magentaPetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.runeLust, BotaniaItems.runeGluttony });
+            IndustrialAltarRecipe3(5, "sunshine_lily", new ItemStack(ExtrabotanyFlowerBlocks.sunshineLily), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal });
+            IndustrialAltarRecipe3(4, "moonlight_lily", new ItemStack(ExtrabotanyFlowerBlocks.moonlightLily), new Item[] { BotaniaItems.blackPetal, BotaniaItems.blackPetal, BotaniaItems.purplePetal, BotaniaItems.grayPetal });
+            IndustrialAltarRecipe3(3, "serenitian", new ItemStack(ExtrabotanyFlowerBlocks.serenitian), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.runeMana, BotaniaItems.runeSloth, BotaniaItems.runeGreed, BotaniaItems.lifeEssence, Items.WITHER_ROSE });
+            IndustrialAltarRecipe3(3, "twinstar", new ItemStack(ExtrabotanyFlowerBlocks.twinstar), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.orangePetal, BotaniaItems.manaPowder, BotaniaItems.manaPowder });
+            IndustrialAltarRecipe3(3, "omniviolet", new ItemStack(ExtrabotanyFlowerBlocks.omniviolet), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.bluePetal, BotaniaItems.bluePetal, BotaniaItems.runeSpring, BotaniaItems.runeMana, BotaniaItems.runeLust });
+            IndustrialAltarRecipe3(4, "tinkle", new ItemStack(ExtrabotanyFlowerBlocks.tinkle), new Item[] { BotaniaItems.yellowPetal, BotaniaItems.yellowPetal, BotaniaItems.greenPetal, BotaniaItems.limePetal, BotaniaItems.runeWater, BotaniaItems.runeEarth, BotaniaItems.manaPowder, ExtraBotanyItems.spiritFragment, ExtraBotanyItems.spiritFragment });
+            IndustrialAltarRecipe3(3, "blood_enchantress", new ItemStack(ExtrabotanyFlowerBlocks.bloodEnchantress), new Item[] { BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.redPetal, BotaniaItems.runeFire, BotaniaItems.runeSummer, BotaniaItems.runeWrath });
+            IndustrialAltarRecipe3(4, "mirrowtunia", new ItemStack(ExtrabotanyFlowerBlocks.mirrowtunia), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.runeWrath, BotaniaItems.runePride, BotaniaItems.runeAir, BotaniaItems.manaPowder });
+            IndustrialAltarRecipe3(3, "manalink", new ItemStack(ExtrabotanyFlowerBlocks.manalink), new Item[] { BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.lightBluePetal, BotaniaItems.runeSloth, BotaniaItems.runeLust, BotaniaItems.lifeEssence });
+            IndustrialAltarRecipe3(3, "necrofleur", new ItemStack(ExtrabotanyFlowerBlocks.necrofleur), new Item[] { BotaniaItems.grayPetal, BotaniaItems.grayPetal, BotaniaItems.pinkPetal, BotaniaItems.pinkPetal, BotaniaItems.redPetal, BotaniaItems.runeWrath, BotaniaItems.manaPowder });
+            IndustrialAltarRecipe3(3, "enchanter", new ItemStack(ExtrabotanyFlowerBlocks.enchanter), new Item[] { BotaniaItems.purplePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.limePetal, BotaniaItems.limePetal, BotaniaItems.runePride, BotaniaItems.runeGreed, BotaniaItems.runeGluttony, BotaniaItems.lifeEssence });
 
-            INDUSTRIAL_ALTAR_RECIPES.builder("colorful_mystical_flower")
-                    .inputItems(CommonTags.Items.SEEDS, 8)
-                    .inputFluids(Water, 8000)
-                    .outputItems(COLORFUL_MYSTICAL_FLOWER, 8)
-                    .duration(20)
-                    .MANAt(32)
-                    .inputItems(BotaniaItems.whitePetal, 8)
-                    .inputItems(BotaniaItems.lightGrayPetal, 8)
-                    .inputItems(BotaniaItems.grayPetal, 8)
-                    .inputItems(BotaniaItems.blackPetal, 8)
-                    .inputItems(BotaniaItems.brownPetal, 8)
-                    .inputItems(BotaniaItems.redPetal, 8)
-                    .inputItems(BotaniaItems.orangePetal, 8)
-                    .inputItems(BotaniaItems.yellowPetal, 8)
-                    .inputItems(BotaniaItems.limePetal, 8)
-                    .inputItems(BotaniaItems.greenPetal, 8)
-                    .inputItems(BotaniaItems.cyanPetal, 8)
-                    .inputItems(BotaniaItems.lightBluePetal, 8)
-                    .inputItems(BotaniaItems.bluePetal, 8)
-                    .inputItems(BotaniaItems.purplePetal, 8)
-                    .inputItems(BotaniaItems.magentaPetal, 8)
-                    .inputItems(BotaniaItems.pinkPetal, 8)
-                    .save();
-
+            // GTO 多彩神秘花瓣
+            IndustrialAltarRecipe3(6, "colorful_mystical_flower", new ItemStack(COLORFUL_MYSTICAL_FLOWER), new Item[] { BotaniaItems.whitePetal, BotaniaItems.lightGrayPetal, BotaniaItems.grayPetal, BotaniaItems.blackPetal, BotaniaItems.brownPetal, BotaniaItems.redPetal, BotaniaItems.orangePetal, BotaniaItems.yellowPetal, BotaniaItems.limePetal, BotaniaItems.greenPetal, BotaniaItems.cyanPetal, BotaniaItems.lightBluePetal, BotaniaItems.bluePetal, BotaniaItems.purplePetal, BotaniaItems.magentaPetal, BotaniaItems.pinkPetal });
         }
 
-        // 工业祭坛 - 额外植物学 祭坛锻造
+        // 锻造祭坛（工业祭坛 6 号电路）
         {
-            PedestalSmashRecipe(5, "gilded_potato_mashed", 180, Ingredient.of(ExtraBotanyTags.Items.HAMMERS), new ItemStack(ExtraBotanyItems.gildedPotato, 16), new ItemStack(ExtraBotanyItems.gildedPotatoMashed, 16));
-            PedestalSmashRecipe(5, "spirit_fragment", 180, Ingredient.of(ExtraBotanyTags.Items.HAMMERS), new ItemStack(ExtraBotanyItems.spiritFuel, 16), new ItemStack(ExtraBotanyItems.spiritFragment, 16));
-            PedestalSmashRecipe(5, "heros_soul", 360, Ingredient.of(ExtraBotanyTags.Items.HAMMERS), new ItemStack(ExtraBotanyItems.heroMedal, 16), new ItemStack(GTOItems.HEROS_SOUL, 64));
+            PedestalSmashRecipe("gilded_potato_mashed", 180, Ingredient.of(ExtraBotanyTags.Items.HAMMERS), new ItemStack(ExtraBotanyItems.gildedPotato), new ItemStack(ExtraBotanyItems.gildedPotatoMashed));
+            PedestalSmashRecipe("spirit_fragment", 180, Ingredient.of(ExtraBotanyTags.Items.HAMMERS), new ItemStack(ExtraBotanyItems.spiritFuel), new ItemStack(ExtraBotanyItems.spiritFragment));
+            PedestalSmashRecipe("heros_soul", 360, Ingredient.of(ExtraBotanyTags.Items.HAMMERS), new ItemStack(ExtraBotanyItems.heroMedal), new ItemStack(GTOItems.HEROS_SOUL, 4));
+        }
+
+        // 凝聚板
+        {
+            TERRA_PLATE_RECIPES.builder("terrasteel_ingot")
+                    .inputItems(ingot, GTOMaterials.Manasteel)
+                    .inputItems("botania:mana_pearl")
+                    .inputItems(gem, GTOMaterials.ManaDiamond)
+                    .outputItems(ingot, GTOMaterials.Terrasteel)
+                    .MANAt(500)
+                    .duration(500000 / 500)
+                    .save();
+
+            TERRA_PLATE_RECIPES.builder("thaumium_ingot")
+                    .inputItems(ingot, Livingsteel)
+                    .inputItems(ItemsRegistry.SOURCE_GEM)
+                    .inputItems(ingot, OriginalBronze)
+                    .inputItems(ItemsRegistry.MANIPULATION_ESSENCE)
+                    .outputItems(ingot, GTOMaterials.Thaumium)
+                    .MANAt(500)
+                    .duration(500000 / 500)
+                    .save();
+
+            TERRA_PLATE_RECIPES.builder("alfsteel_ingot")
+                    .inputItems(BotaniaItems.elementium)
+                    .inputItems(BotaniaItems.pixieDust)
+                    .inputItems(BotaniaItems.dragonstone)
+                    .outputItems(ingot, Alfsteel)
+                    .MANAt(500)
+                    .duration(1500000 / 500)
+                    .save();
+
+            TERRA_PLATE_RECIPES.builder("gaiasteel_ingot")
+                    .inputItems(ModItems.asgardRune)
+                    .inputItems(ModItems.vanaheimRune)
+                    .inputItems(ModItems.alfheimRune)
+                    .inputItems(ModItems.midgardRune)
+                    .inputItems(ModItems.joetunheimRune)
+                    .inputItems(ModItems.muspelheimRune)
+                    .inputItems(ModItems.niflheimRune)
+                    .inputItems(ModItems.nidavellirRune)
+                    .inputItems(ModItems.helheimRune)
+                    .inputItems(ingot, Alfsteel, 3)
+                    .inputItems(ingot, Runerock, 3)
+                    .outputItems(ingot, Gaiasteel, 3)
+                    .MANAt(500)
+                    .duration(2500000 / 500)
+                    .save();
+
+            TERRA_PLATE_RECIPES.builder("gaia_ingot")
+                    .inputItems(ingot, Gaiasteel, 2)
+                    .inputItems(BotaniaItems.lifeEssence, 2)
+                    .outputItems(ingot, Gaia, 2)
+                    .MANAt(500)
+                    .duration(5000000 / 500)
+                    .save();
+
+            TERRA_PLATE_RECIPES.builder("aerialite_ingot")
+                    .inputItems(BotaniaItems.enderAirBottle, 2)
+                    .inputItems(gem, Dragonstone, 2)
+                    .inputItems(Items.PHANTOM_MEMBRANE.asItem(), 2)
+                    .notConsumableFluid(GTOMaterials.Aerialite, 144)
+                    .outputItems(ingot, Aerialite, 3)
+                    .MANAt(500)
+                    .duration(500000 / 500)
+                    .save();
+
+            TERRA_PLATE_RECIPES.builder("the_universe")
+                    .inputItems(ExtraBotanyItems.theChaos, 2)
+                    .inputItems(ExtraBotanyItems.theOrigin, 2)
+                    .inputItems(ExtraBotanyItems.theEnd, 2)
+                    .outputItems(ExtraBotanyItems.theUniverse, 3)
+                    .MANAt(500)
+                    .duration(500000 / 500)
+                    .save();
         }
 
         // 多方块特供配方
         {
+            // 魔力灌注
+            MANA_INFUSER_RECIPES.builder("bifrost_perm")
+                    .notConsumable("botania:rainbow_rod")
+                    .inputItems(BotaniaBlocks.elfGlass, 16)
+                    .outputItems(BotaniaBlocks.bifrostPerm, 16)
+                    .duration(200)
+                    .MANAt(1)
+                    .save();
+
+            MANA_INFUSER_RECIPES.builder("gjallar_horn_full")
+                    .notConsumable(mythicbotany.register.ModBlocks.yggdrasilBranch.asItem())
+                    .inputItems(ModItems.gjallarHornEmpty, 16)
+                    .outputItems(ModItems.gjallarHornFull, 16)
+                    .duration(400)
+                    .MANAt(240)
+                    .save();
+
             // 魔力凝聚
             {
                 String[] EndremEyes = {
@@ -905,8 +901,8 @@ public final class BotaniaRecipes {
                         .save();
 
                 MANA_CONDENSER_RECIPES.builder("nether_star")
-                        .chancedInput("mythicbotany:helheim_rune", 9500, 100)
-                        .inputItems("botania:quartz_elven", 4)
+                        .chancedInput(ModItems.helheimRune, 9500, 100)
+                        .inputItems(BotaniaItems.elfQuartz, 4)
                         .inputItems(dust, GTMaterials.Iridium)
                         .outputItems(gem, GTMaterials.NetherStar, 2)
                         .inputFluids(GTMaterials.NetherAir, 4000)
@@ -946,15 +942,15 @@ public final class BotaniaRecipes {
                         .save();
 
                 MANA_CONDENSER_RECIPES.builder("gaiasteel_ingot")
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:asgard_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:vanaheim_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:alfheim_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:midgard_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:joetunheim_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:muspelheim_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:niflheim_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:nidavellir_rune"), 2)
-                        .inputItems(RegistriesUtils.getItemStack("mythicbotany:helheim_rune"), 2)
+                        .inputItems(ModItems.asgardRune, 2)
+                        .inputItems(ModItems.vanaheimRune, 2)
+                        .inputItems(ModItems.alfheimRune, 2)
+                        .inputItems(ModItems.midgardRune, 2)
+                        .inputItems(ModItems.joetunheimRune, 2)
+                        .inputItems(ModItems.muspelheimRune, 2)
+                        .inputItems(ModItems.niflheimRune, 2)
+                        .inputItems(ModItems.nidavellirRune, 2)
+                        .inputItems(ModItems.helheimRune, 2)
                         .inputItems(ingot, Alfsteel, 6)
                         .inputItems(ingot, Runerock, 6)
                         .outputItems(ingot, Gaiasteel, 9)
@@ -992,7 +988,7 @@ public final class BotaniaRecipes {
                         .save();
             }
 
-            // 精灵交易
+            // 精灵门：兑换袋 / 贤者之石
             {
                 ElfExchangeRecipe(1, "pandoras_box", 20000, 100, new ItemStack(ExtraBotanyItems.heroMedal, 2), new ItemStack(ExtraBotanyItems.pandorasBox));
                 ElfExchangeRecipe(2, "nine_and_three_quarters", 10000, 100, new ItemStack(ExtraBotanyItems.heroMedal), new ItemStack(ExtraBotanyItems.nineAndThreeQuartersRewardBag, 40));
@@ -1116,7 +1112,7 @@ public final class BotaniaRecipes {
                                           int duration,
                                           ItemStack input,
                                           ItemStack output) {
-        var build = ELF_EXCHANGE_RECIPES.builder(id);
+        var build = ELVEN_PORTAL_RECIPES.builder(id);
         if (circuitMeta != 0) build.circuitMeta(circuitMeta);
         build
                 .inputItems(input)
@@ -1135,15 +1131,22 @@ public final class BotaniaRecipes {
 
     private static void InfusionManaPoolRecipe(
                                                String id,
-                                               Item input,
+                                               Object input,
                                                ItemStack output,
                                                int mana,
-                                               Block customCatalyst,
+                                               Item customCatalyst,
                                                String group) {
-        Item customCatalystItem = (customCatalyst == null) ? BotaniaBlocks.livingrock.asItem() : customCatalyst.asItem();
+        Item customCatalystItem = (customCatalyst == null) ? BotaniaBlocks.livingrock.asItem() : customCatalyst;
         int manat = Math.max(mana / 500, 1);
         int count = 1;
         if (manat == 1) count = Math.max(500 / mana, 1);
+        var r = MANA_POOL_RECIPES.builder(id);
+        if (customCatalyst != null) r.notConsumable(customCatalystItem);
+        r.inputItems(input)
+                .outputItems(output)
+                .duration(20)
+                .MANAt(mana / 20)
+                .save();
         MANA_INFUSER_RECIPES.builder(id)
                 .notConsumable(customCatalystItem)
                 .inputItems(input, count)
@@ -1156,8 +1159,14 @@ public final class BotaniaRecipes {
 
     private static void InfusionPureDaisyRecipe(
                                                 String id,
-                                                Item input,
+                                                Object input,
                                                 Item output) {
+        PURE_DAISY_RECIPES.builder(id)
+                .inputItems(input)
+                .outputItems(output)
+                .duration(20)
+                .MANAt(1)
+                .save();
         MANA_INFUSER_RECIPES.builder(id)
                 .notConsumable(BotaniaFlowerBlocks.pureDaisy.asItem())
                 .inputItems(input, 32)
@@ -1168,80 +1177,136 @@ public final class BotaniaRecipes {
                 .save();
     }
 
+    private static final List<Item> runeItems = List.of(
+            BotaniaItems.runeEarth, BotaniaItems.runeAir, BotaniaItems.runeFire, BotaniaItems.runeWater,
+            BotaniaItems.runeSpring, BotaniaItems.runeSummer, BotaniaItems.runeAutumn, BotaniaItems.runeWinter,
+            BotaniaItems.runeMana, BotaniaItems.runeLust, BotaniaItems.runeGluttony, BotaniaItems.runeGreed,
+            BotaniaItems.runeSloth, BotaniaItems.runeWrath, BotaniaItems.runeEnvy, BotaniaItems.runePride,
+            ModItems.asgardRune, ModItems.vanaheimRune, ModItems.alfheimRune,
+            ModItems.joetunheimRune, ModItems.muspelheimRune, ModItems.niflheimRune,
+            ModItems.nidavellirRune, ModItems.helheimRune, ModItems.midgardRune);
+
     private static void IndustrialAltarRecipe1(
-                                               int circuitMeta,
                                                String id,
                                                int mana,
-                                               Item input,
                                                ItemStack output,
                                                Item[] inputs) {
         Reference2IntOpenHashMap<Item> CountMap = new Reference2IntOpenHashMap<>();
         for (Item item : inputs) CountMap.addTo(item, 1);
+        var build1 = RUNIC_ALTAR_RECIPES.builder(id);
+        build1
+                .inputItems(BotaniaBlocks.livingrock.asItem())
+                .outputItems(output.copyWithCount(output.getCount()))
+                .duration(mana / 100)
+                .MANAt(100);
+        CountMap.reference2IntEntrySet().fastForEach(entry -> {
+            if (runeItems.contains(entry.getKey()))
+                build1.notConsumable(entry.getKey(), entry.getIntValue());
+            else
+                build1.inputItems(entry.getKey(), entry.getIntValue());
+        });
+        build1.save();
 
-        var build = INDUSTRIAL_ALTAR_RECIPES.builder(id);
-        build
-                .inputItems(input, 16)
-                .outputItems(output.copyWithCount(output.getCount() << 3))
+        var build2 = INDUSTRIAL_ALTAR_RECIPES.builder(id);
+        build2
+                .inputItems(BotaniaBlocks.livingrock.asItem())
+                .outputItems(output.copyWithCount(output.getCount()))
                 .duration(300)
-                .circuitMeta(circuitMeta)
+                .circuitMeta(1)
                 .MANAt(mana / 50);
-        CountMap.reference2IntEntrySet().fastForEach(entry -> build.inputItems(entry.getKey(), entry.getIntValue()));
-        build.save();
+        CountMap.reference2IntEntrySet().fastForEach(entry -> {
+            if (runeItems.contains(entry.getKey()))
+                build2.notConsumable(entry.getKey(), entry.getIntValue());
+            else
+                build2.inputItems(entry.getKey(), entry.getIntValue());
+        });
+        build2.save();
+
+        var build3 = INDUSTRIAL_ALTAR_RECIPES.builder(id + "_plas");
+        build3
+                .inputItems(BotaniaBlocks.livingrock.asItem(), 16)
+                .outputItems(output.copyWithCount(output.getCount() << 4))
+                .duration(300)
+                .circuitMeta(2)
+                .MANAt(mana / 50);
+        CountMap.reference2IntEntrySet().fastForEach(entry -> build3.inputItems(entry.getKey(), entry.getIntValue()));
+        build3.save();
     }
 
     private static void IndustrialAltarRecipe2(
-                                               int circuitMeta,
                                                String id,
                                                int mana,
-                                               Item input,
                                                ItemStack output,
                                                Item[] inputs) {
         Reference2IntOpenHashMap<Item> CountMap = new Reference2IntOpenHashMap<>();
         for (Item item : inputs) CountMap.addTo(item, 1);
 
-        var build = INDUSTRIAL_ALTAR_RECIPES.builder(id);
-        build
-                .inputItems(input, 4)
+        var build1 = RUNIC_ALTAR_RECIPES.builder(id);
+        build1
+                .inputItems(BotaniaBlocks.livingrock.asItem())
                 .outputItems(output)
+                .duration(mana / 100)
+                .MANAt(100);
+        CountMap.reference2IntEntrySet().fastForEach(entry -> build1.inputItems(entry.getKey(), entry.getIntValue()));
+        build1.save();
+
+        var build2 = INDUSTRIAL_ALTAR_RECIPES.builder(id);
+        build2
+                .inputItems(BotaniaBlocks.livingrock.asItem(), 4)
+                .outputItems(output, output.getCount() * 4)
                 .duration(300)
-                .circuitMeta(circuitMeta)
+                .circuitMeta(1)
                 .MANAt(mana / 50);
-        CountMap.reference2IntEntrySet().fastForEach(entry -> build.inputItems(entry.getKey(), entry.getIntValue() * 4));
-        build.save();
+        CountMap.reference2IntEntrySet().fastForEach(entry -> build2.inputItems(entry.getKey(), entry.getIntValue() * 4));
+        build2.save();
     }
 
     private static void IndustrialAltarRecipe3(
                                                int circuitMeta,
                                                String id,
-                                               int mana,
-                                               Item input,
                                                ItemStack output,
                                                Item[] inputs) {
         Reference2IntOpenHashMap<Item> CountMap = new Reference2IntOpenHashMap<>();
         for (Item item : inputs) CountMap.addTo(item, 1);
+        var build1 = PETAL_APOTHECARY_RECIPES.builder(id);
+        build1
+                .inputItems(CommonTags.Items.SEEDS)
+                .inputFluids(Water, 1000)
+                .outputItems(output)
+                .duration(20)
+                .circuitMeta(circuitMeta)
+                .MANAt(1);
+        CountMap.reference2IntEntrySet().fastForEach(entry -> build1.inputItems(entry.getKey()));
+        build1.save();
 
-        var build = INDUSTRIAL_ALTAR_RECIPES.builder(id);
-        build
+        var build2 = INDUSTRIAL_ALTAR_RECIPES.builder(id);
+        build2
                 .inputItems(CommonTags.Items.SEEDS, 8)
                 .inputFluids(Water, 8000)
                 .outputItems(output, 8)
                 .duration(20)
                 .circuitMeta(circuitMeta)
                 .MANAt(32);
-        CountMap.reference2IntEntrySet().fastForEach(entry -> build.inputItems(entry.getKey(), entry.getIntValue() * 2));
-        build.save();
+        CountMap.reference2IntEntrySet().fastForEach(entry -> build2.inputItems(entry.getKey(), entry.getIntValue() * 2));
+        build2.save();
     }
 
     private static void PedestalSmashRecipe(
-                                            int circuitMeta,
                                             String id,
                                             int mana,
                                             Ingredient hammer,
                                             ItemStack input,
                                             ItemStack output) {
+        PEDESTAL_RECIPES.builder(id)
+                .notConsumable(hammer)
+                .inputItems(input)
+                .outputItems(output)
+                .duration(mana * 2)
+                .MANAt(25)
+                .save();
         INDUSTRIAL_ALTAR_RECIPES.builder(id)
                 .notConsumable(hammer)
-                .circuitMeta(circuitMeta)
+                .circuitMeta(6)
                 .inputItems(input)
                 .outputItems(output)
                 .duration(40)

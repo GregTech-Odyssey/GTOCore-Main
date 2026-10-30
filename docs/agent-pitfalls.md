@@ -59,6 +59,12 @@ enabled = false
 
 ## 构建与验证
 
+### GameTest 与独立 GTOLib 不能共用包
+
+保护模式把 GTOLib 放进独立的 `gtolib` 模组，`gametest` source set 则归属于 `gtocore` 模组，并且也参与 data/client 等运行配置。新增 GameTest 若放在 GTOLib 已有的包（例如 `com.gtolib.storage`），Java 模块层会在启动前报 `Modules gtocore and gtolib export package ...`，连 `runData` 也不能启动；仅在明文模式跑测试发现不了这个问题。
+
+测试类统一放在 `com.gtocore.gametest.*`，通过 GTOLib 公共接口访问实现。移动类后让 `compileGametestJava` 清理旧输出，并使用默认保护模式运行 `runGameTestServer` 验证。GameTest 创建玩家时还需要与 client/server/data 相同的普通 Java 库注入，运行配置必须将 `gametestRuntimeClasspath` 中这些库写入 `gameTestServerLegacyClasspath.txt`。
+
 - Windows 上第一次调用 Gradle 前显式设置 JDK 21 并确认 `java.exe` 存在（见 AGENTS.md）。
 - 推送前 `spotlessApply` + `spotlessCheck`；只覆盖 Java 时用 `spotlessJavaCheck`（`spotlessCheck` 会连 Kotlin 一起查，可能报别人正在改的文件）。
 - **依赖版本升级（`gradle.properties`）会静默换掉 API**：例如 AE2 `15.269.2` 去掉了 `appeng.api.implementations.items.IStorageComponent`，`StorageComponentItem` 从「实现该接口、`int getBytes(ItemStack)`」变成「无参 `long getBytes()`」。升版本后先 `compileJava`，按编译错误逐个适配，并把版本号与适配代码放进**同一个提交**（否则提交出去的状态编译不过）。

@@ -1,0 +1,25 @@
+{
+  "name": "gtocore.lexicon.laureril_pool.name",
+  "category": "botania:mana",
+  "icon": "gtocore:laureril_mana_pool",
+  "pages": [
+    {
+      "type": "text",
+      "text": "gtocore.lexicon.laureril_pool.page0"
+    },
+    {
+      "type": "text",
+      "text": "gtocore.lexicon.laureril_pool.page1"
+    },
+    {
+      "type": "crafting",
+      "text": "gtocore.lexicon.laureril_pool.page2",
+      "recipe": "gtocore:shaped/laureril_mana_pool"
+    },
+    {
+      "type": "crafting",
+      "text": "gtocore.lexicon.laureril_pool.page3",
+      "recipe": "gtocore:shaped/large_laureril_mana_pool"
+    }
+  ]
+}

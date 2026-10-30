@@ -5,6 +5,7 @@ import com.gtolib.api.capability.IHeatContainer;
 
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.integration.jade.provider.CapabilityBlockProvider;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -43,6 +44,7 @@ public final class TemperatureProvider extends CapabilityBlockProvider<IHeatCont
     protected void addTooltip(CompoundTag capData, ITooltip tooltip, Player player, BlockAccessor block, BlockEntity blockEntity, IPluginConfig config) {
         var max_temperature = capData.getLong("max_temperature");
         if (max_temperature == 0) return;
-        tooltip.add(Component.translatable("gtocore.machine.current_temperature", (long) capData.getDouble("temperature") + " / " + max_temperature));
+        tooltip.add(Component.translatable("gtocore.machine.current_temperature",
+                FormattingUtil.formatNumbers(capData.getDouble("temperature")) + " / " + FormattingUtil.formatNumbers(max_temperature)));
     }
 }

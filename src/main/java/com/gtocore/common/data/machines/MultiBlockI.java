@@ -159,7 +159,8 @@ public class MultiBlockI {
     // 太阳风暴聚合反应器
     public static final MultiblockMachineDefinition SOLAR_STORM_AGGREGATION_REACTOR = multiblock("solar_storm_aggregation_reactor", "太阳风暴聚合反应器", SolarStormAggregationReactor::new)
             .nonYAxisRotation()
-            .recipeTypes(GTORecipeTypes.MIXER_RECIPES)
+            .recipeTypes(GTORecipeTypes.SOLAR_STORM_AGGREGATION_REACTOR_RECIPES)
+            .tips(GTOMachineTooltipsA.solarStormAggregationReactorTooltips)
             .block(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING)
             .structure(definition -> Structure.root(MultiBlockFileReader.piece(definition.getName()).build()).symbols(Symbols.create()
                     .wherePart('A', blocks(GTOBlocks.SINGULARITY_REINFORCED_STELLAR_SHIELDING_CASING.get())

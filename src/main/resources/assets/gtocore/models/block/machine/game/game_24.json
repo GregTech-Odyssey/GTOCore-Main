@@ -1,0 +1,18 @@
+{
+  "credit": "Made with Blockbench",
+  "render_type": "translucent",
+  "textures": {
+    "0": "gtocore:block/machines/game/game_24"
+  },
+  "elements": [
+    {
+      "name": "screen",
+      "from": [1.5, 3.5, 0.15],
+      "to": [14.5, 16.5, 0.15],
+      "rotation": { "angle": 0, "axis": "y", "origin": [-0.75, 3.5, 0] },
+      "faces": {
+        "north": { "uv": [0, 0, 16, 16], "texture": "#0" }
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
+import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
@@ -102,6 +103,7 @@ public final class LangHandler {
         BlockRegisterUtils.LANG.forEach((k, v) -> addCN("block.gtocore." + k, v));
         GTORecipeCategories.LANG.forEach((k, v) -> addCNEN("gtceu.recipe.category." + k, v));
         GTOFluidStorageKey.initLang();
+        LaurerilManaPools.initLang();
         Ions.NAME_TO_transkey.forEach(LangHandler::addCNEN);
         for (var type : OrganType.VALUES) addCNEN(type.translationKey, type.cn, type.en);
         for (var tier : OrganTier.all()) addCNEN(tier.getTranslationKey(), tier.getCn(), tier.getEn());

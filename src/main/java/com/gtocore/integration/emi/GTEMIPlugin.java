@@ -185,6 +185,9 @@ public final class GTEMIPlugin implements EmiPlugin {
         if (Mods.SOPHISTICATEDBACKPACKS.isLoaded()) {
             list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.emi.BackpackEmiPlugin(), "backpack"));
         }
+        if (Mods.SOPHISTICATEDSTORAGE.isLoaded()) {
+            list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin(), "sophisticatedstorage"));
+        }
         list.accept(new EmiPluginContainer(new BotaniaEmiPlugin(), BotaniaAPI.MODID));
         list.accept(new EmiPluginContainer(new EmiExtrabotanyPlugin(), ExtraBotanyAPI.MODID));
         list.accept(new EmiPluginContainer(new EMIPlugin(), LDLib.MOD_ID));
@@ -265,8 +268,8 @@ public final class GTEMIPlugin implements EmiPlugin {
         GTBedrockFluidEmiCategory.registerWorkStations(registry);
         GTBedrockOreEmiCategory.registerWorkStations(registry);
         NanitesIntegratedProcessingEmiCategory.registerWorkstations(registry);
-        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.compareNbt());
-        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.compareNbt());
+        registry.setDefaultComparison(GTItems.PROGRAMMED_CIRCUIT.asItem(), Comparison.COMPARE_STACK_KEY);
+        registry.setDefaultComparison(GTOItems.DIMENSION_DATA.asItem(), Comparison.COMPARE_STACK_KEY);
         registerDimensionDataVariants(registry);
 
         Comparison potionComparison = Comparison.compareData(stack -> PotionUtils.getPotion(stack.getNbt()));
@@ -274,8 +277,11 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.setDefaultComparison(potionFluid.getSource(), potionComparison);
         registry.setDefaultComparison(potionFluid.getFlowing(), potionComparison);
 
-        GTCEuAPI.materialManager.getRegisteredMaterials().stream().filter(m -> GTOUtils.isGeneration(TagPrefix.turbineBlade, m)).forEach(
-                m -> registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, m), Comparison.compareNbt()));
+        for (var material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+            if (GTOUtils.isGeneration(TagPrefix.turbineBlade, material)) {
+                registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, material), Comparison.COMPARE_STACK_KEY);
+            }
+        }
 
         registry.addGenericDragDropHandler(new EmiDragDropHandler<>() {
 

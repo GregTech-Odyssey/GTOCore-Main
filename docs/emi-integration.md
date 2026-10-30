@@ -20,7 +20,7 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 | 库存合成判定、可合成列表及库存比较 | EMI-gto `dev.emi.emi.api.recipe.EmiPlayerInventory` |
 | 合成余物发现 | EMI-gto `dev.emi.emi.recipe.EmiShapedRecipe` |
 | 自定义物品列表的过滤及索引烘焙 | EMI-gto `dev.emi.emi.registry.EmiStackList.bake(List)` |
-| 物品/流体连同 NBT 的驻留键、NBT 比较 | EMI-gto `EmiStackKey`/`EmiItemKey`/`EmiFluidKey`、`Comparison` |
+| 物品/流体连同 NBT 的驻留键、NBT 比较 | 装有 AE 时为 AE 的 `AEItemKey`/`AEFluidKey`（EMI-gto `StackKeys` 选择）、`Comparison` |
 | 全局/服务器分组 JSON 读写与旧格式兼容 | EMI-gto `dev.emi.emi.runtime.EmiPersistentData` |
 | 工作站多列布局 | EMI-gto `RecipeScreen` |
 | 异步搜索烘焙、搜索就绪状态与进度显示 | EMI-gto `EmiSearch`、`EmiReloadManager`、`EmiScreenManager` |
@@ -30,7 +30,13 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 | 大数量按 AE 格式渲染、AE 包装流体的配方查询、收藏变动回调 | AE `AppEngEmiHooks`（接 EMI-gto 的 `EmiHooks`） |
 | 无槽位的 AE 合成确认/合成 CPU 界面显示 EMI | AE `AppEngEmiPlugin`（通用界面范围提供器） |
 
-`ItemEmiStack` / `FluidEmiStack` 内部持有 EMI 自己的驻留键（`EmiItemKey` / `EmiFluidKey`，内容相同即同一对象，按 `==` 比较），`getStackKey()` 提供该引用；键的 `attachment` 槽位由 AE 填入对应的 AEKey，`EmiStackHelper.toAEKey` 先读槽位，没有才换算一次并写回。`getKey()` 继续返回 `Item` / `Fluid`，以维持注册表适配、配方比较及第三方集成的既有语义。自定义 EMI 资源没有驻留键，仍走自身的 key/NBT 逻辑。
+`ItemEmiStack` / `FluidEmiStack` 内部持有驻留键（内容相同即同一对象，按 `==` 比较），`getStackKey()` 提供该引用。装有 AE 时 EMI 直接使用 AE 的 `AEItemKey` / `AEFluidKey`，与 AE 共用一套键，`EmiStackHelper.toAEKey` 直接取用、`toEmiStack` 用 `ItemEmiStack.ofKey` / `FluidEmiStack.ofKey` 包回；没装 AE 时 EMI 才用自带的键。`getKey()` 继续返回 `Item` / `Fluid`，以维持注册表适配、配方比较及第三方集成的既有语义。自定义 EMI 资源没有驻留键，仍走自身的 key/NBT 逻辑。
+
+### 资源专属比较器
+
+严格比较通过 `EmiStack.getStrictComparison()` 选择资源专属的共享比较器，调用方用 `isStrictEqual`；严格索引的 hash 也必须取同一个比较器，不能另行读取 NBT。物品/流体使用 `COMPARE_STACK_KEY`，搜索文本使用 `COMPARE_STRING`，材料形态、研究标签、科技节点和离子使用各自的注册对象引用。装有 AE 时物品/流体的驻留键就是 AEKey，`COMPARE_STACK_KEY` 即按 AEKey 引用比较；需要区分数据的 GTO 物品默认比较也使用它。
+
+新增自定义资源必须覆写 `getStrictComparison()`，比较与 hash 使用同一业务标识；不要为了匹配而临时序列化 NBT。旧 `COMPARE_NBT`、`Comparison.compareNbt()` 与无资源参数的 `EmiPort.compareStrict()` 保留并标记弃用，仅供尚未迁移的第三方二进制兼容，本仓及维护中的 EMI/AE 调用不再使用。
 
 `EmiHooks` 的三个回调由 AE 客户端初始化时（`AppEngClient` 构造器调用 `AppEngEmiHooks.register()`）注册一次。收藏缓存由 EMI 的收藏变更路径（磁盘加载、添加和删除）经 `EmiHooks.onFavoritesChanged` 更新；GTO 不再额外用 Mixin 重算同一份缓存。
 
@@ -47,6 +53,14 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 EMI 加载/重载中的逐配方、逐原料、逐标签操作按局部高频路径处理，不能因为入口低频而保留内部的 stream pipeline、装箱或重复构建集合。索引直接构建最终列表，注册对象与驻留键使用引用容器，哈希对象使用哈希缓存容器；AE 侧以 AEKey 为键的容器用 `AEKeySet`/`AEKeyObjectMap`/`AEKeyIntMap` 等专用容器。排序先缓存比较所需的数据，避免在 comparator 中反复遍历。
 
 对外 EMI/JEI 协议保留必要的接口类型、Stream/Optional 返回值；内部使用具体容器、原始类型与显式循环。参数和空值约束通过 JetBrains `@NotNull`、`@Nullable`、`@Contract`、`@UnmodifiableView` 表达，直接共享只读缓存，不增加运行时防御检查或不可变包装。
+
+## 精妙系列兼容
+
+精妙核心的 `EmiGridMenuInfo` 仍以二进制方式访问 `dev.emi.emi.platform.EmiClient.onServer`。EMI-gto 保留该旧包名的兼容类，继承 `dev.emi.emi.EmiClient`，让旧、新调用共享服务器握手状态、断线复位和配方传输入口；不要在兼容类里另行声明同名静态字段。
+
+GTO 的 EMI 插件白名单分别注册 `BackpackEmiPlugin` 和 `StorageEmiPlugin`，按各自模组是否存在启用。精妙核心的 `CoreEmiPlugin` 当前为空，无需额外注册。
+
+EMI-gto 的 `SophisticatedEmiCompatibilityTest` 使用与主仓一致的精妙核心、背包、存储真实依赖，检查 EMI 字段/方法的二进制链接，并执行两个容器的实际 `EmiGridMenuInfo.craft`。测试覆盖客户端填充以及服务器传输的三种目标、单次/批量请求；Minecraft 界面与 Forge 网络边界使用 mock，游戏内的实际物品移动仍需客户端回归。
 
 ## 跨仓验证与交付
 

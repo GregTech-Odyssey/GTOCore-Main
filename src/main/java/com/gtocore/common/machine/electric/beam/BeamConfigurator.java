@@ -119,7 +119,7 @@ final class BeamConfigurator implements IFancyConfigurator {
     public static final String LOOP = "gtocore.machine.ray_beam.loop";
     @RegisterLanguage(cn = "已截断回返支路，其余光路继续工作", en = "Returning branch truncated; remaining paths stay active")
     public static final String BRANCH_LOOP = "gtocore.machine.ray_beam.branch_loop";
-    @RegisterLanguage(cn = "光路超过计算预算，已停止供光", en = "Optical path exceeds its work budget; output disabled")
+    @RegisterLanguage(cn = "光路超过计算预算，已截断后续光路", en = "Optical path exceeds its work budget; further tracing truncated")
     public static final String LIMIT = "gtocore.machine.ray_beam.limit";
     @RegisterLanguage(cn = "光路在未加载区块边界停止", en = "Optical path stops at an unloaded chunk boundary")
     public static final String UNLOADED = "gtocore.machine.ray_beam.unloaded";

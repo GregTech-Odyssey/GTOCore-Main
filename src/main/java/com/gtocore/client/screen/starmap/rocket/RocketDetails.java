@@ -2,18 +2,22 @@ package com.gtocore.client.screen.starmap.rocket;
 
 import com.gtocore.client.screen.starmap.base.StarCatalog;
 import com.gtocore.client.screen.starmap.base.StarSprites;
+import com.gtocore.common.data.StarMapDysonSync;
 
 import com.gtolib.api.adastra.IAdDisplayTagName;
+import com.gtolib.api.data.GTODimensions;
 
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.render.UIDraw;
 import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,8 +37,11 @@ import earth.terrarium.adastra.common.constants.ConstantComponents;
 import earth.terrarium.adastra.common.menus.PlanetsMenu;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.IntSupplier;
 
 /**
@@ -68,6 +75,11 @@ final class RocketDetails {
                 planet.oxygen() ? () -> UITheme.STATUS_TEXT_GOOD : UITheme::panelText));
         info.addChild(row(RocketLang.LABEL_TEMPERATURE, Component.translatable(RocketLang.TEMPERATURE_VALUE, planet.temperature())));
         info.addChild(row(RocketLang.LABEL_SOLAR, Component.literal(String.valueOf(planet.solarPower()))));
+        var level = menu.player().level();
+        var galaxy = GTODimensions.getGalaxy(dimension);
+        if (catalog.isStellar(body) && galaxy != null && galaxy == GTODimensions.getGalaxy(level.dimension())) {
+            info.addChild(new DysonProgress(info, level));
+        }
         column.addChild(info);
 
         boolean here = catalog.current() == body;
@@ -121,6 +133,39 @@ final class RocketDetails {
 
     private static UIElement row(String label, Component value) {
         return row(label, value, UITheme::panelText);
+    }
+
+    static int dysonContentWidth() {
+        return Math.max(UISizes.POPUP_CONTENT_WIDTH, UIText.width(Component.translatable(RocketLang.LABEL_DYSON_LAUNCHED)) +
+                UISizes.GAP + dysonValueWidth() + 2 * UISizes.PANEL_PADDING);
+    }
+
+    private static int dysonValueWidth() {
+        // 为总数与三位小数百分比预留宽度，实时更新时无需改变布局。
+        var maximum = FormattingUtil.formatNumbers(StarMapDysonSync.COMPLETE);
+        return UIText.width(Component.translatable(RocketLang.DYSON_LAUNCHED_VALUE, maximum, maximum, "100.000")) + 2;
+    }
+
+    private static final class DysonProgress extends UIElement {
+
+        private final DecimalFormat percentage = new DecimalFormat("0.###", DecimalFormatSymbols.getInstance(Locale.ROOT));
+        private Component value;
+
+        DysonProgress(UIElement info, Level level) {
+            layout(l -> l.row().height(TextLine.HEIGHT).gapAll(UISizes.GAP));
+            int launched = StarMapDysonSync.launched(level);
+            update(launched);
+            addChildren(TextLine.translatable(LayoutStyle.AUTO, RocketLang.LABEL_DYSON_LAUNCHED).bindClientColor(UITheme::textSecondary).layout(l -> l.flex(1)),
+                    TextLine.of(dysonValueWidth(), () -> value).setTextAlign(Horizontal.RIGHT).bindClientColor(UITheme::panelText));
+            // 绑定放在始终显示的信息区，零发射时隐藏的行也能在首次发射后恢复显示。
+            info.addSyncValue(SyncValue.ofInt(() -> StarMapDysonSync.launched(level), launched).onChanged(this::update));
+        }
+
+        private void update(int launched) {
+            value = Component.translatable(RocketLang.DYSON_LAUNCHED_VALUE, FormattingUtil.formatNumbers(launched),
+                    FormattingUtil.formatNumbers(StarMapDysonSync.COMPLETE), percentage.format(launched * 100.0 / StarMapDysonSync.COMPLETE));
+            setDisplay(launched > 0);
+        }
     }
 
     private static UIElement row(String label, Component value, IntSupplier color) {

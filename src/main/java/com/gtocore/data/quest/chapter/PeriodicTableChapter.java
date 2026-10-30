@@ -345,9 +345,9 @@ public final class PeriodicTableChapter {
             .at(-0.5, 8.5)
             .task(Task.item(TagPrefix.dust, GTMaterials.Thorium)));
 
-    public static final Quest PRASEODYMIUM_DUST_2 = CHAPTER.quest("praseodymium_dust_2", q -> q
+    public static final Quest PROTACTINIUM_DUST = CHAPTER.quest("protactinium_dust", q -> q
             .at(1, 8.5)
-            .task(Task.item(TagPrefix.dust, GTMaterials.Praseodymium)));
+            .task(Task.item(TagPrefix.dust, GTMaterials.Protactinium)));
 
     public static final Quest URANIUM_DUST = CHAPTER.quest("uranium_dust", q -> q
             .at(2.5, 8.5)

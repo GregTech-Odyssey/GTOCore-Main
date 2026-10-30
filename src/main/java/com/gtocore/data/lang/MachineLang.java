@@ -13,6 +13,7 @@ import static com.gtocore.data.lang.LangHandler.addCNEN;
 final class MachineLang {
 
     static void init() {
+        addCNEN("gtocore.super_storage.upgrade.tip", "可插入升级提升容量", "Insert upgrades to increase capacity");
         addCNEN("gtocore.structure.deprecated", "该结构已弃用", "This structure has been deprecated");
         addCNEN("gui.tooltips.redstone_mode.enabled", "启用红石模式，机器接收红石信号", "Enable redstone mode, the machine will receive redstone signals");
         addCNEN("gui.tooltips.redstone_mode.disabled", "禁用红石模式，机器无视红石信号", "Disable redstone mode, the machine will ignore redstone signals");
@@ -148,6 +149,8 @@ final class MachineLang {
         for (int tier = 0; tier < GTOValues.MANA.length; tier++) {
             addCNEN("gtocore.recipe.info.mana_tier." + tier, GTOValues.MANACN[tier], GTOValues.MANAN[tier]);
         }
+        addCNEN("gtocore.machine.wood_quantum_tank.tooltip", "木头做的超级缸", "A super tank made of wood");
+        addCNEN("gtocore.machine.wood_quantum_chest.tooltip", "比储物抽屉好...一点点吧", "Better than a storage drawer... just a little bit");
         addCNEN("gtocore.machine.mana_eu", "支持电力配方，转换比1:1", "Supports EU recipes, conversion ratio 1:1");
         addCNEN("gtocore.machine.processing_array.tooltip.0", "玻璃等级限制了内部机器等级", "Tier is limited by glass grade");
         addCNEN("gtocore.machine.processing_array.tooltip.1", "并行数由内部机器数量决定", "Parallel are determined by the amount of internal machines");
@@ -370,6 +373,8 @@ final class MachineLang {
         addCNEN("gtocore.machine.resonance_flower.tier_max", "等级：Lv.%s  §a§lMAX§r", "Tier: Lv.%s  §a§lMAX§r");
         addCNEN("gtocore.machine.resonance_flower.tier_effect", "耗时：%s%% 并行：%s", "Duration: %s%% Parallel: %s");
 
+        addCNEN("block.gtceu.ulv_super_chest", "超级箱青春版", "Super Chest Lite");
+        addCNEN("block.gtceu.ulv_super_tank", "超级缸青春版", "Super Tank Lite");
         addSingleMachineTooltips();
 
         DisplayRegistry.registerLanguage();

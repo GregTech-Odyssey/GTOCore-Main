@@ -16,6 +16,7 @@ import vazkii.botania.forge.integration.ae2.ManaKey;
 
 import java.util.Optional;
 import java.util.function.LongSupplier;
+import java.util.function.ObjLongConsumer;
 
 public final class AEManaKeyHandler implements ManaPool {
 
@@ -25,8 +26,9 @@ public final class AEManaKeyHandler implements ManaPool {
     private long capacity;
     @Setter
     private LongSupplier storageSupplier;
+    /** 每次实际变动后回调 (key, 变动量)：正为存入、负为取出，调用方据此增量记账。 */
     @Setter
-    private Runnable onChange;
+    private ObjLongConsumer<AEKey> onChange;
 
     @Setter
     @Nullable
@@ -61,12 +63,13 @@ public final class AEManaKeyHandler implements ManaPool {
     @Override
     public void receiveMana(int mana) {
         if (map == null || mana == 0) return;
+        long applied;
         if (mana > 0) {
-            map.insert(ManaKey.KEY, mana);
+            applied = map.insert(ManaKey.KEY, mana, Long.MAX_VALUE);
         } else {
-            map.extract(ManaKey.KEY, -mana);
+            applied = -map.extract(ManaKey.KEY, -mana);
         }
-        onChange.run();
+        onChange.accept(ManaKey.KEY, applied);
     }
 
     @Override
@@ -100,12 +103,13 @@ public final class AEManaKeyHandler implements ManaPool {
     @Override
     public void receiveManaLong(long mana) {
         if (map == null || mana == 0) return;
+        long applied;
         if (mana > 0) {
-            map.insert(ManaKey.KEY, mana);
+            applied = map.insert(ManaKey.KEY, mana, Long.MAX_VALUE);
         } else {
-            map.extract(ManaKey.KEY, -mana);
+            applied = -map.extract(ManaKey.KEY, -mana);
         }
-        onChange.run();
+        onChange.accept(ManaKey.KEY, applied);
     }
 
     @Override
