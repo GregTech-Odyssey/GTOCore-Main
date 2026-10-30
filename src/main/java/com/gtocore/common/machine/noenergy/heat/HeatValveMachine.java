@@ -49,6 +49,11 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
     }
 
     @Override
+    public boolean isRecipeLogicAvailable() {
+        return false;
+    }
+
+    @Override
     public boolean supportLockRecipe() {
         return false;
     }
@@ -228,6 +233,11 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
         @Override
         public int getSignal() {
             return 0;
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return getBlockState().getBlock().getName();
         }
     }
 }
