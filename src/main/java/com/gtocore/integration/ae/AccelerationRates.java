@@ -29,6 +29,7 @@ import appeng.items.tools.powered.MatterCannonItem;
 import appeng.parts.automation.IOBusPart;
 
 import com.glodblock.github.extendedae.common.EPPItemAndBlock;
+import com.glodblock.github.extendedae.common.me.CraftingThread;
 import com.glodblock.github.extendedae.common.tileentities.TileCircuitCutter;
 import com.glodblock.github.extendedae.common.tileentities.TileExInscriber;
 import com.glodblock.github.extendedae.common.tileentities.TileExMolecularAssembler;
@@ -67,7 +68,6 @@ public final class AccelerationRates {
     public static final String PRECISE_NOTE = "gtocore.acceleration.precise_note";
 
     private static final double TICKS_PER_SECOND = 20.0;
-    private static final int EX_ASSEMBLER_PROGRESS_MULTIPLIER = 2;
     private static final long EX_IO_PORT_BASE_OPERATIONS = 2048;
 
     private AccelerationRates() {}
@@ -84,7 +84,7 @@ public final class AccelerationRates {
     }
 
     public static int exAssemblerProgressPerTick(int speedCards) {
-        return EX_ASSEMBLER_PROGRESS_MULTIPLIER * MolecularAssemblerBlockEntity.getProgressPerTick(speedCards);
+        return CraftingThread.getProgressPerTick(speedCards);
     }
 
     public static int exAssemblerTicksPerCraft(int speedCards) {

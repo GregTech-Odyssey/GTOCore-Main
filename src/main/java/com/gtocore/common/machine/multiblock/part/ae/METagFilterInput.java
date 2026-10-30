@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAESlot;
-import com.gtocore.integration.ae.hooks.ITagPriorityListExtension;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -38,7 +37,7 @@ final class METagFilterInput {
     private METagFilterInput() {}
 
     static void refreshConfigs(ExportOnlyAESlot[] slots, Class<? extends AEKey> keyType, TagPriorityList filter, long amount, IStorageService storage, IActionSource source) {
-        if (!((ITagPriorityListExtension) filter).gtocore$isReady()) return;
+        if (!filter.isReady()) return;
         boolean empty = filter.isEmpty();
         var network = storage.getCachedInventory();
         int free = 0;

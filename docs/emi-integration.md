@@ -42,6 +42,8 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 
 ## GTO 保留的适配
 
+ExtendedAE 的配方传输、样板显示槽查询和电路切割器配方由其原生 `ExtendedAEEmiPlugin` 提供，不再保留 JEI、REI 插件。GTO 的 EMI 白名单注册该插件，避免在 Core 重复注册传输处理器。
+
 `GTOLib/src/main/java/com/gtolib/emi` 保留 GT/GTO 专用行为：GT 物品和配方收集、机器等级筛选、TagPrefix/通用电路、研究提示、玩家 AE 数据、合成站库存、GT 流体单元，以及 FTB 界面返回行为。
 
 服务器收藏配置与服务器身份仍由 GTO 决定，再调用 EMI 的分组存储入口。身份尚未同步时，GTO 跳过写入并加载空数据，不能把未知身份写进全局收藏。Spark 启动分析的停止策略与 JEI 自身启动拦截也保留在 GTO。

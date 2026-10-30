@@ -80,7 +80,8 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
 
     @Override
     public long getParallel(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipe recipe, long parallel) {
-        return 0;
+        // 晶片扫描保持单份处理，普通超频达到时长下限后不再转为并行补偿。
+        return Math.min(parallel, 1);
     }
 
     @Override

@@ -532,6 +532,14 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         return this.job != null;
     }
 
+    public long getJobStartedAt() {
+        return job == null ? 0 : job.startedAt;
+    }
+
+    public long getJobUsedBytes() {
+        return job == null ? -1 : job.usedBytes;
+    }
+
     @Override
     public GenericStack getFinalJobOutput() {
         return this.job != null ? this.job.finalOutput : null;

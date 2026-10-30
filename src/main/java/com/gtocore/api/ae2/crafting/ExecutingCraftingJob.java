@@ -37,6 +37,8 @@ class ExecutingCraftingJob {
     private static final String NBT_CRAFTING_PROGRESS = "#craftingProgress";
     private static final String NBT_PAUSED = "paused";
     private static final String NBT_FOLLOW_JOB = "followJob";
+    private static final String NBT_STARTED_AT = "startedAt";
+    private static final String NBT_USED_BYTES = "usedBytes";
 
     final CraftingLink link;
     final ListCraftingInventory waitingFor;
@@ -49,6 +51,8 @@ class ExecutingCraftingJob {
     Integer playerId;
     boolean paused = false;
     boolean followJob;
+    final long startedAt;
+    final long usedBytes;
 
     final KeyCounter expectedOutputs = new KeyCounter();
     final AEKeySet<AEKey> defsToPurge = new AEKeySet<>();
@@ -68,6 +72,8 @@ class ExecutingCraftingJob {
     }
 
     private ExecutingCraftingJob(ICraftingPlan plan, ListCraftingInventory.ChangeListener changeListener, CraftingLink link, @Nullable Integer playerId) {
+        this.startedAt = System.currentTimeMillis();
+        this.usedBytes = plan.bytes();
         this.finalOutput = plan.finalOutput();
         this.isOrder = isOrder(this.finalOutput);
         this.remainingAmount = this.finalOutput.amount();
@@ -108,6 +114,8 @@ class ExecutingCraftingJob {
     }
 
     ExecutingCraftingJob(CompoundTag data, ListCraftingInventory.ChangeListener changeListener, OptimizedCraftingCpuLogic cpu) {
+        this.startedAt = data.getLong(NBT_STARTED_AT);
+        this.usedBytes = data.contains(NBT_USED_BYTES) ? data.getLong(NBT_USED_BYTES) : -1;
         this.link = new CraftingLink(data.getCompound(NBT_LINK), cpu.cluster);
         IGrid grid = cpu.cluster.getGrid();
         if (grid != null) {
@@ -215,6 +223,8 @@ class ExecutingCraftingJob {
         }
 
         data.putBoolean(NBT_PAUSED, this.paused);
+        if (startedAt != 0) data.putLong(NBT_STARTED_AT, startedAt);
+        if (usedBytes >= 0) data.putLong(NBT_USED_BYTES, usedBytes);
         if (this.followJob) {
             data.putBoolean(NBT_FOLLOW_JOB, true);
         }

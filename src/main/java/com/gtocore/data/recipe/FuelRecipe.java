@@ -22,6 +22,7 @@ import java.util.Set;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
+import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 
 public final class FuelRecipe {
@@ -361,11 +362,20 @@ public final class FuelRecipe {
         // IV 挡（x4，8,192 EU/t）：氦 38、硼 47、氧 53、氩 59、钙 61、硫 62、氮 64
         // LuV 挡（x16，32,768 EU/t）：锡 26、铌 29、氙 31、钛 33、锌 34、铁 35、镍 42、银 44、镅 45、钍 62、山铜 24、秘银 28
         // 山铜 / 秘银的热值按需求单独加强，仍落在 LuV 挡
+        // UV 挡（x256，524,288 EU/t）：原始恒星物质 100
         PLASMA_GENERATOR_FUELS.recipeBuilder("helium")
                 .inputFluids(Helium.getFluid(FluidStorageKeys.PLASMA, 5))
                 .outputFluids(Helium.getFluid(4))
                 .duration(38)
                 .EUt(-V[IV])
+                .save();
+
+        PLASMA_GENERATOR_FUELS.recipeBuilder("raw_star_matter")
+                .inputFluids(RawStarMatter, 1)
+                .outputFluids(Lava, 20000)
+                .chancedOutput(MagnetohydrodynamicallyConstrainedStarMatter.getFluid(), 1, 10, 0)
+                .duration(100)
+                .EUt(-V[UV])
                 .save();
 
         PLASMA_GENERATOR_FUELS.recipeBuilder("oxygen")

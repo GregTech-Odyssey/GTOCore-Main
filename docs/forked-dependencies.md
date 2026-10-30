@@ -1,6 +1,6 @@
 # 依赖模组 fork 的修改位置
 
-仅在定位或修复 GTM、AE2、EMI、Botania、Ars Nouveau 行为、考虑为其添加 GTOCore Mixin，或调整这些依赖时读取本文。
+仅在定位或修复 GTM、AE2、ExtendedAE、EMI、Botania、Ars Nouveau 行为、考虑为其添加 GTOCore Mixin，或调整这些依赖时读取本文。
 
 本项目维护以下模组的 fork：
 
@@ -8,11 +8,14 @@
 | --- | --- |
 | GTM | [GregTech-Modern](https://github.com/GregTech-Odyssey/GregTech-Modern) |
 | AE2 | [Applied-Energistics-2-gto](https://github.com/GregTech-Odyssey/Applied-Energistics-2-gto) |
+| ExtendedAE | [ExtendedAE](https://github.com/GregTech-Odyssey/ExtendedAE) |
 | EMI | [EMI-gto](https://github.com/GregTech-Odyssey/EMI-gto) |
 | Botania | [Botania-gto](https://github.com/GregTech-Odyssey/Botania-gto) |
 | Ars Nouveau | [Ars-Nouveau-gto](https://github.com/GregTech-Odyssey/Ars-Nouveau-gto) |
 
-主仓通过 `build.gradle.kts` 依赖块中的 Maven 坐标引用 fork，不会自动读取任何本地 fork 工作区。其中 GTM、AE2 的版本分别由 `gradle.properties` 中的 `gtceu_version`、`ae2_version` 控制。需要访问源码时，默认在主仓同一父目录下查找与上表仓库同名的目录。
+主仓通过 `build.gradle.kts` 依赖块中的 Maven 坐标引用 fork，不会自动读取任何本地 fork 工作区。其中 GTM、AE2、ExtendedAE 的版本分别由 `gradle.properties` 中的 `gtceu_version`、`ae2_version`、`extendedae_version` 控制。需要访问源码时，默认在主仓同一父目录下查找与上表仓库同名的目录。
+
+ExtendedAE 使用 `com.glodblock.github.extendedae:extendedae-forge-1.20.1`，依赖项目的 AE2、EMI fork。其通用兼容逻辑直接在 ExtendedAE 源码维护，不在 AE2 或 Core 重复添加 Mixin；Core 的分级接口、GT 机器规则、传送与专属界面等集成仍由 Core 维护。
 
 ## 选择修改位置
 
