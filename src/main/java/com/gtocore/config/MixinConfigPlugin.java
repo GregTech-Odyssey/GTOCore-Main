@@ -17,6 +17,7 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
             return Mods.XAERO_WORLDMAP.isLoaded();
         }
         if (mixinClassName.startsWith("com.gtocore.mixin.inventoryessentials.")) {
+            if (mixinClassName.endsWith(".ServerInventoryTransfersMixin")) return Mods.INVENTORY_ESSENTIALS.isLoaded() && Mods.CHISEL.isLoaded();
             return Mods.INVENTORY_ESSENTIALS.isLoaded();
         }
         if (mixinClassName.startsWith("com.gtocore.mixin.ftbxmodcompat.")) {
