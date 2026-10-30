@@ -54,6 +54,7 @@ import appeng.api.stacks.*;
 import appeng.api.storage.AEKeyFilter;
 import appeng.api.storage.MEStorage;
 import appeng.client.gui.me.common.StackSizeRenderer;
+import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.EncodedPatternItem;
 import appeng.crafting.pattern.ProcessingPatternItem;
@@ -285,7 +286,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
 
     @Override
     public boolean patternFilter(@NotNull ItemStack stack) {
-        return stack.getItem() instanceof ProcessingPatternItem &&
+        return stack.is(AEItems.BLANK_PATTERN.asItem()) || stack.getItem() instanceof ProcessingPatternItem &&
                 checkDuplicatedPattern(this, stack);
     }
 

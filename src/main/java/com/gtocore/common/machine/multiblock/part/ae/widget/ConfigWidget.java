@@ -80,7 +80,7 @@ public abstract class ConfigWidget extends WidgetGroup {
     private void placeAmountPanel(int slotIndex) {
         if (!isValidIndex(slotIndex)) return;
         Position cell = cellPosition(slotIndex);
-        int width = AmountSetWidget.WIDTH;
+        int width = this.amountSetWidget.width;
         int centerX = cell.x + CELL_WIDTH / 2;
         int x = centerX - width / 2;
         int y = cell.y + UISizes.SLOT_SIZE + UISizes.POPUP_NOTCH_HEIGHT;
@@ -174,6 +174,10 @@ public abstract class ConfigWidget extends WidgetGroup {
     }
 
     abstract void init();
+
+    long amountStepUnit() {
+        return 1;
+    }
 
     /**
      * 配置数量的下限：数量面板调节器的最小值，服务端写入数量时也按它校验。

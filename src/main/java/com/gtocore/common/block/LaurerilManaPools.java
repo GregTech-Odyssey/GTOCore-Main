@@ -6,17 +6,10 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtolib.GTOCore;
 import com.gtolib.utils.RLUtils;
 
-import com.gregtechceu.gtceu.utils.FormattingUtil;
-
-import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -45,25 +38,37 @@ import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.BotaniaForgeClientCapabilities;
 import vazkii.botania.common.block.block_entity.mana.LargeManaPoolBlockEntity;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
+import vazkii.botania.common.block.block_entity.mana.ManaPoolSpec;
 import vazkii.botania.common.block.mana.LargeManaPoolBlock;
 import vazkii.botania.common.block.mana.ManaPoolBlock;
 import vazkii.botania.common.item.block.LargeManaPoolItem;
 import vazkii.botania.common.item.material.MysticalPetalItem;
 import vazkii.botania.common.lib.BotaniaTags;
 
-import java.util.List;
-
+import static com.gtocore.data.lang.LangHandler.addCNEN;
 import static com.gtolib.utils.register.BlockRegisterUtils.block;
 
 /** 秘金魔力池系列：秘金魔力池（魔力池的 8 倍）、秘金大型魔力池（大型魔力池每座的 8 倍）。 */
 public final class LaurerilManaPools {
 
-    public static final int POOL_CAPACITY = 8 * ManaPoolBlockEntity.MAX_MANA;
-    public static final long LARGE_UNIT_CAPACITY = 8 * LargeManaPoolBlockEntity.UNIT_CAPACITY;
+    public static final ManaPoolSpec POOL = ManaPoolSpec.POOL.toBuilder().capacity(8 * ManaPoolSpec.POOL.capacity()).infusionRate(8 * ManaPoolSpec.POOL.infusionRate()).build();
+    public static final ManaPoolSpec LARGE = ManaPoolSpec.LARGE.toBuilder().capacity(8 * ManaPoolSpec.LARGE.capacity()).infusionRate(8 * ManaPoolSpec.LARGE.infusionRate()).build();
     private static final String POOL_ID = "laureril_mana_pool";
     private static final String LARGE_ID = "large_laureril_mana_pool";
 
     private LaurerilManaPools() {}
+
+    public static void initLang() {
+        addCNEN("gtocore.lexicon.laureril_pool.name", "秘金魔力池", "Laureril Mana Pools");
+        addCNEN("gtocore.lexicon.laureril_pool.page0",
+                "$(item)秘金魔力池$(0)是裹上秘金的$(l:mana/pool)$(item)魔力池$(0)$(/l)，能装下普通魔力池八倍的$(thing)魔力$(0)。$(p)秘金似乎很合魔力的脾气：丢进去的材料浸染起来也快了八倍，一整组东西眨几下眼就泡好了。除此之外，它用起来和普通魔力池没有两样。",
+                "The $(item)Laureril Mana Pool$(0) is a $(l:mana/pool)$(item)Mana Pool$(0)$(/l) clad in laureril, holding eight times as much $(thing)Mana$(0).$(p)Laureril seems to agree with $(thing)Mana$(0): items tossed in are infused eight times as fast, so a whole stack is done in a few blinks. Otherwise it works just like a normal pool.");
+        addCNEN("gtocore.lexicon.laureril_pool.page1",
+                "$(item)秘金大型魔力池$(0)是$(l:mana/large_pool)$(item)大型魔力池$(0)$(/l)的秘金版本，同样能装下八倍的$(thing)魔力$(0)，浸染速度也在大型魔力池的基础上再快八倍——一整组材料往往刚落进水里就浸染完了。$(p)合并、火花与催化剂的规则都和大型魔力池一样。",
+                "The $(item)Laureril Large Mana Pool$(0) does the same for the $(l:mana/large_pool)$(item)Large Mana Pool$(0)$(/l): eight times the $(thing)Mana$(0), and infusion another eight times faster on top of the large pool's own speed, so a whole stack is often done the moment it lands.$(p)Merging, sparks and catalysts all follow the large pool's rules.");
+        addCNEN("gtocore.lexicon.laureril_pool.page2", "制作$(item)秘金魔力池$(0)", "Crafting a $(item)Laureril Mana Pool$(0)");
+        addCNEN("gtocore.lexicon.laureril_pool.page3", "制作$(item)秘金大型魔力池$(0)", "Crafting a $(item)Laureril Large Mana Pool$(0)");
+    }
 
     public static final class Pool extends ManaPoolBlockEntity {
 
@@ -76,11 +81,6 @@ public final class LaurerilManaPools {
 
         public Pool(BlockEntityType<Pool> type, BlockPos pos, BlockState state) {
             super(type, pos, state);
-        }
-
-        @Override
-        public int getMaxMana() {
-            return POOL_CAPACITY;
         }
 
         @Override
@@ -117,11 +117,6 @@ public final class LaurerilManaPools {
         }
 
         @Override
-        public long unitCapacity() {
-            return LARGE_UNIT_CAPACITY;
-        }
-
-        @Override
         public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
             if (cap == BotaniaForgeCapabilities.MANA_RECEIVER || cap == BotaniaForgeCapabilities.SPARK_ATTACHABLE || cap == BotaniaForgeCapabilities.WANDABLE) {
                 return self.cast();
@@ -144,7 +139,7 @@ public final class LaurerilManaPools {
     private static final class PoolBlock extends ManaPoolBlock {
 
         private PoolBlock(Properties builder) {
-            super(Variant.DEFAULT, builder);
+            super(Variant.DEFAULT, builder, POOL);
         }
 
         @Override
@@ -156,19 +151,6 @@ public final class LaurerilManaPools {
         public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
             if (type != GTOBlockEntities.LAURERIL_MANA_POOL.get()) return null;
             return level.isClientSide ? (l, p, s, be) -> ManaPoolBlockEntity.clientTick(l, p, s, (ManaPoolBlockEntity) be) : (l, p, s, be) -> ManaPoolBlockEntity.serverTick(l, p, s, (ManaPoolBlockEntity) be);
-        }
-    }
-
-    private static final class LargeItem extends LargeManaPoolItem {
-
-        private LargeItem(Block block, Item.Properties props) {
-            super(block, props);
-        }
-
-        @Override
-        public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-            tooltip.add(Component.translatable("gtocore.large_laureril_mana_pool.capacity", FormattingUtil.formatNumbers(LARGE_UNIT_CAPACITY)).withStyle(ChatFormatting.GRAY));
-            tooltip.add(Component.translatable("botaniamisc.largePool1").withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -195,7 +177,7 @@ public final class LaurerilManaPools {
     }
 
     public static BlockEntry<LargeManaPoolBlock> registerLarge() {
-        return block(LARGE_ID, "秘金大型魔力池", p -> new LargeManaPoolBlock(p, Large::new))
+        return block(LARGE_ID, "秘金大型魔力池", p -> new LargeManaPoolBlock(p, LARGE, Large::new))
                 .lang("Laureril Large Mana Pool")
                 .properties(p -> p.sound(SoundType.STONE).strength(2, 10).requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))
                 .blockstate((ctx, prov) -> {
@@ -223,7 +205,7 @@ public final class LaurerilManaPools {
                         .add(LootItem.lootTableItem(prov.asItem())
                                 .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(prov)
                                         .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(LargeManaPoolBlock.CORE, true)))))))
-                .item(LargeItem::new)
+                .item(LargeManaPoolItem::new)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), GTOCore.id("block/" + LARGE_ID)))
                 .build()
                 .register();

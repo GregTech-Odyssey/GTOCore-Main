@@ -6,6 +6,8 @@ import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.config.GTORules;
 
+import com.gtolib.api.data.storage.CompartmentStorageRegistration;
+import com.gtolib.api.data.storage.WoodenSuperStorageRegistration;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -1136,32 +1138,17 @@ public final class MachineRecipeLoader {
     }
 
     private static void registerNBTRemoval() {
-        for (MachineDefinition chest : GTMachines.SUPER_CHEST) {
-            if (chest != null) {
-                VanillaRecipeHelper.addShapelessNBTClearingRecipe("super_chest_nbt_removal_" + chest.getTier(),
-                        chest.asStack(), chest.asItem());
-            }
-        }
-
-        for (MachineDefinition tank : GTMachines.SUPER_TANK) {
-            if (tank != null) {
-                VanillaRecipeHelper.addShapelessNBTClearingRecipe("super_tank_nbt_removal_" + tank.getTier(),
-                        tank.asStack(), tank.asItem());
-            }
-        }
-
-        for (MachineDefinition chest : GTMachines.QUANTUM_CHEST) {
-            if (chest != null) {
-                VanillaRecipeHelper.addShapelessNBTClearingRecipe("quantum_chest_nbt_removal_" + chest.getTier(),
-                        chest.asStack(), chest.asItem());
-            }
-        }
-
-        for (MachineDefinition tank : GTMachines.QUANTUM_TANK) {
-            if (tank != null) {
-                VanillaRecipeHelper.addShapelessNBTClearingRecipe("quantum_tank_nbt_removal_" + tank.getTier(),
-                        tank.asStack(), tank.asItem());
-            }
+        registerStorageNBTRemoval(GTMachines.SUPER_CHEST);
+        registerStorageNBTRemoval(GTMachines.SUPER_TANK);
+        registerStorageNBTRemoval(GTMachines.QUANTUM_CHEST);
+        registerStorageNBTRemoval(GTMachines.QUANTUM_TANK);
+        registerStorageNBTRemoval(WoodenSuperStorageRegistration.CHESTS);
+        registerStorageNBTRemoval(WoodenSuperStorageRegistration.TANKS);
+        for (int layout = 0; layout < CompartmentStorageRegistration.CHESTS.length; layout++) {
+            registerStorageNBTRemoval(CompartmentStorageRegistration.CHESTS[layout]);
+            registerStorageNBTRemoval(CompartmentStorageRegistration.TANKS[layout]);
+            registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_CHESTS[layout]);
+            registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_TANKS[layout]);
         }
 
         // Drums
@@ -1238,6 +1225,15 @@ public final class MachineRecipeLoader {
                 TAG_FILTER.asItem());
         VanillaRecipeHelper.addShapelessRecipe("fluid_tag_filter_nbt", TAG_FLUID_FILTER.asStack(),
                 TAG_FLUID_FILTER.asItem());
+    }
+
+    private static void registerStorageNBTRemoval(MachineDefinition[] definitions) {
+        for (MachineDefinition definition : definitions) {
+            if (definition != null) {
+                VanillaRecipeHelper.addShapelessNBTClearingRecipe(definition.getId().getPath() + "_nbt_removal",
+                        definition.asStack(), definition.asItem());
+            }
+        }
     }
 
     private static void registerHatchConversion() {

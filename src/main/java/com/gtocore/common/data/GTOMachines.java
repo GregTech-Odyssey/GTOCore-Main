@@ -28,19 +28,20 @@ import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
+import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.heat.*;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachine;
-import com.gtocore.common.machine.noenergy.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
-import com.gtocore.common.machine.tesseract.DirectedTesseractMachine;
 import com.gtocore.common.machine.tesseract.TesseractMachine;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
+import com.gtolib.api.data.storage.SuperStorageRegistration;
 import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
@@ -69,6 +70,7 @@ import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.client.renderer.machine.*;
+import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
@@ -97,6 +99,7 @@ import static com.gtocore.utils.register.MachineRegisterUtils.*;
 public final class GTOMachines {
 
     public static void init() {
+        SuperStorageRegistration.init();
         ManaMachine.init();
         GeneratorMultiblock.init();
         ExResearchMachines.init();
@@ -461,6 +464,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 4A Energy Hatch")
                     .allRotation()
                     .abilities(PartAbility.INPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.IN, 4))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.input_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.input_4a")))
                     .register(),
@@ -472,6 +476,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 4A Dynamo Hatch")
                     .allRotation()
                     .abilities(PartAbility.OUTPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.OUT, 4))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.output_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.output_4a")))
                     .register(),
@@ -483,6 +488,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 16A Energy Hatch")
                     .allRotation()
                     .abilities(PartAbility.INPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.IN, 16))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.input_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.input_16a")))
                     .register(),
@@ -494,6 +500,7 @@ public final class GTOMachines {
                     .langValue(GTOValues.VNFR[tier] + " 16A Dynamo Hatch")
                     .allRotation()
                     .abilities(PartAbility.OUTPUT_ENERGY)
+                    .tips(EnergyHatchPartMachine.hatchTips(tier, IO.OUT, 16))
                     .tips(Tips.feature(Component.translatable("gtceu.machine.energy_hatch.output_hi_amp.tooltip")))
                     .renderer(() -> new OverlayTieredMachineRenderer(tier, GTCEu.id("block/machine/part/" + "energy_hatch.output_16a")))
                     .register(),
@@ -873,6 +880,7 @@ public final class GTOMachines {
     public static final MachineDefinition CREATIVE_RADIATION_HATCH = machine("creative_radiation_hatch", "创造放射仓", CreativeRadiationHatch::new)
             .tier(MAX)
             .tips(GTOMachineTooltips.RadiationHatchTooltips)
+            .tooltipBuilder(GTMachines.CREATIVE_TOOLTIPS)
             .notAllowSharedTooltips()
             .recipeType(GTORecipeTypes.RADIATION_HATCH_RECIPES)
             .allRotation()
@@ -885,6 +893,7 @@ public final class GTOMachines {
             .tier(MAX)
             .allRotation()
             .overlayTieredHullRenderer("radiation_hatch")
+            .tooltipBuilder(GTMachines.CREATIVE_TOOLTIPS)
             .allowCoverOnFront(false)
             .register();
 
@@ -1163,14 +1172,6 @@ public final class GTOMachines {
             .allowCoverOnFront(true)
             .register();
 
-    public static final MachineDefinition DIRECTED_TESSERACT_GENERATOR = blockEntityMachine("directed_tesseract_generator", "有向超立方体发生器", DirectedTesseractMachine::new, TesseractBlockEntity::new)
-            .allRotation()
-            .tips(GTOMachineTooltipsA.directedHyperCubeMachineTooltips)
-            .modelRenderer(() -> GTOCore.id("block/machine/tesseract_generator"))
-            .tier(IV)
-            .allowCoverOnFront(true)
-            .register();
-
     public static final MachineDefinition INDUSTRIAL_PLATFORM_DEPLOYMENT_TOOLS = machine("industrial_platform_deployment_tools", "工业平台展开工具", PlatformDeploymentMachine::new)
             .tips(GTOMachineTooltips.IndustrialPlatformDeploymentToolsTooltips)
             .nonYAxisRotation()
@@ -1242,7 +1243,8 @@ public final class GTOMachines {
             .langValue("Just Get UHV Game Machine")
             .tips(GTOMachineTooltips.JustGet10MachineTooltips)
             .nonYAxisRotation()
-            .modelRenderer(() -> GTOCore.id("block/machine/just_get_10"))
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/just_get_10")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
@@ -1251,7 +1253,8 @@ public final class GTOMachines {
             .langValue("Circuit 2048 Game Machine")
             .tips(GTOMachineTooltips.Game2048MachineTooltips)
             .nonYAxisRotation()
-            .modelRenderer(() -> GTOCore.id("block/machine/game_2048"))
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/game_2048")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
@@ -1260,7 +1263,18 @@ public final class GTOMachines {
             .langValue("24 Game Machine")
             .tips(GTOMachineTooltips.Game24MachineTooltips)
             .nonYAxisRotation()
-            .modelRenderer(() -> GTOCore.id("block/machine/game_24"))
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/game_24")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition NUMBER_PUZZLE = machine("number_puzzle_machine", "数字华容道游戏机", NumberPuzzleMachine::new)
+            .langValue("Number Puzzle Game Machine")
+            .tips(GTOMachineTooltips.NumberPuzzleTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/number_puzzle")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

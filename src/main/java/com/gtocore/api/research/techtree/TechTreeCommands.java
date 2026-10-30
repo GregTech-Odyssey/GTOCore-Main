@@ -16,6 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+import appeng.api.identity.IdentityKeyIntMap;
+
 import com.lowdragmc.lowdraglib.gui.factory.UIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -26,7 +28,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -195,8 +196,8 @@ public final class TechTreeCommands {
         return result;
     }
 
-    private static Reference2IntOpenHashMap<TechNode> createNodeOrder(TechTreeLayout layout) {
-        Reference2IntOpenHashMap<TechNode> order = new Reference2IntOpenHashMap<>();
+    private static IdentityKeyIntMap<TechNode> createNodeOrder(TechTreeLayout layout) {
+        IdentityKeyIntMap<TechNode> order = new IdentityKeyIntMap<>();
         int index = 0;
         for (TechNode node : layout.orderedNodes()) {
             order.put(node, index++);

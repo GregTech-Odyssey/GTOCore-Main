@@ -9,14 +9,11 @@ import com.gtolib.api.recipe.RecipeBuilder;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.DimensionMarker;
 import com.gregtechceu.gtceu.config.ConfigHolder;
-import com.gregtechceu.gtceu.uipro.render.UILayers;
-import com.gregtechceu.gtceu.uipro.render.UIText;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
+import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.widget.SlotWidget;
 import org.jetbrains.annotations.NotNull;
@@ -68,22 +65,17 @@ final class SatelliteEmiRecipe extends GTEMIRecipe {
 
     private static final class TierSlotWidget extends SlotWidget {
 
-        private final String tier;
+        private final TextTexture texture;
 
         private TierSlotWidget(EmiIngredient ingredient, int x, int y, String tier) {
             super(ingredient, x, y);
-            this.tier = tier;
+            this.texture = (TextTexture) new TextTexture(tier).scale(0.75F).transform(-3.0F, 5.0F);
         }
 
         @Override
         public void drawOverlay(GuiGraphics draw, int mouseX, int mouseY, float delta) {
             super.drawOverlay(draw, mouseX, mouseY, delta);
-            var font = Minecraft.getInstance().font;
-            var pose = draw.pose();
-            pose.pushPose();
-            pose.translate(0, 0, UILayers.ITEM_OVERLAY);
-            draw.drawString(font, tier, x + UISizes.SLOT_SIZE - 1 - font.width(tier), y + UISizes.SLOT_SIZE - 1 - UIText.GLYPH_HEIGHT, TIER_COLOR, true);
-            pose.popPose();
+            texture.draw(draw, mouseX, mouseY, x, y, 18, 18);
         }
     }
 }

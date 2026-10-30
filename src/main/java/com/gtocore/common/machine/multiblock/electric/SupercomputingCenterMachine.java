@@ -229,9 +229,9 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
 
         if (maxEUt > 0) {
             if (coolantAmount == 0) {
-                runRecipe = RecipeBuilder.ofRaw().EUt(machineTier == 1 ? maxEUt / 4 : maxEUt).duration(20).build();
+                runRecipe = RecipeBuilder.ofRaw().EUt(machineTier == 1 ? Math.max(1, maxEUt / 4) : maxEUt).duration(20).build();
             } else if (machineTier == 1) {
-                runRecipe = RecipeBuilder.ofRaw().inputFluids(PCBCoolant.getFluid(LIQUID, coolantAmount)).EUt(maxEUt / 4).duration(20).build();
+                runRecipe = RecipeBuilder.ofRaw().inputFluids(PCBCoolant.getFluid(LIQUID, coolantAmount)).EUt(Math.max(1, maxEUt / 4)).duration(20).build();
             } else {
                 runRecipe = RecipeBuilder.ofRaw().inputFluids(Helium.getFluid(LIQUID, coolantAmount)).outputFluids(Helium.getFluid(GAS, coolantAmount)).EUt(maxEUt).duration(20).build();
             }

@@ -1,8 +1,8 @@
 package com.gtocore.api.research;
 
-import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
+import appeng.api.identity.IdentityKeyLongMap;
 
-public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
+public class ResearchPoints extends IdentityKeyLongMap<ResearchTag> {
 
     public ResearchPoints() {
         super();
@@ -21,8 +21,7 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
     public ResearchPoints copyWithWeight(float weight) {
         // 按源条目数预分配，避免默认容量下的多次扩容 rehash；仍须逐项算权重并过滤 <=0 的项
         ResearchPoints copy = new ResearchPoints(this.size());
-        for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
+        for (var entry : this) {
             long weightedValue = (long) (entry.getLongValue() * weight);
             if (weightedValue > 0) {
                 copy.put(entry.getKey(), weightedValue);
@@ -33,8 +32,7 @@ public class ResearchPoints extends Reference2LongOpenHashMap<ResearchTag> {
 
     public long countBytes() {
         long totalBytes = 0;
-        for (var it = this.reference2LongEntrySet().fastIterator(); it.hasNext();) {
-            var entry = it.next();
+        for (var entry : this) {
             totalBytes += entry.getKey().getBytePerPoint() * entry.getLongValue();
         }
         return totalBytes;

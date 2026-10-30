@@ -37,6 +37,8 @@ public final class HeatRoutePath implements IRoutePath<IHeatContainer> {
     @Nullable
     @Override
     public IHeatContainer getHandler(Level world) {
+        // a paused pipe must not push heat into its neighbours
+        if (!targetPipe.isWorkingEnabled()) return null;
         return GTCapabilityHelper.getBlockEntityGTCapability(IHeatContainer.class, targetPipe.getNeighborBlockEntity(targetFacing), targetFacing.getOpposite());
     }
 

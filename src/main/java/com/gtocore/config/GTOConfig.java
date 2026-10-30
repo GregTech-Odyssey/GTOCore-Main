@@ -74,7 +74,7 @@ public final class GTOConfig {
         ConfigHolder.init();
         INSTANCE = Configuration.registerConfig(GTOConfig.class, ConfigFormats.YAML).getConfigInstance();
         if (INSTANCE.devMode.startSpark == SparkRange.ALL || INSTANCE.devMode.startSpark == SparkRange.MAIN_MENU) {
-            SparkLaunchProfiler.start("all");
+            if (!GTCEu.isDataGen()) SparkLaunchProfiler.start("all");
         }
         if (INSTANCE.devMode.dev) Configurator.setRootLevel(Level.INFO);
         if (INSTANCE.devMode.detailedLogging) Configurator.setRootLevel(Level.DEBUG);
@@ -478,6 +478,13 @@ public final class GTOConfig {
             public boolean wirelessEnergyHUDEnabled = false;
 
             @Configurable
+            @Configurable.Comment({ "1：按电塔最高输出电压显示安时；2：按容量 EU ÷ 72000 向下选择安时显示档位；3：显示 EU 数量；数字使用可读简写", "1: tower output voltage; 2: amp-hour tier from capacity EU / 72000, rounded down; 3: EU amount; numbers use readable abbreviations" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Display Format", cn = "无线能量 HUD 显示格式")
+            @Configurable.Range(min = 1, max = 3)
+            @Configurable.Gui.Slider
+            public int wirelessEnergyHUDDisplayFormat = 1;
+
+            @Configurable
             @Configurable.Comment({ "无线能量 HUD 的默认 X 相对位置", "0意味着屏幕左侧，100意味着屏幕右侧", "The default X relative position of the Wireless Energy HUD", "0.0 means the left side of the screen, 1.0 means the right side of the screen" })
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Default X", cn = "无线能量 HUD 默认 X 位置")
             @Configurable.Range(min = 0, max = 100)
@@ -509,6 +516,25 @@ public final class GTOConfig {
             @Configurable.Range(min = 0, max = 100)
             @Configurable.Gui.Slider
             public int researchPointsHUDDefaultY = 12;
+
+            @Configurable
+            @Configurable.Comment({ "有疾病积累时显示疾病 HUD", "Show the Disease HUD when a medical condition has accumulated" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Enabled", cn = "疾病 HUD 启用")
+            public boolean medicalConditionHUDEnabled = true;
+
+            @Configurable
+            @Configurable.Comment({ "疾病 HUD 的默认 X 相对位置，0 为左侧，100 为右侧", "Disease HUD relative X position: 0 is left, 100 is right" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Default X", cn = "疾病 HUD 默认 X 位置")
+            @Configurable.Range(min = 0, max = 100)
+            @Configurable.Gui.Slider
+            public int medicalConditionHUDDefaultX = 0;
+
+            @Configurable
+            @Configurable.Comment({ "疾病 HUD 的默认 Y 相对位置，0 为顶部，100 为底部", "Disease HUD relative Y position: 0 is top, 100 is bottom" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Default Y", cn = "疾病 HUD 默认 Y 位置")
+            @Configurable.Range(min = 0, max = 100)
+            @Configurable.Gui.Slider
+            public int medicalConditionHUDDefaultY = 50;
 
             @Configurable
             @Configurable.Comment({ "启用客户端属性 HUD 显示", "Enable Client Attributes HUD display" })
@@ -589,6 +615,11 @@ public final class GTOConfig {
         @Configurable.Comment({ "一些机器内容会以服务器语言的翻译呈现", "Some machine contents will be presented in the server language translation" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Server language", cn = "服务器语言")
         public String serverLang = "en_us";
+
+        @Configurable
+        @Configurable.Comment({ "启用后，玩家在服务器中输入/bug时，服务器会把服务端日志（IP已打码）上传到该玩家的官网反馈链接，日志将随issue公开", "When enabled, a player's /bug on this server also uploads the server log (IP addresses masked) to that player's report link on the website; logs are published with the issue" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Upload Server Log on /bug", cn = "/bug时上传服务端日志")
+        public boolean bugReportServerLogs = true;
     }
 
     @DataGeneratorScanned

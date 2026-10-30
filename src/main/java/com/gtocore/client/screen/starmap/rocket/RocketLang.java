@@ -44,6 +44,10 @@ public final class RocketLang {
     public static final String LABEL_TEMPERATURE = "gtocore.starmap.label.temperature";
     @RegisterLanguage(cn = "太阳能", en = "Solar power")
     public static final String LABEL_SOLAR = "gtocore.starmap.label.solar";
+    @RegisterLanguage(cn = "发射的戴森球总数", en = "Total Dyson spheres launched")
+    public static final String LABEL_DYSON_LAUNCHED = "gtocore.starmap.label.dyson_launched";
+    @RegisterLanguage(cn = "%s/%s（%s%%）", en = "%s/%s (%s%%)")
+    public static final String DYSON_LAUNCHED_VALUE = "gtocore.starmap.dyson_launched_value";
     @RegisterLanguage(cn = "%s m/s²", en = "%s m/s²")
     public static final String GRAVITY_VALUE = "gtocore.starmap.gravity_value";
     @RegisterLanguage(cn = "%s ℃", en = "%s °C")

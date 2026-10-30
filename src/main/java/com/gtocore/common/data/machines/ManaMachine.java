@@ -2,6 +2,7 @@ package com.gtocore.common.data.machines;
 
 import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.client.renderer.machine.CelestialCondenserRenderer;
+import com.gtocore.client.renderer.machine.CompositeMachineRenderer;
 import com.gtocore.client.renderer.machine.ManaHeaterRenderer;
 import com.gtocore.client.renderer.machine.OverlayManaTieredMachineRenderer;
 import com.gtocore.common.cover.HeatInterfaceCover;
@@ -21,6 +22,7 @@ import com.gtolib.api.machine.mana.ManaAmplifierPartMachine;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
@@ -240,4 +242,43 @@ public final class ManaMachine {
             .allRotation()
             .workableManaTieredHullRenderer(2, GTOCore.id("block/multiblock/pulse_core"))
             .register();
+
+    //////////////////////////////////////
+    // ********** 魔法站点单方块 **********//
+    //////////////////////////////////////
+
+    /// 魔法站点单方块：只消耗魔力运行、不接电力；配方来自对应的基础站点类型。
+    /// 模型拆成父子两份：父模型 machine/magic/frame（共享框架 + 六面单面玻璃），
+    /// 子模型 machine/magic/inner 下与机器 id 同名的文件（各自的原作机器模型 80%），由 CompositeMachineRenderer 合成渲染。
+    private static MachineDefinition manaStation(String name, String cn, int tier, GTRecipeType recipeType) {
+        return manaMachine(name, cn, holder -> new SimpleManaStationMachine(holder, tier, t -> 16000))
+                .tier(tier)
+                .nonYAxisRotation()
+                .editableUI(SimpleNoEnergyMachine.EDITABLE_UI_CREATOR.apply(GTOCore.id(name), recipeType))
+                .recipeType(recipeType)
+                .noRecipeModifier()
+                .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/magic/frame"),
+                        GTOCore.id("block/machine/magic/inner/" + name)))
+                .blockProp(p -> p.noOcclusion().isViewBlocking((state, level, pos) -> false))
+                .register();
+    }
+
+    // 白雏菊：MANAt 1
+    public static final MachineDefinition PURE_DAISY_STATION = manaStation("pure_daisy", "白雏菊", LV, GTORecipeTypes.PURE_DAISY_RECIPES);
+    // 魔力池：最高 MANAt 1000（生命精华），需要 MANA >= 1024
+    public static final MachineDefinition MANA_POOL_STATION = manaStation("mana_pool", "魔力池", ZPM, GTORecipeTypes.MANA_POOL_RECIPES);
+    // 花药台：MANAt 32
+    public static final MachineDefinition PETAL_APOTHECARY_STATION = manaStation("petal_apothecary", "花药台", LV, GTORecipeTypes.PETAL_APOTHECARY_RECIPES);
+    // 符文祭坛：最高 MANAt 40000（嬗变催化剂），需要 MANA >= 40000
+    public static final MachineDefinition RUNIC_ALTAR_STATION = manaStation("runic_altar", "符文祭坛", HV, GTORecipeTypes.RUNIC_ALTAR_RECIPES);
+    // 凝聚板：暂无配方，先按 EV 注册
+    public static final MachineDefinition TERRA_PLATE_STATION = manaStation("terra_plate", "凝聚板", EV, GTORecipeTypes.TERRA_PLATE_RECIPES);
+    // 锻造祭坛：最高 MANAt 360（英雄之魂）
+    public static final MachineDefinition PEDESTAL_STATION = manaStation("pedestal", "锻造祭坛", MV, GTORecipeTypes.PEDESTAL_RECIPES);
+    // 精灵门：最高 MANAt 20000（潘多拉魔盒等兑换袋）
+    public static final MachineDefinition ELVEN_PORTAL_STATION = manaStation("elven_portal", "精灵门", ZPM, GTORecipeTypes.ELVEN_PORTAL_RECIPES);
+    // 灌注室：最高 MANAt 400（魔源 10000 / 25）
+    public static final MachineDefinition IMBUEMENT_CHAMBER_STATION = manaStation("imbuement_chamber", "灌注室", LV, GTORecipeTypes.IMBUEMENT_CHAMBER_RECIPES);
+    // 附魔核心：最高 MANAt 400（魔源 10000 / 25）
+    public static final MachineDefinition ENCHANTING_APPARATUS_STATION = manaStation("enchanting_apparatus", "附魔核心", HV, GTORecipeTypes.ENCHANTING_APPARATUS_RECIPES);
 }

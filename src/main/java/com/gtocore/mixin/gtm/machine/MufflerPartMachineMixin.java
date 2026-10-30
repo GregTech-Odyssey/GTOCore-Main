@@ -21,6 +21,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
@@ -32,6 +33,8 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.MufflerPartMachine;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.ByteArrayTag;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,6 +49,7 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -64,7 +68,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 @Mixin(MufflerPartMachine.class)
-public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine implements IGTOMufflerMachine, IDroneInteractionMachine, IAirScrubberInteractor, IMufflerConduction {
+public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine implements IGTOMufflerMachine, IDroneInteractionMachine, IAirScrubberInteractor, IMufflerConduction, IDropSaveMachine {
 
     @Unique
     @SaveToDisk(defaultValue = "false")
@@ -372,5 +376,22 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
 
         self().getLevel().addParticle(GTParticleTypes.MUFFLER_PARTICLE.get(),
                 xPos, yPos, zPos, xSpd, ySpd, zSpd);
+    }
+
+    @Override
+    public boolean saveBreak() {
+        return !inventory.isEmpty();
+    }
+
+    @Override
+    public void loadFromItem(CompoundTag tag) {
+        if (tag.get("inv") instanceof ByteArrayTag byteArrayTag) {
+            inventory.readValue(JavaValueOps.INSTANCE.fromBytes(byteArrayTag.getAsByteArray()), JavaValueOps.INSTANCE);
+        }
+    }
+
+    @Override
+    public void saveToItem(CompoundTag tag) {
+        tag.putByteArray("inv", JavaValueOps.INSTANCE.toBytes(inventory.writeValue(JavaValueOps.INSTANCE)));
     }
 }

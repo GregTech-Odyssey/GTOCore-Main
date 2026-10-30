@@ -22,6 +22,7 @@ public final class PetrochemRecipes {
                 .outputFluids(cracked[1].getFluid(200), cracked[2].getFluid(200))
                 .duration(200)
                 .EUt(VA[LV])
+                .HU(2)
                 .save();
     }
 }

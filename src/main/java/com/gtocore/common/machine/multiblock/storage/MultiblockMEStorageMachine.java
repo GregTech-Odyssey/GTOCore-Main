@@ -56,6 +56,7 @@ import vazkii.botania.api.mana.ManaReceiver;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
+import java.util.function.ObjLongConsumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 
@@ -129,6 +130,8 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
 
     private int cells;
     private long storage;
+    /// 已用容量的精确累计值：写入路径按增量累加，`storage` 是它的取整快照
+    private double storageExact;
     @Getter
     private long capacity;
 
@@ -136,7 +139,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     @NotNull
     private final LongSupplier storageSupplier = () -> storage;
     @Getter
-    private final Runnable onChange = this::saveChanges;
+    private final ObjLongConsumer<AEKey> onChange = this::addUsage;
 
     @Nullable
     private final AEKeyType type;
@@ -317,11 +320,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
             manaHandler.setPos(getPos());
             manaHandler.setLevel(getLevel());
         }
-        double totalAmount = 0;
-        for (var e : keyMap) {
-            totalAmount += getCapacityUsage(e.getKey().getType(), e.getLongValue());
-        }
-        this.storage = (long) totalAmount;
+        recalculateStorage();
         // 区块重新加载时成型状态可能已经从盘上恢复，这里补一次注册（结构失效时会再移除）
         if (isFormed()) MEStorageProviderIndex.add(getLevel(), this);
     }
@@ -335,9 +334,15 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     }
 
     @Override
+    public boolean saveBreak() {
+        return !keyMap.isEmpty();
+    }
+
+    @Override
     public void loadFromItem(CompoundTag tag) {
         if (tag.get("keymap") instanceof ByteArrayTag byteArrayTag) {
             getFieldDataManager().readFieldFromValue(JavaValueOps.INSTANCE.fromBytes(byteArrayTag.getAsByteArray()), JavaValueOps.INSTANCE, "keyMap");
+            recalculateStorage();
         }
     }
 
@@ -383,6 +388,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         if (amount < 1) return 0;
         if (mode == Actionable.MODULATE) {
             keyMap.insert(what, amount);
+            addUsage(what, amount);
             saveChanges();
         }
         return amount;
@@ -392,7 +398,10 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (mode == Actionable.MODULATE) {
             var extract = keyMap.extract(what, amount);
-            if (extract > 0) saveChanges();
+            if (extract > 0) {
+                addUsage(what, -extract);
+                saveChanges();
+            }
             return extract;
         } else {
             return Math.min(amount, keyMap.getAmount(what));
@@ -406,14 +415,26 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         out.addAll(map.size(), m -> map.fastForEach(m::insert));
     }
 
-    /** 存储内容变化后标脏并按当前内容重算已用容量；子类写入路径也要调它。 */
+    /** 存储内容变化后标脏；已用容量由各写入路径（{@link #addUsage}）增量维护，这里不再全表求和。 */
     protected void saveChanges() {
         holder.setChanged();
+    }
+
+    /// 按本次实际变动的数量增量更新已用容量；`storageExact` 保留小数，逐次取整不会把零头吃掉
+    private void addUsage(AEKey key, long delta) {
+        if (delta == 0) return;
+        storageExact += getCapacityUsage(key.getType(), delta);
+        storage = (long) storageExact;
+    }
+
+    /// 全表重算已用容量，只在加载、导入这类一次性路径上调用
+    private void recalculateStorage() {
         double totalAmount = 0;
         for (var e : keyMap) {
             totalAmount += getCapacityUsage(e.getKey().getType(), e.getLongValue());
         }
-        this.storage = (long) totalAmount;
+        storageExact = totalAmount;
+        storage = (long) totalAmount;
     }
 
     @Override

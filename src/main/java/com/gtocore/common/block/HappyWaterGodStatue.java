@@ -101,13 +101,13 @@ public final class HappyWaterGodStatue extends HorizontalDirectionalBlock implem
     public static final String LORE = "gtocore.happy_water_god_statue.lore";
     @RegisterLanguage(cn = "%s，感谢你游玩GTO", en = "%s, thanks for playing GTO")
     public static final String BUBBLE = "gtocore.happy_water_god_statue.bubble";
-    @RegisterLanguage(cn = "格雷科技：新征程整合包完全免费，很开心你能看到此信息，我们很开心有实力的富哥支持一手 %s\n%s",
-                      en = "GregTech Odyssey is completely free. We're glad you've seen this message, and we'd love some support from anyone who can spare it: %s\n%s")
+    @RegisterLanguage(cn = "感谢你一路玩到这里！格雷科技：新征程完全免费，是我们三位开发者出于热爱、在业余时间打造的个人作品，许多社区贡献者也为它投入了宝贵的时间。开发工作的大部分时间，以及高昂的 AI 服务费用、服务器与域名等开支，目前由我们三人个人承担；如果你愿意，赞助将支持我们把后续版本继续做下去。\n中国大陆境内：%s\n中国大陆境外：%s",
+                      en = "Thanks for playing all the way here! GregTech Odyssey is free: a personal project the three of us build in our spare time for the love of it, with valuable time given by many community contributors. Most of the development time, along with the considerable cost of AI services and the servers and domains, is covered by the three of us personally. If you'd like, a sponsorship helps us keep making new releases.\nMainland China: %s\nEverywhere else: %s")
     public static final String SPONSOR = "gtocore.happy_water_god_statue.sponsor";
     @RegisterLanguage(cn = "点击打开赞助页面", en = "Click to open the sponsor page")
     public static final String SPONSOR_HOVER = "gtocore.happy_water_god_statue.sponsor_hover";
-    private static final String SPONSOR_URL = "https://afdian.com/a/suried";
-    private static final String PATREON_URL = "https://www.patreon.com/c/Suried";
+    private static final String AFDIAN_URL = "https://afdian.com/a/suried";
+    private static final String KOFI_URL = "https://ko-fi.com/suried";
     @RegisterLanguage(cn = "光敏性癫痫警告", en = "Photosensitive Seizure Warning")
     public static final String WARNING = "gtocore.happy_water_god_statue.warning";
     @RegisterLanguage(cn = "即将出现强烈闪光与快速变换的光效", en = "Intense flashing and rapidly changing lights ahead")
@@ -149,7 +149,7 @@ public final class HappyWaterGodStatue extends HorizontalDirectionalBlock implem
     public static final int WARNING_EVERY = 40;
     public static final String LEAD = "suriedxinxin";
     public static final String[] DEVS = { "POWSDSSAG", "hophenby" };
-    public static final String[] HELPERS = { "Alcox233", "maple197", "bnw_neurs", "qwerty54188", "Armadillo", "ratonhagaton" };
+    public static final String[] HELPERS = { "Alcox233", "maple197", "bnw_neurs", "qwerty54188", "Armadillo", "ratonhagaton", "MuuuShin" };
     public static final String OFFLINE_HELPER = "Armadillo";
     @RegisterLanguage(cn = "犰狳", en = "Armadillo")
     public static final String OFFLINE_HELPER_NAME = "gtocore.happy_water_god_statue.armadillo";
@@ -685,7 +685,7 @@ public final class HappyWaterGodStatue extends HorizontalDirectionalBlock implem
         }
 
         private static Component sponsorMessage() {
-            return Component.translatable(SPONSOR, sponsorLink(SPONSOR_URL), sponsorLink(PATREON_URL)).withStyle(ChatFormatting.GOLD);
+            return Component.translatable(SPONSOR, sponsorLink(AFDIAN_URL), sponsorLink(KOFI_URL)).withStyle(ChatFormatting.GOLD);
         }
 
         private static Component sponsorLink(String url) {

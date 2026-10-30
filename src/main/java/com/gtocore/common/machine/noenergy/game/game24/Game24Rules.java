@@ -34,21 +34,21 @@ public final class Game24Rules {
 
     /**
      * 抽牌范围：1~10 只用小数字，1~13 是完整的 A~K。范围越大越容易摸到 11~13 这类不好凑 24 的牌，所以
-     * {@link #solveReward()} 稍高一点。
+     * {@link #runReward()}（连解一轮的奖励）稍高一点。
      */
     public enum DrawRange {
 
-        ONE_TO_TEN(10, 2),
-        ONE_TO_THIRTEEN(13, 3);
+        ONE_TO_TEN(10, 10),
+        ONE_TO_THIRTEEN(13, 15);
 
         public static final DrawRange[] ALL = values();
 
         private final int max;
-        private final long solveReward;
+        private final long runReward;
 
-        DrawRange(int max, long solveReward) {
+        DrawRange(int max, long runReward) {
             this.max = max;
-            this.solveReward = solveReward;
+            this.runReward = runReward;
         }
 
         public int min() {
@@ -59,9 +59,9 @@ public final class Game24Rules {
             return max;
         }
 
-        /** 答对一题给多少游戏币（用过提示另有折扣）。 */
-        public long solveReward() {
-            return solveReward;
+        /** 连解一轮（{@code Game24Machine#RUN_PUZZLES} 题）给多少游戏币；中途用提示或换题这一轮就作废。 */
+        public long runReward() {
+            return runReward;
         }
 
         /** 按序数取范围，越界返回 {@code null}（存档与网络来的值一律校验）。 */
@@ -225,16 +225,35 @@ public final class Game24Rules {
         };
     }
 
-    /** 与 {@link #combine} 对应的表达式片段：加减套括号，乘除不套（两边若本身带括号也仍然正确）。 */
+    /**
+     * 与 {@link #combine} 对应的表达式片段：加减套括号；除法的除数若本身是顶层乘除式，
+     * 必须再括一层——除法左结合，不括就会改变原表达式的值。
+     */
     private static String combineText(String leftText, String rightText, int combination) {
         return switch (combination) {
             case 0 -> "(" + leftText + " + " + rightText + ")";
             case 1 -> "(" + leftText + " − " + rightText + ")";
             case 2 -> "(" + rightText + " − " + leftText + ")";
             case 3 -> leftText + " × " + rightText;
-            case 4 -> leftText + " ÷ " + rightText;
-            default -> rightText + " ÷ " + leftText;
+            case 4 -> leftText + " ÷ " + asDivisor(rightText);
+            default -> rightText + " ÷ " + asDivisor(leftText);
         };
+    }
+
+    /** 只给除法用的除数片段：数字或已经整体括起来的式子原样保留，顶层乘除式补一层括号。 */
+    private static String asDivisor(String text) {
+        int depth = 0;
+        for (int index = 0; index < text.length(); index++) {
+            char current = text.charAt(index);
+            if (current == '(') {
+                depth++;
+            } else if (current == ')') {
+                depth--;
+            } else if (depth == 0 && (current == '×' || current == '÷')) {
+                return "(" + text + ")";
+            }
+        }
+        return text;
     }
 
     /** 中缀转后缀求值；结构或除零有问题时返回 {@code null}。 */

@@ -12,7 +12,7 @@ import com.gtolib.api.machine.mana.trait.ManaTrait;
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
 import com.gtolib.api.misc.ManaContainerList;
 import com.gtolib.api.recipe.extension.MANATRecipeExtension;
-import com.gtolib.utils.explosion.SphereExplosion;
+import com.gtolib.utils.explosion.LargeExplosion;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -116,7 +116,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
         var level = machine.getLevel();
         if (level != null) {
             level.removeBlock(pos, false);
-            SphereExplosion.explosion(pos, level, 100, true, true);
+            LargeExplosion.sphere(level, pos, 100).breakBedrock(true).start();
         }
     }
 

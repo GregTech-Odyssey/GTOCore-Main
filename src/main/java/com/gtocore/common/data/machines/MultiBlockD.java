@@ -723,7 +723,7 @@ public final class MultiBlockD {
             .lossyOCTooltips()
             .parallelizableTooltips()
             .laserTooltips()
-            .recipeModifiers(GTORecipeModifiers.POWER_AMPLIFIER, GTORecipeModifiers.PARALLEL, RecipeModifier::laserLossOverclocking)
+            .recipeModifiers(GTORecipeModifiers.POWER_AMPLIFIER, AdvancedAssemblyLineMachine::orderedParallel, RecipeModifier::laserLossOverclocking)
             .block(GTBlocks.CASING_STEEL_SOLID)
             .structure(definition -> {
                 var symbols = Symbols.create()

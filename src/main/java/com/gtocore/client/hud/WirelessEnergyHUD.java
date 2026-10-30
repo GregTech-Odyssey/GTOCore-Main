@@ -7,10 +7,9 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
-import com.gtolib.api.wireless.energy.WirelessText;
+import com.gtolib.api.wireless.energy.WirelessEnergyDisplayMode;
 
-import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.tooltip.ElectricText;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -54,6 +53,8 @@ public class WirelessEnergyHUD implements IMoveableHUD {
     private int realHeight = height;
     private double displayedNetPower = Double.NaN;
     private double displayedThroughput = Double.NaN;
+    private WirelessEnergyDisplayMode displayedFormat;
+    private int displayedTier = -1;
     private Component throughputLabel;
     private int displayedConsumers = -1;
     private int displayedGenerators = -1;
@@ -223,24 +224,24 @@ public class WirelessEnergyHUD implements IMoveableHUD {
     }
 
     private Component createLabel(PlayerData playerData) {
+        var format = WirelessEnergyDisplayMode.of(GTOConfig.INSTANCE.client.hud.wirelessEnergyHUDDisplayFormat);
+        int tier = format.tier(playerData.electricityCapacityCache, playerData.electricityOutputTierCache);
         return Component.translatable(FORMAT_WIRELESS_ENERGY_HUD,
-                hudCharge(playerData.electricityStorageCache.doubleValue(), playerData.electricityCapacityCache.doubleValue()),
+                format.charge(playerData.electricityStorageCache, playerData.electricityCapacityCache, tier).withStyle(ChatFormatting.GOLD),
                 playerData.electricityStorageCache.min(playerData.electricityCapacityCache).multiply(BigInteger.valueOf(100)).divide(playerData.electricityCapacityCache).intValue());
-    }
-
-    private static Component hudCharge(double stored, double capacity) {
-        int tier = WirelessText.powerTier(capacity / 72000);
-        return ElectricText.charge(stored, capacity, tier, GTValues.VNF[tier]).withStyle(ChatFormatting.GOLD);
     }
 
     private Component createThroughputLabel(PlayerData playerData) {
         double power = playerData.electricityNetPowerCache;
         double throughput = playerData.electricityThroughputCache;
-        if (power == displayedNetPower && throughput == displayedThroughput) return throughputLabel;
+        var format = WirelessEnergyDisplayMode.of(GTOConfig.INSTANCE.client.hud.wirelessEnergyHUDDisplayFormat);
+        int tier = format.tier(playerData.electricityCapacityCache, playerData.electricityOutputTierCache);
+        if (power == displayedNetPower && throughput == displayedThroughput && format == displayedFormat && tier == displayedTier) return throughputLabel;
         displayedNetPower = power;
         displayedThroughput = throughput;
-        throughputLabel = Component.translatable(FORMAT_THROUGHPUT, WirelessText.signedPowerUsage(power, throughput, -1,
-                power < 0 ? ChatFormatting.RED : ChatFormatting.GREEN).withStyle(ChatFormatting.GOLD));
+        displayedFormat = format;
+        displayedTier = tier;
+        throughputLabel = Component.translatable(FORMAT_THROUGHPUT, format.throughput(power, throughput, tier).withStyle(ChatFormatting.GOLD));
         return throughputLabel;
     }
 
@@ -251,8 +252,8 @@ public class WirelessEnergyHUD implements IMoveableHUD {
             displayedConsumers = consumers;
             displayedGenerators = generators;
             consumersLabel = Component.translatable(FORMAT_ACTIVE_CONSUMERS,
-                    Component.literal(Integer.toString(consumers)).withStyle(ChatFormatting.GOLD),
-                    Component.literal(Integer.toString(generators)).withStyle(ChatFormatting.GOLD));
+                    Component.literal(FormattingUtil.formatNumberReadable(consumers)).withStyle(ChatFormatting.GOLD),
+                    Component.literal(FormattingUtil.formatNumberReadable(generators)).withStyle(ChatFormatting.GOLD));
         }
         return consumersLabel;
     }

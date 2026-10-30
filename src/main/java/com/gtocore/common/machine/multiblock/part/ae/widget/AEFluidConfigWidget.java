@@ -6,6 +6,7 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.slot.AEFluidConfigSl
 
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
 
+import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.GenericStack;
 
 public class AEFluidConfigWidget extends ConfigWidget {
@@ -21,6 +22,11 @@ public class AEFluidConfigWidget extends ConfigWidget {
         // 流体数量以 mB 计（AE 流体 1 桶 = 1000）
         super(x, y, list.getInventory(), list.isStocking(), columns);
         this.fluidList = list;
+    }
+
+    @Override
+    long amountStepUnit() {
+        return AEFluidKey.AMOUNT_BUCKET;
     }
 
     @Override

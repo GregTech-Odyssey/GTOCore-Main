@@ -3,7 +3,13 @@ package com.gtocore.common.blockentity;
 import com.gtocore.common.pipe.universal.*;
 
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
+import com.gregtechceu.gtceu.api.machine.feature.IAutoOutput;
+import com.gregtechceu.gtceu.common.cover.FluidFilterCover;
+import com.gregtechceu.gtceu.common.cover.ItemFilterCover;
+import com.gregtechceu.gtceu.common.cover.data.FilterMode;
+import com.gregtechceu.gtceu.common.cover.data.ManualIOMode;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -17,7 +23,10 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
+import appeng.api.stacks.AEFluidKey;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
@@ -92,6 +101,24 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
     }
 
     @Override
+    public boolean acceptsFilter(AEKeyType type) {
+        return type == AEKeyTypes.ITEMS || type == AEKeyTypes.FLUIDS;
+    }
+
+    private boolean coverAllows(Direction side, AEKey key, boolean intoPipe) {
+        var cover = getCoverContainer().getCoverAtSide(side);
+        if (cover instanceof ItemFilterCover filter && key instanceof AEItemKey item) {
+            if (filter.getFilterMode() == (intoPipe ? FilterMode.FILTER_EXTRACT : FilterMode.FILTER_INSERT)) return filter.getAllowFlow() == ManualIOMode.UNFILTERED;
+            return filter.getItemFilter().test(item.getReadOnlyStack());
+        }
+        if (cover instanceof FluidFilterCover filter && key instanceof AEFluidKey fluid) {
+            if (filter.getFilterMode() == (intoPipe ? FilterMode.FILTER_EXTRACT : FilterMode.FILTER_INSERT)) return filter.getAllowFlow() == ManualIOMode.UNFILTERED;
+            return filter.getFluidFilter().test(fluid.getReadOnlyStack());
+        }
+        return true;
+    }
+
+    @Override
     public @Nullable MEStorage getMEStorage(@Nullable Direction side) {
         return side != null && isConnected(side) ? handler(side) : null;
     }
@@ -132,30 +159,42 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
     @Override
     public void clearRemoved() {
         super.clearRemoved();
-        if (blockedSide != null && isBlocked(blockedSide)) {
-            updateTransferTick(true, this::autoTransfer);
-        }
+        updateAutoTransferTick();
     }
 
     @Override
     protected void blockedChanged(boolean isBlocked) {
-        updateTransferTick(isBlocked && blockedSide != null, this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     protected void updateNetworkConnection(Direction side, boolean connected) {
         super.updateNetworkConnection(side, connected);
         invalidateCapabilityCache();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     public void onNeighborChanged() {
         super.onNeighborChanged();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
+    }
+
+    @Override
+    protected void onWorkingEnabledChanged() {
+        updateAutoTransferTick();
+    }
+
+    private void updateAutoTransferTick() {
+        updateTransferTick(isWorkingEnabled() && blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
     }
 
     private void autoTransfer() {
+        if (!isWorkingEnabled()) {
+            // a paused pipe releases its tick, it is restarted once the pipe is resumed
+            updateTransferTick(false, this::autoTransfer);
+            return;
+        }
         if (getUniversalPipeNet() == null) return;
         boolean hasSource = false;
         autoTransfer = true;
@@ -164,7 +203,12 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
             if (facing == blockedSide || !isConnected(facing)) continue;
             var neighbour = getNeighborBlockEntity(facing);
             if (neighbour == null || neighbour instanceof PipeBlockEntity<?, ?>) continue;
-            var source = UniversalStorages.getStorage(neighbour, facing.getOpposite(), StorageAccess.EXTRACT);
+            // the neighbour pushes into the pipe on its own, so do not pull from it as well
+            var opposite = facing.getOpposite();
+            if ((neighbour instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity instanceof IAutoOutput autoOutput) && (autoOutput.isAutoOutputtingItems(opposite) || autoOutput.isAutoOutputtingFluids(opposite))) {
+                continue;
+            }
+            var source = UniversalStorages.getStorage(neighbour, opposite, StorageAccess.EXTRACT);
             if (source == null) continue;
             var target = handler(facing);
             if (target == null) continue;
@@ -235,7 +279,9 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         @Override
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (amount <= 0) return 0;
-            if (pipe.isInValid() || pipe.routing || pipe.isBlocked(facing)) return 0;
+            // a paused pipe accepts nothing, no matter whether a machine or the net itself inserts
+            if (!pipe.isWorkingEnabled()) return 0;
+            if (pipe.isInValid() || pipe.routing || pipe.isBlocked(facing) || !pipe.coverAllows(facing, what, true)) return 0;
             boolean fluid = what.getType() == AEKeyTypes.FLUIDS;
             long allowed = Math.min(amount, pipe.available(fluid));
             if (allowed <= 0) return 0;
@@ -248,6 +294,7 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
                 long left = allowed - inserted;
                 if (left <= 0) break;
                 if (pipe.autoTransfer && route.getTargetPipe() == pipe && route.getTargetFacing() != pipe.blockedSide) continue;
+                if (!route.getTargetPipe().coverAllows(route.getTargetFacing(), what, false)) continue;
                 var target = route.getHandler(level);
                 if (target == null) continue;
                 inserted += target.insert(what, left, mode, source);

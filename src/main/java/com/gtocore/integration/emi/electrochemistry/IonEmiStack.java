@@ -14,12 +14,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 
+import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
 
 import java.util.Collections;
 import java.util.List;
 
 public final class IonEmiStack extends EmiStack {
+
+    private static final Comparison COMPARE_ION = Comparison.of(
+            (a, b) -> a instanceof IonEmiStack first && b instanceof IonEmiStack second && first.ion == second.ion,
+            stack -> ((IonEmiStack) stack).ion.hashCode());
 
     private static final ResourceLocation STILL = GTCEu.id("block/material_sets/dull/liquid");
     private final IonDefinition ion;
@@ -28,6 +33,11 @@ public final class IonEmiStack extends EmiStack {
 
     public IonEmiStack(IonDefinition ion) {
         this.ion = ion;
+    }
+
+    @Override
+    public Comparison getStrictComparison() {
+        return COMPARE_ION;
     }
 
     @Override

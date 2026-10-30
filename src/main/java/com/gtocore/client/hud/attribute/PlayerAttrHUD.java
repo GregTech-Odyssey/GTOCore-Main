@@ -6,6 +6,9 @@ import com.gtocore.config.GTOConfig;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.gui.HudUIStyle;
+
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -34,12 +37,12 @@ public class PlayerAttrHUD implements IMoveableHUD {
 
     public static final PlayerAttrHUD INSTANCE = new PlayerAttrHUD();
 
-    private static final int PREVIEW_PADDING = 4;
-    private static final int PREVIEW_LINE_SPACING = 2;
+    private static final int PREVIEW_PADDING = UISizes.TEXT_PADDING;
+    private static final int PREVIEW_LINE_SPACING = UISizes.GAP;
 
     private static final int EDITOR_WIDTH = 190;
-    private static final int EDITOR_PADDING = 6;
-    private static final int EDITOR_ENTRY_SPACING = 4;
+    private static final int EDITOR_PADDING = UISizes.WINDOW_PADDING_X;
+    private static final int EDITOR_ENTRY_SPACING = UISizes.SECTION_GAP;
     private static final int EDITOR_HEADER_GAP = 6;
 
     private PlayerAttrEntry activeEntry;
@@ -89,12 +92,11 @@ public class PlayerAttrHUD implements IMoveableHUD {
         int lineHeight = font.lineHeight + PREVIEW_LINE_SPACING;
         int lineY = bounds.getY() + PREVIEW_PADDING;
 
-        guiGraphics.fill(bounds.getX(), bounds.getY(),
-                bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight(), 0xA0101010);
-        IMoveableHUD.drawOutline(guiGraphics, bounds, 0xFFFFFFFF);
+        var style = HudUIStyle.get();
+        style.window(guiGraphics, bounds);
 
         for (Component line : lines) {
-            guiGraphics.drawString(font, line, bounds.getX() + PREVIEW_PADDING, lineY, 0xFFFFFFFF, false);
+            guiGraphics.drawString(font, line, bounds.getX() + PREVIEW_PADDING, lineY, style.text, false);
             lineY += lineHeight;
         }
     }
@@ -112,31 +114,32 @@ public class PlayerAttrHUD implements IMoveableHUD {
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         Rect2i bounds = getEditorBounds(getScreenWidth(), getScreenHeight());
-        guiGraphics.fill(bounds.getX(), bounds.getY(),
-                bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight(), 0xD0101010);
-        IMoveableHUD.drawOutline(guiGraphics, bounds, 0xFFFFFFFF);
+        var style = HudUIStyle.get();
+        style.window(guiGraphics, bounds);
 
         Font font = Minecraft.getInstance().font;
         int contentX = bounds.getX() + EDITOR_PADDING;
         int cursorY = bounds.getY() + EDITOR_PADDING;
 
-        guiGraphics.drawString(font, getDisplayName(), contentX, cursorY, 0xFFFFFFFF, false);
+        guiGraphics.drawString(font, getDisplayName(), contentX, cursorY, style.text, false);
+        guiGraphics.hLine(contentX, bounds.getX() + bounds.getWidth() - EDITOR_PADDING - 1,
+                cursorY + font.lineHeight + UISizes.GAP, style.divider);
         cursorY += font.lineHeight + EDITOR_HEADER_GAP;
 
         var entries = PlayerAttrEntry.getEntries();
-        if (entries.stream().noneMatch(PlayerAttrEntry::isEditorVisible)) {
-            guiGraphics.drawString(font, Component.translatable(EMPTY_MESSAGE), contentX, cursorY, 0xFFB8C2CC, false);
-            return;
-        }
-
+        boolean visible = false;
         for (PlayerAttrEntry entry : entries) {
             if (!entry.isEditorVisible()) {
                 continue;
             }
             Rect2i entryBounds = getEntryBounds(bounds, entries, entry);
             if (entryBounds != null) {
+                visible = true;
                 entry.renderEditor(guiGraphics, entryBounds, mouseX, mouseY);
             }
+        }
+        if (!visible) {
+            guiGraphics.drawString(font, Component.translatable(EMPTY_MESSAGE), contentX, cursorY, style.secondary, false);
         }
     }
 
@@ -291,18 +294,16 @@ public class PlayerAttrHUD implements IMoveableHUD {
     private int getEditorHeight() {
         Font font = Minecraft.getInstance().font;
         List<PlayerAttrEntry> entries = PlayerAttrEntry.getEntries();
-        if (entries.stream().noneMatch(PlayerAttrEntry::isEditorVisible)) {
-            return EDITOR_PADDING * 2 + font.lineHeight * 2 + EDITOR_HEADER_GAP;
-        }
-
         int height = EDITOR_PADDING * 2 + font.lineHeight + EDITOR_HEADER_GAP;
+        boolean visible = false;
         for (PlayerAttrEntry entry : entries) {
             if (!entry.isEditorVisible()) {
                 continue;
             }
+            visible = true;
             height += entry.getEditorHeight() + EDITOR_ENTRY_SPACING;
         }
-        return height - EDITOR_ENTRY_SPACING + EDITOR_PADDING;
+        return visible ? height - EDITOR_ENTRY_SPACING + EDITOR_PADDING : height + font.lineHeight;
     }
 
     private Rect2i getEntryBounds(Rect2i panelBounds, List<PlayerAttrEntry> entries, PlayerAttrEntry targetEntry) {

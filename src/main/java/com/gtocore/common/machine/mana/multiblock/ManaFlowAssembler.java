@@ -418,11 +418,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                 if (mana <= 0) break;
                 var pool = poolRef.get();
                 if (pool == null || pool.isRemoved()) continue;
-                var currentMana = Math.max(0, pool.getCurrentMana());
-                var toRemove = (int) Math.min(mana, currentMana);
-                if (toRemove == 0) continue;
-                pool.receiveMana(-toRemove);
-                mana -= Math.max(0, currentMana - pool.getCurrentMana());
+                mana -= pool.removeMana(mana, false);
             }
         }
 
@@ -431,12 +427,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                 if (mana <= 0) break;
                 var pool = poolRef.get();
                 if (pool == null || pool.isRemoved()) continue;
-                var currentMana = Math.max(0, pool.getCurrentMana());
-                var availableSpace = Math.max(0, pool.getMaxMana() - currentMana);
-                var toAdd = (int) Math.min(mana, availableSpace);
-                if (toAdd == 0) continue;
-                pool.receiveMana(toAdd);
-                mana -= Math.max(0, pool.getCurrentMana() - currentMana);
+                mana -= pool.addMana(mana, false);
             }
         }
 

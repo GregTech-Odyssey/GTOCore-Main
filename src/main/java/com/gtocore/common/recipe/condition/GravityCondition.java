@@ -1,5 +1,6 @@
 package com.gtocore.common.recipe.condition;
 
+import com.gtolib.adastra.NoSpaceChallenge;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.feature.IGravityPartMachine;
 
@@ -28,6 +29,7 @@ public final class GravityCondition extends RecipeCondition {
 
     @Override
     public boolean testCondition(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
+        if (NoSpaceChallenge.testGravity(holder.self(), zero)) return true;
         if (holder instanceof MultiblockControllerMachine controllerMachine) {
             for (var part : controllerMachine.getParts(IGravityPartMachine.class)) {
                 return part.getCurrentGravity() == (zero ? 0 : 100);

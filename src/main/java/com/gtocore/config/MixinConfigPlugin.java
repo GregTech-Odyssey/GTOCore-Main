@@ -25,6 +25,9 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtocore.mixin.renderblender.")) {
             return Mods.RENDER_BLENDER.isLoaded();
         }
+        if (mixinClassName.startsWith("com.gtocore.mixin.corpse.")) {
+            return Mods.CORPSE.isLoaded();
+        }
         return switch (mixinClassName) {
             case "com.gtocore.mixin.sophisticatedcore.CraftingUpgradeTweakUIPartMixin" -> Mods.SOPHISTICATEDCORE.isLoaded() && FMLLoader.getLoadingModList().getModFileById("craftingtweaks") != null;
             case "com.gtocore.mixin.ae2.search.RepoSearchMixin", "com.gtocore.mixin.ae2.search.AEKeyMixin" -> Mods.LANG.isLoaded();

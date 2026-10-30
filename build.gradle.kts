@@ -445,6 +445,21 @@ if (extra["isGtolibDebugMode"] == true) {
         .builtBy("buildGtolibProtected")
 }
 
+val questHotReloadClasspath = layout.buildDirectory.file("quest-hotreload/classpath.txt")
+val writeQuestHotReloadClasspath = tasks.register("writeQuestHotReloadClasspath") {
+    val main = sourceSets.main.get()
+    val entries = main.output.classesDirs + main.compileClasspath
+    val sourceRoot = file("src/main/java")
+    outputs.upToDateWhen { false }
+    doLast {
+        val target = questHotReloadClasspath.get().asFile
+        target.parentFile.mkdirs()
+        target.writeText((listOf(sourceRoot.absolutePath) + entries.files.map { it.absolutePath }).joinToString("\n"))
+    }
+}
+legacyForge.runs.configureEach { systemProperty("gtocore.questHotReload", questHotReloadClasspath.get().asFile.absolutePath) }
+tasks.matching { it.name in setOf("runClient", "runServer", "runData", "runGameTestServer") }.configureEach { dependsOn(writeQuestHotReloadClasspath) }
+
 // ---------- 资源与 jar ----------
 
 val generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {

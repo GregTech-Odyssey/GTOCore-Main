@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy.game.minesweeper;
 
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.milestone.MinesweeperMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -13,10 +14,12 @@ import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Adjuster;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -26,11 +29,15 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.FakePlayer;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
@@ -41,22 +48,17 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * 「扫雷」游戏机：{@link MinesweeperRules.Difficulty} 档位的翻格玩法，盘面以方块形式铺在机器旁边（+X / -Z 方向），
- * 一格一个 {@link MinesweeperDisplayBlock}。
+ * 扫雷游戏机：在机器旁边铺开一格一个显示方块的盘面，提供难度、重开、展开/收起与取出游戏币。
  *
  * <p>
- * 机器本身只提供界面：右击打开（{@link #createUIWidget()}），里面换难度、重开一局、展开/收起盘面、取出游戏币；
- * 游戏里的落子仍然是右击显示方块翻开、潜行右击插旗（见 {@link #click}）。全部通关才把奖励记进余额，没收完的盘面
- * 重开、收起或拆机器都拿不到币；自定义档（自己定宽高与雷数，最大 64×64）不计奖励。
- *
- * <p>
- * 盘面按自定义档的最大尺寸分配定长数组（{@link #CELL_CAPACITY}）：DataSyncLib 的数组字段是按内容原地存取、长度不上网，
- * 定长才能换难度时不必换数组引用；多出来的尾巴一直是「未翻开 / 不是雷」，规则只看前 {@code rules.cellCount()} 格。
- * 大盘每次落子只刷新规则报告改动过的那几格（{@link MinesweeperRules#open} 的 {@code touched}），不整盘重刷。
+ * 落子由显示方块转发到 {@link #click}；只有整局通关才结算基础奖励，自定义档不计奖励。
+ * 盘面按自定义最大尺寸定长分配，规则只看前 {@code cellCount} 格；每次落子只刷新规则报告的显示方块。
  */
 @DataGeneratorScanned
 public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreMachine.BoardSnapshot> {
@@ -121,9 +123,63 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "位置被挡住了，先把机器旁边的空地清出来", en = "The area is obstructed — clear the ground next to the machine first")
     private static final String MSG_OBSTRUCTED = "gtocore.machine.minesweeper.msg.obstructed";
 
+    @RegisterLanguage(cn = "经典模式", en = "Classic mode")
+    private static final String PAGE_CLASSIC = "gtocore.machine.minesweeper.page.classic";
+    @RegisterLanguage(cn = "扫雷经典模式", en = "Minesweeper classic mode")
+    private static final String PAGE_CLASSIC_TOOLTIP = "gtocore.machine.minesweeper.page.classic.tooltip";
+    @RegisterLanguage(cn = "战役", en = "Campaign")
+    private static final String PAGE_CAMPAIGN = "gtocore.machine.minesweeper.page.campaign";
+    @RegisterLanguage(cn = "扫雷战役", en = "Minesweeper campaign")
+    private static final String PAGE_CAMPAIGN_TOOLTIP = "gtocore.machine.minesweeper.page.campaign.tooltip";
+    @RegisterLanguage(cn = "基础里程碑", en = "Base milestones")
+    private static final String PAGE_RECORDS = "gtocore.machine.minesweeper.page.records";
+    @RegisterLanguage(cn = "扫雷基础模式里程碑", en = "Minesweeper base-mode milestones")
+    private static final String PAGE_RECORDS_TOOLTIP = "gtocore.machine.minesweeper.page.records.tooltip";
+    @RegisterLanguage(cn = "战役里程碑", en = "Campaign milestones")
+    private static final String PAGE_CAMPAIGN_RECORDS = "gtocore.machine.minesweeper.page.campaign_records";
+    @RegisterLanguage(cn = "扫雷战役里程碑", en = "Minesweeper campaign milestones")
+    private static final String PAGE_CAMPAIGN_RECORDS_TOOLTIP = "gtocore.machine.minesweeper.page.campaign_records.tooltip";
+    @RegisterLanguage(cn = "新手", en = "Novice")
+    private static final String TIER_NOVICE = "gtocore.machine.minesweeper.tier.novice";
+    @RegisterLanguage(cn = "老兵", en = "Veteran")
+    private static final String TIER_VETERAN = "gtocore.machine.minesweeper.tier.veteran";
+    @RegisterLanguage(cn = "精锐", en = "Elite")
+    private static final String TIER_ELITE = "gtocore.machine.minesweeper.tier.elite";
+    private static final String[] TIER_NAMES = { TIER_NOVICE, TIER_VETERAN, TIER_ELITE };
+    @RegisterLanguage(cn = "已通关 %s / %s", en = "%s / %s cleared")
+    private static final String TEXT_CAMPAIGN_PROGRESS = "gtocore.machine.minesweeper.text.campaign_progress";
+    @RegisterLanguage(cn = "%s×%s · %s 雷 · %s", en = "%s×%s · %s mines · %s")
+    private static final String TEXT_CAMPAIGN_LEVEL_DETAIL = "gtocore.machine.minesweeper.text.campaign_level_detail";
+    @RegisterLanguage(cn = "已通关 · 最快 %s", en = "Cleared · best %s")
+    private static final String TEXT_CAMPAIGN_LEVEL_CLEARED = "gtocore.machine.minesweeper.text.campaign_level_cleared";
+    @RegisterLanguage(cn = "已通关", en = "Cleared")
+    private static final String TEXT_CAMPAIGN_LEVEL_CLEARED_NO_SPEED = "gtocore.machine.minesweeper.text.campaign_level_cleared_no_speed";
+    @RegisterLanguage(cn = "未通关", en = "Not cleared")
+    private static final String TEXT_CAMPAIGN_LEVEL_UNCLEARED = "gtocore.machine.minesweeper.text.campaign_level_uncleared";
+    @RegisterLanguage(cn = "%s %s/%s · %s×%s · %s 雷",
+                      en = "%s %s/%s · %s×%s · %s mines")
+    private static final String TEXT_CAMPAIGN = "gtocore.machine.minesweeper.text.campaign";
+    @RegisterLanguage(cn = "通关！", en = "Cleared!")
+    private static final String TEXT_CAMPAIGN_WON = "gtocore.machine.minesweeper.text.campaign_won";
+    @RegisterLanguage(cn = "首次通关奖励已存入机器：%s 游戏币", en = "First-clear reward added to the machine: %s Game Coins")
+    private static final String TEXT_CAMPAIGN_REWARD = "gtocore.machine.minesweeper.text.campaign_reward";
+    @RegisterLanguage(cn = "先完成上一关", en = "Clear the previous level first")
+    private static final String REASON_LEVEL_LOCKED = "gtocore.machine.minesweeper.reason.level_locked";
+    @RegisterLanguage(cn = "总时间", en = "Total time")
+    private static final String COLUMN_TOTAL_TIME = "gtocore.machine.minesweeper.column.total_time";
+    @RegisterLanguage(cn = "参与者：%s", en = "Participants: %s")
+    private static final String TOOLTIP_PARTICIPANTS = "gtocore.machine.minesweeper.tooltip.participants";
+    @RegisterLanguage(cn = "已完成 %s/%s", en = "%s/%s completed")
+    private static final String TOOLTIP_CAMPAIGN_PROGRESS = "gtocore.machine.minesweeper.tooltip.campaign_progress";
+
     /** 踩雷时每颗雷的爆炸威力：踩中的那颗大一点，其余小一点。 */
-    private static final float DEATH_EXPLOSION_POWER = 3.0F;
-    private static final float MINE_EXPLOSION_POWER = 1.5F;
+    private static final float DEATH_EXPLOSION_POWER = 12.0F;
+    private static final float MINE_EXPLOSION_POWER = 6.0F;
+    /** 额外补一层爆炸声，避免原版固定音量把冲击感压住。 */
+    private static final float DEATH_EXPLOSION_SOUND_VOLUME = 16.0F;
+    private static final float MINE_EXPLOSION_SOUND_VOLUME = 10.0F;
+    private static final float DEATH_EXPLOSION_SOUND_PITCH = 0.6F;
+    private static final float MINE_EXPLOSION_SOUND_PITCH = 0.8F;
     /**
      * 一局最多炸几下：大盘的雷有几百颗，全炸会把服务器与客户端一起拖垮；踩中的那颗必炸，其余按固定间隔抽。
      */
@@ -138,6 +194,29 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private static final long[] MINE_STEPS = { 1, 16, 128, 1024 };
     /** 配置页里输入框前面那一列名字的宽度：两个汉字足够。 */
     private static final int LABEL_WIDTH = 40;
+
+    /** 模式（{@link MinesweeperRules.Mode} 的序数）；旧存档默认基础档。 */
+    @SaveToDisk
+    private int mode = MinesweeperRules.Mode.PRESET.ordinal();
+    /** 当前选中的战役关 0..59；基础/自定义模式下也保留，切回战役时继续用。 */
+    @SaveToDisk
+    private int campaignLevel;
+    /** 本局种子；与 firstCell 一起决定雷盘，读档时重算。 */
+    @SaveToDisk
+    private long boardSeed;
+    /** 第一次翻开的格子；-1 表示本局还没生成雷盘。 */
+    @SaveToDisk
+    private int firstCell = -1;
+    /** 本局开始时刻（展开盘面时记下）；用于成绩计时。 */
+    @SaveToDisk
+    private long roundStart;
+    /** 本局开启者；= null 表示无法归属成绩。 */
+    @SaveToDisk
+    @Nullable
+    private UUID roundStarter;
+    /** 本局其他参与者（翻开过格子的人，不含开启者）。 */
+    @SaveToDisk
+    private List<UUID> roundParticipants = new ArrayList<>();
 
     /** 难度（{@link MinesweeperRules.Difficulty} 的序数）。 */
     @SaveToDisk
@@ -166,8 +245,8 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     /** 这一面盘是否已经结过账，一面盘只兑现一次。 */
     @SaveToDisk
     private boolean settled;
-    /** 雷盘，按行优先存 {@code width * height} 格；第一次翻开之前全是 false。只在铺开盘面时存盘。 */
-    @SaveToDisk(skipWhen = "boardPackedUp")
+    /** 雷盘运行期缓存；新盘由 seed + firstCell 重算，旧档才需要把雷盘本身存下来。 */
+    @SaveToDisk(skipWhen = "minesNeedSaving")
     private boolean[] mines = new boolean[CELL_CAPACITY];
     /** 显示盘，取值见 {@link MinesweeperRules}。只在铺开盘面时存盘。 */
     @SaveToDisk(skipWhen = "boardPackedUpCells")
@@ -193,8 +272,8 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
      * <p>
      * 尺寸与雷数写进快照，是为了自定义档改了宽高之后客户端不用自己再算一遍（服务端夹好的值才作数）。
      */
-    public record BoardSnapshot(int revision, int difficulty, int width, int height, int mineCount, long maxReward,
-                                int flags, int state) {
+    public record BoardSnapshot(int revision, int mode, int difficulty, int campaignLevel, long campaignCleared,
+                                int width, int height, int mineCount, long maxReward, int flags, int state) {
 
         /** 盘面收起（还没铺开）。 */
         private static final int STATE_COLLAPSED = 0;
@@ -205,10 +284,13 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         /** 踩到雷，已结算。 */
         private static final int STATE_LOST = 3;
 
-        private static final BoardSnapshot EMPTY = new BoardSnapshot(-1, 0, 0, 0, 0, 0, 0, STATE_COLLAPSED);
+        private static final BoardSnapshot EMPTY = new BoardSnapshot(-1, 0, 0, 0, 0L, 0, 0, 0, 0L, 0, STATE_COLLAPSED);
         private static final StreamCodec<FriendlyByteBuf, BoardSnapshot> CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, BoardSnapshot::revision,
+                ByteBufCodecs.VAR_INT, BoardSnapshot::mode,
                 ByteBufCodecs.VAR_INT, BoardSnapshot::difficulty,
+                ByteBufCodecs.VAR_INT, BoardSnapshot::campaignLevel,
+                ByteBufCodecs.VAR_LONG, BoardSnapshot::campaignCleared,
                 ByteBufCodecs.VAR_INT, BoardSnapshot::width,
                 ByteBufCodecs.VAR_INT, BoardSnapshot::height,
                 ByteBufCodecs.VAR_INT, BoardSnapshot::mineCount,
@@ -221,6 +303,18 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         MinesweeperRules.Difficulty preset() {
             var all = MinesweeperRules.Difficulty.ALL;
             return all[Math.clamp(difficulty, 0, all.length - 1)];
+        }
+
+        boolean isPreset() {
+            return mode == MinesweeperRules.Mode.PRESET.ordinal();
+        }
+
+        boolean isCampaign() {
+            return mode == MinesweeperRules.Mode.CAMPAIGN.ordinal();
+        }
+
+        boolean isCustom() {
+            return mode == MinesweeperRules.Mode.CUSTOM.ordinal();
         }
 
         boolean collapsed() {
@@ -247,44 +341,74 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         if (isRemote()) return;
         rebuildRules();
         sanitizeBoard();
+        sanitizeRound();
     }
 
-    /**
-     * 地上那片盘面还是不是当前档位的尺寸：档位尺寸改过（旧存档）或者有人改过盘面文件时，按记录下来的旧尺寸把方块收干净，
-     * 当作没铺开——留着会让落子按下标错位。
-     */
+    /** 盘面尺寸与当前档位不符时收干净，并按未铺开处理。 */
     private void sanitizeBoard() {
         if (!unfolded) return;
-        if (boardWidth == rules.width() && boardHeight == rules.height()) return;
-        removeLayout();
-        unfolded = false;
-        boardWidth = 0;
-        boardHeight = 0;
-        newBoard();
+        if (boardWidth != rules.width() || boardHeight != rules.height()) {
+            removeLayout();
+            unfolded = false;
+            boardWidth = 0;
+            boardHeight = 0;
+            newBoard();
+            clearRound();
+            return;
+        }
+        if (firstCell >= 0) {
+            if (firstCell < rules.cellCount()) {
+                regenerateMines();
+            } else {
+                firstCell = -1;
+                boardSeed = 0L;
+                Arrays.fill(mines, false);
+            }
+        } else if (!rules.isPlaced(mines)) {
+            Arrays.fill(mines, false);
+        }
     }
 
     /**
-     * 按当前档位重建规则：预设档直接用枚举里的尺寸与奖励；自定义档把宽高雷数夹进合法范围，并把夹好的值写回字段，
-     * 界面上的输入框与状态行才不会跟规则各说一套。
+     * 按当前模式重建规则：预设档直接用枚举；战役用静态关卡；自定义档把宽高雷数夹进合法范围，
+     * 并把夹好的值写回字段，界面上的输入框与状态行才不会跟规则各说一套。
      */
     private void rebuildRules() {
-        var preset = MinesweeperRules.Difficulty.of(difficulty);
-        if (preset == null) preset = MinesweeperRules.Difficulty.EASY;
-        difficulty = preset.ordinal();
-        if (preset.custom()) {
+        var selected = MinesweeperRules.Mode.of(mode);
+        if (selected == null) selected = MinesweeperRules.Mode.PRESET;
+        if (selected == MinesweeperRules.Mode.PRESET) {
+            var preset = MinesweeperRules.Difficulty.of(difficulty);
+            if (preset == null) preset = MinesweeperRules.Difficulty.EASY;
+            if (preset.custom()) {
+                selected = MinesweeperRules.Mode.CUSTOM;
+            } else {
+                difficulty = preset.ordinal();
+                rules = MinesweeperRules.create(preset);
+                mode = selected.ordinal();
+                return;
+            }
+        }
+        mode = selected.ordinal();
+        if (selected == MinesweeperRules.Mode.CAMPAIGN) {
+            campaignLevel = Math.clamp(campaignLevel, 0, MinesweeperCampaign.LEVEL_COUNT - 1);
+            difficulty = -1;
+            rules = MinesweeperRules.createCampaign(MinesweeperCampaign.level(campaignLevel));
+        } else {
+            difficulty = MinesweeperRules.Difficulty.CUSTOM.ordinal();
             rules = MinesweeperRules.createCustom(customWidth, customHeight, customMines);
             customWidth = rules.width();
             customHeight = rules.height();
             customMines = rules.mineCount();
-        } else {
-            rules = MinesweeperRules.create(preset);
         }
     }
 
     @Override
     protected BoardSnapshot createView() {
-        return new BoardSnapshot(revision(), difficulty, rules.width(), rules.height(), rules.mineCount(),
-                rules.maxReward(), rules.flags(cells), stateOrdinal());
+        int snapshotDifficulty = rules.difficulty() == null ?
+                (rules.campaign() ? -1 : MinesweeperRules.Difficulty.CUSTOM.ordinal()) :
+                rules.difficulty().ordinal();
+        return new BoardSnapshot(revision(), mode, snapshotDifficulty, campaignLevel, viewerCleared(),
+                rules.width(), rules.height(), rules.mineCount(), rules.maxReward(), rules.flags(cells), stateOrdinal());
     }
 
     /** 局面阶段：收起 / 进行中 / 通关 / 踩雷，全部从盘面现推。 */
@@ -304,6 +428,8 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private void newBoard() {
         Arrays.fill(mines, false);
         Arrays.fill(cells, MinesweeperRules.UNOPENED);
+        firstCell = -1;
+        boardSeed = 0L;
         settled = false;
     }
 
@@ -324,7 +450,12 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
                 return;
             }
         }
+        if (rules.campaign() && (player == null || !isCampaignUnlocked(player.getUUID(), campaignLevel))) {
+            send(player, Component.translatable(REASON_LEVEL_LOCKED));
+            return;
+        }
         newBoard();
+        startRound(player);
         for (int z = 0; z < height; z++) {
             for (int x = 0; x < width; x++) {
                 BlockPos pos = cellPos(x, z);
@@ -358,14 +489,20 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         boardWidth = 0;
         boardHeight = 0;
         newBoard();
+        clearRound();
         syncAndMarkChanged();
     }
 
     /** 服务端：「重新开始」：结掉当前这一局，再按同一难度重铺一盘。只有铺开时才有意义。 */
     private void restartOnServer(@Nullable ServerPlayer player) {
         if (isRemote() || !unfolded) return;
+        if (rules.campaign() && (player == null || !isCampaignUnlocked(player.getUUID(), campaignLevel))) {
+            send(player, Component.translatable(REASON_LEVEL_LOCKED));
+            return;
+        }
         settle(player);
         newBoard();
+        startRound(player);
         mirrorAll();
         syncAndMarkChanged();
     }
@@ -376,10 +513,31 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
      * @param ordinal 配置页按钮的序号，与 {@link MinesweeperRules.Difficulty} 的序数一一对应
      */
     private void switchDifficulty(int ordinal) {
-        if (isRemote() || ordinal == difficulty) return;
-        if (MinesweeperRules.Difficulty.of(ordinal) == null) return;
+        if (isRemote()) return;
+        var preset = MinesweeperRules.Difficulty.of(ordinal);
+        if (preset == null) return;
+        var target = preset.custom() ? MinesweeperRules.Mode.CUSTOM : MinesweeperRules.Mode.PRESET;
+        if (mode == target.ordinal() && difficulty == ordinal) return;
         collapseOnServer(null);
         difficulty = ordinal;
+        mode = target.ordinal();
+        rebuildRules();
+        newBoard();
+        syncAndMarkChanged();
+    }
+
+    /** 服务端：选中战役关；只允许点的人已经解锁的关卡。 */
+    private void selectCampaignLevel(int level, @Nullable ServerPlayer player) {
+        if (isRemote() || player == null) return;
+        if (level < 0 || level >= MinesweeperCampaign.LEVEL_COUNT) return;
+        if (!isCampaignUnlocked(player.getUUID(), level)) {
+            send(player, Component.translatable(REASON_LEVEL_LOCKED));
+            return;
+        }
+        if (mode == MinesweeperRules.Mode.CAMPAIGN.ordinal() && campaignLevel == level) return;
+        collapseOnServer(null);
+        mode = MinesweeperRules.Mode.CAMPAIGN.ordinal();
+        campaignLevel = level;
         rebuildRules();
         newBoard();
         syncAndMarkChanged();
@@ -413,7 +571,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     /** 自定义盘面参数变了：雷数按新尺寸重新夹紧；正在玩自定义盘的话先结账收摊，再按新参数重铺。 */
     private void applyCustomShape() {
         customMines = MinesweeperRules.clampMines(customWidth, customHeight, customMines);
-        if (rules.custom()) {
+        if (mode == MinesweeperRules.Mode.CUSTOM.ordinal()) {
             collapseOnServer(null);
             rebuildRules();
             newBoard();
@@ -431,7 +589,102 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         return Math.max(1, customWidth * customHeight - 9);
     }
 
-    // ==================== 落子 ====================
+    // ==================== 战役/成绩/生成 ====================
+
+    private @Nullable MinesweeperMilestones minesweeperMilestones() {
+        return getLevel() instanceof ServerLevel level ? MinesweeperMilestones.get(level) : null;
+    }
+
+    private boolean isCampaignUnlocked(UUID player, int level) {
+        var store = minesweeperMilestones();
+        return store != null && store.isCampaignUnlocked(player, level);
+    }
+
+    /** 当前界面查看者的战役进度；没有界面查看者时为 0。 */
+    private long viewerCleared() {
+        var store = minesweeperMilestones();
+        var viewer = viewerId();
+        return store == null || viewer == null ? 0L : store.campaignCleared(viewer);
+    }
+
+    @Override
+    protected void onViewerChanged() {
+        if (!isRemote() && getLevel() != null) syncAndMarkChanged();
+    }
+
+    private void startRound(@Nullable ServerPlayer player) {
+        roundStart = gameTime();
+        roundStarter = player == null || player instanceof FakePlayer ? null : player.getUUID();
+        if (roundParticipants == null) roundParticipants = new ArrayList<>();
+        roundParticipants.clear();
+    }
+
+    private void clearRound() {
+        roundStart = 0L;
+        roundStarter = null;
+        if (roundParticipants == null) roundParticipants = new ArrayList<>();
+        roundParticipants.clear();
+    }
+
+    private void sanitizeRound() {
+        if (!unfolded) {
+            clearRound();
+            return;
+        }
+        if (roundStart <= 0L || roundStart > gameTime()) roundStart = gameTime();
+        if (roundParticipants == null) roundParticipants = new ArrayList<>();
+        if (roundStarter == null) {
+            roundParticipants.clear();
+        } else {
+            roundParticipants.removeIf(participant -> participant == null || participant.equals(roundStarter));
+        }
+    }
+
+    /** 新盘只有 seed/firstCell，不存雷盘；旧档没有 firstCell 时才需要把旧雷盘存下来。 */
+    private boolean minesNeedSaving(boolean[] mines) {
+        return unfolded && firstCell < 0 && rules.isPlaced(mines);
+    }
+
+    /** 读档时按 seed+firstCell 重算雷盘；算法与生成器共用同一个布局函数。 */
+    private void regenerateMines() {
+        Arrays.fill(mines, false);
+        boolean[] generated = MinesweeperBoardGenerator.layout(rules.width(), rules.height(),
+                rules.mineCount(), boardSeed, firstCell);
+        System.arraycopy(generated, 0, mines, 0, Math.min(generated.length, mines.length));
+    }
+
+    /** 首次翻开前生成雷盘：基础种子混合世界种子、核心方块位置和本局随机盐；异常时退回混合种子布雷。 */
+    private void generateBoard(int safeCell) {
+        if (!(getLevel() instanceof ServerLevel level)) return;
+        long worldSeed = level.getSeed();
+        long corePosition = getPos().asLong();
+        try {
+            var generated = MinesweeperBoardGenerator.generate(random(), worldSeed, corePosition,
+                    rules.width(), rules.height(), rules.mineCount(), safeCell);
+            Arrays.fill(mines, false);
+            System.arraycopy(generated.mines(), 0, mines, 0, Math.min(generated.mines().length, mines.length));
+            boardSeed = generated.seed();
+        } catch (RuntimeException failure) {
+            boardSeed = MinesweeperBoardGenerator.mixSeed(worldSeed, corePosition, random().nextLong());
+            Arrays.fill(mines, false);
+            boolean[] generated = MinesweeperBoardGenerator.layout(rules.width(), rules.height(),
+                    rules.mineCount(), boardSeed, safeCell);
+            System.arraycopy(generated, 0, mines, 0, Math.min(generated.length, mines.length));
+        }
+        firstCell = safeCell;
+    }
+
+    private void noteParticipant(@Nullable ServerPlayer player) {
+        if (player == null || player instanceof FakePlayer) return;
+        UUID id = player.getUUID();
+        if (roundStarter == null) {
+            roundStarter = id;
+            return;
+        }
+        if (roundParticipants == null) roundParticipants = new ArrayList<>();
+        if (id.equals(roundStarter) || roundParticipants.contains(id)) return;
+        roundParticipants.add(id);
+    }
 
     /** 显示方块被点：右击翻开、潜行右击插旗；数字格周围旗数对上了就连开一圈。 */
     public void click(BlockPos displayPos, @Nullable ServerPlayer player, boolean flag) {
@@ -439,17 +692,27 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         int cell = cellAt(displayPos);
         if (cell < 0) return;
         touched.clear();
+        boolean generated = false;
+        if (!flag && cells[cell] == MinesweeperRules.UNOPENED && firstCell < 0 && !rules.isPlaced(mines)) {
+            generateBoard(cell);
+            generated = true;
+        }
         boolean changed;
         if (flag) {
             changed = rules.toggleFlag(cells, cell, touched);
         } else if (cells[cell] >= MinesweeperRules.NUMBER_MIN) {
             changed = chord(cell);
         } else {
-            changed = rules.open(mines, cells, cell, random(), touched);
+            changed = rules.open(mines, cells, cell, touched);
         }
-        if (!changed) return;
-        mirrorTouched();
-        if (rules.isOver(mines, cells)) settle(player);
+        if (!flag && changed) noteParticipant(player);
+        if (changed) mirrorTouched();
+        // 每次有效点击都检查一次结束条件；没有改动盘面时也要补上可能漏掉的结算。
+        if (rules.isOver(mines, cells)) {
+            settle(player);
+        } else if (!changed && !generated) {
+            return;
+        }
         syncAndMarkChanged();
     }
 
@@ -465,7 +728,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         for (int direction = 0; direction < MinesweeperRules.DIRECTIONS; direction++) {
             int next = rules.neighbour(cell, direction);
             if (next < 0 || cells[next] != MinesweeperRules.UNOPENED) continue;
-            changed |= rules.open(mines, cells, next, random(), touched);
+            changed |= rules.open(mines, cells, next, touched);
             if (rules.isLost(cells)) break;
         }
         return changed;
@@ -480,14 +743,46 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private void settle(@Nullable ServerPlayer player) {
         if (settled) return;
         settled = true;
+        boolean won = rules.isWon(mines, cells);
+        long firstClearReward = won ? recordVictory() : 0L;
         long amount = payout();
         if (amount > 0) addBalance(amount);
         if (rules.isLost(cells)) {
             explode();
             send(player, Component.translatable(TEXT_LOST));
-        } else if (amount > 0) {
-            send(player, Component.translatable(TEXT_WON, number(amount)));
+        } else if (won) {
+            if (rules.campaign()) {
+                send(player, Component.translatable(TEXT_CAMPAIGN_WON));
+                if (firstClearReward > 0L) {
+                    send(player, Component.translatable(TEXT_CAMPAIGN_REWARD, number(firstClearReward)));
+                }
+            } else if (amount > 0L) {
+                send(player, Component.translatable(TEXT_WON, number(amount)));
+            }
         }
+    }
+
+    /**
+     * 胜利时先落成绩/战役进度；战役首次完成把奖励存进机器余额，返回奖励金额供提示。
+     * 用时非法（0 或负）时不写成绩，但战役进度仍按完成推进。
+     */
+    private long recordVictory() {
+        var store = minesweeperMilestones();
+        if (store == null || roundStarter == null) return 0L;
+        long completedAt = gameTime();
+        long ticks = roundStart > 0L && completedAt > roundStart ? completedAt - roundStart : 0L;
+        if (rules.campaign()) {
+            boolean first = store.recordCampaign(campaignLevel, roundStarter, roundParticipants, ticks, completedAt);
+            if (!first) return 0L;
+            long reward = MinesweeperCampaign.rewardForLevel(campaignLevel);
+            addBalance(reward);
+            return reward;
+        }
+        if (rules.mode() == MinesweeperRules.Mode.PRESET &&
+                difficulty >= 0 && difficulty < MinesweeperRules.Difficulty.CUSTOM.ordinal()) {
+            store.recordBase(difficulty, roundStarter, roundParticipants, ticks, completedAt);
+        }
+        return 0L;
     }
 
     /** 拆除机器时先把盘面收干净，余额由基类按面额掉回世界。 */
@@ -520,42 +815,64 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         if (mineTotal == 0) return;
         int budget = MAX_EXPLOSIONS;
         if (deathCell >= 0) {
-            explodeAt(serverLevel, deathCell, DEATH_EXPLOSION_POWER);
+            explodeAt(serverLevel, deathCell, DEATH_EXPLOSION_POWER,
+                    DEATH_EXPLOSION_SOUND_VOLUME, DEATH_EXPLOSION_SOUND_PITCH);
             budget--;
         }
-        if (budget <= 0) return;
         int stride = Math.max(1, mineTotal / budget);
         int seen = 0;
         for (int cell = 0; cell < cellCount && budget > 0; cell++) {
             if (!mines[cell] || cell == deathCell) continue;
             if (seen++ % stride != 0) continue;
-            explodeAt(serverLevel, cell, MINE_EXPLOSION_POWER);
+            explodeAt(serverLevel, cell, MINE_EXPLOSION_POWER,
+                    MINE_EXPLOSION_SOUND_VOLUME, MINE_EXPLOSION_SOUND_PITCH);
             budget--;
         }
     }
 
-    private void explodeAt(ServerLevel level, int cell, float power) {
+    private void explodeAt(ServerLevel level, int cell, float power, float volume, float pitch) {
         BlockPos pos = displayPos(cell);
         level.explode(null, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, power,
                 Level.ExplosionInteraction.NONE);
+        // 原版爆炸声的音量是固定的，这里额外补一层更响、更低沉的爆炸声。
+        level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, volume, pitch);
     }
 
     // ==================== 盘面方块 ====================
 
-    /** 只把盘面方块拆掉：显示方块与边框；机器自己不动。按「实际铺开时的尺寸」收，尺寸改过也收得干净。 */
+    /** 只拆属于本机的盘面：显示方块按核心归属认领，边框只收外圈；没铺开过则不动。 */
     private void removeLayout() {
         if (!(getLevel() instanceof ServerLevel serverLevel)) return;
-        int width = boardWidth > 0 ? boardWidth : rules.width();
-        int height = boardHeight > 0 ? boardHeight : rules.height();
+        if (boardWidth > 0 && boardHeight > 0) {
+            removeBlocks(serverLevel, boardWidth, boardHeight, true);
+        } else if (unfolded) {
+            removeBlocks(serverLevel, MinesweeperRules.CUSTOM_MAX_SIDE, MinesweeperRules.CUSTOM_MAX_SIDE, false);
+        }
+    }
+
+    /** 扫 {@code width × height} 盘面及外圈；显示方块按核心归属，{@code frames} 控制是否连边框一起收。 */
+    private void removeBlocks(ServerLevel level, int width, int height, boolean frames) {
+        BlockPos core = getPos();
         for (int x = 0; x <= width + 1; x++) {
             for (int z = 0; z <= height + 1; z++) {
                 BlockPos pos = gridPos(x, z);
-                Block block = serverLevel.getBlockState(pos).getBlock();
-                if (block instanceof MinesweeperDisplayBlock || block instanceof MinesweeperFrameBlock) {
-                    serverLevel.removeBlock(pos, false);
+                if (pos.equals(core)) continue;
+                Block block = level.getBlockState(pos).getBlock();
+                if (block instanceof MinesweeperDisplayBlock) {
+                    if (level.getBlockEntity(pos) instanceof MinesweeperDisplayBlockEntity display &&
+                            core.equals(display.getCore())) {
+                        level.removeBlock(pos, false);
+                    }
+                } else if (frames && block instanceof MinesweeperFrameBlock && onRing(x, z, width, height)) {
+                    level.removeBlock(pos, false);
                 }
             }
         }
+    }
+
+    /** 是否位于盘面外圈那一圈边框上（{@code 0} 与 {@code width + 1} / {@code height + 1} 是边框）。 */
+    private static boolean onRing(int x, int z, int width, int height) {
+        return x == 0 || x == width + 1 || z == 0 || z == height + 1;
     }
 
     /** 把一次落子改动过的显示方块刷成新状态（{@link #touched} 里可能有重复，重复刷同一个格子无害）。 */
@@ -620,11 +937,14 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         return page;
     }
 
-    /** 主页之外再挂一个「配置」子页，换难度与自定义盘面参数都在里面。 */
+    /** 主页之外挂配置、基础里程碑、战役、战役里程碑四个子页。 */
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
         sideTabs.attachSubTab(new BoardConfigPage());
+        sideTabs.attachSubTab(new BaseMilestonePage());
+        sideTabs.attachSubTab(new CampaignPage());
+        sideTabs.attachSubTab(new CampaignMilestonePage());
     }
 
     /** 局面面板：难度、这一局的进度与操作说明，快照挂在这一层上。 */
@@ -667,7 +987,14 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     /** 难度行：档位、盘面尺寸、雷数与全找到时的奖励；自定义档换成「不计奖励」。 */
     private Component difficultyText() {
         var snapshot = view();
-        if (snapshot.preset().custom()) {
+        if (snapshot.isCampaign()) {
+            int tier = MinesweeperCampaign.tierOf(snapshot.campaignLevel());
+            var level = MinesweeperCampaign.level(snapshot.campaignLevel());
+            return Component.translatable(TEXT_CAMPAIGN, Component.translatable(TIER_NAMES[tier]),
+                    level.index(), MinesweeperCampaign.tierSize(tier), snapshot.width(), snapshot.height(),
+                    FormattingUtil.formatNumbers(snapshot.mineCount()));
+        }
+        if (snapshot.isCustom()) {
             return Component.translatable(TEXT_CUSTOM, snapshot.width(), snapshot.height(), snapshot.mineCount());
         }
         return Component.translatable(TEXT_DIFFICULTY, Component.translatable(difficultyName(snapshot.preset())),
@@ -679,7 +1006,8 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private Component stateText() {
         var snapshot = view();
         return switch (snapshot.state()) {
-            case BoardSnapshot.STATE_WON -> Component.translatable(TEXT_WON, number(snapshot.maxReward()));
+            case BoardSnapshot.STATE_WON -> snapshot.isCampaign() ? Component.translatable(TEXT_CAMPAIGN_WON) :
+                    Component.translatable(TEXT_WON, number(snapshot.maxReward()));
             case BoardSnapshot.STATE_LOST -> Component.translatable(TEXT_LOST);
             case BoardSnapshot.STATE_PLAYING -> Component.translatable(TEXT_FLAGS,
                     number(snapshot.flags()), number(snapshot.mineCount()));
@@ -687,12 +1015,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         };
     }
 
-    /** 按钮背后要的玩家：界面的持有者，服务端才拿得到。 */
-    private static @Nullable ServerPlayer playerOf(Widget source) {
-        var gui = source.getGui();
-        return gui != null && gui.entityPlayer instanceof ServerPlayer player ? player : null;
-    }
-
+    /** 按钮背后要的玩家由 {@code AbstractGameMachine#playerOf(Widget)} 提供。 */
     private static void send(@Nullable ServerPlayer player, Component message) {
         if (player != null) player.displayClientMessage(message, true);
     }
@@ -720,7 +1043,9 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
                             FormattingUtil.formatNumbers(preset.maxReward())));
                 }
                 button.setOnServerClick(() -> switchDifficulty(index));
-                button.setSelected(() -> view().preset().ordinal() == index);
+                boolean customButton = preset.custom();
+                button.setSelected(() -> customButton ? view().isCustom() :
+                        view().isPreset() && view().preset().ordinal() == index);
                 difficulties.addChild(button);
             }
             page.addChild(difficulties);
@@ -751,12 +1076,248 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
 
         @Override
         public Component getTitle() {
-            return Component.translatable(PAGE_SETTINGS);
+            return Component.translatable(PAGE_CLASSIC);
         }
 
         @Override
         public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
+            return List.of(Component.translatable(PAGE_CLASSIC_TOOLTIP));
+        }
+
+        @Override
+        public boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    private static final MilestoneColumn[] BASE_RECORD_COLUMNS = {
+            MilestoneColumn.left(COLUMN_PLAYER, 70), MilestoneColumn.center(COLUMN_DURATION, 56) };
+    private static final MilestoneColumn[] CAMPAIGN_RECORD_COLUMNS = {
+            MilestoneColumn.left(COLUMN_PLAYER, 70), MilestoneColumn.center(COLUMN_TOTAL_TIME, 56) };
+
+    private int minesweeperMilestonesVersion() {
+        var store = minesweeperMilestones();
+        return store == null ? Integer.MIN_VALUE : store.modCount();
+    }
+
+    private List<MilestoneCell[]> baseRows(int difficulty) {
+        var store = minesweeperMilestones();
+        var server = server();
+        return store == null || server == null ? List.of() : buildBaseRows(store, server, difficulty);
+    }
+
+    private List<MilestoneCell[]> campaignRows(int tierStart, int tierSize) {
+        var store = minesweeperMilestones();
+        var server = server();
+        return store == null || server == null ? List.of() : buildCampaignRows(store, server, tierStart, tierSize);
+    }
+
+    /** 战役关按钮的悬浮提示：盘面尺寸、雷数，以及打开界面这名玩家自己的进度与最快用时。 */
+    private Component campaignLevelTooltip(int level) {
+        var levelData = MinesweeperCampaign.level(level);
+        var store = minesweeperMilestones();
+        var viewer = viewerId();
+        Component progress;
+        if (store == null || !store.isCampaignCleared(viewer, level)) {
+            progress = Component.translatable(TEXT_CAMPAIGN_LEVEL_UNCLEARED);
+        } else {
+            long best = store.campaignLevelBestTicks(level, viewer);
+            progress = best > 0L ? Component.translatable(TEXT_CAMPAIGN_LEVEL_CLEARED, duration(best)) :
+                    Component.translatable(TEXT_CAMPAIGN_LEVEL_CLEARED_NO_SPEED);
+        }
+        return Component.translatable(TEXT_CAMPAIGN_LEVEL_DETAIL, levelData.width(), levelData.height(),
+                FormattingUtil.formatNumbers(levelData.minesCount()), progress);
+    }
+
+    private static List<MilestoneCell[]> buildBaseRows(MinesweeperMilestones store, MinecraftServer server,
+                                                       int difficulty) {
+        var stats = store.baseBoard(difficulty);
+        var rows = new ArrayList<MilestoneCell[]>(stats.size());
+        for (var stat : stats) {
+            var key = stat.key();
+            rows.add(new MilestoneCell[] {
+                    MilestoneCell.of(Component.literal(MinesweeperMilestones.nameOf(server, key.starter()))),
+                    MilestoneCell.of(duration(stat.ticks()), participantHint(server, stat.completedGameTime(),
+                            key.participants())) });
+        }
+        return rows;
+    }
+
+    private static List<MilestoneCell[]> buildCampaignRows(MinesweeperMilestones store, MinecraftServer server,
+                                                           int tierStart, int tierSize) {
+        var stats = store.campaignChapterBoard(tierStart, tierSize);
+        var rows = new ArrayList<MilestoneCell[]>(stats.size());
+        for (var stat : stats) {
+            var key = stat.key();
+            var value = stat.completedCount() >= stat.tierSize() ?
+                    duration(stat.totalTicks()) :
+                    Component.translatable(TOOLTIP_CAMPAIGN_PROGRESS, stat.completedCount(), stat.tierSize());
+            rows.add(new MilestoneCell[] {
+                    MilestoneCell.of(Component.literal(MinesweeperMilestones.nameOf(server, key.starter()))),
+                    MilestoneCell.of(value, campaignHint(server, stat)) });
+        }
+        return rows;
+    }
+
+    private static Component participantHint(MinecraftServer server, long completedGameTime, List<UUID> participants) {
+        var hint = Component.translatable(TOOLTIP_ACHIEVED, dayTime(completedGameTime));
+        if (participants.isEmpty()) return hint;
+        return Component.empty().append(hint).append("\n")
+                .append(Component.translatable(TOOLTIP_PARTICIPANTS, Component.literal(participantNames(server, participants))));
+    }
+
+    private static Component campaignHint(MinecraftServer server, MinesweeperMilestones.MineCampaignChapterStat stat) {
+        var hint = Component.translatable(TOOLTIP_CAMPAIGN_PROGRESS, stat.completedCount(), stat.tierSize());
+        var participants = stat.key().participants();
+        if (participants.isEmpty()) return hint;
+        return Component.empty().append(hint).append("\n")
+                .append(Component.translatable(TOOLTIP_PARTICIPANTS, Component.literal(participantNames(server, participants))));
+    }
+
+    private static String participantNames(MinecraftServer server, List<UUID> participants) {
+        var names = new StringBuilder();
+        for (int index = 0; index < participants.size(); index++) {
+            if (index > 0) names.append(", ");
+            names.append(MinesweeperMilestones.nameOf(server, participants.get(index)));
+        }
+        return names.toString();
+    }
+
+    /** 战役页：三个章节、每关一个按钮；未解锁只看得到、点不动，服务端再校验一次。 */
+    private final class CampaignPage implements IFancyUIProvider {
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var scroller = ScrollerView.page("gtocore_minesweeper_campaign", UISizes.CONTENT_WIDTH).adaptiveWidth();
+            var page = Form.page();
+            page.addChild(TextLine.of(LayoutStyle.AUTO, () -> Component.translatable(TEXT_CAMPAIGN_PROGRESS,
+                    MinesweeperCampaign.clearedCount(view().campaignCleared()), MinesweeperCampaign.LEVEL_COUNT)).styled());
+            for (int tier = 0; tier < MinesweeperCampaign.TIER_COUNT; tier++) {
+                int start = MinesweeperCampaign.tierStart(tier);
+                int size = MinesweeperCampaign.tierSize(tier);
+                var section = Form.section(TIER_NAMES[tier]);
+                UIElement row = null;
+                for (int index = start; index < start + size; index++) {
+                    final int levelIndex = index;
+                    if ((index - start) % 5 == 0) {
+                        row = UIElement.row(Button.HEIGHT).layout(style -> style.gapAll(UISizes.GAP));
+                        section.addChild(row);
+                    }
+                    var level = MinesweeperCampaign.level(levelIndex);
+                    var button = Button.text(24, Component.literal(String.valueOf(level.index())));
+                    button.setHoverTooltips(Component.translatable(TEXT_CAMPAIGN_LEVEL_UNCLEARED));
+                    button.addSyncValue(SyncValue.ofComponent(() -> campaignLevelTooltip(levelIndex), Component.empty()))
+                            .onChanged(button::setHoverTooltips);
+                    button.setSelected(() -> view().isCampaign() && view().campaignLevel() == levelIndex);
+                    button.clientDisabled(() -> !MinesweeperCampaign.isUnlocked(view().campaignCleared(), levelIndex),
+                            REASON_LEVEL_LOCKED);
+                    button.setOnServerClick(() -> selectCampaignLevel(levelIndex, playerOf(button)));
+                    row.addChild(button);
+                }
+                page.addChild(section);
+            }
+            page.addChild(balancePanel());
+            scroller.addScrollViewChild(page);
+            return scroller;
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.SETTINGS;
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(PAGE_CAMPAIGN);
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(PAGE_CAMPAIGN_TOOLTIP));
+        }
+
+        @Override
+        public boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    /** 和其它游戏机器一样，把余额放在里程碑页面底部。 */
+    private StatusPanel balancePanel() {
+        var status = panel();
+        status.addLine(LINE_BALANCE, () -> number(balance()));
+        return status;
+    }
+
+    /** 基础模式里程碑页：五个基础模式各一张表，表格沿用公共里程碑样式。 */
+    private final class BaseMilestonePage implements IFancyUIProvider {
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            for (int mode = 0; mode < MinesweeperRules.Difficulty.CUSTOM.ordinal(); mode++) {
+                final int difficulty = mode;
+                var section = Form.section(difficultyName(MinesweeperRules.Difficulty.ALL[mode]));
+                section.addChild(milestoneTable("minesweeper_base_" + mode, BASE_RECORD_COLUMNS,
+                        MinesweeperCoreMachine.this::minesweeperMilestonesVersion, () -> baseRows(difficulty)));
+                page.addChild(section);
+            }
+            page.addChild(balancePanel());
+            return page;
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.INFO;
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(PAGE_RECORDS);
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(PAGE_RECORDS_TOOLTIP));
+        }
+
+        @Override
+        public boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    /** 战役里程碑页：三个章节各一张表，显示总用时/完成进度。 */
+    private final class CampaignMilestonePage implements IFancyUIProvider {
+
+        @Override
+        public Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            for (int tier = 0; tier < MinesweeperCampaign.TIER_COUNT; tier++) {
+                final int start = MinesweeperCampaign.tierStart(tier);
+                final int size = MinesweeperCampaign.tierSize(tier);
+                var section = Form.section(TIER_NAMES[tier]);
+                section.addChild(milestoneTable("minesweeper_campaign_" + start, CAMPAIGN_RECORD_COLUMNS,
+                        MinesweeperCoreMachine.this::minesweeperMilestonesVersion, () -> campaignRows(start, size)));
+                page.addChild(section);
+            }
+            page.addChild(balancePanel());
+            return page;
+        }
+
+        @Override
+        public IGuiTexture getTabIcon() {
+            return WidgetIcons.INFO;
+        }
+
+        @Override
+        public Component getTitle() {
+            return Component.translatable(PAGE_CAMPAIGN_RECORDS);
+        }
+
+        @Override
+        public List<Component> getTabTooltips() {
+            return List.of(Component.translatable(PAGE_CAMPAIGN_RECORDS_TOOLTIP));
         }
 
         @Override
@@ -773,11 +1334,6 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     }
 
     // ==================== 存盘跳过 ====================
-
-    /** 盘面收起时不写雷盘（全 false 没有意义）；参数类型决定 DataSyncLib 认哪个重载。 */
-    private boolean boardPackedUp(boolean[] mines) {
-        return !unfolded;
-    }
 
     /** 盘面收起时不写显示盘（全未翻开没有意义）。 */
     private boolean boardPackedUpCells(int[] cells) {

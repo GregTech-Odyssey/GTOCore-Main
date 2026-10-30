@@ -6,7 +6,6 @@ import com.gtocore.utils.ManaUnification;
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
-import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.BlockPos;
@@ -48,7 +47,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     @NotNull
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == BotaniaForgeCapabilities.MANA_RECEIVER) {
-            if ((side == null || isConnected(side)) && getManaPipeNet() != null) {
+            if ((side == null || isConnected(side)) && isWorkingEnabled() && getManaPipeNet() != null) {
                 ManaReceiver receiver = side == null ? this : sideReceiver(side);
                 return BotaniaForgeCapabilities.MANA_RECEIVER.orEmpty(cap, LazyOptional.of(() -> receiver));
             }
@@ -60,29 +59,41 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     @Override
     public void clearRemoved() {
         super.clearRemoved();
-        if (blockedSide != null && isBlocked(blockedSide)) {
-            updateTransferTick(true, this::autoTransfer);
-        }
+        updateAutoTransferTick();
     }
 
     @Override
     protected void blockedChanged(boolean isBlocked) {
-        updateTransferTick(isBlocked && blockedSide != null, this::autoTransfer);
+        updateAutoTransferTick();
     }
 
     @Override
     protected void updateNetworkConnection(@NotNull Direction side, boolean connected) {
         super.updateNetworkConnection(side, connected);
-        this.updateTransferTick(this.blockedSide != null && this.isBlocked(this.blockedSide), this::autoTransfer);
+        this.updateAutoTransferTick();
     }
 
     @Override
     public void onNeighborChanged() {
         super.onNeighborChanged();
-        updateTransferTick(blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
+        updateAutoTransferTick();
+    }
+
+    @Override
+    protected void onWorkingEnabledChanged() {
+        updateAutoTransferTick();
+    }
+
+    private void updateAutoTransferTick() {
+        updateTransferTick(isWorkingEnabled() && blockedSide != null && isBlocked(blockedSide), this::autoTransfer);
     }
 
     private void autoTransfer() {
+        if (!isWorkingEnabled()) {
+            // a paused pipe releases its tick, it is restarted once the pipe is resumed
+            updateTransferTick(false, this::autoTransfer);
+            return;
+        }
         if (getManaPipeNet() == null) return;
         boolean hasHandler = false;
         autoTransfer = true;
@@ -91,15 +102,15 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             var be = getNeighborBlockEntity(facing);
             if (be == null || be instanceof PipeBlockEntity<?, ?>) continue;
             var opposite = facing.getOpposite();
-            if (GTCapabilityHelper.getBlockEntityCapability(BotaniaForgeCapabilities.MANA_RECEIVER, be, opposite) instanceof ManaPool pool) {
+            if (ManaRoutePath.receiverOf(be, opposite) instanceof ManaPool pool) {
                 hasHandler = true;
                 var manaInPool = pool.getCurrentMana();
                 if (manaInPool > 0 && !isFull()) {
                     int manaMissing = getMaxMana() - getCurrentMana();
                     int manaToRemove = (int) Math.min(Math.min(manaInPool, manaMissing), availableMana());
-                    if (manaToRemove > 0) {
-                        pool.receiveMana(-manaToRemove);
-                        receiveMana(manaToRemove);
+                    long taken = manaToRemove > 0 ? pool.removeMana(manaToRemove, false) : 0;
+                    if (taken > 0) {
+                        receiveMana((int) taken);
                     }
                 }
             } else if (be instanceof ISourceTile sourceTile) {
@@ -108,9 +119,9 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
                 var sourceMissing = getMaxSourceLong() - getSourceLong();
                 if (sourceInTile > 0 && sourceMissing > 0) {
                     long sourceToRemove = Math.min(Math.min(sourceInTile, sourceMissing), ManaUnification.manaToSource(availableMana()));
-                    if (sourceToRemove > 0) {
-                        sourceTile.removeSourceLong(sourceToRemove);
-                        addSourceLong(sourceToRemove);
+                    long taken = sourceToRemove > 0 ? sourceTile.removeSource(sourceToRemove, false) : 0;
+                    if (taken > 0) {
+                        addSourceLong(taken);
                     }
                 }
             }
@@ -196,7 +207,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     }
 
     private void receiveMana(int mana, @Nullable Direction entry) {
-        if (mana <= 0) return;
+        if (mana <= 0 || !isWorkingEnabled()) return;
         var net = getManaPipeNet();
         if (net == null) return;
         long left = availableMana();
@@ -221,7 +232,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
 
     private boolean canReceiveManaFromBursts(@Nullable Direction entry) {
         var net = getManaPipeNet();
-        if (net == null) return false;
+        if (net == null || !isWorkingEnabled()) return false;
         for (var path : net.getNetData(longPos, worldPosition)) {
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), entry)) continue;
             var handler = path.getHandler(level);
@@ -267,7 +278,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     @Override
     public boolean canAcceptSource() {
         var net = getManaPipeNet();
-        return net != null && acceptableSource(net) > 0;
+        return isWorkingEnabled() && net != null && acceptableSource(net) > 0;
     }
 
     @Override
@@ -323,7 +334,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
 
     @Override
     public long addSourceLong(long source) {
-        if (source <= 0) return getSourceLong();
+        if (source <= 0 || !isWorkingEnabled()) return getSourceLong();
         var net = getManaPipeNet();
         if (net == null) return getSourceLong();
         long affordable = ManaUnification.manaToSource(availableMana());
@@ -358,11 +369,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (skipRoute(path.getTargetPipe(), path.getTargetFacing(), null)) continue;
             var handler = path.getHandler(level);
             if (handler == null) continue;
-            var take = Math.min(left, handler.getSourceLong());
-            if (take > 0) {
-                handler.removeSourceLong(take);
-                left -= take;
-            }
+            left -= handler.removeSource(left, false);
         }
         return getSourceLong();
     }
@@ -417,8 +424,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (handler == null || handler.isFull() || !handler.canReceiveManaFromBursts()) continue;
             var canReceive = Math.min(mana, getMaxMana(handler) - handler.getCurrentMana());
             if (canReceive > 0) {
-                handler.receiveMana(canReceive);
-                mana -= canReceive;
+                mana -= (int) handler.addMana(canReceive, false);
                 if (mana <= 0) return 0;
             }
         }
@@ -432,8 +438,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             if (handler == null || !canAcceptSource(handler)) continue;
             var canReceive = Math.min(source, handler.getMaxSourceLong() - handler.getSourceLong());
             if (canReceive > 0) {
-                handler.addSourceLong(canReceive);
-                source -= canReceive;
+                source -= handler.addSource(canReceive, false);
                 if (source <= 0) return 0;
             }
         }

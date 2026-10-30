@@ -46,10 +46,7 @@ import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.ArmorLogicSuite;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
-import com.gregtechceu.gtceu.common.data.GTCovers;
-import com.gregtechceu.gtceu.common.data.GTFluids;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.common.data.GTMedicalConditions;
+import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.item.*;
 import com.gregtechceu.gtceu.common.item.armor.*;
 import com.gregtechceu.gtceu.config.ConfigHolder;
@@ -94,6 +91,7 @@ public final class GTOItems {
         GTOOrganItems.init();
         GTOAEParts.init();
         SpeedCards.init();
+        SuperStorageUpgrades.init();
         TieredInterfaces.init();
         ComponentSlang.init();
         MultiblockSlang.init();
@@ -351,14 +349,14 @@ public final class GTOItems {
             }), new CoverPlaceBehavior(GTOCovers.POWER_AMPLIFIERS[5])))
             .register();
 
-    public static final ItemEntry<ComponentItem> CREATIVE_POWER_AMPLIFIER = item("creative_power_amplifier", "创造模式功率增幅器", ComponentItem::create)
+    public static final ItemEntry<ComponentItem> CREATIVE_POWER_AMPLIFIER = item("creative_power_amplifier", "创造功率增幅器", ComponentItem::create)
             .tab(CreativeModeTabs.CREATIVE_TAB.getKey())
             .model((ctx, prov) -> prov.generated(ctx, GTOCore.id("item/power_amplifiers/creative_power_amplifier")))
             .onRegister(attach(new TooltipBehavior(lines -> {
-                lines.add(Component.translatable("gtmthings.creative_tooltip"));
                 lines.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_DURATION_MULTIPLIER)));
                 lines.add(Component.translatable("gtocore.machine.eut_multiplier.tooltip", FormattingUtil.formatNumbers(CreativePowerAmplifierCover.DEFAULT_ENERGY_MULTIPLIER)));
                 lines.add(Component.translatable("gtocore.cover.creative_power_amplifier.tooltip").withStyle(ChatFormatting.GRAY));
+                GTMachines.CREATIVE_TOOLTIPS.accept(null, lines);
             }), new CoverPlaceBehavior(GTOCovers.CREATIVE_POWER_AMPLIFIER)))
             .register();
 
@@ -694,10 +692,10 @@ public final class GTOItems {
     public static final ItemEntry<Item> DEPLETED_REACTOR_NAQUADAH_DUAL = register("depleted_reactor_naquadah_dual", "枯竭二联硅岩燃料棒");
     public static final ItemEntry<Item> DEPLETED_REACTOR_NAQUADAH_QUAD = register("depleted_reactor_naquadah_quad", "枯竭四联硅岩燃料棒");
 
-    public static final ItemEntry<Item> NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("neutronium_antimatter_fuel_rod", "中子反物质燃料棒", "antimatter_fuel_rod");
-    public static final ItemEntry<Item> DRACONIUM_ANTIMATTER_FUEL_ROD = registerTexture("draconium_antimatter_fuel_rod", "龙反物质燃料棒", "antimatter_fuel_rod");
-    public static final ItemEntry<Item> COSMIC_NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("cosmic_neutronium_antimatter_fuel_rod", "宇宙中子反物质燃料棒", "antimatter_fuel_rod");
-    public static final ItemEntry<Item> INFINITY_ANTIMATTER_FUEL_ROD = registerTexture("infinity_antimatter_fuel_rod", "无尽反物质燃料棒", "antimatter_fuel_rod");
+    public static final ItemEntry<Item> NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("neutronium_antimatter_fuel_rod", "中子反物质燃料棒", "neutronium_antimatter_fuel_rod");
+    public static final ItemEntry<Item> DRACONIUM_ANTIMATTER_FUEL_ROD = registerTexture("draconium_antimatter_fuel_rod", "龙反物质燃料棒", "draconium_antimatter_fuel_rod");
+    public static final ItemEntry<Item> COSMIC_NEUTRONIUM_ANTIMATTER_FUEL_ROD = registerTexture("cosmic_neutronium_antimatter_fuel_rod", "宇宙中子反物质燃料棒", "cosmic_neutronium_antimatter_fuel_rod");
+    public static final ItemEntry<Item> INFINITY_ANTIMATTER_FUEL_ROD = registerTexture("infinity_antimatter_fuel_rod", "无尽反物质燃料棒", "infinity_antimatter_fuel_rod");
 
     public static final ItemEntry<Item> SPACE_ESSENCE = register("space_essence", "宇宙精华");
     public static final ItemEntry<Item> BEDROCK_DESTROYER = register("bedrock_destroyer", "基岩破坏者");
@@ -1472,7 +1470,7 @@ public final class GTOItems {
                     Tips.leftClick(GTOTips.global("§a左键方块：§r 按当前模式从末尾添加或移除标记§r", "§aLeft-Click:§r Add from the end or remove marks, per the current mode§r")),
                     Tips.rightClick(GTOTips.global("§a右键空气：§r 打开界面，调整模式与编辑目标§r", "§aRight-Click Air:§r Open the interface to change modes and edit targets§r")),
                     Tips.leftClick(GTOTips.global("§aShift + 左键超立方体：§r 将当前的标签应用到该超立方体§r", "§aShift + Left-Click Tesseract:§r Apply the current markers to this Tesseract§r")),
-                    Tips.middleClick(GTOTips.global("§a中键选取键超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r", "§aPick Block Key(default Middle-Click) Tesseract:§r Copy the coordinate configuration of this Tesseract to the marker gun§r")),
+                    Tips.middleClick(GTOTips.global("§a中键选取超立方体：§r 将当前超立方体的坐标配置复制到标签枪§r", "§aPick Block Key(default Middle-Click) Tesseract:§r Copy the coordinate configuration of this Tesseract to the marker gun§r")),
                     Tips.attention(GTOTips.global("§6注意：§r 向基于坐标信息卡的超立方体应用标签时需要足量的坐标信息卡！§r", "§6Note:§r Applying markers to a coordinate card-based Tesseract requires sufficient coordinate cards!§r")))
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(new TesseractTargetMarker()))

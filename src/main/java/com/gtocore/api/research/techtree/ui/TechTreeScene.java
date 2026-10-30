@@ -28,6 +28,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import appeng.api.client.AEKeyRendering;
+import appeng.api.identity.IdentityKeyIntMap;
 
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +68,7 @@ final class TechTreeScene {
         var manager = view.getManager();
         var layout = manager.getLayout();
         var nodes = layout.orderedNodes();
-        var indices = new Reference2IntOpenHashMap<TechNode>(nodes.size());
+        var indices = new IdentityKeyIntMap<TechNode>(nodes.size());
         indices.defaultReturnValue(-1);
         var items = new ItemLayer<NodeItem>();
         for (int i = 0; i < nodes.size(); i++) {
@@ -367,7 +368,7 @@ final class TechTreeScene {
             return node;
         }
 
-        private void resolvePrerequisites(Reference2IntOpenHashMap<TechNode> indices) {
+        private void resolvePrerequisites(IdentityKeyIntMap<TechNode> indices) {
             prerequisiteIndices = new int[node.prerequisites.size()];
             for (int i = 0; i < prerequisiteIndices.length; i++) prerequisiteIndices[i] = indices.getInt(node.prerequisites.get(i));
         }

@@ -1,0 +1,37 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha",
+    "srcalpha": "one",
+    "dstalpha": "1-srcalpha"
+  },
+  "vertex": "gtocore:dyson_force_field",
+  "fragment": "gtocore:dyson_force_field",
+  "attributes": ["Position", "UV0"],
+  "samplers": [],
+  "uniforms": [
+    {
+      "name": "ViewProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+      "name": "InverseViewProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    { "name": "CameraHeight", "type": "float", "count": 1, "values": [5] },
+    {
+      "name": "ColorModulator",
+      "type": "float",
+      "count": 4,
+      "values": [1, 1, 1, 1]
+    },
+    { "name": "GridOrigin", "type": "float", "count": 2, "values": [0, 0] },
+    { "name": "ViewDistance", "type": "float", "count": 1, "values": [256] },
+    { "name": "Completion", "type": "float", "count": 1, "values": [0] }
+  ]
+}

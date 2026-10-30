@@ -17,6 +17,7 @@ import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
+import com.gtocore.common.website.BugReportServer;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.SparkRange;
@@ -133,8 +134,10 @@ public class CommonProxy {
         RecipeEditorUIFactory.init();
         Manager.init();
         StarMapCommand.init();
+        StarMapDysonSync.init();
         TesseractTargetMarker.init();
         TravelEvents.init();
+        BugReportServer.init();
         PendingItemRewardDelivery.Events.init();
         if (!GTCEu.isDataGen() && Mods.FTBQUESTS.isLoaded()) {
             GTOQuestTypes.init();

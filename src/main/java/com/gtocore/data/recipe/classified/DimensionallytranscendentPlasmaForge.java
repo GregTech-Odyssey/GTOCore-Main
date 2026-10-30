@@ -271,11 +271,11 @@ final class DimensionallytranscendentPlasmaForge {
                 .inputItems(GTOItems.CHAOS_SHARD)
                 .inputFluids(GTOMaterials.Infinity, 1000)
                 .inputFluids(GTOMaterials.Chaos, 1000)
-                .outputFluids(GTOMaterials.ChaosInfinityAlloy, 1000)
+                .outputFluids(GTOMaterials.ChaosInfinityAlloy, 4000)
                 .outputFluids(GTOMaterials.DimensionallyTranscendentResidue, 100)
                 .EUt(2222222222L)
                 .blastFurnaceTemp(66666)
-                .duration(4444)
+                .duration(1200)
                 .save();
     }
 }

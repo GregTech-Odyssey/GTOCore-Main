@@ -8,6 +8,7 @@
 
 | 任务或改动 | 开始工作前读取 |
 |---|---|
+| 新增功能、调整行为、移除内容、性能优化或修复问题（含 GTOLib、各 fork 模组与依赖接入） | [更新记录维护](docs/changelog-maintenance.md)；同步维护 [更新记录](docs/changelog.md) 的当前周条目 |
 | 创建、修改或审查 Java/Kotlin 代码 | [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 中与改动相关的章节 |
 | 修改 `src/generated/resources`、语言、模型、标签、配方等生成结果 | [生成资源](docs/generated-resources.md) |
 | 修改 GTORules 的世界创建、读取或持久化流程 | [世界规则只读约定](docs/world-rules.md)；规则仅在创建世界时确定，已有世界禁止补写、迁移回写或修复改写 |
@@ -22,13 +23,16 @@
 | 修改天气类型、天体天气行为、天气指令或天气预报 | [星系天气](docs/galaxy-weather.md) |
 | 修改动态维度生命周期、昼夜时钟、同步、兼容适配、实例元数据或天气存盘结构 | [动态维度系统](docs/dimensions.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
+| 新写或修改任务章节（`data/quest`）、任务书热加载/热修改/编辑模式 | [任务书热加载与热修改](docs/quest-hot-edit.md)；章节写法不合规时开发环境启动直接崩溃 |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 
-GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，先判断是否应直接改对应 fork，不默认在 GTOCore 添加 Mixin；根据 [修改位置说明](docs/forked-dependencies.md) 权衡。
+GTM/AE2/EMI/Botania/Ars Nouveau 等模组均有本项目维护的 fork。修复涉及它们内部行为时，先判断是否应直接改对应 fork，不默认在 GTOCore 添加 Mixin；根据 [修改位置说明](docs/forked-dependencies.md) 权衡。
 
 ## 编码规范
 
+- **默认实现位置**：新增编写的代码逻辑默认在 `GTOLib/` 模块中实现；物品、方块、机器、配方等注册项在本体仓库实现；涉及 GTM/AE2/EMI/Botania 等已 fork 模组的内部行为时，仍按 [修改位置说明](docs/forked-dependencies.md) 判断是否直接修改对应 fork。
+- **特化功能局部实现**：新增功能时，不要在 `MetaMachine`、`MetaMachineItem`、`RecipeLogic` 等适用范围宽泛的共用父类或通用逻辑类中，通过 `if (this instanceof YourNewClass)` 等针对新类的特判实现特化功能。应将功能实现在对应的特化类或其他能限定适用范围的合适位置。
 - 首次编辑或审查 Java/Kotlin 代码前，必须打开 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 的相关章节；完成修改后按实际 diff 再检查一次。它是本仓性能与正确性约束，不是可选建议。
 - 集合、Map/Set、遍历、复制、热路径分配或并发改动：读取“术语”“容器规范”“非容器规范”。
 - 异常处理、同步执行的状态切换或公共方法/API 设计：读取“非容器规范”。
@@ -44,6 +48,7 @@ GTM 与 AE2 均有本项目维护的 fork。修复涉及它们内部行为时，
 
 - **只以本仓 fork 的实际源码为准**：GTM 读 `../GregTech-Modern`，AE2 读 GTO 的 AE fork（`ae2_version` 指向的 `appeng:appliedenergistics2-forge-1.20.1:*`，本地解 jar/`javap` 或用仓库里的调用点）。不要读上游 AE/GT 官方源码，不要凭记忆或"看起来是这么回事"写实现；方法是否存在、签名与语义以实际字节码/源码为准（见 [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md)）。
 - **性能优先，不写自造遍历**：能在既有容器/API 上一次查到的，不写 `for` 全扫。典型例：模糊匹配用 GTO AE fork 在 `KeyCounter` 上的 `findFuzzyValue`（只要数量）/ `findFuzzyKey`（要具体 key）/ `containsFuzzy`（先判定再决定是否分配），语义与 `IExpandedStorageService#fuzzyExtract`、`crafting2` 取料一致；精确命中优先，未命中再走模糊。掉耐久物品（GT 工具、桶、流体容器）必须按"同类物品"匹配，`AEKey` 是引用类型，普通物品按引用比较。
+- **魔力、魔源的转移只走标准传输**（2026-10-23，福鲁伊克斯魔力池虚增复制事故后统一）：两个持有者之间搬魔力一律 `ManaEndpoint.transfer(from, to, amount)`（植物魔法 API）；魔源一律 `ISourceTile.transfer(from, to, amount)`（新生魔艺 API）；GT 魔力容器和魔源方块按魔力单位接入用 `ManaUnification.of(container, 速率倍数)` / `ManaUnification.of(sourceTile)`。`transfer` 先模拟目标能收多少，再从来源扣，只把实际扣到的给目标，没给出去的退回来源。禁止手写"先给后扣"（`receiver.receiveMana(x)` 后再 `pool.receiveMana(-x)`）、禁止拿读数（`getCurrentMana`/`getSource`）代替实际变化量记账；单边加减用 `addMana/removeMana(amount, simulate)`、`addSource/removeSource(amount, simulate)`，按返回值记账。机器里的端点对象建一次存字段，不在 tick 里新建。改动这类代码要跑守恒探针（`tools/probe-templates/mana-transfer/2026-10-23/`）。
 - **热路径零无谓分配**：先精确查 `get`/`contains`，需要集合时用仓库既有类型（`AEKeyLongMap`/`KeyCounter`/`ObjectArrayList`/`ReferenceOpenHashSet`），不要 streams、`Optional`、临时 `List` 装箱。
 - **DataSyncLib 持久化/同步**：自定义类型字段用 `@SaveToDisk` 时**不加 `final`**（final 会走 `@Access` 工厂，定义建不起来），编解码必须在 `GTOCodecs.init()` 里注册（早于机器注册）；机器字段不要拿 `@SyncToClient` 当界面同步用，界面走 uipro 的 `SyncValue`/`RPC`，可变的列表类数据要给"内容变了就换新快照实例"的 getter（`SyncValue` 用 `Objects.equals` 判变化）。
 - **uipro 界面**：尺寸按 `UISizes` 常量给死（例如 3×3 槽位所在行高必须是 `3 * SLOT_SIZE`，否则会压到下一行）；主页面用 `Form.page()` + `column/row/centeredRow` 竖排，不要给主页面套没必要的 `ScrollerView`；列表页用 `ScrollerView` + `VirtualList`/`AEStackGrid`。
@@ -69,6 +74,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - Gradle 会写入用户级缓存。若当前宿主限制实际缓存路径，按宿主权限机制在第一次调用时处理；不要先运行一个已知会因缓存权限失败的试跑。
 - `build` / `assemble` 只构建，不会自动运行单测。单测须显式执行 `test` 或 `testCrafting`；禁止添加凑数、明显正确或与行为无关的测试。
 - `src/test/` 下的 `com.gtolib.*` 测试需要明文 GTOLib 字节码，只在 `-PgtolibUnprotected=true` 下运行，加密构建会自动跳过。
+- GameTest 类放在 `com.gtocore.gametest.*`，不要与独立 GTOLib 模组共用 `com.gtolib.*` 包；保护模式的包冲突会连 `runData` 一起阻断，见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
 - 验证应与改动范围相称。通常只需 `compileJava`、`compileKotlin`、相关测试或专题文档要求的 `runData` / `buildGtolibProtected`，不要为纯说明修改运行 Gradle。
 - 任务报「另一个程序正在使用此文件」（如 `libs/gto-seal-runtime-1.0.jar`）时先 `.\gradlew.bat --stop`，再单独跑目标任务；`runData` 至少 1~3 分钟且可能因 datagen 崩溃偶发失败，先重试再排查。详见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
 - 用 PowerShell 管道接 `gradlew` 输出会让 `$LASTEXITCODE` 失真（可能拿到 -1）：先把输出存进变量，再读退出码。
@@ -99,6 +105,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 
 ## 收尾
 
+- **实时维护更新记录**：功能、行为、内容、性能或修复发生变化时，必须在实现过程中同步更新 [docs/changelog.md](docs/changelog.md)，与对应改动在同一任务中完成，不得拖到提交、推送或用户提醒时补写；具体范围、周次和合并规则见 [更新记录维护](docs/changelog-maintenance.md)。
 - 保留用户已有和无关改动，只处理当前任务范围内的文件。
 - 提交只带自己的路径（`git commit --only <paths>` 或 `git commit -F msg -- <paths>`）：同一工作区里可能有别人并行 `git add`，不带路径的 `git commit` 与 `git commit --amend` 会把对方的暂存一起提交。误提交后用 `git reset --mixed <上一个好提交>` 重做，再把对方原本暂存的文件原样 `git add` 回去。
 - 推送前先 `git fetch` 并用 `git rev-list --left-right --count origin/<branch>...HEAD` 看差距：远端可能已有内容等价的提交，这种情况不要 force，reset 到远端后只补真正的增量。详细流程与其它坑见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。

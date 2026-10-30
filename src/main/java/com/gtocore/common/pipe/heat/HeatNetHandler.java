@@ -32,7 +32,8 @@ public final class HeatNetHandler implements IHeatContainer {
 
     @Override
     public long acceptHeatFromNetwork(Object sender, Direction side, long heat, double temperature, double heatCapacity, double baseTransferRate, int rateMultiplier) {
-        if (transfer || net == null) return 0;
+        // a paused pipe neither takes nor passes on heat
+        if (transfer || net == null || !pipe.isWorkingEnabled()) return 0;
         if (side == null) {
             if (facing == null) return 0;
             side = facing;
