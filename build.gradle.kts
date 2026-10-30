@@ -40,6 +40,7 @@ val parchment_mappings_version = prop("parchment_mappings_version")
 val mixinextras_version = prop("mixinextras_version")
 val taffy_version = prop("taffy_version")
 val ae2_version = prop("ae2_version")
+val extendedae_version = prop("extendedae_version")
 val emi_version = prop("emi_version")
 val botania_version = prop("botania_version")
 val ars_nouveau_version = prop("ars_nouveau_version")
@@ -206,6 +207,14 @@ repositories {
             includeGroup("com.eliotlash.mclib")
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven("https://api.modrinth.com/maven")
+        }
+        filter {
+            includeGroup("maven.modrinth")
+        }
+    }
     maven("https://maven.blamejared.com/") { name = "Jared's Maven" } // JEI
     maven("https://modmaven.dev") { name = "ModMaven" } // JEI 镜像、AE2
     maven("https://maven.firstdarkdev.xyz/snapshots/")
@@ -255,6 +264,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("curse.maven:spark-361579:4738952")
 
     implementation("org.lwjgl:lwjgl:3.3.2")
     implementation("org.lwjgl:lwjgl-opengl:3.3.2")
@@ -288,7 +298,7 @@ dependencies {
     // Applied Energistics 2
     modImplementation("org.appliedenergistics:guideme:20.1.13")
     modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
-    modImplementation("curse.maven:ex-pattern-provider-892005:8918777")
+    modImplementation("com.glodblock.github.extendedae:extendedae-forge-1.20.1:$extendedae_version")
     modImplementation("curse.maven:merequester-688367:5689932")
     modImplementation("curse.maven:ae2-toggleable-view-cell-1141472:8054118")
 
@@ -339,6 +349,7 @@ dependencies {
     modImplementation("curse.maven:titanium-287342:5468426")
     modImplementation("curse.maven:deeperdarker-659011:5906086")
     modImplementation("curse.maven:modernfix-790626:7928686")
+    modCompileOnly("curse.maven:spark-361579:4738952")
     modImplementation("curse.maven:just-enough-resources-jer-240630:5057220")
     modImplementation("curse.maven:construction-wand-399558:4684054")
     modImplementation("curse.maven:pipez-443900:6945379")
@@ -391,6 +402,7 @@ dependencies {
     clientMod("curse.maven:render-blender-1346485:7035162")
     clientMod("curse.maven:embeddium-908741:5681725")
     clientMod("curse.maven:moremorelang-1444917:8673054")
+    clientMod("maven.modrinth:oculus:1.20.1-1.8.0")
     "modClientRuntimeOnly"("curse.maven:fzzy-config-1005914:7085017")
     "modClientRuntimeOnly"("curse.maven:imblocker-483760:6922546")
 
@@ -413,6 +425,11 @@ dependencies {
     modCompileOnly("com.ref:calculatoroverlay:1.0.2")
     modCompileOnly("dev:calculatoroverlay:1.0.2")
 
+//    // 开发客户端内存分析：named 产物无需重映射，只加入客户端运行时。
+//    "clientRuntimeOnly"("com.gto:memory-tool-dev-forge-1.20.1:0.1.2")
+//    "clientRuntimeOnly"("io.github.llamalad7:mixinextras-forge:0.5.5")
+
+
     // 额外模组
     // modImplementation(jarJar("dev.mineland:item-interactions-mod-forge+1.20.1:2.1.4"))
     // modRuntimeOnly("curse.maven:mouse-tweaks-60089:4581240")
@@ -422,8 +439,8 @@ dependencies {
     // runtimeMod("curse.maven:rts-building-build-from-above-1553142:8155138")
     // modRuntimeOnly("curse.maven:super-factory-manager-306935:7021189")
     // modRuntimeOnly("curse.maven:worldedit-225608:4586218")
-    // modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
-    // modRuntimeOnly("curse.maven:ftb-chunks-forge-314906:7880858") // 有个人存档有
+//     modRuntimeOnly("curse.maven:create-328085:7178761") // 几把动力
+//     modRuntimeOnly("curse.maven:ftb-chunks-forge-314906:7880858") // 有个人存档有
     // modRuntimeOnly("curse.maven:effortless-building-302113:6330928")
 
     // 牢模组
@@ -571,10 +588,10 @@ tasks.named("prepareClientRun") {
     outputs.upToDateWhen { false }
 }
 
-mapOf("Client" to "clientRuntimeClasspath", "Server" to "serverRuntimeClasspath", "Data" to "dataRuntimeClasspath").forEach { (side, configName) ->
+mapOf("Client" to "clientRuntimeClasspath", "Server" to "serverRuntimeClasspath", "Data" to "dataRuntimeClasspath", "GameTestServer" to "gametestRuntimeClasspath").forEach { (side, configName) ->
     tasks.named("write${side}LegacyClasspath") {
         doLast {
-            val out = layout.buildDirectory.file("moddev/${side.lowercase()}LegacyClasspath.txt").get().asFile
+            val out = layout.buildDirectory.file("moddev/${side.replaceFirstChar { it.lowercase() }}LegacyClasspath.txt").get().asFile
             out.parentFile.mkdirs()
             out.appendText(configurations.getByName(configName).files.map { it.absolutePath }
                 .filter { p -> listOf("commons-math3", "opencc4j", "heaven", "nlp-common").any { p.contains(it) } }
