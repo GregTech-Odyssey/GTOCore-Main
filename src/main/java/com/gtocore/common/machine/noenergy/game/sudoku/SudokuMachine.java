@@ -438,7 +438,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
-        status.addLine(LINE_DIFFICULTY, ()-> difficultyName(view().difficulty()));
+        status.addLine(LINE_DIFFICULTY, () -> difficultyName(view().difficulty()));
         status.addLine(LINE_TIME, () -> duration(view().elapsedTicks()));
         var restart = Button.translatable(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRound(playerOf(restart)));

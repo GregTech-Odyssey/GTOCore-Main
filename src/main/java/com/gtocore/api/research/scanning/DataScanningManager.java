@@ -188,6 +188,18 @@ public class DataScanningManager {
         return TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(ownerId)).hasScanned(entry);
     }
 
+    public static boolean canScanUnscanned(AEKey key) {
+        if (!ResearchRequirements.getEurekaRequirements(key).isEmpty()) return true;
+        var material = AEChemicalHelper.getMaterial(key);
+        var points = material == NULL ? dataScanningMap.get(key) : materialDataScanningMap.get(material);
+        if (points == null) return false;
+        long bytes = 0;
+        for (var entry : points) {
+            if (entry.getLongValue() > 0) bytes += entry.getKey().getBytePerPoint() * entry.getLongValue();
+        }
+        return bytes > 0;
+    }
+
     public record DataScanningEntry(AEKey key, ResearchPoints points) {}
 
     public static void freeze() {

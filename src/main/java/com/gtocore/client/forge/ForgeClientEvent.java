@@ -1,6 +1,7 @@
 package com.gtocore.client.forge;
 
 import com.gtocore.api.research.TeamResearchSavedData;
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.ClientWorldLeakFixes;
@@ -44,6 +45,7 @@ import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -74,6 +76,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+
+import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import com.hepdd.gtmthings.data.CustomItems;
@@ -171,6 +175,10 @@ public final class ForgeClientEvent {
         } else {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);
             if (tooltips != null) event.getToolTip().addAll(tooltips);
+        }
+        var key = AEItemKey.of(stack);
+        if (key != null && !TeamResearchSavedData.getOrCreateContext(player).hasScanned(key) && DataScanningManager.canScanUnscanned(key)) {
+            event.getToolTip().add(Component.translatable("gtocore.research.scanning_selection_tab.unscanned").withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         if (HiddenItems.isItemDeprecated(item)) {
             event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());

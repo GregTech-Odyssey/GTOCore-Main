@@ -342,7 +342,8 @@ public final class SudokuRules {
                 progress = true;
             }
             if (progress) continue;
-            outer: for (int digit = VALUE_MIN; digit <= VALUE_MAX; digit++) {
+            outer:
+            for (int digit = VALUE_MIN; digit <= VALUE_MAX; digit++) {
                 int bit = 1 << (digit - VALUE_MIN);
                 for (int unit = 0; unit < SIZE; unit++) {
                     int only = -1;
