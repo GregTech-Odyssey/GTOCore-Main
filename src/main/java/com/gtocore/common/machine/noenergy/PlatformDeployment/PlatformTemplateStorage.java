@@ -348,6 +348,50 @@ public final class PlatformTemplateStorage {
                                     .build())
                             .build());
         }
+        // 暗色粉纹平台系列（玩家 shelwind 投稿）
+        {
+            presets.add(
+                    PlatformPreset.preset("shelwind_dark_pink_pattern_platforms")
+                            .displayName(add("暗色粉纹平台系列", "Dark pink pattern platforms"))
+                            .description(add("玩家 shelwind 投稿，暗色粉纹地砖风格的平台，可按区块无缝拼接", "Submitted by player shelwind, dark pink pattern platforms tileable per chunk"))
+                            .addStructure(structure("dark_pink_pattern_small_platform")
+                                    .type(platform)
+                                    .displayName(add("暗色粉纹小平台", "Dark pink pattern small platform"))
+                                    .description(add("80×80，5×5 区块", "80x80 blocks in 5x5 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_small_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_small_platform.json")))
+                                    .materials(0, 3600)
+                                    .build())
+                            .addStructure(structure("dark_pink_pattern_3x3_small_platform")
+                                    .type(platform_3_3)
+                                    .displayName(add("暗色粉纹3x3小平台", "Dark pink pattern 3x3 small platform"))
+                                    .description(add("208×208，13×13 区块", "208x208 blocks in 13x13 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform.json")))
+                                    .materials(0, 24336)
+                                    .build())
+                            .addStructure(structure("dark_pink_pattern_3x3_small_platform_framed")
+                                    .type(platform_3_3)
+                                    .displayName(add("暗色粉纹3x3小平台（含边框）", "Dark pink pattern 3x3 small platform framed"))
+                                    .description(add("208×208，13×13 区块，四周带边框", "208x208 blocks in 13x13 chunks with frame"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform_framed")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform_framed.json")))
+                                    .materials(0, 24336)
+                                    .build())
+                            .addStructure(structure("dark_pink_pattern_large_platform")
+                                    .type(platform_large)
+                                    .displayName(add("暗色粉纹大平台", "Dark pink pattern large platform"))
+                                    .description(add("208×208，13×13 区块", "208x208 blocks in 13x13 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_large_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_large_platform.json")))
+                                    .materials(0, 24336)
+                                    .build())
+                            .build());
+        }
         presets.forEach(c -> {
             if (c != null) preset.add(c);
         });
