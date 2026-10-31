@@ -196,7 +196,7 @@ public final class MultiBlockD {
                             .where('M', blocks(GTOBlocks.DIMENSIONAL_BRIDGE_CASING.get()))
                             .where('N', blocks(GTOBlocks.ABS_ORANGE_CASING.get()))
                             .where('O', blocks(GTOBlocks.HIGH_STRENGTH_CONCRETE.get()))
-                            .where('P', heatingCoils())
+                            .where('P', GTOPredicates.dtpfCoils())
                             .where('Q', blocks(GTOBlocks.COBALT_OXIDE_CERAMIC_STRONG_THERMALLY_CONDUCTIVE_MECHANICAL_BLOCK.get()))
                             .where('R', blocks(GTOBlocks.RHENIUM_REINFORCED_ENERGY_GLASS.get()))
                             .where('S', blocks(GTOBlocks.HOLLOW_CASING.get()))

@@ -43,6 +43,7 @@ import net.minecraftforge.fluids.FluidStack;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import static com.gregtechceu.gtceu.common.data.GTRecipeTypes.*;
@@ -352,9 +353,12 @@ public final class GTORecipeTypes {
                 return "";
             })
             .setUiBuilder((recipe, info) -> {
-                // 温度 273 的线圈（乌鲁姆）只用于 32000K 以下的配方
                 int temp = recipe.data.getInt(GTRecipeDataKeys.EBF_TEMP);
-                info.slot(() -> RecipeDisplaySlots.item(RecipeDisplaySlots.coils(coilTemperature -> coilTemperature == 273 ? temp <= 32000 : coilTemperature >= temp), IngredientIO.CATALYST));
+                List<ItemStack> coils = RecipeDisplaySlots.coils(coilTemperature -> coilTemperature >= temp);
+                if (temp <= 32000) {
+                    coils.add(GTOBlocks.URUIUM_COIL_BLOCK.asStack());
+                }
+                info.slot(() -> RecipeDisplaySlots.item(coils, IngredientIO.CATALYST));
             });
 
     public static final RecipeType PLASMA_CONDENSER_RECIPES = register("plasma_condenser", "等离子冷凝", MULTIBLOCK)
