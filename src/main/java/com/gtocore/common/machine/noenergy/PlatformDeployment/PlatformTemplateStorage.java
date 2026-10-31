@@ -353,7 +353,7 @@ public final class PlatformTemplateStorage {
             presets.add(
                     PlatformPreset.preset("shelwind_dark_pink_pattern_platforms")
                             .displayName(add("暗色粉纹平台系列", "Dark pink pattern platforms"))
-                            .description(add("暗色粉纹地砖风格的平台，可按区块无缝拼接", "Dark pink pattern platforms tileable per chunk"))
+                            .description(add("玩家 shelwind 投稿，暗色粉纹地砖风格的平台，可按区块无缝拼接", "Submitted by player shelwind, dark pink pattern platforms tileable per chunk"))
                             .addStructure(structure("dark_pink_pattern_small_platform")
                                     .type(platform)
                                     .displayName(add("暗色粉纹小平台", "Dark pink pattern small platform"))
