@@ -22,6 +22,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.Tags;
 
 import com.gto.registrate.util.entry.ItemEntry;
+
 import org.jetbrains.annotations.Nullable;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;

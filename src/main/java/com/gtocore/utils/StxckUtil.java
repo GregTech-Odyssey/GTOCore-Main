@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import com.gto.datasynclib.util.ItemStackHashStrategy;
+
 import lombok.experimental.UtilityClass;
 
 import java.util.Objects;

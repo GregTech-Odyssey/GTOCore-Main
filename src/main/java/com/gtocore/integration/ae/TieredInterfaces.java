@@ -75,6 +75,10 @@ import appeng.parts.misc.InterfacePart;
 import appeng.util.ConfigInventory;
 import appeng.util.InteractionUtil;
 
+import com.gto.registrate.util.entry.BlockEntityEntry;
+import com.gto.registrate.util.entry.BlockEntry;
+import com.gto.registrate.util.entry.ItemEntry;
+
 import com.glodblock.github.extendedae.client.gui.GuiExInterface;
 import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import com.glodblock.github.extendedae.common.blocks.BlockBaseGui;
@@ -82,9 +86,6 @@ import com.glodblock.github.extendedae.common.parts.PartExInterface;
 import com.glodblock.github.extendedae.common.tileentities.TileExInterface;
 import com.glodblock.github.extendedae.container.ContainerExInterface;
 import com.glodblock.github.extendedae.util.Ae2Reflect;
-import com.gto.registrate.util.entry.BlockEntityEntry;
-import com.gto.registrate.util.entry.BlockEntry;
-import com.gto.registrate.util.entry.ItemEntry;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Locale;

@@ -46,8 +46,7 @@ import com.gregtechceu.gtceu.api.GTValues;
 
 import net.minecraftforge.common.data.LanguageProvider;
 
-import gto_ae.core.localization.ExtendedLangs;
-
+import com.gto.ae.core.localization.ExtendedLangs;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
 import java.util.Map;
@@ -120,10 +119,6 @@ public final class LangHandler {
         for (var reason : IdleReason.values()) {
             if (reason.getEn() != null) addCNEN(reason.getKey(), reason.getCn(), reason.getEn());
             if (reason.getDescEn() != null) addCNEN(reason.getDescKey(), reason.getDescCn(), reason.getDescEn());
-        }
-
-        for (var l : ExtendedLangs.values()) {
-            addCN(l.getTranslationKey(), l.getChineseText());
         }
 
         addCN("entity.gtocore.task_entity", "任务执行实体");
@@ -598,6 +593,9 @@ public final class LangHandler {
     }
 
     public static void twInitialize(TraditionalChineseLanguageProvider provider) {
+        for (var l : ExtendedLangs.values()) {
+            provider.add(l.getTranslationKey(), ChineseConverter.convert(l.getChineseText()));
+        }
         LANGS.forEach((k, v) -> {
             if (v.cn() == null) return;
             provider.add(k, ChineseConverter.convert(v.cn()));

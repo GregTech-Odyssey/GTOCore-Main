@@ -9,6 +9,7 @@ import com.gregtechceu.gtceu.common.data.GTBlocks;
 import net.minecraft.world.level.block.Block;
 
 import com.gto.registrate.util.entry.BlockEntry;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

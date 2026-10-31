@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 import java.math.BigDecimal;

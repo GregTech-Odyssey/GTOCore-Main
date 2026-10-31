@@ -28,6 +28,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
+
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;

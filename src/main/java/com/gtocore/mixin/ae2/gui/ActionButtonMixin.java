@@ -10,8 +10,8 @@ import appeng.client.gui.widgets.ActionButton;
 import appeng.client.gui.widgets.IconButton;
 import appeng.core.localization.LocalizationEnum;
 
-import gto_ae.hooks.gui.IActionItems;
-import gto_ae.hooks.gui.INoMouseRedirectionWidget;
+import com.gto.ae.hooks.gui.IActionItems;
+import com.gto.ae.hooks.gui.INoMouseRedirectionWidget;
 
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;

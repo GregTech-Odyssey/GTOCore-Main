@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import appeng.client.gui.widgets.IconButton;
 
-import gto_ae.hooks.gui.IIcon;
+import com.gto.ae.hooks.gui.IIcon;
 
 import org.jetbrains.annotations.Nullable;
 

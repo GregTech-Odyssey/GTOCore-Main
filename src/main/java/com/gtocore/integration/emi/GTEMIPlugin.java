@@ -72,10 +72,11 @@ import appeng.integration.modules.emi.EmiUseCraftingRecipeHandler;
 import appeng.integration.modules.emi.IStackInteractionScreen;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 
+import com.gto.datasynclib.util.ByteBufCodecExtends;
+
 import com.arsmeteorites.arsmeteorites.ArsMeteorites;
 import com.arsmeteorites.arsmeteorites.emi.MeteoritesEmiPlugin;
 import com.glodblock.github.extendedae.xmod.emi.ExtendedAEEmiPlugin;
-import com.gto.datasynclib.util.ByteBufCodecExtends;
 import com.hollingsworth.arsnouveau.client.jei.JEIArsNouveauPlugin;
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.emi.EMIPlugin;

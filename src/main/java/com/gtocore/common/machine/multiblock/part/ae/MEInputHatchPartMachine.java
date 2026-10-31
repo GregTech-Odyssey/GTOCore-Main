@@ -37,9 +37,9 @@ import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 
-import gto_ae.helpers.facility_management.WorkingStatus;
-
+import com.gto.ae.helpers.facility_management.WorkingStatus;
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;

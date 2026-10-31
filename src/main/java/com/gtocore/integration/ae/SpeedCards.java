@@ -44,8 +44,9 @@ import appeng.items.materials.UpgradeCardItem;
 import appeng.parts.automation.IOBusPart;
 import appeng.util.InteractionUtil;
 
-import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import com.gto.registrate.util.entry.ItemEntry;
+
+import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 

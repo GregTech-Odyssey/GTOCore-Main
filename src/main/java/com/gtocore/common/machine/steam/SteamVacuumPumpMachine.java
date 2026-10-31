@@ -7,6 +7,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import lombok.Getter;
 
 public final class SteamVacuumPumpMachine extends SimpleSteamMachine implements IVacuumMachine {

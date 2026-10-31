@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-import gto_ae.hooks.gui.INoMouseRedirectionWidget;
+import com.gto.ae.hooks.gui.INoMouseRedirectionWidget;
 
 import com.glodblock.github.extendedae.client.button.EPPButton;
 import com.glodblock.github.extendedae.client.button.HighlightButton;

@@ -36,7 +36,10 @@ import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
 import com.gtocore.integration.ae.PatternContentAccessTerminalScreen;
+import com.gtocore.integration.ae.PatternEncoderStats;
 import com.gtocore.integration.ae.TieredInterfaces;
+import com.gtocore.integration.ae.client.PatternEncoderStatsButton;
+import com.gtocore.integration.ae.client.PatternEncoderStatsScreen;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
@@ -90,6 +93,7 @@ import appeng.client.render.StaticItemColor;
 import appeng.init.client.InitScreens;
 
 import com.almostreliable.merequester.MERequester;
+import com.glodblock.github.extendedae.client.gui.GuiExPatternTerminal;
 import com.lowdragmc.shimmer.client.light.ColorPointLight;
 import com.lowdragmc.shimmer.client.light.LightManager;
 import com.lowdragmc.shimmer.event.ShimmerReloadEvent.ReloadType;
@@ -127,6 +131,8 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void init() {
+        GuiExPatternTerminal.setSortProviderGroups(false);
+        GuiExPatternTerminal.setScreenInitializer(screen -> screen.addToLeftToolbar(new PatternEncoderStatsButton(button -> screen.switchToScreen(new PatternEncoderStatsScreen<>(screen, PatternEncoderStats.collect(screen.getPatternRecords().values()))))));
         SuperStorageClient.init();
         KeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）

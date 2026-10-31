@@ -11,11 +11,12 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.material.Fluid;
 
+import com.gto.datasynclib.annotations.SyncToClient;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.Collections;

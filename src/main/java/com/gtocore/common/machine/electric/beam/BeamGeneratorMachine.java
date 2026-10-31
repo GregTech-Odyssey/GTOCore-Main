@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 

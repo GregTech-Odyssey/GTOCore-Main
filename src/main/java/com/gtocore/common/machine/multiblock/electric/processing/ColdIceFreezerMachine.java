@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.world.level.material.Fluid;
 
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

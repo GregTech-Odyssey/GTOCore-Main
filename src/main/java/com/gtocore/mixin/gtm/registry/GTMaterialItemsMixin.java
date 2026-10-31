@@ -17,9 +17,10 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Item;
 
+import com.gto.registrate.util.entry.ItemEntry;
+
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.gto.registrate.util.entry.ItemEntry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;

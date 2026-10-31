@@ -16,10 +16,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 
-import com.google.gson.Gson;
 import com.gto.registrate.providers.DataGenContext;
 import com.gto.registrate.providers.RegistrateItemModelProvider;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+
+import com.google.gson.Gson;
 import com.lowdragmc.lowdraglib.client.renderer.IRenderer;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;

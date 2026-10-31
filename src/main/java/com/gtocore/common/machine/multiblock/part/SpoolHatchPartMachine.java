@@ -13,8 +13,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.item.Item;
 
-import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
+
+import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 

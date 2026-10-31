@@ -14,9 +14,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.FormattedCharSequence;
 
-import com.google.common.collect.ImmutableBiMap;
 import com.gto.datasynclib.annotations.Access;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.google.common.collect.ImmutableBiMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;

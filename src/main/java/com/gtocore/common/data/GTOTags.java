@@ -13,9 +13,10 @@ import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagLoader;
 
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.mojang.serialization.Dynamic;
 import lombok.experimental.UtilityClass;
 

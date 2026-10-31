@@ -15,6 +15,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

@@ -46,8 +46,9 @@ import net.minecraft.world.item.ItemStack;
 
 import appeng.api.stacks.AEItemKey;
 
-import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
+
+import com.google.common.collect.ImmutableMap;
 import earth.terrarium.adastra.common.registry.ModItems;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import lombok.Getter;

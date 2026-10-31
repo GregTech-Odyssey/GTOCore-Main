@@ -4,6 +4,7 @@ import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineLayout.Pa
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 

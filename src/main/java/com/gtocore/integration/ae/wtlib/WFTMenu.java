@@ -23,13 +23,13 @@ import appeng.menu.implementations.MenuTypeBuilder;
 import appeng.menu.slot.RestrictedInputSlot;
 import appeng.util.ConfigManager;
 
-import gto_ae.api.config.ExtendedSettings;
-import gto_ae.client.gui.me.facility_management.FacilityManagementScreen;
-import gto_ae.helpers.facility_management.FacilityManagement;
-import gto_ae.helpers.facility_management.IFacilityManagementHost;
-import gto_ae.helpers.facility_management.IO;
-import gto_ae.helpers.facility_management.WorkingStatus;
-import gto_ae.menu.implementations.FacilityManagementMenu;
+import com.gto.ae.api.config.ExtendedSettings;
+import com.gto.ae.client.gui.me.facility_management.FacilityManagementScreen;
+import com.gto.ae.helpers.facility_management.FacilityManagement;
+import com.gto.ae.helpers.facility_management.IFacilityManagementHost;
+import com.gto.ae.helpers.facility_management.IO;
+import com.gto.ae.helpers.facility_management.WorkingStatus;
+import com.gto.ae.menu.implementations.FacilityManagementMenu;
 
 import de.mari_023.ae2wtlib.AE2wtlib;
 import de.mari_023.ae2wtlib.AE2wtlibSlotSemantics;

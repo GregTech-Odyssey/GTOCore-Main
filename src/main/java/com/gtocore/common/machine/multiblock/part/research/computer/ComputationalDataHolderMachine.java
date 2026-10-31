@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.HPCAMac
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import lombok.Getter;
 import lombok.Setter;

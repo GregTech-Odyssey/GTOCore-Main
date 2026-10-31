@@ -11,6 +11,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import lombok.Getter;
 
 public class VoidOutputBusPartMachine extends WorkableTieredIOPartMachine {

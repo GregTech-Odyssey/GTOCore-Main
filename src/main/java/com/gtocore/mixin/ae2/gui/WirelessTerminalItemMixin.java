@@ -7,8 +7,8 @@ import appeng.api.util.IConfigManager;
 import appeng.items.tools.powered.WirelessTerminalItem;
 import appeng.util.ConfigManager;
 
-import gto_ae.api.config.ExtendedSettings;
-import gto_ae.menu.ShowMolecularAssembler;
+import com.gto.ae.api.config.ExtendedSettings;
+import com.gto.ae.menu.ShowMolecularAssembler;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import de.mari_023.ae2wtlib.AE2wtlib;

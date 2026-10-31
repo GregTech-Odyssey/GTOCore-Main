@@ -40,8 +40,9 @@ import appeng.parts.encoding.PatternEncodingLogic;
 import appeng.util.ConfigInventory;
 import appeng.util.inv.AppEngInternalInventory;
 
-import com.glodblock.github.extendedae.common.tileentities.matrix.TileAssemblerMatrixPattern;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
+import com.glodblock.github.extendedae.common.tileentities.matrix.TileAssemblerMatrixPattern;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;

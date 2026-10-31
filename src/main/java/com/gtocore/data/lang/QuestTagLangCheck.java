@@ -6,10 +6,11 @@ import com.gtolib.api.quest.QuestRef;
 
 import net.minecraftforge.fml.ModList;
 
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.nio.file.Files;

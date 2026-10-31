@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.hepdd.gtmthings.utils.FormatUtil;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
 

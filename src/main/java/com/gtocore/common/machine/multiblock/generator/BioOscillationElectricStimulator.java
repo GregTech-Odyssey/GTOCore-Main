@@ -20,6 +20,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;

@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.registrate.util.entry.RegistryEntry;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

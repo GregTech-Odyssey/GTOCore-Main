@@ -7,6 +7,7 @@ import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestObject;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;

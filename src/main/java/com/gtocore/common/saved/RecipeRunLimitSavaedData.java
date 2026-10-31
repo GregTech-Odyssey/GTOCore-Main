@@ -9,6 +9,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 

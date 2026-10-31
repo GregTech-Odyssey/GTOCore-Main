@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullConsumer;
+
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.EnumMap;

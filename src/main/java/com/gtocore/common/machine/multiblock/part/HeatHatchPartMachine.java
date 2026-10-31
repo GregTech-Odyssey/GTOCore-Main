@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import lombok.Getter;
 
 public class HeatHatchPartMachine extends MultiblockPartMachine implements IHeatContainerPart, IExplosionMachine {

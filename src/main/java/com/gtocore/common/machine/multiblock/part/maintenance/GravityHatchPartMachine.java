@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 public final class GravityHatchPartMachine extends AutoMaintenanceHatchPartMachine implements IGravityPartMachine {

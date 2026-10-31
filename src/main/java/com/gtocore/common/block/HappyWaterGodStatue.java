@@ -76,6 +76,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.registrate.util.entry.BlockEntry;
+
 import com.mojang.authlib.GameProfile;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;

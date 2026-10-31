@@ -46,9 +46,10 @@ import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEItemKey;
 
-import com.google.common.collect.ImmutableBiMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.google.common.collect.ImmutableBiMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;

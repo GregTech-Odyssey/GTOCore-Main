@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
+
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 

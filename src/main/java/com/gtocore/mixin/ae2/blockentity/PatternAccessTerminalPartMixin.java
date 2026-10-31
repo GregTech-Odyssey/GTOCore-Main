@@ -3,8 +3,8 @@ package com.gtocore.mixin.ae2.blockentity;
 import appeng.parts.reporting.PatternAccessTerminalPart;
 import appeng.util.ConfigManager;
 
-import gto_ae.api.config.ExtendedSettings;
-import gto_ae.menu.ShowMolecularAssembler;
+import com.gto.ae.api.config.ExtendedSettings;
+import com.gto.ae.menu.ShowMolecularAssembler;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

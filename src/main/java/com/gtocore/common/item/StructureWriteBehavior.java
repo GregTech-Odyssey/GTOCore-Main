@@ -37,9 +37,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 

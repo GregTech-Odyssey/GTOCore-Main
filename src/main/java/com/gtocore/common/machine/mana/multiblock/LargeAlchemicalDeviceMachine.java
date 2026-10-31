@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

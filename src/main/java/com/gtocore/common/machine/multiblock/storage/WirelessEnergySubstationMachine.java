@@ -82,9 +82,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.data.WirelessMachines;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;

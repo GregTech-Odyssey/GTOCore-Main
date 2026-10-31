@@ -18,7 +18,7 @@ import appeng.menu.SlotSemantics;
 import appeng.menu.implementations.PatternProviderMenu;
 import appeng.menu.slot.AppEngSlot;
 
-import gto_ae.client.gui.widgets.ExpandableToggleButton;
+import com.gto.ae.client.gui.widgets.ExpandableToggleButton;
 
 import com.glodblock.github.extendedae.container.ContainerExPatternProvider;
 import org.jetbrains.annotations.NotNull;

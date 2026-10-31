@@ -20,9 +20,10 @@ import appeng.crafting.execution.ElapsedTimeTracker;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.menu.me.crafting.CraftingStatusMenu;
 
-import com.google.common.collect.ImmutableSet;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.google.common.collect.ImmutableSet;
 import com.hepdd.gtmthings.utils.FormatUtil;
 import com.lowdragmc.lowdraglib.gui.widget.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;

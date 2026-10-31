@@ -7,6 +7,7 @@ import appeng.crafting.pattern.AEStonecuttingPattern;
 import appeng.crafting.pattern.StonecuttingPatternItem;
 
 import com.gto.fastcollection.cache.WeakValueIdentityHashCache;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;

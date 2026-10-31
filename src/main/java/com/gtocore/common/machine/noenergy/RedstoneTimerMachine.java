@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.RedStoneWireBlock;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 

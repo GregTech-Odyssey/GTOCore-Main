@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;

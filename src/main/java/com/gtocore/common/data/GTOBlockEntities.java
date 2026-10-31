@@ -13,6 +13,7 @@ import com.gtocore.common.blockentity.WirelessEnergyUnitBlockEntity;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperDisplayBlockEntity;
 
 import com.gto.registrate.util.entry.BlockEntityEntry;
+
 import com.hollingsworth.arsnouveau.client.renderer.tile.LargeSourceJarRenderer;
 import vazkii.botania.client.render.block_entity.LargeManaPoolBlockEntityRenderer;
 import vazkii.botania.client.render.block_entity.ManaPoolBlockEntityRenderer;

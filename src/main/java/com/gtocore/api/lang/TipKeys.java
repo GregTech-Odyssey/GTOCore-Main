@@ -5,6 +5,7 @@ import com.gtolib.api.lang.CNEN;
 import com.gregtechceu.gtceu.GTCEu;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public final class TipKeys {

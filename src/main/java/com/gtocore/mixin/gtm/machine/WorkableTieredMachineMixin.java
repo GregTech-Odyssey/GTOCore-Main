@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import net.minecraft.core.Direction;
 
 import com.gto.datasynclib.datastream.codec.ValueOps;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Unique;

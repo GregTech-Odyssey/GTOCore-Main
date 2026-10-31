@@ -71,12 +71,13 @@ import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.gto.datasynclib.AbstractDataSerializable;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;

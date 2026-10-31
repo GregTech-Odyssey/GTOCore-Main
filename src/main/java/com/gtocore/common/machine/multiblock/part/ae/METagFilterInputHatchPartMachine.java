@@ -13,8 +13,9 @@ import net.minecraft.nbt.CompoundTag;
 
 import appeng.api.stacks.AEFluidKey;
 
-import com.glodblock.github.extendedae.common.me.taglist.TagPriorityList;
 import com.gto.datasynclib.annotations.SaveToDisk;
+
+import com.glodblock.github.extendedae.common.me.taglist.TagPriorityList;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 import javax.annotation.ParametersAreNonnullByDefault;

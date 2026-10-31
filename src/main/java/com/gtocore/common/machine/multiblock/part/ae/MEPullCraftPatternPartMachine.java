@@ -29,6 +29,7 @@ import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;

@@ -26,9 +26,10 @@ import net.minecraft.network.chat.Component;
 
 import appeng.core.definitions.AEParts;
 
-import com.google.common.collect.ImmutableList;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.registrate.util.entry.ItemEntry;
+
+import com.google.common.collect.ImmutableList;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import earth.terrarium.adastra.common.registry.ModItems;
 

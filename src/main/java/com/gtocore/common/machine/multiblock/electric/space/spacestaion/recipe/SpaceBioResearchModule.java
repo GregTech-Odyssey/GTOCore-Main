@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

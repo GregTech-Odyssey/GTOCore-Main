@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 

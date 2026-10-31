@@ -21,6 +21,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 
 import com.gto.registrate.providers.ProviderType;
+
 import com.hollingsworth.arsnouveau.common.datagen.BlockTagProvider;
 
 import java.util.Set;

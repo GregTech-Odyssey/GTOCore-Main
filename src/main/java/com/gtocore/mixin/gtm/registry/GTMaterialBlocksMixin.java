@@ -19,13 +19,14 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableTable;
 import com.gto.registrate.builders.ItemBuilder;
 import com.gto.registrate.providers.DataGenContext;
 import com.gto.registrate.providers.RegistrateItemModelProvider;
 import com.gto.registrate.util.entry.BlockEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.llamalad7.mixinextras.sugar.Local;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;

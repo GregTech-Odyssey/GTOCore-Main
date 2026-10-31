@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import com.gto.registrate.util.entry.ItemProviderEntry;
+
 import com.hepdd.gtmthings.integration.jade.provider.WirelessEnergyHatchProvider;
 import snownee.jade.addon.harvest.HarvestToolProvider;
 import snownee.jade.addon.harvest.SimpleToolHandler;
