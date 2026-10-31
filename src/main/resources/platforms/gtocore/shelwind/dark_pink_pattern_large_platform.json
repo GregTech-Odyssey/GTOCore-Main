@@ -1,0 +1,52 @@
+{
+  " ": {
+    "id": "minecraft:air",
+    "properties": {}
+  },
+  "A": {
+    "id": "chisel:legacy/pink_wool",
+    "properties": {}
+  },
+  "B": {
+    "id": "chisel:llama/purple_wool",
+    "properties": {}
+  },
+  "C": {
+    "id": "minecraft:black_concrete",
+    "properties": {}
+  },
+  "D": {
+    "id": "chisel:weaver/black_concrete",
+    "properties": {}
+  },
+  "E": {
+    "id": "botania:lavender_quartz_pillar",
+    "properties": {
+      "axis": "y"
+    }
+  },
+  "F": {
+    "id": "botania:lavender_quartz_pillar",
+    "properties": {
+      "axis": "z"
+    }
+  },
+  "G": {
+    "id": "botania:lavender_quartz_pillar",
+    "properties": {
+      "axis": "x"
+    }
+  },
+  "H": {
+    "id": "chisel:circular/gray_concrete",
+    "properties": {}
+  },
+  "I": {
+    "id": "xtonesreworked:zion_block_15",
+    "properties": {}
+  },
+  "J": {
+    "id": "xtonesreworked:korp_block_7",
+    "properties": {}
+  }
+}
