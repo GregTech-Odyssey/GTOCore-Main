@@ -11,6 +11,8 @@ import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.recipe.TierDataKey;
 import com.gtolib.utils.GTOUtils;
 
+import com.gregtechceu.gtceu.api.GTCEuAPI;
+import com.gregtechceu.gtceu.api.block.ICoilType;
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.PipeBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -29,6 +31,8 @@ import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.info.EURecipeInfo;
+import com.gregtechceu.gtceu.common.block.CoilBlock;
+import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.RotorHolderPartMachine;
 
@@ -358,11 +362,47 @@ public final class GTOPredicates {
         };
     }
 
+    public static TraceabilityPredicate dtpfCoils() {
+        return new TraceabilityPredicate(blockWorldState -> {
+            var blockState = blockWorldState.getBlockState();
+            if (blockState.is(GTOBlocks.URUIUM_COIL_BLOCK.get())) {
+                Object currentCoil = blockWorldState.getMatchContext().getOrPut(DataKeys.DTPF_COIL, GTOBlocks.URUIUM_COIL_BLOCK.get());
+                if (currentCoil != GTOBlocks.URUIUM_COIL_BLOCK.get()) {
+                    blockWorldState.setError(new PatternStringError("gtceu.multiblock.pattern.error.coils"));
+                    return false;
+                }
+                return true;
+            }
+            for (Map.Entry<ICoilType, Supplier<CoilBlock>> entry : GTCEuAPI.HEATING_COILS.entrySet()) {
+                if (blockState.is(entry.getValue().get())) {
+                    var stats = entry.getKey();
+                    Object currentCoil = blockWorldState.getMatchContext().getOrPut(DataKeys.DTPF_COIL, stats);
+                    if (currentCoil != stats) {
+                        blockWorldState.setError(new PatternStringError("gtceu.multiblock.pattern.error.coils"));
+                        return false;
+                    }
+                    blockWorldState.getMatchContext().set(Predicates.DataKey.COIL_TYPE, stats);
+                    return true;
+                }
+            }
+            return false;
+        }, () -> BlockInfo.fromBlockState(GTBlocks.COIL_CUPRONICKEL.getDefaultState()), () -> {
+            var list = new ArrayList<Block>();
+            GTCEuAPI.HEATING_COILS.entrySet().stream()
+                    .sorted(Comparator.comparingInt(value -> value.getKey().getTier()))
+                    .forEach(coil -> list.add(coil.getValue().get()));
+            list.add(GTOBlocks.URUIUM_COIL_BLOCK.get());
+            return list.toArray(Block[]::new);
+        }).addTooltips(Component.translatable("gtceu.multiblock.pattern.error.coils"));
+    }
+
     static {
         Structure.addWhitelistBlockEntity(ManaPoolBlockEntity.class);
     }
 
     public static final class DataKeys {
+
+        public static final DataComponentKey<Object> DTPF_COIL = DataComponentKey.createNoCodec("dtpfCoil");
 
         public static final DataComponentKey<Set<IWorkInSpaceMachine>> SPACE_MACHINE = DataComponentKey.create("spaceMachine", DataComponentKey.collectionBuilder(ReferenceOpenHashSet::new));
         public static final DataComponentKey<Set<BlockPos>> SPACE = DataComponentKey.create("space", DataComponentKey.collectionBuilder(OpenCacheHashSet::new));
