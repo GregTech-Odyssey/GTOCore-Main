@@ -10,6 +10,7 @@ import com.gtocore.data.tag.Tags;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.quest.reward.QuestStacks;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -46,7 +47,6 @@ import static com.gtocore.common.data.GTOMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.*;
 import static com.gtocore.common.machine.mana.CelestialHandler.*;
 import static com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine.toResonanceTag;
-import static com.gtocore.utils.PlayerHeadUtils.itemStackAddNbtString;
 
 public final class MagicRecipesB {
 
@@ -226,7 +226,7 @@ public final class MagicRecipesB {
                 .inputFluids(NetherAir, 8000)
                 .inputFluids(Salamander.getFluid(LIQUID, 200))
                 .inputFluids(Mana, 32000)
-                .outputItems(itemStackAddNbtString(ModItems.fadedNetherStar.getDefaultInstance(), "{Damage:1100000}"), 4)
+                .outputItems(QuestStacks.damaged(ModItems.fadedNetherStar, 1100000), 4)
                 .duration(20)
                 .EUt(VA[IV])
                 .save();

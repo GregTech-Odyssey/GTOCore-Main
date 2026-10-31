@@ -82,7 +82,7 @@ public final class GTODamageTypes {
         @Override
         public @NotNull Component getLocalizedDeathMessage(@NotNull LivingEntity livingEntity) {
             if (livingEntity instanceof Player player) {
-                return Component.translatable(MACHINE_HEAT_WAVE_MSG_ID, player.getDisplayName(), container.toString(), container.getTemperature());
+                return Component.translatable(MACHINE_HEAT_WAVE_MSG_ID, player.getDisplayName(), container.getDisplayName(), container.getTemperature());
             }
             return super.getLocalizedDeathMessage(livingEntity);
         }
@@ -110,7 +110,7 @@ public final class GTODamageTypes {
     private static final String BLAST_FURNACE_MSG_ID_1 = "gtocore.death.attack.blast_furnace.1";
     @RegisterLanguage(cn = "员工 %s 尝试在高炉里蒸桑拿", en = "Player %s tired to have a sauna in a blast furnace.")
     private static final String BLAST_FURNACE_MSG_ID_2 = "gtocore.death.attack.blast_furnace.2";
-    @RegisterLanguage(cn = "悲，员工 %s 死于%s %sK的热浪", en = "Sad, employee %s died from a heat wave of %s %sK")
+    @RegisterLanguage(cn = "悲，员工 %s 死于 %s 的 %sK热浪", en = "Alas, employee %1$s died from a %3$sK heat wave from %2$s.")
     private static final String MACHINE_HEAT_WAVE_MSG_ID = "gtocore.death.attack.machine_heat_wave";
     @RegisterLanguage(cn = "%s 成为了奔腾炽焱等离子体的一部分", en = "%s became a part of the blazing plasma.")
     private static final String BLAZING_PLASMA_MSG_ID = "death.attack.blazing_plasma";

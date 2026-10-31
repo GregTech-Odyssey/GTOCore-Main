@@ -6,15 +6,16 @@ import com.gtolib.api.machine.feature.multiblock.ICrossRecipeMachine;
 import com.gtolib.api.recipe.ContentBuilder;
 import com.gtolib.utils.FluidUtils;
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.ContentList;
+import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.integration.jade.GTElementHelper;
 import com.gregtechceu.gtceu.integration.jade.provider.CapabilityBlockProvider;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -81,12 +82,9 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
                     var output = entry.getKey();
                     if (!(output.key() instanceof AEItemKey key)) return;
                     var nbt = new CompoundTag();
+                    GTUtil.saveItemStack(Keys.displayStack(key), nbt);
                     nbt.putInt("c", output.chance());
-                    nbt.putString("id", RegistriesUtils.getId(key.getItem()));
                     nbt.putLong("a", entry.getLongValue());
-                    if (key.hasTag()) {
-                        nbt.put("tag", key.copyTag());
-                    }
                     itemTags.add(nbt);
                 });
                 data.put("OutputItems", itemTags);
@@ -97,12 +95,9 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
                     var output = entry.getKey();
                     if (!(output.key() instanceof AEFluidKey key)) return;
                     var nbt = new CompoundTag();
+                    key.toStack(1).writeToNBT(nbt);
                     nbt.putInt("c", output.chance());
-                    nbt.putString("FluidName", RegistriesUtils.getId(key.getFluid()));
                     nbt.putLong("a", entry.getLongValue());
-                    if (key.hasTag()) {
-                        nbt.put("tag", key.copyTag());
-                    }
                     fluidTags.add(nbt);
                 });
                 data.put("OutputFluids", fluidTags);
@@ -206,6 +201,6 @@ public final class RecipeOutputProvider extends CapabilityBlockProvider<RecipeLo
     }
 
     private static JadeFluidObject getFluid(FluidStack stack) {
-        return JadeFluidObject.of(stack.getFluid(), stack.getAmount());
+        return JadeFluidObject.of(stack.getFluid(), stack.getAmount(), stack.getTag());
     }
 }

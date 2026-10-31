@@ -6,7 +6,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
-import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
@@ -31,8 +30,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEItemKey;
@@ -47,7 +44,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -327,11 +323,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             root.put(KEY_STACK, stackTag);
         } else if (stack instanceof FluidStack fluidStack) {
             root.putString(KEY_TYPE, TYPE_FLUID);
-            CompoundTag stackTag = new CompoundTag();
-            stackTag.putString("FluidName", Objects.requireNonNull(RegistriesUtils.getIdLocation(fluidStack.getFluid())).toString());
-            stackTag.putInt(KEY_AMOUNT, fluidStack.getAmount());
-            if (fluidStack.hasTag()) stackTag.put("tag", fluidStack.getTag().copy());
-            root.put(KEY_STACK, stackTag);
+            root.put(KEY_STACK, fluidStack.writeToNBT(new CompoundTag()));
         }
         return root;
     }
@@ -347,11 +339,9 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         if (type.equals(TYPE_ITEM)) {
             stack = ItemStack.of(stackTag);
         } else if (type.equals(TYPE_FLUID)) {
-            Fluid fluid = RegistriesUtils.getFluid(stackTag.getString("FluidName"));
-            if (fluid != null && fluid != Fluids.EMPTY) {
-                int amount = stackTag.getInt(KEY_AMOUNT);
-                CompoundTag extraTag = stackTag.contains("tag", Tag.TAG_COMPOUND) ? stackTag.getCompound("tag") : null;
-                stack = new FluidStack(fluid, amount, extraTag);
+            FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(stackTag);
+            if (!fluidStack.isEmpty()) {
+                stack = fluidStack;
             }
         }
         return new Object[] { stack, frequency };

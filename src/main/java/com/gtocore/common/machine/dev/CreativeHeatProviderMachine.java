@@ -180,5 +180,10 @@ public class CreativeHeatProviderMachine extends MetaMachine implements IFancyUI
         public int getSignal() {
             return (int) Math.min(15, 15.0 * getTemperature() / getMaxTemperature());
         }
+
+        @Override
+        public Component getDisplayName() {
+            return getBlockState().getBlock().getName();
+        }
     }
 }
