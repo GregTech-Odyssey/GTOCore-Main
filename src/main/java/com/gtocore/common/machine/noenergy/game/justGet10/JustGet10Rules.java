@@ -8,12 +8,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 
 /**
- * 「合成十」的盘面规则：{@link #SIZE}×{@link #SIZE} 方格，每格一个 {@link #VALUE_MIN}~{@link #VALUE_MAX}
- * 的整数，按行优先存进 {@link #CELL_COUNT} 长的 {@code int[]}（第 0 行在最上面）。点一格把与它四向连通、数字相同的一整组
- * 合并成「该数字 + 1」，合并后整列下坠、顶部补随机数字。
+ * 「合成十」的盘面规则：{@link #SIZE}×{@link #SIZE} 方格，每格 {@link #VALUE_MIN}~{@link #VALUE_MAX} 的整数，按行
+ * 优先存进 {@link #CELL_COUNT} 长的 {@code int[]}（第 0 行在最上面）。点一格把与它四向连通、数字相同的一整组合并成
+ * 「该数字 + 1」，合并后整列下坠、顶部补随机数字。
  *
  * <p>
- * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用（机器持有一份）。
+ * 纯逻辑，不持有机器状态；只在服务端线程调用，不要求线程安全，临时容器按实例复用。
  */
 public final class JustGet10Rules {
 
@@ -25,9 +25,8 @@ public final class JustGet10Rules {
 
     /** 盘面边长（固定 5×5）。 */
     public static final int SIZE = 5;
-    /** 一盘多少格。 */
     public static final int CELL_COUNT = SIZE * SIZE;
-    /** 兑现比例：超过兑现基线后每多少分折 1 枚游戏币（只留小盘的那个比例）。 */
+    /** 兑现比例：超过兑现基线后每这么多分折 1 枚游戏币。 */
     public static final int POINTS_PER_COIN = 100;
 
     /** 难度区间：分数到 DIFFICULTY_START 之前新格等概率，到 DIFFICULTY_END 完全按高难度权重。 */
@@ -181,11 +180,8 @@ public final class JustGet10Rules {
     }
 
     /**
-     * 补格用的新数字：按难度在两组权重间插值，再按权重抽 1~4。
-     *
-     * <p>
-     * 权重现算两遍（求和、抽签各一遍）而不落静态暂存数组：{@link #EASY_VALUE_WEIGHTS} 与 {@link #HARD_VALUE_WEIGHTS}
-     * 是只读常量，一次插值只是几个乘加，没必要为它维护一份所有规则实例共享的可写数组。
+     * 补格用的新数字：按难度在两组权重间插值，再按权重抽 1~4。权重现算两遍（求和、抽签各一遍）而不落静态数组：
+     * 两组权重是只读常量，一次插值只是几个乘加。
      */
     private static int randomValue(RandomSource random, int score) {
         double difficulty = difficultyAt(score);

@@ -9,16 +9,14 @@ import org.jetbrains.annotations.Nullable;
  * {@link #CELL_COUNT} 长的 {@code int[]}（第 0 行在最上面）。
  *
  * <p>
- * 一次移动把整盘数字朝该方向推到底，相邻同值两两合并（同一回合里每个数字只参与一次合并）；只要有格子挪动或合并，
- * 就在随机一个空格补上新数字（九成是 {@link #VALUE_MIN}、一成是它的两倍）。推不动的方向返回 {@code null}：不补新数字，
- * 机器也就不改任何状态。
+ * 一次移动把数字朝该方向推到底，相邻同值两两合并（每块每步只并一次）；有挪动或合并才在随机空格补一个新数字。
+ * 推不动返回 {@code null}，机器不改任何状态。
  *
  * <p>
- * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用（机器持有一份）。
+ * 纯逻辑，不持有机器状态；只在服务端线程调用，不要求线程安全，临时容器按实例复用。
  */
 public final class Game2048Rules {
 
-    /** 空格。 */
     public static final int EMPTY = 0;
     /** 补格与合并出的最小数字；{@link #VALUE_MAX} 是合并上限，两格到顶的数字合起来仍是它自己。 */
     public static final int VALUE_MIN = 2;
@@ -26,15 +24,11 @@ public final class Game2048Rules {
 
     /** 盘面边长（固定 4×4）。 */
     public static final int SIZE = 4;
-    /** 一盘多少格。 */
     public static final int CELL_COUNT = SIZE * SIZE;
-    /**
-     * 兑现比例：超过兑现基线后每多少分折 1 枚游戏币。盘面固定 4×4，「同样分数能刷得更高」的档位差别已经没有了，
-     * 只留小盘的那个比例。
-     */
+    /** 兑现比例：超过兑现基线后每这么多分折 1 枚游戏币。 */
     public static final int POINTS_PER_COIN = 200;
 
-    /** 新格出现 {@link #VALUE_MIN} 两倍数字的概率，其余出 {@link #VALUE_MIN}。 */
+    /** 新格出 {@link #VALUE_MIN} 两倍数字的概率。 */
     private static final double SPAWN_DOUBLE_CHANCE = 0.1;
 
     /** 移动方向；{@link #rotations()} 是左旋几次后该方向就变成「往左推」，与合并逻辑一致。 */
@@ -101,8 +95,8 @@ public final class Game2048Rules {
     }
 
     /**
-     * 存档里的盘面：长度不对（旧档）时重建成空盘，非法数字（既不是 {@link #EMPTY}、也不是
-     * {@link #VALUE_MIN}~{@link #VALUE_MAX} 的 2 的幂）当空格。空盘由机器当成「还没开这一局」，不是可玩的局面。
+     * 存档里的盘面：长度不对（旧存档）就重建成空盘，非法数字（不是 {@link #EMPTY} 也不是
+     * {@link #VALUE_MIN}~{@link #VALUE_MAX} 的 2 的幂）当空格；空盘由机器当成「还没开局」。
      */
     public int[] normalizeBoard(int @Nullable [] board) {
         if (board == null || board.length != CELL_COUNT) return new int[CELL_COUNT];

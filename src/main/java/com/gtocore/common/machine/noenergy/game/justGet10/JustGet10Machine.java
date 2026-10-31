@@ -43,12 +43,8 @@ import java.util.List;
  * 「合成十」游戏机：5×5 盘面的合并玩法。
  *
  * <p>
- * 一局攒积分，盘面无相邻同数字时这一局结束、按兑现比例换成游戏币；按「重新开始」提前兑现重开。余额、取出与快照通道
- * 来自 {@link AbstractGameMachine}，本局积分、盘面与界面都在这个类里。
- *
- * <p>
- * 每个数字格是一个 {@link Cell}（外裹一层转发坐标，里面是 {@link CellButton}），盘面走界面通道，只在盘面或提起位变了
- * 的那一 tick 下发。
+ * 一局攒积分，盘面无相邻同数字时结账、按兑现基线折成游戏币，「重新开始」提前结账重开；余额、取出与快照通道来自
+ * {@link AbstractGameMachine}。每个数字格是 {@link Cell}（定尺寸外壳 + {@link CellButton}），盘面随界面通道下发。
  */
 @DataGeneratorScanned
 public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.BoardSnapshot> {
@@ -58,25 +54,23 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     @RegisterLanguage(cn = "重新开始", en = "Restart")
     private static final String BUTTON_RESTART = "gtocore.machine.game.button.restart";
 
-    /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 成绩，达成时间放在成绩格的悬停提示里。 */
+    /** 里程碑表格的列（名次由表格自动加在最前）：玩家、最高分与最大合成，达成时间放在成绩格的悬停提示里。 */
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 42),
             MilestoneColumn.right(COLUMN_BEST_SCORE, 54),
             MilestoneColumn.right(COLUMN_BEST_MERGED, 40) };
 
-    /** 格子材质原尺寸（和数字材质一致）。 */
+    /** 格子边长：数字材质是 32×32，这里缩成 24 画。 */
     private static final int CELL_SIZE = 24;
 
     /**
-     * 额外分：一局里 {@link #SCORE_BONUS_MIN_VALUE}~{@link JustGet10Rules#VALUE_MAX} 的每个数字<b>首次</b>被合出时各给
-     * 一次，金额随数字递增；水位记在 {@link #maxValue} 上。
+     * 额外分：一局里 {@link #SCORE_BONUS_MIN_VALUE}~{@link JustGet10Rules#VALUE_MAX} 的每个数字<b>首次</b>合出时
+     * 各给一次，金额随数字递增；水位记在 {@link #maxValue} 上。
      */
     private static final int SCORE_BONUS_MIN_VALUE = 10;
     private static final int SCORE_BONUS_BASE = 1000;
     private static final int SCORE_BONUS_PER_VALUE = 500;
-    /**
-     * 兑现门槛：一局积分超过它的部分才按比例折成游戏币，达不到就一枚不给。公开给工具提示复用，免得两处各写一个数。
-     */
+    /** 兑现门槛：一局积分超过它的部分才按比例折成游戏币，达不到一枚不给；公开给工具提示复用同一份数值。 */
     public static final int REDEMPTION_BASELINE = 1000;
 
     /** 提起位图：一个 {@code long} 装 {@link Long#SIZE} 格，25 格一个字够用。 */
@@ -97,17 +91,16 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         }
     }
 
-    /** 本局累计积分。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient(scheduleUpdate = true)
     private int score;
-    /** 局面阶段；只有服务端看它，界面按盘面自己判断能不能动。 */
-    @SaveToDisk
+    /** 局面阶段；不进快照，界面按盘面自行判断能不能动。 */
+    @SaveToDisk(defaultValue = "0")
     private int gameStatus = Status.IDLE.ordinal();
-    /** 本局是否已经结过账。不存盘：读档时按局面阶段还原（已结束的那一局在结束时就结过账了）。 */
+    /** 本局是否已结过账；不存盘，读档时按局面还原（已结束的那局当时就结过账）。 */
     private boolean settled;
 
-    /** 局面阶段：还没开局 / 进行中 / 已结束（结束的那一局已经兑现过）。 */
+    /** 局面阶段；GAME_OVER 的那一局已经兑现过。 */
     private enum Status {
         IDLE,
         PLAYING,
@@ -120,15 +113,15 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     /** 服务端权威盘面，按行优先存 {@code size * size} 格，空格为 -1。 */
     @SaveToDisk
     private int[] board = NO_BOARD;
-    /** 本局出现过的最大数字 */
-    @SaveToDisk
+    /** 本局到过的最大数字，也是额外分的水位。 */
+    @SaveToDisk(defaultValue = "1")
     @SyncToClient(scheduleUpdate = true)
     private int maxValue = JustGet10Rules.VALUE_MIN;
-    /** 已提起的格子位图；提到的是「点中那格所在的整个连通组」，格数超过 64，所以用位图而不是位掩码。 */
+    /** 已提起的格子位图：字 = 格号 / 64，位 = 格号 % 64；一次提起的是点中那格所在的整个连通组。 */
     @SaveToDisk
     private long[] selection = NO_SELECTION;
     /** 本局合成出的最大数字：结账时拿去比里程碑。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "1")
     private int roundPeakValue = JustGet10Rules.VALUE_MIN;
 
     public JustGet10Machine(MetaMachineBlockEntity holder) {
@@ -172,7 +165,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     }
 
     /**
-     * 先把局面阶段夹回合法值，再整理盘面；盘面尺寸对不上（旧档）本局作废，等下次打开界面重发，其余数值夹回合法范围。
+     * 先夹回合法的局面阶段再整理盘面；盘面尺寸对不上（旧存档）本局作废、等下次打开界面重发，其余数值夹回合法范围。
      */
     private void sanitizeState() {
         if (gameStatus < 0 || gameStatus >= Status.values().length) setIdle();
@@ -228,8 +221,8 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     }
 
     /**
-     * 把本局积分折成游戏币入余额；同一局只结一次账（{@link #settled} 一置位，结束、重新开始、换档位、拆机器都不会
-     * 再给第二次）。分数没超过兑现基线时同样算结过账，只是这次给 0 枚。
+     * 把本局积分折成游戏币入余额；{@link #settled} 保证同一局只结一次账（结束、重新开始、拆机器都走这里）。
+     * 没超过兑现基线时同样算结过账，只是给 0 枚。
      */
     @Override
     protected void cashOut() {
@@ -240,7 +233,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         recordRound();
     }
 
-    /** 本局结账时记一次里程碑：只有单人局才写；分数/最大合成没有超过个人记录时不会真的落盘。 */
+    /** 结账时记一次里程碑：只有单人局、且分数超过里程碑门槛才写，并且只更新更好的分数/最大合成。 */
     private void recordRound() {
         if (!sessionCounts()) return;
         var server = server();
@@ -249,7 +242,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
                 gameTime());
     }
 
-    /** 玩不动了：把这局积分兑现掉，再记下结束。先结账后改状态，任何顺序都不会漏给或重复给。 */
+    /** 玩不动了：先结账再置为结束，{@link #settled} 兜住重复结账。 */
     private void endRound() {
         cashOut();
         gameStatus = Status.GAME_OVER.ordinal();
@@ -262,7 +255,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         setIdle();
     }
 
-    /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用。 */
+    /** 服务端：「重新开始」：结掉当前这一局（没有在玩的一局就只结 0 分）再开一局。 */
     private void restartRoundOnServer(@Nullable ServerPlayer player) {
         if (isRemote() || !guard(player)) return;
         settleRound();
@@ -279,13 +272,9 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     // ==================== 服务端动作 ====================
 
     /**
-     * 落子（下标就是按钮编号）：
-     *
-     * <p>
-     * 未提起的格子先提起整组——把 {@code index} 所在、数字相同且四向连通的一一整组标进 {@link #selection}；不成组
-     * （单格、空格、越界）就清空提起。已提起的格子则合并：整组清空、被点中的那格写入「原数字 + 1」、逐列下坠补格，
-     * 然后按新盘面结算分数与「首次合出」里程碑。合并会清掉<b>所有</b>提起（盘面换了位置，留着旧高亮会指错格子）；
-     * 不可合并时直接返回、状态不变。
+     * 落子（{@code index} 就是按钮编号）：未提起的格子先提起 {@code index} 所在的同数字连通组，不成组就清空提起；
+     * 已提起则合并成「原数字 + 1」并整列下坠补格，再结算分数与额外分。合并会清掉所有提起（盘面换了位置，旧高亮
+     * 会指错格子）；不可合并时状态不变。
      */
     private void clickCell(int index, @Nullable ServerPlayer player) {
         if (isRemote() || !isPlaying() || !guard(player)) return;
@@ -416,7 +405,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         return rows;
     }
 
-    /** 最大合成按盘面上的电压字显示（和格子里的图一致）：1 → ULV，15 → MAX，再往上就是 MAX+1 往后排。 */
+    /** 最大合成按电压等级名显示：1 → ULV、15 → MAX，更高的按 MAX+1、MAX+2 往后排（上限夹到 VALUE_MAX）。 */
     private static Component tileName(int value) {
         if (value < JustGet10Rules.VALUE_MIN) return Component.literal("-");
         return voltageName(Math.min(value, JustGet10Rules.VALUE_MAX) - 1);
@@ -442,11 +431,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
         return boardRows;
     }
 
-    /**
-     * 数字格：外裹定尺寸的 {@link UIElement}，里面才是按钮。这层不能省——LDLib 的
-     * {@code WidgetGroup.mouseClicked} 会把父控件坐标原样转发给每个子控件，只有 {@link UIElement} 会在自己的坐标
-     * 空间里再转发一次，少了它整盘按钮会同时收到同一次点击。
-     */
+    /** 数字格：定尺寸外壳，里面才是按钮；格号与尺寸定死，按钮不参与外层行的布局。 */
     private final class Cell extends UIElement {
 
         private Cell(int cellSize, int index) {
@@ -459,8 +444,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
      * 按钮本体：整格就是一张数字材质，提起时换成高亮的那套；不画底图、文字或禁用态。
      *
      * <p>
-     * 一律不禁用：格值每帧现读同步快照，有数字就画；能不能动由服务端在处理点击时判定，界面不会出现斜纹或
-     * 「禁止操作」。
+     * 一律不禁用：格值每帧现读同步快照，能不能动由服务端处理点击时判定，界面不会出现禁止操作的斜纹。
      */
     private final class CellButton extends Button {
 

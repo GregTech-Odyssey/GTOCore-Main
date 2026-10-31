@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.numberPuzzle;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.LiveDurationLine;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -24,6 +25,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 
@@ -35,8 +37,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 数字华容道游戏机：3×3 到 8×8 六档，点击空格相邻的数字块滑动，按行排好即完成。
- * 完成一局按尺寸发放游戏币，并把最快完成时间记入该尺寸的里程碑。
+ * 数字华容道游戏机：3×3 到 8×8 六档，点击与空格相邻的数字块滑动，把 1..n²-1 按序排好、空格归位即完成。
+ * 完成一局按尺寸发放游戏币，并把该尺寸的最快完成时间记入里程碑。
  */
 @DataGeneratorScanned
 public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine.BoardSnapshot> {
@@ -83,9 +85,14 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         SOLVED
     }
 
+    /**
+     * 下发的界面快照：{@link #board} 只带当前尺寸的 {@code size²} 个有效格，不发整块
+     * {@link NumberPuzzleRules#CELL_CAPACITY}（客户端只按 {@code sizeOrdinal} 读前 {@code size²} 格）；
+     * {@code equals} 只看版本号，省掉逐元素比数组。
+     */
     public record BoardSnapshot(int revision, int sizeOrdinal, int[] board, int moves, long elapsedTicks, int status) {
 
-        private static final BoardSnapshot EMPTY = new BoardSnapshot(-1, 0, new int[NumberPuzzleRules.CELL_CAPACITY],
+        private static final BoardSnapshot EMPTY = new BoardSnapshot(-1, 0, new int[0],
                 0, 0L, Status.IDLE.ordinal());
         private static final StreamCodec<FriendlyByteBuf, BoardSnapshot> CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, BoardSnapshot::revision,
@@ -111,21 +118,22 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         }
     }
 
-    /** 当前尺寸档；基础值为 3×3。 */
-    @SaveToDisk
+    /** 当前尺寸档；默认 3×3（序数 0）。 */
+    @SaveToDisk(defaultValue = "0")
     private int sizeOrdinal = NumberPuzzleRules.Difficulty.THREE.ordinal();
     /** 固定长度盘面，前 size² 格有效；0 为空格。 */
     @SaveToDisk
     private int[] board = new int[NumberPuzzleRules.CELL_CAPACITY];
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int blankCell;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int moves;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
+    @SyncToClient(scheduleUpdate = true)
     private long roundStart;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long lastElapsed;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int status = Status.IDLE.ordinal();
 
     public NumberPuzzleMachine(MetaMachineBlockEntity holder) {
@@ -150,14 +158,24 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         } else {
             blankCell = NumberPuzzleRules.findBlank(board, size);
             moves = Math.max(0, moves);
-            if (status == Status.PLAYING.ordinal() && roundStart <= 0L) roundStart = gameTime();
+            if (status == Status.PLAYING.ordinal() &&
+                    (roundStart <= 0L || roundStart > gameTime())) {
+                roundStart = gameTime();
+            }
             if (status == Status.SOLVED.ordinal()) lastElapsed = Math.max(1L, lastElapsed);
         }
     }
 
     @Override
     protected BoardSnapshot createView() {
-        return new BoardSnapshot(revision(), sizeOrdinal, board, moves, elapsedTicks(), status);
+        return new BoardSnapshot(revision(), sizeOrdinal, activeBoard(), moves, elapsedTicks(), status);
+    }
+
+    /** 只取当前尺寸的有效格：客户端按 {@code sizeOrdinal} 读的正是这一段，后面的定长填充不必下发。 */
+    private int[] activeBoard() {
+        int size = NumberPuzzleRules.sizeOf(sizeOrdinal);
+        int area = size * size;
+        return area >= board.length ? board : Arrays.copyOf(board, area);
     }
 
     private boolean isPlaying() {
@@ -167,6 +185,14 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private long elapsedTicks() {
         if (status == Status.SOLVED.ordinal()) return lastElapsed;
         if (status != Status.PLAYING.ordinal() || roundStart <= 0L) return 0L;
+        return Math.max(0L, gameTime() - roundStart);
+    }
+
+    /** 计时行：进行中按世界刻现算，已完成用快照里的最终用时。 */
+    private long displayElapsedTicks() {
+        var snapshot = view();
+        if (snapshot.isSolved()) return snapshot.elapsedTicks();
+        if (snapshot.status() != Status.PLAYING.ordinal() || roundStart <= 0L) return 0L;
         return Math.max(0L, gameTime() - roundStart);
     }
 
@@ -181,6 +207,8 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         roundStart = gameTime();
         status = Status.PLAYING.ordinal();
         beginSession(starter);
+        // 开局时刻单独同步一次，计时行才能在客户端本地读秒。
+        requestSync();
         syncAndMarkChanged();
     }
 
@@ -188,7 +216,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         if (status == Status.IDLE.ordinal()) startRound(null);
     }
 
-    /** 服务端：结掉旧局（未完成不给币）并换到指定尺寸。 */
+    /** 服务端：切到指定尺寸并立即开新局；旧局未完成不给币。 */
     private void selectSize(int ordinal, @Nullable ServerPlayer player) {
         if (isRemote() || player == null || !guard(player)) return;
         if (ordinal < 0 || ordinal >= NumberPuzzleRules.SIZE_COUNT || sizeOrdinal == ordinal) return;
@@ -247,7 +275,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_MOVES, () -> number(view().moves()));
-        status.addLine(LINE_TIME, () -> duration(view().elapsedTicks()));
+        status.addChild(new LiveDurationLine(LINE_TIME, this::displayElapsedTicks));
         status.addChild(TextLine.of(LayoutStyle.AUTO, () -> view().isSolved() ?
                 Component.translatable(TEXT_SOLVED, duration(view().elapsedTicks())) :
                 Component.translatable(TEXT_PLAYING)).styled());
@@ -278,9 +306,10 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
                 var cell = Button.of(CELL_SIZE, CELL_SIZE);
                 cell.bindClientText(() -> {
                     var snapshot = view();
-                    int cellSize = NumberPuzzleRules.sizeOf(snapshot.sizeOrdinal());
-                    if (index >= cellSize * cellSize) return "";
-                    int value = snapshot.board()[index];
+                    // 快照只带有效格；未下发时是空数组，越界一律当空格。
+                    var cellss = snapshot.board();
+                    if (index < 0 || index >= cellss.length) return "";
+                    int value = cellss[index];
                     return value == 0 ? "" : Integer.toString(value);
                 });
                 cell.setOnServerClick(() -> moveTile(index, playerOf(cell)));
@@ -345,7 +374,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         }
     }
 
-    /** 单个尺寸的排行榜：玩家 + 最快用时，用时悬停显示达成时刻。 */
+    /** 单个尺寸的榜单行：玩家 + 最快用时，悬停显示达成时刻。 */
     private List<MilestoneCell[]> buildLeaderboardRows(GameMilestones store, MinecraftServer server,
                                                        int sizeOrdinal) {
         var stats = store.numberPuzzleBoard(sizeOrdinal);

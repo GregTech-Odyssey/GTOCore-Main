@@ -2,20 +2,21 @@ package com.gtocore.common.machine.noenergy.game.sudoku;
 
 import net.minecraft.util.RandomSource;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
 /**
- * 数独的规则与出题：标准 9×9 盘面，每行、每列、每个 3×3 宫恰好填 1~9 一次。
+ * 数独的出题入口与难度定义：9×9 盘面、每格 1~9，约束由 {@link SudokuConstraints} 决定（标准局为行、列、3×3 宫）。
  *
  * <p>
- * 出题先用随机回溯填出一份完整解，再随机抽一个 {@link #MIN_CLUES}~{@link #MAX_CLUES} 的提示数并挖去格子；每挖一格
- * 都检查「解是否仍然唯一」，不唯一就放回去。难度完全由 {@link #rate(int[])} 的逻辑评级决定，提示数只作为随机范围。
- * 因此玩家填满且行列宫都合法时，答案必然就是那份唯一的解，不需要再和标准答案逐个比对。
+ * 锯齿先构造 9 区域再填完整解，其余变体直接填解；随后从解反推连续标记与杀手笼（保证解合法），最后在
+ * {@link #MIN_CLUES}~{@link #MAX_CLUES} 内取目标提示数逐格挖空，每挖一格都要求全部约束下解仍唯一。
+ * 难度由 {@link SudokuSolver#rate} 的逻辑评级决定，提示数只在范围内微调。
  *
  * <p>
- * 纯逻辑，不持有机器状态；位掩码只在小整数上运算，临时容器按实例复用。只在服务端线程调用，不要求线程安全。
+ * 杀手例外：笼和就是提示，盘面不放数字，也不做唯一解与逻辑评级筛选（零提示盘面搜索量无法承受），档位只决定笼的最大尺寸。
  */
 public final class SudokuRules {
 
@@ -26,46 +27,46 @@ public final class SudokuRules {
     public static final int VALUE_MAX = 9;
     /** 1~9 全在的低九位。 */
     public static final int ALL_VALUES = (1 << VALUE_MAX) - 1;
-    /** 每局提示数的随机范围（含两端），与难度档位无关；行、列、宫都可以出现空置。 */
+    /** 杀手笼和的合法上限：1~9 全用一遍的和。 */
+    public static final int MAX_CAGE_TOTAL = VALUE_MAX * (VALUE_MAX + 1) / 2;
+    /** 每局提示数的随机范围（含两端），与难度档位无关。 */
     public static final int MIN_CLUES = 24;
     public static final int MAX_CLUES = 28;
-    /** 单数可解的题里，隐性唯一数不超过这个次数算 0 级（扫描与少量隐性唯一数即可完成）。 */
-    private static final int SINGLES_EASY_LIMIT = 8;
+    /** 隐性唯一数不超过此值时评级为 0。 */
+    static final int SINGLES_EASY_LIMIT = 8;
 
     /**
-     * 六档难度完全由 {@link SudokuRules#rate(int[])} 的逻辑评级决定，提示数只在
-     * {@link #MIN_CLUES}~{@link #MAX_CLUES} 内随机抽取并微调，不参与分档。
+     * 六档难度：除杀手外由 {@link SudokuSolver#rate} 的逻辑评级筛出，提示数只在 {@link #MIN_CLUES}~{@link #MAX_CLUES}
+     * 内微调、不参与分档；杀手没有提示数字，只用 {@link #cageMaxSize()} 控制难度。奖励按档位固定。
      *
-     * <ul>
-     * <li>{@link #targetRate()}：这一档要求的逻辑评级（0~5）；</li>
-     * <li>{@link #attempts()}：最多重试几次，用来命中评级；</li>
-     * <li>{@link #ratingLevel()}：界面上显示的 1~6 级。</li>
-     * </ul>
-     *
-     * 奖励按档位固定，与这一局实际抽到多少提示无关。
+     * <p>
+     * 构造参数依次为 reward、targetRate（0~5）、attempts、cageMaxSize（杀手笼最大格数，最小笼固定 2 格）；
+     * ratingLevel 为目标评级 + 1（1~6 级）。
      */
     public enum Difficulty {
 
-        BEGINNER(2, 0, 32),
-        EASY(5, 1, 16),
-        NORMAL(9, 2, 48),
-        HARD(16, 3, 64),
-        EXPERT(25, 4, 48),
-        MASTER(40, 5, 48);
+        BEGINNER(2, 0, 32, 5),
+        EASY(5, 1, 16, 6),
+        NORMAL(9, 2, 48, 7),
+        HARD(16, 3, 64, 8),
+        EXPERT(25, 4, 48, 9),
+        MASTER(40, 5, 48, 9);
 
         public static final Difficulty[] ALL = values();
 
         private final long reward;
         private final int targetRate;
         private final int attempts;
+        private final int cageMaxSize;
 
-        Difficulty(long reward, int targetRate, int attempts) {
+        Difficulty(long reward, int targetRate, int attempts, int cageMaxSize) {
             this.reward = reward;
             this.targetRate = targetRate;
             this.attempts = attempts;
+            this.cageMaxSize = cageMaxSize;
         }
 
-        /** 完成一局发多少游戏币。 */
+        /** 完成一局发放的游戏币数。 */
         public long reward() {
             return reward;
         }
@@ -75,7 +76,7 @@ public final class SudokuRules {
             return targetRate;
         }
 
-        /** 界面上显示的 1~6 级。 */
+        /** 目标评级的 1~6 级表示。 */
         public int ratingLevel() {
             return targetRate + 1;
         }
@@ -85,7 +86,11 @@ public final class SudokuRules {
             return attempts;
         }
 
-        /** 距目标评级差多少：0 表示命中，数值越小越接近。 */
+        /** 杀手笼的最大格数；最小笼固定 2 格。 */
+        public int cageMaxSize() {
+            return cageMaxSize;
+        }
+
         int rateDistance(int rate) {
             return Math.abs(rate - targetRate);
         }
@@ -96,81 +101,376 @@ public final class SudokuRules {
         }
     }
 
-    /** 判别完成时复用的掩码（每个机器一份实例，服务端单线程使用）。 */
-    private final int[] rowUsed = new int[SIZE];
-    private final int[] columnUsed = new int[SIZE];
-    private final int[] boxUsed = new int[SIZE];
-
     private SudokuRules() {}
 
-    /** 机器持有一份实例，临时容器跟着它复用。 */
-    public static SudokuRules create() {
-        return new SudokuRules();
-    }
-
-    /** 第 {@code cell} 格的宫序号（行、列各 0~8）。 */
-    public static int boxOf(int cell) {
-        return cell / SIZE / BOX * BOX + cell % SIZE / BOX;
+    /**
+     * 出一局新题：返回提示盘与变体附加数据，0 表示空格。目标提示数取自 {@link #MIN_CLUES}~{@link #MAX_CLUES}，
+     * 按唯一解逐格挖空后用逻辑评级筛选；没命中就朝更难/更简单方向微调提示数重试，最多 {@link Difficulty#attempts()} 次，
+     * 仍未命中返回最接近的一局。杀手不挖提示：盘面全空，只靠笼和。
+     */
+    public static SudokuPuzzle createPuzzle(RandomSource random, Difficulty difficulty, SudokuVariant variant) {
+        return createPuzzle(random, difficulty, variant.mask());
     }
 
     /**
-     * 出一局新题：返回 {@link #CELLS} 格的提示盘，0 表示空格。
-     *
-     * <p>
-     * 每一局先从 {@link #MIN_CLUES}~{@link #MAX_CLUES} 随机抽一个提示数，再按唯一解挖格，最后只用逻辑评级筛选；
-     * 没命中时在随机范围内朝更难/更简单方向移动提示数再试，最多尝试 {@link Difficulty#attempts()} 次，
-     * 仍未命中则返回最接近的一局。
-     *
-     * @param difficulty 目标逻辑评级所属的档位
+     * 出一局新题：{@code variantMask} 是 {@link SudokuVariant#mask()} 的位或，可叠加多条规则（界面目前只传单条）。
+     * 叠加杀手时盘面没有提示数字，难度只由该档的笼尺寸决定，不走逻辑评级筛选。
      */
-    public int[] createPuzzle(RandomSource random, Difficulty difficulty) {
+    public static SudokuPuzzle createPuzzle(RandomSource random, Difficulty difficulty, int variantMask) {
+        int mask = SudokuRuleSet.normalizeMask(variantMask);
+        // 杀手用笼和代替提示数字：零提示盘面无法用唯一解计数或逻辑评级筛选（解搜索量指数级放大），
+        // 直接按完整解切笼并返回空提示盘，判题只要求满足行/列/宫、标记与笼和。
+        if ((mask & SudokuVariant.KILLER.mask()) != 0) {
+            SudokuSeed seed = createSeed(random, difficulty, mask);
+            return new SudokuPuzzle(new int[CELLS], seed.jigsawMap(), seed.cageOf(), seed.cageTotals(),
+                    seed.marks());
+        }
         int targetRate = difficulty.targetRate();
         int clueTarget = MIN_CLUES + random.nextInt(MAX_CLUES - MIN_CLUES + 1);
-        int[] best = null;
+        SudokuSeed seed = createSeed(random, difficulty, mask);
+        SudokuPuzzle best = null;
         int bestDistance = Integer.MAX_VALUE;
         for (int attempt = 0; attempt < difficulty.attempts(); attempt++) {
-            int[] puzzle = createCandidate(random, clueTarget);
-            int rate = rate(puzzle);
+            // 同一份解可反复挖题；每 SEED_REFRESH 次换解，省去每轮重新生成与求解。
+            if (attempt > 0 && attempt % SEED_REFRESH == 0) {
+                seed = createSeed(random, difficulty, mask);
+            }
+            SudokuPuzzle puzzle = carve(random, seed, clueTarget);
+            int rate = SudokuSolver.rate(puzzle.givens(), seed.constraints());
             int distance = Math.abs(rate - targetRate);
             if (distance < bestDistance) {
                 best = puzzle;
                 bestDistance = distance;
             }
             if (distance == 0) return puzzle;
-            // 难度不够就往更少提示再试，太难就往更多提示再试；提示数始终留在随机范围内
+            // 偏简单就减少提示、偏难就增加提示，提示数始终留在随机范围内
             if (rate < targetRate && clueTarget > MIN_CLUES) {
                 clueTarget--;
             } else if (rate > targetRate && clueTarget < MAX_CLUES) {
                 clueTarget++;
             }
         }
-        return best == null ? createCandidate(random, clueTarget) : best;
+        return best == null ? carve(random, seed, clueTarget) : best;
     }
 
-    /** 挖一局候选题：随机挖格，直到提示数达到目标；每挖一格都只要求解仍唯一，允许出现空行、空列或空宫。 */
-    private int[] createCandidate(RandomSource random, int clueTarget) {
-        int[] board = new int[CELLS];
-        int[] rows = new int[SIZE];
-        int[] columns = new int[SIZE];
-        int[] boxes = new int[SIZE];
-        fillBoard(board, rows, columns, boxes, 0, random);
-        int[] puzzle = board.clone();
+    /** 同一份解挖几次后重新生成，兼顾难度命中率与生成耗时。 */
+    private static final int SEED_REFRESH = 8;
+
+    /**
+     * 一局出题的母版：完整解、锯齿区域（非锯齿为空数组）以及由解反推的连续标记与杀手笼；挖提示只从母版复制，不重复求解。
+     */
+    private record SudokuSeed(int[] jigsawMap, int[] solution, int[] cageOf, int[] cageTotals, int[] marks,
+                              SudokuConstraints constraints) {}
+
+    /**
+     * 生成母版：锯齿先构造 9 区域再填解，其余变体直接填解；随后反推标记与笼。区域无解时换一份，最多 {@link #LAYOUT_ATTEMPTS} 次。
+     */
+    private static SudokuSeed createSeed(RandomSource random, Difficulty difficulty, int variantMask) {
+        int[] solution = new int[CELLS];
+        int[] jigsawMap = new int[CELLS];
+        SudokuConstraints geometry;
+        if ((variantMask & SudokuVariant.JIGSAW.mask()) != 0) {
+            boolean ready = false;
+            geometry = null;
+            for (int layoutAttempt = 0; layoutAttempt < LAYOUT_ATTEMPTS && !ready; layoutAttempt++) {
+                var map = JigsawLayout.generate(random);
+                if (map == null) continue;
+                // 先把本局区域装进约束再填解。
+                SudokuConstraints withMap = SudokuConstraints.of(variantMask, map, null, null, null);
+                if (SudokuSolver.fillBoard(solution, withMap, random)) {
+                    jigsawMap = map;
+                    geometry = withMap;
+                    ready = true;
+                }
+            }
+            if (!ready) {
+                jigsawMap = JigsawLayout.fallback();
+                geometry = SudokuConstraints.of(variantMask, jigsawMap, null, null, null);
+                fillBoard(solution, geometry, random);
+            }
+        } else {
+            // 固定几何先组装，再填解。
+            geometry = SudokuConstraints.of(variantMask, null, null, null, null);
+            fillBoard(solution, geometry, random);
+        }
+
+        // 笼和与连续标记是解派生数据：先有满足几何约束的合法解，再落成数据，因此解天然满足它们。
+        int[] cageOf = new int[CELLS];
+        int[] cageTotals = new int[0];
+        int[] marks = new int[CELLS];
+        if ((variantMask & SudokuVariant.KILLER.mask()) != 0) {
+            cageTotals = createCages(solution, cageOf, random, difficulty);
+        }
+        if ((variantMask & SudokuVariant.CONSECUTIVE.mask()) != 0) {
+            createMarks(solution, marks);
+        }
+        SudokuConstraints constraints = new SudokuPuzzle(new int[CELLS], jigsawMap, cageOf, cageTotals, marks)
+                .constraints(variantMask);
+        return new SudokuSeed(jigsawMap, solution, cageOf, cageTotals, marks, constraints);
+    }
+
+    /** 锯齿区域无解时最多换几次。 */
+    private static final int LAYOUT_ATTEMPTS = 8;
+    /** 填解失败时换随机顺序重试的次数。 */
+    private static final int FILL_ATTEMPTS = 8;
+
+    /** 在固定约束下随机填一份完整解，失败时换随机顺序重试。 */
+    private static boolean fillBoard(int[] solution, SudokuConstraints constraints, RandomSource random) {
+        for (int attempt = 0; attempt < FILL_ATTEMPTS; attempt++) {
+            if (SudokuSolver.fillBoard(solution, constraints, random)) return true;
+        }
+        return false;
+    }
+
+    /** 从母版的完整解挖到目标提示数，每挖一格都要求当前约束下仍唯一。 */
+    private static SudokuPuzzle carve(RandomSource random, SudokuSeed seed, int clueTarget) {
+        int[] puzzle = seed.solution().clone();
         int[] order = shuffledCells(random);
         int remaining = CELLS;
         for (int index = 0; index < order.length && remaining > clueTarget; index++) {
             int cell = order[index];
             int value = puzzle[cell];
             puzzle[cell] = 0;
-            if (countSolutions(puzzle, 2) == 1) {
+            if (SudokuSolver.countSolutions(puzzle, seed.constraints(), 2) == 1) {
                 remaining--;
             } else {
                 puzzle[cell] = value;
             }
         }
-        return puzzle;
+        return new SudokuPuzzle(puzzle, seed.jigsawMap(), seed.cageOf(), seed.cageTotals(), seed.marks());
     }
 
-    /** 按行优先的格号随机打乱。 */
+    /**
+     * 连续标记：标出完整解中所有「相邻且相差 1」的边；弱连续不约束未标记边，所以这份解天然满足。
+     */
+    private static void createMarks(int[] solution, int[] marks) {
+        for (int cell = 0; cell < CELLS; cell++) {
+            int row = cell / SIZE;
+            int column = cell % SIZE;
+            if (column < SIZE - 1 && Math.abs(solution[cell] - solution[cell + 1]) == 1) {
+                marks[cell] |= SudokuConstraints.DIR_RIGHT;
+                marks[cell + 1] |= SudokuConstraints.DIR_LEFT;
+            }
+            if (row < SIZE - 1 && Math.abs(solution[cell] - solution[cell + SIZE]) == 1) {
+                marks[cell] |= SudokuConstraints.DIR_DOWN;
+                marks[cell + SIZE] |= SudokuConstraints.DIR_UP;
+            }
+        }
+    }
+
+    /**
+     * 杀手笼：随机贪心放 2~3 格直条，放不下的格子留成单格笼，再优先并进相邻笼；相邻两格值必不同，两个单格笼
+     * 可直接合并，并入多格笼前仍检查解值不重叠。单格笼清完后随机合并相邻笼，上限由该档 cageMaxSize 决定；
+     * 返回按 1 起的笼和，写进 {@code cageOf}。
+     */
+    private static int[] createCages(int[] solution, int[] cageOf, RandomSource random, Difficulty difficulty) {
+        int maxSize = Math.max(2, difficulty.cageMaxSize());
+        for (int attempt = 0; attempt < CAGE_LAYOUT_ATTEMPTS; attempt++) {
+            var cages = new ObjectArrayList<int[]>(CELLS);
+            int[] values = new int[CELLS];
+            int[] owner = new int[CELLS];
+            Arrays.fill(owner, -1);
+            randomTiling(owner, cages, random);
+            fillCageValues(solution, values, cages);
+            boolean[] alive = new boolean[cages.size()];
+            Arrays.fill(alive, true);
+            eliminateSingletons(cages, alive, values, owner, maxSize, random);
+            if (hasSingleton(cages, alive)) continue;
+            mergeAdjacent(cages, alive, values, owner, maxSize, random);
+            if (hasSingleton(cages, alive)) continue;
+            return writeCages(solution, cageOf, cages, alive);
+        }
+        // 随机切分多次仍有单格笼时，退回每行 3+3+3 的直条切分。
+        var cages = new ObjectArrayList<int[]>(CELLS);
+        int[] values = new int[CELLS];
+        int[] owner = new int[CELLS];
+        Arrays.fill(owner, -1);
+        fallbackTiling(owner, cages);
+        fillCageValues(solution, values, cages);
+        boolean[] alive = new boolean[cages.size()];
+        Arrays.fill(alive, true);
+        mergeAdjacent(cages, alive, values, owner, maxSize, random);
+        return writeCages(solution, cageOf, cages, alive);
+    }
+
+    /** 随机切分的最多尝试次数。 */
+    private static final int CAGE_LAYOUT_ATTEMPTS = 8;
+
+    /**
+     * 随机贪心切分：按随机格序以当前空格为中心向左右或上下扩 2~3 格直条；无位置时留单格笼，交给合并阶段。
+     */
+    private static void randomTiling(int[] owner, ObjectArrayList<int[]> cages, RandomSource random) {
+        int[] order = shuffledCells(random);
+        int[][] options = new int[12][];
+        for (int cell : order) {
+            if (owner[cell] != -1) continue;
+            int row = cell / SIZE;
+            int column = cell % SIZE;
+            int count = 0;
+            for (int length = 2; length <= 3; length++) {
+                for (int start = column - length + 1; start <= column; start++) {
+                    if (start < 0 || start + length > SIZE) continue;
+                    int[] cells = new int[length];
+                    boolean free = true;
+                    for (int offset = 0; offset < length; offset++) {
+                        cells[offset] = row * SIZE + start + offset;
+                        if (owner[cells[offset]] != -1) free = false;
+                    }
+                    if (free) options[count++] = cells;
+                }
+                for (int start = row - length + 1; start <= row; start++) {
+                    if (start < 0 || start + length > SIZE) continue;
+                    int[] cells = new int[length];
+                    boolean free = true;
+                    for (int offset = 0; offset < length; offset++) {
+                        cells[offset] = (start + offset) * SIZE + column;
+                        if (owner[cells[offset]] != -1) free = false;
+                    }
+                    if (free) options[count++] = cells;
+                }
+            }
+            int cageIndex = cages.size();
+            int[] chosen = count == 0 ? new int[] { cell } : options[random.nextInt(count)];
+            cages.add(chosen);
+            for (int member : chosen) {
+                owner[member] = cageIndex;
+            }
+        }
+    }
+
+    private static void fillCageValues(int[] solution, int[] values, ObjectArrayList<int[]> cages) {
+        for (int index = 0; index < cages.size(); index++) {
+            values[index] = cageValueMask(solution, cages.get(index));
+        }
+    }
+
+    /** 反复把单格笼并进相邻笼；优先并另一个单格笼（相邻两格值必不同）。 */
+    private static void eliminateSingletons(ObjectArrayList<int[]> cages, boolean[] alive, int[] values, int[] owner,
+                                            int maxSize, RandomSource random) {
+        boolean progress = true;
+        while (progress) {
+            progress = false;
+            for (int index = 0; index < cages.size(); index++) {
+                if (!alive[index] || cages.get(index).length != 1) continue;
+                int candidate = findMergeCandidate(cages, alive, values, owner, index, maxSize, random);
+                if (candidate < 0) continue;
+                mergeCages(cages, alive, values, owner, index, candidate);
+                progress = true;
+            }
+        }
+    }
+
+    /** 随机合并相邻且解值不重叠的笼，把 2~3 格直条长成更大的异形笼。 */
+    private static void mergeAdjacent(ObjectArrayList<int[]> cages, boolean[] alive, int[] values, int[] owner,
+                                      int maxSize, RandomSource random) {
+        int failedAttempts = 0;
+        while (failedAttempts < 300) {
+            int index = random.nextInt(cages.size());
+            if (!alive[index]) {
+                failedAttempts++;
+                continue;
+            }
+            int candidate = findMergeCandidate(cages, alive, values, owner, index, maxSize, random);
+            if (candidate < 0) {
+                failedAttempts++;
+                continue;
+            }
+            mergeCages(cages, alive, values, owner, index, candidate);
+            failedAttempts = 0;
+        }
+    }
+
+    /** 在 {@code index} 的相邻笼里找可合并项；有单格笼候选时优先。 */
+    private static int findMergeCandidate(ObjectArrayList<int[]> cages, boolean[] alive, int[] values, int[] owner,
+                                          int index, int maxSize, RandomSource random) {
+        int[] cage = cages.get(index);
+        int single = -1;
+        int singleCount = 0;
+        int any = -1;
+        int anyCount = 0;
+        for (int cell : cage) {
+            for (int direction : DIRECTION_ORDER) {
+                int neighbor = SudokuConstraints.neighbor(cell, direction);
+                if (neighbor < 0) continue;
+                int other = owner[neighbor];
+                if (other < 0 || other == index || !alive[other]) continue;
+                if (cage.length + cages.get(other).length > maxSize) continue;
+                if ((values[index] & values[other]) != 0) continue;
+                anyCount++;
+                if (random.nextInt(anyCount) == 0) any = other;
+                if (cages.get(other).length == 1) {
+                    singleCount++;
+                    if (random.nextInt(singleCount) == 0) single = other;
+                }
+            }
+        }
+        return single >= 0 ? single : any;
+    }
+
+    private static void mergeCages(ObjectArrayList<int[]> cages, boolean[] alive, int[] values, int[] owner,
+                                   int index, int other) {
+        int[] cage = cages.get(index);
+        int[] otherCage = cages.get(other);
+        int[] merged = Arrays.copyOf(cage, cage.length + otherCage.length);
+        System.arraycopy(otherCage, 0, merged, cage.length, otherCage.length);
+        for (int cell : otherCage) {
+            owner[cell] = index;
+        }
+        values[index] |= values[other];
+        alive[other] = false;
+        cages.set(index, merged);
+    }
+
+    private static boolean hasSingleton(ObjectArrayList<int[]> cages, boolean[] alive) {
+        for (int index = 0; index < cages.size(); index++) {
+            if (alive[index] && cages.get(index).length < 2) return true;
+        }
+        return false;
+    }
+
+    /** 把存活笼编号为 1..n，写回 {@code cageOf} 并汇总笼和。 */
+    private static int[] writeCages(int[] solution, int[] cageOf, ObjectArrayList<int[]> cages, boolean[] alive) {
+        int cageCount = 0;
+        int[] totals = new int[cages.size()];
+        for (int index = 0; index < cages.size(); index++) {
+            if (!alive[index]) continue;
+            cageCount++;
+            int total = 0;
+            for (int cell : cages.get(index)) {
+                cageOf[cell] = cageCount;
+                total += solution[cell];
+            }
+            totals[cageCount - 1] = total;
+        }
+        return Arrays.copyOf(totals, cageCount);
+    }
+
+    /** 备用切分：每行三个 3 格横条，必然覆盖全盘且无单格笼。 */
+    private static void fallbackTiling(int[] owner, ObjectArrayList<int[]> cages) {
+        for (int row = 0; row < SIZE; row++) {
+            for (int column = 0; column < SIZE; column += 3) {
+                int cageIndex = cages.size();
+                int[] cells = { row * SIZE + column, row * SIZE + column + 1, row * SIZE + column + 2 };
+                cages.add(cells);
+                for (int member : cells) {
+                    owner[member] = cageIndex;
+                }
+            }
+        }
+    }
+
+    private static int cageValueMask(int[] solution, int[] cells) {
+        int mask = 0;
+        for (int cell : cells) {
+            mask |= 1 << (solution[cell] - VALUE_MIN);
+        }
+        return mask;
+    }
+
+    /** 合并笼时按上右下左的顺序找相邻笼。 */
+    private static final int[] DIRECTION_ORDER = { SudokuConstraints.DIR_UP, SudokuConstraints.DIR_RIGHT,
+            SudokuConstraints.DIR_DOWN, SudokuConstraints.DIR_LEFT };
+
     private static int[] shuffledCells(RandomSource random) {
         int[] order = new int[CELLS];
         for (int cell = 0; cell < CELLS; cell++) {
@@ -185,348 +485,7 @@ public final class SudokuRules {
         return order;
     }
 
-    /** 随机回溯填满整盘；顺序按格号走，候选数字起点随机。 */
-    private static boolean fillBoard(int[] board, int[] rows, int[] columns, int[] boxes, int cell,
-                                     RandomSource random) {
-        if (cell == CELLS) return true;
-        int row = cell / SIZE;
-        int column = cell % SIZE;
-        int box = boxOf(cell);
-        int free = ALL_VALUES & ~(rows[row] | columns[column] | boxes[box]);
-        if (free == 0) return false;
-        int start = random.nextInt(VALUE_MAX);
-        for (int offset = 0; offset < VALUE_MAX; offset++) {
-            int digit = (start + offset) % VALUE_MAX + VALUE_MIN;
-            int bit = 1 << (digit - VALUE_MIN);
-            if ((free & bit) == 0) continue;
-            board[cell] = digit;
-            rows[row] |= bit;
-            columns[column] |= bit;
-            boxes[box] |= bit;
-            if (fillBoard(board, rows, columns, boxes, cell + 1, random)) return true;
-            board[cell] = 0;
-            rows[row] &= ~bit;
-            columns[column] &= ~bit;
-            boxes[box] &= ~bit;
-        }
-        return false;
-    }
-
-    /**
-     * 数一数这盘有几种解，最多数到 {@code limit} 种。
-     *
-     * <p>
-     * 每层挑候选最少的空格（MRV），候选为 0 立刻回溯；填满即记一种解。只在出题时调用，属于冷路径。
-     */
-    private static int countSolutions(int[] puzzle, int limit) {
-        int[] board = puzzle.clone();
-        int[] rows = new int[SIZE];
-        int[] columns = new int[SIZE];
-        int[] boxes = new int[SIZE];
-        for (int cell = 0; cell < CELLS; cell++) {
-            int digit = board[cell];
-            if (digit == 0) continue;
-            int bit = 1 << (digit - VALUE_MIN);
-            rows[cell / SIZE] |= bit;
-            columns[cell % SIZE] |= bit;
-            boxes[boxOf(cell)] |= bit;
-        }
-        return count(board, rows, columns, boxes, limit, 0);
-    }
-
-    private static int count(int[] board, int[] rows, int[] columns, int[] boxes, int limit, int found) {
-        int bestCell = -1;
-        int bestCandidates = 0;
-        int bestCount = VALUE_MAX + 1;
-        for (int cell = 0; cell < CELLS; cell++) {
-            if (board[cell] != 0) continue;
-            int row = cell / SIZE;
-            int column = cell % SIZE;
-            int box = boxOf(cell);
-            int candidates = ALL_VALUES & ~(rows[row] | columns[column] | boxes[box]);
-            int count = Integer.bitCount(candidates);
-            if (count == 0) return found;
-            if (count < bestCount) {
-                bestCell = cell;
-                bestCandidates = candidates;
-                bestCount = count;
-                if (count == 1) break;
-            }
-        }
-        if (bestCell < 0) return found + 1;
-        int row = bestCell / SIZE;
-        int column = bestCell % SIZE;
-        int box = boxOf(bestCell);
-        for (int digit = VALUE_MIN; digit <= VALUE_MAX && found < limit; digit++) {
-            int bit = 1 << (digit - VALUE_MIN);
-            if ((bestCandidates & bit) == 0) continue;
-            board[bestCell] = digit;
-            rows[row] |= bit;
-            columns[column] |= bit;
-            boxes[box] |= bit;
-            found = count(board, rows, columns, boxes, limit, found);
-            board[bestCell] = 0;
-            rows[row] &= ~bit;
-            columns[column] &= ~bit;
-            boxes[box] &= ~bit;
-        }
-        return found;
-    }
-
-    // ==================== 难度评级 ====================
-
-    /**
-     * 逻辑难度评级（0~5），只看「必须动用的推理强度」而不看提示数：
-     *
-     * <ul>
-     * <li>0：只靠唯一数类技巧就能填满，且隐性唯一数不超过 {@link #SINGLES_EASY_LIMIT} 次；</li>
-     * <li>1：同样只靠唯一数类技巧，但需要的隐性唯一数更多；</li>
-     * <li>2~5：单数推进后会卡住，按最小候选优先求解时的分支尝试次数与最大嵌套深度递增。
-     * </li>
-     * </ul>
-     *
-     * 单数推进用严格的候选数传播；卡住后交给最小候选优先的试探求解器。
-     */
-    public int rate(int[] puzzle) {
-        SinglesResult singles = solveSingles(puzzle);
-        if (singles.filled() == CELLS) return singles.hiddenSingles() <= SINGLES_EASY_LIMIT ? 0 : 1;
-        GuessStats stats = solveByGuessing(singles.board());
-        if (stats.attempts() <= 3 && stats.depth() <= 2) return 2;
-        if (stats.attempts() <= 7 && stats.depth() <= 4) return 3;
-        if (stats.attempts() <= 20 && stats.depth() <= 7) return 4;
-        return 5;
-    }
-
-    /** 单数推进结果：填了多少格、用了多少次隐性唯一数，以及卡住时的盘面（交给试探求解器继续）。 */
-    private record SinglesResult(int filled, int hiddenSingles, int[] board) {}
-
-    /** 试探求解的统计：分支候选的尝试次数与最大嵌套深度。 */
-    private record GuessStats(int attempts, int depth) {}
-
-    /**
-     * 反复应用显性唯一数与隐性唯一数，直到填满或卡住；返回填了多少格与卡住时的盘面。
-     * 候选数用位掩码维护，放置一个数字时同步清掉同行、同列、同宫的该候选。
-     */
-    private static SinglesResult solveSingles(int[] puzzle) {
-        int[] board = puzzle.clone();
-        int[] candidates = new int[CELLS];
-        int[] rows = new int[SIZE];
-        int[] columns = new int[SIZE];
-        int[] boxes = new int[SIZE];
-        int filled = 0;
-        for (int cell = 0; cell < CELLS; cell++) {
-            int digit = board[cell];
-            if (digit == 0) continue;
-            int bit = 1 << (digit - VALUE_MIN);
-            rows[cell / SIZE] |= bit;
-            columns[cell % SIZE] |= bit;
-            boxes[boxOf(cell)] |= bit;
-            filled++;
-        }
-        for (int cell = 0; cell < CELLS; cell++) {
-            if (board[cell] != 0) continue;
-            candidates[cell] = ALL_VALUES & ~(rows[cell / SIZE] | columns[cell % SIZE] | boxes[boxOf(cell)]);
-        }
-        int hiddenSingles = 0;
-        boolean progress = true;
-        while (progress) {
-            progress = false;
-            for (int cell = 0; cell < CELLS; cell++) {
-                if (board[cell] != 0) continue;
-                int candidatesHere = candidates[cell];
-                if (candidatesHere == 0) return new SinglesResult(filled, hiddenSingles, board);
-                if (Integer.bitCount(candidatesHere) != 1) continue;
-                int digit = Integer.numberOfTrailingZeros(candidatesHere) + VALUE_MIN;
-                placeDigit(board, candidates, rows, columns, boxes, cell, digit);
-                filled++;
-                progress = true;
-            }
-            if (progress) continue;
-            outer:
-            for (int digit = VALUE_MIN; digit <= VALUE_MAX; digit++) {
-                int bit = 1 << (digit - VALUE_MIN);
-                for (int unit = 0; unit < SIZE; unit++) {
-                    int only = -1;
-                    int count = 0;
-                    for (int index = 0; index < SIZE; index++) {
-                        int cell = unit * SIZE + index;
-                        if (board[cell] == 0 && (candidates[cell] & bit) != 0) {
-                            count++;
-                            only = cell;
-                            if (count > 1) break;
-                        }
-                    }
-                    if (count == 1) {
-                        hiddenSingles++;
-                        placeDigit(board, candidates, rows, columns, boxes, only, digit);
-                        filled++;
-                        progress = true;
-                        continue outer;
-                    }
-                    count = 0;
-                    only = -1;
-                    for (int index = 0; index < SIZE; index++) {
-                        int cell = index * SIZE + unit;
-                        if (board[cell] == 0 && (candidates[cell] & bit) != 0) {
-                            count++;
-                            only = cell;
-                            if (count > 1) break;
-                        }
-                    }
-                    if (count == 1) {
-                        hiddenSingles++;
-                        placeDigit(board, candidates, rows, columns, boxes, only, digit);
-                        filled++;
-                        progress = true;
-                        continue outer;
-                    }
-                    int startRow = unit / BOX * BOX;
-                    int startColumn = unit % BOX * BOX;
-                    count = 0;
-                    only = -1;
-                    for (int row = 0; row < BOX; row++) {
-                        for (int column = 0; column < BOX; column++) {
-                            int cell = (startRow + row) * SIZE + startColumn + column;
-                            if (board[cell] == 0 && (candidates[cell] & bit) != 0) {
-                                count++;
-                                only = cell;
-                                if (count > 1) break;
-                            }
-                        }
-                        if (count > 1) break;
-                    }
-                    if (count == 1) {
-                        hiddenSingles++;
-                        placeDigit(board, candidates, rows, columns, boxes, only, digit);
-                        filled++;
-                        progress = true;
-                        continue outer;
-                    }
-                }
-            }
-        }
-        return new SinglesResult(filled, hiddenSingles, board);
-    }
-
-    /** 放置一个数字：写盘面、清本格候选，并清掉同行、同列、同宫其它格子的该候选。 */
-    private static void placeDigit(int[] board, int[] candidates, int[] rows, int[] columns, int[] boxes,
-                                   int cell, int digit) {
-        int bit = 1 << (digit - VALUE_MIN);
-        int row = cell / SIZE;
-        int column = cell % SIZE;
-        int box = boxOf(cell);
-        board[cell] = digit;
-        candidates[cell] = 0;
-        rows[row] |= bit;
-        columns[column] |= bit;
-        boxes[box] |= bit;
-        int startRow = row / BOX * BOX;
-        int startColumn = column / BOX * BOX;
-        for (int peerRow = startRow; peerRow < startRow + BOX; peerRow++) {
-            for (int peerColumn = startColumn; peerColumn < startColumn + BOX; peerColumn++) {
-                int peer = peerRow * SIZE + peerColumn;
-                if (peer != cell) candidates[peer] &= ~bit;
-            }
-        }
-        for (int peerColumn = 0; peerColumn < SIZE; peerColumn++) {
-            int peer = row * SIZE + peerColumn;
-            if (peer != cell) candidates[peer] &= ~bit;
-        }
-        for (int peerRow = 0; peerRow < SIZE; peerRow++) {
-            int peer = peerRow * SIZE + column;
-            if (peer != cell) candidates[peer] &= ~bit;
-        }
-    }
-
-    /** 从单数推进卡住的局面继续试探，统计分支尝试次数与最大深度。 */
-    private static GuessStats solveByGuessing(int[] board) {
-        int[] work = board.clone();
-        int[] rows = new int[SIZE];
-        int[] columns = new int[SIZE];
-        int[] boxes = new int[SIZE];
-        for (int cell = 0; cell < CELLS; cell++) {
-            int digit = work[cell];
-            if (digit == 0) continue;
-            int bit = 1 << (digit - VALUE_MIN);
-            rows[cell / SIZE] |= bit;
-            columns[cell % SIZE] |= bit;
-            boxes[boxOf(cell)] |= bit;
-        }
-        int[] counters = new int[2];
-        guess(work, rows, columns, boxes, 0, counters);
-        return new GuessStats(counters[0], counters[1]);
-    }
-
-    /**
-     * 最小候选优先的试探求解；{@code counters[0]} 累计分支候选的尝试次数，{@code counters[1]} 记最大分支深度。
-     * 找到一份解就立刻返回，不再数其它解（出题阶段已经保证唯一）。
-     */
-    private static boolean guess(int[] board, int[] rows, int[] columns, int[] boxes, int depth, int[] counters) {
-        int bestCell = -1;
-        int bestCandidates = 0;
-        int bestCount = VALUE_MAX + 1;
-        for (int cell = 0; cell < CELLS; cell++) {
-            if (board[cell] != 0) continue;
-            int candidates = ALL_VALUES & ~(rows[cell / SIZE] | columns[cell % SIZE] | boxes[boxOf(cell)]);
-            int count = Integer.bitCount(candidates);
-            if (count == 0) return false;
-            if (count < bestCount) {
-                bestCell = cell;
-                bestCandidates = candidates;
-                bestCount = count;
-                if (count == 1) break;
-            }
-        }
-        if (bestCell < 0) return true;
-        int nextDepth = bestCount > 1 ? depth + 1 : depth;
-        if (bestCount > 1 && nextDepth > counters[1]) counters[1] = nextDepth;
-        int row = bestCell / SIZE;
-        int column = bestCell % SIZE;
-        int box = boxOf(bestCell);
-        for (int digit = VALUE_MIN; digit <= VALUE_MAX; digit++) {
-            int bit = 1 << (digit - VALUE_MIN);
-            if ((bestCandidates & bit) == 0) continue;
-            if (bestCount > 1) counters[0]++;
-            board[bestCell] = digit;
-            rows[row] |= bit;
-            columns[column] |= bit;
-            boxes[box] |= bit;
-            if (guess(board, rows, columns, boxes, nextDepth, counters)) return true;
-            board[bestCell] = 0;
-            rows[row] &= ~bit;
-            columns[column] &= ~bit;
-            boxes[box] &= ~bit;
-        }
-        return false;
-    }
-
-    /**
-     * 盘面是否已经填满并且合法：每格都有数（提示或玩家填写），每行、每列、每宫都没有重复。
-     * 出题保证唯一解，所以合法即等于答案。
-     */
-    public boolean isComplete(int[] givens, int[] values) {
-        if (givens.length != CELLS || values.length != CELLS) return false;
-        Arrays.fill(rowUsed, 0);
-        Arrays.fill(columnUsed, 0);
-        Arrays.fill(boxUsed, 0);
-        for (int cell = 0; cell < CELLS; cell++) {
-            int digit = values[cell] != 0 ? values[cell] : givens[cell];
-            if (digit < VALUE_MIN || digit > VALUE_MAX) return false;
-            int bit = 1 << (digit - VALUE_MIN);
-            int row = cell / SIZE;
-            int column = cell % SIZE;
-            int box = boxOf(cell);
-            if ((rowUsed[row] & bit) != 0 || (columnUsed[column] & bit) != 0 || (boxUsed[box] & bit) != 0) {
-                return false;
-            }
-            rowUsed[row] |= bit;
-            columnUsed[column] |= bit;
-            boxUsed[box] |= bit;
-        }
-        return true;
-    }
-
-    /** 格子最终显示的数字：提示优先，其次玩家填写，空为 0。数组长度异常时按空处理。 */
+    /** 格子最终显示的数字：提示优先，其次玩家填写，空为 0；数组越界按空处理。 */
     public static int displayedValue(int[] givens, int[] values, int cell) {
         if (cell < 0 || cell >= CELLS) return 0;
         int given = cell < givens.length ? givens[cell] : 0;

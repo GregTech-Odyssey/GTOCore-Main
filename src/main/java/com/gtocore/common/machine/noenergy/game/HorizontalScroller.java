@@ -7,19 +7,14 @@ import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 /**
- * 横向选项条：一排按钮从左到右排列，放不下时用鼠标滚轮横向滚动，不画滚动条。
- *
- * <p>
- * uipro 的 {@code ScrollerView} 只做纵向滚动（内容宽度固定为视口宽度），所以这里直接用 LDLib 的
- * {@link DraggableScrollableWidgetGroup} 配成横向：内容是一行 {@link UIElement}，宽度由按钮自己撑开，
- * 滚轮方向设为横向，视口用滚动区自带的裁剪。
+ * 横向选项条：一排按钮从左到右排，放不下时用滚轮横向滚动，不画滚动条。
+ * uipro 的 {@code ScrollerView} 只支持纵向滚动，所以直接用 LDLib 的横向滚动组。
  */
 public final class HorizontalScroller extends DraggableScrollableWidgetGroup {
 
-    /** 控件高度：一行按钮。 */
     public static final int HEIGHT = UISizes.CONTROL_HEIGHT;
 
-    /** 内容行：按钮按加入顺序从左到右排，宽度由内容撑开。 */
+    /** 内容行：宽度由按钮撑开。 */
     private final UIElement row = UIElement.row(HEIGHT).layout(l -> l.gapAll(UISizes.GAP));
 
     public HorizontalScroller(int width) {
@@ -31,7 +26,6 @@ public final class HorizontalScroller extends DraggableScrollableWidgetGroup {
         addWidget(row);
     }
 
-    /** 加一个选项；按加入顺序从左到右排列。 */
     public HorizontalScroller addOption(Widget option) {
         row.addWidget(option);
         row.getSize();

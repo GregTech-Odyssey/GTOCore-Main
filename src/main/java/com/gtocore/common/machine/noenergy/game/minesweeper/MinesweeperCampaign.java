@@ -1,8 +1,8 @@
 package com.gtocore.common.machine.noenergy.game.minesweeper;
 
 /**
- * 战役的 60 关：新手 10 关、老兵 20 关、精锐 30 关，按全局关卡 0..59 连续排列。
- * 每关记录章节、章内序号、宽高与雷数；进度用每玩家一个 60 位 {@code long} 表示，前一位完成才解锁后一位。
+ * 战役 60 关：新手 10 关、老兵 20 关、精锐 30 关，按全局关卡 0..59 连续排列；每关有章节、章内序号、宽高与雷数。
+ * 进度是每玩家一个 60 位 {@code long}（{@link #ALL_LEVELS_MASK}），前一关完成才解锁后一关。
  */
 public final class MinesweeperCampaign {
 
@@ -16,15 +16,7 @@ public final class MinesweeperCampaign {
     private static final int[] TIER_STARTS = { 0, 10, 30 };
     private static final int[] TIER_SIZES = { 10, 20, 30 };
 
-    /**
-     * 一关的静态数据。
-     *
-     * @param tier       0 新手、1 老兵、2 精锐
-     * @param index      章内序号，从 1 开始
-     * @param width      宽（列）
-     * @param height     高（行）
-     * @param minesCount 雷数
-     */
+    /** 一关的静态数据：{@code tier} 为 0 新手 / 1 老兵 / 2 精锐，{@code index} 是章内序号（从 1 开始）。 */
     public record Level(int tier, int index, int width, int height, int minesCount) {}
 
     private static final Level[] LEVELS = {
@@ -136,7 +128,7 @@ public final class MinesweeperCampaign {
         return Long.bitCount(cleared & ALL_LEVELS_MASK);
     }
 
-    /** 章节首通奖励 */
+    /** 战役每关首通的奖励额，按关卡所属章节取值。 */
     public static long rewardForTier(int tier) {
         return switch (tier) {
             case TIER_NOVICE -> 15L;

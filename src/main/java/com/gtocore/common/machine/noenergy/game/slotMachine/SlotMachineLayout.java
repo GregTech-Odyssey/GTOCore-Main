@@ -4,11 +4,8 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * 老虎机的盘面布局：列数、显示行数、中奖线走向与滚动时长。
- *
- * <p>
- * 布局只决定盘面几何，不参与赔付：赔付倍率由 {@link SlotMachineRules} 按布局提供。{@link #id()} 会随开奖
- * 结果写进存档，所以布局只能追加，不能改动或删除已有 id 的含义。
+ * 盘面布局：列数、显示行数、中奖线走向与滚动时长；只决定几何，赔付倍率由 {@link SlotMachineRules} 提供。
+ * {@link #id()} 随开奖结果写进存档，{@code byId} 按枚举序数还原，因此新增布局只能追加在末尾。
  */
 @Getter
 @Accessors(fluent = true)
@@ -23,7 +20,7 @@ public enum SlotMachineLayout {
             Payline.WIDE_TOP_NOTCH, Payline.WIDE_BOTTOM_NOTCH, Payline.WIDE_TOP_EDGES, Payline.WIDE_BOTTOM_EDGES);
 
     private static final SlotMachineLayout[] VALUES = values();
-    /** 所有布局里最大的列数：开奖结果的连中长度按它校验，不需要为每种布局单独编解码。 */
+    /** 所有布局里最大的列数：赔付表按它定行数，中奖线的连中长度也按它校验。 */
     static final int MAX_REEL_COUNT;
 
     static {
@@ -48,28 +45,25 @@ public enum SlotMachineLayout {
         this.paylines = paylines;
     }
 
-    /** 一局盘面的格子总数。 */
     int symbolCount() {
         return reelCount * visibleRows;
     }
 
-    /** 盘面按行存储：第 {@code row} 行第 {@code reel} 列的格子下标。 */
+    /** 盘面按行存储：第 {@code row} 行第 {@code reel} 列的格子下标；越界抛 IndexOutOfBounds。 */
     int symbolIndex(int reel, int row) {
         if (reel < 0 || reel >= reelCount) throw new IndexOutOfBoundsException(reel);
         if (row < 0 || row >= visibleRows) throw new IndexOutOfBoundsException(row);
         return row * reelCount + reel;
     }
 
-    /** 从稳定 id 还原布局；非法 id（旧档或损坏数据）回退到经典盘面，读档不失败。 */
+    /** 按枚举序数还原布局；非法 id（旧档或损坏数据）回退到经典盘面，读档不失败。 */
     static SlotMachineLayout byId(int id) {
         return id < 0 || id >= VALUES.length ? CLASSIC : VALUES[id];
     }
 
     /**
      * 中奖线几何：每条线记录自己在每根卷轴上取的行号（0 上、1 中、2 下）。
-     *
-     * <p>
-     * {@link #id()} 是稳定存档 id，与布局 id 一起决定读档结果，只能追加新的线；未知 id 回退到中线。
+     * {@link #id()} 与布局 id 一起写进存档，{@code byId} 按枚举序数还原；未知 id 回退到中线，只能追加。
      */
     enum Payline {
 

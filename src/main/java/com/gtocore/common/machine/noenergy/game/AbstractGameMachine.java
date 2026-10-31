@@ -75,28 +75,14 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
- * 游戏机的公共底座：钱、下发通道、游玩权限与「这一局是谁在玩」，玩法、局面字段、界面排版与配置页都写在各自的机器里。
+ * 游戏机的公共底座：余额与取出、界面快照通道、游玩权限、单局发起者与多人局判定，以及里程碑表格、
+ * 选项按钮、余额面板等共用件；玩法、局面字段与页面内容都写在各自的机器里。
  *
  * <p>
- * 本类提供的部分：
- * <ul>
- * <li>余额：{@link #balance()} / {@link #addBalance(long)}，拆除时先 {@link #cashOut()} 兑现再按面额掉回世界；</li>
- * <li>取出：{@link #createWithdrawButton(int)} 那块「取出全部」按钮与它背后的取币逻辑；</li>
- * <li>界面快照：{@link #registerView} 在界面上注册一项同步值，子类给 {@link #createView()}，版本号没变就复用实例；</li>
- * <li>选项与页签：{@link #choiceButton} / {@link #optionStrip} / {@link #optionRow} 拼选项条与绿色选中标记，
- * {@link GamePage} / {@link LeaderboardTabPage} / {@link SingleLeaderboardPage} 统一子页的图标、标题与排行榜页骨架；</li>
- * <li>里程碑表格：{@link #milestoneTable} 把服务端构建好的全服榜单挂到界面上；</li>
- * <li>游玩权限：{@link #allowOthers()} 开关与 {@link GameAccess#canPlay} 判定，锁上后非主人打不开也玩不了；</li>
- * <li>会话：{@link #beginSession} 记发起者、{@link #noteOpener} 记参与者，多人局用 {@link #sessionCounts()} 挡掉记录；</li>
- * <li>共用的文案与小工具：{@link #random()}、{@link #number(long)}、{@link #dayTime(long)}、{@link #duration(long)}。</li>
- * </ul>
+ * 余额等字段声明在本类：DataSyncLib 沿父类链合并注解字段，存盘键取字段名，位置不影响旧存档；
+ * {@link RegisterLanguage} 只扫描类自身的字段，所以本类也要带 {@link DataGeneratorScanned}。
  *
- * <p>
- * 余额等字段声明在本类：DataSyncLib 会沿父类链合并注解字段，存盘键就是字段名（{@code field.getName()}），所以字段
- * 位置不影响旧存档。{@link RegisterLanguage} 的扫描只看类自身的字段，所以本类同样要带 {@link DataGeneratorScanned}，
- * 共用的那几条文案才不会漏生成。
- *
- * @param <VIEW> 这类机器下发给客户端的界面快照类型
+ * @param <VIEW> 下发给客户端的界面快照类型
  */
 @DataGeneratorScanned
 public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements IFancyUIMachine, IMachineLife {
@@ -117,7 +103,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     protected static final String PAGE_DIFFICULTY = "gtocore.machine.game.page.difficulty";
     @RegisterLanguage(cn = "选择本局难度", en = "Choose the difficulty for this game")
     protected static final String PAGE_DIFFICULTY_TOOLTIP = "gtocore.machine.game.page.difficulty.tooltip";
-    /** 排行榜页：所有游戏共用同一个标题，图标统一用信息图标。 */
+    /** 排行榜页：所有游戏共用同一个标题，图标统一用金银铜柱。 */
     @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
     protected static final String PAGE_LEADERBOARD = "gtocore.machine.game.page.leaderboard";
     @RegisterLanguage(cn = "全服排行榜", en = "Global leaderboards")
@@ -155,7 +141,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     private static final RandomSource FALLBACK_RANDOM = RandomSource.create();
 
     /** 未取出的游戏币余额。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient(scheduleUpdate = true)
     private long balance;
     /** 是否允许主人以外的玩家打开并游玩；默认允许。 */
@@ -167,7 +153,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     @Nullable
     private UUID sessionStarter;
     /** 本局是否出现过第二个玩家；置位后本局不写任何里程碑。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean sessionMultiplayer;
     /** 最近打开界面的玩家（不存盘）：配置页改开关时的操作者、以及本局发起者的来源。 */
     @Nullable
@@ -178,7 +164,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 界面快照版本号：只在服务端递增，靠它决定要不要重建 {@link #cachedView}。 */
     private int revision;
 
-    /** 服务端当前快照；版本号没变就复用同一实例，不白复制。 */
+    /** 服务端当前快照；版本号没变就复用同一实例。 */
     @Nullable
     private SyncValue<VIEW> viewSync;
     @Nullable
@@ -482,13 +468,10 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
             return page;
         }
 
-        /** 榜的数量。 */
         protected abstract int boardCount();
 
-        /** 第 {@code index} 张榜的名称。 */
         protected abstract Component boardName(int index);
 
-        /** 第 {@code index} 张榜的区块。 */
         protected abstract Widget boardContent(int index);
     }
 
@@ -506,7 +489,6 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
             return page;
         }
 
-        /** 这张榜的区块。 */
         protected abstract Widget boardContent();
     }
 
@@ -576,31 +558,27 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     private static final int MILESTONE_MAX_HEIGHT = UISizes.SLOT_SIZE * 7;
     /** 名次列宽度：{@code #99} 放得下。 */
     private static final int MILESTONE_RANK_WIDTH = 16;
-    /** 单元格之间的间隙。 */
     private static final int MILESTONE_GAP = 2;
     /** 隔行的淡色条纹：一眼看得出表格是一行一行的。 */
     private static final IGuiTexture MILESTONE_STRIPE = new ColorRectTexture(0x0A000000);
 
     /**
-     * 里程碑表格的一列：表头文案、宽度与对齐。
+     * 里程碑表格的一列：表头、宽度与对齐。
      *
      * <p>
-     * 列宽全部写死：服务端量不到字体，写死的尺寸两端才会搭出同一份布局（{@code LayoutStyle.AUTO} 配 {@code flex}
-     * 在两端的文字测量结果不同，会错位）。宽了由 {@link TextLine} 截断加省略号，鼠标停上去看全文。
+     * 列宽必须写死：服务端量不到字体，{@code AUTO} + {@code flex} 在两端测出的宽度不同会错位。
+     * 文字超宽由 {@link TextLine} 截断加省略号，悬停看全文。
      */
     protected record MilestoneColumn(String headerKey, int width, Horizontal align) {
 
-        /** 左对齐的列（玩家名这类文字）。 */
         public static MilestoneColumn left(String headerKey, int width) {
             return new MilestoneColumn(headerKey, width, Horizontal.LEFT);
         }
 
-        /** 右对齐的列（数字）。 */
         public static MilestoneColumn right(String headerKey, int width) {
             return new MilestoneColumn(headerKey, width, Horizontal.RIGHT);
         }
 
-        /** 居中的列（时间这类定长文字）。 */
         public static MilestoneColumn center(String headerKey, int width) {
             return new MilestoneColumn(headerKey, width, Horizontal.CENTER);
         }
@@ -613,12 +591,10 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         private static final MilestoneCell EMPTY = new MilestoneCell(Component.empty(), Component.empty());
 
-        /** 只有字的格子。 */
         public static MilestoneCell of(Component text) {
             return new MilestoneCell(text, Component.empty());
         }
 
-        /** 带自定义悬停提示的格子。 */
         public static MilestoneCell of(Component text, Component hint) {
             return new MilestoneCell(text, hint);
         }
@@ -638,14 +614,11 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
      * 里程碑表格：表头 + 每人一行，列宽固定、数值右对齐，整表可滚动。
      *
      * <p>
-     * 表格由 {@link UIElement#row} 套 {@link TextLine} 搭出来（uipro 没有现成的表格控件，仓库里其它「表格」也是这么拼的）：
-     * 表头用 {@link TextLine#constant} 两端同文、不加同步；数据格由服务端取值下发，带提示的格子再挂一项提示的同步值。
-     *
-     * <p>
-     * 人数是 {@link SwitchedContent} 的键：人数变了才重建表格；同一行里数值变了由格子自己的同步值刷，不必重建。
+     * 用 {@link UIElement#row} 套 {@link TextLine} 拼成（uipro 没有表格控件）：表头两端同文、不加同步，
+     * 数据格与悬停提示各挂自己的同步值。人数是 {@link SwitchedContent} 的键，人数变了才重建表格。
      *
      * @param id      滚动区 id（拖动缩放的记忆键）
-     * @param columns 列定义（不含名次列：名次由表格自动加在最前）
+     * @param columns 列定义（名次列由表格自动加在最前）
      * @param builder 服务端构建每一行的格子，顺序与 {@code columns} 一致
      */
     protected final ScrollerView milestoneTable(String id, MilestoneColumn[] columns,
@@ -790,11 +763,11 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     private static final Style CHOICE_MARK_STYLE = Style.EMPTY.withColor(TextColor.fromRgb(UITheme.STATUS_TEXT_GOOD & 0xFFFFFF));
 
     /**
-     * 列表里的一个选项按钮：选中的那项文字两端各带一个绿色 {@code > <}，按钮本身不画选中高光。
+     * 列表里的一个选项按钮：选中时文字两端各带绿色 {@code > <}，按钮本身不画高光。
      *
      * <p>
-     * 服务端只下发「选没选中」这一个布尔（{@link SyncValue#ofBool}），文字在客户端按它现拼。选中标记不能写进按钮的
-     * 静态文字——{@link Button} 的标签会被 {@code FittedText} 拍平成纯字符串，绿色样式会丢——所以这里自己画。
+     * 两端只同步「选没选中」一个布尔，文字在客户端现拼。标记不能写进按钮静态文字
+     * ——{@link Button} 的标签会被 {@code FittedText} 拍平成纯字符串、丢掉样式——所以这里自己画。
      *
      * @param width    按钮宽度；{@link LayoutStyle#AUTO} 表示由布局拉伸
      * @param text     未选中时的文字（两端各建一次，翻译键由客户端解析）

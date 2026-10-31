@@ -11,13 +11,8 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * 老虎机使用的全部符号定义：每个值携带稳定 id、名称翻译键和二连/三连赔付倍率
- * （奖励 = 下注 × 倍率，与档位无关）。
- *
- * <p>
- * {@link #SYMBOL8} 是百搭符号：自身不赔付，只在中奖线判定时替代普通符号；各档位的符号比例由
- * {@link SlotMachineRules} 定义。取值方法名与字段同名（{@code id()}、{@code wild()} 等），
- * 由 Lombok 按 fluent 命名生成。
+ * 老虎机的全部符号：稳定 id、二连/三连赔付倍率（奖励 = 下注 × 倍率）与百搭标记；
+ * 显示用的物品与名称由 {@link #symbolItem} / {@link #symbolName} 按 id 给出，各符号的出现次数见 {@link SlotMachineRules}。
  */
 @Getter
 @Accessors(fluent = true)
@@ -48,7 +43,7 @@ public enum SlotSymbol {
         this.wild = wild;
     }
 
-    /** 从稳定 id 恢复符号；非法 id（旧档或损坏数据）回退到最基础的甜浆果，不影响机器加载。 */
+    /** 从稳定 id 恢复符号；非法 id（旧档或损坏数据）回退到 SYMBOL0（晶体管），不影响机器加载。 */
     public static SlotSymbol byId(int id) {
         if (id < 0 || id >= VALUES.length) return SYMBOL0;
         return VALUES[id];

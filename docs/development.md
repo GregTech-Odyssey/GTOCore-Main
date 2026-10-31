@@ -49,6 +49,20 @@ gradlew.bat build
 
 `runData` 会写入 `src/generated/resources/`。提交前请检查生成结果，只保留与本次改动有关的文件。
 
+## 字段同步与持久化（DataSyncLib）
+
+给机器/BlockEntity 加需要存档或同步的字段时，用 DataSyncLib 的注解（`@SaveToDisk` /
+`@SyncToClient` / `@Access` 等），不要手写 `tag.putInt(...)` 或自己拼 `FriendlyByteBuf`。
+完整功能参考与目录见 [docs/datasynclib/00-overview.md](datasynclib/00-overview.md)。
+
+本仓几条既定约定：
+
+- 机器的 `@SaveToDisk` 字段**几乎都应配 `defaultValue`**（大量机器停在默认值，能显著缩小存档）。
+- 机器的同步用 `requestSync()`（标脏，下一 tick 走完整流程）或 `syncToClient()`
+  （立即发包，但**不跑自动检测**，需先 `markFieldsForSync`）。
+- 容器字段引用不变、内容变时，加 `@Access` 或声明为 `final`。
+- 新增自定义类型的 `DataSyncCodec.register(...)` 必须放在模组构造期，晚于字段首次扫描会被缓存遮蔽。
+
 ## 推荐开发流程
 
 1. 从当前活跃的开发分支（如 `0.6.0`）创建独立开发分支。

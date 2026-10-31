@@ -20,11 +20,11 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * 扫雷显示方块：一格一个，铺在扫雷机器旁边；格子的内容不存在这里——它读机器里的盘面，渲染用的数字直接写在方块状态
- * {@link #STATE} 上（由机器在落子后改写），所以两端不用再同步一份数据。
+ * 扫雷显示方块：一格一个，铺在扫雷机器旁边；格子内容读机器里的盘面，渲染值写在方块状态 {@link #STATE} 上
+ * （机器落子后改写），两端因此不用再同步一份数据。
  *
  * <p>
- * 右击翻开、潜行右击插旗，都转发给机器处理（{@link MinesweeperCoreMachine#click}）。
+ * 右击翻开、潜行右击插旗，都转发给机器（{@link MinesweeperCoreMachine#click}）。
  */
 public class MinesweeperDisplayBlock extends Block implements EntityBlock {
 

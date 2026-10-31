@@ -1,17 +1,14 @@
 package com.gtocore.common.machine.noenergy.game.milestone;
 
-import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
-
-import com.gtolib.GTOCore;
-
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
+import com.gto.datasynclib.DataSyncCodec;
+import com.gto.datasynclib.datastream.codec.CombinedCodec;
+import com.gto.datasynclib.datastream.codec.JavaValueOps;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
 import com.mojang.authlib.GameProfile;
@@ -25,16 +22,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 游戏机的玩家里程碑：每个存档一份（`world/data/gtocore_game_milestones.dat`），按游戏分成多个列表。
+ * 游戏机的玩家里程碑：每个存档一份（`world/data/gtocore_game_milestones.dat`），按游戏分成多张表。
  *
  * <p>
- * 存盘格式与 {@code WalletSavedData} 一致：{@code save(CompoundTag)} 把每张表写成 {@link ListTag}（每条一个
- * compound，里面带玩家 UUID 与各项数字），读档走 {@link #fromNBT(CompoundTag)}，入口是
- * {@link #get(ServerLevel)}（绑定主世界，保证全局唯一）；写操作一律 {@link #setDirty()}，随原版自动保存落盘。
+ * 存盘由 DataSyncLib 承担：{@link CompoundTag} 只是 {@link SavedData} 的外层容器，里面放一个字节数组，
+ * 整份数据由 {@link #DATA_CODEC} 编成 carrier 再经 {@link JavaValueOps#toBytes(Object)} 落盘。
+ * 记录各分量的顺序与编码由 codec 决定，新增统计只改 record 与 codec。
  *
  * <p>
- * 写入只发生在服务端、且只记单人局（见 {@code AbstractGameMachine#sessionCounts()}）；这里只存数据，名字与文案由
- * 调用方在拼文本时解析（{@link #nameOf}）。
+ * 只在服务端写入，且只记单人局（见 {@code AbstractGameMachine#sessionCounts()}）。
  */
 public final class GameMilestones extends SavedData {
 
@@ -42,36 +38,21 @@ public final class GameMilestones extends SavedData {
     /** 最高分/最大合成榜的最低积分：不超过这个分数的局不进入里程碑。 */
     public static final int MIN_MILESTONE_SCORE = 1000;
 
-    /** 游戏名（存盘分区与榜单标识）。 */
+    /** 游戏名（榜单标识）。 */
     public static final String SLOT_MACHINE = "slot_machine";
     public static final String JUST_GET_10 = "just_get_10";
     public static final String GAME_2048 = "game_2048";
     public static final String GAME_24 = "game_24";
     public static final String NUMBER_PUZZLE = "number_puzzle";
-    public static final String SUDOKU = "sudoku";
 
-    private static final String NBT_SLOT_MACHINE = "slot_machine";
-    private static final String NBT_JUST_GET_10 = "just_get_10";
-    private static final String NBT_GAME_2048 = "game_2048";
-    private static final String NBT_GAME_24 = "game_24";
-    private static final String NBT_PLAYER = "player";
-    private static final String NBT_SPINS = "spins";
-    private static final String NBT_STAKED = "staked";
-    private static final String NBT_WON = "won";
-    private static final String NBT_SCORE = "score";
-    private static final String NBT_SCORE_TIME = "score_time";
-    private static final String NBT_MERGED = "merged";
-    private static final String NBT_MERGED_TIME = "merged_time";
-    private static final String NBT_TEN = "ten";
-    private static final String NBT_TEN_TIME = "ten_time";
-    private static final String NBT_THIRTEEN = "thirteen";
-    private static final String NBT_THIRTEEN_TIME = "thirteen_time";
-    private static final String NBT_NUMBER_PUZZLE = "number_puzzle";
-    private static final String NBT_NUMBER_TICKS = "number_ticks";
-    private static final String NBT_NUMBER_TIMES = "number_times";
-    private static final String NBT_SUDOKU = "sudoku";
-    private static final String NBT_SUDOKU_TICKS = "sudoku_ticks";
-    private static final String NBT_SUDOKU_TIMES = "sudoku_times";
+    /** 载荷所在键：整份数据编码后的字节数组。 */
+    private static final String NBT_DATA = "data";
+    /** 载荷的格式版本，读档时交给 {@link JavaValueOps#create(int)}，codec 里用 {@code ops.dataVersion()} 取。 */
+    private static final String NBT_VERSION = "data_version";
+    private static final int DATA_VERSION = 1;
+
+    /** 华容道尺寸档数。 */
+    private static final int FIXED_SLOTS = 6;
 
     // ==================== 表项 ====================
 
@@ -86,9 +67,6 @@ public final class GameMilestones extends SavedData {
 
     /** 数字华容道：六档尺寸各自的最快用时与达成时间；0 表示该尺寸没有记录。 */
     public record NumberPuzzleStat(UUID player, long[] ticks, long[] times) {}
-
-    /** 数独：六档难度各自的最快完成用时与达成时间；0 表示该难度没有记录。 */
-    public record SudokuStat(UUID player, long[] ticks, long[] times) {}
 
     /** 老虎机榜单：回报比降序 → 获得降序 → 次数降序。 */
     private static final Comparator<SlotStat> SLOT_ORDER = Comparator
@@ -106,6 +84,57 @@ public final class GameMilestones extends SavedData {
             .thenComparingLong(GameMilestones::numberPuzzleTotal)
             .thenComparing(stat -> stat.player().toString());
 
+    // ==================== 编解码 ====================
+
+    private static final DataSyncCodec<SlotStat> SLOT_CODEC = CombinedCodec.composite(
+            DataSyncCodec.UUID_CODEC, SlotStat::player,
+            DataSyncCodec.LONG_CODEC, SlotStat::spins,
+            DataSyncCodec.LONG_CODEC, SlotStat::staked,
+            DataSyncCodec.LONG_CODEC, SlotStat::won,
+            SlotStat::new);
+
+    private static final DataSyncCodec<ScoreStat> SCORE_CODEC = CombinedCodec.composite(
+            DataSyncCodec.UUID_CODEC, ScoreStat::player,
+            DataSyncCodec.INT_CODEC, ScoreStat::bestScore,
+            DataSyncCodec.LONG_CODEC, ScoreStat::bestScoreTime,
+            DataSyncCodec.INT_CODEC, ScoreStat::bestMerged,
+            DataSyncCodec.LONG_CODEC, ScoreStat::bestMergedTime,
+            ScoreStat::new);
+
+    private static final DataSyncCodec<PuzzleStat> PUZZLE_CODEC = CombinedCodec.composite(
+            DataSyncCodec.UUID_CODEC, PuzzleStat::player,
+            DataSyncCodec.LONG_CODEC, PuzzleStat::tenTicks,
+            DataSyncCodec.LONG_CODEC, PuzzleStat::tenTime,
+            DataSyncCodec.LONG_CODEC, PuzzleStat::thirteenTicks,
+            DataSyncCodec.LONG_CODEC, PuzzleStat::thirteenTime,
+            PuzzleStat::new);
+
+    private static final DataSyncCodec<NumberPuzzleStat> NUMBER_PUZZLE_CODEC = CombinedCodec.composite(
+            DataSyncCodec.UUID_CODEC, NumberPuzzleStat::player,
+            DataSyncCodec.LONGS_CODEC, NumberPuzzleStat::ticks,
+            DataSyncCodec.LONGS_CODEC, NumberPuzzleStat::times,
+            NumberPuzzleStat::new);
+
+    /** 五张表：键都是玩家 UUID，值是整条记录。UUID 走两个 long，比存字符串短。 */
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, SlotStat>> SLOTS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, SLOT_CODEC);
+
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, ScoreStat>> JUST_GET_10_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, SCORE_CODEC);
+
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, ScoreStat>> GAME_2048_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, SCORE_CODEC);
+
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, PuzzleStat>> PUZZLES_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, PUZZLE_CODEC);
+
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, NumberPuzzleStat>> NUMBER_PUZZLES_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, NUMBER_PUZZLE_CODEC);
+
+    /** 整份数据：五张表按声明顺序串成一个 carrier；解码侧 {@link #of} 装回去。 */
+    private static final DataSyncCodec<GameMilestones> DATA_CODEC = CombinedCodec.composite(
+            SLOTS_CODEC, GameMilestones::slots,
+            JUST_GET_10_CODEC, GameMilestones::justGet10,
+            GAME_2048_CODEC, GameMilestones::game2048,
+            PUZZLES_CODEC, GameMilestones::puzzles,
+            NUMBER_PUZZLES_CODEC, GameMilestones::numberPuzzles,
+            GameMilestones::of);
+
     // ==================== 数据 ====================
 
     private final O2OOpenCacheHashMap<UUID, SlotStat> slots = new O2OOpenCacheHashMap<>();
@@ -113,53 +142,56 @@ public final class GameMilestones extends SavedData {
     private final O2OOpenCacheHashMap<UUID, ScoreStat> game2048 = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles = new O2OOpenCacheHashMap<>();
-    private final O2OOpenCacheHashMap<UUID, SudokuStat> sudokus = new O2OOpenCacheHashMap<>();
 
     /** 写一次加一：界面靠它判断里程碑文字要不要重建（不存盘）。 */
     private int modCount;
 
     private GameMilestones() {}
 
-    /** 读档：四个分区各是一个 {@link ListTag}，每条里带玩家 UUID。 */
-    public static GameMilestones fromNBT(CompoundTag tag) {
+    // ==================== codec 取数 ====================
+
+    private O2OOpenCacheHashMap<UUID, SlotStat> slots() {
+        return slots;
+    }
+
+    private O2OOpenCacheHashMap<UUID, ScoreStat> justGet10() {
+        return justGet10;
+    }
+
+    private O2OOpenCacheHashMap<UUID, ScoreStat> game2048() {
+        return game2048;
+    }
+
+    private O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles() {
+        return puzzles;
+    }
+
+    private O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles() {
+        return numberPuzzles;
+    }
+
+    /** 解码构造：装回五张表，并把华容道的定长数组补齐到固定档数。 */
+    private static GameMilestones of(O2OOpenCacheHashMap<UUID, SlotStat> slots,
+                                     O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
+                                     O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
+                                     O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
+                                     O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles) {
         var data = new GameMilestones();
-        ListTag slots = tag.getList(NBT_SLOT_MACHINE, Tag.TAG_COMPOUND);
-        for (int index = 0; index < slots.size(); index++) {
-            var entry = slots.getCompound(index);
-            var player = readPlayer(entry);
-            if (player == null) continue;
-            data.slots.put(player, new SlotStat(player, entry.getLong(NBT_SPINS), entry.getLong(NBT_STAKED),
-                    entry.getLong(NBT_WON)));
-        }
-        readScores(tag.getList(NBT_JUST_GET_10, Tag.TAG_COMPOUND), data.justGet10);
-        readScores(tag.getList(NBT_GAME_2048, Tag.TAG_COMPOUND), data.game2048);
-        ListTag numberPuzzles = tag.getList(NBT_NUMBER_PUZZLE, Tag.TAG_COMPOUND);
-        for (int index = 0; index < numberPuzzles.size(); index++) {
-            var entry = numberPuzzles.getCompound(index);
-            var player = readPlayer(entry);
-            if (player == null) continue;
-            long[] ticks = normalizeTimes(entry.getLongArray(NBT_NUMBER_TICKS));
-            long[] times = normalizeTimes(entry.getLongArray(NBT_NUMBER_TIMES));
-            data.numberPuzzles.put(player, new NumberPuzzleStat(player, ticks, times));
-        }
-        ListTag puzzles = tag.getList(NBT_GAME_24, Tag.TAG_COMPOUND);
-        for (int index = 0; index < puzzles.size(); index++) {
-            var entry = puzzles.getCompound(index);
-            var player = readPlayer(entry);
-            if (player == null) continue;
-            data.puzzles.put(player, new PuzzleStat(player, entry.getLong(NBT_TEN), entry.getLong(NBT_TEN_TIME),
-                    entry.getLong(NBT_THIRTEEN), entry.getLong(NBT_THIRTEEN_TIME)));
-        }
-        ListTag sudokus = tag.getList(NBT_SUDOKU, Tag.TAG_COMPOUND);
-        for (int index = 0; index < sudokus.size(); index++) {
-            var entry = sudokus.getCompound(index);
-            var player = readPlayer(entry);
-            if (player == null) continue;
-            long[] ticks = normalizeTimes(entry.getLongArray(NBT_SUDOKU_TICKS), SudokuRules.Difficulty.ALL.length);
-            long[] times = normalizeTimes(entry.getLongArray(NBT_SUDOKU_TIMES), SudokuRules.Difficulty.ALL.length);
-            data.sudokus.put(player, new SudokuStat(player, ticks, times));
-        }
+        data.slots.putAll(slots);
+        data.justGet10.putAll(justGet10);
+        data.game2048.putAll(game2048);
+        data.puzzles.putAll(puzzles);
+        data.numberPuzzles.putAll(numberPuzzles);
+        data.numberPuzzles.replaceAll((player, stat) -> normalizeNumberPuzzle(stat));
         return data;
+    }
+
+    // ==================== 读档 / 取实例 ====================
+
+    /** 读档：{@code data} 是整份载荷，{@code data_version} 交回 codec。 */
+    public static GameMilestones fromNBT(CompoundTag tag) {
+        var ops = JavaValueOps.create(tag.getInt(NBT_VERSION));
+        return DATA_CODEC.decode(ops, ops.fromBytes(tag.getByteArray(NBT_DATA)));
     }
 
     /** 主世界的数据存储里拿这一份（与钱包同一套取法，保证全局唯一）。 */
@@ -233,28 +265,14 @@ public final class GameMilestones extends SavedData {
 
     /** 数字华容道完成一局：该尺寸取更短用时，并记住达成时间。 */
     public void recordNumberPuzzle(@Nullable UUID player, int sizeOrdinal, long ticks, long gameTime) {
-        if (player == null || sizeOrdinal < 0 || sizeOrdinal >= 6 || ticks <= 0L) return;
+        if (player == null || sizeOrdinal < 0 || sizeOrdinal >= FIXED_SLOTS || ticks <= 0L) return;
         var old = numberPuzzles.get(player);
-        long[] bestTicks = old == null ? new long[6] : old.ticks().clone();
-        long[] bestTimes = old == null ? new long[6] : old.times().clone();
+        long[] bestTicks = old == null ? new long[FIXED_SLOTS] : old.ticks().clone();
+        long[] bestTimes = old == null ? new long[FIXED_SLOTS] : old.times().clone();
         if (bestTicks[sizeOrdinal] > 0L && ticks >= bestTicks[sizeOrdinal]) return;
         bestTicks[sizeOrdinal] = ticks;
         bestTimes[sizeOrdinal] = gameTime;
         numberPuzzles.put(player, new NumberPuzzleStat(player, bestTicks, bestTimes));
-        touch();
-    }
-
-    /** 数独完成一局：该难度取更短用时，并记住达成时间。 */
-    public void recordSudoku(@Nullable UUID player, int difficultyOrdinal, long ticks, long gameTime) {
-        int difficulties = SudokuRules.Difficulty.ALL.length;
-        if (player == null || difficultyOrdinal < 0 || difficultyOrdinal >= difficulties || ticks <= 0L) return;
-        var old = sudokus.get(player);
-        long[] bestTicks = old == null ? new long[difficulties] : old.ticks().clone();
-        long[] bestTimes = old == null ? new long[difficulties] : old.times().clone();
-        if (bestTicks[difficultyOrdinal] > 0L && ticks >= bestTicks[difficultyOrdinal]) return;
-        bestTicks[difficultyOrdinal] = ticks;
-        bestTimes[difficultyOrdinal] = gameTime;
-        sudokus.put(player, new SudokuStat(player, bestTicks, bestTimes));
         touch();
     }
 
@@ -294,25 +312,12 @@ public final class GameMilestones extends SavedData {
 
     /** 单个尺寸的排行榜：只收该尺寸有成绩的玩家，按用时升序。 */
     public List<NumberPuzzleStat> numberPuzzleBoard(int sizeOrdinal) {
-        int index = Math.clamp(sizeOrdinal, 0, 5);
+        int index = Math.clamp(sizeOrdinal, 0, FIXED_SLOTS - 1);
         var board = new ObjectArrayList<NumberPuzzleStat>();
         for (var stat : numberPuzzles.values()) {
             if (stat.ticks()[index] > 0L) board.add(stat);
         }
         board.sort(Comparator.comparingLong((NumberPuzzleStat stat) -> stat.ticks()[index])
-                .thenComparingLong(stat -> stat.times()[index])
-                .thenComparing(stat -> stat.player().toString()));
-        return board;
-    }
-
-    /** 数独某个难度的排行榜：只收该难度有成绩的玩家，按用时升序。 */
-    public List<SudokuStat> sudokuBoard(int difficultyOrdinal) {
-        int index = Math.clamp(difficultyOrdinal, 0, SudokuRules.Difficulty.ALL.length - 1);
-        var board = new ObjectArrayList<SudokuStat>();
-        for (var stat : sudokus.values()) {
-            if (stat.ticks()[index] > 0L) board.add(stat);
-        }
-        board.sort(Comparator.comparingLong((SudokuStat stat) -> stat.ticks()[index])
                 .thenComparingLong(stat -> stat.times()[index])
                 .thenComparing(stat -> stat.player().toString()));
         return board;
@@ -346,85 +351,29 @@ public final class GameMilestones extends SavedData {
 
     // ==================== 存盘 ====================
 
+    /** 存盘：整份数据编成一个 carrier，再写成 {@code data} 字节数组；版本号与载荷分开写。 */
     @Override
     public @NotNull CompoundTag save(@NotNull CompoundTag tag) {
-        ListTag slots = new ListTag();
-        for (var stat : this.slots.values()) {
-            var entry = new CompoundTag();
-            entry.putUUID(NBT_PLAYER, stat.player());
-            entry.putLong(NBT_SPINS, stat.spins());
-            entry.putLong(NBT_STAKED, stat.staked());
-            entry.putLong(NBT_WON, stat.won());
-            slots.add(entry);
-        }
-        tag.put(NBT_SLOT_MACHINE, slots);
-        tag.put(NBT_JUST_GET_10, saveScores(justGet10));
-        tag.put(NBT_GAME_2048, saveScores(game2048));
-
-        ListTag puzzles = new ListTag();
-        for (var stat : this.puzzles.values()) {
-            var entry = new CompoundTag();
-            entry.putUUID(NBT_PLAYER, stat.player());
-            entry.putLong(NBT_TEN, stat.tenTicks());
-            entry.putLong(NBT_TEN_TIME, stat.tenTime());
-            entry.putLong(NBT_THIRTEEN, stat.thirteenTicks());
-            entry.putLong(NBT_THIRTEEN_TIME, stat.thirteenTime());
-            puzzles.add(entry);
-        }
-        tag.put(NBT_GAME_24, puzzles);
-
-        ListTag numberPuzzles = new ListTag();
-        for (var stat : this.numberPuzzles.values()) {
-            var entry = new CompoundTag();
-            entry.putUUID(NBT_PLAYER, stat.player());
-            entry.putLongArray(NBT_NUMBER_TICKS, stat.ticks());
-            entry.putLongArray(NBT_NUMBER_TIMES, stat.times());
-            numberPuzzles.add(entry);
-        }
-        tag.put(NBT_NUMBER_PUZZLE, numberPuzzles);
-
-        ListTag sudokus = new ListTag();
-        for (var stat : this.sudokus.values()) {
-            var entry = new CompoundTag();
-            entry.putUUID(NBT_PLAYER, stat.player());
-            entry.putLongArray(NBT_SUDOKU_TICKS, stat.ticks());
-            entry.putLongArray(NBT_SUDOKU_TIMES, stat.times());
-            sudokus.add(entry);
-        }
-        tag.put(NBT_SUDOKU, sudokus);
+        var ops = JavaValueOps.create(DATA_VERSION);
+        tag.putByteArray(NBT_DATA, ops.toBytes(DATA_CODEC.encode(ops, this)));
+        tag.putInt(NBT_VERSION, DATA_VERSION);
         return tag;
     }
 
-    private static ListTag saveScores(O2OOpenCacheHashMap<UUID, ScoreStat> stats) {
-        var list = new ListTag();
-        for (var stat : stats.values()) {
-            var entry = new CompoundTag();
-            entry.putUUID(NBT_PLAYER, stat.player());
-            entry.putInt(NBT_SCORE, stat.bestScore());
-            entry.putLong(NBT_SCORE_TIME, stat.bestScoreTime());
-            entry.putInt(NBT_MERGED, stat.bestMerged());
-            entry.putLong(NBT_MERGED_TIME, stat.bestMergedTime());
-            list.add(entry);
-        }
-        return list;
+    // ==================== 内部工具 ====================
+
+    /** 解码后的华容道记录补齐到固定档数：载荷可能比当前版本短。 */
+    private static NumberPuzzleStat normalizeNumberPuzzle(NumberPuzzleStat stat) {
+        long[] ticks = normalizeTimes(stat.ticks(), FIXED_SLOTS);
+        long[] times = normalizeTimes(stat.times(), FIXED_SLOTS);
+        return ticks == stat.ticks() && times == stat.times() ? stat : new NumberPuzzleStat(stat.player(), ticks, times);
     }
 
-    private static void readScores(ListTag list, O2OOpenCacheHashMap<UUID, ScoreStat> target) {
-        for (int index = 0; index < list.size(); index++) {
-            var entry = list.getCompound(index);
-            var player = readPlayer(entry);
-            if (player == null) continue;
-            target.put(player, new ScoreStat(player, entry.getInt(NBT_SCORE), entry.getLong(NBT_SCORE_TIME),
-                    entry.getInt(NBT_MERGED), entry.getLong(NBT_MERGED_TIME)));
-        }
-    }
-
-    private static @Nullable UUID readPlayer(CompoundTag entry) {
-        if (!entry.hasUUID(NBT_PLAYER)) {
-            GTOCore.LOGGER.warn("Dropped a milestone entry without a player id");
-            return null;
-        }
-        return entry.getUUID(NBT_PLAYER);
+    private static long[] normalizeTimes(long[] values, int size) {
+        if (values.length == size) return values;
+        long[] normalized = new long[size];
+        System.arraycopy(values, 0, normalized, 0, Math.min(values.length, normalized.length));
+        return normalized;
     }
 
     private List<ScoreStat> scoreBoard(O2OOpenCacheHashMap<UUID, ScoreStat> stats) {
@@ -453,17 +402,6 @@ public final class GameMilestones extends SavedData {
             if (ticks > 0L) total += ticks;
         }
         return total;
-    }
-
-    private static long[] normalizeTimes(long[] values) {
-        return normalizeTimes(values, 6);
-    }
-
-    private static long[] normalizeTimes(long[] values, int size) {
-        if (values.length == size) return values;
-        long[] normalized = new long[size];
-        System.arraycopy(values, 0, normalized, 0, Math.min(values.length, normalized.length));
-        return normalized;
     }
 
     private static long addSaturated(long base, long add) {

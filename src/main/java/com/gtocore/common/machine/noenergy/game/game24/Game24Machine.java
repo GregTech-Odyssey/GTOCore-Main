@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.game24;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.LiveDurationLine;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -43,9 +44,8 @@ import java.util.List;
  * 用 + − × ÷ 与括号把它们各用一次拼成 {@link Game24Rules#TARGET}。
  *
  * <p>
- * 界面只用按钮与文本：一张牌、一个运算符、一个括号都是一个按钮，点一下往表达式尾巴上追加一个 token；表达式、反馈与
- * 「哪张牌已经用掉」都由服务端算好下发（快照 + 文字各走自己的同步项）。答对一题按是否用过提示发游戏币进余额，
- * 换一题随时可点（放弃不扣钱）。余额、取出与界面骨架都在 {@link AbstractGameMachine} 里，这里只管题目与答题。
+ * 界面只用按钮与文本：一张牌、一个运算符、一个括号都是一个按钮，点一下往表达式尾巴上追加一个 token；表达式与反馈
+ * 由服务端算好下发。答对不直接给币，每攒满 {@link #RUN_PUZZLES} 题结一次奖励（用过提示的那题不计）。
  */
 @DataGeneratorScanned
 public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
@@ -86,6 +86,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     private static final String TEXT_RANGE_REWARD = "gtocore.machine.game_24.text.range_reward";
     @RegisterLanguage(cn = "连解 %s / %s 题", en = "Run %s / %s puzzles")
     private static final String TEXT_RUN = "gtocore.machine.game_24.text.run";
+    @RegisterLanguage(cn = "本轮用时", en = "Run time")
+    private static final String LINE_TIME = "gtocore.machine.game_24.line.time";
     @RegisterLanguage(cn = "奖励 %s / %s 题", en = "Reward %s / %s puzzles")
     private static final String TEXT_REWARD_PROGRESS = "gtocore.machine.game_24.text.reward_progress";
     @RegisterLanguage(cn = "用过提示：这一题不计入奖励，连解榜单那一轮也作废",
@@ -101,9 +103,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
             MilestoneColumn.left(COLUMN_PLAYER, 70),
             MilestoneColumn.center(COLUMN_DURATION, 56) };
 
-    /** 一轮里程碑的题数：连解这么多题才算一次用时，也才结一次奖励。 */
+    /** 一轮的题数：连解这么多题记一次用时榜，也结一次奖励。 */
     public static final int RUN_PUZZLES = 10;
-    /** 每张榜单的可见高度：四行。 */
 
     /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
     private static final String[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
@@ -128,32 +129,32 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     /** 服务端权威牌面，{@link Game24Rules#NUMBER_COUNT} 张。 */
     @SaveToDisk
     private int[] numbers = NO_NUMBERS;
-    /** 抽牌范围（{@link Game24Rules.DrawRange} 的序数）；默认整副 1~13，和旧存档行为一致。 */
-    @SaveToDisk
+    /** 抽牌范围（{@link Game24Rules.DrawRange} 的序数）；默认整副 1~13，旧存档没有这个字段。 */
+    @SaveToDisk(defaultValue = "1")
     @SyncToClient(scheduleUpdate = true)
     private int drawRange = Game24Rules.DrawRange.ONE_TO_THIRTEEN.ordinal();
-    /** 玩家拼到一半的表达式，按 token 顺序存。 */
     @SaveToDisk
     private int[] tokens = NO_TOKENS;
     /** 上一次提交的结果：只影响反馈文案与按钮禁用。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int result = RESULT_NONE;
     /** 本题是否用过提示（用过之后这一轮连解作废，这一题也不计入奖励进度）。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean hinted;
-    /** 这一轮连解算不算数（只管榜单用时）：用提示、没答对就换题、换范围或多人的一轮作废。 */
-    @SaveToDisk
+    /** 这一轮连解算不算数（只管榜单用时）：用提示、没答对就换题、换范围都会作废；多人局另在记榜时挡掉。 */
+    @SaveToDisk(defaultValue = "false")
     private boolean runValid;
-    /** 本轮连解进度与起点（存档 gameTime，{@code 0} 表示这一轮已经收尾）。 */
-    @SaveToDisk
+    /** 本轮已连解的题数与起表时刻（存档 gameTime；{@code 0} 表示这一轮已收尾）。 */
+    @SaveToDisk(defaultValue = "0")
     private int runSolved;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
+    @SyncToClient(scheduleUpdate = true)
     private long runStart;
     /**
-     * 奖励进度：单独累计「解出的题数」，不够十题也一直留着。用提示的那题不计，换题与多人同局都不影响，换抽牌范围会清零；
+     * 奖励进度：累计解出的题数，不够一轮也一直留着；用提示的那题不计，换题与多人局都不影响，换抽牌范围清零；
      * 每满 {@link #RUN_PUZZLES} 题结一次 {@link Game24Rules.DrawRange#runReward()}。
      */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int rewardProgress;
 
     public Game24Machine(MetaMachineBlockEntity holder) {
@@ -161,7 +162,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     /**
-     * 通道里下发的界面快照：牌面、表达式、答对/答错/用过提示三个标记、连解进度与奖励进度。
+     * 通道里下发的界面快照：牌面、表达式、答对与用过提示两个标志位、连解进度与奖励进度；
      * 相等性只看版本号，省掉逐元素比数组。
      */
     public record View(int revision, int[] numbers, int[] tokens, int flags, int run, int reward) {
@@ -216,8 +217,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     /**
-     * 读档后的收尾：范围非法就回落整副 1~13；牌不对、或牌面超出当前范围（换过范围）就重发一局，token 里有非法项就把
-     * 表达式丢掉，结果夹到合法取值。
+     * 读档收尾：范围非法就回落 1~13；牌数不对或牌面超出当前范围（换过范围）就重发一题；token 有非法项就丢掉整个
+     * 表达式；结果不合理回落到无结果，连解进度与奖励进度夹回合法范围，起表时刻非法则本轮作废。
      */
     private void sanitizeState() {
         var range = Game24Rules.DrawRange.of(drawRange);
@@ -257,12 +258,12 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return new View(revision(), numbers, tokens, flags, runSolved, rewardProgress);
     }
 
-    /** 这一题答对了吗（不论有没有凑满十题）。 */
+    /** 这一题答对了吗（不论有没有凑满一轮）。 */
     private boolean isSolved() {
         return result == RESULT_SOLVED || result == RESULT_REWARDED;
     }
 
-    /** 首次打开界面时把没发的那一题发出来，并保证有一轮在计时。 */
+    /** 首次打开界面时：没发牌就发一题，没有有效的一轮就起表（用过提示的那题不起表）。 */
     private void ensureStarted() {
         if (numbers.length != Game24Rules.NUMBER_COUNT) startPuzzle();
         if (!runValid) startRun(null);
@@ -300,10 +301,11 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         return board;
     }
 
-    /** 状态面板：余额 + 连解进度 + 奖励进度 + 反馈行 + 提示/换一题 + 取出全部。 */
+    /** 状态面板：余额、本轮用时、连解与奖励进度、反馈行、提示/换一题与取出。 */
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
+        status.addChild(new LiveDurationLine(LINE_TIME, this::displayElapsedTicks));
         status.addChild(TextLine.of(LayoutStyle.AUTO, () -> Component.translatable(TEXT_RUN, view().run(), RUN_PUZZLES))
                 .setTextAlign(Horizontal.CENTER));
         status.addChild(TextLine.of(LayoutStyle.AUTO, () -> Component.translatable(TEXT_REWARD_PROGRESS, view().reward(), RUN_PUZZLES))
@@ -345,7 +347,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         hinted = false;
     }
 
-    /** 起一轮：起点、进度清零，并把「这一轮算不算」置位；发起者用开界面的人（没有就等第一个开界面的人）。 */
+    /** 起一轮：起点与进度清零、{@link #runValid} 置位；发起者用开界面的人（没有就等第一个开界面的人）。 */
     private void startRun(@Nullable ServerPlayer player) {
         // 提示过的题不开启新一轮：否则关掉界面再打开时 ensureStarted 会把已经作废的一轮重新计时。
         if (hinted) return;
@@ -353,24 +355,29 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         runSolved = 0;
         runValid = true;
         beginSession(player);
+        // 起表时刻同步给客户端，计时行在客户端本地读秒
+        requestSync();
     }
 
-    /** 本轮作废：计时、进度与「算不算」一起清零，下一次发牌重新起表。 */
+    /** 本轮作废：计时、进度与「算不算」一起清零，下次发牌重新起表。 */
     private void voidRun() {
         runStart = 0L;
         runSolved = 0;
         runValid = false;
+        // 停表也要让客户端知道，计时行才会归零
+        requestSync();
+    }
+
+    /** 状态栏计时行：本轮起表后按本地世界刻现算；没起表时为 0。 */
+    private long displayElapsedTicks() {
+        if (runStart <= 0L) return 0L;
+        return Math.max(0L, gameTime() - runStart);
     }
 
     /**
-     * 答对一题：奖励与榜单各算各的。
-     *
-     * <ul>
-     * <li>奖励：单独累计「解出的题数」（{@link #rewardProgress}），每完成 {@link #RUN_PUZZLES} 题结一次
-     * {@link Game24Rules.DrawRange#runReward()}；用提示的那题不计，换题与多人同局都不影响，换抽牌范围清零；</li>
-     * <li>榜单：同一轮里连解 {@link #RUN_PUZZLES} 题才记一次用时，用提示、没答对就换题、换范围或多人的一轮作废
-     * （见 {@link #runValid}）。</li>
-     * </ul>
+     * 答对一题：奖励与榜单各算各的——奖励看 {@link #rewardProgress}，每满 {@link #RUN_PUZZLES} 题结一次
+     * {@link Game24Rules.DrawRange#runReward()}；榜单要同一轮连解满 {@link #RUN_PUZZLES} 题才记一次用时
+     * （见 {@link #runValid}）。用过提示的题两边都不算。
      */
     private void onPuzzleSolved() {
         recordRunTime();
@@ -383,9 +390,9 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         result = RESULT_REWARDED;
     }
 
-    /** 榜单那一半：连解满一轮就按本轮用时记一次（单人局且用时正常才算），然后重开一轮。 */
+    /** 榜单那一半：连解满一轮就按本轮用时记一次（单人局且用时正常才算），然后作废这一轮。 */
     private void recordRunTime() {
-        // 用过提示的题不算连解；即使界面重开把 runValid 又置回来，这里也要把这一轮停掉。
+        // 用过提示的题不算连解，直接把这一轮停掉
         if (hinted) {
             voidRun();
             return;
@@ -449,7 +456,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         syncAndMarkChanged();
     }
 
-    /** 提交：语法、用牌与数值全对才算解出；答对不直接给币，攒满一轮才结算。只是不对的话不扣钱，给一句反馈继续改。 */
+    /** 提交：语法、用牌与数值全对才算解出；答对不直接给币，攒满 {@link #RUN_PUZZLES} 题才结一次奖励，答错只换一句反馈。 */
     private void submit(@Nullable ServerPlayer player) {
         if (isRemote() || isSolved() || tokens.length == 0 || !guard(player)) return;
         if (!rules.isSolution(tokens, numbers)) {

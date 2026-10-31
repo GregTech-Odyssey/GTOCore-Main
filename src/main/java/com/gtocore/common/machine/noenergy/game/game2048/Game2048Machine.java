@@ -43,12 +43,8 @@ import java.util.List;
  * 「2048」游戏机：4×4 盘面的推格合并玩法。
  *
  * <p>
- * 一局攒积分，盘面再也推不动时这一局结束、按兑现比例换成游戏币；按「重新开始」提前兑现重开。余额、取出与快照通道
- * 来自 {@link AbstractGameMachine}，本局积分、盘面与界面都在这个类里。
- *
- * <p>
- * 盘面用键盘操作：W A S D 与四个方向键各对应一次移动（见 {@link BoardInput#keyPressed}），请求发到服务端由服务端改
- * 盘面，客户端把下发来的快照画进固定大小的盘面区。
+ * 一局攒积分，盘面推不动时结账、按兑现基线折成游戏币，「重新开始」提前结账重开；余额、取出与快照通道来自
+ * {@link AbstractGameMachine}。WASD 与方向键的移动请求经 {@link RPC} 上行、由服务端改盘面，客户端只按快照绘制。
  */
 @DataGeneratorScanned
 public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSnapshot> {
@@ -58,18 +54,18 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     @RegisterLanguage(cn = "重新开始", en = "Restart")
     private static final String BUTTON_RESTART = "gtocore.machine.game.button.restart";
 
-    /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 成绩，达成时间放在成绩格的悬停提示里。 */
+    /** 里程碑表格的列（名次由表格自动加在最前）：玩家、最高分与最大合成，达成时间放在成绩格的悬停提示里。 */
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 42),
             MilestoneColumn.right(COLUMN_BEST_SCORE, 54),
             MilestoneColumn.right(COLUMN_BEST_MERGED, 40) };
 
-    /** 盘面区宽度：顶部图例 15 档 × {@link #LEGEND_ICON_SIZE} 正好铺满，4×4 的格子按它摊满整框。 */
+    /** 盘面区宽度：15 档图例 × {@link #LEGEND_ICON_SIZE} 正好铺满，4×4 的格子按它摊满整框。 */
     private static final int FRAME_SIZE = 156;
 
     /**
-     * 额外分：一局里 {@link #SCORE_BONUS_MIN_VALUE} 及以上的每个数字<b>首次</b>被合出时各给一次，金额随数字递增；
-     * 水位就是当时盘面上的最大数字，合并只会把它顶得更高，所以直接和上一步的盘面比。
+     * 额外分：一局里 {@link #SCORE_BONUS_MIN_VALUE} 及以上的数字<b>首次</b>合出时各给一次，金额随数字翻倍递增；
+     * 是否新合出，直接拿上一步盘面的最大值判断。
      */
     private static final int SCORE_BONUS_MIN_VALUE = 1024;
     private static final int SCORE_BONUS_BASE = 1000;
@@ -85,10 +81,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     /** 盘面区顶部那条图例的高度：一排电压等级图标 + 底部 1px 分隔线。 */
     private static final int LEGEND_HEIGHT = 15;
 
-    /**
-     * 数字用通用电路显示：数组下标就是电路档位（{@code UNIVERSAL_CIRCUIT} 从最低到最高共 15 档），
-     * 格子越大用越高电压等级的电路，每格始终只有 1 个。
-     */
+    /** 数字用通用电路显示：下标即 15 档电路档位，数字越大电压等级越高，每格 1 个。 */
     private static final ItemStack[] TILE_STACKS = new ItemStack[GTOItems.UNIVERSAL_CIRCUIT.length];
 
     static {
@@ -97,17 +90,16 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         }
     }
 
-    /** 本局累计积分。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient(scheduleUpdate = true)
     private int score;
-    /** 局面阶段；只有服务端看它，界面按盘面自己判断能不能动。 */
-    @SaveToDisk
+    /** 局面阶段；不进快照，界面按盘面自行判断能不能动。 */
+    @SaveToDisk(defaultValue = "0")
     private int gameStatus = Status.IDLE.ordinal();
-    /** 本局是否已经结过账。不存盘：读档时按局面阶段还原（已结束的那一局在结束时就结过账了）。 */
+    /** 本局是否已结过账；不存盘，读档时按局面还原（已结束的那局当时就结过账）。 */
     private boolean settled;
 
-    /** 局面阶段：还没开局 / 进行中 / 已结束（结束的那一局已经兑现过）。 */
+    /** 局面阶段；GAME_OVER 的那一局已经兑现过。 */
     private enum Status {
         IDLE,
         PLAYING,
@@ -120,7 +112,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     @SaveToDisk
     private int[] board = NO_BOARD;
     /** 本局出现过的最大方块：结账时拿去比里程碑。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "2")
     private int roundPeakValue = Game2048Rules.VALUE_MIN;
 
     public Game2048Machine(MetaMachineBlockEntity holder) {
@@ -158,8 +150,8 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     }
 
     /**
-     * 先把局面阶段夹回合法值，再整理盘面；长度对不上（旧档）会被整成空盘，进而当成「还没开这一局」，等下次打开界面
-     * 重发——那种情况下残留的积分不属于任何一局，一并清掉，免得被当成有效成绩兑现。
+     * 先夹回合法的局面阶段再整理盘面；长度对不上（旧存档）就整成空盘并当成「还没开局」，残留积分一并清掉，
+     * 免得被当成有效成绩兑现。
      */
     private void sanitizeState() {
         if (gameStatus < 0 || gameStatus >= Status.values().length) setIdle();
@@ -188,7 +180,6 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         gameStatus = Status.IDLE.ordinal();
     }
 
-    /** 发一局新牌：按当前规则把盘面铺出来。 */
     private void dealBoard() {
         board = rules.createBoard(random());
     }
@@ -204,8 +195,8 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     }
 
     /**
-     * 把本局积分折成游戏币入余额；同一局只结一次账（{@link #settled} 一置位，结束、重新开始、拆机器都不会再给第二次）。
-     * 分数没超过兑现基线时同样算结过账，只是这次给 0 枚。
+     * 把本局积分折成游戏币入余额；{@link #settled} 保证同一局只结一次账（结束、重新开始、拆机器都走这里）。
+     * 没超过兑现基线时同样算结过账，只是给 0 枚。
      */
     @Override
     protected void cashOut() {
@@ -216,7 +207,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         recordRound();
     }
 
-    /** 本局结账时记一次里程碑：只有单人局才写；分数/最大合成没有超过个人记录时不会真的落盘。 */
+    /** 结账时记一次里程碑：只有单人局、且分数超过里程碑门槛才写，并且只更新更好的分数/最大合成。 */
     private void recordRound() {
         if (!sessionCounts()) return;
         var server = server();
@@ -225,7 +216,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
                 gameTime());
     }
 
-    /** 玩不动了：把这局积分兑现掉，再记下结束。先结账后改状态，任何顺序都不会漏给或重复给。 */
+    /** 玩不动了：先结账再置为结束，{@link #settled} 兜住重复结账。 */
     private void endRound() {
         cashOut();
         gameStatus = Status.GAME_OVER.ordinal();
@@ -238,7 +229,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         setIdle();
     }
 
-    /** 服务端：「重新开始」按钮：结掉当前这一局再开一局。没有进行中的一局时按下也无副作用。 */
+    /** 服务端：「重新开始」：结掉当前这一局（没有在玩的一局就只结 0 分）再开一局。 */
     private void restartRoundOnServer(@Nullable ServerPlayer player) {
         if (isRemote() || !guard(player)) return;
         settleRound();
@@ -255,11 +246,9 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     // ==================== 服务端动作 ====================
 
     /**
-     * 服务端：朝 {@code directionOrdinal} 推一次（下标对应 {@link Game2048Rules.Direction}，网络来的值一律校验）。
-     *
-     * <p>
-     * 推不动时 {@link Game2048Rules#move} 返回 {@code null}，状态一律不变。合并得分之外，本局首次合出的
-     * {@link #SCORE_BONUS_MIN_VALUE} 及以上数字各再给一次 {@code (数字 / 1024) × SCORE_BONUS_BASE}。
+     * 服务端：朝 {@code directionOrdinal} 推一次（网络来的值一律校验）；{@link Game2048Rules#move} 返回
+     * {@code null} 时状态不变。合并得分之外，首次合出的 {@link #SCORE_BONUS_MIN_VALUE} 及以上数字各再加
+     * {@code (数字 / 1024) × SCORE_BONUS_BASE}。
      */
     private void moveOnServer(int directionOrdinal, @Nullable ServerPlayer player) {
         if (isRemote() || !isPlaying() || !guard(player)) return;
@@ -385,12 +374,9 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
      * 盘面本体：一次画完整盘，同时是界面的键盘入口。
      *
      * <p>
-     * 控件按 {@link #FRAME_SIZE} 定尺寸（顶部图例铺满一行，4×4 的棋盘把整框填满）。
-     *
-     * <p>
-     * 键盘事件由 LDLib 从界面根控件逐层向下派发（{@code WidgetGroup.keyPressed}），本元素在派发链上，所以不需要
-     * 焦点；收到的移动请求经 {@link RPC} 上行，服务端照旧做一次校验再改盘面。盘面值只在绘制时读同步快照，
-     * 两端的控件树完全一致，通道里的条目顺序（先盘面、后请求）也因此一致。
+     * 尺寸按 {@link #FRAME_SIZE} 定死。键盘事件由 LDLib 从界面根控件逐层向下派发（{@code WidgetGroup.keyPressed}），
+     * 本元素在派发链上，所以不需要焦点；移动请求经 {@link RPC} 上行，服务端再校验一次。两端控件树一致，通道里的
+     * 条目顺序（先盘面、后请求）才一致。
      */
     private final class BoardInput extends UIElement {
 
@@ -434,7 +420,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
             int[] current = view().board();
-            // 4×4 的格子按整框摊满：156 / 4 = 39 一格，和旧版 4×4 的大小一致
+            // 4×4 的格子按整框摊满：156 / 4 = 39 一格
             int cell = FRAME_SIZE / Game2048Rules.SIZE;
             int board = cell * Game2048Rules.SIZE;
             int left = getPositionX() + (FRAME_SIZE - board) / 2;

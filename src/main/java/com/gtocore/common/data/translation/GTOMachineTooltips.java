@@ -218,6 +218,8 @@ public final class GTOMachineTooltips {
                 "Classic 9×9 Sudoku: fill 1 to 9 once in every row, column and 3×3 box; clue digits are fixed"));
         t.feature(t.tr("点格子选中，点 1~9 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
                 "Select a cell and press 1 to 9; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes"));
+        t.feature(t.tr("变体页可为一局叠加一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
+                "The Variant tab stacks one extra rule: Diagonal X, Center dots, Window, Color, Jigsaw, Consecutive or Killer"));
         var rewards = new StringBuilder();
         for (var difficulty : SudokuRules.Difficulty.ALL) {
             if (rewards.length() > 0) rewards.append('/');

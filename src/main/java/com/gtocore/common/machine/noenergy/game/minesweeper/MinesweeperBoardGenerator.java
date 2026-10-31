@@ -12,23 +12,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * 扫雷棋盘生成器：固定种子布雷 + L1~L3 无猜求解。
+ * 扫雷棋盘生成器：固定种子布雷 + 无猜求解。
  *
  * <p>
- * 基础种子由世界种子、核心方块位置和本局随机盐混合，再派生候选种子。
- * 满足尺寸/密度限制时并行尝试 {@link #NO_GUESS_CANDIDATES} 个候选，取最快可解盘；否则单种子。
- * 所有路径都保证首点 3×3 无雷；任务只用本地数组、不访问 Level，可在任意线程调用。
- * 候选种子可复现，读档时据此重算。
+ * 基础种子由世界种子、核心方块位置和本局随机盐混合，再派生候选种子；规模与密度允许时并行试
+ * {@link #NO_GUESS_CANDIDATES} 个候选取最快可解盘，否则单种子。所有路径都保证首点 3×3 无雷；只用本地数组、
+ * 不访问 Level，可在任意线程调用；候选种子可复现，读档据此重算。
  */
 public final class MinesweeperBoardGenerator {
 
-    /** 无猜尝试的候选数。 */
     private static final int NO_GUESS_CANDIDATES = 10;
     /** 超过这个格数不再尝试无猜。 */
     private static final int NO_GUESS_MAX_CELLS = 900;
     /** 超过这个雷密度不再尝试无猜。 */
     private static final double NO_GUESS_MAX_DENSITY = 0.22D;
-    /** 一次生成最多等待的时间；超时用最快已完成候选/单种子兜底。 */
+    /** 一次生成的等待上限；超时取已完成里最快的候选，再不行退回单种子。 */
     private static final long NO_GUESS_BUDGET_MILLIS = 1000L;
 
     private static final int[] NEIGHBOR_COL = { -1, 0, 1, -1, 1, -1, 0, 1 };
@@ -37,9 +35,9 @@ public final class MinesweeperBoardGenerator {
     /**
      * 生成结果。
      *
-     * @param seed    选中的种子；写进机器后读档可重算
-     * @param mines   雷盘，长度正好是 width * height
-     * @param noGuess 是否通过了无猜校验
+     * @param seed    选中的种子，机器存下它后读档可重算
+     * @param mines   雷盘，长度正好是 {@code width * height}
+     * @param noGuess 是否通过无猜校验
      */
     public record GeneratedBoard(long seed, boolean[] mines, boolean noGuess) {}
 
@@ -48,12 +46,11 @@ public final class MinesweeperBoardGenerator {
     private MinesweeperBoardGenerator() {}
 
     /**
-     * 生成一张盘。基础种子由世界种子、核心方块位置和本局随机盐混合；条件满足时并行尝试
-     * {@link #NO_GUESS_CANDIDATES} 个候选种子，否则单种子。
+     * 生成一张盘：{@code firstCell} 周围 3×3 一定无雷；规模与密度允许时并行试候选取最快可解盘，否则单种子。
      *
      * @param random       提供本局随机盐；生成任务本身不接触 Level
      * @param worldSeed    当前存档的世界种子
-     * @param corePosition 核心方块的 {@link net.minecraft.core.BlockPos#asLong()} 坐标
+     * @param corePosition 核心方块坐标的 {@code BlockPos#asLong()} 打包值
      * @param firstCell    首点（0..width*height-1）
      */
     public static GeneratedBoard generate(RandomSource random, long worldSeed, long corePosition,
@@ -170,7 +167,7 @@ public final class MinesweeperBoardGenerator {
         return new Candidate(seed, mines, noGuess, System.nanoTime() - start);
     }
 
-    /** 供测试/读档校验使用：判断该种子+首点是否是无猜盘。 */
+    /** 判断该种子 + 首点是否是无猜盘（可按规则解完，无需猜）。 */
     public static boolean isNoGuess(int width, int height, int mineCount, long seed, int firstCell) {
         boolean[] mines = layout(width, height, mineCount, seed, firstCell);
         int[] numbers = numbers(mines, width, height);
@@ -199,7 +196,7 @@ public final class MinesweeperBoardGenerator {
         return numbers;
     }
 
-    /** L1 基础规则 + L2 子集规则 + L3 全局雷数的确定性求解器；绝不猜测。 */
+    /** 确定性求解器：依次尝试基础规则、全局雷数、子集规则；绝不猜测，非雷格全开完才算可解。 */
     private static boolean solve(boolean[] mines, int[] numbers, int width, int height, int mineCount, int firstCell) {
         Detective detective = new Detective(mines, numbers, width, height, mineCount);
         detective.open(firstCell);
