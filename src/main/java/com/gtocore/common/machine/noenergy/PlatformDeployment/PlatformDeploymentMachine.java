@@ -77,7 +77,7 @@ import static com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformCre
 public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
 
     @RegisterLanguage(cn = "材料与坐标卡", en = "Materials & Coordinate Cards")
-    private static final String ITEMS = "gtocore.machine.industrial_platform_deployment_tools.ui.items";
+    private static final Component ITEMS = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.items");
 
     private static final NetworkPack HIGHLIGHT_REGION = NetworkPack.registerS2C("platformDeploymentMachineHighlight", (p, b) -> {
         var dimension = b.readResourceKey(Registries.DIMENSION);
@@ -255,99 +255,100 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     // ************ UI组件 ************ //
     /////////////////////////////////////
     @RegisterLanguage(cn = "部署步骤", en = "Deployment Steps")
-    private static final String STEP_SECTION = "gtocore.machine.industrial_platform_deployment_tools.ui.steps";
+    private static final Component STEP_SECTION = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.steps");
     @RegisterLanguage(cn = "预设库", en = "Library")
-    private static final String PRESET_GROUP = "gtocore.machine.industrial_platform_deployment_tools.ui.preset_group";
+    private static final Component PRESET_GROUP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.preset_group");
     @RegisterLanguage(cn = "切换预设库后，蓝图回到该库的第一个", en = "Switching libraries returns to the first blueprint of the library")
-    private static final String PRESET_GROUP_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.preset_group_tip";
+    private static final Component PRESET_GROUP_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.preset_group_tip");
     @RegisterLanguage(cn = "蓝图", en = "Blueprint")
-    private static final String BLUEPRINT = "gtocore.machine.industrial_platform_deployment_tools.ui.blueprint";
+    private static final Component BLUEPRINT = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.blueprint");
     @RegisterLanguage(cn = "向前 10 个", en = "Back 10")
-    private static final String PREVIOUS_10 = "gtocore.machine.industrial_platform_deployment_tools.ui.previous_10";
+    private static final Component PREVIOUS_10 = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.previous_10");
     @RegisterLanguage(cn = "向后 10 个", en = "Forward 10")
-    private static final String NEXT_10 = "gtocore.machine.industrial_platform_deployment_tools.ui.next_10";
+    private static final Component NEXT_10 = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.next_10");
     @RegisterLanguage(cn = "向前 5 个", en = "Back 5")
-    private static final String PREVIOUS_5 = "gtocore.machine.industrial_platform_deployment_tools.ui.previous_5";
+    private static final Component PREVIOUS_5 = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.previous_5");
     @RegisterLanguage(cn = "向后 5 个", en = "Forward 5")
-    private static final String NEXT_5 = "gtocore.machine.industrial_platform_deployment_tools.ui.next_5";
+    private static final Component NEXT_5 = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.next_5");
     @RegisterLanguage(cn = "选用当前蓝图", en = "Use This Blueprint")
-    private static final String CHOOSE = "gtocore.machine.industrial_platform_deployment_tools.ui.choose";
+    private static final Component CHOOSE = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.choose");
     @RegisterLanguage(cn = "选用", en = "Select")
-    private static final String CHOOSE_BUTTON = "gtocore.machine.industrial_platform_deployment_tools.ui.choose_button";
+    private static final Component CHOOSE_BUTTON = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.choose_button");
     @RegisterLanguage(cn = "将正在查看的蓝图设为部署目标，并重新计算材料与放置范围", en = "Sets the viewed blueprint as the deployment target and recalculates materials and placement range")
-    private static final String CHOOSE_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.choose_tip";
+    private static final Component CHOOSE_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.choose_tip");
     @RegisterLanguage(cn = "显示预览图", en = "Show Preview")
-    private static final String PREVIEW = "gtocore.machine.industrial_platform_deployment_tools.ui.preview";
+    private static final Component PREVIEW = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.preview");
     @RegisterLanguage(cn = "该蓝图没有预览图", en = "This blueprint has no preview image")
-    private static final String PREVIEW_UNAVAILABLE = "gtocore.machine.industrial_platform_deployment_tools.ui.preview_unavailable";
+    private static final Component PREVIEW_UNAVAILABLE = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.preview_unavailable");
     @RegisterLanguage(cn = "高亮放置范围", en = "Highlight Area")
-    private static final String HIGHLIGHT = "gtocore.machine.industrial_platform_deployment_tools.ui.highlight";
+    private static final Component HIGHLIGHT = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.highlight");
     @RegisterLanguage(cn = "在世界中标出已选蓝图的放置范围；放入两张坐标卡时标出两卡之间的区域", en = "Marks the placement area of the selected blueprint in the world; with two coordinate cards inserted, marks the region between them")
-    private static final String HIGHLIGHT_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.highlight_tip";
+    private static final Component HIGHLIGHT_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.highlight_tip");
     @RegisterLanguage(cn = "装载材料", en = "Load Materials")
-    private static final String LOAD = "gtocore.machine.industrial_platform_deployment_tools.ui.load";
+    private static final Component LOAD = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.load");
     @RegisterLanguage(cn = "装载", en = "Load")
-    private static final String LOAD_BUTTON = "gtocore.machine.industrial_platform_deployment_tools.ui.load_button";
+    private static final Component LOAD_BUTTON = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.load_button");
     @RegisterLanguage(cn = "将物品槽中的工业组件折算为材料储量", en = "Converts industrial components in the slots into material reserves")
-    private static final String LOAD_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.load_tip";
+    private static final Component LOAD_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.load_tip");
     @RegisterLanguage(cn = "卸载材料", en = "Unload Materials")
-    private static final String UNLOAD = "gtocore.machine.industrial_platform_deployment_tools.ui.unload";
+    private static final Component UNLOAD = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.unload");
     @RegisterLanguage(cn = "卸载", en = "Unload")
-    private static final String UNLOAD_BUTTON = "gtocore.machine.industrial_platform_deployment_tools.ui.unload_button";
+    private static final Component UNLOAD_BUTTON = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.unload_button");
     @RegisterLanguage(cn = "将材料储量换回工业组件，放入空物品槽", en = "Converts material reserves back into industrial components in empty slots")
-    private static final String UNLOAD_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.unload_tip";
+    private static final Component UNLOAD_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.unload_tip");
     @RegisterLanguage(cn = "X 偏移（区块）", en = "X Offset (chunks)")
-    private static final String OFFSET_X = "gtocore.machine.industrial_platform_deployment_tools.ui.offset_x";
+    private static final Component OFFSET_X = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.offset_x");
     @RegisterLanguage(cn = "Y 偏移（格）", en = "Y Offset (blocks)")
-    private static final String OFFSET_Y = "gtocore.machine.industrial_platform_deployment_tools.ui.offset_y";
+    private static final Component OFFSET_Y = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.offset_y");
     @RegisterLanguage(cn = "Z 偏移（区块）", en = "Z Offset (chunks)")
-    private static final String OFFSET_Z = "gtocore.machine.industrial_platform_deployment_tools.ui.offset_z";
+    private static final Component OFFSET_Z = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.offset_z");
     @RegisterLanguage(cn = "跳过空气", en = "Skip Air")
-    private static final String SKIP_AIR = "gtocore.machine.industrial_platform_deployment_tools.ui.skip_air";
+    private static final Component SKIP_AIR = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.skip_air");
     @RegisterLanguage(cn = "蓝图中的空气不清除原有方块", en = "Air in the blueprint does not clear existing blocks")
-    private static final String SKIP_AIR_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.skip_air_tip";
+    private static final Component SKIP_AIR_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.skip_air_tip");
     @RegisterLanguage(cn = "光照更新", en = "Update Lighting")
-    private static final String UPDATE_LIGHT = "gtocore.machine.industrial_platform_deployment_tools.ui.update_light";
+    private static final Component UPDATE_LIGHT = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.update_light");
     @RegisterLanguage(cn = "放置时重新计算光照", en = "Recalculates lighting while placing")
-    private static final String UPDATE_LIGHT_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.update_light_tip";
+    private static final Component UPDATE_LIGHT_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.update_light_tip");
     @RegisterLanguage(cn = "X 轴对称", en = "Mirror X")
-    private static final String X_MIRROR = "gtocore.machine.industrial_platform_deployment_tools.ui.x_mirror";
+    private static final Component X_MIRROR = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.x_mirror");
     @RegisterLanguage(cn = "Z 轴对称", en = "Mirror Z")
-    private static final String Z_MIRROR = "gtocore.machine.industrial_platform_deployment_tools.ui.z_mirror";
+    private static final Component Z_MIRROR = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.z_mirror");
     @RegisterLanguage(cn = "绕 Y 轴旋转", en = "Rotation (Y axis)")
-    private static final String ROTATION = "gtocore.machine.industrial_platform_deployment_tools.ui.rotation";
+    private static final Component ROTATION = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.rotation");
     @RegisterLanguage(cn = "部署速度", en = "Deployment Speed")
-    private static final String SPEED = "gtocore.machine.industrial_platform_deployment_tools.ui.speed";
+    private static final Component SPEED = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.speed");
     @RegisterLanguage(cn = "每刻放置 速度×1000 个方块", en = "Places speed × 1000 blocks per tick")
-    private static final String SPEED_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.speed_tip";
+    private static final Component SPEED_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.speed_tip");
     @RegisterLanguage(cn = "部署", en = "Deployment")
-    private static final String DEPLOY_SECTION = "gtocore.machine.industrial_platform_deployment_tools.ui.deploy";
+    private static final Component DEPLOY_SECTION = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.deploy");
     @RegisterLanguage(cn = "部署平台", en = "Deploy Platform")
-    private static final String START = "gtocore.machine.industrial_platform_deployment_tools.ui.start";
+    private static final Component START = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.start");
     @RegisterLanguage(cn = "开始", en = "Start")
-    private static final String START_BUTTON = "gtocore.machine.industrial_platform_deployment_tools.ui.start_button";
+    private static final Component START_BUTTON = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.start_button");
     @RegisterLanguage(cn = "消耗材料，按当前偏移、旋转与对称设置放置已选蓝图", en = "Consumes materials and places the selected blueprint with the current offset, rotation and mirror settings")
-    private static final String START_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.start_tip";
+    private static final Component START_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.start_tip");
     @RegisterLanguage(cn = "需要已选择蓝图、材料充足且没有进行中的部署", en = "Requires a selected blueprint, sufficient materials and no deployment in progress")
-    private static final String START_UNAVAILABLE = "gtocore.machine.industrial_platform_deployment_tools.ui.start_unavailable";
+    private static final Component START_UNAVAILABLE = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.start_unavailable");
     @RegisterLanguage(cn = "已放入两张坐标卡，当前为导出模式", en = "Two coordinate cards are inserted; export mode is active")
-    private static final String EXPORT_MODE = "gtocore.machine.industrial_platform_deployment_tools.ui.export_mode";
+    private static final Component EXPORT_MODE = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.export_mode");
     @RegisterLanguage(cn = "可以开始部署", en = "Ready to deploy")
     private static final String READY = "gtocore.machine.industrial_platform_deployment_tools.ui.ready";
     @RegisterLanguage(cn = "导出区域", en = "Export Region")
-    private static final String EXPORT = "gtocore.machine.industrial_platform_deployment_tools.ui.export";
+    private static final Component EXPORT = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.export");
     @RegisterLanguage(cn = "导出", en = "Export")
-    private static final String EXPORT_BUTTON = "gtocore.machine.industrial_platform_deployment_tools.ui.export_button";
+    private static final Component EXPORT_BUTTON = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.export_button");
     @RegisterLanguage(cn = "将两张坐标卡之间的区域导出为结构文件，保存在 logs/platform 目录", en = "Exports the region between the two coordinate cards as a structure file in the logs/platform folder")
-    private static final String EXPORT_TIP = "gtocore.machine.industrial_platform_deployment_tools.ui.export_tip";
+    private static final Component EXPORT_TIP = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.export_tip");
     @RegisterLanguage(cn = "需要放入两张已记录坐标的坐标卡", en = "Requires two coordinate cards with stored positions")
-    private static final String EXPORT_UNAVAILABLE = "gtocore.machine.industrial_platform_deployment_tools.ui.export_unavailable";
+    private static final Component EXPORT_UNAVAILABLE = Component.translatable("gtocore.machine.industrial_platform_deployment_tools.ui.export_unavailable");
 
-    private static final String AT_MIN = "gtceu.uipro.stepper.at_min";
-    private static final String AT_MAX = "gtceu.uipro.stepper.at_max";
+    private static final Component AT_MIN = Component.translatable("gtceu.uipro.stepper.at_min");
+    private static final Component AT_MAX = Component.translatable("gtceu.uipro.stepper.at_max");
     private static final String UNSELECTED = "gtocore.machine.industrial_platform_deployment_tools.text.unselected";
     private static final String INSUFFICIENT = "gtocore.machine.industrial_platform_deployment_tools.material.insufficient";
     private static final String DOING = "gtocore.machine.industrial_platform_deployment_tools.doing";
+
     private static final String[] STEP_TITLES = {
             "gtocore.machine.industrial_platform_deployment_tools.title.0",
             "gtocore.machine.industrial_platform_deployment_tools.title.1",
@@ -433,9 +434,9 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     }
 
     private static UIElement helpSection(String titleKey, String... lineKeys) {
-        var section = Form.section(titleKey);
+        var section = Form.section(Component.translatable(titleKey));
         int width = UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING;
-        for (String key : lineKeys) section.addChild(Label.translatable(width, key).bindClientColor(UITheme::panelText));
+        for (String key : lineKeys) section.addChild(Label.constant(width, Component.translatable(key)).bindClientColor(UITheme::panelText));
         return section;
     }
 
@@ -517,14 +518,14 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     private UIElement createDeployControls() {
         var status = TextLine.of(LayoutStyle.AUTO, MultiblockPage.cached(this::deployState, PlatformDeploymentMachine::deployStateText))
                 .bindClientColor(UITheme::panelText);
-        var start = Button.translatable(UISizes.BUTTON_WIDTH, START_BUTTON)
+        var start = Button.text(UISizes.BUTTON_WIDTH, START_BUTTON)
                 .setOnServerClick(() -> {
                     start();
                     onChanged();
                 })
                 .disabled(() -> !presetConfirm || !insufficient || !taskCompleted, START_UNAVAILABLE);
         var startRow = Form.controlRow(START, start, START_TIP).disabled(() -> canExport, EXPORT_MODE);
-        var export = Button.translatable(UISizes.BUTTON_WIDTH, EXPORT_BUTTON)
+        var export = Button.text(UISizes.BUTTON_WIDTH, EXPORT_BUTTON)
                 .setOnServerClick(this::requestExport)
                 .disabled(() -> !canExport, EXPORT_UNAVAILABLE);
         return Form.section(DEPLOY_SECTION).addChildren(status, startRow, Form.controlRow(EXPORT, export, EXPORT_TIP));
@@ -539,7 +540,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
     }
 
     private static Component deployStateText(long state) {
-        if (state == -1) return Component.translatable(EXPORT_MODE);
+        if (state == -1) return EXPORT_MODE;
         if (state == -2) return Component.translatable(UNSELECTED);
         if (state == -3) return Component.translatable(INSUFFICIENT);
         if (state == -4) return Component.translatable(READY);
@@ -550,12 +551,12 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         return UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(children);
     }
 
-    private Button navButton(String glyph, String tooltipKey, Runnable action, BooleanSupplier atEdge, String edgeKey) {
+    private Button navButton(String glyph, Component tooltip, Runnable action, BooleanSupplier atEdge, Component edgeTooltip) {
         var button = Button.glyph(glyph).setOnServerClick(() -> {
             action.run();
             onChanged();
-        }).disabled(atEdge, edgeKey);
-        button.tooltips(tooltipKey);
+        }).disabled(atEdge, edgeTooltip);
+        button.tooltips(tooltip);
         return button;
     }
 

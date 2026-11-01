@@ -125,7 +125,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @RegisterLanguage(cn = "EMI 中找不到配方 %s", en = "Recipe %s is not available in EMI")
     public static final String RECIPE_NOT_IN_EMI = "gtocore.pattern_buffer.recipe_not_in_emi";
     @RegisterLanguage(cn = "解除当前机器的配方锁定", en = "Clear the recipe lock of this machine")
-    public static final String CLEAR_RECIPE_SLOT = "gtceu.ae.pattern_part_machine.clear_recipe";
+    public static final Component CLEAR_RECIPE_SLOT = Component.translatable("gtceu.ae.pattern_part_machine.clear_recipe");
     @RegisterLanguage(cn = "当前机器的配方锁定已清除", en = "The recipe lock of this machine has been cleared")
     public static final String CLEAR_RECIPE_SLOT_MSG = "gtceu.ae.pattern_part_machine.clear_recipe_msg";
     @RegisterLanguage(cn = "打开emi页面后，选择一个配方，用“+”按钮将其添加到样板中。", en = "After opening the emi page, select a recipe and use the \"+\" button to add it to the pattern.")
@@ -137,16 +137,16 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @RegisterLanguage(cn = "物品不够时请求合成", en = "Request crafting when items are insufficient")
     public static final String REQUEST_CRAFTING_WHEN_INSUFFICIENT = "gtceu.ae.pattern_part_machine.REQUEST_CRAFTING_WHEN_INSUFFICIENT";
     @RegisterLanguage(cn = "已锁定，由样板内的配方自动拉取虚拟成分进行合成", en = "Locked, automatically pull virtual ingredients for crafting according to the recipe in the pattern")
-    public static final String ITEM_LOCKED = "gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode";
+    public static final Component ITEM_LOCKED = Component.translatable("gtceu.ae.pattern_part_machine.locked_emitting_crafting_mode");
     @RegisterLanguage(cn = "该模式与标准发信器的合成卡功能相似，在下单请求该物品后，机器会使用样板中的配方被动持续向机器内输入",
                       en = "This mode is similar to the crafting card function of a standard emitter. " +
                               "After placing an order for the item, the machine will passively and continuously input items into the machine using the recipe in the pattern.")
     public static final String EMITTING_CRAFTING_MODE_TOOLTIP = "gtceu.ae.pattern_part_machine.EMITTING_CRAFTING_MODE_TOOLTIP";
     @RegisterLanguage(cn = "需要先在此槽放入处理样板（发信合成监听样板产物的下单请求）",
                       en = "Put a processing pattern in this slot first (emitting crafting watches orders for the pattern's output)")
-    public static final String EMITTING_CRAFTING_MODE_NEED_PATTERN = "gtocore.pattern_buffer.emitting_crafting_mode.need_pattern";
+    public static final Component EMITTING_CRAFTING_MODE_NEED_PATTERN = Component.translatable("gtocore.pattern_buffer.emitting_crafting_mode.need_pattern");
     @RegisterLanguage(cn = "需要先在此槽放入样板", en = "Put a pattern in this slot first")
-    public static final String PATTERN_REQUIRED = "gtocore.pattern_buffer.pattern_required";
+    public static final Component PATTERN_REQUIRED = Component.translatable("gtocore.pattern_buffer.pattern_required");
     @RegisterLanguage(cn = "低存量触发模式", en = "Low stock triggering mode")
     public static final String LOW_STOCK_TRIGGERING_MODE = "gtceu.ae.pattern_part_machine.LOW_STOCK_TRIGGERING_MODE";
     @RegisterLanguage(cn = "该模式会在网络库存量低于设定数量时触发持续被动配方输入，直到库存量满足要求。",

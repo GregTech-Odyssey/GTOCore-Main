@@ -423,6 +423,9 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.COMBUSTION);
 
+    private static final Component RECIPE_SIMULATION_TIER = Component.translatable("gtocore.recipe.simulation_tier");
+    private static final Component RECIPE_TIER = Component.translatable("gtocore.recipe.tier");
+
     public static final RecipeType COSMOS_SIMULATION_RECIPES = register("cosmos_simulation", "宇宙模拟", MULTIBLOCK)
             .setSlotLayout(GTORecipeLayouts.WIDE_OUTPUT)
             .setMaxIOSize(1, 120, 1, 24)
@@ -430,7 +433,7 @@ public final class GTORecipeTypes {
             .setSound(GTSoundEntries.ARC)
             .ingredientConverter(DimensionDataItem.INGREDIENT_CONVERTER)
             .itemConverter(DimensionDataItem.ITEM_CONVERTER)
-            .setUiBuilder((recipe, info) -> info.line("gtocore.recipe.simulation_tier", () -> Component.literal(String.valueOf(recipe.data.getInt(GTORecipeDataKeys.TIER)))));
+            .setUiBuilder((recipe, info) -> info.line(RECIPE_SIMULATION_TIER, () -> Component.literal(String.valueOf(recipe.data.getInt(GTORecipeDataKeys.TIER)))));
 
     public static final RecipeType SPACE_PROBE_SURFACE_RECEPTION_RECIPES = register("space_probe_surface_reception", "宇宙射线搜集", MULTIBLOCK)
             .setEUIO(IO.IN)
@@ -898,7 +901,7 @@ public final class GTORecipeTypes {
             .setMaxIOSize(0, 0, 1, 1)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.ARC)
-            .setUiBuilder((recipe, info) -> info.line("gtocore.recipe.tier", () -> Component.literal(String.valueOf(recipe.data.getInt(GTORecipeDataKeys.TIER)))));
+            .setUiBuilder((recipe, info) -> info.line(RECIPE_TIER, () -> Component.literal(String.valueOf(recipe.data.getInt(GTORecipeDataKeys.TIER)))));
 
     public static final RecipeType PHYSICAL_VAPOR_DEPOSITION_RECIPES = register("physical_vapor_deposition", "物理气相沉积", MULTIBLOCK)
             .setEUIO(IO.IN)

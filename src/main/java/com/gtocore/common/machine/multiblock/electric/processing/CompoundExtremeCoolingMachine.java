@@ -84,9 +84,9 @@ public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMa
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addLine(WINGS_NAME, () -> hasStructurePart(PLASMA_WINGS) ? BUILT_TEXT : MISSING_TEXT)
+        page.addLine(Component.translatable(WINGS_NAME), () -> hasStructurePart(PLASMA_WINGS) ? BUILT_TEXT : MISSING_TEXT)
                 .bindLevel(this::wingsLevel)
-                .tooltips(WINGS_DESC);
+                .tooltips(Component.translatable(WINGS_DESC));
     }
 
     private Level wingsLevel() {

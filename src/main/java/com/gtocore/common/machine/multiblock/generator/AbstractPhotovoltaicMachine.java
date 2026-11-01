@@ -178,8 +178,8 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
     }
 
     @Override
-    public String getStorageSlotLabel() {
-        return BotaniaBlocks.motifDaybloom.asItem().getDescriptionId();
+    public Component getStorageSlotLabel() {
+        return Component.translatable(BotaniaBlocks.motifDaybloom.asItem().getDescriptionId());
     }
 
     @Override

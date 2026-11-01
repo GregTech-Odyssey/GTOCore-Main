@@ -42,11 +42,11 @@ public final class TechNode extends IdentityKey {
     @RegisterLanguage(cn = "前置：%s 未解锁", en = "Prerequisites: %s not unlocked")
     private static final String UNLOCKED = "gtocore.tech_node.unlocked";
     @RegisterLanguage(cn = "[配方奖励]", en = "[Recipe Reward]")
-    public static final String RECIPE_REWARD_LABEL = "gtocore.research.side_tab.recipe_reward";
+    public static final Component RECIPE_REWARD_LABEL = Component.translatable("gtocore.research.side_tab.recipe_reward");
     @RegisterLanguage(cn = "[其他奖励]", en = "[Other Reward]")
-    public static final String OTHER_REWARD_LABEL = "gtocore.research.side_tab.other_reward";
+    public static final Component OTHER_REWARD_LABEL = Component.translatable("gtocore.research.side_tab.other_reward");
     @RegisterLanguage(cn = "可解锁：", en = "Unlockable:")
-    public static final String UNLOCKABLE_LABEL = "gtocore.research.side_tab.unlockable";
+    public static final Component UNLOCKABLE_LABEL = Component.translatable("gtocore.research.side_tab.unlockable");
 
     @Getter
     final TechTreeManager manager;
@@ -104,7 +104,7 @@ public final class TechNode extends IdentityKey {
             recipePrimaryOutputs.add(mainOutput);
         }
         rewardLines.add(
-                Component.translatable(RECIPE_REWARD_LABEL).withStyle(net.minecraft.ChatFormatting.DARK_PURPLE)
+                RECIPE_REWARD_LABEL.copy().withStyle(net.minecraft.ChatFormatting.DARK_PURPLE)
                         .append(getMainOutputText(recipe).withStyle(net.minecraft.ChatFormatting.GRAY)));
     }
 
@@ -151,7 +151,7 @@ public final class TechNode extends IdentityKey {
         if (rewardLines.isEmpty() && additionalLines.isEmpty()) {
             return new ArrayList<>();
         }
-        var firstLine = Component.translatable(UNLOCKABLE_LABEL).withStyle(net.minecraft.ChatFormatting.GRAY);
+        var firstLine = UNLOCKABLE_LABEL.copy().withStyle(net.minecraft.ChatFormatting.GRAY);
         ArrayList<Component> lines = new ArrayList<>();
         lines.add(firstLine);
         lines.addAll(rewardLines);

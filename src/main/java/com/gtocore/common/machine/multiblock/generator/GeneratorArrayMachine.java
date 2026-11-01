@@ -56,9 +56,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class GeneratorArrayMachine extends StorageMultiblockMachine implements IArrayMachine, IBindable {
 
     @RegisterLanguage(cn = "无线电网模式", en = "Wireless Network Mode")
-    private static final String WIRELESS_MODE = "gtocore.machine.generator_array.wireless_mode";
+    private static final Component WIRELESS_MODE = Component.translatable("gtocore.machine.generator_array.wireless_mode");
     @RegisterLanguage(cn = "无线发电", en = "Wireless Output")
-    private static final String WIRELESS_OUTPUT = "gtocore.machine.generator_array.wireless_output";
+    private static final Component WIRELESS_OUTPUT = Component.translatable("gtocore.machine.generator_array.wireless_output");
 
     @SaveToDisk
     private final EnergyPortTrait portTrait;
@@ -236,7 +236,12 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotComponent() {
+        return IStorageMultiblock.SLOT_GENERATOR;
+    }
+
+    @Override
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_GENERATOR;
     }
 }

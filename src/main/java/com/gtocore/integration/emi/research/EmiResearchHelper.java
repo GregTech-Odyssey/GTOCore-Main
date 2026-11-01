@@ -55,7 +55,7 @@ public final class EmiResearchHelper {
     @RegisterLanguage(cn = "该物品尚未扫描", en = "This item has not been scanned")
     static final String DOMAIN_DATA_STORAGE_NOT_SCANNED = "gtocore.research.domain_data.storage.not_scanned";
     @RegisterLanguage(cn = "打开科技树", en = "Open Tech Tree")
-    static final String OPEN_TECH_TREE = "gtocore.research.open_tech_tree";
+    static final Component OPEN_TECH_TREE = Component.translatable("gtocore.research.open_tech_tree");
     @RegisterLanguage(cn = "扫描耗能", en = "Scan Power")
     static final String SCAN_POWER = "gtocore.research.scan_power";
     @RegisterLanguage(cn = "扫描状态", en = "Scan Status")

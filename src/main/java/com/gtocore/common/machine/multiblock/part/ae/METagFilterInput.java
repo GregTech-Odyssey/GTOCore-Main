@@ -10,6 +10,8 @@ import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 
+import net.minecraft.network.chat.Component;
+
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageService;
@@ -28,11 +30,11 @@ import java.util.function.LongSupplier;
 final class METagFilterInput {
 
     @RegisterLanguage(cn = "每种保持数量", en = "Amount per Type")
-    private static final String KEEP_AMOUNT = "gtocore.machine.me_tag_filter_input.keep_amount";
+    private static final Component KEEP_AMOUNT = Component.translatable("gtocore.machine.me_tag_filter_input.keep_amount");
     @RegisterLanguage(cn = "每种匹配的物品在总线内保持的数量", en = "Amount of each matching item kept in the bus")
-    private static final String KEEP_AMOUNT_ITEM = "gtocore.machine.me_tag_filter_input.keep_amount.item";
+    private static final Component KEEP_AMOUNT_ITEM = Component.translatable("gtocore.machine.me_tag_filter_input.keep_amount.item");
     @RegisterLanguage(cn = "每种匹配的流体在仓内保持的数量（mB）", en = "Amount of each matching fluid kept in the hatch (mB)")
-    private static final String KEEP_AMOUNT_FLUID = "gtocore.machine.me_tag_filter_input.keep_amount.fluid";
+    private static final Component KEEP_AMOUNT_FLUID = Component.translatable("gtocore.machine.me_tag_filter_input.keep_amount.fluid");
 
     private METagFilterInput() {}
 

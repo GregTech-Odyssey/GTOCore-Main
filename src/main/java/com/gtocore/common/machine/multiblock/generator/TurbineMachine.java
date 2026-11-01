@@ -329,7 +329,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
                             Component.translatable(DESC2),
                             Component.translatable(DESC3),
                             Component.translatable(DESC4),
-                            Component.translatable(DESC5));
+                            DESC5);
                 }
 
                 @Override
@@ -372,10 +372,10 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         // 范围只有 490%，用不上 ±1000% 那一档：只给 1% / 10% / 100%（Ctrl+Shift 沿用 100%）
         var factor = PercentField.of(NumberSettingPage.COMPACT_WIDTH, () -> highSpeedFactor, value -> setHighSpeedFactor((float) value),
                 ADJUST_MIN, ADJUST_MAX, PercentField.DEFAULT_STEP, 1, 10, 100);
-        var reset = Button.translatable(LayoutStyle.AUTO, RESET).setOnServerClick(() -> setHighSpeedFactor(1.0f));
+        var reset = Button.text(LayoutStyle.AUTO, RESET).setOnServerClick(() -> setHighSpeedFactor(1.0f));
         // 两种锁定原因分两层：外层转子缺失 / 材料不一致，内层转子仍在转动（每个元素只能设一次禁用）
         var controls = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, ADJUST_FACTOR).bindClientColor(UITheme::text), factor, reset)
+                .addChildren(TextLine.constant(LayoutStyle.AUTO, ADJUST_FACTOR).bindClientColor(UITheme::text), factor, reset)
                 .disabled(this::isAnyRotorSpinning, ROTOR_SPINNING);
         var guarded = UIElement.column(LayoutStyle.AUTO).addChildren(controls)
                 .disabled(() -> !hasMatchingRotors(), ROTOR_MISMATCH);
@@ -589,25 +589,25 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     @RegisterLanguage(cn = "高速模式乘数调节：", en = "High Speed Mode Multiplier Adjustment:")
     public static final String ADJUSTMENT1 = "gtocore.machine.mega_turbine.expert.adjustment.1";
     @RegisterLanguage(cn = "输出乘数", en = "Output Multiplier")
-    public static final String OUTPUT_MULTIPLIER = "gtocore.machine.mega_turbine.expert.output_multiplier";
+    public static final Component OUTPUT_MULTIPLIER = Component.translatable("gtocore.machine.mega_turbine.expert.output_multiplier");
     @RegisterLanguage(cn = "转子损坏乘数", en = "Rotor Damage Multiplier")
-    public static final String DAMAGE_MULTIPLIER = "gtocore.machine.mega_turbine.expert.damage_multiplier";
+    public static final Component DAMAGE_MULTIPLIER = Component.translatable("gtocore.machine.mega_turbine.expert.damage_multiplier");
     @RegisterLanguage(cn = "预计最大输出：%s", en = "Estimated Max Output: %s")
     public static final String ESTIMATED_MAX_OUTPUT = "gtocore.machine.mega_turbine.expert.estimated_max_output";
     @RegisterLanguage(cn = "预计最大输出", en = "Estimated Max Output")
-    private static final String ESTIMATED_MAX_OUTPUT_LABEL = "gtocore.machine.turbine.estimated_max_output";
+    private static final Component ESTIMATED_MAX_OUTPUT_LABEL = Component.translatable("gtocore.machine.turbine.estimated_max_output");
     @RegisterLanguage(cn = "转子转速", en = "Rotor Speed")
-    private static final String ROTOR_SPEED = "gtocore.machine.turbine.rotor_speed";
+    private static final Component ROTOR_SPEED = Component.translatable("gtocore.machine.turbine.rotor_speed");
     @RegisterLanguage(cn = "涡轮效率", en = "Turbine Efficiency")
-    private static final String TURBINE_EFFICIENCY = "gtocore.machine.turbine.efficiency";
+    private static final Component TURBINE_EFFICIENCY = Component.translatable("gtocore.machine.turbine.efficiency");
     @RegisterLanguage(cn = "转子耐久度", en = "Rotor Durability")
-    private static final String ROTOR_DURABILITY = "gtocore.machine.turbine.rotor_durability";
+    private static final Component ROTOR_DURABILITY = Component.translatable("gtocore.machine.turbine.rotor_durability");
     @RegisterLanguage(cn = "线圈等级", en = "Coil Tier")
-    private static final String COIL_TIER = "gtocore.machine.mega_turbine.coil_tier.value";
+    private static final Component COIL_TIER = Component.translatable("gtocore.machine.mega_turbine.coil_tier.value");
     @RegisterLanguage(cn = "转子启动增速", en = "Rotor Launch Speed Bonus")
-    private static final String LAUNCH_SPEED_BONUS = "gtocore.machine.mega_turbine.launch_speed_bonus";
+    private static final Component LAUNCH_SPEED_BONUS = Component.translatable("gtocore.machine.mega_turbine.launch_speed_bonus");
     @RegisterLanguage(cn = "转子损坏乘数基数", en = "Rotor Damage Multiplier Base")
-    private static final String DAMAGE_BASE = "gtocore.machine.mega_turbine.damage_base";
+    private static final Component DAMAGE_BASE = Component.translatable("gtocore.machine.mega_turbine.damage_base");
     @RegisterLanguage(cn = "专家模式下，允许调节高速模式下的输出乘数。", en = "In Expert Mode, allows adjustment of the output multiplier in High Speed Mode.")
     public static final String DESC1 = "gtocore.machine.mega_turbine.expert.desc.1";
     @RegisterLanguage(cn = "不过，调节输出乘数会同时大幅牺牲转子寿命。", en = "However, adjusting the output multiplier will also significantly sacrifice rotor durability.")
@@ -617,13 +617,13 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     @RegisterLanguage(cn = "公式：输出乘数 = 基础乘数 × 调节乘数", en = "Formula: Output Multiplier = Base Multiplier x Adjustment Multiplier")
     public static final String DESC4 = "gtocore.machine.mega_turbine.expert.desc.4";
     @RegisterLanguage(cn = "转子损坏乘数 = 基础乘数 × max(2.2 - 0.08 × 玻璃等级, 1.2) ^ (调节乘数 - 1)", en = "Rotor Damage Multiplier = Base Multiplier x max(2.2 - 0.08 * Glass Tier, 1.2) ^ (Adjustment Multiplier - 1)")
-    public static final String DESC5 = "gtocore.machine.mega_turbine.expert.desc.5";
+    public static final Component DESC5 = Component.translatable("gtocore.machine.mega_turbine.expert.desc.5");
     @RegisterLanguage(cn = "调节乘数（%%）", en = "Adjustment Multiplier (%%)")
-    public static final String ADJUST_FACTOR = "gtocore.machine.mega_turbine.expert.adjust_factor";
+    public static final Component ADJUST_FACTOR = Component.translatable("gtocore.machine.mega_turbine.expert.adjust_factor");
     @RegisterLanguage(cn = "重置", en = "Reset")
-    public static final String RESET = "gtocore.machine.mega_turbine.expert.reset";
+    public static final Component RESET = Component.translatable("gtocore.machine.mega_turbine.expert.reset");
     @RegisterLanguage(cn = "转子仍在转动，停转后才能调节", en = "The rotor is still spinning; adjust after it stops")
-    public static final String ROTOR_SPINNING = "gtocore.machine.mega_turbine.expert.rotor_spinning";
+    public static final Component ROTOR_SPINNING = Component.translatable("gtocore.machine.mega_turbine.expert.rotor_spinning");
     @RegisterLanguage(cn = "转子缺失或材料不一致", en = "Rotors are missing or of different materials")
-    public static final String ROTOR_MISMATCH = "gtocore.machine.mega_turbine.expert.rotor_mismatch";
+    public static final Component ROTOR_MISMATCH = Component.translatable("gtocore.machine.mega_turbine.expert.rotor_mismatch");
 }

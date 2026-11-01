@@ -108,28 +108,28 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
     }
 
     @RegisterLanguage(cn = "塔顶温度", en = "Top Temperature")
-    private static final String TOP_TEMPERATURE = "gtocore.machine.primitive_distillation_tower.top_temperature";
+    private static final Component TOP_TEMPERATURE = Component.translatable("gtocore.machine.primitive_distillation_tower.top_temperature");
     @RegisterLanguage(cn = "塔底温度", en = "Bottom Temperature")
-    private static final String BOTTOM_TEMPERATURE = "gtocore.machine.primitive_distillation_tower.bottom_temperature";
+    private static final Component BOTTOM_TEMPERATURE = Component.translatable("gtocore.machine.primitive_distillation_tower.bottom_temperature");
     @RegisterLanguage(cn = "连续运行", en = "Continuous Run")
-    private static final String CONTINUOUS = "gtocore.machine.primitive_distillation_tower.continuous";
+    private static final Component CONTINUOUS = Component.translatable("gtocore.machine.primitive_distillation_tower.continuous");
     @RegisterLanguage(cn = "耗时倍率", en = "Duration Multiplier")
-    private static final String DURATION = "gtocore.machine.primitive_distillation_tower.duration";
+    private static final Component DURATION = Component.translatable("gtocore.machine.primitive_distillation_tower.duration");
     @RegisterLanguage(cn = "塔底需高于 400 K 才能运行", en = "The bottom must exceed 400 K to run")
-    private static final String BOTTOM_HINT = "gtocore.machine.primitive_distillation_tower.bottom_hint";
+    private static final Component BOTTOM_HINT = Component.translatable("gtocore.machine.primitive_distillation_tower.bottom_hint");
     @RegisterLanguage(cn = "此层没有输出仓，产物将被丢弃", en = "No output hatch on this layer; the product is discarded")
-    private static final String LAYER_MISSING = "gtocore.machine.primitive_distillation_tower.layer_missing";
+    private static final Component LAYER_MISSING = Component.translatable("gtocore.machine.primitive_distillation_tower.layer_missing");
     @RegisterLanguage(cn = "无输出仓", en = "No Hatch")
-    private static final String LAYER_MISSING_SHORT = "gtocore.machine.primitive_distillation_tower.layer_missing_short";
+    private static final Component LAYER_MISSING_SHORT = Component.translatable("gtocore.machine.primitive_distillation_tower.layer_missing_short");
     @RegisterLanguage(cn = "部分产物丢失", en = "Products Lost")
-    private static final String PRODUCTS_LOST = "gtocore.machine.primitive_distillation_tower.products_lost";
+    private static final Component PRODUCTS_LOST = Component.translatable("gtocore.machine.primitive_distillation_tower.products_lost");
 
     @Override
     public UIElement createUIWidget() {
         var page = MultiblockPage.of(this).setScreen(MachineEra.STEEL.getScreen());
         page.getRecipeList().setFluidOutputBlocked(this::layerMissing, LAYER_MISSING_SHORT, LAYER_MISSING);
         page.bindAlert(this::productsLost, PRODUCTS_LOST);
-        temperatureBar(page, BOTTOM_TEMPERATURE, () -> heatMachineB).addMarker(400, 0xFF2A2F33).bindDetail(() -> BOTTOM_DETAIL);
+        temperatureBar(page, BOTTOM_TEMPERATURE, () -> heatMachineB).addMarker(400, 0xFF2A2F33).bindDetail(() -> BOTTOM_HINT);
         temperatureBar(page, TOP_TEMPERATURE, () -> heatMachineA);
         page.addLine(CONTINUOUS, MultiblockPage.cached(() -> getRecipeLogic().getTotalContinuousRunningTime() / 20,
                 seconds -> Component.literal(FormattingUtil.formatNumbers(seconds) + " s")));
@@ -138,9 +138,7 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
         return page.build();
     }
 
-    private static final Component BOTTOM_DETAIL = Component.translatable(BOTTOM_HINT);
-
-    private static ProgressBar temperatureBar(MultiblockPage page, String key, Supplier<IHeatContainerPart> part) {
+    private static ProgressBar temperatureBar(MultiblockPage page, Component key, Supplier<IHeatContainerPart> part) {
         return page.addBar(key, UITheme::barHeat, () -> {
             var hatch = part.get();
             if (hatch == null) return ProgressBar.Progress.EMPTY;

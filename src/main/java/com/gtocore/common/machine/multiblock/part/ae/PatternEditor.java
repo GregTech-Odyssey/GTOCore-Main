@@ -54,34 +54,34 @@ import java.util.Objects;
 public final class PatternEditor extends UIElement {
 
     @RegisterLanguage(cn = "样板编辑器", en = "Pattern Editor")
-    static final String TITLE = "gtocore.ae.pattern_editor.title";
+    static final Component TITLE = Component.translatable("gtocore.ae.pattern_editor.title");
     @RegisterLanguage(cn = "拖入物品、流体或通配符；点击槽位在下方修改数量，中键清空。每次修改立即生效，主产物不能与其他样板槽重复。", en = "Drop items, fluids or wildcards; select a slot to edit its amount below, or middle-click to clear. Changes take effect immediately; primary outputs must be unique across pattern slots.")
-    static final String HINT = "gtocore.ae.pattern_editor.hint";
+    static final Component HINT = Component.translatable("gtocore.ae.pattern_editor.hint");
     @RegisterLanguage(cn = "请放入空白样板或处理样板", en = "Insert a blank or processing pattern, or ensure the ME network can provide one blank pattern")
-    static final String INSERT_PATTERN = "gtocore.ae.pattern_editor.insert_pattern";
+    static final Component INSERT_PATTERN = Component.translatable("gtocore.ae.pattern_editor.insert_pattern");
     @RegisterLanguage(cn = "可提取样板并编码", en = "Pattern can be extracted and encoded")
-    private static final String EMPTY_PATTERN = "gtocore.ae.pattern_editor.empty_pattern";
+    private static final Component EMPTY_PATTERN = Component.translatable("gtocore.ae.pattern_editor.empty_pattern");
     @RegisterLanguage(cn = "此样板不完整", en = "This pattern is incomplete")
-    private static final String INCOMPLETE = "gtocore.ae.pattern_editor.incomplete";
+    private static final Component INCOMPLETE = Component.translatable("gtocore.ae.pattern_editor.incomplete");
     @RegisterLanguage(cn = "修改已写入样板", en = "Changes saved to the pattern")
-    private static final String READY = "gtocore.ae.pattern_editor.ready";
+    private static final Component READY = Component.translatable("gtocore.ae.pattern_editor.ready");
     @RegisterLanguage(cn = "输入", en = "Inputs")
-    private static final String INPUT = "gtocore.ae.pattern_editor.input";
+    private static final Component INPUT = Component.translatable("gtocore.ae.pattern_editor.input");
     @RegisterLanguage(cn = "输出", en = "Outputs")
-    private static final String OUTPUT = "gtocore.ae.pattern_editor.output";
+    private static final Component OUTPUT = Component.translatable("gtocore.ae.pattern_editor.output");
     @RegisterLanguage(cn = "%s #%s：%s", en = "%s #%s: %s")
     private static final String SELECTED = "gtocore.ae.pattern_editor.selected";
     @RegisterLanguage(cn = "空槽", en = "Empty slot")
-    private static final String EMPTY = "gtocore.ae.pattern_editor.empty";
+    private static final Component EMPTY = Component.translatable("gtocore.ae.pattern_editor.empty");
     @RegisterLanguage(cn = "选择一个有内容的槽位后修改数量", en = "Select a non-empty slot to edit its amount")
-    private static final String SELECT_SLOT = "gtocore.ae.pattern_editor.select_slot";
+    private static final Component SELECT_SLOT = Component.translatable("gtocore.ae.pattern_editor.select_slot");
     @RegisterLanguage(cn = "清空选中槽位", en = "Clear Selected Slot")
-    private static final String CLEAR = "gtocore.ae.pattern_editor.clear";
+    private static final Component CLEAR = Component.translatable("gtocore.ae.pattern_editor.clear");
     @RegisterLanguage(cn = "转化为通配符", en = "Convert to Wildcard")
-    private static final String CONVERT_TO_WILDCARD = "gtocore.ae.pattern_editor.convert_to_wildcard";
+    private static final Component CONVERT_TO_WILDCARD = Component.translatable("gtocore.ae.pattern_editor.convert_to_wildcard");
 
-    private static final Component[] STATES = { Component.translatable(INSERT_PATTERN), Component.translatable(INCOMPLETE), Component.translatable(READY), Component.translatable(EMPTY_PATTERN) };
-    private static final Component INSTRUCTIONS = Component.translatable(HINT);
+    private static final Component[] STATES = { INSERT_PATTERN, INCOMPLETE, READY, EMPTY_PATTERN };
+    private static final Component INSTRUCTIONS = HINT;
     private static final int SIDE_COLUMNS = 3;
     private static final int PAGE_SLOTS = SIDE_COLUMNS * SIDE_COLUMNS;
     private static final int SIDE_WIDTH = SIDE_COLUMNS * UISizes.SLOT_SIZE;
@@ -133,13 +133,13 @@ public final class PatternEditor extends UIElement {
         addChild(amount);
         if (machine instanceof MEWildcardPatternBufferPartMachine) {
             var wildcard = UIElement.column(LayoutStyle.AUTO)
-                    .addChild(Button.translatable(LayoutStyle.AUTO, CONVERT_TO_WILDCARD).setOnServerClick(this::convertSelectedToWildcard))
+                    .addChild(Button.text(LayoutStyle.AUTO, CONVERT_TO_WILDCARD).setOnServerClick(this::convertSelectedToWildcard))
                     .setDisplay(false);
             addChild(wildcard);
             // 显隐同步挂在编辑器上，隐藏按钮后仍能收到重新显示的更新。
             addSyncValue(SyncValue.ofBool(() -> selectedWildcardKey() != null).onChanged(wildcard::setDisplay));
         }
-        addChild(Button.translatable(LayoutStyle.AUTO, CLEAR)
+        addChild(Button.text(LayoutStyle.AUTO, CLEAR)
                 .setOnServerClick(() -> machine.setEditorStack(patternIndex, selectedOutput(), selectedIndex(), null))
                 .disabled(() -> selectedStack() == null, SELECT_SLOT));
         disabled(() -> !machine.canEditPattern(patternIndex), INSERT_PATTERN);
@@ -163,10 +163,10 @@ public final class PatternEditor extends UIElement {
         var content = UIElement.column(section.getContentWidth()).layout(l -> l.gapAll(UISizes.GAP)).setDisplay(false);
         // 绑定留在可见的标题区，收起内容后仍可同步展开状态；状态只属于当前玩家的面板。
         var expanded = section.addBinding(Binding.bindBool(content::isDisplayed, content::setDisplay).onChanged(content::setDisplay));
-        String title = Component.translatable(TITLE).getString();
+        String title = TITLE.getString();
         String expandedTitle = "▼ " + title;
         String collapsedTitle = "▶ " + title;
-        section.addChildren(Button.translatable(LayoutStyle.AUTO, TITLE)
+        section.addChildren(Button.text(LayoutStyle.AUTO, TITLE)
                 .bindClientText(() -> expanded.getValue() ? expandedTitle : collapsedTitle)
                 .setOnClientClick(() -> expanded.set(!expanded.getValue()))
                 .disabled(() -> !expanded.getValue() && !machine.canEditPattern(patternIndex), INSERT_PATTERN), content);
@@ -225,7 +225,7 @@ public final class PatternEditor extends UIElement {
                     slot -> new GhostSlot(this, output, start + slot))));
         }
         var side = UIElement.column(SIDE_WIDTH).layout(l -> l.gapAll(UISizes.GAP).alignCenter());
-        side.addChildren(TextLine.translatable(SIDE_WIDTH, output ? OUTPUT : INPUT).setTextAlign(Horizontal.CENTER), pages,
+        side.addChildren(TextLine.constant(SIDE_WIDTH, output ? OUTPUT : INPUT).setTextAlign(Horizontal.CENTER), pages,
                 Stepper.of(18, pages::getPage, pages::selectPage, 0, pagesCount - 1).setFormatter(page -> labels[page]));
         return side;
     }
@@ -270,8 +270,8 @@ public final class PatternEditor extends UIElement {
         if (nameSlot != selectedSlot || !Objects.equals(nameStack, stack)) {
             nameSlot = selectedSlot;
             nameStack = stack;
-            selectedName = Component.translatable(SELECTED, Component.translatable(selectedOutput() ? OUTPUT : INPUT), selectedIndex() + 1,
-                    stack == null ? Component.translatable(EMPTY) : stack.what().getDisplayName());
+            selectedName = Component.translatable(SELECTED, selectedOutput() ? OUTPUT : INPUT, selectedIndex() + 1,
+                    stack == null ? EMPTY : stack.what().getDisplayName());
         }
         return selectedName;
     }

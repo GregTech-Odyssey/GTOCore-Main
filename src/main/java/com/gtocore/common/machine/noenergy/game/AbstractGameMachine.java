@@ -89,11 +89,11 @@ import java.util.function.Supplier;
 public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements IFancyUIMachine, IMachineLife {
 
     @RegisterLanguage(cn = "余额", en = "Credits")
-    protected static final String LINE_BALANCE = "gtocore.machine.game.line.balance";
+    protected static final Component LINE_BALANCE = Component.translatable("gtocore.machine.game.line.balance");
     @RegisterLanguage(cn = "取出全部", en = "Withdraw all")
-    protected static final String BUTTON_WITHDRAW = "gtocore.machine.game.button.withdraw";
+    protected static final Component BUTTON_WITHDRAW = Component.translatable("gtocore.machine.game.button.withdraw");
     @RegisterLanguage(cn = "没有余额可取出", en = "Nothing to withdraw")
-    protected static final String REASON_NOTHING_TO_WITHDRAW = "gtocore.machine.game.reason.nothing_to_withdraw";
+    protected static final Component REASON_NOTHING_TO_WITHDRAW = Component.translatable("gtocore.machine.game.reason.nothing_to_withdraw");
     /** 「配置」子页的标题与标签提示：三个游戏都挂同一个子页，文案也共用。 */
     @RegisterLanguage(cn = "配置", en = "Config")
     protected static final String PAGE_SETTINGS = "gtocore.machine.game.page.settings";
@@ -112,18 +112,19 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 排行榜页签图标：金银铜三色柱，放在 GTOCore 自己的小组件图集里。 */
     protected static final IGuiTexture LEADERBOARD_ICON = GTOGuiTextures.LEADERBOARD;
     @RegisterLanguage(cn = "允许其他玩家游玩", en = "Allow other players")
-    protected static final String LINE_ALLOW_OTHERS = "gtocore.machine.game.allow_others";
+    protected static final Component LINE_ALLOW_OTHERS = Component.translatable("gtocore.machine.game.allow_others");
     @RegisterLanguage(cn = "关闭后只有机器主人（含同队、好友与管理员）能打开并游玩这台机器",
                       en = "When off, only the machine owner (plus their team, friends and operators) can open and play it")
-    protected static final String TOOLTIP_ALLOW_OTHERS = "gtocore.machine.game.allow_others.tooltip";
+    protected static final Component TOOLTIP_ALLOW_OTHERS = Component.translatable("gtocore.machine.game.allow_others.tooltip");
     @RegisterLanguage(cn = "只有机器主人能改这个开关", en = "Only the machine owner can change this")
     protected static final String REASON_ONLY_OWNER = "gtocore.machine.game.reason.only_owner";
     @RegisterLanguage(cn = "这台机器不允许你游玩", en = "You are not allowed to play this machine")
     protected static final String MSG_NO_PERMISSION = "gtocore.machine.game.msg.no_permission";
     @RegisterLanguage(cn = "里程碑", en = "Milestones")
-    protected static final String SECTION_MILESTONES = "gtocore.machine.game.section.milestones";
+    protected static final Component SECTION_MILESTONES = Component.translatable("gtocore.machine.game.section.milestones");
     @RegisterLanguage(cn = "暂无记录", en = "No records yet")
-    protected static final String TEXT_NO_RECORD = "gtocore.machine.game.text.no_record";
+    protected static final Component TEXT_NO_RECORD = Component.translatable("gtocore.machine.game.text.no_record");
+
     @RegisterLanguage(cn = "%s天%s", en = "D%s %s")
     protected static final String TEXT_DAY_TIME = "gtocore.machine.game.text.day_time";
     /** 里程碑表格的列标题：几台游戏机共用的那几列。 */
@@ -418,13 +419,17 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     protected abstract static class GamePage implements IFancyUIProvider {
 
         private final IGuiTexture icon;
-        private final String titleKey;
-        private final String tooltipKey;
+        private final Component title;
+        private final Component tooltip;
+
+        protected GamePage(IGuiTexture icon, Component title, Component tooltip) {
+            this.icon = icon;
+            this.title = title;
+            this.tooltip = tooltip;
+        }
 
         protected GamePage(IGuiTexture icon, String titleKey, String tooltipKey) {
-            this.icon = icon;
-            this.titleKey = titleKey;
-            this.tooltipKey = tooltipKey;
+            this(icon, Component.translatable(titleKey), Component.translatable(tooltipKey));
         }
 
         @Override
@@ -434,12 +439,12 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         @Override
         public final Component getTitle() {
-            return Component.translatable(titleKey);
+            return title;
         }
 
         @Override
         public final List<Component> getTabTooltips() {
-            return List.of(Component.translatable(tooltipKey));
+            return List.of(tooltip);
         }
 
         @Override
@@ -456,6 +461,10 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         /** 当前选中的榜；服务端改动后由 SwitchedContent 下发给客户端。 */
         private int board;
+
+        protected LeaderboardTabPage(Component title, Component tooltip) {
+            super(LEADERBOARD_ICON, title, tooltip);
+        }
 
         protected LeaderboardTabPage(String titleKey, String tooltipKey) {
             super(LEADERBOARD_ICON, titleKey, tooltipKey);
@@ -479,6 +488,10 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 单榜排行榜页：一张表。 */
     protected abstract class SingleLeaderboardPage extends GamePage {
 
+        protected SingleLeaderboardPage(Component title, Component tooltip) {
+            super(LEADERBOARD_ICON, title, tooltip);
+        }
+
         protected SingleLeaderboardPage(String titleKey, String tooltipKey) {
             super(LEADERBOARD_ICON, titleKey, tooltipKey);
         }
@@ -497,8 +510,8 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
     /** 「取出全部」按钮：余额为 0 时禁用；点一下把余额按面额从大到小塞进玩家背包，塞不下的留在余额里。 */
     protected final Button createWithdrawButton(int width) {
-        var withdraw = Button.translatable(width, BUTTON_WITHDRAW);
-        withdraw.setHoverTooltips(currencyName());
+        var withdraw = Button.text(width, BUTTON_WITHDRAW);
+        withdraw.tooltips(Component.translatable(currencyName()));
         withdraw.disabled(() -> balance == 0, REASON_NOTHING_TO_WITHDRAW);
         withdraw.setOnServerClick(() -> withdrawAll(withdraw));
         return withdraw;
@@ -702,7 +715,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
             var table = UIElement.column(LayoutStyle.AUTO).layout(layout -> layout.gapAll(MILESTONE_GAP));
             table.addChild(headerRow());
             if (rowCount <= 0) {
-                table.addChild(TextLine.translatable(LayoutStyle.AUTO, TEXT_NO_RECORD).setTextAlign(Horizontal.CENTER));
+                table.addChild(TextLine.constant(LayoutStyle.AUTO, TEXT_NO_RECORD).setTextAlign(Horizontal.CENTER));
                 return table;
             }
             for (int row = 0; row < rowCount; row++) {

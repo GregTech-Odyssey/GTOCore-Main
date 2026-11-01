@@ -88,8 +88,12 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     }
 
     /// 存储转移（文案与 ME 磁盘箱子共用，注册在 MachineLang）
-    private static final String LANG_TRANSFER = "gtocore.machine.storage_transfer";
-    private static final String LANG_TRANSFER_TOOLTIP = "gtocore.machine.storage_transfer.tooltip";
+    private static final Component LANG_TRANSFER = Component.translatable("gtocore.machine.storage_transfer");
+    private static final Component LANG_TRANSFER_TOOLTIP = Component.translatable("gtocore.machine.storage_transfer.tooltip");
+
+    private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
+    private static final Component PRIORITY_EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
+    private static final Component PRIORITY_INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
 
     int counter;
     @Setter
@@ -140,16 +144,17 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
     UIElement buildPage() {
         var section = UIElement.section();
-        section.addChild(Form.numberRow("gui.ae2.Priority", MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
-                "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
+        section.addChild(Form.numberRow(PRIORITY, MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
+                PRIORITY_EXTRACTION_HINT, PRIORITY_INSERTION_HINT));
         addTransferButton(section);
         return Form.page().addChild(section);
     }
 
     final void addTransferButton(UIElement section) {
-        section.addChild(Button.translatable(UISizes.BUTTON_WIDTH, LANG_TRANSFER)
-                .setOnServerClick(this::transferFromNetwork)
-                .bindTooltip(() -> Component.translatable(LANG_TRANSFER_TOOLTIP)));
+        var button = Button.text(UISizes.BUTTON_WIDTH, LANG_TRANSFER)
+                .setOnServerClick(this::transferFromNetwork);
+        button.tooltips(LANG_TRANSFER_TOOLTIP);
+        section.addChild(button);
     }
 
     private void transferFromNetwork() {
@@ -654,7 +659,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     @RegisterLanguage(cn = "导入到ME存储器", en = "Import to ME Storage")
     private static final String LANG_IMPORT = "gtocore.machine.part.ae.storage_access.import";
     @RegisterLanguage(cn = "导入/导出速率设置", en = "Import/Export Rate Setting")
-    private static final String LANG_RATE_SETTING = "gtocore.machine.part.ae.storage_access.rate_setting";
+    private static final Component LANG_RATE_SETTING = Component.translatable("gtocore.machine.part.ae.storage_access.rate_setting");
 
     /**
      * 可配置存储访问仓：在普通访问仓之上加两张按 AEKey 记的表——
@@ -675,27 +680,27 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         static final int OUTPUT_ARGUMENT = 1;
 
         @RegisterLanguage(cn = "输入限制", en = "Input Limit")
-        private static final String LANG_INPUT_LIMIT = "gtocore.machine.configurable_storage_access_hatch.input_limit";
+        private static final Component LANG_INPUT_LIMIT = Component.translatable("gtocore.machine.configurable_storage_access_hatch.input_limit");
         @RegisterLanguage(cn = "按输入表限制存入：每种最多存多少（0 = 禁止存入）", en = "Limits insertion by the input table: the most of each key that may be stored (0 = forbidden)")
-        private static final String LANG_INPUT_LIMIT_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_limit_tooltip";
+        private static final Component LANG_INPUT_LIMIT_TOOLTIP = Component.translatable("gtocore.machine.configurable_storage_access_hatch.input_limit_tooltip");
         @RegisterLanguage(cn = "开关：关着时不看输入表", en = "Switch: the input table is ignored while off")
         private static final String LANG_INPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_switch_tooltip";
         @RegisterLanguage(cn = "输出限制", en = "Output Limit")
-        private static final String LANG_OUTPUT_LIMIT = "gtocore.machine.configurable_storage_access_hatch.output_limit";
+        private static final Component LANG_OUTPUT_LIMIT = Component.translatable("gtocore.machine.configurable_storage_access_hatch.output_limit");
         @RegisterLanguage(cn = "按输出表限制取出：每种至少保留多少（0 = 不设下限）", en = "Limits extraction by the output table: the least of each key to keep (0 = no floor)")
-        private static final String LANG_OUTPUT_LIMIT_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_limit_tooltip";
+        private static final Component LANG_OUTPUT_LIMIT_TOOLTIP = Component.translatable("gtocore.machine.configurable_storage_access_hatch.output_limit_tooltip");
         @RegisterLanguage(cn = "开关：关着时不看输出表", en = "Switch: the output table is ignored while off")
         private static final String LANG_OUTPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_switch_tooltip";
         @RegisterLanguage(cn = "配置", en = "Configure")
-        private static final String LANG_CONFIG = "gtocore.machine.configurable_storage_access_hatch.config";
+        private static final Component LANG_CONFIG = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config");
         @RegisterLanguage(cn = "在弹出面板里编辑这张表", en = "Edit this table in the popup")
-        private static final String LANG_CONFIG_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.config_tooltip";
+        private static final Component LANG_CONFIG_TOOLTIP = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_tooltip");
         @RegisterLanguage(cn = "点格子放东西、在中间的输入框里改数量；右键清掉格子 = 不限", en = "Click a slot to set a key, edit the amount in the middle field; right-click a slot to clear it (unlimited)")
-        private static final String LANG_CONFIG_HINT = "gtocore.machine.configurable_storage_access_hatch.config_hint";
+        private static final Component LANG_CONFIG_HINT = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_hint");
         @RegisterLanguage(cn = "物品格", en = "Item Slots")
-        private static final String LANG_CONFIG_ITEMS = "gtocore.machine.configurable_storage_access_hatch.config_items";
+        private static final Component LANG_CONFIG_ITEMS = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_items");
         @RegisterLanguage(cn = "流体格", en = "Fluid Slots")
-        private static final String LANG_CONFIG_FLUIDS = "gtocore.machine.configurable_storage_access_hatch.config_fluids";
+        private static final Component LANG_CONFIG_FLUIDS = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_fluids");
 
         @SaveToDisk
         private final AEKeyLongMap<AEKey> inputLimits = new AEKeyLongMap<>();
@@ -883,7 +888,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         @Override
         protected void registerPopups(MachineWindow window) {
             window.registerPopup(CONFIG_POPUP, argument -> Popup.of(
-                    () -> Component.translatable(argument == OUTPUT_ARGUMENT ? LANG_OUTPUT_LIMIT : LANG_INPUT_LIMIT),
+                    () -> argument == OUTPUT_ARGUMENT ? LANG_OUTPUT_LIMIT : LANG_INPUT_LIMIT,
                     this::buildConfigPanel));
         }
 
@@ -893,7 +898,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
          */
         private void buildConfigPanel(UIElement column) {
             var hint = MEPatternPartUI.section(column, LANG_CONFIG);
-            hint.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_CONFIG_HINT).bindClientColor(UITheme::panelText));
+            hint.addChild(TextLine.constant(LayoutStyle.AUTO, LANG_CONFIG_HINT).bindClientColor(UITheme::panelText));
             MEPatternPartUI.section(column, LANG_CONFIG_ITEMS).addChild(configGrid(true));
             MEPatternPartUI.section(column, LANG_CONFIG_FLUIDS).addChild(configGrid(false));
         }
@@ -908,10 +913,10 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         /** 配置按钮：服务端切到这张表，客户端打开配置面板（已打开时原地换成新表的界面）。 */
         private Button configButton(boolean output) {
-            var button = Button.translatable(UISizes.BUTTON_WIDTH, LANG_CONFIG)
+            var button = Button.text(UISizes.BUTTON_WIDTH, LANG_CONFIG)
                     .setSelected(() -> editingOutput == output)
-                    .setOnServerClick(() -> switchLimitMode(output))
-                    .bindTooltip(() -> Component.translatable(LANG_CONFIG_TOOLTIP));
+                    .setOnServerClick(() -> switchLimitMode(output));
+            button.tooltips(LANG_CONFIG_TOOLTIP);
             // 用按钮自己（一定挂在窗口里）反查窗口，别用建界面时抓的元素：那个可能已经不在树上
             button.setOnClientClick(() -> {
                 var window = MachineWindow.of(button);

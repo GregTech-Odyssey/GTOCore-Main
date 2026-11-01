@@ -58,17 +58,17 @@ import java.util.List;
 public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
 
     @RegisterLanguage(cn = "套装等级", en = "Set tier")
-    private static final String LABEL_SET_TIER = "gtocore.organ_modifier.set_tier";
+    private static final Component LABEL_SET_TIER = Component.translatable("gtocore.organ_modifier.set_tier");
     @RegisterLanguage(cn = "生命上限", en = "Max health")
-    private static final String LABEL_HEALTH = "gtocore.organ_modifier.health";
+    private static final Component LABEL_HEALTH = Component.translatable("gtocore.organ_modifier.health");
     @RegisterLanguage(cn = "饥饿值消耗", en = "Hunger drain")
-    private static final String LABEL_HUNGER = "gtocore.organ_modifier.hunger";
+    private static final Component LABEL_HUNGER = Component.translatable("gtocore.organ_modifier.hunger");
     @RegisterLanguage(cn = "可停留星球", en = "Habitable planets")
-    private static final String LABEL_PLANET = "gtocore.organ_modifier.planet";
+    private static final Component LABEL_PLANET = Component.translatable("gtocore.organ_modifier.planet");
     @RegisterLanguage(cn = "套装等级取九种身体器官中最低的等级，缺任何一件都不算整套", en = "The set tier is the lowest tier among the nine body organs; any missing organ breaks the set")
-    private static final String TIP_SET_TIER = "gtocore.organ_modifier.set_tier.tip";
+    private static final Component TIP_SET_TIER = Component.translatable("gtocore.organ_modifier.set_tier.tip");
     @RegisterLanguage(cn = "每缺一件身体器官，生命上限按比例降低；整套达到标准级 (I) 起，生命上限随套装等级提高", en = "Each missing body organ lowers your max health; a full set of Standard (I) or higher raises it by set tier")
-    private static final String TIP_HEALTH = "gtocore.organ_modifier.health.tip";
+    private static final Component TIP_HEALTH = Component.translatable("gtocore.organ_modifier.health.tip");
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
@@ -102,12 +102,12 @@ public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
             for (var type : OrganType.BODY) {
                 bodySlots.addChild(organSlot(organs, type, 0));
                 // 与槽同宽；放不下时截断，悬停看全名
-                bodyLabels.addChild(TextLine.translatable(UISizes.SLOT_SIZE, type.translationKey));
+                bodyLabels.addChild(TextLine.constant(UISizes.SLOT_SIZE, Component.translatable(type.translationKey)));
             }
             var body = UIElement.column(LayoutStyle.AUTO).addChildren(bodySlots, bodyLabels);
 
             // 翅膀：名称 …… 4 格
-            var wingName = TextLine.translatable(0, OrganType.WING.translationKey);
+            var wingName = TextLine.constant(0, Component.translatable(OrganType.WING.translationKey));
             wingName.layout(l -> l.flex(1));
             var wings = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.alignCenter()).addChild(wingName);
             for (int i = 0; i < OrganType.WING.slotCount; i++) {
@@ -126,7 +126,7 @@ public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
         /** 器官槽：直接绑定玩家器官库存的固定槽位，库存只收对应部位（{@link OrganInventory#isItemValid}）；空槽悬停显示部位。 */
         private static ItemSlot organSlot(OrganInventory organs, OrganType type, int index) {
             var slot = ItemSlot.of(organs, type.firstSlot() + index);
-            slot.tooltips(type.translationKey);
+            slot.tooltips(Component.translatable(type.translationKey));
             return slot;
         }
 

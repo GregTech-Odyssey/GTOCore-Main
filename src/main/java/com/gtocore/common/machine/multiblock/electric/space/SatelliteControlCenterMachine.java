@@ -47,40 +47,40 @@ import static com.gregtechceu.gtceu.api.GTValues.V;
 public final class SatelliteControlCenterMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
 
     @RegisterLanguage(en = "Target planet", cn = "目标星球")
-    private static final String TARGET = "gtocore.satellite_control_center.target";
+    private static final Component TARGET = Component.translatable("gtocore.satellite_control_center.target");
 
     @RegisterLanguage(en = "Rocket", cn = "所需火箭")
-    private static final String ROCKET = "gtocore.satellite_control_center.rocket";
+    private static final Component ROCKET = Component.translatable("gtocore.satellite_control_center.rocket");
 
     @RegisterLanguage(en = "Fuel", cn = "所需燃料")
-    private static final String FUEL = "gtocore.satellite_control_center.fuel";
+    private static final Component FUEL = Component.translatable("gtocore.satellite_control_center.fuel");
 
     @RegisterLanguage(en = "Status", cn = "状态")
-    private static final String STATE = "gtocore.satellite_control_center.state";
+    private static final Component STATE = Component.translatable("gtocore.satellite_control_center.state");
 
     @RegisterLanguage(en = "Standby", cn = "待命")
-    private static final String STATE_IDLE = "gtocore.satellite_control_center.state.idle";
+    private static final Component STATE_IDLE = Component.translatable("gtocore.satellite_control_center.state.idle");
 
     @RegisterLanguage(en = "Launching", cn = "发射中")
-    private static final String STATE_WORKING = "gtocore.satellite_control_center.state.working";
+    private static final Component STATE_WORKING = Component.translatable("gtocore.satellite_control_center.state.working");
 
     @RegisterLanguage(en = "Structure not formed", cn = "结构未成形")
-    private static final String STATE_UNFORMED = "gtocore.satellite_control_center.state.unformed";
+    private static final Component STATE_UNFORMED = Component.translatable("gtocore.satellite_control_center.state.unformed");
 
     @RegisterLanguage(en = "Insufficient voltage", cn = "电压不足")
-    private static final String STATE_LOW_VOLTAGE = "gtocore.satellite_control_center.state.low_voltage";
+    private static final Component STATE_LOW_VOLTAGE = Component.translatable("gtocore.satellite_control_center.state.low_voltage");
 
     @RegisterLanguage(en = "Requires an HV or higher energy hatch", cn = "需要 HV 及以上等级的能源仓")
-    private static final String LOW_VOLTAGE_DETAIL = "gtocore.satellite_control_center.low_voltage";
+    private static final Component LOW_VOLTAGE_DETAIL = Component.translatable("gtocore.satellite_control_center.low_voltage");
 
     @RegisterLanguage(en = "No owner", cn = "未绑定所有者")
-    private static final String STATE_NO_OWNER = "gtocore.satellite_control_center.state.no_owner";
+    private static final Component STATE_NO_OWNER = Component.translatable("gtocore.satellite_control_center.state.no_owner");
 
     @RegisterLanguage(en = "Launch", cn = "发射")
-    private static final String LAUNCH = "gtocore.satellite_control_center.launch";
+    private static final Component LAUNCH = Component.translatable("gtocore.satellite_control_center.launch");
 
     @RegisterLanguage(en = "Launch in progress", cn = "发射进行中")
-    private static final String LAUNCH_IN_PROGRESS = "gtocore.satellite_control_center.launch_in_progress";
+    private static final Component LAUNCH_IN_PROGRESS = Component.translatable("gtocore.satellite_control_center.launch_in_progress");
 
     @RegisterLanguage(cn = "建造空间站", en = "Build Space Station")
     private static final String BUILD_SPACE_STATION = "gtocore.satellite_control_center.emi.space_station";
@@ -118,14 +118,14 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
                 .bindIcon(() -> ROCKET_ICONS.computeIfAbsent(rocket(), ItemStack::new));
         status.addLine(FUEL, () -> new FluidStack(fuel(), FUEL_AMOUNT).getDisplayName().copy()
                 .append(" " + FormattingUtil.formatNumbers(FUEL_AMOUNT) + " mB"));
-        status.addLine(STATE, () -> Component.translatable(stateKey()))
+        status.addLine(STATE, this::stateText)
                 .bindLevel(this::stateLevel)
-                .bindDetail(() -> isFormed() && !isActive() && getTier() <= GTValues.MV ? Component.translatable(LOW_VOLTAGE_DETAIL) : Component.empty());
+                .bindDetail(() -> isFormed() && !isActive() && getTier() <= GTValues.MV ? LOW_VOLTAGE_DETAIL : Component.empty());
 
         var targets = RocketFuels.SATELLITE_TARGETS;
         var stepper = Stepper.of(STEPPER_VALUE_WIDTH, this::targetPosition, this::selectTarget, 0, targets.length - 1).setFormatter(i -> Component.translatable(targets[i].getKey()).getString());
-        stepper.setHoverTooltips(Component.translatable(TARGET));
-        var launchButton = Button.translatable(UISizes.BUTTON_WIDTH, LAUNCH)
+        stepper.tooltips(TARGET);
+        var launchButton = Button.text(UISizes.BUTTON_WIDTH, LAUNCH)
                 .setVariant(UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(this::requestLaunch)
                 .disabled(() -> getTier() <= GTValues.MV, LOW_VOLTAGE_DETAIL);
@@ -183,7 +183,7 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
         getRecipeLogic().updateTickSubscription();
     }
 
-    private String stateKey() {
+    private Component stateText() {
         if (!isFormed()) return STATE_UNFORMED;
         if (isActive()) return STATE_WORKING;
         if (getTier() <= GTValues.MV) return STATE_LOW_VOLTAGE;
@@ -192,11 +192,9 @@ public final class SatelliteControlCenterMachine extends ElectricMultiblockMachi
     }
 
     private Level stateLevel() {
-        return switch (stateKey()) {
-            case STATE_WORKING -> Level.GOOD;
-            case STATE_IDLE -> Level.NORMAL;
-            default -> Level.ERROR;
-        };
+        if (!isFormed() || getTier() <= GTValues.MV || getOwnerUUID() == null) return Level.ERROR;
+        if (isActive()) return Level.GOOD;
+        return Level.NORMAL;
     }
 
     @Override

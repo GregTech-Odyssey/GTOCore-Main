@@ -46,15 +46,15 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::HeatUpdate);
 
     @RegisterLanguage(cn = "燃料组件数量", en = "Fuel Components")
-    private static final String FUEL_COUNT = "gtocore.machine.fission_reactor.fuel_count";
+    private static final Component FUEL_COUNT = Component.translatable("gtocore.machine.fission_reactor.fuel_count");
     @RegisterLanguage(cn = "燃料组件相邻数", en = "Fuel Component Adjacency")
-    private static final String FUEL_ADJACENT = "gtocore.machine.fission_reactor.fuel_adjacent";
+    private static final Component FUEL_ADJACENT = Component.translatable("gtocore.machine.fission_reactor.fuel_adjacent");
     @RegisterLanguage(cn = "冷却组件数量", en = "Cooling Components")
-    private static final String COOLER_COUNT = "gtocore.machine.fission_reactor.cooler_count";
+    private static final Component COOLER_COUNT = Component.translatable("gtocore.machine.fission_reactor.cooler_count");
     @RegisterLanguage(cn = "冷却组件相邻数", en = "Cooling Component Adjacency")
-    private static final String COOLER_ADJACENT = "gtocore.machine.fission_reactor.cooler_adjacent";
+    private static final Component COOLER_ADJACENT = Component.translatable("gtocore.machine.fission_reactor.cooler_adjacent");
     @RegisterLanguage(cn = "堆温", en = "Reactor Temperature")
-    private static final String TEMPERATURE = "gtocore.machine.fission_reactor.temperature";
+    private static final Component TEMPERATURE = Component.translatable("gtocore.machine.fission_reactor.temperature");
 
     private static final Fluid DistilledWater = GTMaterials.DistilledWater.getFluid();
     private static final Fluid Steam = GTMaterials.Steam.getFluid();

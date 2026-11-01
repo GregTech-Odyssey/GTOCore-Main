@@ -48,7 +48,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class ProcessingArrayMachine extends TierCasingMultiblockMachine implements IParallelMachine, IArrayMachine {
 
     @RegisterLanguage(cn = "未放入机器", en = "No machine inserted")
-    static final String NO_MACHINE = "gtocore.machine.processing_array.no_machine";
+    static final Component NO_MACHINE = Component.translatable("gtocore.machine.processing_array.no_machine");
 
     private MachineDefinition machineDefinitionCache;
     @Getter

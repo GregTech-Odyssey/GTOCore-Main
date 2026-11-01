@@ -43,7 +43,7 @@ import java.util.Map;
 public final class BlockConversionRoomMachine extends StorageMultiblockMachine implements ICustomRecipeLogicHolder {
 
     @RegisterLanguage(cn = "转换模拟卡", en = "Conversion Simulation Card")
-    private static final String SLOT_LABEL = "gtocore.machine.block_conversion_room.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.block_conversion_room.slot");
 
     private static final List<int[]> poses1 = new ArrayList<>();
     private static final List<int[]> poses2 = new ArrayList<>();
@@ -183,7 +183,7 @@ public final class BlockConversionRoomMachine extends StorageMultiblockMachine i
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

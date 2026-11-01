@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.uipro.elements.PercentField;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -33,6 +34,9 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
     public static final double MIN_DURATION_MULTIPLIER = 0.0001D;
     public static final double MIN_ENERGY_MULTIPLIER = 0.01D;
     public static final double MAX_MULTIPLIER = 100D;
+
+    private static final Component DURATION = Component.translatable("gtocore.cover.creative_power_amplifier.duration");
+    private static final Component ENERGY = Component.translatable("gtocore.cover.creative_power_amplifier.energy");
 
     @SaveToDisk(defaultValue = "0.01")
     private double durationMultiplier = DEFAULT_DURATION_MULTIPLIER;
@@ -77,8 +81,8 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
         var energy = PercentField.of(LayoutStyle.AUTO, () -> energyMultiplier, this::setEnergyMultiplier,
                 MIN_ENERGY_MULTIPLIER, MAX_MULTIPLIER, PercentField.DEFAULT_STEP, 1, 10, 100);
         return Form.page().addChild(UIElement.section().addChildren(
-                Form.numberRow("gtocore.cover.creative_power_amplifier.duration", duration),
-                Form.numberRow("gtocore.cover.creative_power_amplifier.energy", energy)));
+                Form.numberRow(DURATION, duration),
+                Form.numberRow(ENERGY, energy)));
     }
 
     private void setDurationMultiplier(double durationMultiplier) {

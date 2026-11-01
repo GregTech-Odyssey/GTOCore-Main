@@ -6455,6 +6455,8 @@
   "gtocore.machine.hu_input": "熱量輸入：%s HU",
   "gtocore.machine.hu_output": "熱量輸出：%s HU",
   "gtocore.machine.hu_stored": "總熱量：%s HU",
+  "gtocore.machine.huge_bus.empty": "無",
+  "gtocore.machine.huge_bus.item": "物品",
   "gtocore.machine.hv_arc_generator.tooltip": "§7摩擦生電",
   "gtocore.machine.hv_cluster.tooltip": "§7生產薄片",
   "gtocore.machine.hv_dehydrator.tooltip": "§7脫水，脫水！",

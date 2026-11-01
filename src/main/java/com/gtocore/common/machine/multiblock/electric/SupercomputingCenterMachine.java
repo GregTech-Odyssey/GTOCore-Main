@@ -72,14 +72,14 @@ import static com.gtocore.common.data.GTOMaterials.*;
 public final class SupercomputingCenterMachine extends StorageMultiblockMachine implements IOpticalComputationProvider {
 
     @RegisterLanguage(cn = "主机", en = "Mainframe")
-    private static final String SLOT_LABEL = "gtocore.machine.supercomputing_center.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.supercomputing_center.slot");
 
     @RegisterLanguage(cn = "桥接", en = "Bridging")
-    private static final String BRIDGING = "gtocore.machine.supercomputing_center.bridging";
+    private static final Component BRIDGING = Component.translatable("gtocore.machine.supercomputing_center.bridging");
     @RegisterLanguage(cn = "组件总能耗", en = "Component Energy Usage")
-    private static final String ENERGY_CONSUMPTION = "gtocore.machine.supercomputing_center.energy_consumption";
+    private static final Component ENERGY_CONSUMPTION = Component.translatable("gtocore.machine.supercomputing_center.energy_consumption");
     @RegisterLanguage(cn = "冷却液需求", en = "Coolant Needed")
-    private static final String COOLANT = "gtocore.machine.supercomputing_center.coolant";
+    private static final Component COOLANT = Component.translatable("gtocore.machine.supercomputing_center.coolant");
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor cwutMonitor = holder.monitorTick(GTOTickTimeMonitors.CWUT_MODIFICATION, this::maxCWUtModificationUpdate);
@@ -489,7 +489,12 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotComponent() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

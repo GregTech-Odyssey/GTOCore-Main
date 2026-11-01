@@ -49,9 +49,9 @@ import java.util.UUID;
 public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultiblockMachine implements IWirelessGridProvider, IBindable, ITierCasingMachine, IMachineLife, IMachineSubWindows {
 
     @RegisterLanguage(cn = "目标维度", en = "Target Dimension")
-    private static final String TARGET = "gtocore.machine.wireless_dimension_repeater.target";
+    private static final Component TARGET = Component.translatable("gtocore.machine.wireless_dimension_repeater.target");
     @RegisterLanguage(cn = "线路连接的目标维度，连接后两个维度可双向输电", en = "The dimension this line connects to; energy then flows both ways between the two dimensions")
-    private static final String TARGET_TIP = "gtocore.machine.wireless_dimension_repeater.target.tooltip";
+    private static final Component TARGET_TIP = Component.translatable("gtocore.machine.wireless_dimension_repeater.target.tooltip");
     @RegisterLanguage(cn = "线路：%s ↔ %s", en = "Line: %s ↔ %s")
     private static final String LINE = "gtocore.machine.wireless_dimension_repeater.line";
     @RegisterLanguage(cn = "每个方向：%s", en = "Each way: %s")

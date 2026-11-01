@@ -70,7 +70,7 @@ public final class MEDiskBoxMachine extends MetaMachine
     }
 
     @RegisterLanguage(cn = "存储组件", en = "Storage Component")
-    private static final String SLOT_LABEL = "gtocore.machine.me_disk_box.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.me_disk_box.slot");
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meStorageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::tickUpdate);
@@ -78,12 +78,15 @@ public final class MEDiskBoxMachine extends MetaMachine
     /// 组件槽的数量上限
     public static final int COMPONENT_LIMIT = 64;
     /// 数据索引位置（与 ME 存储器共用同一套文案）
-    private static final String MODE = "gtocore.machine.me_storage.mode";
+    private static final Component MODE = Component.translatable("gtocore.machine.me_storage.mode");
     /// 存储转移的文案与存储访问仓共用，注册在 MachineLang
-    private static final String TRANSFER = "gtocore.machine.storage_transfer";
-    private static final String TRANSFER_TOOLTIP = "gtocore.machine.storage_transfer.tooltip";
+    private static final Component TRANSFER = Component.translatable("gtocore.machine.storage_transfer");
+    private static final Component TRANSFER_TOOLTIP = Component.translatable("gtocore.machine.storage_transfer.tooltip");
     @RegisterLanguage(cn = "执行", en = "Run")
-    private static final String TRANSFER_RUN = "gtocore.machine.me_disk_box.transfer_run";
+    private static final Component TRANSFER_RUN = Component.translatable("gtocore.machine.me_disk_box.transfer_run");
+
+    private static final Component MACHINES = Component.translatable("config.gtceu.option.machines");
+    private static final Component PLAYER = Component.translatable("gtceu.ownership.name.player");
 
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
@@ -329,7 +332,7 @@ public final class MEDiskBoxMachine extends MetaMachine
     public Widget createUIWidget() {
         return MachineDisplay.page(this, this::addDisplayText, controls -> {
             addStorageSlot(controls);
-            controls.addChoice(MODE, 2, i -> Component.translatable(i == 0 ? "config.gtceu.option.machines" : "gtceu.ownership.name.player"),
+            controls.addChoice(MODE, 2, i -> i == 0 ? MACHINES : PLAYER,
                     () -> player ? 1 : 0, i -> setPlayer(i == 1));
             controls.addServerButton(TRANSFER, TRANSFER_RUN, this::transferFromNetwork, TRANSFER_TOOLTIP);
         });
@@ -383,7 +386,7 @@ public final class MEDiskBoxMachine extends MetaMachine
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

@@ -159,9 +159,9 @@ public class VirtualCoinMiner extends ElectricMultiblockMachine implements ICust
     @RegisterLanguage(cn = "下一枚虚拟金币:%sCWU", en = "CWU needed for next coin: %s CWU")
     public static final String LANG_CWU_TO_NEXT_COIN = "gtocore.machine.virtual_coin_miner.cwu_to_next_coin";
     @RegisterLanguage(cn = "累计虚拟金币", en = "Accumulated Virtual Coins")
-    private static final String LANG_ACCUMULATED_COINS_NAME = "gtocore.machine.virtual_coin_miner.accumulated_coins_name";
+    private static final Component LANG_ACCUMULATED_COINS_NAME = Component.translatable("gtocore.machine.virtual_coin_miner.accumulated_coins_name");
     @RegisterLanguage(cn = "下一枚虚拟金币所需算力", en = "CWU Needed for Next Coin")
-    private static final String LANG_CWU_TO_NEXT_COIN_NAME = "gtocore.machine.virtual_coin_miner.cwu_to_next_coin_name";
+    private static final Component LANG_CWU_TO_NEXT_COIN_NAME = Component.translatable("gtocore.machine.virtual_coin_miner.cwu_to_next_coin_name");
     @RegisterLanguage(cn = "未提交算力缓存", en = "Uncommitted CWU Buffer")
-    private static final String LANG_UNCOMMITTED_CWU_BUFFER_NAME = "gtocore.machine.virtual_coin_miner.cwu_buffer_name";
+    private static final Component LANG_UNCOMMITTED_CWU_BUFFER_NAME = Component.translatable("gtocore.machine.virtual_coin_miner.cwu_buffer_name");
 }

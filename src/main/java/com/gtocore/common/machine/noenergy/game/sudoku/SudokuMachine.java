@@ -64,61 +64,61 @@ import java.util.function.IntSupplier;
 public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapshot> {
 
     @RegisterLanguage(cn = "入门", en = "Beginner")
-    private static final String DIFFICULTY_BEGINNER = "gtocore.machine.sudoku.difficulty.beginner";
+    private static final Component DIFFICULTY_BEGINNER = Component.translatable("gtocore.machine.sudoku.difficulty.beginner");
     @RegisterLanguage(cn = "简单", en = "Easy")
-    private static final String DIFFICULTY_EASY = "gtocore.machine.sudoku.difficulty.easy";
+    private static final Component DIFFICULTY_EASY = Component.translatable("gtocore.machine.sudoku.difficulty.easy");
     @RegisterLanguage(cn = "普通", en = "Normal")
-    private static final String DIFFICULTY_NORMAL = "gtocore.machine.sudoku.difficulty.normal";
+    private static final Component DIFFICULTY_NORMAL = Component.translatable("gtocore.machine.sudoku.difficulty.normal");
     @RegisterLanguage(cn = "困难", en = "Hard")
-    private static final String DIFFICULTY_HARD = "gtocore.machine.sudoku.difficulty.hard";
+    private static final Component DIFFICULTY_HARD = Component.translatable("gtocore.machine.sudoku.difficulty.hard");
     @RegisterLanguage(cn = "专家", en = "Expert")
-    private static final String DIFFICULTY_EXPERT = "gtocore.machine.sudoku.difficulty.expert";
+    private static final Component DIFFICULTY_EXPERT = Component.translatable("gtocore.machine.sudoku.difficulty.expert");
     @RegisterLanguage(cn = "大师", en = "Master")
-    private static final String DIFFICULTY_MASTER = "gtocore.machine.sudoku.difficulty.master";
+    private static final Component DIFFICULTY_MASTER = Component.translatable("gtocore.machine.sudoku.difficulty.master");
     /** 难度名字，下标与 {@link SudokuRules.Difficulty} 的序数一一对应。 */
-    public static final String[] DIFFICULTY_NAMES = { DIFFICULTY_BEGINNER, DIFFICULTY_EASY, DIFFICULTY_NORMAL,
+    public static final Component[] DIFFICULTY_NAMES = { DIFFICULTY_BEGINNER, DIFFICULTY_EASY, DIFFICULTY_NORMAL,
             DIFFICULTY_HARD, DIFFICULTY_EXPERT, DIFFICULTY_MASTER };
 
     @RegisterLanguage(cn = "标准", en = "Standard")
-    private static final String VARIANT_STANDARD = "gtocore.machine.sudoku.variant.standard";
+    private static final Component VARIANT_STANDARD = Component.translatable("gtocore.machine.sudoku.variant.standard");
     @RegisterLanguage(cn = "对角线 X", en = "Diagonal X")
-    private static final String VARIANT_DIAGONAL_X = "gtocore.machine.sudoku.variant.diagonal_x";
+    private static final Component VARIANT_DIAGONAL_X = Component.translatable("gtocore.machine.sudoku.variant.diagonal_x");
     @RegisterLanguage(cn = "中心点", en = "Center dots")
-    private static final String VARIANT_CENTER_DOTS = "gtocore.machine.sudoku.variant.center_dots";
+    private static final Component VARIANT_CENTER_DOTS = Component.translatable("gtocore.machine.sudoku.variant.center_dots");
     @RegisterLanguage(cn = "窗口", en = "Window")
-    private static final String VARIANT_WINDOW = "gtocore.machine.sudoku.variant.window";
+    private static final Component VARIANT_WINDOW = Component.translatable("gtocore.machine.sudoku.variant.window");
     @RegisterLanguage(cn = "彩色", en = "Color")
-    private static final String VARIANT_COLOR = "gtocore.machine.sudoku.variant.color";
+    private static final Component VARIANT_COLOR = Component.translatable("gtocore.machine.sudoku.variant.color");
     @RegisterLanguage(cn = "锯齿", en = "Jigsaw")
-    private static final String VARIANT_JIGSAW = "gtocore.machine.sudoku.variant.jigsaw";
+    private static final Component VARIANT_JIGSAW = Component.translatable("gtocore.machine.sudoku.variant.jigsaw");
     @RegisterLanguage(cn = "连续", en = "Consecutive")
-    private static final String VARIANT_CONSECUTIVE = "gtocore.machine.sudoku.variant.consecutive";
+    private static final Component VARIANT_CONSECUTIVE = Component.translatable("gtocore.machine.sudoku.variant.consecutive");
     @RegisterLanguage(cn = "杀手", en = "Killer")
-    private static final String VARIANT_KILLER = "gtocore.machine.sudoku.variant.killer";
+    private static final Component VARIANT_KILLER = Component.translatable("gtocore.machine.sudoku.variant.killer");
     /** 变体名字，下标与 {@link SudokuVariant} 的序数一一对应。 */
-    public static final String[] VARIANT_NAMES = { VARIANT_STANDARD, VARIANT_DIAGONAL_X, VARIANT_CENTER_DOTS,
+    public static final Component[] VARIANT_NAMES = { VARIANT_STANDARD, VARIANT_DIAGONAL_X, VARIANT_CENTER_DOTS,
             VARIANT_WINDOW, VARIANT_COLOR, VARIANT_JIGSAW, VARIANT_CONSECUTIVE, VARIANT_KILLER };
 
     @RegisterLanguage(cn = "难度", en = "Difficulty")
-    private static final String SECTION_DIFFICULTY = "gtocore.machine.sudoku.section.difficulty";
+    private static final Component SECTION_DIFFICULTY = Component.translatable("gtocore.machine.sudoku.section.difficulty");
     @RegisterLanguage(cn = "变体", en = "Variant")
-    public static final String PAGE_VARIANT = "gtocore.machine.sudoku.page.variant";
+    public static final Component PAGE_VARIANT = Component.translatable("gtocore.machine.sudoku.page.variant");
     @RegisterLanguage(cn = "为这一局叠加一条附加规则", en = "Stack one extra rule on this round")
-    private static final String PAGE_VARIANT_TOOLTIP = "gtocore.machine.sudoku.page.variant.tooltip";
+    private static final Component PAGE_VARIANT_TOOLTIP = Component.translatable("gtocore.machine.sudoku.page.variant.tooltip");
     @RegisterLanguage(cn = "变体", en = "Variant")
-    private static final String LINE_VARIANT = "gtocore.machine.sudoku.line.variant";
+    private static final Component LINE_VARIANT = Component.translatable("gtocore.machine.sudoku.line.variant");
     @RegisterLanguage(cn = "难度", en = "Difficulty")
-    private static final String LINE_DIFFICULTY = "gtocore.machine.sudoku.line.difficulty";
+    private static final Component LINE_DIFFICULTY = Component.translatable("gtocore.machine.sudoku.line.difficulty");
     @RegisterLanguage(cn = "用时", en = "Time")
-    private static final String LINE_TIME = "gtocore.machine.sudoku.line.time";
+    private static final Component LINE_TIME = Component.translatable("gtocore.machine.sudoku.line.time");
     @RegisterLanguage(cn = "标记", en = "Mark")
-    private static final String BUTTON_MARK = "gtocore.machine.sudoku.button.mark";
+    private static final Component BUTTON_MARK = Component.translatable("gtocore.machine.sudoku.button.mark");
     @RegisterLanguage(cn = "%s · 完成奖励 %s 游戏币", en = "%s · Clear reward %s Game Coins")
     private static final String TEXT_DIFFICULTY = "gtocore.machine.sudoku.text.difficulty";
     @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final String BUTTON_RESTART = "gtocore.machine.sudoku.button.restart";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.sudoku.button.restart");
     @RegisterLanguage(cn = "这一局已经完成了", en = "This puzzle is already solved")
-    private static final String REASON_SOLVED = "gtocore.machine.sudoku.reason.solved";
+    private static final Component REASON_SOLVED = Component.translatable("gtocore.machine.sudoku.reason.solved");
 
     private static final MilestoneColumn[] LEADERBOARD_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 64),
@@ -629,7 +629,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
 
     private Button createMarkButton() {
         var button = Button.text(KEY_WIDTH, Component.literal("✏️"));
-        button.setHoverTooltips(Component.translatable(BUTTON_MARK));
+        button.setHoverTooltips(BUTTON_MARK);
         button.setSelected(() -> view().notesMode());
         button.clientDisabled(() -> view().solved(), REASON_SOLVED);
         button.setOnServerClick(() -> toggleMark(playerOf(button)));
@@ -642,7 +642,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
         status.addLine(LINE_DIFFICULTY, () -> difficultyName(view().difficulty()));
         status.addLine(LINE_VARIANT, () -> variantName(view().variant()));
         status.addChild(new LiveDurationLine(LINE_TIME, this::displayElapsedTicks));
-        var restart = Button.translatable(77, BUTTON_RESTART);
+        var restart = Button.text(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRound(playerOf(restart)));
         status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));
         return status;
@@ -650,12 +650,12 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
 
     /** 难度名字的翻译键；越界按入门处理。 */
     private static Component difficultyName(int ordinal) {
-        return Component.translatable(DIFFICULTY_NAMES[Math.clamp(ordinal, 0, DIFFICULTY_NAMES.length - 1)]);
+        return DIFFICULTY_NAMES[Math.clamp(ordinal, 0, DIFFICULTY_NAMES.length - 1)];
     }
 
     /** 变体名字的翻译键；越界按标准处理。 */
     private static Component variantName(int ordinal) {
-        return Component.translatable(VARIANT_NAMES[Math.clamp(ordinal, 0, VARIANT_NAMES.length - 1)]);
+        return VARIANT_NAMES[Math.clamp(ordinal, 0, VARIANT_NAMES.length - 1)];
     }
 
     /** 变体奖励倍率的显示文本：100 → "1"，110 → "1.1"，200 → "2"；倍率都按 10% 的整数倍配置。 */
@@ -1202,12 +1202,12 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
                 // 循环变量不是有效 final，拷一份给 lambda。
                 int index = ordinal;
                 var difficulty = SudokuRules.Difficulty.ALL[index];
-                var button = choiceButton(LayoutStyle.AUTO, Component.translatable(DIFFICULTY_NAMES[index]),
+                var button = choiceButton(LayoutStyle.AUTO, DIFFICULTY_NAMES[index],
                         () -> difficulty.ordinal() == view().difficulty());
                 button.bindTooltip(() -> {
                     var current = SudokuVariant.ALL[Math.clamp(view().variant(), 0, SudokuVariant.ALL.length - 1)];
                     return Component.translatable(TEXT_DIFFICULTY,
-                            Component.translatable(DIFFICULTY_NAMES[index]),
+                            DIFFICULTY_NAMES[index],
                             number(SudokuRules.reward(difficulty, current)))
                             .append(Component.literal(" ×" + multiplierText(current)));
                 });
@@ -1239,7 +1239,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
                         .gapAll(2));
                 for (int offset = 0; offset < 2 && start + offset < SudokuVariant.ALL.length; offset++) {
                     int index = start + offset;
-                    var button = choiceButton(buttonWidth, Component.translatable(VARIANT_NAMES[index]),
+                    var button = choiceButton(buttonWidth, VARIANT_NAMES[index],
                             () -> index == view().variant());
                     button.setOnServerClick(() -> selectVariant(index, playerOf(button)));
                     row.addChild(button);
@@ -1286,12 +1286,12 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
 
         /** 难度名字的翻译键；由控件在客户端解析当前语言。 */
         private Component difficultyLabel(int index) {
-            return Component.translatable(DIFFICULTY_NAMES[Math.clamp(index, 0, DIFFICULTY_NAMES.length - 1)]);
+            return DIFFICULTY_NAMES[Math.clamp(index, 0, DIFFICULTY_NAMES.length - 1)];
         }
 
         /** 变体名字的翻译键。 */
         private Component variantLabel(int index) {
-            return Component.translatable(VARIANT_NAMES[Math.clamp(index, 0, VARIANT_NAMES.length - 1)]);
+            return VARIANT_NAMES[Math.clamp(index, 0, VARIANT_NAMES.length - 1)];
         }
 
         /**

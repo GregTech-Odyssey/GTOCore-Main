@@ -47,25 +47,25 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private static final int CELL_SIZE = 20;
 
     @RegisterLanguage(cn = "3×3", en = "3×3")
-    private static final String SIZE_3 = "gtocore.machine.number_puzzle.size.3";
+    private static final Component SIZE_3 = Component.translatable("gtocore.machine.number_puzzle.size.3");
     @RegisterLanguage(cn = "4×4", en = "4×4")
-    private static final String SIZE_4 = "gtocore.machine.number_puzzle.size.4";
+    private static final Component SIZE_4 = Component.translatable("gtocore.machine.number_puzzle.size.4");
     @RegisterLanguage(cn = "5×5", en = "5×5")
-    private static final String SIZE_5 = "gtocore.machine.number_puzzle.size.5";
+    private static final Component SIZE_5 = Component.translatable("gtocore.machine.number_puzzle.size.5");
     @RegisterLanguage(cn = "6×6", en = "6×6")
-    private static final String SIZE_6 = "gtocore.machine.number_puzzle.size.6";
+    private static final Component SIZE_6 = Component.translatable("gtocore.machine.number_puzzle.size.6");
     @RegisterLanguage(cn = "7×7", en = "7×7")
-    private static final String SIZE_7 = "gtocore.machine.number_puzzle.size.7";
+    private static final Component SIZE_7 = Component.translatable("gtocore.machine.number_puzzle.size.7");
     @RegisterLanguage(cn = "8×8", en = "8×8")
-    private static final String SIZE_8 = "gtocore.machine.number_puzzle.size.8";
-    public static final String[] SIZE_NAMES = { SIZE_3, SIZE_4, SIZE_5, SIZE_6, SIZE_7, SIZE_8 };
+    private static final Component SIZE_8 = Component.translatable("gtocore.machine.number_puzzle.size.8");
+    public static final Component[] SIZE_NAMES = { SIZE_3, SIZE_4, SIZE_5, SIZE_6, SIZE_7, SIZE_8 };
 
     @RegisterLanguage(cn = "尺寸", en = "Size")
-    private static final String SECTION_SIZE = "gtocore.machine.number_puzzle.section.size";
+    private static final Component SECTION_SIZE = Component.translatable("gtocore.machine.number_puzzle.section.size");
     @RegisterLanguage(cn = "步数", en = "Moves")
-    private static final String LINE_MOVES = "gtocore.machine.number_puzzle.line.moves";
+    private static final Component LINE_MOVES = Component.translatable("gtocore.machine.number_puzzle.line.moves");
     @RegisterLanguage(cn = "用时", en = "Time")
-    private static final String LINE_TIME = "gtocore.machine.number_puzzle.line.time";
+    private static final Component LINE_TIME = Component.translatable("gtocore.machine.number_puzzle.line.time");
     @RegisterLanguage(cn = "进行中", en = "Playing")
     private static final String TEXT_PLAYING = "gtocore.machine.number_puzzle.text.playing";
     @RegisterLanguage(cn = "完成！用时 %s", en = "Solved! %s")
@@ -73,7 +73,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     @RegisterLanguage(cn = "完成奖励：%s 游戏币", en = "Clear reward: %s Game Coins")
     private static final String TEXT_SIZE_REWARD = "gtocore.machine.number_puzzle.text.size_reward";
     @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final String BUTTON_RESTART = "gtocore.machine.number_puzzle.button.restart";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.number_puzzle.button.restart");
 
     /** 单个尺寸的排行榜只有两列：玩家与最快用时。 */
     private static final MilestoneColumn[] LEADERBOARD_COLUMNS = {
@@ -286,7 +286,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         status.addChild(TextLine.of(LayoutStyle.AUTO, () -> view().isSolved() ?
                 Component.translatable(TEXT_SOLVED, duration(view().elapsedTicks())) :
                 Component.translatable(TEXT_PLAYING)).styled());
-        var restart = Button.translatable(77, BUTTON_RESTART);
+        var restart = Button.text(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRound(playerOf(restart)));
         status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));
         return status;
@@ -342,7 +342,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
             var section = Form.section(SECTION_SIZE);
             for (int ordinal = 0; ordinal < NumberPuzzleRules.SIZE_COUNT; ordinal++) {
                 final int index = ordinal;
-                var button = choiceButton(120, Component.translatable(SIZE_NAMES[index]), () -> sizeOrdinal == index);
+                var button = choiceButton(120, SIZE_NAMES[index], () -> sizeOrdinal == index);
                 button.setHoverTooltips(Component.translatable(TEXT_SIZE_REWARD,
                         NumberPuzzleRules.Difficulty.ALL[index].reward()));
                 button.setOnServerClick(() -> selectSize(index, playerOf(button)));
@@ -369,7 +369,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
 
         @Override
         protected Component boardName(int index) {
-            return Component.translatable(SIZE_NAMES[index]);
+            return SIZE_NAMES[index];
         }
 
         @Override

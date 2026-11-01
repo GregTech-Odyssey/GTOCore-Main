@@ -35,7 +35,10 @@ import java.util.regex.Pattern;
 public final class PerformanceMonitorMachine extends MetaMachine implements IFancyUIMachine {
 
     @RegisterLanguage(cn = "ME网络", en = "ME Grid")
-    private static final String GRID = "gtocore.performance_monitor.grid";
+    private static final Component GRID = Component.translatable("gtocore.performance_monitor.grid");
+
+    private static final Component SHOW_RANGE = Component.translatable("gtocore.digital_miner.show_range");
+    private static final Component MACHINES = Component.translatable("config.gtceu.option.machines");
 
     private static final Pattern PATTERN = Pattern.compile(", ");
 
@@ -60,7 +63,7 @@ public final class PerformanceMonitorMachine extends MetaMachine implements IFan
     @Override
     public Widget createUIWidget() {
         var controls = ControlPanel.of(this);
-        controls.addChoice("gtocore.digital_miner.show_range", 2, i -> Component.translatable(i == 0 ? "config.gtceu.option.machines" : GRID),
+        controls.addChoice(SHOW_RANGE, 2, i -> i == 0 ? MACHINES : GRID,
                 () -> grid ? 1 : 0, i -> {
                     grid = i == 1;
                     textListCache = null;

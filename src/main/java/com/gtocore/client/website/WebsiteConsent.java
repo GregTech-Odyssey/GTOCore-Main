@@ -106,6 +106,11 @@ public final class WebsiteConsent {
     @RegisterLanguage(cn = "不启用", en = "Do not enable")
     static final String DISABLE = "gtocore.website.consent.disable";
 
+    private static final Component TITLE_LABEL = Component.translatable(TITLE);
+    private static final Component INTRO_LABEL = Component.translatable(INTRO);
+    private static final Component DISABLE_LABEL = Component.translatable(DISABLE);
+    private static final Component ENABLE_LABEL = Component.translatable(ENABLE);
+
     private static final String[] TERMS = { INTRO, GUIDES_HEADING, GUIDES_1, GUIDES_2, BUG_HEADING, BUG_1, BUG_2, BUG_3, BUG_4, BUG_5, BUG_6, OTHER_HEADING, OTHER_1, OTHER_2, OTHER_3 };
     private static final Path STATE_FILE = GTOWebsite.DIR.resolve("website").resolve("consent.json");
     private static final int BULLET_WIDTH = 5;
@@ -132,7 +137,7 @@ public final class WebsiteConsent {
     }
 
     public static void open(@Nullable Screen previous) {
-        Minecraft.getInstance().tell(() -> WebsitePopupScreen.open("website_consent", previous, close -> Popup.of(() -> Component.translatable(TITLE), content -> content(content, close))
+        Minecraft.getInstance().tell(() -> WebsitePopupScreen.open("website_consent", previous, close -> Popup.of(() -> TITLE_LABEL, content -> content(content, close))
                 .setContentWidth(2 * UISizes.CONTENT_WIDTH)));
     }
 
@@ -187,7 +192,7 @@ public final class WebsiteConsent {
 
     private static void content(UIElement content, Runnable close) {
         int width = 2 * UISizes.CONTENT_WIDTH;
-        content.addChild(Label.translatable(width, INTRO));
+        content.addChild(Label.constant(width, INTRO_LABEL));
         content.addChild(section(width, GUIDES_HEADING, Component.translatable(GUIDES_1), Component.translatable(GUIDES_2, ItemGuides.keyName())));
         content.addChild(section(width, BUG_HEADING, Component.translatable(BUG_1), Component.translatable(BUG_2), Component.translatable(BUG_3),
                 Component.translatable(BUG_4), Component.translatable(BUG_5), Component.translatable(BUG_6)));
@@ -195,11 +200,11 @@ public final class WebsiteConsent {
         String state = !decided ? (changed ? STATE_CHANGED : STATE_UNSET) : granted ? STATE_ON : STATE_OFF;
         content.addChild(TextLine.constant(width, Component.translatable(STATE, Component.translatable(state))).bindClientColor(UITheme::textSecondary));
         int action = 2 * UISizes.BUTTON_WIDTH;
-        var disable = Button.translatable(action, DISABLE).setOnClientClick(() -> {
+        var disable = Button.text(action, DISABLE_LABEL).setOnClientClick(() -> {
             decide(false);
             close.run();
         });
-        var enable = Button.translatable(action, ENABLE).setVariant(UITheme.ButtonVariant.CONFIRM).setOnClientClick(() -> {
+        var enable = Button.text(action, ENABLE_LABEL).setVariant(UITheme.ButtonVariant.CONFIRM).setOnClientClick(() -> {
             decide(true);
             close.run();
         });
@@ -207,7 +212,7 @@ public final class WebsiteConsent {
     }
 
     private static UIElement section(int width, String heading, Component... items) {
-        var section = Form.section(heading).layout(l -> l.width(width));
+        var section = Form.section(Component.translatable(heading)).layout(l -> l.width(width));
         int text = width - 2 * UISizes.PANEL_PADDING - BULLET_WIDTH - UISizes.GAP;
         for (Component item : items) {
             var row = UIElement.row(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));

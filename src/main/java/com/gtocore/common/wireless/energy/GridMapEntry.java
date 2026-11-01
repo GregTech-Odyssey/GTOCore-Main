@@ -44,18 +44,22 @@ public final class GridMapEntry {
         return level == null ? 0 : GridView.dimRef(GridBody.of(level.dimension()));
     }
 
-    public static Button openButton(MetaMachine machine, String buttonKey, String tooltipKey) {
-        var button = Button.translatable(LayoutStyle.AUTO, buttonKey);
+    public static Button openButton(MetaMachine machine, Component buttonText, Component tooltip) {
+        var button = Button.text(LayoutStyle.AUTO, buttonText);
         var request = button.addRPC(player -> {
             if (player instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.open(serverPlayer, machine, WINDOW);
         }).limit(1);
         button.setOnClientClick(() -> request.send(Unit.INSTANCE));
-        return button.tooltips(tooltipKey);
+        return button.tooltips(tooltip);
+    }
+
+    public static Button openButton(MetaMachine machine, String buttonKey, String tooltipKey) {
+        return openButton(machine, Component.translatable(buttonKey), Component.translatable(tooltipKey));
     }
 
     public static SubWindowButton subWindowButton(IMachineSubWindows machine) {
         return new SubWindowButton(machine, WINDOW, new ItemStackTexture(CustomItems.WIRELESS_ENERGY_TERMINAL.asStack()),
-                Component.translatable(GridMapLang.TITLE), Component.translatable(HINT).withStyle(ChatFormatting.GRAY));
+                GridMapLang.TITLE, Component.translatable(HINT).withStyle(ChatFormatting.GRAY));
     }
 
     @Nullable

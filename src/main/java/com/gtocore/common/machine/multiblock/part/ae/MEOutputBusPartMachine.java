@@ -101,6 +101,6 @@ public final class MEOutputBusPartMachine extends StatusTrackedMEPartMachine {
 
     /** 页面："等待输出"网格（每行 9 格，只读）。 */
     private UIElement buildPage() {
-        return Form.page().addChild(MEPartUI.waitingList("me.output_bus.waiting", this.internalBuffer, false, null));
+        return Form.page().addChild(MEPartUI.waitingList("me.output_bus.waiting", this.internalBuffer, false));
     }
 }

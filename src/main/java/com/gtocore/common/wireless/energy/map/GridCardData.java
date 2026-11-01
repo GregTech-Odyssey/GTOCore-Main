@@ -83,10 +83,10 @@ final class GridCardData {
         nodeIndex = topology.indexOf(dimension);
         info = nodeIndex < 0 ? null : topology.nodes().get(nodeIndex);
         if (info == null) {
-            state = Component.translatable(GridMapLang.STATE_OUTSIDE);
+            state = GridMapLang.STATE_OUTSIDE;
             stateLevel = Level.NORMAL;
             tier = GridFormat.NO_VALUE;
-            storageNote = Component.translatable(GridMapLang.NO_STORAGE);
+            storageNote = GridMapLang.NO_STORAGE;
         } else if (info.towers() > 0) {
             state = Component.translatable(GridMapLang.STATE_NODE, GridFormat.tierPlain(info.tier()));
             stateLevel = Level.GOOD;
@@ -96,7 +96,7 @@ final class GridCardData {
             state = Component.translatable(GridMapLang.STATE_LINE_ONLY, GridFormat.tierPlain(info.reachTier()));
             stateLevel = Level.WARNING;
             tier = GridFormat.NO_VALUE;
-            storageNote = Component.translatable(GridMapLang.RELAY_ONLY);
+            storageNote = GridMapLang.RELAY_ONLY;
         }
     }
 
@@ -117,9 +117,9 @@ final class GridCardData {
         progress = new ProgressBar.Progress(GridFormat.ppm(stored, capacity), 1_000_000L, 0);
         storedDetail = GridFormat.storedDetail(stored, capacity);
         towers = detail.towers() > 0 ? Component.translatable(GridMapLang.TOWERS_VALUE, detail.towers(), GridFormat.tierPlain(detail.topTowerTier())) :
-                Component.translatable(GridMapLang.NONE);
+                GridMapLang.NONE;
         loss = Component.translatable(GridMapLang.PERCENT, GridFormat.amount(detail.lossPercent()));
-        ports = detail.portCount() > 0 ? Component.translatable(GridMapLang.PORTS_VALUE, detail.portCount()) : Component.translatable(GridMapLang.NONE);
+        ports = detail.portCount() > 0 ? Component.translatable(GridMapLang.PORTS_VALUE, detail.portCount()) : GridMapLang.NONE;
         int tier = detail.unitTier();
         delta = GridFormat.netRate(detail.storageDelta(), tier);
         eta = capacity > 0 ? GridFormat.eta(stored, capacity, detail.storageDelta()) : GridFormat.NO_VALUE;

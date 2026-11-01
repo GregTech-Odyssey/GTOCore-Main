@@ -876,7 +876,7 @@ public final class BaseNodes {
             langMap.put(node.name, new CNEN(descriptionCN, descriptionEN));
         } else {
             node.getAdditionalLines().add(
-                    Component.translatable(OTHER_REWARD_LABEL).withStyle(ChatFormatting.DARK_PURPLE)
+                    OTHER_REWARD_LABEL.copy().withStyle(ChatFormatting.DARK_PURPLE)
                             .append(Component.translatable("gtocore.data." + node.name).withStyle(ChatFormatting.GRAY)));
         }
         return node;

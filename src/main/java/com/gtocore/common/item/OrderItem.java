@@ -27,15 +27,15 @@ public final class OrderItem implements IItemUIFactory, ICustomDescriptionId {
 
     public static final OrderItem INSTANCE = new OrderItem();
 
-    private static final String TARGET = "item.gtocore.order.target";
-    private static final String NO_TARGET = "item.gtocore.order.no_target";
+    private static final Component TARGET = Component.translatable("item.gtocore.order.target");
+    private static final Component NO_TARGET = Component.translatable("item.gtocore.order.no_target");
 
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
         return HeldItemPage.create(holder, player, window -> {
             var name = TextLine.of(0, () -> {
                 var target = getTarget(holder.getHeld());
-                return target.isEmpty() ? Component.translatable(NO_TARGET) : target.getHoverName();
+                return target.isEmpty() ? NO_TARGET : target.getHoverName();
             }).bindClientColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
             var slot = PhantomItemSlot.of(new TargetSlot(holder), 0).xeiPhantom();

@@ -176,12 +176,12 @@ public final class OverviewView extends UIElement implements ILayoutHost, ILocal
 
     private static UIElement legendRow(Widget swatch, String key) {
         return UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
-                .addChildren(swatch, TextLine.translatable(LEGEND_TEXT, key).setColor(UITheme.PANEL_TEXT));
+                .addChildren(swatch, TextLine.constant(LEGEND_TEXT, Component.translatable(key)).setColor(UITheme.PANEL_TEXT));
     }
 
     private static UIElement noticeRow(String key) {
         var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.alignCenter())
-                .addChildren(TextLine.translatable(SWATCH_SIZE + UISizes.GAP + LEGEND_TEXT, key).setColor(UITheme.STATUS_TEXT_WARNING));
+                .addChildren(TextLine.constant(SWATCH_SIZE + UISizes.GAP + LEGEND_TEXT, Component.translatable(key)).setColor(UITheme.STATUS_TEXT_WARNING));
         row.setDisplay(false);
         return row;
     }

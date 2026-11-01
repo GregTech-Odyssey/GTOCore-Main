@@ -53,7 +53,7 @@ final class GridTips {
         lines.add(GridFormat.bodyName(catalog.dimension(body)).copy().withStyle(ChatFormatting.WHITE));
         int node = model.node(body);
         if (node < 0) {
-            lines.add(Component.translatable(GridMapLang.STATE_OUTSIDE).withStyle(ChatFormatting.GRAY));
+            lines.add(GridMapLang.STATE_OUTSIDE.copy().withStyle(ChatFormatting.GRAY));
         } else if (model.isLineOnly(node)) {
             lines.add(Component.translatable(GridMapLang.STATE_LINE_ONLY, GridFormat.tierText(model.info(node).reachTier()))
                     .withStyle(ChatFormatting.GRAY));
@@ -92,7 +92,7 @@ final class GridTips {
         lines.add(catalog.anchorName(anchor).copy().withStyle(ChatFormatting.WHITE));
         int count = anchorMoons(catalog, model, anchor);
         lines.add(count > 0 ? Component.translatable(GridMapLang.TIP_ANCHOR_MOONS, count).withStyle(ChatFormatting.GRAY) :
-                Component.translatable(GridMapLang.STATE_OUTSIDE).withStyle(ChatFormatting.GRAY));
+                GridMapLang.STATE_OUTSIDE.copy().withStyle(ChatFormatting.GRAY));
         moons(catalog, model, -1, anchor, lines);
         return Collections.unmodifiableList(lines);
     }

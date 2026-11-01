@@ -25,10 +25,14 @@ public final class LiveDurationLine extends UIElement {
     private final Component label;
     private final LongSupplier elapsedTicks;
 
-    public LiveDurationLine(String labelKey, LongSupplier elapsedTicks) {
-        this.label = Component.translatable(labelKey);
+    public LiveDurationLine(Component label, LongSupplier elapsedTicks) {
+        this.label = label;
         this.elapsedTicks = elapsedTicks;
         layout(style -> style.size(LayoutStyle.AUTO, StatusLine.HEIGHT));
+    }
+
+    public LiveDurationLine(String labelKey, LongSupplier elapsedTicks) {
+        this(Component.translatable(labelKey), elapsedTicks);
     }
 
     @Override

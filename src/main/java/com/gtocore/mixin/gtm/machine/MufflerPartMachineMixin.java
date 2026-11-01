@@ -11,21 +11,14 @@ import com.gtolib.api.machine.feature.IGTOMufflerMachine;
 import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.misc.Drone;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.UITemplate;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
-import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.common.data.GTParticleTypes;
 import com.gregtechceu.gtceu.common.machine.electric.AirScrubberMachine;
@@ -38,7 +31,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -51,10 +43,6 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
 
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.utils.Position;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -64,7 +52,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -304,33 +291,6 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
             }
         });
         gtocore$isWorkingEnabled = false;
-    }
-
-    @Inject(method = "createUI", at = @At("RETURN"), remap = false, cancellable = true)
-    private void gtolib$createUI(Player entityPlayer, CallbackInfoReturnable<ModularUI> cir) {
-        ConfiguratorPanel configuratorPanel;
-        var originUI = cir.getReturnValue();
-        int rowSize = (int) Math.sqrt(inventory.size());
-        int xOffset = Math.max(0, rowSize - 9) * 9;
-        if (GTCEu.isDev() || rowSize > 9) {
-            var modular = new ModularUI(176 + xOffset * 2, 18 + 18 * rowSize + 94, this, entityPlayer).background(GuiTextures.BACKGROUND).widget(new LabelWidget(10, 5, getBlockState().getBlock().getDescriptionId())).widget(UITemplate.bindPlayerInventory(entityPlayer.getInventory(), GuiTextures.SLOT, 7 + xOffset, 18 + 18 * rowSize + 12, true));
-            var slots = new MenuItemAdapter(inventory);
-            for (int y = 0; y < rowSize; y++) {
-                for (int x = 0; x < rowSize; x++) {
-                    int index = y * rowSize + x;
-                    modular.widget(new SlotWidget(slots, index, (88 - rowSize * 9 + x * 18) + xOffset, 18 + y * 18, true, true).setBackgroundTexture(GuiTextures.SLOT));
-                }
-            }
-            originUI = modular;
-        }
-        cir.setReturnValue(originUI.widget(configuratorPanel = new ConfiguratorPanel(-(24 + 2), originUI.getHeight())));
-        attachConfigurators(configuratorPanel);
-        configuratorPanel.setSelfPosition(new Position(-24 - 2, originUI.getHeight() - configuratorPanel.getSize().height - 4));
-    }
-
-    @Override
-    public Widget createMainPage(FancyMachineUIWidget widget) {
-        return super.createMainPage(widget);
     }
 
     @Override

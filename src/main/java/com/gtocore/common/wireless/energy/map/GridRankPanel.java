@@ -24,8 +24,8 @@ final class GridRankPanel extends UIElement {
 
     private static final int VALUE_WIDTH = 96, BUSY = 2;
     private static final double LOW_STORAGE = 0.1, SATURATED = 0.95, SWAP_GAP = 0.05;
-    private static final String[] TABS = { GridMapLang.RANK_TAB_MOST, GridMapLang.RANK_TAB_LOW, GridMapLang.RANK_TAB_BUSY };
-    private static final String[] TAB_TIPS = { GridMapLang.RANK_MOST, GridMapLang.RANK_LOW, GridMapLang.RANK_BUSY };
+    private static final Component[] TABS = { GridMapLang.RANK_TAB_MOST, GridMapLang.RANK_TAB_LOW, GridMapLang.RANK_TAB_BUSY };
+    private static final Component[] TAB_TIPS = { GridMapLang.RANK_MOST, GridMapLang.RANK_LOW, GridMapLang.RANK_BUSY };
 
     private final GridMapContext ctx;
     private final Group most = new Group(new GridRanking(true, true, SWAP_GAP));
@@ -44,8 +44,8 @@ final class GridRankPanel extends UIElement {
         this.ctx = ctx;
         layout(l -> l.column().width(LayoutStyle.AUTO).gapAll(UISizes.GAP));
         shownTab = addSyncValue(SyncValue.ofInt(() -> tab, 0));
-        var tabs = ButtonGroup.single(TABS.length, i -> Component.translatable(TABS[i]), () -> tab, i -> tab = Math.max(0, Math.min(TABS.length - 1, i)))
-                .optionTooltips(i -> Collections.singletonList(Component.translatable(TAB_TIPS[i]))).horizontal().compact();
+        var tabs = ButtonGroup.single(TABS.length, i -> TABS[i], () -> tab, i -> tab = Math.max(0, Math.min(TABS.length - 1, i)))
+                .optionTooltips(i -> Collections.singletonList(TAB_TIPS[i])).horizontal().compact();
         var panel = new StatusPanel(LayoutStyle.AUTO);
         for (int i = 0; i < GridRanking.SIZE; i++) {
             int rank = i;

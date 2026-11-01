@@ -33,39 +33,39 @@ import java.util.function.IntConsumer;
 public final class SelectBox extends UIElement {
 
     /**
-     * @param width      按钮宽度，浮层与选项也按它排版
-     * @param titleKey   悬停说明的翻译键（如「难度」）
-     * @param optionKeys 各选项名字的翻译键，下标就是选项序号
-     * @param selected   当前选中项的序号，越界会被夹到范围内
-     * @param select     服务端改选回调；收到的是选项序号
+     * @param width    按钮宽度，浮层与选项也按它排版
+     * @param title    悬停说明（如「难度」）
+     * @param options  各选项名字，下标就是选项序号
+     * @param selected 当前选中项的序号，越界会被夹到范围内
+     * @param select   服务端改选回调；收到的是选项序号
      */
-    public SelectBox(int width, String titleKey, String[] optionKeys, int selected, IntConsumer select) {
-        int current = Math.clamp(selected, 0, optionKeys.length - 1);
+    public SelectBox(int width, Component title, Component[] options, int selected, IntConsumer select) {
+        int current = Math.clamp(selected, 0, options.length - 1);
         layout(l -> l.size(width, Button.HEIGHT));
 
         // 浮层先建出来：标题与选项的点击都要引用它，控件内容随后再填进去
         var dropdown = new Dropdown(width);
         var request = addRPC(ByteBufCodecs.INT, (player, index) -> select.accept(index));
 
-        var header = Button.text(width, Component.translatable(optionKeys[current]));
-        header.tooltips(titleKey);
+        var header = Button.text(width, options[current]);
+        header.tooltips(title);
         header.setOnClientClick(() -> dropdown.setDisplay(true));
 
-        var copy = Button.text(width, Component.translatable(optionKeys[current]));
+        var copy = Button.text(width, options[current]);
         copy.setOnClientClick(() -> dropdown.setDisplay(false));
 
-        var options = UIElement.section(width).layout(l -> l.gapAll(UISizes.GAP));
+        var optionSection = UIElement.section(width).layout(l -> l.gapAll(UISizes.GAP));
         int optionWidth = width - 2 * UISizes.PANEL_PADDING;
-        for (int index = 0; index < optionKeys.length; index++) {
+        for (int index = 0; index < options.length; index++) {
             final int option = index;
-            var button = Button.text(optionWidth, Component.translatable(optionKeys[index]));
+            var button = Button.text(optionWidth, options[index]);
             button.bindClientVariant(() -> option == current ?
                     UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT);
             button.setOnClientClick(() -> {
                 request.send(option);
                 dropdown.setDisplay(false);
             });
-            options.addChild(button);
+            optionSection.addChild(button);
         }
 
         dropdown.fill(copy, options);

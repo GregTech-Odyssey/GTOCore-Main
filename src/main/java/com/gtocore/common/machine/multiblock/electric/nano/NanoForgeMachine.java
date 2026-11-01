@@ -255,7 +255,7 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_NANITES;
     }
 }

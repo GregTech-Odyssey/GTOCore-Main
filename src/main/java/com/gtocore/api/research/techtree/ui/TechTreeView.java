@@ -70,12 +70,12 @@ public class TechTreeView extends UIElement {
     @RegisterLanguage(cn = "前置科技", en = "Prerequisites")
     static final String PREREQUISITES = "gtocore.techtree.widget.prerequisites";
     @RegisterLanguage(cn = "点击节点查看详情", en = "Click a node to see its details")
-    private static final String HELP_CLICK = "gtocore.techtree.view.help.click";
+    private static final Component HELP_CLICK = Component.translatable("gtocore.techtree.view.help.click");
     @RegisterLanguage(cn = "定位到选中的科技", en = "Locate the selected node")
-    private static final String LOCATE = "gtocore.techtree.view.locate";
+    private static final Component LOCATE = Component.translatable("gtocore.techtree.view.locate");
     private static final int[] NO_CODES = new int[0];
     @RegisterLanguage(cn = "点击查看详情", en = "Click for details")
-    static final String CLICK_FOR_DETAILS = "gtocore.techtree.view.click_for_details";
+    static final Component CLICK_FOR_DETAILS = Component.translatable("gtocore.techtree.view.click_for_details");
 
     public static final byte LOCKED = 0;
     public static final byte AVAILABLE = 1;
@@ -132,8 +132,7 @@ public class TechTreeView extends UIElement {
             var selected = decodeNode(details.getArgument());
             if (selected != null) navigateTo(selected);
         });
-        var help = InfoIcon.of(Level.NORMAL, Component.translatable(HELP_CLICK),
-                Component.translatable(CanvasView.HELP_PAN), Component.translatable(CanvasView.HELP_ZOOM));
+        var help = InfoIcon.of(Level.NORMAL, HELP_CLICK, CanvasView.HELP_PAN, CanvasView.HELP_ZOOM);
         canvas.addOverlay(new Dock().addGroup(ZoomBar.dock(canvas))
                 .addGroup(ZoomBar.dockRow().addChild(locate))
                 .addGroup(help));

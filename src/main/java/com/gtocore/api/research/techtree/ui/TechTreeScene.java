@@ -498,7 +498,7 @@ final class TechTreeScene {
                     lines.add(line.withStyle(s -> s.withColor(unlocked ? style.tooltipUnlocked : style.tooltipLocked)));
                 }
             }
-            lines.add(Component.translatable(TechTreeView.CLICK_FOR_DETAILS).withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(TechTreeView.CLICK_FOR_DETAILS.copy().withStyle(ChatFormatting.DARK_GRAY));
             return lines;
         }
 

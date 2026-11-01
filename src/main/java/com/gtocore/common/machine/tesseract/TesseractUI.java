@@ -81,13 +81,13 @@ public final class TesseractUI {
     public static final String FACE_POPUP = "tesseract.face";
 
     @RegisterLanguage(cn = "已绑定", en = "Bound")
-    private static final String LINE_BOUND = "gtocore.tesseract.line.bound";
+    private static final Component LINE_BOUND = Component.translatable("gtocore.tesseract.line.bound");
     @RegisterLanguage(cn = "%s / %s", en = "%s / %s")
     public static final String VALUE_BOUND = "gtocore.tesseract.value.bound";
     @RegisterLanguage(cn = "%s（不限）", en = "%s (no limit)")
     public static final String VALUE_UNLIMITED = "gtocore.tesseract.value.unlimited";
     @RegisterLanguage(cn = "跨维度", en = "Cross-dimension")
-    private static final String LINE_CROSS = "gtocore.tesseract.line.cross";
+    private static final Component LINE_CROSS = Component.translatable("gtocore.tesseract.line.cross");
     @RegisterLanguage(cn = "支持", en = "Supported")
     private static final String VALUE_SUPPORTED = "gtocore.tesseract.value.supported";
     @RegisterLanguage(cn = "不支持", en = "Not supported")
@@ -97,7 +97,7 @@ public final class TesseractUI {
     @RegisterLanguage(cn = "坐标信息卡只记录坐标，目标按本机所在维度查找", en = "Coordinate cards store only coordinates; targets are looked up in this dimension")
     private static final String CROSS_UNSUPPORTED_DETAIL = "gtocore.tesseract.cross.unsupported";
     @RegisterLanguage(cn = "访问面", en = "Access side")
-    private static final String LINE_ACCESS = "gtocore.tesseract.line.access";
+    private static final Component LINE_ACCESS = Component.translatable("gtocore.tesseract.line.access");
     @RegisterLanguage(cn = "随访问方向", en = "Follows accessor")
     private static final String VALUE_FOLLOW = "gtocore.tesseract.value.follow";
     @RegisterLanguage(cn = "各目标指定面", en = "Set per target")
@@ -126,7 +126,7 @@ public final class TesseractUI {
     @RegisterLanguage(cn = "轮询", en = "Round robin")
     private static final String MODE_ROUND_ROBIN = "gtocore.tesseract.mode.round_robin";
     @RegisterLanguage(cn = "也可用螺丝刀右键本机切换", en = "Can also be toggled with a screwdriver")
-    private static final String MODE_TOOLTIP = "gtocore.tesseract.mode.tooltip";
+    private static final Component MODE_TOOLTIP = Component.translatable("gtocore.tesseract.mode.tooltip");
     @RegisterLanguage(cn = "按卡槽顺序写入，前面的目标放满后溢出到后面的目标。", en = "Inserted in slot order; once a target is full, the rest overflows into the next one.")
     private static final String DESC_SEQUENTIAL = "gtocore.tesseract.mode.sequential.desc";
     @RegisterLanguage(cn = "每轮向每个目标各推送一份样板，已含该样板原料的目标跳过，循环至全部推送失败。", en = "Each round pushes one pattern copy into every target, skipping targets that already hold its ingredients, until no target accepts more.")
@@ -140,28 +140,28 @@ public final class TesseractUI {
     @RegisterLanguage(cn = "第 i 种原料 → 第 i 个目标", en = "Ingredient i → target i")
     private static final String VALUE_DISPATCH = "gtocore.tesseract.rule.dispatch.value";
     @RegisterLanguage(cn = "原料按样板中的编码顺序编号", en = "Ingredients are numbered in the order they are encoded in the pattern")
-    private static final String DISPATCH_DETAIL = "gtocore.tesseract.rule.dispatch.detail";
+    private static final Component DISPATCH_DETAIL = Component.translatable("gtocore.tesseract.rule.dispatch.detail");
     @RegisterLanguage(cn = "接收条件", en = "Accepts")
     private static final String RULE_ACCEPT = "gtocore.tesseract.rule.accept";
     @RegisterLanguage(cn = "原料种数 ≤ %s", en = "Up to %s ingredients")
     public static final String VALUE_ACCEPT = "gtocore.tesseract.rule.accept.value";
     @RegisterLanguage(cn = "原料种数多于已绑定目标数的样板不会被推送", en = "Patterns with more ingredients than bound targets are not pushed")
-    private static final String ACCEPT_DETAIL = "gtocore.tesseract.rule.accept.detail";
+    private static final Component ACCEPT_DETAIL = Component.translatable("gtocore.tesseract.rule.accept.detail");
     @RegisterLanguage(cn = "目标已满", en = "Target full")
     private static final String RULE_FULL = "gtocore.tesseract.rule.full";
     @RegisterLanguage(cn = "暂存，每秒重试", en = "Buffered, retried every second")
     private static final String VALUE_FULL = "gtocore.tesseract.rule.full.value";
     @RegisterLanguage(cn = "放不进目标的原料暂存在本机，暂存清空前不接收新的样板推送", en = "Ingredients that do not fit are buffered here; no new pushes are accepted until the buffer is empty")
-    private static final String FULL_DETAIL = "gtocore.tesseract.rule.full.detail";
+    private static final Component FULL_DETAIL = Component.translatable("gtocore.tesseract.rule.full.detail");
 
     @RegisterLanguage(cn = "绑定目标（按卡槽顺序）", en = "Targets (in slot order)")
-    public static final String SECTION_TARGETS = "gtocore.tesseract.section.targets";
+    public static final Component SECTION_TARGETS = Component.translatable("gtocore.tesseract.section.targets");
     @RegisterLanguage(cn = "原料序号 → 目标", en = "Ingredient index → target")
-    public static final String SECTION_DIRECTED_TARGETS = "gtocore.tesseract.section.directed_targets";
+    public static final Component SECTION_DIRECTED_TARGETS = Component.translatable("gtocore.tesseract.section.directed_targets");
     @RegisterLanguage(cn = "放入写有坐标的坐标信息卡以绑定目标", en = "Insert a coordinate card holding a position to bind a target")
-    public static final String TARGETS_TOOLTIP = "gtocore.tesseract.targets.tooltip";
+    public static final Component TARGETS_TOOLTIP = Component.translatable("gtocore.tesseract.targets.tooltip");
     @RegisterLanguage(cn = "也可用坐标标签枪 Shift + 左键本机写入", en = "A Tesseract Target Marker can also write targets with Shift + left-click")
-    public static final String TARGETS_MARKER_TOOLTIP = "gtocore.tesseract.targets.marker_tooltip";
+    public static final Component TARGETS_MARKER_TOOLTIP = Component.translatable("gtocore.tesseract.targets.marker_tooltip");
     @RegisterLanguage(cn = "用坐标标签枪编辑目标后，Shift + 左键本机写入", en = "Edit targets with a Tesseract Target Marker, then Shift + left-click this block to write them")
     public static final String DIRECTED_TARGETS_TOOLTIP = "gtocore.tesseract.targets.directed_tooltip";
     @RegisterLanguage(cn = "对本机按中键可将当前目标读入标签枪", en = "Pick-block on this block to copy its targets into the marker")
@@ -207,9 +207,9 @@ public final class TesseractUI {
     @RegisterLanguage(cn = "移除标记", en = "Remove marks")
     private static final String MARKER_LEFT_REMOVE = "gtocore.tesseract.marker.left.remove";
     @RegisterLanguage(cn = "从末尾往前添加：目标排在列表末尾，后添加的排在更前", en = "Add from the end: targets go to the end of the list, later ones placed before earlier ones")
-    private static final String MARKER_LEFT_TAIL_TOOLTIP = "gtocore.tesseract.marker.left.tail.tooltip";
+    private static final Component MARKER_LEFT_TAIL_TOOLTIP = Component.translatable("gtocore.tesseract.marker.left.tail.tooltip");
     @RegisterLanguage(cn = "移除标记：移除该方块上的全部标记", en = "Remove marks: removes every mark on that block")
-    private static final String MARKER_LEFT_REMOVE_TOOLTIP = "gtocore.tesseract.marker.left.remove.tooltip";
+    private static final Component MARKER_LEFT_REMOVE_TOOLTIP = Component.translatable("gtocore.tesseract.marker.left.remove.tooltip");
     @RegisterLanguage(cn = "记录的面", en = "Recorded side")
     private static final String MARKER_FACE = "gtocore.tesseract.marker.face";
     @RegisterLanguage(cn = "点击的面", en = "Clicked side")
@@ -217,21 +217,21 @@ public final class TesseractUI {
     @RegisterLanguage(cn = "相对的面", en = "Opposite side")
     private static final String MARKER_FACE_OPPOSITE = "gtocore.tesseract.marker.face.opposite";
     @RegisterLanguage(cn = "相对的面：记录被点击面的背面，用于标记被遮挡的面", en = "Opposite side: records the side facing away from the click, for hidden sides")
-    private static final String MARKER_FACE_TOOLTIP = "gtocore.tesseract.marker.face.tooltip";
+    private static final Component MARKER_FACE_TOOLTIP = Component.translatable("gtocore.tesseract.marker.face.tooltip");
     @RegisterLanguage(cn = "已记录 %s 个目标", en = "%s target(s) recorded")
     private static final String MARKER_TARGETS = "gtocore.tesseract.marker.targets";
     @RegisterLanguage(cn = "尚未记录目标", en = "No targets recorded")
-    private static final String MARKER_EMPTY = "gtocore.tesseract.marker.empty";
+    private static final Component MARKER_EMPTY = Component.translatable("gtocore.tesseract.marker.empty");
     @RegisterLanguage(cn = "清空", en = "Clear")
     private static final String MARKER_CLEAR = "gtocore.tesseract.marker.clear";
     @RegisterLanguage(cn = "右键方块：添加标记", en = "Right-click a block: add a mark")
-    private static final String MARKER_HELP_ADD = "gtocore.tesseract.marker.help.add";
+    private static final Component MARKER_HELP_ADD = Component.translatable("gtocore.tesseract.marker.help.add");
     @RegisterLanguage(cn = "Shift + 右键方块：移除该面的标记", en = "Shift + right-click a block: remove the mark on that side")
-    private static final String MARKER_HELP_REMOVE = "gtocore.tesseract.marker.help.remove";
+    private static final Component MARKER_HELP_REMOVE = Component.translatable("gtocore.tesseract.marker.help.remove");
     @RegisterLanguage(cn = "Shift + 左键超立方体：写入目标", en = "Shift + left-click a Tesseract: write the targets")
-    private static final String MARKER_HELP_WRITE = "gtocore.tesseract.marker.help.write";
+    private static final Component MARKER_HELP_WRITE = Component.translatable("gtocore.tesseract.marker.help.write");
     @RegisterLanguage(cn = "中键超立方体：读取其配置", en = "Pick-block on a Tesseract: read its configuration")
-    private static final String MARKER_HELP_READ = "gtocore.tesseract.marker.help.read";
+    private static final Component MARKER_HELP_READ = Component.translatable("gtocore.tesseract.marker.help.read");
     @RegisterLanguage(cn = "目标顺序：%s", en = "Target order: %s")
     private static final String MARKER_BADGE = "gtocore.tesseract.marker.badge";
     @RegisterLanguage(cn = "金色序号为左键添加的目标，固定排在末尾", en = "Gold numbers were added by left-click and stay at the end")
@@ -265,13 +265,33 @@ public final class TesseractUI {
     @RegisterLanguage(cn = "按列表顺序绑定全部目标，记录的面与维度都生效", en = "Binds every target in list order, using the recorded sides and dimensions")
     private static final String PREVIEW_DIRECTED_DETAIL = "gtocore.tesseract.marker.preview.directed.detail";
     @RegisterLanguage(cn = "最多 20 个，每个目标消耗 1 张坐标信息卡，支持跨维度；记录的面不生效", en = "Up to 20 targets across dimensions, one coordinate card per target; recorded sides are ignored")
-    private static final String PREVIEW_ADVANCED_DETAIL = "gtocore.tesseract.marker.preview.advanced.detail";
+    private static final Component PREVIEW_ADVANCED_DETAIL = Component.translatable("gtocore.tesseract.marker.preview.advanced.detail");
     @RegisterLanguage(cn = "只绑定当前维度中的第 1 个目标，消耗 1 张坐标信息卡", en = "Binds only the first target in the current dimension, using one coordinate card")
-    private static final String PREVIEW_BASIC_DETAIL = "gtocore.tesseract.marker.preview.basic.detail";
+    private static final Component PREVIEW_BASIC_DETAIL = Component.translatable("gtocore.tesseract.marker.preview.basic.detail");
     @RegisterLanguage(cn = "%s 号 · %s", en = "#%s · %s")
     private static final String POPUP_TITLE = "gtocore.tesseract.marker.popup.title";
     @RegisterLanguage(cn = "超立方体只通过此面与目标交互。", en = "The Tesseract interacts with the target only through this side.")
     private static final String POPUP_HINT = "gtocore.tesseract.marker.popup.hint";
+
+    private static final Component SECTION_PUSH_LABEL = Component.translatable(SECTION_PUSH);
+    private static final Component PUSH_BASIC_LABEL = Component.translatable(PUSH_BASIC);
+    private static final Component RULE_PATTERN_LABEL = Component.translatable(RULE_PATTERN);
+    private static final Component RULE_DISPATCH_LABEL = Component.translatable(RULE_DISPATCH);
+    private static final Component RULE_ACCEPT_LABEL = Component.translatable(RULE_ACCEPT);
+    private static final Component RULE_FULL_LABEL = Component.translatable(RULE_FULL);
+    private static final Component MARKER_SECTION_MODE_LABEL = Component.translatable(MARKER_SECTION_MODE);
+    private static final Component MARKER_LEFT_LABEL = Component.translatable(MARKER_LEFT);
+    private static final Component MARKER_FACE_LABEL = Component.translatable(MARKER_FACE);
+    private static final Component MARKER_CLEAR_LABEL = Component.translatable(MARKER_CLEAR);
+    private static final Component REASON_EMPTY_TIP = Component.translatable(REASON_EMPTY);
+    private static final Component PREVIEW_ADVANCED_LABEL = Component.translatable(PREVIEW_ADVANCED);
+    private static final Component PREVIEW_BASIC_LABEL = Component.translatable(PREVIEW_BASIC);
+    private static final Component POPUP_HINT_LABEL = Component.translatable(POPUP_HINT);
+    private static final Component REASON_FIRST_TIP = Component.translatable(REASON_FIRST);
+    private static final Component REASON_LAST_TIP = Component.translatable(REASON_LAST);
+    private static final Component MOVE_UP_LABEL = Component.translatable(MOVE_UP);
+    private static final Component MOVE_DOWN_LABEL = Component.translatable(MOVE_DOWN);
+    private static final Component REMOVE_LABEL = Component.translatable(REMOVE);
 
     private TesseractUI() {}
 
@@ -471,18 +491,26 @@ public final class TesseractUI {
         panel.addLine(LINE_BOUND, bound);
         var cross = Component.translatable(crossDimension ? VALUE_SUPPORTED : VALUE_UNSUPPORTED);
         panel.addLine(LINE_CROSS, () -> cross).bindLevel(() -> crossDimension ? com.gregtechceu.gtceu.uipro.Level.GOOD : com.gregtechceu.gtceu.uipro.Level.NORMAL)
-                .tooltips(crossDimension ? CROSS_SUPPORTED_DETAIL : CROSS_UNSUPPORTED_DETAIL);
+                .tooltips(Component.translatable(crossDimension ? CROSS_SUPPORTED_DETAIL : CROSS_UNSUPPORTED_DETAIL));
         var access = Component.translatable(perTargetFace ? VALUE_PER_TARGET : VALUE_FOLLOW);
-        panel.addLine(LINE_ACCESS, () -> access).tooltips(perTargetFace ? ACCESS_PER_TARGET_DETAIL : ACCESS_FOLLOW_DETAIL);
+        panel.addLine(LINE_ACCESS, () -> access).tooltips(Component.translatable(perTargetFace ? ACCESS_PER_TARGET_DETAIL : ACCESS_FOLLOW_DETAIL));
         return panel;
     }
 
-    public static UIElement listSection(String titleKey, Widget list, String... tooltipKeys) {
-        var title = TextLine.translatable(0, titleKey).bindClientColor(UITheme::panelText);
-        title.layout(l -> l.flex(1));
-        var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChild(title);
-        if (tooltipKeys.length > 0) header.addChild(InfoIcon.info(tooltipKeys));
+    public static UIElement listSection(Component title, Widget list, Component... tooltips) {
+        var titleLine = TextLine.constant(0, title).bindClientColor(UITheme::panelText);
+        titleLine.layout(l -> l.flex(1));
+        var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChild(titleLine);
+        if (tooltips.length > 0) header.addChild(InfoIcon.info(tooltips));
         return UIElement.section().addChildren(header, list);
+    }
+
+    public static UIElement listSection(String titleKey, Widget list, String... tooltipKeys) {
+        Component[] tooltips = new Component[tooltipKeys.length];
+        for (int i = 0; i < tooltipKeys.length; i++) {
+            tooltips[i] = Component.translatable(tooltipKeys[i]);
+        }
+        return listSection(Component.translatable(titleKey), list, tooltips);
     }
 
     public static Widget page(Widget... children) {
@@ -498,7 +526,7 @@ public final class TesseractUI {
     }
 
     public static UIElement basicPushSection() {
-        return Form.section(SECTION_PUSH).addChild(Label.translatable(LIST_WIDTH, PUSH_BASIC).bindClientColor(UITheme::panelText));
+        return Form.section(SECTION_PUSH_LABEL).addChild(Label.constant(LIST_WIDTH, PUSH_BASIC_LABEL).bindClientColor(UITheme::panelText));
     }
 
     public static UIElement roundRobinSection(BooleanSupplier roundRobin, Consumer<Boolean> setRoundRobin) {
@@ -507,7 +535,7 @@ public final class TesseractUI {
         modes.setHoverTooltips(MODE_TOOLTIP);
         var description = Label.of(LIST_WIDTH, () -> Component.translatable(roundRobin.getAsBoolean() ? DESC_ROUND_ROBIN : DESC_SEQUENTIAL))
                 .bindClientColor(UITheme::panelText);
-        return Form.section(SECTION_PUSH).addChildren(modes, new DistributionStrip(roundRobin), description);
+        return Form.section(SECTION_PUSH_LABEL).addChildren(modes, new DistributionStrip(roundRobin), description);
     }
 
     public static UIElement directedPushSection(IntSupplier targetCount, Widget pending) {
@@ -515,11 +543,11 @@ public final class TesseractUI {
         var pattern = Component.translatable(VALUE_PATTERN);
         var dispatch = Component.translatable(VALUE_DISPATCH);
         var full = Component.translatable(VALUE_FULL);
-        rules.addLine(RULE_PATTERN, () -> pattern);
-        rules.addLine(RULE_DISPATCH, () -> dispatch).tooltips(DISPATCH_DETAIL);
-        rules.addLine(RULE_ACCEPT, () -> Component.translatable(VALUE_ACCEPT, targetCount.getAsInt())).tooltips(ACCEPT_DETAIL);
-        rules.addLine(RULE_FULL, () -> full).tooltips(FULL_DETAIL);
-        return Form.section(SECTION_PUSH).addChildren(rules, pending);
+        rules.addLine(RULE_PATTERN_LABEL, () -> pattern);
+        rules.addLine(RULE_DISPATCH_LABEL, () -> dispatch).tooltips(DISPATCH_DETAIL);
+        rules.addLine(RULE_ACCEPT_LABEL, () -> Component.translatable(VALUE_ACCEPT, targetCount.getAsInt())).tooltips(ACCEPT_DETAIL);
+        rules.addLine(RULE_FULL_LABEL, () -> full).tooltips(FULL_DETAIL);
+        return Form.section(SECTION_PUSH_LABEL).addChildren(rules, pending);
     }
 
     public static ModularUI markerUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
@@ -540,15 +568,15 @@ public final class TesseractUI {
         var face = ButtonGroup.single(2, i -> Component.translatable(i == 0 ? MARKER_FACE_CLICKED : MARKER_FACE_OPPOSITE),
                 () -> TesseractTargetMarker.getFaceMode(held.get()), i -> TesseractTargetMarker.setFaceMode(held.get(), i)).horizontal();
         face.setHoverTooltips(MARKER_FACE_TOOLTIP);
-        var modes = Form.section(MARKER_SECTION_MODE).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, MARKER_LEFT).bindClientColor(UITheme::textSecondary), left,
-                TextLine.translatable(LayoutStyle.AUTO, MARKER_FACE).bindClientColor(UITheme::textSecondary), face);
+        var modes = Form.section(MARKER_SECTION_MODE_LABEL).addChildren(
+                TextLine.constant(LayoutStyle.AUTO, MARKER_LEFT_LABEL).bindClientColor(UITheme::textSecondary), left,
+                TextLine.constant(LayoutStyle.AUTO, MARKER_FACE_LABEL).bindClientColor(UITheme::textSecondary), face);
 
         var count = TextLine.of(0, () -> Component.translatable(MARKER_TARGETS, TesseractTargetMarker.count(held.get()))).bindClientColor(UITheme::panelText);
         count.layout(l -> l.flex(1));
-        var clear = Button.translatable(UISizes.BUTTON_WIDTH, MARKER_CLEAR).setVariant(UITheme.ButtonVariant.DANGER)
+        var clear = Button.text(UISizes.BUTTON_WIDTH, MARKER_CLEAR_LABEL).setVariant(UITheme.ButtonVariant.DANGER)
                 .setOnServerClick(() -> TesseractTargetMarker.clearAllPatternFaces(held.get()))
-                .disabled(() -> TesseractTargetMarker.count(held.get()) == 0, REASON_EMPTY);
+                .disabled(() -> TesseractTargetMarker.count(held.get()) == 0, REASON_EMPTY_TIP);
         var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                 .addChildren(count, InfoIcon.info(MARKER_HELP_ADD, MARKER_HELP_REMOVE, MARKER_HELP_WRITE, MARKER_HELP_READ), clear);
         var rows = ServerList.of(ByteBufCodecs.VAR_INT, () -> indices(TesseractTargetMarker.count(held.get())), index -> markerRow(window, held, targets, index))
@@ -557,9 +585,9 @@ public final class TesseractUI {
         var list = UIElement.section().addChildren(header, rows);
 
         var preview = new StatusPanel();
-        preview.addLine(PREVIEW_ADVANCED, () -> Component.translatable(PREVIEW_TARGETS, Math.min(AdvancedTesseractMachine.MAX_TARGETS, TesseractTargetMarker.count(held.get()))))
+        preview.addLine(PREVIEW_ADVANCED_LABEL, () -> Component.translatable(PREVIEW_TARGETS, Math.min(AdvancedTesseractMachine.MAX_TARGETS, TesseractTargetMarker.count(held.get()))))
                 .tooltips(PREVIEW_ADVANCED_DETAIL);
-        preview.addLine(PREVIEW_BASIC, () -> Component.translatable(sameDimension(holder) > 0 ? PREVIEW_FIRST : PREVIEW_NONE))
+        preview.addLine(PREVIEW_BASIC_LABEL, () -> Component.translatable(sameDimension(holder) > 0 ? PREVIEW_FIRST : PREVIEW_NONE))
                 .tooltips(PREVIEW_BASIC_DETAIL);
 
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.minWidth(MARKER_PAGE_WIDTH).gapAll(UISizes.SECTION_GAP))
@@ -575,21 +603,21 @@ public final class TesseractUI {
         var face = face(targets, index);
         bindFacePopup(face, window, index);
         var up = Button.icon(UITheme.ARROW_UP).setOnServerClick(() -> TesseractTargetMarker.move(held.get(), index, -1))
-                .disabled(() -> index == 0, REASON_FIRST);
-        up.setHoverTooltips(MOVE_UP);
+                .disabled(() -> index == 0, REASON_FIRST_TIP);
+        up.setHoverTooltips(MOVE_UP_LABEL);
         var down = Button.icon(UITheme.ARROW_DOWN).setOnServerClick(() -> TesseractTargetMarker.move(held.get(), index, 1))
-                .disabled(() -> index >= TesseractTargetMarker.count(held.get()) - 1, REASON_LAST);
-        down.setHoverTooltips(MOVE_DOWN);
+                .disabled(() -> index >= TesseractTargetMarker.count(held.get()) - 1, REASON_LAST_TIP);
+        down.setHoverTooltips(MOVE_DOWN_LABEL);
         var remove = Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER)
                 .setOnServerClick(() -> TesseractTargetMarker.remove(held.get(), index));
-        remove.setHoverTooltips(REMOVE);
+        remove.setHoverTooltips(REMOVE_LABEL);
         return row(badge, targets, index, face, up, down, remove);
     }
 
     public static Popup facePopup(Targets targets, int index, Supplier<Direction> current, Consumer<Direction> select) {
         return Popup.of(() -> targets.get(index).icon(), () -> Component.translatable(POPUP_TITLE, index + 1, targets.get(index).name()),
                 content -> content.addChildren(FacePicker.grid(current, select),
-                        Label.translatable(UISizes.POPUP_CONTENT_WIDTH, POPUP_HINT).bindClientColor(UITheme::panelText)));
+                        Label.constant(UISizes.POPUP_CONTENT_WIDTH, POPUP_HINT_LABEL).bindClientColor(UITheme::panelText)));
     }
 
     public static void bindFacePopup(FaceNet face, MachineWindow window, int index) {

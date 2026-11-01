@@ -74,23 +74,24 @@ import java.util.UUID;
 public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     @RegisterLanguage(cn = "上一局奖励", en = "Last payout")
-    private static final String LINE_LAST_REWARD = "gtocore.machine.slot_machine.line.last_reward";
+    private static final Component LINE_LAST_REWARD = Component.translatable("gtocore.machine.slot_machine.line.last_reward");
     @RegisterLanguage(cn = "下注数量", en = "Bet amount")
-    private static final String ROW_BET = "gtocore.machine.slot_machine.row.bet";
+    private static final Component ROW_BET = Component.translatable("gtocore.machine.slot_machine.row.bet");
     @RegisterLanguage(cn = "下注会在开始滚动时扣除，滚动结束后按中奖线返还奖励", en = "The bet is consumed when a spin starts; payout is returned after the spin")
-    private static final String ROW_BET_TOOLTIP = "gtocore.machine.slot_machine.row.bet.tooltip";
+    private static final Component ROW_BET_TOOLTIP = Component.translatable("gtocore.machine.slot_machine.row.bet.tooltip");
     @RegisterLanguage(cn = "开始", en = "Spin")
-    private static final String BUTTON_SPIN = "gtocore.machine.slot_machine.button.spin";
+    private static final Component BUTTON_SPIN = Component.translatable("gtocore.machine.slot_machine.button.spin");
     @RegisterLanguage(cn = "当前无法开始：机器关闭、正在滚动或余额不足", en = "Cannot start: disabled, spinning, or insufficient credits")
-    private static final String REASON_CANNOT_START = "gtocore.machine.slot_machine.reason.cannot_start";
+    private static final Component REASON_CANNOT_START = Component.translatable("gtocore.machine.slot_machine.reason.cannot_start");
     @RegisterLanguage(cn = "正在滚动，暂不能取出余额", en = "Cannot withdraw while spinning")
-    private static final String REASON_SPINNING = "gtocore.machine.slot_machine.reason.spinning";
+    private static final Component REASON_SPINNING = Component.translatable("gtocore.machine.slot_machine.reason.spinning");
     @RegisterLanguage(cn = "当前无法开始：服务器已禁用老虎机", en = "Cannot start: the slot machine is disabled on this server")
-    private static final String REASON_DISABLED = "gtocore.machine.slot_machine.reason.disabled";
+    private static final Component REASON_DISABLED = Component.translatable("gtocore.machine.slot_machine.reason.disabled");
     @RegisterLanguage(cn = "老虎机已被禁用", en = "Slot machine disabled")
-    private static final String NOTICE_DISABLED_TITLE = "gtocore.machine.slot_machine.notice.disabled.title";
+    private static final Component NOTICE_DISABLED_TITLE = Component.translatable("gtocore.machine.slot_machine.notice.disabled.title");
     @RegisterLanguage(cn = "本服务器已关闭老虎机，禁止赌博；余额仍可取出", en = "This server has disabled the slot machine; credits can still be withdrawn")
-    private static final String NOTICE_DISABLED_DETAIL = "gtocore.machine.slot_machine.notice.disabled.detail";
+    private static final Component NOTICE_DISABLED_DETAIL = Component.translatable("gtocore.machine.slot_machine.notice.disabled.detail");
+
     @RegisterLanguage(cn = "无", en = "None")
     private static final String VALUE_NONE = "gtocore.machine.slot_machine.value.none";
     @RegisterLanguage(cn = "%s (倍率 ×%s)", en = "%s (multiplier ×%s)")
@@ -438,9 +439,9 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     /** 禁赌提示：固定文本，两端各自翻译，不需要下发。 */
     private static UIElement createDisabledNotice() {
         var notice = UIElement.column(LayoutStyle.AUTO).layout(style -> style.alignCenter().gapAll(UISizes.GAP));
-        notice.addChild(TextLine.translatable(LayoutStyle.AUTO, NOTICE_DISABLED_TITLE)
+        notice.addChild(TextLine.constant(LayoutStyle.AUTO, NOTICE_DISABLED_TITLE)
                 .styled().bindClientColor(() -> UITheme.STATUS_TEXT_ERROR));
-        notice.addChild(TextLine.translatable(LayoutStyle.AUTO, NOTICE_DISABLED_DETAIL)
+        notice.addChild(TextLine.constant(LayoutStyle.AUTO, NOTICE_DISABLED_DETAIL)
                 .bindClientColor(() -> UITheme.TEXT_SECONDARY));
         return notice;
     }
@@ -473,7 +474,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_LAST_REWARD, this::lastRewardText);
 
-        var spinButton = Button.translatable(LayoutStyle.AUTO, BUTTON_SPIN)
+        var spinButton = Button.text(LayoutStyle.AUTO, BUTTON_SPIN)
                 .disabled(() -> !slotMachineEnabled() || !canStart(),
                         slotMachineEnabled() ? REASON_CANNOT_START : REASON_DISABLED);
         spinButton.setOnServerClick(() -> startSpin(playerOf(spinButton)));
@@ -481,16 +482,16 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         var credits = UIElement.centeredRow(UISizes.SLOT_SIZE).layout(layout -> layout.justifyContent(AlignContent.CENTER));
         var deposit = ItemSlot.of(depositInventory, 0, true, true);
         deposit.setGhosts(currency().itemStacks())
-                .setChangeListener(this::onDepositInventoryChanged)
-                .setHoverTooltips(currencyName());
-        var withdraw = Button.translatable(136, BUTTON_WITHDRAW)
+                .tooltips(Component.translatable(currencyName()))
+                .setChangeListener(this::onDepositInventoryChanged);
+        var withdraw = Button.text(136, BUTTON_WITHDRAW)
                 .disabled(() -> state.isSpinning(), REASON_SPINNING);
         withdraw.setOnServerClick(() -> {
             // 界面已禁用，服务端再挡一次，防网络请求绕过。
             if (state.isSpinning() || !guard(playerOf(withdraw))) return;
             withdrawAll(withdraw);
         });
-        withdraw.setHoverTooltips(currencyName());
+        withdraw.tooltips(Component.translatable(currencyName()));
         credits.addChildren(deposit, withdraw);
 
         status.addChildren(

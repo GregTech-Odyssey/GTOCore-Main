@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.uipro.elements.RichText;
 import com.gregtechceu.gtceu.uiwidgets.filter.TagLookupView;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -73,15 +74,17 @@ public interface ITagFilterMachine extends IDropSaveMachine {
     final class TagFilterUI {
 
         @RegisterLanguage(cn = "白名单", en = "Whitelist")
-        private static final String WHITELIST = "gtocore.machine.tag_filter.whitelist";
+        private static final Component WHITELIST = Component.translatable("gtocore.machine.tag_filter.whitelist");
         @RegisterLanguage(cn = "黑名单", en = "Blacklist")
-        private static final String BLACKLIST = "gtocore.machine.tag_filter.blacklist";
+        private static final Component BLACKLIST = Component.translatable("gtocore.machine.tag_filter.blacklist");
         @RegisterLanguage(cn = "放入物品以查看其标签", en = "Insert an item to view its tags")
-        private static final String LOOKUP_ITEM = "gtocore.machine.tag_filter.lookup_item";
+        private static final Component LOOKUP_ITEM = Component.translatable("gtocore.machine.tag_filter.lookup_item");
         @RegisterLanguage(cn = "从EMI拖入流体以查看其标签", en = "Drag a fluid from EMI to view its tags")
-        private static final String LOOKUP_FLUID = "gtocore.machine.tag_filter.lookup_fluid";
+        private static final Component LOOKUP_FLUID = Component.translatable("gtocore.machine.tag_filter.lookup_fluid");
         @RegisterLanguage(cn = "仅用于查询，不影响过滤结果", en = "For lookup only; does not affect filtering")
-        private static final String LOOKUP_ONLY = "gtocore.machine.tag_filter.lookup_only";
+        private static final Component LOOKUP_ONLY = Component.translatable("gtocore.machine.tag_filter.lookup_only");
+        private static final Component TOOLTIP_0 = Component.translatable("gtocore.machine.tag_filter.tooltip.0");
+        private static final Component TOOLTIP_1 = Component.translatable("gtocore.machine.tag_filter.tooltip.1");
 
         private TagFilterUI() {}
 
@@ -96,10 +99,10 @@ public interface ITagFilterMachine extends IDropSaveMachine {
          * 一个名单的区块：标题、"输入框 + 虚拟槽"一行、槽里内容的标签列表。
          * {@code scrollerId} 是标签列表滚动区的固定 id（锁定高度按它记）。
          */
-        private static UIElement filterSection(String titleKey, String scrollerId, boolean isItem, Supplier<String> getter, Consumer<String> setter) {
+        private static UIElement filterSection(Component title, String scrollerId, boolean isItem, Supplier<String> getter, Consumer<String> setter) {
             var lookup = isItem ? TagLookupView.items(scrollerId, getter, setter, setter, LOOKUP_ITEM, LOOKUP_ONLY) :
                     TagLookupView.fluids(scrollerId, getter, setter, setter, LOOKUP_FLUID, LOOKUP_ONLY);
-            var titleRow = Form.controlRow(titleKey, InfoIcon.info("gtocore.machine.tag_filter.tooltip.0", "gtocore.machine.tag_filter.tooltip.1"));
+            var titleRow = Form.controlRow(title, InfoIcon.info(TOOLTIP_0, TOOLTIP_1));
             return UIElement.section(LayoutStyle.AUTO).addChildren(titleRow, lookup);
         }
     }

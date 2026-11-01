@@ -55,7 +55,7 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     private static final String WINDOW_OVERVIEW = "station_overview";
     @RegisterLanguage(cn = "核心舱", en = "Core Module")
-    public static final String CORE_MODULE = "gtocore.machine.spacestation.core_module";
+    public static final Component CORE_MODULE = Component.translatable("gtocore.machine.spacestation.core_module");
 
     @Getter
     private final Map<Class<? extends ISpaceServiceMachine>, ISpaceServiceMachine> serviceMachineMap = new Reference2ObjectOpenHashMap<>();

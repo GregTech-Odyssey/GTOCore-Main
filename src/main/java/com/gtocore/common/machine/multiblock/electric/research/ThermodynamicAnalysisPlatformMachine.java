@@ -147,11 +147,11 @@ public class ThermodynamicAnalysisPlatformMachine extends ElectricMultiblockMach
     private static final long NO_DATA_BITS = Double.doubleToLongBits(Double.NaN);
 
     @RegisterLanguage(cn = "高温热区温度", en = "High-Temp Zone Temperature")
-    private static final String HIGH_TEMP_ZONE = "gtocore.machine.thermodynamic_analysis_platform.high_temp_zone";
+    private static final Component HIGH_TEMP_ZONE = Component.translatable("gtocore.machine.thermodynamic_analysis_platform.high_temp_zone");
     @RegisterLanguage(cn = "低温热区温度", en = "Low-Temp Zone Temperature")
-    private static final String LOW_TEMP_ZONE = "gtocore.machine.thermodynamic_analysis_platform.low_temp_zone";
+    private static final Component LOW_TEMP_ZONE = Component.translatable("gtocore.machine.thermodynamic_analysis_platform.low_temp_zone");
     @RegisterLanguage(cn = "热区温差", en = "Zone Temperature Difference")
-    private static final String TEMP_DIFFERENCE = "gtocore.machine.thermodynamic_analysis_platform.temp_difference";
+    private static final Component TEMP_DIFFERENCE = Component.translatable("gtocore.machine.thermodynamic_analysis_platform.temp_difference");
     @RegisterLanguage(cn = "高温热区监测：%sK", en = "High-Temp Thermal Zone Monitoring: %sK")
     public static final String THERMAL_ZONE_MONITORING = "gtocore.machine.thermal_zone_monitoring";
     @RegisterLanguage(cn = "低温热区监测：%sK", en = "Low-Temp Thermal Zone Monitoring: %sK")

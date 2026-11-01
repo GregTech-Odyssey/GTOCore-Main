@@ -87,77 +87,83 @@ import java.util.function.Supplier;
 public final class WirelessMachineUI {
 
     @RegisterLanguage(cn = "无线网络", en = "Wireless Network")
-    static final String TAB = "gtocore.wireless.tab";
+    static final Component TAB = Component.translatable("gtocore.wireless.tab");
     @RegisterLanguage(cn = "独立运行", en = "Standalone")
-    static final String STANDALONE = "gtocore.wireless.standalone";
+    static final Component STANDALONE = Component.translatable("gtocore.wireless.standalone");
     @RegisterLanguage(cn = "状态", en = "Status")
-    static final String LINE_STATE = "gtocore.wireless.line.state";
+    static final Component LINE_STATE = Component.translatable("gtocore.wireless.line.state");
     @RegisterLanguage(cn = "网络", en = "Network")
-    static final String LINE_NETWORK = "gtocore.wireless.line.network";
+    static final Component LINE_NETWORK = Component.translatable("gtocore.wireless.line.network");
     @RegisterLanguage(cn = "所有者", en = "Owner")
-    static final String LINE_OWNER = "gtocore.wireless.line.owner";
+    static final Component LINE_OWNER = Component.translatable("gtocore.wireless.line.owner");
     @RegisterLanguage(cn = "成员", en = "Members")
-    static final String LINE_MEMBERS = "gtocore.wireless.line.members";
+    static final Component LINE_MEMBERS = Component.translatable("gtocore.wireless.line.members");
     // 状态面板"状态"行的短文字（完整说明句留给 Jade 等地方）：行内只剩约 12 个汉字的宽度
     @RegisterLanguage(cn = "未加入网络", en = "Not joined")
-    static final String STATE_STANDALONE = "gtocore.wireless.line.state.standalone";
+    static final Component STATE_STANDALONE = Component.translatable("gtocore.wireless.line.state.standalone");
     @RegisterLanguage(cn = "在线", en = "Online")
-    static final String STATE_ONLINE = "gtocore.wireless.line.state.online";
+    static final Component STATE_ONLINE = Component.translatable("gtocore.wireless.line.state.online");
     @RegisterLanguage(cn = "ME 网络离线", en = "ME network offline")
-    static final String STATE_OFFLINE = "gtocore.wireless.line.state.offline";
+    static final Component STATE_OFFLINE = Component.translatable("gtocore.wireless.line.state.offline");
     @RegisterLanguage(cn = "所有者无权使用此网络", en = "Owner not permitted")
-    static final String STATE_NO_PERMISSION = "gtocore.wireless.line.state.no_permission";
+    static final Component STATE_NO_PERMISSION = Component.translatable("gtocore.wireless.line.state.no_permission");
     @RegisterLanguage(cn = "网络数据不可用", en = "Data unavailable")
-    static final String STATE_UNAVAILABLE = "gtocore.wireless.line.state.unavailable";
+    static final Component STATE_UNAVAILABLE = Component.translatable("gtocore.wireless.line.state.unavailable");
     @RegisterLanguage(cn = "未绑定所有者", en = "No machine owner")
-    static final String STATE_NO_OWNER = "gtocore.wireless.line.state.no_owner";
+    static final Component STATE_NO_OWNER = Component.translatable("gtocore.wireless.line.state.no_owner");
     @RegisterLanguage(cn = "控制器冲突", en = "Controller conflict")
-    static final String STATE_CONFLICT = "gtocore.wireless.line.state.conflict";
+    static final Component STATE_CONFLICT = Component.translatable("gtocore.wireless.line.state.conflict");
     /** 状态行悬停说明：未绑定所有者的完整原因。 */
     @RegisterLanguage(cn = "机器未绑定所有者，按操作玩家校验权限", en = "No machine owner; the acting player's permissions apply")
-    static final String NO_OWNER = "gtocore.wireless.no_owner";
+    static final Component NO_OWNER = Component.translatable("gtocore.wireless.no_owner");
     /** 状态面板里没有值（未加入 / 无权查看）时显示的占位。 */
     static final String NO_VALUE = "—";
     @RegisterLanguage(cn = "暂无可用网络", en = "No networks available")
-    static final String EMPTY = "gtocore.wireless.empty";
+    static final Component EMPTY = Component.translatable("gtocore.wireless.empty");
     @RegisterLanguage(cn = "网络名称", en = "Network name")
-    static final String NAME_PLACEHOLDER = "gtocore.wireless.name_placeholder";
+    static final Component NAME_PLACEHOLDER = Component.translatable("gtocore.wireless.name_placeholder");
     @RegisterLanguage(cn = "新建", en = "Create")
-    static final String CREATE = "gtocore.wireless.create";
+    static final Component CREATE = Component.translatable("gtocore.wireless.create");
     @RegisterLanguage(cn = "加入", en = "Join")
     static final String JOIN = "gtocore.wireless.join";
     @RegisterLanguage(cn = "断开", en = "Leave")
     static final String LEAVE = "gtocore.wireless.leave";
     @RegisterLanguage(cn = "网络详情", en = "Network Details")
-    static final String DETAIL = "gtocore.wireless.detail";
+    static final Component DETAIL = Component.translatable("gtocore.wireless.detail");
     @RegisterLanguage(cn = "未加入网络，或无权查看此网络", en = "Not joined, or not permitted to view this network")
-    static final String DETAIL_UNAVAILABLE = "gtocore.wireless.detail_unavailable";
+    static final Component DETAIL_UNAVAILABLE = Component.translatable("gtocore.wireless.detail_unavailable");
     @RegisterLanguage(cn = "收藏：潜行放置无线机器时自动加入此网络", en = "Favorite: wireless machines placed while sneaking join this network")
-    static final String FAVORITE = "gtocore.wireless.favorite";
+    static final Component FAVORITE = Component.translatable("gtocore.wireless.favorite");
     @RegisterLanguage(cn = "此机器不能连接无线网络", en = "This machine cannot connect to wireless networks")
-    static final String BANNED = "gtocore.wireless.banned";
+    static final Component BANNED = Component.translatable("gtocore.wireless.banned");
     @RegisterLanguage(cn = "网络详情：%s", en = "Network: %s")
     static final String DETAIL_TITLE = "gtocore.wireless.detail_title";
     @RegisterLanguage(cn = "返回", en = "Back")
-    static final String BACK = "gtocore.wireless.back";
+    static final Component BACK = Component.translatable("gtocore.wireless.back");
     @RegisterLanguage(cn = "重命名", en = "Rename")
-    static final String RENAME = "gtocore.wireless.rename";
+    static final Component RENAME = Component.translatable("gtocore.wireless.rename");
     @RegisterLanguage(cn = "成员（%s）", en = "Members (%s)")
     static final String MEMBERS = "gtocore.wireless.members";
     @RegisterLanguage(cn = "%1$s  %2$s  [%3$s]", en = "%1$s  %2$s  [%3$s]")
     static final String MEMBER_ROW = "gtocore.wireless.member_row";
     @RegisterLanguage(cn = "点击：在聊天栏生成传送命令", en = "Click: put a teleport command in chat")
-    static final String MEMBER_HINT = "gtocore.wireless.member_hint";
+    static final Component MEMBER_HINT = Component.translatable("gtocore.wireless.member_hint");
     @RegisterLanguage(cn = "[传送到 %s]", en = "[Teleport to %s]")
     static final String MEMBER_TP = "gtocore.wireless.member_tp";
     @RegisterLanguage(cn = "控制器冲突：网络内有多个互不相连的 ME 控制器", en = "Controller conflict: several unconnected ME controllers")
-    static final String CONFLICT = "gtocore.wireless.conflict";
+    static final Component CONFLICT = Component.translatable("gtocore.wireless.conflict");
     @RegisterLanguage(cn = "删除网络", en = "Delete")
-    static final String DELETE = "gtocore.wireless.delete";
+    static final Component DELETE = Component.translatable("gtocore.wireless.delete");
     @RegisterLanguage(cn = "确认删除？", en = "Delete?")
-    static final String DELETE_CONFIRM = "gtocore.wireless.delete_confirm";
+    static final Component DELETE_CONFIRM = Component.translatable("gtocore.wireless.delete_confirm");
     @RegisterLanguage(cn = "删除后所有成员立即断开，且无法恢复", en = "All members disconnect at once; this cannot be undone")
-    static final String DELETE_WARNING = "gtocore.wireless.delete_warning";
+    static final Component DELETE_WARNING = Component.translatable("gtocore.wireless.delete_warning");
+    static final Component STATE_INDICATOR_STANDALONE = Component.translatable(WirelessMachine.KEY_STATE_STANDALONE);
+    static final Component STATE_INDICATOR_ONLINE = Component.translatable(WirelessMachine.KEY_STATE_ONLINE);
+    static final Component STATE_INDICATOR_OFFLINE = Component.translatable(WirelessMachine.KEY_STATE_OFFLINE);
+    static final Component STATE_INDICATOR_NO_PERMISSION = Component.translatable(WirelessMachine.KEY_STATE_NO_PERMISSION);
+    static final Component STATE_INDICATOR_UNAVAILABLE = Component.translatable(WirelessMachine.KEY_STATE_UNAVAILABLE);
+    static final Component STATE_INDICATOR_STORM_ISOLATED = Component.translatable(WirelessMachine.KEY_STATE_STORM_ISOLATED);
 
     /** 网络详情弹出面板的键（参数不使用）。 */
     public static final String DETAIL_POPUP = "wireless_network_detail";
@@ -199,7 +205,7 @@ public final class WirelessMachineUI {
 
             @Override
             public Component getTitle() {
-                return Component.translatable(TAB);
+                return TAB;
             }
 
             @Override
@@ -216,7 +222,7 @@ public final class WirelessMachineUI {
     public static Widget createPage(WirelessMachine machine, FancyMachineUIWidget host) {
         var root = page();
         if (!machine.allowWirelessConnection()) {
-            return root.addChild(TextLine.translatable(LayoutStyle.AUTO, BANNED).bindClientColor(() -> UITheme.STATUS_OFFLINE));
+            return root.addChild(TextLine.constant(LayoutStyle.AUTO, BANNED).bindClientColor(() -> UITheme.STATUS_OFFLINE));
         }
         var ctx = new WirelessUIContext(host.getGui().entityPlayer, machine.self()::getOffsetTimer);
         if (!ctx.remote) WirelessSync.pushTo(ctx.serverPlayer());
@@ -256,12 +262,12 @@ public final class WirelessMachineUI {
     /** 指示灯 + 一行文字（服务端取值），高 {@link UISizes#CONTROL_HEIGHT}。 */
     static UIElement header(WirelessMachine machine, int width, IntSupplier color, Supplier<Component> text) {
         var indicator = Indicator.of(() -> machine.getWirelessLinkState().ordinal(),
-                Indicator.State.of(UITheme.TEXT_SECONDARY, WirelessMachine.KEY_STATE_STANDALONE),
-                Indicator.State.of(UITheme.STATUS_ONLINE, WirelessMachine.KEY_STATE_ONLINE),
-                Indicator.State.of(UITheme.STATUS_OFFLINE, WirelessMachine.KEY_STATE_OFFLINE),
-                Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_NO_PERMISSION),
-                Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_UNAVAILABLE),
-                Indicator.State.of(UITheme.STATUS_WARNING, WirelessMachine.KEY_STATE_STORM_ISOLATED));
+                Indicator.State.of(UITheme.TEXT_SECONDARY, STATE_INDICATOR_STANDALONE),
+                Indicator.State.of(UITheme.STATUS_ONLINE, STATE_INDICATOR_ONLINE),
+                Indicator.State.of(UITheme.STATUS_OFFLINE, STATE_INDICATOR_OFFLINE),
+                Indicator.State.of(UITheme.STATUS_WARNING, STATE_INDICATOR_NO_PERMISSION),
+                Indicator.State.of(UITheme.STATUS_WARNING, STATE_INDICATOR_UNAVAILABLE),
+                Indicator.State.of(UITheme.STATUS_WARNING, STATE_INDICATOR_STORM_ISOLATED));
         var line = TextLine.of(0, text).bindClientColor(color);
         line.layout(l -> l.flex(1));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.width(width).gapAll(UISizes.SECTION_GAP).alignCenter())
@@ -278,7 +284,7 @@ public final class WirelessMachineUI {
                                   Consumer<Button> detailAction) {
         // 当前网络：状态面板 + 紧贴其下、与面板两边对齐的整行 [网络详情]（都被拉伸到页面宽）
         var current = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));
-        var detail = Button.translatable(LayoutStyle.AUTO, DETAIL)
+        var detail = Button.text(LayoutStyle.AUTO, DETAIL)
                 .disabled(() -> machine.getWirelessNetwork() == null || !canView(ctx, machine), DETAIL_UNAVAILABLE);
         detailAction.accept(detail);
         current.addChildren(statusPanel(machine, ctx, !inWindow), detail);
@@ -398,9 +404,9 @@ public final class WirelessMachineUI {
                                        Function<WirelessNetwork, WirelessStatus> afterCreate) {
         var field = TextField.of(0, () -> ctx.pendingName, text -> ctx.pendingName = text);
         field.layout(l -> l.flex(1));
-        field.bindClientPlaceholder(() -> Component.translatable(NAME_PLACEHOLDER));
+        field.bindClientPlaceholder(() -> NAME_PLACEHOLDER);
         field.getInput().setMaxStringLength(WirelessNetworks.MAX_NAME_LENGTH);
-        var create = Button.translatable(UISizes.BUTTON_WIDTH, CREATE).setVariant(UITheme.ButtonVariant.CONFIRM)
+        var create = Button.text(UISizes.BUTTON_WIDTH, CREATE).setVariant(UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(() -> {
                     var allowed = precheck.get();
                     if (!allowed.ok()) {
@@ -444,7 +450,7 @@ public final class WirelessMachineUI {
         field.layout(l -> l.flex(1));
         field.bindClientPlaceholder(currentName::getValue);
         field.getInput().setMaxStringLength(WirelessNetworks.MAX_NAME_LENGTH);
-        var apply = Button.translatable(UISizes.BUTTON_WIDTH, RENAME).setOnServerClick(() -> {
+        var apply = Button.text(UISizes.BUTTON_WIDTH, RENAME).setOnServerClick(() -> {
             var result = ctx.networks().rename(ctx.serverPlayer(), machine.getWirelessNetworkId(), ctx.renameBuffer);
             if (result.ok()) ctx.renameBuffer = "";
             ctx.report(result);
@@ -467,7 +473,7 @@ public final class WirelessMachineUI {
 
         // 控制器冲突提示放在 [删除网络] 左侧的空位里，没有冲突时不占一整行
         var delete = UIElement.section();
-        var ask = ConfirmButton.translatable(UISizes.BUTTON_WIDTH, DELETE, DELETE_CONFIRM);
+        var ask = ConfirmButton.of(UISizes.BUTTON_WIDTH, DELETE, DELETE_CONFIRM);
         ask.setOnServerConfirm(() -> {
             onConfirm.run();
             var result = ctx.networks().delete(ctx.serverPlayer(), machine.getWirelessNetworkId());
@@ -476,7 +482,7 @@ public final class WirelessMachineUI {
         });
         ask.disabled(() -> machine.getWirelessNetwork() == null, STATE_STANDALONE);
         ask.tooltips(DELETE_WARNING);
-        var conflict = TextLine.of(0, () -> canView(ctx, machine) && isConflict(machine) ? Component.translatable(CONFLICT) : Component.empty())
+        var conflict = TextLine.of(0, () -> canView(ctx, machine) && isConflict(machine) ? CONFLICT : Component.empty())
                 .bindClientColor(() -> UITheme.STATUS_OFFLINE);
         conflict.layout(l -> l.flex(1));
         var askRow = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(conflict, ask);
@@ -579,7 +585,7 @@ public final class WirelessMachineUI {
         private MemberRow(MemberKey key) {
             this.key = key;
             layout(l -> l.row().height(MEMBER_ROW_HEIGHT).gapAll(UISizes.GAP).alignCenter());
-            var tooltips = new Component[] { key.name(), key.location(), Component.translatable(MEMBER_HINT) };
+            var tooltips = new Component[] { key.name(), key.location(), MEMBER_HINT };
             var icon = ItemView.of(ICON, key.icon());
             icon.tooltips(tooltips);
             var name = TextLine.constant(LayoutStyle.AUTO, key.name()).bindClientColor(UITheme::panelText);
@@ -619,7 +625,7 @@ public final class WirelessMachineUI {
     /** 网络名；未加入时"独立运行"，数据不可用、网络已不存在、无权查看时显示对应说明。 */
     static Component networkName(WirelessUIContext ctx, WirelessMachine machine) {
         var id = machine.getWirelessNetworkId();
-        if (id.isEmpty()) return Component.translatable(STANDALONE);
+        if (id.isEmpty()) return STANDALONE;
         if (!machine.isWirelessAvailable()) return Component.translatable(WirelessMachine.KEY_STATE_UNAVAILABLE);
         var network = machine.getWirelessNetwork();
         if (network == null) return WirelessStatus.NOT_FOUND.message();
@@ -672,14 +678,14 @@ public final class WirelessMachineUI {
     private static Component stateText(WirelessUIContext ctx, WirelessMachine machine) {
         var hint = machineHint(ctx, machine);
         if (hint != null) return hint;
-        return Component.translatable(switch (machine.getWirelessLinkState()) {
+        return switch (machine.getWirelessLinkState()) {
             case STANDALONE -> STATE_STANDALONE;
             case ONLINE -> STATE_ONLINE;
             case OFFLINE -> STATE_OFFLINE;
             case NO_PERMISSION -> STATE_NO_PERMISSION;
             case UNAVAILABLE -> STATE_UNAVAILABLE;
-            case STORM_ISOLATED -> WirelessMachine.KEY_STATE_STORM_ISOLATED;
-        });
+            case STORM_ISOLATED -> STATE_INDICATOR_STORM_ISOLATED;
+        };
     }
 
     /** 状态行等级：控制器冲突为错误，未绑定所有者为注意；否则按连接状态（在线正常、离线错误、无权 / 不可用注意、未加入为普通）。 */
@@ -696,16 +702,16 @@ public final class WirelessMachineUI {
 
     /** 状态行悬停说明（完整句子）：未绑定所有者 / 控制器冲突的完整原因，否则连接状态的完整描述。 */
     private static Component stateDetail(WirelessUIContext ctx, WirelessMachine machine) {
-        if (machine.self().getOwnerUUID() == null) return Component.translatable(NO_OWNER);
-        if (canView(ctx, machine) && isConflict(machine)) return Component.translatable(CONFLICT);
+        if (machine.self().getOwnerUUID() == null) return NO_OWNER;
+        if (canView(ctx, machine) && isConflict(machine)) return CONFLICT;
         return machine.getWirelessLinkState().describe();
     }
 
     /** 机器级提示（短句）：无主人 / 控制器冲突（无权查看网络时不给网络相关提示）；没有时为 null。主人无权使用网络由连接状态给出。 */
     @Nullable
     private static Component machineHint(WirelessUIContext ctx, WirelessMachine machine) {
-        if (machine.self().getOwnerUUID() == null) return Component.translatable(STATE_NO_OWNER);
-        if (canView(ctx, machine) && isConflict(machine)) return Component.translatable(STATE_CONFLICT);
+        if (machine.self().getOwnerUUID() == null) return STATE_NO_OWNER;
+        if (canView(ctx, machine) && isConflict(machine)) return STATE_CONFLICT;
         return null;
     }
 }

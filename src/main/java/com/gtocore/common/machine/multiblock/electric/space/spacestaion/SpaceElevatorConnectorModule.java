@@ -145,7 +145,7 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
     @RegisterLanguage(cn = "未连接到当前星球的空间站", en = "Not Connected to Space Station of Current Planet")
     public static final String SPACE_ELEVATOR_NOT_CONNECTED_CURRENT_PLANET_TEXT = "spacestation.space_elevator.not_connected_current_planet";
     @RegisterLanguage(cn = "太空电梯动力模块最高等级", en = "Space Elevator Max Power Module Tier")
-    private static final String MAX_POWER_MODULE_TIER = "gtocore.machine.space_elevator_connector.max_power_module_tier";
+    private static final Component MAX_POWER_MODULE_TIER = Component.translatable("gtocore.machine.space_elevator_connector.max_power_module_tier");
     @RegisterLanguage(cn = "耗时乘数增益", en = "Time Cost Multiplier Gain")
-    private static final String TIME_COST_MULTIPLIER = "gtocore.machine.space_elevator_connector.time_cost_multiplier";
+    private static final Component TIME_COST_MULTIPLIER = Component.translatable("gtocore.machine.space_elevator_connector.time_cost_multiplier");
 }

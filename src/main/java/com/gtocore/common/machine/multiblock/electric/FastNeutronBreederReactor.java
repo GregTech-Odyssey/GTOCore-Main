@@ -47,14 +47,14 @@ import java.util.List;
 public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine implements IStorageMultiblock, IExplosionMachine {
 
     @RegisterLanguage(cn = "中子反射板", en = "Neutron Reflector")
-    private static final String SLOT_LABEL = "gtocore.machine.fast_neutron_breeder_reactor.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.fast_neutron_breeder_reactor.slot");
 
     @RegisterLanguage(cn = "当前温度", en = "Current Temperature")
-    private static final String TEMPERATURE = "gtocore.machine.fast_neutron_breeder_reactor.temperature";
+    private static final Component TEMPERATURE = Component.translatable("gtocore.machine.fast_neutron_breeder_reactor.temperature");
     @RegisterLanguage(cn = "当前中子通量", en = "Current Neutron Flux")
-    private static final String NEUTRON_FLUX = "gtocore.machine.fast_neutron_breeder_reactor.neutron_flux";
+    private static final Component NEUTRON_FLUX = Component.translatable("gtocore.machine.fast_neutron_breeder_reactor.neutron_flux");
     @RegisterLanguage(cn = "配方每秒升温", en = "Recipe Temperature Increase Per Second")
-    private static final String HEAT_PER_SECOND = "gtocore.machine.fast_neutron_breeder_reactor.heat_per_second";
+    private static final Component HEAT_PER_SECOND = Component.translatable("gtocore.machine.fast_neutron_breeder_reactor.heat_per_second");
 
     @SaveToDisk
     private final NotifiableStackInventory machineStorage;
@@ -279,7 +279,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

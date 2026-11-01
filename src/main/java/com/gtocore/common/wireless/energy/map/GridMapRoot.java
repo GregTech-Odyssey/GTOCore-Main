@@ -40,7 +40,11 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
 
     static final int HUD_WIDTH = UISizes.POPUP_CONTENT_WIDTH;
     private static final int EMPTY_WIDTH = HUD_WIDTH, STEP_NUMBER_WIDTH = 12, LEGEND_GAP = 8;
-    private static final String[] EMPTY_STEPS = { GridMapLang.EMPTY_STEP_1, GridMapLang.EMPTY_STEP_2, GridMapLang.EMPTY_STEP_3 };
+    private static final Component[] EMPTY_STEPS = {
+            GridMapLang.EMPTY_STEP_1,
+            GridMapLang.EMPTY_STEP_2,
+            GridMapLang.EMPTY_STEP_3
+    };
 
     private final GridMapContext ctx;
     private final GridMapToggles toggles = new GridMapToggles();
@@ -89,11 +93,11 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
 
     private Dock emptyCard() {
         var column = UIElement.column(EMPTY_WIDTH).layout(l -> l.gapAll(UISizes.GAP))
-                .addChild(TextLine.translatable(LayoutStyle.AUTO, GridMapLang.EMPTY_TITLE).bindClientColor(() -> UITheme.STATUS_TEXT_WARNING));
+                .addChild(TextLine.constant(LayoutStyle.AUTO, GridMapLang.EMPTY_TITLE).bindClientColor(() -> UITheme.STATUS_TEXT_WARNING));
         for (int i = 0; i < EMPTY_STEPS.length; i++) {
             var number = TextLine.constant(STEP_NUMBER_WIDTH, Component.literal((i + 1) + ".")).bindClientColor(UITheme::panelText);
             number.layout(l -> l.marginTop((Label.LINE_HEIGHT - TextLine.HEIGHT) / 2f));
-            var body = Label.translatable(EMPTY_WIDTH - STEP_NUMBER_WIDTH - UISizes.GAP, EMPTY_STEPS[i]).bindClientColor(UITheme::panelText);
+            var body = Label.constant(EMPTY_WIDTH - STEP_NUMBER_WIDTH - UISizes.GAP, EMPTY_STEPS[i]).bindClientColor(UITheme::panelText);
             column.addChild(UIElement.row(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP).alignStart()).addChildren(number, body));
         }
         var card = Dock.vertical().addGroup(column);
@@ -103,9 +107,9 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
     }
 
     private Dock pickBar() {
-        var text = Component.translatable(GridMapLang.PICK_HINT);
+        var text = GridMapLang.PICK_HINT;
         var hint = TextLine.constant(UISizes.widthFor(text.getString()), text).bindClientColor(UITheme::panelText);
-        var cancel = Button.translatable(UISizes.BUTTON_WIDTH, GridMapLang.PICK_CANCEL).setOnClientClick(this::sendBack);
+        var cancel = Button.text(UISizes.BUTTON_WIDTH, GridMapLang.PICK_CANCEL).setOnClientClick(this::sendBack);
         cancel.disabled(() -> ctx.machine() == null, GridMapLang.FROM_TERMINAL);
         var bar = new Dock().addGroup(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(hint, cancel));
         bar.setDisplay(ctx.mode() == GridMapMode.PICK);

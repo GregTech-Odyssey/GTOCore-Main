@@ -61,6 +61,11 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     public static final int TRANSFER_ITEM = 1;
     public static final int TRANSFER_FLUID = 2;
 
+    private static final Component STATUS = Component.translatable("gtocore.cover.advanced_wireless_transfer.status");
+    private static final Component TARGET = Component.translatable("gtocore.cover.advanced_wireless_transfer.target");
+    private static final Component POSITION = Component.translatable("gtocore.cover.advanced_wireless_transfer.position");
+    private static final Component DIMENSION = Component.translatable("gtocore.cover.advanced_wireless_transfer.dimension");
+
     protected final int transferType;
     private TickableSubscription subscription;
     @SaveToDisk
@@ -207,12 +212,12 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     @Override
     public Widget createUIWidget() {
         var status = new StatusPanel();
-        status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).bindLevel(this::connectionLevel);
-        status.addLine("gtocore.cover.advanced_wireless_transfer.target",
+        status.addLine(STATUS, this::connectionText).bindLevel(this::connectionLevel);
+        status.addLine(TARGET,
                 new Memo<>(() -> isBound() ? target.blockEntity() : null, be -> be.getBlockState().getBlock().getName()));
-        status.addLine("gtocore.cover.advanced_wireless_transfer.position",
+        status.addLine(POSITION,
                 new Memo<>(() -> targetPos, pos -> Component.literal(pos.toShortString())));
-        status.addLine("gtocore.cover.advanced_wireless_transfer.dimension",
+        status.addLine(DIMENSION,
                 new Memo<>(() -> dimensionId, Component::literal));
         return Form.page().addChildren(status,
                 CoverUIs.filterSection(transferType == TRANSFER_ITEM ? filterHandlerItem : filterHandlerFluid));

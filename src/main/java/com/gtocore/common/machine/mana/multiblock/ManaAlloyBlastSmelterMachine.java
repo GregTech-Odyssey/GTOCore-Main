@@ -32,6 +32,8 @@ import java.util.List;
 
 public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultiblockMachine implements IManaMultiblock {
 
+    private static final Component MANA_CONSUMPTION = Component.translatable("gtocore.recipe.mana_consumption");
+
     public static Component getRunes() {
         var c = Component.empty();
         for (var i = 1; i <= 8; i++) {
@@ -138,7 +140,7 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addNumber("gtocore.recipe.mana_consumption", () -> mana, "");
+        page.addNumber(MANA_CONSUMPTION, () -> mana, "");
     }
 
     @Override
