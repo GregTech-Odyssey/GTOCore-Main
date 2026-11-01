@@ -14,9 +14,12 @@ public final class KeyBind {
             KeyConflictContext.GUI, KeyModifier.CONTROL, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_I, "key.keybinding.gtocore");
     public static final KeyMapping movableHudToggle = new KeyMapping("key.gtocore.movable_hud_toggle",
             InputConstants.KEY_Z, "key.keybinding.gtocore");
+    public static final KeyMapping droneToggle = new KeyMapping("key.gtocore.drone_toggle",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, "key.keybinding.gtocore");
 
     public static void init() {
         KeyMappingRegistry.register(debugInspectKey);
         KeyMappingRegistry.register(movableHudToggle);
+        KeyMappingRegistry.register(droneToggle);
     }
 }

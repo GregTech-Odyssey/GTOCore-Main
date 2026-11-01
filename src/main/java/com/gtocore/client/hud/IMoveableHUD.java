@@ -1,7 +1,10 @@
 package com.gtocore.client.hud;
 
+import com.gtocore.utils.GuiHelper;
+
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.drone.client.DroneClient;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -32,7 +35,9 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
 
     static void registerHUD(RegisterGuiOverlaysEvent event, String id, IMoveableHUD hud) {
         REGISTERED_HUDS.put(id, hud);
-        event.registerAboveAll(id, hud);
+        event.registerAboveAll(id, (gui, graphics, partialTick, width, height) -> {
+            if (hud.isAvailable()) hud.render(gui, graphics, partialTick, width, height);
+        });
     }
 
     @RegisterLanguage(cn = "左键开关HUD显示（已启用）", en = "Left click to toggle HUD display (Enabled)")
@@ -46,7 +51,7 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
     /// renderInGameHud
     default void render(ForgeGui forgeGui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         Minecraft mc = Minecraft.getInstance();
-        if (!isEnabled() || mc.level == null || mc.options.renderDebug || mc.options.hideGui) {
+        if (!isAvailable() || !isEnabled() || mc.level == null || mc.options.renderDebug || mc.options.hideGui) {
             return;
         }
         renderGeneral(guiGraphics, partialTick, screenWidth, screenHeight);
@@ -100,6 +105,10 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
         return false;
     }
 
+    default boolean isAvailable() {
+        return !DroneClient.active();
+    }
+
     default boolean isPositionDragging() {
         return false;
     }
@@ -128,7 +137,7 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
         public static void onGuiRender(ScreenEvent.Render.Post event) {
             if (event.getScreen() instanceof HUDScreen) return;
             for (IMoveableHUD hud : activeHuds) {
-                if (hud.isEnabled()) {
+                if (hud.isAvailable() && hud.isEnabled()) {
                     hud.render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY(), event.getPartialTick());
                 }
             }
@@ -138,7 +147,7 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             if (event.getScreen() instanceof HUDScreen) return;
             boolean handled = false;
             for (IMoveableHUD hud : activeHuds) {
-                if (hud.isEnabled() && !handled) {
+                if (hud.isAvailable() && hud.isEnabled() && !handled) {
                     handled = hud.mouseClicked(event.getMouseX(), event.getMouseY(), event.getButton());
                 }
             }
@@ -149,7 +158,7 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             if (event.getScreen() instanceof HUDScreen) return;
             boolean handled = false;
             for (IMoveableHUD hud : activeHuds) {
-                if (hud.isEnabled() && !handled) {
+                if (hud.isAvailable() && hud.isEnabled() && !handled) {
                     handled = hud.mouseDragged(event.getMouseX(), event.getMouseY(),
                             event.getMouseButton(), event.getDragX(), event.getDragY());
                 }
@@ -161,7 +170,7 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
             if (event.getScreen() instanceof HUDScreen) return;
             boolean handled = false;
             for (IMoveableHUD hud : activeHuds) {
-                if (hud.isEnabled() && !handled) {
+                if (hud.isAvailable() && hud.isEnabled() && !handled) {
                     handled = hud.mouseReleased(event.getMouseX(), event.getMouseY(), event.getButton());
                 }
             }
@@ -170,6 +179,9 @@ public interface IMoveableHUD extends IGuiOverlay, GuiEventListener, Renderable 
 
         public static void onClosing(ScreenEvent.Closing event) {
             if (event.getScreen() instanceof HUDScreen) return;
+            for (IMoveableHUD hud : activeHuds) {
+                hud.mouseReleased(GuiHelper.getRealMouseX(), GuiHelper.getRealMouseY(), 0);
+            }
             activeHuds.clear();
             EmiConfig.enabled = true;
         }

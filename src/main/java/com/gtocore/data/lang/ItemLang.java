@@ -143,6 +143,11 @@ final class ItemLang {
         addCNEN("gtocore.turbine_rotor.coated", "%s镀层", "%s Coated");
         addCNEN("gtocore.tooltip.artificial_gem", "比自然的更好", "Better than nature");
         addCNEN("gtocore.tooltip.unknown", "未知", "Unknown");
+        addCNEN("gtocore.tooltip.drone", "无人机远程操控", "Drone Remote Control");
+        addCNEN("gtocore.tooltip.drone.control", "右键启用飞控台，按下§6§lEscape§r键可退出；也可放入 Curios 无人机槽，通过“切换无人机模式”按键进入或退出（默认未绑定）", "Right click to enable the flight control console; press §6§lEscape§r to exit. Alternatively, equip it in the Curios drone slot and use Toggle Drone Mode to enter or exit (unbound by default).");
+        addCNEN("gtocore.tooltip.drone.range", "取景范围：%s 格", "Viewing Range: %s blocks");
+        addCNEN("gtocore.tooltip.drone.attack", "攻击伤害：%s", "Attack Damage: %s");
+        addCNEN("gtocore.tooltip.drone.speed", "最大飞行速度：%s", "Max Flight Speed: %s");
 
         addCNEN("item.gtceu.tool.hv_vajra", "%s 基础金刚杵", "%s Basic Vajra");
         addCNEN("item.gtceu.tool.ev_vajra", "%s 高级金刚杵", "%s Advanced Vajra");

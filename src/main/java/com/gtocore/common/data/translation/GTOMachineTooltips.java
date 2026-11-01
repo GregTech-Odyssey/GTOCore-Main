@@ -1754,6 +1754,7 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("机器的多方块顶部区域，以主机为中心，可以将仓室放置区划分为两侧，分别用于输入不同的半反应", "The multi-block top area of the machine, centered on the mainframe, can be divided into two sides for inputting different half-reactions"));
         t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
         t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
+        t.control(t.tr("离子中和：一个半反应生成与另一半反应所生成离子电荷符号相反的离子，或恰好消耗另一半反应生成的离子", "Ion neutralization: one half-reaction produces ions with charges opposite to those produced by the other half-reaction, or exactly consumes the ions produced by the other half-reaction"));
         t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
         t.formula(t.tr("储能基础耗时=1秒×膜的耗时乘数；", "Base storage duration = 1 second × membrane time multiplier;"));
         t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
@@ -1773,6 +1774,7 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("机器的多方块顶部区域，以主机为中心，可以将仓室放置区划分为两侧，分别用于输入不同的半反应", "The multi-block top area of the machine, centered on the mainframe, can be divided into two sides for inputting different half-reactions"));
         t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
         t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
+        t.control(t.tr("离子中和：一个半反应生成与另一半反应所生成离子电荷符号相反的离子，或恰好消耗另一半反应生成的离子", "Ion neutralization: one half-reaction produces ions with charges opposite to those produced by the other half-reaction, or exactly consumes the ions produced by the other half-reaction"));
         t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
         t.formula(t.tr("总反应的时间=两侧半反应（时间×功率）之和/总反应功率", "Total reaction time = sum of both half-reaction (time × power) / total reaction power"));
         t.heading(t.tr("半透膜", "Semipermeable Membrane"));

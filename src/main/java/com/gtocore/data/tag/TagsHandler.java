@@ -3,6 +3,7 @@ package com.gtocore.data.tag;
 import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.common.data.*;
 
+import com.gtolib.drone.DroneSlot;
 import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.GTCEuAPI;
@@ -62,6 +63,8 @@ public final class TagsHandler {
                 GTOItems.CRUDELY_SHAPED_REMNANT_SPIRIT_STONE_ORE.asItem());
         create(ResourceLocation.fromNamespaceAndPath("curios", "curio"),
                 GTOItems.WIRELESS_ME2IN1.asItem());
+        create(ResourceLocation.fromNamespaceAndPath("curios", DroneSlot.CURIOS_SLOT),
+                GTOItems.HV_DRONE.asItem(), GTOItems.EV_DRONE.asItem(), GTOItems.IV_DRONE.asItem(), GTOItems.HYPERDIMENSIONAL_DRONE.asItem());
         create(ResourceLocation.parse("forge:ingots/redstone_alloy"),
                 ChemicalHelper.getItem(TagPrefix.ingot, GTMaterials.RedAlloy));
         Item[] isaProcessableItems = GTCEuAPI.materialManager.getRegistries().stream()

@@ -345,6 +345,6 @@ public class PlayerAttrHUD implements IMoveableHUD {
 
     private boolean isEditorActive() {
         Minecraft mc = Minecraft.getInstance();
-        return mc.screen instanceof HUDScreen || (mc.screen != null && IMoveableHUD.activeHuds.contains(this));
+        return mc.screen instanceof HUDScreen || (mc.screen != null && IMoveableHUD.activeHuds.contains(IMoveableHUD.REGISTERED_HUDS.get("client_property_hud")));
     }
 }

@@ -51,6 +51,7 @@ import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
+import com.gtolib.drone.DroneServer;
 import com.gtolib.gtm.recipe.editor.RecipeEditorUIFactory;
 import com.gtolib.quest.QuestNetwork;
 
@@ -137,6 +138,7 @@ public class CommonProxy {
         StarMapCommand.init();
         StarMapDysonSync.init();
         TesseractTargetMarker.init();
+        DroneServer.init();
         TravelEvents.init();
         BugReportServer.init();
         PendingItemRewardDelivery.Events.init();

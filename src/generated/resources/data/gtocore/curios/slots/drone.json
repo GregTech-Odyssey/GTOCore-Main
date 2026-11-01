@@ -1,0 +1,9 @@
+{
+  "add_cosmetic": false,
+  "icon": "gtocore:slot/empty_drone_slot",
+  "render_toggle": false,
+  "size": 1,
+  "validators": [
+    "curios:tag"
+  ]
+}

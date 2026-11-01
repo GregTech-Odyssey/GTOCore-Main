@@ -56,7 +56,10 @@ import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
+import com.gtolib.api.gui.hud.ScalableHud;
 import com.gtolib.api.machine.storage.SuperStorageClient;
+import com.gtolib.drone.client.DroneClient;
+import com.gtolib.drone.client.DroneHud;
 import com.gtolib.quest.client.QuestPinnedHud;
 import com.gtolib.quest.client.book.QuestBookStyle;
 
@@ -148,6 +151,7 @@ public final class ClientProxy extends CommonProxy {
         TravelEvents.Client.init();
         TravelParticleHandler.init();
         IMoveableHUD.EventHandler.init();
+        DroneClient.init();
         QuestHotReload.init();
         ClientForge.init();
         ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
@@ -260,12 +264,16 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-        registerHUD(event, "wireless_energy_hud", WirelessEnergyHUD.INSTANCE);
-        registerHUD(event, "research_points_hud", ResearchPointsHUD.INSTANCE);
-        registerHUD(event, "medical_condition_hud", MedicalConditionHUD.INSTANCE);
-        registerHUD(event, "adastra_hud", AdAstraHUD.gto$INSTANCE);
-        registerHUD(event, "client_property_hud", PlayerAttrHUD.INSTANCE);
-        registerHUD(event, "quest_pinned_hud", QuestPinnedHud.INSTANCE);
+        registerHUD(event, "wireless_energy_hud", new ScalableHud("wireless_energy_hud", WirelessEnergyHUD.INSTANCE));
+        registerHUD(event, "research_points_hud", new ScalableHud("research_points_hud", ResearchPointsHUD.INSTANCE));
+        registerHUD(event, "medical_condition_hud", new ScalableHud("medical_condition_hud", MedicalConditionHUD.INSTANCE));
+        registerHUD(event, "adastra_hud", new ScalableHud("adastra_hud", AdAstraHUD.gto$INSTANCE));
+        registerHUD(event, "client_property_hud", new ScalableHud("client_property_hud", PlayerAttrHUD.INSTANCE));
+        registerHUD(event, "quest_pinned_hud", new ScalableHud("quest_pinned_hud", QuestPinnedHud.INSTANCE));
+        registerHUD(event, "drone_mode", DroneHud.MODE);
+        registerHUD(event, "drone_speed", DroneHud.SPEED);
+        registerHUD(event, "drone_preview", DroneHud.PREVIEW);
+        registerHUD(event, "drone_power", DroneHud.POWER);
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
     }
 

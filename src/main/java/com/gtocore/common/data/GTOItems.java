@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.api.data.Algae;
+import com.gtocore.api.lang.GTOStats;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.OffsetGradientColor;
 import com.gtocore.client.renderer.item.HaloItemRenderer;
@@ -44,6 +45,7 @@ import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.armor.ArmorLogicSuite;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
+import com.gregtechceu.gtceu.api.tooltip.TipSpec;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.item.*;
@@ -193,13 +195,29 @@ public final class GTOItems {
             .tag(CustomTags.ULV_BATTERIES).register();
 
     public static final ItemEntry<ComponentItem> HV_DRONE = item("hv_drone", "基础无人机", ComponentItem::create)
+            .tips(TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
+                    l -> {
+                        l.feature(Component.translatable("gtocore.tooltip.drone.control"));
+                        l.stat(GTOStats.FLY_SPEED, 0.15F);
+                        l.stat(GTOStats.SCENE_RANGE, 64);
+                        l.stat(GTOStats.ATTACK_DAMAGE, 20.0F);
+                        l.stat(GTOStats.REACH_DISTANCE, 4.0F);
+                    }).build())
             .lang("Base Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
-            .onRegister(attach(new DroneBehavior(GTValues.HV)))
+            .onRegister(attach(new DroneBehavior(HV)))
             .register();
 
     public static final ItemEntry<ComponentItem> EV_DRONE = item("ev_drone", "高级无人机", ComponentItem::create)
+            .tips(TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
+                    l -> {
+                        l.feature(Component.translatable("gtocore.tooltip.drone.control"));
+                        l.stat(GTOStats.FLY_SPEED, 0.25F);
+                        l.stat(GTOStats.SCENE_RANGE, 256);
+                        l.stat(GTOStats.ATTACK_DAMAGE, 40.0F);
+                        l.stat(GTOStats.REACH_DISTANCE, 8.0F);
+                    }).build())
             .lang("Advanced Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
@@ -207,6 +225,14 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> IV_DRONE = item("iv_drone", "终极无人机", ComponentItem::create)
+            .tips(TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
+                    l -> {
+                        l.feature(Component.translatable("gtocore.tooltip.drone.control"));
+                        l.stat(GTOStats.FLY_SPEED, 0.35F);
+                        l.stat(GTOStats.SCENE_RANGE, 512);
+                        l.stat(GTOStats.ATTACK_DAMAGE, 80.0F);
+                        l.stat(GTOStats.REACH_DISTANCE, 16.0F);
+                    }).build())
             .lang("Ultimate Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
@@ -214,6 +240,14 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> HYPERDIMENSIONAL_DRONE = item("hyperdimensional_drone", "超维度无人机", ComponentItem::create)
+            .tips(TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
+                    l -> {
+                        l.feature(Component.translatable("gtocore.tooltip.drone.control"));
+                        l.stat(GTOStats.FLY_SPEED, 1.75F);
+                        l.stat(GTOStats.SCENE_RANGE, 0x7fffffff);
+                        l.stat(GTOStats.ATTACK_DAMAGE, 0x7fffffff);
+                        l.stat(GTOStats.REACH_DISTANCE, 256.0F);
+                    }).build())
             .lang("Hyperdimensional Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))

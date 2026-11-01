@@ -4,7 +4,9 @@ import com.gtocore.common.CommonProxy;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.KeepName;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.gui.hud.HudSettings;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -435,6 +437,11 @@ public final class GTOConfig {
 
         @DataGeneratorScanned
         public static class HUDConfig {
+
+            @KeepName
+            @Configurable
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Panel Layouts", cn = "面板布局")
+            public HudSettings panels = new HudSettings();
 
             @Configurable
             @Configurable.Comment({ "启用无线能量 HUD 显示", "Enable Wireless Energy HUD display" })

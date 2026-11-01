@@ -7,6 +7,8 @@ import com.gtolib.api.machine.storage.CompartmentStorageMachine;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.config.ConfigHolder;
+import com.gregtechceu.gtceu.config.ConfigHolder.MachineConfigs.SuperStorageInteraction;
 
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
@@ -30,6 +32,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import appeng.api.stacks.AEFluidKey;
+
 import io.netty.buffer.Unpooled;
 
 @GameTestHolder("gtocore_tank_drops")
@@ -95,7 +98,8 @@ public final class TankDropGameTests {
                 // A full container cannot take fluid; it still activates the display interaction.
                 player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
                 var entering = ForgeHooks.onLeftClickBlock(player, pos, front, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK);
-                helper.assertTrue(entering.isCanceled(), id + ": current display hit must cancel mining");
+                boolean drawer = machine instanceof CompartmentStorageMachine || ConfigHolder.INSTANCE.machines.superStorageInteraction == SuperStorageInteraction.DRAWER;
+                helper.assertTrue(entering.isCanceled() == drawer, id + ": only drawer interactions cancel display mining");
                 player.xRotO = player.getXRot();
                 player.yRotO = player.getYRot();
                 player.yHeadRotO = player.getYHeadRot();

@@ -142,6 +142,8 @@ public final class LangHandler {
         addCNEN("key.gtocore.nightvision", "夜视开关", "Night Vision Toggle");
         addCNEN("key.gtocore.drift", "飞行惯性", "Flight Inertia");
         addCNEN("key.gtocore.debug_inspect", "调试检查GUI槽位", "Debug Inspect GUI Slot");
+        addCNEN("key.gtocore.drone_toggle", "切换无人机模式", "Toggle Drone Mode");
+        addCNEN("curios.identifier.drone", "无人机", "Drone");
         addCNEN("key.keybinding.gtocore", "GTO按键绑定", "GTO Key Bindings");
 
         addCNEN("selectWorld.self_restraint_mode.enabled", "自我约束模式开！", "Self-restraint mode enabled!");
