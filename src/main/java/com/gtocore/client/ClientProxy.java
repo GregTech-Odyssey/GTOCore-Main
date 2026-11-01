@@ -54,6 +54,7 @@ import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
 import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubScreen;
 import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
+import com.gtolib.api.client.FluidNameOverlay;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
 import com.gtolib.api.gui.hud.ScalableHud;
@@ -137,7 +138,7 @@ public final class ClientProxy extends CommonProxy {
         GuiExPatternTerminal.setSortProviderGroups(false);
         GuiExPatternTerminal.setScreenInitializer(screen -> screen.addToLeftToolbar(new PatternEncoderStatsButton(button -> screen.switchToScreen(new PatternEncoderStatsScreen<>(screen, PatternEncoderStats.collect(screen.getPatternRecords().values()))))));
         SuperStorageClient.init();
-        KeyBind.init();
+        GTOKeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
         GTORender.init();
@@ -316,6 +317,7 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(FluidNameOverlay.RELOAD_LISTENER);
         event.registerReloadListener(TechTreeStyle.RELOAD_LISTENER);
         event.registerReloadListener(QuestBookStyle.RELOAD_LISTENER);
     }

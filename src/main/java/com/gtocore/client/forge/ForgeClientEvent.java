@@ -6,7 +6,7 @@ import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
-import com.gtocore.client.KeyBind;
+import com.gtocore.client.GTOKeyBind;
 import com.gtocore.client.MaterialTypeTooltips;
 import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
@@ -374,7 +374,7 @@ public final class ForgeClientEvent {
     }
 
     private static boolean isMovableHudTogglePhysicallyDown(Minecraft mc) {
-        var key = KeyBind.movableHudToggle.getKey();
+        var key = GTOKeyBind.movableHudToggle.getKey();
         long window = mc.getWindow().getWindow();
         if (key == InputConstants.UNKNOWN) {
             return false;
@@ -382,7 +382,7 @@ public final class ForgeClientEvent {
         return switch (key.getType()) {
             case KEYSYM -> InputConstants.isKeyDown(window, key.getValue());
             case MOUSE -> GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
-            case SCANCODE -> KeyBind.movableHudToggle.isDown();
+            case SCANCODE -> GTOKeyBind.movableHudToggle.isDown();
         };
     }
 }

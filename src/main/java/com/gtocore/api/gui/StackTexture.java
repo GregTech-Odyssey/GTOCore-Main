@@ -1,6 +1,7 @@
 package com.gtocore.api.gui;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.client.FluidNameOverlay;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -296,6 +297,7 @@ public class StackTexture extends TransformTexture {
                 }
             }
         }
+        FluidNameOverlay.render(graphics, fluidStack, drawX, drawY, 16, 16, 11);
     }
 
     // ===================== 辅助方法：绘制缺失纹理 =====================

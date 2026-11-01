@@ -8,7 +8,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import org.lwjgl.glfw.GLFW;
 
-public final class KeyBind {
+public final class GTOKeyBind {
 
     public static final KeyMapping debugInspectKey = new KeyMapping("key.gtocore.debug_inspect",
             KeyConflictContext.GUI, KeyModifier.CONTROL, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_I, "key.keybinding.gtocore");

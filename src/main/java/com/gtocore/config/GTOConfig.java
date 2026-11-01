@@ -404,6 +404,11 @@ public final class GTOConfig {
         public static class RenderingConfig {
 
             @Configurable
+            @Configurable.Comment({ "在界面流体图标上叠加白色描边的黑字名称，固定字号、最多两行，超出部分直接截断，并为底部数量留出空间", "Overlay fluid names as black text with a white outline in GUI fluid icons, using a fixed font size and at most two lines, truncating overflow and leaving room for amounts below" })
+            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Show Fluid Names", cn = "显示流体名称")
+            public boolean showFluidNames = false;
+
+            @Configurable
             @Configurable.Comment({ "禁用后将渲染视角外，且渲染器被标记为Global的机器，一些高级特效机器需要开启此选项才能正常渲染", "When turned disable, machines that are outside the field of view and whose renderer is marked as Global will be rendered. Some advanced effect machines need to turn on this option to render properly" })
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disable Embeddium Global BE Culling", cn = "禁用Embbedium Global方块实体剔除")
             public boolean disableEmbeddiumBECulling = true;

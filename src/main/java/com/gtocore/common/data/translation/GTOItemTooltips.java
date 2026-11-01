@@ -1,5 +1,6 @@
 package com.gtocore.common.data.translation;
 
+import com.gtocore.api.lang.GTOStats;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
 import com.gtocore.common.block.ChargeBomb;
@@ -338,5 +339,17 @@ public final class GTOItemTooltips {
 
     private static void setTips(Item item, TipSpec spec) {
         ((IItem) item).gtolib$setTips(spec);
+    }
+
+    public static TipSpec droneTips(float flySpeed, int range, int damage, int interactionRange) {
+        return TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
+                l -> {
+                    l.feature(Component.translatable("gtocore.tooltip.drone.control"));
+                    l.feature(Component.translatable("gtocore.tooltip.drone.control.1", Component.keybind("key.gtocore.drone_toggle").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+                    l.stat(GTOStats.FLY_SPEED, flySpeed);
+                    l.stat(GTOStats.SCENE_RANGE, range);
+                    l.stat(GTOStats.ATTACK_DAMAGE, damage);
+                    l.stat(GTOStats.REACH_DISTANCE, interactionRange);
+                }).build();
     }
 }

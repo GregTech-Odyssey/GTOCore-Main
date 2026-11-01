@@ -164,6 +164,7 @@
     "gtm.FluidPipeTypeMixin",
     "gtm.GTCEuMixin",
     "gtm.GTUtilMixin",
+    "gtm.IExplosionMachineMixin",
     "gtm.capability.ItemRecipeInfoMixin",
     "gtm.chemical.MaterialBuilderMixin",
     "gtm.chemical.MaterialMixin",
