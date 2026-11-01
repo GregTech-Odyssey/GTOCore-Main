@@ -13,7 +13,6 @@ import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.uipro.elements.ConfirmButton;
@@ -90,8 +89,8 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
                 else if (item == GTOBlocks.LEPTONIC_CHARGE.asItem()) explosiveEnergy += 2048000L * count;
                 else if (item == GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem()) explosiveEnergy += 32000000L * count;
                 else if (item == GTOItems.COORDINATE_CARD.asItem()) {
-                    if (pos1 == null) pos1 = getStoredCoordinates(Keys.displayStack(key));
-                    else pos2 = getStoredCoordinates(Keys.displayStack(key));
+                    if (pos1 == null) pos1 = getStoredCoordinates(key.getTag());
+                    else pos2 = getStoredCoordinates(key.getTag());
                 }
             }
 

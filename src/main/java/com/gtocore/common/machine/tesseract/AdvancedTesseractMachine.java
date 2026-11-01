@@ -23,7 +23,6 @@ import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -135,11 +134,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
         for (int i = 0; i < Math.min(MAX_TARGETS, targets.size()); i++) {
             var pos = targets.get(i).pos();
             var card = GTOItems.COORDINATE_CARD.asItem().getDefaultInstance();
-            var tag = card.getOrCreateTag();
-            tag.putString("dimension", pos.dimension().location().toString());
-            tag.putInt("x", pos.pos().getX());
-            tag.putInt("y", pos.pos().getY());
-            tag.putInt("z", pos.pos().getZ());
+            CoordinateCardBehavior.setStoredCoordinates(card, pos);
             inventory.storage.set(i, AEItemKey.of(card), 1);
         }
         targets.clear();
@@ -335,11 +330,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
                 player.displayClientMessage(Component.translatable(WRITE_FAIL_TEXT), true);
                 return true;
             }
-            CompoundTag posTags = card.getOrCreateTag();
-            posTags.putString("dimension", target.pos().dimension().location().toString());
-            posTags.putInt("x", pos.getX());
-            posTags.putInt("y", pos.getY());
-            posTags.putInt("z", pos.getZ());
+            CoordinateCardBehavior.setStoredCoordinates(card, target.pos());
             inventory.storage.set(i, AEItemKey.of(card), card.getCount());
             i++;
         }

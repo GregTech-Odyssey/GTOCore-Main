@@ -16,7 +16,6 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +28,7 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.hepdd.gtmthings.common.item.Behaviour.WirelessTransferCoverPlaceBehavior;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -87,14 +87,11 @@ public class WirelessTransferCover extends CoverBehavior {
 
     @Override
     public void onAttached(ItemStack itemStack, ServerPlayer player) {
-        CompoundTag tag = itemStack.getTag();
-        if (tag != null) {
-            this.dimensionId = tag.getString("dimensionid");
-            var intX = tag.getInt("x");
-            var intY = tag.getInt("y");
-            var intZ = tag.getInt("z");
-            this.targetPos = new BlockPos(intX, intY, intZ);
-            this.facing = Direction.byName(tag.getString("facing"));
+        var globalPos = WirelessTransferCoverPlaceBehavior.getStoredGlobalPos(itemStack.getTag());
+        if (globalPos != null) {
+            this.dimensionId = globalPos.dimension().location().toString();
+            this.targetPos = globalPos.pos();
+            this.facing = Direction.byName(itemStack.getTag().getString(WirelessTransferCoverPlaceBehavior.TAG_FACING));
             getTargetLevel();
         }
         var targetMachine = MetaMachine.getMachine(coverHolder.holder());

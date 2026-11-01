@@ -17,8 +17,8 @@ import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
 import com.gtocore.client.screen.GTOTitleScreen;
 import com.gtocore.client.screen.starmap.rocket.RocketMapScreen;
-import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
+import com.gtocore.common.item.ICoordinateHolder;
 import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
@@ -56,6 +56,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
@@ -81,7 +82,6 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 
-import com.hepdd.gtmthings.data.CustomItems;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import earth.terrarium.adastra.client.screens.PlanetsScreen;
@@ -90,7 +90,6 @@ import org.lwjgl.glfw.GLFW;
 import snownee.jade.util.Color;
 
 import java.util.List;
-import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public final class ForgeClientEvent {
@@ -244,10 +243,12 @@ public final class ForgeClientEvent {
                             RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, pos, pos);
                         }
                     }
-                } else if (Highlighting.HIGHLIGHTING_ITEM.contains(item)) {
-                    var tag = itemStack.getTag();
-                    BlockPos blockPos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
-                    RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, blockPos, blockPos);
+                } else {
+                    GlobalPos targetPos = ICoordinateHolder.getGlobalPos(itemStack);
+                    if (targetPos != null && targetPos.dimension() == level.dimension()) {
+                        BlockPos blockPos = targetPos.pos();
+                        RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, blockPos, blockPos);
+                    }
                 }
             }
             CUstomHighlightNeeds.object2IntEntrySet().fastForEach(
@@ -354,16 +355,6 @@ public final class ForgeClientEvent {
      */
     public static void stopHighlight(BlockPos start, BlockPos end) {
         CUstomHighlightNeeds.object2IntEntrySet().removeIf(entry -> entry.getKey().start.equals(start) && entry.getKey().end.equals(end));
-    }
-
-    private static class Highlighting {
-
-        private static final Set<Item> HIGHLIGHTING_ITEM = Set.of(
-                CustomItems.WIRELESS_ITEM_TRANSFER_COVER.asItem(),
-                CustomItems.WIRELESS_FLUID_TRANSFER_COVER.asItem(),
-                CustomItems.ADVANCED_WIRELESS_ITEM_TRANSFER_COVER.asItem(),
-                CustomItems.ADVANCED_WIRELESS_FLUID_TRANSFER_COVER.asItem(),
-                GTOItems.COORDINATE_CARD.asItem());
     }
 
     public record HighlightNeed(BlockPos start, BlockPos end, int color) {}
