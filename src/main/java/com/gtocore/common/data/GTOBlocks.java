@@ -42,6 +42,7 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
+import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.client.model.generators.loaders.CompositeModelBuilder;
 import net.minecraftforge.client.model.generators.loaders.SeparateTransformsModelBuilder;
 import net.minecraftforge.common.util.TransformationHelper;
@@ -248,7 +249,22 @@ public final class GTOBlocks {
     public static final BlockEntry<Block> HERMETIC_CASING_UXV = createHermeticCasing(GTValues.UXV);
     public static final BlockEntry<Block> HERMETIC_CASING_OpV = createHermeticCasing(GTValues.OpV);
 
-    public static final BlockEntry<CoilBlock> URUIUM_COIL_BLOCK = createCoilBlock(CoilType.URUIUM);
+    public static final BlockEntry<ActiveBlock> URUIUM_COIL_BLOCK = block("uruium_coil_block", "超级热熔线圈方块", ActiveBlock::new)
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .properties(p -> p.isValidSpawn((state, level, pos, ent) -> false))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .blockstate((ctx, prov) -> {
+                ActiveBlock block = ctx.getEntry();
+                ModelFile inactive = prov.models().getExistingFile(GTOCore.id("block/coil/uruium_coil_block"));
+                ModelFile active = prov.models().getExistingFile(GTOCore.id("block/coil/uruium_coil_block_bloom"));
+                prov.getVariantBuilder(block).partialState().with(ActiveBlock.ACTIVE, false).modelForState().modelFile(inactive).addModel().partialState().with(ActiveBlock.ACTIVE, true).modelForState().modelFile(active).addModel();
+            })
+            .tag(GTToolType.WRENCH.harvestTags.getFirst(), BlockTags.MINEABLE_WITH_PICKAXE)
+            .item(BlockItem::new)
+            .model((ctx, prov) -> prov.withExistingParent(prov.name(ctx), GTOCore.id("block/coil/uruium_coil_block")))
+            .build()
+            .lang("Uruium Coil Block")
+            .register();
     public static final BlockEntry<CoilBlock> ABYSSALALLOY_COIL_BLOCK = createCoilBlock(CoilType.ABYSSALALLOY);
     public static final BlockEntry<CoilBlock> TITANSTEEL_COIL_BLOCK = createCoilBlock(CoilType.TITANSTEEL);
     public static final BlockEntry<CoilBlock> ADAMANTINE_COIL_BLOCK = createCoilBlock(CoilType.ADAMANTINE);

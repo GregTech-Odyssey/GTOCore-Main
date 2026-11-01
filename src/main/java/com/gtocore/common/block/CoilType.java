@@ -23,8 +23,7 @@ public enum CoilType implements StringRepresentable, ICoilType {
     STARMETAL("starmetal", "星辉", 21600, 64, 8, GTOMaterials.Starmetal, GTOCore.id("block/coil/starmetal_coil_block")),
     INFINITY("infinity", "无尽", 36000, 128, 9, GTOMaterials.Infinity, GTOCore.id("block/coil/infinity_coil_block")),
     HYPOGEN("hypogen", "海珀珍", 62000, 256, 9, GTOMaterials.Hypogen, GTOCore.id("block/coil/hypogen_coil_block")),
-    ETERNITY("eternity", "永恒", 96000, 512, 9, GTOMaterials.Eternity, GTOCore.id("block/coil/eternity_coil_block")),
-    URUIUM("uruium", "超级热熔", 273, 1, 1, GTOMaterials.Uruium, GTOCore.id("block/coil/uruium_coil_block"));
+    ETERNITY("eternity", "永恒", 96000, 512, 9, GTOMaterials.Eternity, GTOCore.id("block/coil/eternity_coil_block"));
 
     @Getter
     private final String cnLang;

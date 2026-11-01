@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.smelter;
 
-import com.gtocore.common.block.CoilType;
+import com.gtocore.api.pattern.GTOPredicates;
+import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.data.IdleReason;
 
@@ -30,19 +31,33 @@ import java.util.List;
 
 public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCrossRecipeMultiblockMachine {
 
+    private boolean isUruiumCoil;
+
     public DimensionallyTranscendentPlasmaForgeMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true, false, false, MachineUtils::getHatchParallel);
     }
 
     @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        isUruiumCoil = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.DTPF_COIL) == GTOBlocks.URUIUM_COIL_BLOCK.get();
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        super.onStructureInvalid();
+        isUruiumCoil = false;
+    }
+
+    @Override
     public int getTemperature() {
-        return getCoilType() == CoilType.URUIUM ? 32000 : super.getTemperature();
+        return isUruiumCoil ? 32000 : super.getTemperature();
     }
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         if (recipe.definition.recipeType == GTORecipeTypes.STELLAR_FORGE_RECIPES) {
-            if (getCoilType() != CoilType.URUIUM) {
+            if (!isUruiumCoil) {
                 IdleReason.COIL_NOT_USABLE.setReason(this);
                 return null;
             }
@@ -56,7 +71,7 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
     @Override
     public void customText(@NotNull List<Component> textList) {
         if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtceu.multiblock.blast_furnace.max_temperature", Component.literal(FormattingUtil.formatNumbers(getTemperature()) + "K").withStyle(ChatFormatting.BLUE)));
-        if (getRecipeType() == GTORecipeTypes.STELLAR_FORGE_RECIPES && getCoilType() != CoilType.URUIUM) {
+        if (getRecipeType() == GTORecipeTypes.STELLAR_FORGE_RECIPES && !isUruiumCoil) {
             textList.add(Component.translatable("gtocore.machine.dimensionally_transcendent_plasma_forge.coil").withStyle(ChatFormatting.RED));
         }
     }

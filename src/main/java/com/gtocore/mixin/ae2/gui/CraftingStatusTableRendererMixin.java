@@ -50,16 +50,19 @@ public abstract class CraftingStatusTableRendererMixin extends AbstractTableRend
 
     @Inject(remap = false, method = "getEntryTooltip(Lappeng/menu/me/crafting/CraftingStatusEntry;)Ljava/util/List;", at = @At("RETURN"), cancellable = true)
     private void gto$modifyGetEntryTooltip(CraftingStatusEntry entry, CallbackInfoReturnable<List<Component>> cir) {
+        var v = cir.getReturnValue();
         if (screen.getMenu() instanceof IPushResultsHandler handler) {
             var lastResults = handler.gto$getLastCraftingResults();
             if (lastResults != null &&
                     lastResults.containsKey(entry.getWhat())) {
                 Set<IPatternProviderLogic.PushResult> results = new ReferenceOpenHashSet<>(lastResults.get(entry.getWhat()));
-                var v = cir.getReturnValue();
                 v.addAll(results.stream().filter(Objects::nonNull).map(r -> Component.translatable(r.getTranslationKey()).withStyle(r.success() ? ChatFormatting.GREEN : ChatFormatting.GOLD)).toList());
-                cir.setReturnValue(v);
             }
         }
+        if (entry.getPendingAmount() > 0) {
+            v.add(Component.translatable("gtocore.ae.appeng.craft.highlight_pending_provider").withStyle(ChatFormatting.GRAY));
+        }
+        cir.setReturnValue(v);
     }
 
     @Inject(remap = false,
