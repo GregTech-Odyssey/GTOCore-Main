@@ -1,0 +1,22 @@
+{
+  " ": {
+    "id": "minecraft:air",
+    "properties": {}
+  },
+  "A": {
+    "id": "chisel:dent/gray_concrete",
+    "properties": {}
+  },
+  "B": {
+    "id": "chisel:dent/black_concrete",
+    "properties": {}
+  },
+  "C": {
+    "id": "chisel:zag/black_concrete",
+    "properties": {}
+  },
+  "D": {
+    "id": "chisel:zag/gray_concrete",
+    "properties": {}
+  }
+}
