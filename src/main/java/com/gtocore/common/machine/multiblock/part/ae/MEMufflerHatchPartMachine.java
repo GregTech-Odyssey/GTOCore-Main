@@ -143,15 +143,15 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
     }
 
     @RegisterLanguage(cn = "放入消声仓", en = "Insert a Muffler Hatch")
-    private static final String MUFFLER_TOOLTIP_KEY = "gtocore.machine.me_muffler_part.muffler_tooltip";
+    private static final Component MUFFLER_TOOLTIP_KEY = Component.translatable("gtocore.machine.me_muffler_part.muffler_tooltip");
     @RegisterLanguage(cn = "放入相同等级的消声仓以启用", en = "Insert a Muffler Hatch of the same level to enable")
-    private static final String MUFFLER_TOOLTIP_KEY_EXPERT = "gtocore.machine.me_muffler_part.muffler_tooltip_expert";
+    private static final Component MUFFLER_TOOLTIP_KEY_EXPERT = Component.translatable("gtocore.machine.me_muffler_part.muffler_tooltip_expert");
     @RegisterLanguage(cn = "放入相同等级的集控核心以增幅概率", en = "Insert a Control Core of the same level to increase the probability")
-    private static final String AMPLIFIER_TOOLTIP_KEY = "gtocore.machine.me_muffler_part.apm_tooltip";
+    private static final Component AMPLIFIER_TOOLTIP_KEY = Component.translatable("gtocore.machine.me_muffler_part.apm_tooltip");
     @RegisterLanguage(cn = "消声仓", en = "Muffler Hatch")
-    private static final String MUFFLER_SLOT = "gtocore.machine.me_muffler_part.muffler_slot";
+    private static final Component MUFFLER_SLOT = Component.translatable("gtocore.machine.me_muffler_part.muffler_slot");
     @RegisterLanguage(cn = "集控核心", en = "Control Core")
-    private static final String AMPLIFIER_SLOT = "gtocore.machine.me_muffler_part.amplifier_slot";
+    private static final Component AMPLIFIER_SLOT = Component.translatable("gtocore.machine.me_muffler_part.amplifier_slot");
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
@@ -176,7 +176,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
         var controls = ControlPanel.of(this);
         controls.addSlot(muffler, MUFFLER_SLOT, ControlPanel.contentName(mufflerHatchInv.storage, 0));
         controls.addSlot(amplifier, AMPLIFIER_SLOT, ControlPanel.contentName(amplifierInv.storage, 0));
-        return Form.page().addChildren(status, controls.build(), MEPartUI.waitingList("me.muffler.waiting", this.internalBuffer, false, null));
+        return Form.page().addChildren(status, controls.build(), MEPartUI.waitingList("me.muffler.waiting", this.internalBuffer, false));
     }
 
     @Override

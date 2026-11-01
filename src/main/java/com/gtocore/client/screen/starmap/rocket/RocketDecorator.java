@@ -61,7 +61,7 @@ final class RocketDecorator implements BodyDecorator {
         tips = new Tip[catalog.size()];
         for (int a = 0; a < catalog.anchorCount(); a++) {
             anchorTips.add(List.of(catalog.anchorName(a).copy().withStyle(ChatFormatting.WHITE),
-                    Component.translatable(RocketLang.MOONS_ONLY).withStyle(ChatFormatting.GRAY)));
+                    RocketLang.MOONS_ONLY.copy().withStyle(ChatFormatting.GRAY)));
         }
     }
 
@@ -129,19 +129,19 @@ final class RocketDecorator implements BodyDecorator {
     private ObjectArrayList<Component> planetLines(int body, boolean unlocked) {
         var lines = new ObjectArrayList<Component>(6);
         lines.add(catalog.name(body).copy().withStyle(ChatFormatting.WHITE));
-        if (catalog.current() == body) lines.add(Component.translatable(RocketLang.CURRENT).withStyle(ChatFormatting.GREEN));
+        if (catalog.current() == body) lines.add(RocketLang.CURRENT.copy().withStyle(ChatFormatting.GREEN));
         boolean reachable = reachable(body);
         lines.add(Component.translatable(RocketLang.REQUIRED_ROCKET, requiredTier[body]).withStyle(reachable ? ChatFormatting.GRAY : ChatFormatting.RED));
         if (!reachable) lines.add(Component.translatable(RocketLang.CURRENT_ROCKET, rocketTier).withStyle(ChatFormatting.RED));
-        lines.add(Component.translatable(unlocked ? RocketLang.UNLOCKED : RocketLang.LOCKED).withStyle(unlocked ? ChatFormatting.GREEN : ChatFormatting.RED));
+        lines.add((unlocked ? RocketLang.UNLOCKED : RocketLang.LOCKED).copy().withStyle(unlocked ? ChatFormatting.GREEN : ChatFormatting.RED));
         return lines;
     }
 
     private ObjectArrayList<Component> realmLines(int body) {
         var lines = new ObjectArrayList<Component>(4);
         lines.add(catalog.name(body).copy().withStyle(ChatFormatting.WHITE));
-        if (catalog.current() == body) lines.add(Component.translatable(RocketLang.CURRENT).withStyle(ChatFormatting.GREEN));
-        lines.add(Component.translatable(RocketLang.NOT_TRAVELABLE).withStyle(ChatFormatting.GRAY));
+        if (catalog.current() == body) lines.add(RocketLang.CURRENT.copy().withStyle(ChatFormatting.GREEN));
+        lines.add(RocketLang.NOT_TRAVELABLE.copy().withStyle(ChatFormatting.GRAY));
         return lines;
     }
 
@@ -174,7 +174,7 @@ final class RocketDecorator implements BodyDecorator {
 
         private static List<Component> withClick(ObjectArrayList<Component> lines) {
             var copy = new ObjectArrayList<>(lines);
-            copy.add(Component.translatable(RocketLang.CLICK_FOR_DETAILS).withStyle(ChatFormatting.GRAY));
+            copy.add(RocketLang.CLICK_FOR_DETAILS.copy().withStyle(ChatFormatting.GRAY));
             return copy;
         }
     }

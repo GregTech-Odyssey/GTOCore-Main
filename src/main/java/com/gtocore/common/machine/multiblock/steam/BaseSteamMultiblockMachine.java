@@ -46,9 +46,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
 
     @RegisterLanguage(cn = "超频次数", en = "Overclocks")
-    private static final String OC_AMOUNT = "gtocore.machine.steam_parallel_machine.oc_amount";
+    private static final Component OC_AMOUNT = Component.translatable("gtocore.machine.steam_parallel_machine.oc_amount");
     @RegisterLanguage(cn = "需要支持超频的大型蒸汽仓", en = "Requires a large steam hatch that supports overclocking")
-    private static final String OC_UNAVAILABLE = "gtocore.machine.steam_parallel_machine.oc_unavailable";
+    private static final Component OC_UNAVAILABLE = Component.translatable("gtocore.machine.steam_parallel_machine.oc_unavailable");
+    private static final Component OC_TOOLTIP = Component.translatable("gtocore.machine.steam_parallel_machine.oc");
 
     protected int maxOCamount;
     private int euMultiplier;
@@ -145,7 +146,7 @@ public class BaseSteamMultiblockMachine extends SteamParallelMultiblockMachine {
     @Override
     public void addControls(ControlPanel controls) {
         if (!oc()) return;
-        controls.addInt(OC_AMOUNT, () -> amountOC, value -> amountOC = value, () -> 0, () -> maxOCamount, "gtocore.machine.steam_parallel_machine.oc")
+        controls.addInt(OC_AMOUNT, () -> amountOC, value -> amountOC = value, () -> 0, () -> maxOCamount, OC_TOOLTIP)
                 .disabled(() -> maxOCamount <= 0, OC_UNAVAILABLE);
     }
 

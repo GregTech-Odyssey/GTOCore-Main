@@ -69,7 +69,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
     @RegisterLanguage(cn = "扫描队列", en = "Scanning Queue")
     private static final String TAB_NAME = "gtocore.research.scanning_selection_tab.name";
     @RegisterLanguage(cn = "搜索可扫描物品或流体", en = "Search available scan targets")
-    private static final String SEARCH_TOOLTIP = "gtocore.research.scanning_selection_tab.search";
+    private static final Component SEARCH_TOOLTIP = Component.translatable("gtocore.research.scanning_selection_tab.search");
     @RegisterLanguage(cn = "没有可用的扫描目标", en = "No scan targets are available.")
     private static final String EMPTY_ENTRIES = "gtocore.research.scanning_selection_tab.empty";
     @RegisterLanguage(cn = "没有符合搜索条件的扫描目标", en = "No scan targets match the search.")
@@ -83,15 +83,15 @@ public class ScanningSelectionTab implements IFancyUIProvider {
     @RegisterLanguage(cn = "未扫描", en = "Not scanned")
     private static final String UNSCANNED_TOOLTIP = "gtocore.research.scanning_selection_tab.unscanned";
     @RegisterLanguage(cn = "不可扫描", en = "Unscannable")
-    private static final String UNSCANNABLE_TOOLTIP = "gtocore.research.scanning_selection_tab.unscannable";
+    private static final Component UNSCANNABLE_TOOLTIP = Component.translatable("gtocore.research.scanning_selection_tab.unscannable");
     @RegisterLanguage(cn = "清空选择", en = "Clear selection")
-    private static final String CLEAR_TOOLTIP = "gtocore.research.scanning_selection_tab.clear";
+    private static final Component CLEAR_TOOLTIP = Component.translatable("gtocore.research.scanning_selection_tab.clear");
     @RegisterLanguage(cn = "重新加载可用扫描目标", en = "Reload available scan targets")
-    private static final String RELOAD_TOOLTIP = "gtocore.research.scanning_selection_tab.reload";
+    private static final Component RELOAD_TOOLTIP = Component.translatable("gtocore.research.scanning_selection_tab.reload");
     @RegisterLanguage(cn = "确认选择", en = "Confirm selection")
-    private static final String EXPORT_TOOLTIP = "gtocore.research.scanning_selection_tab.export";
+    private static final Component EXPORT_TOOLTIP = Component.translatable("gtocore.research.scanning_selection_tab.export");
     @RegisterLanguage(cn = "切换机器工作模式", en = "Switch machine work mode")
-    private static final String WORK_MODE_TOOLTIP = "gtocore.research.scanning_selection_tab.work_mode";
+    private static final Component WORK_MODE_TOOLTIP = Component.translatable("gtocore.research.scanning_selection_tab.work_mode");
     @RegisterLanguage(cn = "当前模式：%s", en = "Current mode: %s")
     private static final String CURRENT_WORK_MODE_TOOLTIP = "gtocore.research.scanning_selection_tab.work_mode.current";
     @RegisterLanguage(cn = "持续检测并扫描未学习目标", en = "Continuously detect and scan unlearned targets")
@@ -278,7 +278,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
             private Content() {
                 layout(l -> l.column());
                 var search = TextField.of(UISizes.CONTENT_WIDTH, () -> searchText, this::setSearchText)
-                        .setPlaceholder(Component.translatable(SEARCH_TOOLTIP)).setRightClickClear(true);
+                        .setPlaceholder(SEARCH_TOOLTIP).setRightClickClear(true);
                 search.getInput().setMaxStringLength(64);
                 search.tooltips(SEARCH_TOOLTIP);
                 grid = new VirtualList(COLUMNS, UISizes.SLOT_SIZE, 0, filtered::size,
@@ -291,10 +291,10 @@ public class ScanningSelectionTab implements IFancyUIProvider {
                 scroller.addScrollViewChild(grid);
                 scroller.addScrollViewChild(empty);
                 var actions = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(
-                        Button.translatable(UISizes.BUTTON_WIDTH, CLEAR_TOOLTIP).setOnClientClick(selected::clear),
+                        Button.text(UISizes.BUTTON_WIDTH, CLEAR_TOOLTIP).setOnClientClick(selected::clear),
                         Button.icon(GTOGuiTextures.REFRESH).tooltips(RELOAD_TOOLTIP).setOnClientClick(() -> reload.send(Unit.INSTANCE)),
                         UIElement.flexSpacer(),
-                        Button.translatable(UISizes.BUTTON_WIDTH, EXPORT_TOOLTIP).setVariant(UITheme.ButtonVariant.CONFIRM)
+                        Button.text(UISizes.BUTTON_WIDTH, EXPORT_TOOLTIP).setVariant(UITheme.ButtonVariant.CONFIRM)
                                 .setOnClientClick(() -> confirm.send(new ObjectArrayList<>(selected))));
                 var mode = Button.icon(UISizes.SLOT_SIZE, GTOGuiTextures.INTELLIGENT_SCANNER_1)
                         .bindClientIcon(() -> getWorkModeTexture(workMode.getValue()))

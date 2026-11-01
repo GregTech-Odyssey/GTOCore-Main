@@ -32,7 +32,7 @@ public final class GravityHatchPartMachine extends AutoMaintenanceHatchPartMachi
         return MachineDisplay.screenPage(this, screen -> {
             MaintenanceReadouts.addState(screen, this);
             screen.addLine(ACMHatchPartMachine.READ_GRAVITY, MultiblockPage.cached(() -> currentGravity, value -> Component.literal(Long.toString(value))));
-        }, controls -> controls.addInt("gtocore.machine.modular_maintenance.gravity_config", this::getCurrentGravity, this::setCurrentGravity, MIN_GRAVITY, MAX_GRAVITY));
+        }, controls -> controls.addInt(ModularHatchPartMachine.GRAVITY_CONFIG, this::getCurrentGravity, this::setCurrentGravity, MIN_GRAVITY, MAX_GRAVITY));
     }
 
     private void setCurrentGravity(int gravity) {

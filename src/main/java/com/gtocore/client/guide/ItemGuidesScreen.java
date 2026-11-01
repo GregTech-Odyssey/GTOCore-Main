@@ -42,6 +42,7 @@ public final class ItemGuidesScreen {
     static final String CHOOSER_TITLE = "gtocore.item_guides.chooser.title";
     @RegisterLanguage(cn = "打开", en = "Open")
     static final String OPEN = "gtocore.item_guides.chooser.open";
+    private static final Component OPEN_LABEL = Component.translatable(OPEN);
     @RegisterLanguage(cn = "用%s显示标题并打开攻略", en = "Show titles and open guides in %s")
     static final String LANGUAGE_TIP = "gtocore.item_guides.chooser.language";
     @RegisterLanguage(cn = "仅有%s版", en = "%s only")
@@ -96,7 +97,7 @@ public final class ItemGuidesScreen {
         details.addChild(UIElement.flexSpacer());
         details.addChild(fitted(Component.literal(DAY.format(Instant.ofEpochMilli(article.published())))).bindClientColor(UITheme::textSecondary));
         var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.flex(1).gapAll(UISizes.GAP)).addChildren(title, details);
-        var open = Button.translatable(UISizes.BUTTON_WIDTH, OPEN).setOnClientClick(() -> {
+        var open = Button.text(UISizes.BUTTON_WIDTH, OPEN_LABEL).setOnClientClick(() -> {
             ItemGuides.openPage(guide);
             close.run();
         });

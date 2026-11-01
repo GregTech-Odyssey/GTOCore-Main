@@ -182,7 +182,7 @@ public final class TechTreeEmiRecipe extends ModularEmiRecipe<Widget> implements
             scroller.addScrollViewChild(details);
             addChild(scroller);
 
-            var open = Button.translatable(frame.besideNotch(width), EmiResearchHelper.OPEN_TECH_TREE)
+            var open = Button.text(frame.besideNotch(width), EmiResearchHelper.OPEN_TECH_TREE)
                     .setOnClientClick(() -> TechTreeBrowser.request(node));
             var lower = new UIElement().layout(l -> l.row().height(lowerHeight).gapAll(UISizes.SECTION_GAP).alignItems(AlignItems.END));
             lower.addChild(open);

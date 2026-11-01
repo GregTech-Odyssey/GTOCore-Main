@@ -52,52 +52,53 @@ import java.util.List;
 public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
 
     @RegisterLanguage(cn = "撤回", en = "Undo")
-    private static final String BUTTON_UNDO = "gtocore.machine.game_24.button.undo";
+    private static final Component BUTTON_UNDO = Component.translatable("gtocore.machine.game_24.button.undo");
     @RegisterLanguage(cn = "清空", en = "Clear")
-    private static final String BUTTON_CLEAR = "gtocore.machine.game_24.button.clear";
+    private static final Component BUTTON_CLEAR = Component.translatable("gtocore.machine.game_24.button.clear");
     @RegisterLanguage(cn = "提交", en = "Submit")
-    private static final String BUTTON_SUBMIT = "gtocore.machine.game_24.button.submit";
+    private static final Component BUTTON_SUBMIT = Component.translatable("gtocore.machine.game_24.button.submit");
     @RegisterLanguage(cn = "提示", en = "Hint")
-    private static final String BUTTON_HINT = "gtocore.machine.game_24.button.hint";
+    private static final Component BUTTON_HINT = Component.translatable("gtocore.machine.game_24.button.hint");
     @RegisterLanguage(cn = "换一题", en = "New puzzle")
-    private static final String BUTTON_NEXT = "gtocore.machine.game_24.button.next";
+    private static final Component BUTTON_NEXT = Component.translatable("gtocore.machine.game_24.button.next");
     @RegisterLanguage(cn = "这张牌已经用过了", en = "This card is already used")
-    private static final String REASON_CARD_USED = "gtocore.machine.game_24.reason.card_used";
+    private static final Component REASON_CARD_USED = Component.translatable("gtocore.machine.game_24.reason.card_used");
     @RegisterLanguage(cn = "这一题已经答对了，点「换一题」继续", en = "This puzzle is solved — hit New puzzle to continue")
-    private static final String REASON_SOLVED = "gtocore.machine.game_24.reason.solved";
+    private static final Component REASON_SOLVED = Component.translatable("gtocore.machine.game_24.reason.solved");
     @RegisterLanguage(cn = "表达式还是空的", en = "The expression is still empty")
-    private static final String REASON_EMPTY = "gtocore.machine.game_24.reason.empty";
+    private static final Component REASON_EMPTY = Component.translatable("gtocore.machine.game_24.reason.empty");
     @RegisterLanguage(cn = "本题已经用过提示了", en = "A hint was already used for this puzzle")
-    private static final String REASON_HINTED = "gtocore.machine.game_24.reason.hinted";
+    private static final Component REASON_HINTED = Component.translatable("gtocore.machine.game_24.reason.hinted");
+
     @RegisterLanguage(cn = "结果不是 24，再改改", en = "That is not 24 — try again")
-    private static final String TEXT_WRONG = "gtocore.machine.game_24.text.wrong";
+    private static final Component TEXT_WRONG = Component.translatable("gtocore.machine.game_24.text.wrong");
     @RegisterLanguage(cn = "答对了！", en = "Correct!")
-    private static final String TEXT_SOLVED = "gtocore.machine.game_24.text.solved";
+    private static final Component TEXT_SOLVED = Component.translatable("gtocore.machine.game_24.text.solved");
     @RegisterLanguage(cn = "完成 %s 题！+%s 游戏币", en = "%s puzzles done! +%s Game Coins")
     private static final String TEXT_REWARD = "gtocore.machine.game_24.text.reward";
     @RegisterLanguage(cn = "%s = 24", en = "%s = 24")
     private static final String TEXT_HINT = "gtocore.machine.game_24.text.hint";
     @RegisterLanguage(cn = "抽牌范围", en = "Card range")
-    private static final String SECTION_DRAW_RANGE = "gtocore.machine.game_24.section.draw_range";
+    private static final Component SECTION_DRAW_RANGE = Component.translatable("gtocore.machine.game_24.section.draw_range");
     @RegisterLanguage(cn = "1 ~ 10", en = "1 to 10")
-    private static final String RANGE_TEN = "gtocore.machine.game_24.range.ten";
+    private static final Component RANGE_TEN = Component.translatable("gtocore.machine.game_24.range.ten");
     @RegisterLanguage(cn = "1 ~ 13", en = "1 to 13")
-    private static final String RANGE_THIRTEEN = "gtocore.machine.game_24.range.thirteen";
+    private static final Component RANGE_THIRTEEN = Component.translatable("gtocore.machine.game_24.range.thirteen");
     @RegisterLanguage(cn = "%s 币 / %s 题", en = "%s coins per %s puzzles")
     private static final String TEXT_RANGE_REWARD = "gtocore.machine.game_24.text.range_reward";
     @RegisterLanguage(cn = "连解 %s / %s 题", en = "Run %s / %s puzzles")
     private static final String TEXT_RUN = "gtocore.machine.game_24.text.run";
     @RegisterLanguage(cn = "本轮用时", en = "Run time")
-    private static final String LINE_TIME = "gtocore.machine.game_24.line.time";
+    private static final Component LINE_TIME = Component.translatable("gtocore.machine.game_24.line.time");
     @RegisterLanguage(cn = "奖励 %s / %s 题", en = "Reward %s / %s puzzles")
     private static final String TEXT_REWARD_PROGRESS = "gtocore.machine.game_24.text.reward_progress";
     @RegisterLanguage(cn = "用过提示：这一题不计入奖励，连解榜单那一轮也作废",
                       en = "Hint used — this puzzle does not count towards the reward, and the streak no longer counts")
-    private static final String MSG_RUN_VOID = "gtocore.machine.game_24.msg.run_void";
+    private static final Component MSG_RUN_VOID = Component.translatable("gtocore.machine.game_24.msg.run_void");
     @RegisterLanguage(cn = "1~10 榜", en = "1 to 10 board")
-    private static final String SECTION_TEN_BOARD = "gtocore.machine.game_24.section.ten_board";
+    private static final Component SECTION_TEN_BOARD = Component.translatable("gtocore.machine.game_24.section.ten_board");
     @RegisterLanguage(cn = "1~13 榜", en = "1 to 13 board")
-    private static final String SECTION_THIRTEEN_BOARD = "gtocore.machine.game_24.section.thirteen_board";
+    private static final Component SECTION_THIRTEEN_BOARD = Component.translatable("gtocore.machine.game_24.section.thirteen_board");
 
     /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 10 题用时，达成时间放在用时格的悬停提示里。 */
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
@@ -108,7 +109,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     public static final int RUN_PUZZLES = 10;
 
     /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
-    public static final String[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
+    /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
+    public static final Component[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
 
     /** 「全部榜单」页里的 24 点榜（一级维度是抽牌范围）：列与行和本机排行榜页完全一致。 */
     public static GameBoardCatalog.Board leaderboardBoard() {
@@ -323,10 +325,10 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     private UIElement createStatusActions() {
-        var hint = Button.translatable(77, BUTTON_HINT)
+        var hint = Button.text(77, BUTTON_HINT)
                 .clientDisabled(() -> view().hinted() || view().solved(), REASON_HINTED);
         hint.setOnServerClick(() -> useHint(playerOf(hint)));
-        var next = Button.translatable(77, BUTTON_NEXT);
+        var next = Button.text(77, BUTTON_NEXT);
         next.setOnServerClick(() -> nextPuzzle(playerOf(next)));
 
         var actions = new UIElement();
@@ -482,7 +484,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         hinted = true;
         if (runValid) {
             voidRun();
-            if (player != null) player.displayClientMessage(Component.translatable(MSG_RUN_VOID), true);
+            if (player != null) player.displayClientMessage(MSG_RUN_VOID, true);
         }
         syncAndMarkChanged();
     }
@@ -550,7 +552,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
         for (int token = Game24Rules.ADD; token < Game24Rules.TOKEN_COUNT; token++) {
             // 循环变量不是有效 final，先拷一份给 lambda 用
             int code = token;
-            var button = Button.translatable(TOKEN_WIDTH, Game24Rules.tokenText(code))
+            String symbol = Game24Rules.tokenText(code);
+            var button = Button.text(TOKEN_WIDTH, symbol == null ? Component.empty() : Component.literal(symbol))
                     .clientDisabled(() -> view().solved(), REASON_SOLVED);
             button.setOnServerClick(() -> appendToken(code, playerOf(button)));
             row.addChild(button);
@@ -560,13 +563,13 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
 
     /** 撤回 / 清空 / 提交：空表达式时前两个没得可动，答对后三个都锁上。 */
     private UIElement createActionRow() {
-        var undo = Button.translatable(ACTION_WIDTH, BUTTON_UNDO)
+        var undo = Button.text(ACTION_WIDTH, BUTTON_UNDO)
                 .clientDisabled(() -> view().tokens().length == 0 || view().solved(), REASON_EMPTY);
         undo.setOnServerClick(() -> undo(playerOf(undo)));
-        var clear = Button.translatable(ACTION_WIDTH, BUTTON_CLEAR)
+        var clear = Button.text(ACTION_WIDTH, BUTTON_CLEAR)
                 .clientDisabled(() -> view().tokens().length == 0 || view().solved(), REASON_EMPTY);
         clear.setOnServerClick(() -> clearTokens(playerOf(clear)));
-        var submit = Button.translatable(ACTION_WIDTH, BUTTON_SUBMIT)
+        var submit = Button.text(ACTION_WIDTH, BUTTON_SUBMIT)
                 .clientDisabled(() -> view().solved(), REASON_SOLVED);
         submit.setOnServerClick(() -> submit(playerOf(submit)));
         return centeredRow().addChildren(undo, clear, submit);
@@ -592,9 +595,9 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
             return Component.translatable(TEXT_REWARD, RUN_PUZZLES, number(currentRange().runReward()))
                     .withStyle(ChatFormatting.GREEN);
         }
-        if (result == RESULT_SOLVED) return Component.translatable(TEXT_SOLVED).withStyle(ChatFormatting.GREEN);
+        if (result == RESULT_SOLVED) return TEXT_SOLVED.copy().withStyle(ChatFormatting.GREEN);
         if (hinted) return Component.translatable(TEXT_HINT, rules.hint(numbers)).withStyle(ChatFormatting.YELLOW);
-        if (result == RESULT_WRONG) return Component.translatable(TEXT_WRONG).withStyle(ChatFormatting.RED);
+        if (result == RESULT_WRONG) return TEXT_WRONG.copy().withStyle(ChatFormatting.RED);
         return Component.literal("—").withStyle(ChatFormatting.GRAY);
     }
 
@@ -614,7 +617,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
             for (int ordinal = 0; ordinal < RANGE_NAMES.length; ordinal++) {
                 // 循环变量不是有效 final，先拷一份给 lambda 用
                 int index = ordinal;
-                var button = choiceButton(LayoutStyle.AUTO, Component.translatable(RANGE_NAMES[index]),
+                var button = choiceButton(LayoutStyle.AUTO, RANGE_NAMES[index],
                         () -> drawRange == index);
                 button.setHoverTooltips(Component.translatable(TEXT_RANGE_REWARD,
                         number(Game24Rules.DrawRange.ALL[index].runReward()), RUN_PUZZLES));
@@ -641,7 +644,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
 
         @Override
         protected Component boardName(int index) {
-            return Component.translatable(RANGE_NAMES[index]);
+            return RANGE_NAMES[index];
         }
 
         @Override
@@ -650,8 +653,8 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
                     milestoneSection(SECTION_THIRTEEN_BOARD, "game_milestones_game_24_thirteen", 1);
         }
 
-        private UIElement milestoneSection(String titleKey, String paneId, int rangeOrdinal) {
-            var section = Form.section(titleKey);
+        private UIElement milestoneSection(Component title, String paneId, int rangeOrdinal) {
+            var section = Form.section(title);
             section.addChild(milestoneTable(paneId, MILESTONE_COLUMNS,
                     (store, server) -> buildMilestoneRows(store, server, rangeOrdinal)));
             return section;

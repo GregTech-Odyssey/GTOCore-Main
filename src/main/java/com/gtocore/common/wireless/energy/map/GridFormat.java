@@ -22,8 +22,8 @@ import java.util.Locale;
 public final class GridFormat {
 
     public static final Component NO_VALUE = Component.literal("—");
-    static final String[] WINDOW_KEYS = { GridMapLang.WINDOW_NOW, GridMapLang.WINDOW_MINUTE, GridMapLang.WINDOW_HOUR, GridMapLang.WINDOW_DAY };
-    static final String[] WINDOW_TIPS = { GridMapLang.WINDOW_NOW_TIP, GridMapLang.WINDOW_MINUTE_TIP, GridMapLang.WINDOW_HOUR_TIP,
+    static final Component[] WINDOW_KEYS = { GridMapLang.WINDOW_NOW, GridMapLang.WINDOW_MINUTE, GridMapLang.WINDOW_HOUR, GridMapLang.WINDOW_DAY };
+    static final Component[] WINDOW_TIPS = { GridMapLang.WINDOW_NOW_TIP, GridMapLang.WINDOW_MINUTE_TIP, GridMapLang.WINDOW_HOUR_TIP,
             GridMapLang.WINDOW_DAY_TIP };
     private static final double STEADY = 1;
     private static final double TICKS_PER_SECOND = 20;
@@ -143,15 +143,15 @@ public final class GridFormat {
     }
 
     public static Component eta(double stored, double capacity, double deltaPerTick) {
-        if (!Double.isFinite(deltaPerTick) || Math.abs(deltaPerTick) < STEADY) return Component.translatable(GridMapLang.ETA_STEADY);
+        if (!Double.isFinite(deltaPerTick) || Math.abs(deltaPerTick) < STEADY) return GridMapLang.ETA_STEADY;
         if (deltaPerTick > 0) {
-            if (stored >= capacity) return Component.translatable(GridMapLang.ETA_FULL);
+            if (stored >= capacity) return GridMapLang.ETA_FULL;
             var time = duration((capacity - stored) / (deltaPerTick * TICKS_PER_SECOND));
-            return time == null ? Component.translatable(GridMapLang.ETA_FILL_BEYOND) : Component.translatable(GridMapLang.ETA_FILL, time);
+            return time == null ? GridMapLang.ETA_FILL_BEYOND : Component.translatable(GridMapLang.ETA_FILL, time);
         }
-        if (stored <= 0) return Component.translatable(GridMapLang.ETA_EMPTY);
+        if (stored <= 0) return GridMapLang.ETA_EMPTY;
         var time = duration(stored / (-deltaPerTick * TICKS_PER_SECOND));
-        return time == null ? Component.translatable(GridMapLang.ETA_DRAIN_BEYOND) : Component.translatable(GridMapLang.ETA_DRAIN, time);
+        return time == null ? GridMapLang.ETA_DRAIN_BEYOND : Component.translatable(GridMapLang.ETA_DRAIN, time);
     }
 
     @Nullable
@@ -180,7 +180,7 @@ public final class GridFormat {
 
     static Component location(@Nullable ResourceKey<net.minecraft.world.level.Level> key) {
         var dimension = key == null ? null : Dimension.get(key);
-        if (dimension == null || !dimension.isWithinGalaxy()) return Component.translatable(GridMapLang.REALM);
+        if (dimension == null || !dimension.isWithinGalaxy()) return GridMapLang.REALM;
         return Component.translatable(GridMapLang.LOCATION_VALUE, Component.translatable(dimension.getGalaxy().getTranslationKey()),
                 Component.translatable(dimension.getKey()));
     }

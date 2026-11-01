@@ -28,7 +28,7 @@ import java.util.Set;
 public class RadioactivityTrait extends MultiblockTrait {
 
     @RegisterLanguage(cn = "辐射剂量", en = "Radiation Dose")
-    private static final String DOSE = "gtocore.machine.radioactivity_trait.dose";
+    private static final Component DOSE = Component.translatable("gtocore.machine.radioactivity_trait.dose");
 
     @SaveToDisk(defaultValue = "0")
     private int recipeRadioactivity;

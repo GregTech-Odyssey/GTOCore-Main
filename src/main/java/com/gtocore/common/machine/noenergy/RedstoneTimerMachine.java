@@ -48,13 +48,13 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     private static final String ELAPSED_TAG = "timerElapsed";
 
     @RegisterLanguage(cn = "状态", en = "State")
-    private static final String LINE_STATE = "gtocore.machine.redstone_timer.line.state";
+    private static final Component LINE_STATE = Component.translatable("gtocore.machine.redstone_timer.line.state");
     @RegisterLanguage(cn = "距下次输出", en = "Next pulse in")
-    private static final String LINE_NEXT = "gtocore.machine.redstone_timer.line.next";
+    private static final Component LINE_NEXT = Component.translatable("gtocore.machine.redstone_timer.line.next");
     @RegisterLanguage(cn = "本次剩余", en = "Pulse remaining")
-    private static final String LINE_REMAINING = "gtocore.machine.redstone_timer.line.remaining";
+    private static final Component LINE_REMAINING = Component.translatable("gtocore.machine.redstone_timer.line.remaining");
     @RegisterLanguage(cn = "控制信号", en = "Control signal")
-    private static final String LINE_SIGNAL = "gtocore.machine.redstone_timer.line.signal";
+    private static final Component LINE_SIGNAL = Component.translatable("gtocore.machine.redstone_timer.line.signal");
     @RegisterLanguage(cn = "输出中", en = "Emitting")
     private static final String STATE_EMITTING = "gtocore.machine.redstone_timer.state.emitting";
     @RegisterLanguage(cn = "间隔中", en = "Waiting")
@@ -74,29 +74,29 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     @RegisterLanguage(cn = "%s t（%s 秒）", en = "%s t (%s s)")
     private static final String VALUE_TICKS = "gtocore.machine.redstone_timer.value.ticks";
     @RegisterLanguage(cn = "周期（t）", en = "Cycle (t)")
-    private static final String PROGRESS_CYCLE = "gtocore.machine.redstone_timer.progress.cycle";
+    private static final Component PROGRESS_CYCLE = Component.translatable("gtocore.machine.redstone_timer.progress.cycle");
     @RegisterLanguage(cn = "前段为间隔，红色段为输出", en = "The first part is the interval; the red part is the pulse")
-    private static final String PROGRESS_TOOLTIP = "gtocore.machine.redstone_timer.progress.tooltip";
+    private static final Component PROGRESS_TOOLTIP = Component.translatable("gtocore.machine.redstone_timer.progress.tooltip");
     @RegisterLanguage(cn = "重新计时", en = "Restart cycle")
-    private static final String BUTTON_RESTART = "gtocore.machine.redstone_timer.button.restart";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.redstone_timer.button.restart");
     @RegisterLanguage(cn = "关闭输出并从间隔起点重新计时", en = "Stop the output and restart from the beginning of the interval")
-    private static final String BUTTON_RESTART_TOOLTIP = "gtocore.machine.redstone_timer.button.restart.tooltip";
+    private static final Component BUTTON_RESTART_TOOLTIP = Component.translatable("gtocore.machine.redstone_timer.button.restart.tooltip");
     @RegisterLanguage(cn = "计时器未运行", en = "The timer is not running")
-    private static final String REASON_NOT_RUNNING = "gtocore.machine.redstone_timer.reason.not_running";
+    private static final Component REASON_NOT_RUNNING = Component.translatable("gtocore.machine.redstone_timer.reason.not_running");
     @RegisterLanguage(cn = "计时", en = "Timing")
-    private static final String SECTION_TIMING = "gtocore.machine.redstone_timer.section.timing";
+    private static final Component SECTION_TIMING = Component.translatable("gtocore.machine.redstone_timer.section.timing");
     @RegisterLanguage(cn = "间隔（t）", en = "Interval (t)")
-    private static final String ROW_INTERVAL = "gtocore.machine.redstone_timer.row.interval";
+    private static final Component ROW_INTERVAL = Component.translatable("gtocore.machine.redstone_timer.row.interval");
     @RegisterLanguage(cn = "两次输出之间无信号的时长，不含输出时长；20 t = 1 秒", en = "Time without signal between two pulses, excluding the pulse itself; 20 t = 1 s")
-    private static final String ROW_INTERVAL_TOOLTIP = "gtocore.machine.redstone_timer.row.interval.tooltip";
+    private static final Component ROW_INTERVAL_TOOLTIP = Component.translatable("gtocore.machine.redstone_timer.row.interval.tooltip");
     @RegisterLanguage(cn = "持续（t）", en = "Duration (t)")
-    private static final String ROW_DURATION = "gtocore.machine.redstone_timer.row.duration";
+    private static final Component ROW_DURATION = Component.translatable("gtocore.machine.redstone_timer.row.duration");
     @RegisterLanguage(cn = "每个间隔结束后输出信号的时长", en = "How long the signal is emitted after each interval")
-    private static final String ROW_DURATION_TOOLTIP = "gtocore.machine.redstone_timer.row.duration.tooltip";
+    private static final Component ROW_DURATION_TOOLTIP = Component.translatable("gtocore.machine.redstone_timer.row.duration.tooltip");
     @RegisterLanguage(cn = "信号强度", en = "Signal strength")
-    private static final String ROW_STRENGTH = "gtocore.machine.redstone_timer.row.strength";
+    private static final Component ROW_STRENGTH = Component.translatable("gtocore.machine.redstone_timer.row.strength");
     @RegisterLanguage(cn = "运行", en = "Operation")
-    private static final String SECTION_OPERATION = "gtocore.machine.redstone_timer.section.operation";
+    private static final Component SECTION_OPERATION = Component.translatable("gtocore.machine.redstone_timer.section.operation");
     @RegisterLanguage(cn = "始终运行", en = "Always run")
     private static final String MODE_ALWAYS = "gtocore.machine.redstone_timer.mode.always";
     @RegisterLanguage(cn = "有控制信号时运行", en = "Run with control signal")
@@ -104,13 +104,13 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     @RegisterLanguage(cn = "无控制信号时运行", en = "Run without control signal")
     private static final String MODE_WITHOUT_SIGNAL = "gtocore.machine.redstone_timer.mode.without_signal";
     @RegisterLanguage(cn = "控制信号从火把对侧输入", en = "The control signal enters from the side opposite the torch")
-    private static final String MODE_TOOLTIP = "gtocore.machine.redstone_timer.mode.tooltip";
+    private static final Component MODE_TOOLTIP = Component.translatable("gtocore.machine.redstone_timer.mode.tooltip");
     @RegisterLanguage(cn = "暂停时保留进度", en = "Keep progress when paused")
-    private static final String ROW_KEEP = "gtocore.machine.redstone_timer.row.keep";
+    private static final Component ROW_KEEP = Component.translatable("gtocore.machine.redstone_timer.row.keep");
     @RegisterLanguage(cn = "关闭时，恢复运行后从间隔起点开始", en = "When off, the cycle restarts from the beginning of the interval on resume")
-    private static final String ROW_KEEP_TOOLTIP = "gtocore.machine.redstone_timer.row.keep.tooltip";
+    private static final Component ROW_KEEP_TOOLTIP = Component.translatable("gtocore.machine.redstone_timer.row.keep.tooltip");
     @RegisterLanguage(cn = "始终运行时不会暂停", en = "Never pauses in Always run mode")
-    private static final String REASON_ALWAYS = "gtocore.machine.redstone_timer.reason.always";
+    private static final Component REASON_ALWAYS = Component.translatable("gtocore.machine.redstone_timer.reason.always");
 
     @SaveToDisk(defaultValue = "20")
     private int interval = 20;
@@ -461,13 +461,13 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
         status.addLine(LINE_NEXT, this::nextText);
         status.addLine(LINE_REMAINING, this::remainingText);
         status.addLine(LINE_SIGNAL, this::signalText);
-        var cycle = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(PROGRESS_CYCLE), UITheme.FLOW_AMBER_LIGHT, this::progress)
+        var cycle = ProgressBar.of(LayoutStyle.AUTO, PROGRESS_CYCLE, UITheme.FLOW_AMBER_LIGHT, this::progress)
                 .bindRange(() -> new ProgressBar.Range(interval, period()), UITheme.FLOW_RED_MID);
-        cycle.setHoverTooltips(PROGRESS_TOOLTIP);
-        var restart = Button.translatable(LayoutStyle.AUTO, BUTTON_RESTART)
+        cycle.tooltips(PROGRESS_TOOLTIP);
+        var restart = Button.text(LayoutStyle.AUTO, BUTTON_RESTART)
                 .setOnServerClick(this::restart)
                 .disabled(() -> !running, REASON_NOT_RUNNING);
-        restart.setHoverTooltips(BUTTON_RESTART_TOOLTIP);
+        restart.tooltips(BUTTON_RESTART_TOOLTIP);
 
         var timing = Form.section(SECTION_TIMING).addChildren(
                 Form.inlineNumberRow(ROW_INTERVAL, NumberField.ofInt(LayoutStyle.AUTO, () -> interval, this::setInterval, 1, MAX_TICKS)
@@ -478,7 +478,7 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
 
         String[] modes = { MODE_ALWAYS, MODE_WITH_SIGNAL, MODE_WITHOUT_SIGNAL };
         var modeGroup = ButtonGroup.single(modes.length, i -> Component.translatable(modes[i]), () -> controlMode, this::setControlMode);
-        modeGroup.setHoverTooltips(MODE_TOOLTIP);
+        modeGroup.tooltips(MODE_TOOLTIP);
         var operation = Form.section(SECTION_OPERATION).addChildren(
                 modeGroup,
                 Form.controlRow(ROW_KEEP, Switch.of(() -> keepProgress, this::setKeepProgress)

@@ -107,7 +107,7 @@ public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine 
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_DIMENSION_DATA;
     }
 

@@ -53,7 +53,7 @@ import static com.lowdragmc.lowdraglib.LDLib.random;
 public class ResonanceFlowerMachine extends ManaMultiblockMachine implements IStorageMultiblock, IDropSaveMachine {
 
     @RegisterLanguage(cn = "下界之星 / 稳定核心", en = "Nether Star / Stabilizer Core")
-    private static final String SLOT_LABEL = "gtocore.machine.resonance_flower.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.resonance_flower.slot");
 
     // 进度表最多保留的配方条数
     private static final int MAX_SIZE = 10;
@@ -518,7 +518,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

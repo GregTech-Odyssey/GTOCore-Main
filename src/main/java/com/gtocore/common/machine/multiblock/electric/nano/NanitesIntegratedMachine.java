@@ -42,7 +42,7 @@ import java.util.Map;
 public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMachine implements IStorageMultiblock {
 
     @RegisterLanguage(cn = "损失概率", en = "Consumption Chance")
-    static final String CONSUME_CHANCE = "gtocore.machine.nanites_integrated_processing_center.consume_chance";
+    static final Component CONSUME_CHANCE = Component.translatable("gtocore.machine.nanites_integrated_processing_center.consume_chance");
 
     private static final Int2ObjectOpenHashMap<MachineDefinition> MODULE_MAP = new Int2ObjectOpenHashMap<>();
 
@@ -157,7 +157,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_NANITES;
     }
 }

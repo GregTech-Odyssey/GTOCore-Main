@@ -43,7 +43,7 @@ public final class CGCHatchPartMachine extends ACMHatchPartMachine implements IG
     @Override
     protected void addMaintenanceControls(ControlPanel controls) {
         super.addMaintenanceControls(controls);
-        controls.addInt("gtocore.machine.modular_maintenance.gravity_config", () -> currentGravity, value -> currentGravity = value, MIN_GRAVITY, MAX_GRAVITY);
+        controls.addInt(ModularHatchPartMachine.GRAVITY_CONFIG, () -> currentGravity, value -> currentGravity = value, MIN_GRAVITY, MAX_GRAVITY);
     }
 
     private static final int MIN_GRAVITY = 0;

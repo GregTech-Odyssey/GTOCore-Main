@@ -45,10 +45,12 @@ import static com.gtocore.common.item.CoordinateCardBehavior.getStoredCoordinate
 public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
 
     @RegisterLanguage(cn = "爆炸物", en = "Explosives")
-    private static final String EXPLOSIVES = "gtocore.machine.area_destruction_tools.explosives";
+    private static final Component EXPLOSIVES = Component.translatable("gtocore.machine.area_destruction_tools.explosives");
 
     @RegisterLanguage(cn = "引爆", en = "Detonate")
-    private static final String DETONATE = "gtocore.machine.area_destruction_tools.detonate";
+    private static final Component DETONATE = Component.translatable("gtocore.machine.area_destruction_tools.detonate");
+
+    public static final Component DETONATE_INSTRUCTION = Component.translatable("gtocore.machine.area_destruction_tools.detonate_instruction");
 
     @SaveToDisk
     private final NotifiableInventory<AEItemKey> inventory;
@@ -139,11 +141,11 @@ public class AreaDestructionToolsMachine extends MetaMachine implements IFancyUI
     public Widget createUIWidget() {
         return MachineDisplay.page(this, this::addDisplayText, controls -> {
             controls.addGrid(EXPLOSIVES, SlotGridView.items(inventory.storage));
-            var detonate = ConfirmButton.translatable(UISizes.BUTTON_WIDTH, DETONATE).setOnServerConfirm(() -> {
+            var detonate = ConfirmButton.of(UISizes.BUTTON_WIDTH, DETONATE).setOnServerConfirm(() -> {
                 triggerExplosion();
                 onChanged();
             });
-            controls.add(Form.controlRow("gtocore.machine.area_destruction_tools.detonate_instruction", detonate));
+            controls.add(Form.controlRow(DETONATE_INSTRUCTION, detonate));
         });
     }
 

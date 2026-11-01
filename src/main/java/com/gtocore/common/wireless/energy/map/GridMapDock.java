@@ -70,17 +70,16 @@ final class GridMapDock {
                 toggle(GridMapLang.TOGGLE_LEGEND, GridMapLang.TOGGLE_LEGEND_TIP, toggles::isLegend, root::toggleLegend));
     }
 
-    private static Button toggle(String key, String tooltipKey, BooleanSupplier on, Runnable flip) {
-        var text = Component.translatable(key);
+    private static Button toggle(Component text, Component tooltip, BooleanSupplier on, Runnable flip) {
         var button = Button.text(UISizes.widthFor(text.getString()) + 2 * UISizes.TEXT_PADDING, UISizes.DOCK_BUTTON_SIZE, text).setOnClientClick(flip)
                 .bindClientVariant(() -> on.getAsBoolean() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT);
-        button.tooltips(tooltipKey);
+        button.tooltips(tooltip);
         return button;
     }
 
     private static Button back(GridMapRoot root) {
         var ctx = root.context();
-        var text = Component.translatable(GridMapLang.BACK);
+        var text = GridMapLang.BACK;
         var button = Button.text(UISizes.widthFor(text.getString()) + 2 * UISizes.TEXT_PADDING, UISizes.DOCK_BUTTON_SIZE, text).setOnClientClick(root::sendBack);
         button.disabled(() -> ctx.machine() == null, GridMapLang.FROM_TERMINAL);
         button.tooltips(GridMapLang.BACK_TIP);

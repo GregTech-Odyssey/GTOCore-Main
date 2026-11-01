@@ -37,33 +37,33 @@ public final class GameBoardCatalog {
     // ==================== 文案 ====================
 
     @RegisterLanguage(cn = "游戏", en = "Game")
-    private static final String TITLE_GAME = "gtocore.machine.game.catalog.title.game";
+    private static final Component TITLE_GAME = Component.translatable("gtocore.machine.game.catalog.title.game");
     @RegisterLanguage(cn = "尺寸", en = "Size")
-    private static final String TITLE_SIZE = "gtocore.machine.game.catalog.title.size";
+    private static final Component TITLE_SIZE = Component.translatable("gtocore.machine.game.catalog.title.size");
     @RegisterLanguage(cn = "抽牌范围", en = "Card range")
-    private static final String TITLE_RANGE = "gtocore.machine.game.catalog.title.range";
+    private static final Component TITLE_RANGE = Component.translatable("gtocore.machine.game.catalog.title.range");
     @RegisterLanguage(cn = "章节", en = "Chapter")
-    private static final String TITLE_CHAPTER = "gtocore.machine.game.catalog.title.chapter";
+    private static final Component TITLE_CHAPTER = Component.translatable("gtocore.machine.game.catalog.title.chapter");
 
     @RegisterLanguage(cn = "老虎机", en = "Slot machine")
-    private static final String GAME_SLOT = "gtocore.machine.game.catalog.game.slot";
+    private static final Component GAME_SLOT = Component.translatable("gtocore.machine.game.catalog.game.slot");
     @RegisterLanguage(cn = "合成十", en = "Just get 10")
-    private static final String GAME_JUST_GET_10 = "gtocore.machine.game.catalog.game.just_get_10";
+    private static final Component GAME_JUST_GET_10 = Component.translatable("gtocore.machine.game.catalog.game.just_get_10");
     @RegisterLanguage(cn = "电路 2048", en = "Circuit 2048")
-    private static final String GAME_2048 = "gtocore.machine.game.catalog.game.game_2048";
+    private static final Component GAME_2048 = Component.translatable("gtocore.machine.game.catalog.game.game_2048");
     @RegisterLanguage(cn = "24 点", en = "24 points")
-    private static final String GAME_24 = "gtocore.machine.game.catalog.game.game_24";
+    private static final Component GAME_24 = Component.translatable("gtocore.machine.game.catalog.game.game_24");
     @RegisterLanguage(cn = "数字华容道", en = "Number puzzle")
-    private static final String GAME_NUMBER_PUZZLE = "gtocore.machine.game.catalog.game.number_puzzle";
+    private static final Component GAME_NUMBER_PUZZLE = Component.translatable("gtocore.machine.game.catalog.game.number_puzzle");
     @RegisterLanguage(cn = "扫雷 · 基础", en = "Minesweeper · Base")
-    private static final String GAME_MINESWEEPER_BASE = "gtocore.machine.game.catalog.game.minesweeper_base";
+    private static final Component GAME_MINESWEEPER_BASE = Component.translatable("gtocore.machine.game.catalog.game.minesweeper_base");
     @RegisterLanguage(cn = "扫雷 · 战役", en = "Minesweeper · Campaign")
-    private static final String GAME_MINESWEEPER_CAMPAIGN = "gtocore.machine.game.catalog.game.minesweeper_campaign";
+    private static final Component GAME_MINESWEEPER_CAMPAIGN = Component.translatable("gtocore.machine.game.catalog.game.minesweeper_campaign");
     @RegisterLanguage(cn = "数独", en = "Sudoku")
-    private static final String GAME_SUDOKU = "gtocore.machine.game.catalog.game.sudoku";
+    private static final Component GAME_SUDOKU = Component.translatable("gtocore.machine.game.catalog.game.sudoku");
 
     /** 游戏下拉栏：下标与 {@link #ALL} 的顺序一一对应。 */
-    public static final Level GAMES = new Level(TITLE_GAME, new String[] { GAME_SLOT, GAME_JUST_GET_10,
+    public static final Level GAMES = new Level(TITLE_GAME, new Component[] { GAME_SLOT, GAME_JUST_GET_10,
             GAME_2048, GAME_24, GAME_NUMBER_PUZZLE, GAME_MINESWEEPER_BASE, GAME_MINESWEEPER_CAMPAIGN, GAME_SUDOKU });
 
     // ==================== 目录 ====================
@@ -87,23 +87,15 @@ public final class GameBoardCatalog {
 
     private GameBoardCatalog() {}
 
-    /** 选择链的一级：标题翻译键 + 各档位的名字翻译键（客户端按当前语言解析）。 */
-    public record Level(String titleKey, String[] nameKeys) {
+    /** 选择链的一级：标题 + 各档位的名字。 */
+    public record Level(Component title, Component[] names) {
 
         public int count() {
-            return nameKeys.length;
-        }
-
-        public String nameKey(int index) {
-            return nameKeys[Math.clamp(index, 0, nameKeys.length - 1)];
-        }
-
-        public Component title() {
-            return Component.translatable(titleKey);
+            return names.length;
         }
 
         public Component name(int index) {
-            return Component.translatable(nameKey(index));
+            return names[Math.clamp(index, 0, names.length - 1)];
         }
     }
 
@@ -126,7 +118,7 @@ public final class GameBoardCatalog {
     }
 
     /** 一个可在全部榜单页里选中的榜组：游戏名 + 一级维度 + 可选的二级维度 + 数据。 */
-    public record Group(String nameKey, @Nullable Level first, @Nullable Level second, Board board) {}
+    public record Group(Component name, @Nullable Level first, @Nullable Level second, Board board) {}
 
     /** 由游戏机自带的列定义与行构建器组一张榜。 */
     public static Board board(MilestoneColumn[] columns, ToIntFunction<MinecraftServer> version, BoardRows rows) {
@@ -151,7 +143,7 @@ public final class GameBoardCatalog {
     }
 
     /** 扫雷基础只有前五档有榜（自定义档不计成绩）。 */
-    private static String[] baseDifficultyNames() {
+    private static Component[] baseDifficultyNames() {
         return Arrays.copyOf(MinesweeperCoreMachine.DIFFICULTY_NAMES, MinesweeperRules.Difficulty.CUSTOM.ordinal());
     }
 }

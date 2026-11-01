@@ -24,14 +24,14 @@ final class GridRankRow extends UIElement {
     private final IntConsumer action;
 
     GridRankRow(int valueWidth, Supplier<Component> name, Supplier<Component> value, Supplier<Level> level, IntSupplier target, IntConsumer action,
-                String tooltipKey) {
+                Component tooltip) {
         this.target = target;
         this.action = action;
         layout(l -> l.row().height(StatusLine.HEIGHT).gapAll(UISizes.GAP).alignCenter());
         var nameText = TextLine.of(0, name).bindClientColor(UITheme::panelText);
         var valueText = TextLine.of(valueWidth, value).setTextAlign(Horizontal.RIGHT).bindLevel(level);
         addChildren(nameText.layout(l -> l.flex(1)), valueText);
-        tooltips(tooltipKey);
+        tooltips(tooltip);
     }
 
     @Override

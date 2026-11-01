@@ -866,7 +866,7 @@ public final class GTOMachineTooltips {
                 t.feature(cf1);
                 t.feature(ci1);
                 t.feature(Component.translatable(TurbineMachine.DESC4));
-                t.feature(Component.translatable(TurbineMachine.DESC5));
+                t.feature(TurbineMachine.DESC5);
 
                 t.heading(cs2);
                 t.bonus(ci2);

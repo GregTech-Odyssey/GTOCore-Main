@@ -32,9 +32,9 @@ public final class TechNodeLine extends StatusLine {
     @Nullable
     private final Consumer<TechNode> clientTarget;
 
-    private TechNodeLine(String labelKey, Supplier<@Nullable TechNode> node, @Nullable Consumer<TechNode> clientTarget,
+    private TechNodeLine(Component label, Supplier<@Nullable TechNode> node, @Nullable Consumer<TechNode> clientTarget,
                          @Nullable BiConsumer<Player, TechNode> serverTarget) {
-        super(LayoutStyle.AUTO, Component.translatable(labelKey), nameOf(node));
+        super(LayoutStyle.AUTO, label, nameOf(node));
         this.clientTarget = clientTarget;
         this.code = addSyncValue(SyncValue.ofInt(() -> {
             var current = node.get();
@@ -46,12 +46,20 @@ public final class TechNodeLine extends StatusLine {
         });
     }
 
+    public static TechNodeLine client(Component label, Supplier<@Nullable TechNode> node, Consumer<TechNode> navigate) {
+        return new TechNodeLine(label, node, navigate, null);
+    }
+
+    public static TechNodeLine server(Component label, Supplier<@Nullable TechNode> node, BiConsumer<Player, TechNode> open) {
+        return new TechNodeLine(label, node, null, open);
+    }
+
     public static TechNodeLine client(String labelKey, Supplier<@Nullable TechNode> node, Consumer<TechNode> navigate) {
-        return new TechNodeLine(labelKey, node, navigate, null);
+        return client(Component.translatable(labelKey), node, navigate);
     }
 
     public static TechNodeLine server(String labelKey, Supplier<@Nullable TechNode> node, BiConsumer<Player, TechNode> open) {
-        return new TechNodeLine(labelKey, node, null, open);
+        return server(Component.translatable(labelKey), node, open);
     }
 
     private static Supplier<Component> nameOf(Supplier<@Nullable TechNode> node) {

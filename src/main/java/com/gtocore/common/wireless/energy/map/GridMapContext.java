@@ -11,7 +11,6 @@ import com.gtolib.api.wireless.energy.WirelessGrid;
 import com.gregtechceu.gtceu.api.gui.factory.MachineSubWindowFactory;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -134,7 +133,7 @@ public final class GridMapContext {
             MachineSubWindowFactory.openMachine(serverPlayer, repeater);
             return;
         }
-        serverPlayer.displayClientMessage(Component.translatable(GridMapLang.PICK_REJECTED), true);
+        serverPlayer.displayClientMessage(GridMapLang.PICK_REJECTED, true);
     }
 
     void handleBack(Player sender) {

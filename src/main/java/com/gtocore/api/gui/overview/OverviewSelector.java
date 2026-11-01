@@ -115,13 +115,13 @@ final class OverviewSelector {
                     page = 0;
                     open();
                 });
-                tabs.optionDisabled(i -> members(i).isEmpty(), unavailable);
+                tabs.optionDisabled(i -> members(i).isEmpty(), Component.translatable(unavailable));
                 column.addChild(tabs);
             }
             var list = members(category);
             var section = UIElement.section();
             if (list.isEmpty()) {
-                section.addChild(TextLine.translatable(LayoutStyle.AUTO, OverviewWidget.LANG_NONE).setColor(UITheme.PANEL_TEXT));
+                section.addChild(TextLine.constant(LayoutStyle.AUTO, OverviewWidget.LANG_NONE).setColor(UITheme.PANEL_TEXT));
             } else {
                 int pages = (list.size() + PER_PAGE - 1) / PER_PAGE;
                 page = Math.min(page, pages - 1);

@@ -43,7 +43,7 @@ import java.util.Map;
 public class ModularHatchPartMachine extends ACMHatchPartMachine implements IModularMaintenance, IMachineModifyDrops {
 
     @RegisterLanguage(cn = "功能模块", en = "Function Modules")
-    private static final String MODULES = "gtocore.machine.modular_maintenance.modules";
+    private static final Component MODULES = Component.translatable("gtocore.machine.modular_maintenance.modules");
 
     @SaveToDisk
     private final NotifiableInventory<AEItemKey> temperatureModuleInv;
@@ -142,7 +142,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     private static final int MAX_GRAVITY = 100;
 
     @Override
-    protected void addReadouts(MachineScreen screen) {
+    protected void addReadouts(@NotNull MachineScreen screen) {
         super.addReadouts(screen);
         screen.addLine(READ_TEMPERATURE, MultiblockPage.cached(() -> Math.round(getHeatContainer().getTemperature()), value -> Component.literal(value + " K")))
                 .bindDetail(() -> temperatureMode ? Component.empty() : Hints.TEMPERATURE);
@@ -155,7 +155,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     }
 
     @Override
-    protected void addMaintenanceControls(ControlPanel controls) {
+    protected void addMaintenanceControls(@NotNull ControlPanel controls) {
         var temperatureSlot = ItemSlot.of(temperatureModuleInv.storage, 0).setGhosts(Wrapper.TEMPERATURE_CHECK.getDefaultInstance());
         temperatureSlot.tooltips(Component.translatable(TOOLTIP_KEY, Wrapper.TEMPERATURE_CHECK.getDefaultInstance().getDisplayName(), Component.translatable(TEMPERATURE_FUNC)));
         var gravitySlot = ItemSlot.of(gravityModuleInv.storage, 0).setGhosts(Wrapper.GRAVITY_CHECK.getDefaultInstance());
@@ -276,13 +276,13 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     @RegisterLanguage(cn = "洁净负荷调节自动维护仓", en = "Cleanroom Load Regulating Auto Maintenance Hatch")
     private static final String CLEANROOM_SHORT_NAME = "gtocore.machine.modular_maintenance.cleanroom.short_name";
     @RegisterLanguage(cn = "控制重力", en = "Control Gravity")
-    private static final String GRAVITY_CONFIG = "gtocore.machine.modular_maintenance.gravity_config";
+    public static final Component GRAVITY_CONFIG = Component.translatable("gtocore.machine.modular_maintenance.gravity_config");
     @RegisterLanguage(cn = "调节温度（K）", en = "Adjust Temperature (K)")
-    private static final String TEMPERATURE_CONFIG = "gtocore.machine.modular_maintenance.temperature_config";
+    private static final Component TEMPERATURE_CONFIG = Component.translatable("gtocore.machine.modular_maintenance.temperature_config");
     @RegisterLanguage(cn = "需要在槽位放入电力加热器", en = "Requires an Electric Heater in the slot")
-    private static final String TEMPERATURE_REQUIRED = "gtocore.machine.modular_maintenance.temperature_required";
+    private static final Component TEMPERATURE_REQUIRED = Component.translatable("gtocore.machine.modular_maintenance.temperature_required");
     @RegisterLanguage(cn = "需要在槽位放入重力负荷调节自动维护仓", en = "Requires a Gravity Load Regulating Auto Maintenance Hatch in the slot")
-    private static final String GRAVITY_REQUIRED = "gtocore.machine.modular_maintenance.gravity_required";
+    private static final Component GRAVITY_REQUIRED = Component.translatable("gtocore.machine.modular_maintenance.gravity_required");
     @RegisterLanguage(cn = "未设置超净环境", en = "Cleanroom Not Set")
     public static final String CLEANROOM_NOT_SET = "gtocore.machine.modular_maintenance.no_cleanroom";
     @RegisterLanguage(cn = "无控制器或不接受超净", en = "No Controller or Not Accepting Cleanroom")
@@ -310,7 +310,7 @@ public class ModularHatchPartMachine extends ACMHatchPartMachine implements IMod
     private static final String TIP_HEAT_FRONT = "gtocore.machine.modular_maintenance.tip.heat_front";
 
     public static TipSpec tips() {
-        return tipsBuilder().group(Component.translatable(MODULES), l -> {
+        return tipsBuilder().group(MODULES, l -> {
             l.feature(Component.translatable(TIP_MODULE_TEMPERATURE, Component.translatable("block.gtocore.electric_heater"), MIN_TEMPERATURE, MAX_TEMPERATURE));
             l.feature(Component.translatable(TIP_MODULE_GRAVITY, Component.translatable("block.gtocore.gravity_configuration_hatch"), MIN_GRAVITY, MAX_GRAVITY));
             l.feature(Component.translatable(TIP_MODULE_VACUUM, Component.translatable("block.gtocore.vacuum_configuration_hatch"), 4));

@@ -33,12 +33,12 @@ import java.util.List;
 public final class TreeGrowthSimulator extends StorageMultiblockMachine {
 
     @RegisterLanguage(cn = "斧 / 链锯", en = "Axe / Chainsaw")
-    private static final String SLOT_LABEL = "gtocore.machine.tree_growth_simulator.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.tree_growth_simulator.slot");
 
     @RegisterLanguage(cn = "主产物产出%s%%", en = "Main Output %s%%")
     private static final String MAIN = "gtocore.machine.main_output";
     @RegisterLanguage(cn = "主产物产出", en = "Main Output")
-    private static final String MAIN_NAME = "gtocore.machine.tree_growth_simulator.main_output";
+    private static final Component MAIN_NAME = Component.translatable("gtocore.machine.tree_growth_simulator.main_output");
 
     /**
      * 材料采掘速度的映射指数。原实现用 0.5（即开方）把整棵材料树压平成一条曲线——采掘速度差 90 倍，
@@ -151,7 +151,12 @@ public final class TreeGrowthSimulator extends StorageMultiblockMachine {
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotComponent() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 }

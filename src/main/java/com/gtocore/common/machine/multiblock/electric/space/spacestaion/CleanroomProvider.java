@@ -29,7 +29,7 @@ import static com.gtocore.common.machine.multiblock.part.maintenance.ModularHatc
 public class CleanroomProvider extends Extension implements IDroneControlCenterMachine, ISpaceServiceMachine {
 
     @RegisterLanguage(cn = "超净环境", en = "Cleanroom")
-    private static final String CLEANROOM = "gtocore.machine.space_cleanroom_provider.cleanroom";
+    private static final Component CLEANROOM = Component.translatable("gtocore.machine.space_cleanroom_provider.cleanroom");
 
     private int cleanroomTier;
     private final List<DroneHatchPartMachine> droneHatchPartMachine = new ArrayList<>();

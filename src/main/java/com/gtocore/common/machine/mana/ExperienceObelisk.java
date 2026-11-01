@@ -11,7 +11,6 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
@@ -48,6 +47,7 @@ import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
 import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.SwitchWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.layout.Align;
@@ -198,16 +198,26 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         return intWidget;
     }
 
-    private ToggleButtonWidget createLevelsModeToggleButton() {
-        ToggleButtonWidget toggleButton = new ToggleButtonWidget(
+    private SwitchWidget createLevelsModeToggleButton() {
+        SwitchWidget[] holder = new SwitchWidget[1];
+        SwitchWidget toggleButton = new SwitchWidget(
                 0, 40, 16, 16,
-                this::isConfiguringLevels,
-                pressed -> isConfiguringLevels = pressed);
-        toggleButton.setPressed(isConfiguringLevels);
+                (clickData, pressed) -> {
+                    isConfiguringLevels = pressed;
+                    if (holder[0] != null) {
+                        updateLevelsModeTooltip(holder[0], pressed);
+                    }
+                });
+        holder[0] = toggleButton;
+        toggleButton.setSupplier(this::isConfiguringLevels);
         toggleButton.setTexture(new GuiTextureGroup(GuiTextures.BUTTON, GTOGuiTextures.SMALL_XP_ORB),
                 new GuiTextureGroup(GuiTextures.BUTTON, GTOGuiTextures.LARGE_XP_ORB.scale(0.8f)));
-        toggleButton.setTooltipText("gtocore.machine.experience_obelisk.configure");
+        updateLevelsModeTooltip(toggleButton, isConfiguringLevels);
         return toggleButton;
+    }
+
+    private static void updateLevelsModeTooltip(SwitchWidget widget, boolean levels) {
+        widget.setHoverTooltips(Component.translatable(levels ? LANG_CONFIGURE_LEVELS : LANG_CONFIGURE_POINTS));
     }
 
     private ButtonWidget createTransferConfiguredButton(Player player, boolean toPlayer, int x) {
@@ -235,8 +245,9 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         return button;
     }
 
-    private ToggleButtonWidget createVacuumHopperModeButton(int x) {
-        ToggleButtonWidget button = new ToggleButtonWidget(x, 60, 16, 16, this::isVacuumHopperMode, this::setVacuumHopperMode);
+    private SwitchWidget createVacuumHopperModeButton(int x) {
+        SwitchWidget button = new SwitchWidget(x, 60, 16, 16, (clickData, pressed) -> setVacuumHopperMode(pressed));
+        button.setSupplier(this::isVacuumHopperMode);
         button.setTexture(createToggleTexture(false), createToggleTexture(true));
         button.setHoverTooltips(Component.translatable(LANG_VACUUM_HOPPER_MODE));
         return button;

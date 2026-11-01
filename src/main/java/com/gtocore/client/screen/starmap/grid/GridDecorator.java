@@ -150,10 +150,10 @@ final class GridDecorator implements BodyDecorator {
     @Nullable
     private Component footer(int body, int selected) {
         if (picking) {
-            if (isPickable(body)) return Component.translatable(GridMapLang.TIP_PICK).withStyle(ChatFormatting.GREEN);
-            String key = body == self ? GridMapLang.TIP_PICK_SELF : GridMapLang.TIP_PICK_INVALID;
-            return Component.translatable(key).withStyle(ChatFormatting.RED);
+            if (isPickable(body)) return GridMapLang.TIP_PICK.copy().withStyle(ChatFormatting.GREEN);
+            Component tip = body == self ? GridMapLang.TIP_PICK_SELF : GridMapLang.TIP_PICK_INVALID;
+            return tip.copy().withStyle(ChatFormatting.RED);
         }
-        return body == selected ? null : Component.translatable(GridMapLang.TIP_DETAILS).withStyle(ChatFormatting.DARK_GRAY);
+        return body == selected ? null : GridMapLang.TIP_DETAILS.copy().withStyle(ChatFormatting.DARK_GRAY);
     }
 }

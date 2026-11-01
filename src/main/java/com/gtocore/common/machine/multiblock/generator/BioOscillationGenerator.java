@@ -415,7 +415,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
         controls.addDecimal(BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_LABEL, () -> mediumUsageThreshold / 10.0,
-                value -> mediumUsageThreshold = (short) Math.round(value * 10), 0, 100, 0.1, BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_TOOLTIP);
+                value -> mediumUsageThreshold = (short) Math.round(value * 10), 0.0, 100.0, 0.1, BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_TOOLTIP);
     }
 
     @Override

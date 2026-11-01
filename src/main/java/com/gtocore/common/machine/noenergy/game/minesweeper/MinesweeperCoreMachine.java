@@ -66,31 +66,31 @@ import java.util.UUID;
 public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreMachine.BoardSnapshot> {
 
     @RegisterLanguage(cn = "初级", en = "Beginner")
-    private static final String DIFFICULTY_EASY = "gtocore.machine.minesweeper.difficulty.easy";
+    private static final Component DIFFICULTY_EASY = Component.translatable("gtocore.machine.minesweeper.difficulty.easy");
     @RegisterLanguage(cn = "中级", en = "Intermediate")
-    private static final String DIFFICULTY_NORMAL = "gtocore.machine.minesweeper.difficulty.normal";
+    private static final Component DIFFICULTY_NORMAL = Component.translatable("gtocore.machine.minesweeper.difficulty.normal");
     @RegisterLanguage(cn = "高级", en = "Advanced")
-    private static final String DIFFICULTY_HARD = "gtocore.machine.minesweeper.difficulty.hard";
+    private static final Component DIFFICULTY_HARD = Component.translatable("gtocore.machine.minesweeper.difficulty.hard");
     @RegisterLanguage(cn = "专家", en = "Expert")
-    private static final String DIFFICULTY_EXPERT = "gtocore.machine.minesweeper.difficulty.expert";
+    private static final Component DIFFICULTY_EXPERT = Component.translatable("gtocore.machine.minesweeper.difficulty.expert");
     @RegisterLanguage(cn = "地狱", en = "Hell")
-    private static final String DIFFICULTY_HELL = "gtocore.machine.minesweeper.difficulty.hell";
+    private static final Component DIFFICULTY_HELL = Component.translatable("gtocore.machine.minesweeper.difficulty.hell");
     @RegisterLanguage(cn = "自定义", en = "Custom")
-    private static final String DIFFICULTY_CUSTOM = "gtocore.machine.minesweeper.difficulty.custom";
+    private static final Component DIFFICULTY_CUSTOM = Component.translatable("gtocore.machine.minesweeper.difficulty.custom");
     /** 难度名字，下标与 {@link MinesweeperRules.Difficulty} 的序数一一对应。 */
-    public static final String[] DIFFICULTY_NAMES = { DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARD,
+    public static final Component[] DIFFICULTY_NAMES = { DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARD,
             DIFFICULTY_EXPERT, DIFFICULTY_HELL, DIFFICULTY_CUSTOM };
 
     @RegisterLanguage(cn = "难度", en = "Difficulty")
-    private static final String SECTION_DIFFICULTY = "gtocore.machine.minesweeper.section.difficulty";
+    private static final Component SECTION_DIFFICULTY = Component.translatable("gtocore.machine.minesweeper.section.difficulty");
     @RegisterLanguage(cn = "自定义盘面", en = "Custom board")
-    private static final String SECTION_CUSTOM = "gtocore.machine.minesweeper.section.custom";
+    private static final Component SECTION_CUSTOM = Component.translatable("gtocore.machine.minesweeper.section.custom");
     @RegisterLanguage(cn = "宽度", en = "Width")
-    private static final String LINE_WIDTH = "gtocore.machine.minesweeper.line.width";
+    private static final Component LINE_WIDTH = Component.translatable("gtocore.machine.minesweeper.line.width");
     @RegisterLanguage(cn = "高度", en = "Height")
-    private static final String LINE_HEIGHT = "gtocore.machine.minesweeper.line.height";
+    private static final Component LINE_HEIGHT = Component.translatable("gtocore.machine.minesweeper.line.height");
     @RegisterLanguage(cn = "雷数", en = "Mines")
-    private static final String LINE_MINES = "gtocore.machine.minesweeper.line.mines";
+    private static final Component LINE_MINES = Component.translatable("gtocore.machine.minesweeper.line.mines");
     @RegisterLanguage(cn = "%s×%s · %s 雷 · %s 币", en = "%s×%s · %s mines · %s coins")
     private static final String TEXT_DIFFICULTY_DETAIL = "gtocore.machine.minesweeper.text.difficulty_detail";
     @RegisterLanguage(cn = "不计奖励", en = "no payout")
@@ -113,15 +113,16 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "踩到雷了，本局没有奖励", en = "Hit a mine — no reward this round")
     private static final String TEXT_LOST = "gtocore.machine.minesweeper.text.lost";
     @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final String BUTTON_RESTART = "gtocore.machine.minesweeper.button.restart";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.minesweeper.button.restart");
     @RegisterLanguage(cn = "展开盘面", en = "Unfold board")
-    private static final String BUTTON_UNFOLD = "gtocore.machine.minesweeper.button.unfold";
+    private static final Component BUTTON_UNFOLD = Component.translatable("gtocore.machine.minesweeper.button.unfold");
     @RegisterLanguage(cn = "收起盘面", en = "Pack up board")
-    private static final String BUTTON_COLLAPSE = "gtocore.machine.minesweeper.button.collapse";
+    private static final Component BUTTON_COLLAPSE = Component.translatable("gtocore.machine.minesweeper.button.collapse");
     @RegisterLanguage(cn = "盘面还没铺开", en = "The board is packed up")
-    private static final String REASON_NOT_UNFOLDED = "gtocore.machine.minesweeper.reason.not_unfolded";
+    private static final Component REASON_NOT_UNFOLDED = Component.translatable("gtocore.machine.minesweeper.reason.not_unfolded");
     @RegisterLanguage(cn = "盘面已经铺开了", en = "The board is already unfolded")
-    private static final String REASON_UNFOLDED = "gtocore.machine.minesweeper.reason.unfolded";
+    private static final Component REASON_UNFOLDED = Component.translatable("gtocore.machine.minesweeper.reason.unfolded");
+
     @RegisterLanguage(cn = "位置被挡住了，先把机器旁边的空地清出来", en = "The area is obstructed — clear the ground next to the machine first")
     private static final String MSG_OBSTRUCTED = "gtocore.machine.minesweeper.msg.obstructed";
 
@@ -130,20 +131,20 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "扫雷战役", en = "Minesweeper campaign")
     private static final String PAGE_CAMPAIGN_TOOLTIP = "gtocore.machine.minesweeper.page.campaign.tooltip";
     @RegisterLanguage(cn = "基础排行榜", en = "Base leaderboard")
-    private static final String PAGE_RECORDS = "gtocore.machine.minesweeper.page.records";
+    private static final Component PAGE_RECORDS = Component.translatable("gtocore.machine.minesweeper.page.records");
     @RegisterLanguage(cn = "基础模式各难度的最快通关榜", en = "Fastest clears for each classic difficulty")
-    private static final String PAGE_RECORDS_TOOLTIP = "gtocore.machine.minesweeper.page.records.tooltip";
+    private static final Component PAGE_RECORDS_TOOLTIP = Component.translatable("gtocore.machine.minesweeper.page.records.tooltip");
     @RegisterLanguage(cn = "战役排行榜", en = "Campaign leaderboard")
-    private static final String PAGE_CAMPAIGN_RECORDS = "gtocore.machine.minesweeper.page.campaign_records";
+    private static final Component PAGE_CAMPAIGN_RECORDS = Component.translatable("gtocore.machine.minesweeper.page.campaign_records");
     @RegisterLanguage(cn = "战役各章节的总用时与完成进度", en = "Total time and progress for each campaign chapter")
-    private static final String PAGE_CAMPAIGN_RECORDS_TOOLTIP = "gtocore.machine.minesweeper.page.campaign_records.tooltip";
+    private static final Component PAGE_CAMPAIGN_RECORDS_TOOLTIP = Component.translatable("gtocore.machine.minesweeper.page.campaign_records.tooltip");
     @RegisterLanguage(cn = "新手", en = "Novice")
-    private static final String TIER_NOVICE = "gtocore.machine.minesweeper.tier.novice";
+    private static final Component TIER_NOVICE = Component.translatable("gtocore.machine.minesweeper.tier.novice");
     @RegisterLanguage(cn = "老兵", en = "Veteran")
-    private static final String TIER_VETERAN = "gtocore.machine.minesweeper.tier.veteran";
+    private static final Component TIER_VETERAN = Component.translatable("gtocore.machine.minesweeper.tier.veteran");
     @RegisterLanguage(cn = "精锐", en = "Elite")
-    private static final String TIER_ELITE = "gtocore.machine.minesweeper.tier.elite";
-    public static final String[] TIER_NAMES = { TIER_NOVICE, TIER_VETERAN, TIER_ELITE };
+    private static final Component TIER_ELITE = Component.translatable("gtocore.machine.minesweeper.tier.elite");
+    public static final Component[] TIER_NAMES = { TIER_NOVICE, TIER_VETERAN, TIER_ELITE };
     @RegisterLanguage(cn = "已通关 %s / %s", en = "%s / %s cleared")
     private static final String TEXT_CAMPAIGN_PROGRESS = "gtocore.machine.minesweeper.text.campaign_progress";
     @RegisterLanguage(cn = "%s×%s · %s 雷 · %s", en = "%s×%s · %s mines · %s")
@@ -162,9 +163,9 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "首次通关奖励已存入机器：%s 游戏币", en = "First-clear reward added to the machine: %s Game Coins")
     private static final String TEXT_CAMPAIGN_REWARD = "gtocore.machine.minesweeper.text.campaign_reward";
     @RegisterLanguage(cn = "先完成上一关", en = "Clear the previous level first")
-    private static final String REASON_LEVEL_LOCKED = "gtocore.machine.minesweeper.reason.level_locked";
+    private static final Component REASON_LEVEL_LOCKED = Component.translatable("gtocore.machine.minesweeper.reason.level_locked");
     @RegisterLanguage(cn = "总时间", en = "Total time")
-    private static final String COLUMN_TOTAL_TIME = "gtocore.machine.minesweeper.column.total_time";
+    private static final Component COLUMN_TOTAL_TIME = Component.translatable("gtocore.machine.minesweeper.column.total_time");
     @RegisterLanguage(cn = "参与者：%s", en = "Participants: %s")
     private static final String TOOLTIP_PARTICIPANTS = "gtocore.machine.minesweeper.tooltip.participants";
     @RegisterLanguage(cn = "已完成 %s/%s", en = "%s/%s completed")
@@ -260,7 +261,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     }
 
     /** 难度名字的 lang key，工具提示与配置页共用。 */
-    public static String difficultyName(MinesweeperRules.Difficulty preset) {
+    public static Component difficultyName(MinesweeperRules.Difficulty preset) {
         return DIFFICULTY_NAMES[preset.ordinal()];
     }
 
@@ -447,7 +448,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
             }
         }
         if (rules.campaign() && (player == null || !isCampaignUnlocked(player.getUUID(), campaignLevel))) {
-            send(player, Component.translatable(REASON_LEVEL_LOCKED));
+            send(player, REASON_LEVEL_LOCKED);
             return;
         }
         newBoard();
@@ -493,7 +494,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private void restartOnServer(@Nullable ServerPlayer player) {
         if (isRemote() || !unfolded) return;
         if (rules.campaign() && (player == null || !isCampaignUnlocked(player.getUUID(), campaignLevel))) {
-            send(player, Component.translatable(REASON_LEVEL_LOCKED));
+            send(player, REASON_LEVEL_LOCKED);
             return;
         }
         settle(player);
@@ -527,7 +528,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         if (isRemote() || player == null) return;
         if (level < 0 || level >= MinesweeperCampaign.LEVEL_COUNT) return;
         if (!isCampaignUnlocked(player.getUUID(), level)) {
-            send(player, Component.translatable(REASON_LEVEL_LOCKED));
+            send(player, REASON_LEVEL_LOCKED);
             return;
         }
         if (mode == MinesweeperRules.Mode.CAMPAIGN.ordinal() && campaignLevel == level) return;
@@ -957,13 +958,13 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
 
-        var unfold = Button.translatable(77, BUTTON_UNFOLD)
+        var unfold = Button.text(77, BUTTON_UNFOLD)
                 .clientDisabled(() -> !view().collapsed(), REASON_UNFOLDED);
         unfold.setOnServerClick(() -> unfoldOnServer(playerOf(unfold)));
-        var collapse = Button.translatable(77, BUTTON_COLLAPSE)
+        var collapse = Button.text(77, BUTTON_COLLAPSE)
                 .clientDisabled(() -> view().collapsed(), REASON_NOT_UNFOLDED);
         collapse.setOnServerClick(() -> collapseOnServer(playerOf(collapse)));
-        var restart = Button.translatable(77, BUTTON_RESTART)
+        var restart = Button.text(77, BUTTON_RESTART)
                 .clientDisabled(() -> view().collapsed(), REASON_NOT_UNFOLDED);
         restart.setOnServerClick(() -> restartOnServer(playerOf(restart)));
 
@@ -978,14 +979,14 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         if (snapshot.isCampaign()) {
             int tier = MinesweeperCampaign.tierOf(snapshot.campaignLevel());
             var level = MinesweeperCampaign.level(snapshot.campaignLevel());
-            return Component.translatable(TEXT_CAMPAIGN, Component.translatable(TIER_NAMES[tier]),
+            return Component.translatable(TEXT_CAMPAIGN, TIER_NAMES[tier],
                     level.index(), MinesweeperCampaign.tierSize(tier), snapshot.width(), snapshot.height(),
                     FormattingUtil.formatNumbers(snapshot.mineCount()));
         }
         if (snapshot.isCustom()) {
             return Component.translatable(TEXT_CUSTOM, snapshot.width(), snapshot.height(), snapshot.mineCount());
         }
-        return Component.translatable(TEXT_DIFFICULTY, Component.translatable(difficultyName(snapshot.preset())),
+        return Component.translatable(TEXT_DIFFICULTY, difficultyName(snapshot.preset()),
                 snapshot.width(), snapshot.height(), FormattingUtil.formatNumbers(snapshot.mineCount()),
                 FormattingUtil.formatNumbers(snapshot.maxReward()));
     }
@@ -1031,7 +1032,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
                 // 循环变量不是有效 final，先拷一份给 lambda 用
                 int index = ordinal;
                 var preset = MinesweeperRules.Difficulty.ALL[index];
-                var button = choiceButton(LayoutStyle.AUTO, Component.translatable(DIFFICULTY_NAMES[index]),
+                var button = choiceButton(LayoutStyle.AUTO, DIFFICULTY_NAMES[index],
                         () -> isDifficultySelected(index));
                 if (preset.custom()) {
                     button.setHoverTooltips(Component.translatable(TEXT_CUSTOM_DETAIL),
@@ -1244,7 +1245,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
 
         @Override
         protected Component boardName(int index) {
-            return Component.translatable(DIFFICULTY_NAMES[index]);
+            return DIFFICULTY_NAMES[index];
         }
 
         @Override
@@ -1270,7 +1271,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
 
         @Override
         protected Component boardName(int index) {
-            return Component.translatable(TIER_NAMES[index]);
+            return TIER_NAMES[index];
         }
 
         @Override
@@ -1284,10 +1285,10 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
         }
     }
 
-    /** 一行「名字 + 输入框」：名字占固定一列，输入框吃掉剩余横向空间。 */
-    private static UIElement adjusterRow(String labelKey, Adjuster field) {
+    /** 一行「名字 + 输入框」：名字占固定一列，输入框吃掉剩下的横向空间，增减按钮按步长文字自适应。 */
+    private static UIElement adjusterRow(Component label, Adjuster field) {
         var row = UIElement.row(UISizes.CONTROL_HEIGHT).layout(style -> style.gapAll(UISizes.GAP));
-        row.addChildren(UIElement.column(LABEL_WIDTH).addChild(TextLine.translatable(LayoutStyle.AUTO, labelKey)), field);
+        row.addChildren(UIElement.column(LABEL_WIDTH).addChild(TextLine.constant(LayoutStyle.AUTO, label)), field);
         return row;
     }
 

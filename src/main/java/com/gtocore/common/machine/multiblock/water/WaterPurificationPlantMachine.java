@@ -44,11 +44,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class WaterPurificationPlantMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder, IDataInfoProvider {
 
     @RegisterLanguage(cn = "链接范围", en = "Link Range")
-    private static final String LINK_RANGE = "gtocore.machine.water_purification_plant.link_range";
+    private static final Component LINK_RANGE = Component.translatable("gtocore.machine.water_purification_plant.link_range");
     @RegisterLanguage(cn = "在世界中显示可自动链接净化单元控制器的范围（半径 32 格）", en = "Shows in the world the range within which purification unit controllers are linked automatically (radius 32 blocks)")
-    private static final String LINK_RANGE_TOOLTIP = "gtocore.machine.water_purification_plant.link_range.tooltip";
+    private static final Component LINK_RANGE_TOOLTIP = Component.translatable("gtocore.machine.water_purification_plant.link_range.tooltip");
     @RegisterLanguage(cn = "成功率", en = "Success Chance")
-    static final String SUCCESS_CHANCE = "gtocore.machine.water_purification_unit.success_chance.label";
+    static final Component SUCCESS_CHANCE = Component.translatable("gtocore.machine.water_purification_unit.success_chance.label");
+    private static final Component SHOW_RANGE = Component.translatable("gtocore.digital_miner.show_range");
 
     static final int DURATION = 2400;
 
@@ -162,7 +163,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     @Override
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
-        controls.addClientButton(LINK_RANGE, "gtocore.digital_miner.show_range", () -> ClientUtil.highlighting(getPos(), 32), LINK_RANGE_TOOLTIP);
+        controls.addClientButton(LINK_RANGE, SHOW_RANGE, () -> ClientUtil.highlighting(getPos(), 32), LINK_RANGE_TOOLTIP);
     }
 
     @Override

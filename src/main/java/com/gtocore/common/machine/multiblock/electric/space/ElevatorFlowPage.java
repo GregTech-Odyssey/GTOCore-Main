@@ -57,6 +57,7 @@ final class ElevatorFlowPage {
 
     @RegisterLanguage(cn = "电梯运行", en = "Elevator Run")
     private static final String LANG_RUN = "gtocore.machine.space_elevator.flow.run";
+    private static final Component RUN = Component.translatable(LANG_RUN);
     @RegisterLanguage(cn = "已装满", en = "Full")
     private static final String LANG_SPOOL_FULL = "gtocore.machine.space_elevator.flow.spool_full";
     @RegisterLanguage(cn = "补充中", en = "Refilling")
@@ -67,16 +68,20 @@ final class ElevatorFlowPage {
     private static final String LANG_EUT = "gtocore.machine.space_elevator.flow.eut";
     @RegisterLanguage(cn = "电力", en = "Power")
     private static final String LANG_ENERGY = "gtocore.machine.space_elevator.flow.energy";
+    private static final Component ENERGY = Component.translatable(LANG_ENERGY);
     @RegisterLanguage(cn = "电压", en = "Tier")
     private static final String LANG_VOLTAGE = "gtocore.machine.space_elevator.flow.voltage";
+    private static final Component VOLTAGE = Component.translatable(LANG_VOLTAGE);
     @RegisterLanguage(cn = "状态", en = "State")
     private static final String LANG_STATE = "gtocore.machine.space_elevator.flow.state";
     @RegisterLanguage(cn = "进度", en = "Progress")
     private static final String LANG_PROGRESS = "gtocore.machine.space_elevator.flow.progress";
     @RegisterLanguage(cn = "动力模块", en = "Power Module")
     private static final String LANG_POWER_MODULE = "gtocore.machine.space_elevator.flow.power_module";
+    private static final Component POWER_MODULE = Component.translatable(LANG_POWER_MODULE);
     @RegisterLanguage(cn = "算力", en = "Computation")
     private static final String LANG_COMPUTATION = "gtocore.machine.space_elevator.flow.computation";
+    private static final Component COMPUTATION = Component.translatable(LANG_COMPUTATION);
     @RegisterLanguage(cn = "%s CWU/t", en = "%s CWU/t")
     private static final String LANG_CWU = "gtocore.machine.space_elevator.flow.cwu";
     @RegisterLanguage(cn = "需要 %s 及以上电压", en = "Needs %s or higher")
@@ -89,34 +94,44 @@ final class ElevatorFlowPage {
     private static final String LANG_READY = "gtocore.machine.space_elevator.flow.ready";
     @RegisterLanguage(cn = "纳米管线轴", en = "Nanotube Spools")
     private static final String LANG_SPOOL = "gtocore.machine.space_elevator.flow.spool";
+    private static final Component SPOOL = Component.translatable(LANG_SPOOL);
     @RegisterLanguage(cn = "运行时从输入总线补充纳米管线轴，装满 %s 个后显示电梯缆绳。", en = "While running, nanotube spools are taken from the input bus; the elevator cable appears once %s are stored.")
     private static final String LANG_SPOOL_DESC = "gtocore.machine.space_elevator.flow.spool_desc";
     @RegisterLanguage(cn = "轨道空间站", en = "Orbital Station")
     private static final String LANG_ORBIT = "gtocore.machine.space_elevator.flow.orbit";
+    private static final Component ORBIT = Component.translatable(LANG_ORBIT);
     @RegisterLanguage(cn = "已连接", en = "Linked")
     private static final String LANG_LINKED = "gtocore.machine.space_elevator.flow.linked";
     @RegisterLanguage(cn = "未连接", en = "Not Linked")
     private static final String LANG_UNLINKED = "gtocore.machine.space_elevator.flow.unlinked";
     @RegisterLanguage(cn = "倍率", en = "Multiplier")
     private static final String LANG_MULTIPLIER = "gtocore.machine.space_elevator.flow.multiplier";
+    private static final Component MULTIPLIER = Component.translatable(LANG_MULTIPLIER);
     @RegisterLanguage(cn = "当前星球轨道上的空间站装有太空电梯连接舱且就绪时自动连接：模块耗时进一步降低，算力需求变为 %s 倍。", en = "Links automatically to a ready Space Elevator Connector Module on a station in this planet's orbit: module durations drop further and the computation demand becomes %s times.")
     private static final String LANG_ORBIT_DESC = "gtocore.machine.space_elevator.flow.orbit_desc";
     @RegisterLanguage(cn = "太空电梯模块", en = "Elevator Modules")
     private static final String LANG_MODULES = "gtocore.machine.space_elevator.flow.modules";
+    private static final Component MODULES = Component.translatable(LANG_MODULES);
     @RegisterLanguage(cn = "巨型模块", en = "Mega Modules")
     private static final String LANG_MEGA = "gtocore.machine.space_elevator.flow.mega";
+    private static final Component MEGA = Component.translatable(LANG_MEGA);
     @RegisterLanguage(cn = "已安装", en = "Installed")
     private static final String LANG_INSTALLED = "gtocore.machine.space_elevator.flow.installed";
+    private static final Component INSTALLED = Component.translatable(LANG_INSTALLED);
     @RegisterLanguage(cn = "已接入", en = "Linked")
     private static final String LANG_ATTACHED = "gtocore.machine.space_elevator.flow.attached";
+    private static final Component ATTACHED = Component.translatable(LANG_ATTACHED);
     @RegisterLanguage(cn = "并行", en = "Parallel")
     private static final String LANG_PARALLEL = "gtocore.machine.space_elevator.flow.parallel";
+    private static final Component PARALLEL = Component.translatable(LANG_PARALLEL);
     @RegisterLanguage(cn = "耗时", en = "Duration")
     private static final String LANG_DURATION = "gtocore.machine.space_elevator.flow.duration";
+    private static final Component DURATION = Component.translatable(LANG_DURATION);
     @RegisterLanguage(cn = "点左侧「总览」查看整座结构并在空接口上安装模块", en = "Use \"Overview\" on the left to view the structure and install modules at free ports")
     private static final String LANG_HINT = "gtocore.machine.space_elevator.flow.hint";
     @RegisterLanguage(cn = "在左侧「总览」中安装模块", en = "Install modules in \"Overview\"")
     private static final String LANG_HINT_SHORT = "gtocore.machine.space_elevator.flow.hint_short";
+    private static final Component HINT_SHORT = Component.translatable(LANG_HINT_SHORT);
     @RegisterLanguage(cn = "模块并行上限为 %s^(动力模块等级-1)，耗时倍率随太空电梯电压提高而降低。", en = "Module parallel limit is %s^(power module tier - 1); the duration multiplier falls as the elevator tier rises.")
     private static final String LANG_MODULE_DESC = "gtocore.machine.space_elevator.flow.module_desc";
     @RegisterLanguage(cn = "未成型或未接入：%s", en = "Unformed or not linked: %s")
@@ -130,13 +145,13 @@ final class ElevatorFlowPage {
         boolean road = machine instanceof SuperSpaceElevatorMachine;
         var status = new Status(machine, road);
         var chart = new FlowChart(UISizes.FLOW_GUTTER_WIDTH, COLUMN_WIDTH, COLUMN_WIDTH, COLUMN_WIDTH, SIDE_WIDTH);
-        var energy = inputNode(chart, 0, node -> ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY,
+        var energy = inputNode(chart, 0, node -> ItemView.of(FlowParts.energyIcon(node)), ENERGY,
                 status.live(() -> status.diagnoser.energyIssue().state()), status.live(() -> status.energyDetail),
                 status.live(() -> status.usageText), status.live(() -> status.usageLevel), status.live(() -> status.diagnoser.energyIssue().view()));
-        var computation = inputNode(chart, 1, node -> ItemView.of(GTResearchMachines.COMPUTATION_HATCH_RECEIVER.asStack()), LANG_COMPUTATION,
+        var computation = inputNode(chart, 1, node -> ItemView.of(GTResearchMachines.COMPUTATION_HATCH_RECEIVER.asStack()), COMPUTATION,
                 status.live(() -> status.core), status.live(() -> status.coreDetail), status.live(() -> status.computationText), () -> Level.NORMAL,
                 status.live(() -> status.computationView));
-        var spool = inputNode(chart, 2, node -> ItemView.of(GTOItems.NANOTUBE_SPOOL.asStack()), LANG_SPOOL, status.live(() -> status.spool),
+        var spool = inputNode(chart, 2, node -> ItemView.of(GTOItems.NANOTUBE_SPOOL.asStack()), SPOOL, status.live(() -> status.spool),
                 status.live(() -> status.spoolDetail), status.live(() -> status.spoolText), status.live(() -> status.spoolLevel), status.live(() -> status.spoolView));
         var core = coreNode(chart, machine, status);
         var orbit = orbitNode(chart, status);
@@ -144,49 +159,49 @@ final class ElevatorFlowPage {
         chart.link(computation, core);
         chart.link(spool, core);
         chart.link(orbit, core);
-        var modules = moduleNode(chart, status, status.normal, 0, road ? 2 : 4, LANG_MODULES, MultiBlockD.ASSEMBLER_MODULE.asStack());
+        var modules = moduleNode(chart, status, status.normal, 0, road ? 2 : 4, MODULES, MultiBlockD.ASSEMBLER_MODULE.asStack());
         chart.link(core, modules).follow(modules);
         if (road) {
-            var mega = moduleNode(chart, status, status.mega, 2, 2, LANG_MEGA, MultiBlockH.MEGA_ASSEMBLER.asStack());
+            var mega = moduleNode(chart, status, status.mega, 2, 2, MEGA, MultiBlockH.MEGA_ASSEMBLER.asStack());
             chart.link(core, mega).follow(mega);
         }
         return UIElement.column(LayoutStyle.AUTO).addChild(chart.toView(window, false, machine.getDefinition().getId().toString()));
     }
 
-    private static FlowNode inputNode(FlowChart chart, int column, Function<FlowNode, Widget> icon, String name, Supplier<FlowState> state,
+    private static FlowNode inputNode(FlowChart chart, int column, Function<FlowNode, Widget> icon, Component name, Supplier<FlowState> state,
                                       Supplier<List<Component>> detail, Supplier<Component> value, Supplier<Level> level, Supplier<IssueView> issue) {
         var node = chart.node(0, column).bindState(state).bindDetail(detail);
-        return FlowParts.slotBody(node, icon.apply(node), TextLine.translatable(LayoutStyle.AUTO, name), value, level, issue);
+        return FlowParts.slotBody(node, icon.apply(node), TextLine.constant(LayoutStyle.AUTO, name), value, level, issue);
     }
 
     private static FlowNode orbitNode(FlowChart chart, Status status) {
         var node = chart.node(1, 3).bindState(status.live(() -> status.orbit)).bindDetail(status.live(() -> status.orbitDetail));
-        node.addChildren(FlowParts.header(ItemView.of(SpaceMultiblock.SPACE_ELEVATOR_CONNECTOR_MODULE.asStack()), LANG_ORBIT),
+        node.addChildren(FlowParts.header(ItemView.of(SpaceMultiblock.SPACE_ELEVATOR_CONNECTOR_MODULE.asStack()), ORBIT),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.orbitView)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_MULTIPLIER, status.live(() -> status.orbitText)));
+                StatusLine.of(LayoutStyle.AUTO, MULTIPLIER, status.live(() -> status.orbitText)));
         return node;
     }
 
     private static FlowNode coreNode(FlowChart chart, SpaceElevatorMachine machine, Status status) {
         var node = chart.node(1, 0, 3).bindState(status.live(() -> status.core)).bindDetail(status.live(() -> status.coreDetail));
-        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_RUN),
+        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), RUN),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.coreView)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText))
+                StatusLine.of(LayoutStyle.AUTO, VOLTAGE, status.live(() -> status.voltageText))
                         .bindLevel(status.live(() -> status.voltageOk ? Level.GOOD : Level.ERROR)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_POWER_MODULE, status.live(() -> status.powerModuleText)),
+                StatusLine.of(LayoutStyle.AUTO, POWER_MODULE, status.live(() -> status.powerModuleText)),
                 ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.progress)));
         return node;
     }
 
-    private static FlowNode moduleNode(FlowChart chart, Status status, Group group, int column, int span, String title, ItemStack icon) {
+    private static FlowNode moduleNode(FlowChart chart, Status status, Group group, int column, int span, Component title, ItemStack icon) {
         var node = chart.node(2, column, span).bindState(status.live(() -> group.state)).bindDetail(status.live(() -> group.detail));
         node.addChildren(FlowParts.header(ItemView.of(icon), title),
-                StatusLine.of(LayoutStyle.AUTO, LANG_INSTALLED, status.live(() -> group.installedText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_ATTACHED, status.live(() -> group.attachedText))
+                StatusLine.of(LayoutStyle.AUTO, INSTALLED, status.live(() -> group.installedText)),
+                StatusLine.of(LayoutStyle.AUTO, ATTACHED, status.live(() -> group.attachedText))
                         .bindLevel(status.live(() -> group.allAttached ? Level.GOOD : Level.ERROR)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_PARALLEL, status.live(() -> group.parallelText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_DURATION, status.live(() -> group.durationText)));
-        if (!group.mega) node.addChild(TextLine.translatable(LayoutStyle.AUTO, LANG_HINT_SHORT).setColor(UITheme.TEXT_SECONDARY));
+                StatusLine.of(LayoutStyle.AUTO, PARALLEL, status.live(() -> group.parallelText)),
+                StatusLine.of(LayoutStyle.AUTO, DURATION, status.live(() -> group.durationText)));
+        if (!group.mega) node.addChild(TextLine.constant(LayoutStyle.AUTO, HINT_SHORT).setColor(UITheme.TEXT_SECONDARY));
         return node;
     }
 

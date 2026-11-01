@@ -47,7 +47,7 @@ final class GridPairFlow {
         int a = model.node(source), b = model.node(target);
         if (a >= 0 && b >= 0) result = GridFlow.solve(model.topology(), a, b);
         if (result == null || !result.reachable() || result.flow() <= 0) {
-            tip = Component.translatable(GridMapLang.TIP_UNREACHABLE).withStyle(ChatFormatting.GRAY);
+            tip = GridMapLang.TIP_UNREACHABLE.copy().withStyle(ChatFormatting.GRAY);
             return;
         }
         var amount = GridFormat.rate(result.flow(), result.tier()).copy().withStyle(ChatFormatting.AQUA);

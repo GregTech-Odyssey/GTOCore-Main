@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -68,8 +69,8 @@ public class ApotheosisGemFilter implements ItemFilter {
         var typeRow = UIElement.centeredRow(UISizes.SLOT_SIZE)
                 .addChildren(Form.label(TYPE_FILTER_DESC, TYPE_DESC), typeSlot);
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                Form.controlRow("cover.filter.blacklist.enabled", Switch.of(this::isBlackList, this::setBlackList)),
-                TextLine.translatable(LayoutStyle.AUTO, RARITY_DESC).bindClientColor(UITheme::panelText),
+                Form.controlRow(BLACKLIST, Switch.of(this::isBlackList, this::setBlackList)),
+                TextLine.constant(LayoutStyle.AUTO, RARITY_DESC).bindClientColor(UITheme::panelText),
                 rarities,
                 typeRow);
     }
@@ -180,9 +181,10 @@ public class ApotheosisGemFilter implements ItemFilter {
     }
 
     @RegisterLanguage(cn = "过滤稀有度", en = "Filter by rarity")
-    public static final String RARITY_DESC = "gtocore.apotheosis_gem_filter.rarity_desc";
+    public static final Component RARITY_DESC = Component.translatable("gtocore.apotheosis_gem_filter.rarity_desc");
     @RegisterLanguage(cn = "过滤宝石品种", en = "Filter by gem type")
-    public static final String TYPE_FILTER_DESC = "gtocore.apotheosis_gem_filter.type_filter_desc";
+    public static final Component TYPE_FILTER_DESC = Component.translatable("gtocore.apotheosis_gem_filter.type_filter_desc");
     @RegisterLanguage(cn = "放入宝石来过滤品种，清空则不过滤", en = "Put in a gem to filter by type, or leave empty to not filter by type")
-    public static final String TYPE_DESC = "gtocore.apotheosis_gem_filter.type_desc";
+    public static final Component TYPE_DESC = Component.translatable("gtocore.apotheosis_gem_filter.type_desc");
+    private static final Component BLACKLIST = Component.translatable("cover.filter.blacklist.enabled");
 }

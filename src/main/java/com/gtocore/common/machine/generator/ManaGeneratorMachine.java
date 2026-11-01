@@ -44,17 +44,17 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
     private static final long MANA_PER_EU = 4;
 
     @RegisterLanguage(cn = "魔力缓存", en = "Stored Mana")
-    private static final String LINE_STORED = "gtocore.machine.mana_generator.stored";
+    private static final Component LINE_STORED = Component.translatable("gtocore.machine.mana_generator.stored");
     @RegisterLanguage(cn = "魔力产出", en = "Mana Production")
-    private static final String LINE_PRODUCTION = "gtocore.machine.mana_generator.production";
+    private static final Component LINE_PRODUCTION = Component.translatable("gtocore.machine.mana_generator.production");
     @RegisterLanguage(cn = "电力缓存", en = "Stored Energy")
-    private static final String LINE_ENERGY = "gtocore.machine.mana_generator.energy";
+    private static final Component LINE_ENERGY = Component.translatable("gtocore.machine.mana_generator.energy");
     @RegisterLanguage(cn = "魔力", en = "Mana")
-    private static final String BAR_MANA = "gtocore.machine.mana_generator.bar.mana";
+    private static final Component BAR_MANA = Component.translatable("gtocore.machine.mana_generator.bar.mana");
     @RegisterLanguage(cn = "电力", en = "Energy")
-    private static final String BAR_ENERGY = "gtocore.machine.mana_generator.bar.energy";
+    private static final Component BAR_ENERGY = Component.translatable("gtocore.machine.mana_generator.bar.energy");
     @RegisterLanguage(cn = "运行", en = "Running")
-    private static final String ROW_ENABLED = "gtocore.machine.mana_generator.row.enabled";
+    private static final Component ROW_ENABLED = Component.translatable("gtocore.machine.mana_generator.row.enabled");
 
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
@@ -167,9 +167,9 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
         status.addLine(LINE_STORED, this::storedText);
         status.addLine(LINE_PRODUCTION, this::productionText);
         status.addLine(LINE_ENERGY, this::energyText);
-        var manaBar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(BAR_MANA), UITheme.FLOW_CYAN_LIGHT,
+        var manaBar = ProgressBar.of(LayoutStyle.AUTO, BAR_MANA, UITheme.FLOW_CYAN_LIGHT,
                 () -> new ProgressBar.Progress(manaContainer.getCurrentMana(), MANA_CAPACITY, 0));
-        var energyBar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(BAR_ENERGY), UITheme.FLOW_AMBER_LIGHT,
+        var energyBar = ProgressBar.of(LayoutStyle.AUTO, BAR_ENERGY, UITheme.FLOW_AMBER_LIGHT,
                 () -> new ProgressBar.Progress(energyContainer.getEnergyStored(), energyContainer.getEnergyCapacity(), 0)).percent();
         var enabledSwitch = Switch.of(this::isWorkingEnabled, this::setWorkingEnabled);
         return Form.page().addChildren(status, manaBar, energyBar, Form.controlRow(ROW_ENABLED, enabledSwitch));

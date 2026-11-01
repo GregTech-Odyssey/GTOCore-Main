@@ -51,9 +51,9 @@ import java.util.List;
 public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSnapshot> {
 
     @RegisterLanguage(cn = "本局积分", en = "Current score")
-    private static final String LINE_SCORE = "gtocore.machine.game.line.score";
+    private static final Component LINE_SCORE = Component.translatable("gtocore.machine.game.line.score");
     @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final String BUTTON_RESTART = "gtocore.machine.game.button.restart";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.game.button.restart");
 
     /** 里程碑表格的列（名次由表格自动加在最前）：玩家、最高分与最大合成，达成时间放在成绩格的悬停提示里。 */
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
@@ -316,7 +316,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_SCORE, () -> number(score));
-        var restart = Button.translatable(77, BUTTON_RESTART);
+        var restart = Button.text(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRoundOnServer(playerOf(restart)));
         status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));
         return status;

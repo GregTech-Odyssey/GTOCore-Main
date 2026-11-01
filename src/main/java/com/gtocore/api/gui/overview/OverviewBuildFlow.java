@@ -144,11 +144,11 @@ final class OverviewBuildFlow {
         if (current == null) return;
         var definition = current.definition;
         var popup = Popup.of(definition::asStack, () -> definition.asStack().getHoverName(), column -> {
-            var rotate = Button.translatable(UISizes.BUTTON_WIDTH, OverviewWidget.LANG_ROTATE).setOnClientClick(() -> {
+            var rotate = Button.text(UISizes.BUTTON_WIDTH, Component.translatable(OverviewWidget.LANG_ROTATE)).setOnClientClick(() -> {
                 current.pose++;
                 refreshGhost();
-            }).disabled(() -> current.poses.size() < 2, OverviewWidget.LANG_SINGLE);
-            rotate.tooltips(OverviewWidget.LANG_ROTATE_TOOLTIP);
+            }).disabled(() -> current.poses.size() < 2, Component.translatable(OverviewWidget.LANG_SINGLE));
+            rotate.tooltips(Component.translatable(OverviewWidget.LANG_ROTATE_TOOLTIP));
             column.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(
                     TextLine.of(LayoutStyle.AUTO, () -> current.poses.isEmpty() ? Component.translatable(OverviewWidget.LANG_BLOCKED) :
                             Component.translatable(OverviewWidget.LANG_ORIENTATION, Math.floorMod(current.pose, current.poses.size()) + 1, current.poses.size()))
@@ -156,15 +156,15 @@ final class OverviewBuildFlow {
                     rotate));
             column.addChild(current.config);
             var partsSection = UIElement.section();
-            partsSection.addChild(TextLine.translatable(LayoutStyle.AUTO, StructurePreviewScreen.PARTS).setColor(UITheme.PANEL_TEXT));
+            partsSection.addChild(TextLine.constant(LayoutStyle.AUTO, StructurePreviewScreen.PARTS).setColor(UITheme.PANEL_TEXT));
             partsSection.addChild(current.parts);
             column.addChild(partsSection);
             column.addChild(TerminalModes.networkRow());
-            var project = Button.translatable(LayoutStyle.AUTO, StructurePreviewScreen.PROJECT).layout(l -> l.flex(1))
-                    .disabled(() -> current.current() == null, OverviewWidget.LANG_BLOCKED).setOnClientClick(this::project);
-            var build = Button.translatable(LayoutStyle.AUTO, StructurePreviewScreen.BUILD).layout(l -> l.flex(1))
+            var project = Button.text(LayoutStyle.AUTO, StructurePreviewScreen.PROJECT).layout(l -> l.flex(1))
+                    .disabled(() -> current.current() == null, Component.translatable(OverviewWidget.LANG_BLOCKED)).setOnClientClick(this::project);
+            var build = Button.text(LayoutStyle.AUTO, StructurePreviewScreen.BUILD).layout(l -> l.flex(1))
                     .setVariant(UITheme.ButtonVariant.CONFIRM)
-                    .disabled(() -> current.current() == null || current.config.listLayout() == null, OverviewWidget.LANG_BLOCKED)
+                    .disabled(() -> current.current() == null || current.config.listLayout() == null, Component.translatable(OverviewWidget.LANG_BLOCKED))
                     .setOnClientClick(this::openBuilder);
             column.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(project, build));
         });
@@ -254,10 +254,10 @@ final class OverviewBuildFlow {
         var values = current.values.clone();
         var panel = new PatternBuilderPanel(model, icon, icon.getHoverName(), Integer.MAX_VALUE, view.panelMaxHeight(), () -> {
             int upload = BuildUpload.send(current.definition, values, StructurePlans.assign(model, listed));
-            if (upload < 0) player.sendSystemMessage(Component.translatable(StructureBuild.INVALID));
+            if (upload < 0) player.sendSystemMessage(StructureBuild.INVALID);
             else owner.requestBuild(anchorIndex, current.definition, values, pose, upload, TerminalModes.isNetwork());
             view.clearSelection();
-        }, view::closeBuilder, new PatternBuilderPanel.Footer(StructureBuildFlow.BUILD_TITLE, StructureBuildFlow.BUILD, StructureBuildFlow.INCLUDE,
+        }, view::closeBuilder, new PatternBuilderPanel.Footer(title -> Component.translatable(StructureBuildFlow.BUILD_TITLE, title), StructureBuildFlow.BUILD, StructureBuildFlow.INCLUDE,
                 StructureBuildFlow.BLOCKED, false, true, view::closeBuilder));
         view.showBuilder(panel);
     }

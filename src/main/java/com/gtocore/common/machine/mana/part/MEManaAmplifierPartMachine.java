@@ -47,9 +47,9 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::updateTick);
 
     @RegisterLanguage(cn = "从ME网络拉取魔力", en = "Pull Mana from ME Network")
-    public static final String LANG_USE_SOURCE = "gtceu.machine.mana_amplifier.use_source";
+    public static final Component LANG_USE_SOURCE = Component.translatable("gtceu.machine.mana_amplifier.use_source");
     @RegisterLanguage(cn = "从ME网络拉取魔源", en = "Pull Source from ME Network")
-    public static final String LANG_USE_MANA = "gtceu.machine.mana_amplifier.use_mana";
+    public static final Component LANG_USE_MANA = Component.translatable("gtceu.machine.mana_amplifier.use_mana");
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
     @SyncToClient
@@ -80,7 +80,7 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
     }
 
     /// 基类"最大魔力"设置的翻译键（GTOLib 里声明为私有，这里写完整字面量）
-    private static final String LANG_MAX_MANA = "gtocore.machine.mana_amplifier_part.max_mana";
+    private static final Component LANG_MAX_MANA = Component.translatable("gtocore.machine.mana_amplifier_part.max_mana");
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {

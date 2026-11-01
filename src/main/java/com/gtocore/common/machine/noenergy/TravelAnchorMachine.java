@@ -37,21 +37,21 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
     private static final String PAGE_SCROLLER = "travel_anchor.page";
 
     @RegisterLanguage(cn = "锚点设置", en = "Anchor Settings")
-    private static final String SETTINGS = "gtocore.travel_anchor.settings";
+    private static final Component SETTINGS = Component.translatable("gtocore.travel_anchor.settings");
     @RegisterLanguage(cn = "名称", en = "Name")
-    private static final String NAME = "gtocore.travel_anchor.name";
+    private static final Component NAME = Component.translatable("gtocore.travel_anchor.name");
     @RegisterLanguage(cn = "手持旅行手杖时显示在锚点上方，留空则不显示", en = "Shown above the anchor while holding a Travel Staff; leave empty to hide")
-    private static final String NAME_TIP = "gtocore.travel_anchor.name.tip";
+    private static final Component NAME_TIP = Component.translatable("gtocore.travel_anchor.name.tip");
     @RegisterLanguage(cn = "未命名", en = "Unnamed")
-    private static final String UNNAMED = "gtocore.travel_anchor.unnamed";
+    private static final Component UNNAMED = Component.translatable("gtocore.travel_anchor.unnamed");
     @RegisterLanguage(cn = "图标", en = "Icon")
-    private static final String ICON = "gtocore.travel_anchor.icon";
+    private static final Component ICON = Component.translatable("gtocore.travel_anchor.icon");
     @RegisterLanguage(cn = "手持旅行手杖时显示在锚点前方，可从 EMI 拖入", en = "Shown in front of the anchor while holding a Travel Staff; can be dragged in from EMI")
-    private static final String ICON_TIP = "gtocore.travel_anchor.icon.tip";
+    private static final Component ICON_TIP = Component.translatable("gtocore.travel_anchor.icon.tip");
     @RegisterLanguage(cn = "在旅行网络中显示", en = "Show in Travel Network")
-    private static final String VISIBLE = "gtocore.travel_anchor.visible";
+    private static final Component VISIBLE = Component.translatable("gtocore.travel_anchor.visible");
     @RegisterLanguage(cn = "关闭后不再作为传送目标，开启了“激活隐藏节点”的旅行手杖除外", en = "When off, the anchor is no longer a teleport target, except for Travel Staffs with Include Hidden Nodes on")
-    private static final String VISIBLE_TIP = "gtocore.travel_anchor.visible.tip";
+    private static final Component VISIBLE_TIP = Component.translatable("gtocore.travel_anchor.visible.tip");
 
     @SaveToDisk
     private final ItemStackTransfer itemTransfer;
@@ -81,7 +81,7 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
 
     @Override
     public Widget createUIWidget() {
-        var name = TextField.of(UISizes.INLINE_ADJUSTER_WIDTH, this::getName, this::setName).setPlaceholder(Component.translatable(UNNAMED));
+        var name = TextField.of(UISizes.INLINE_ADJUSTER_WIDTH, this::getName, this::setName).setPlaceholder(UNNAMED);
         name.getInput().setMaxStringLength(NAME_MAX_LENGTH);
         name.tooltips(NAME_TIP);
         var icon = PhantomItemSlot.of(itemTransfer, 0).xeiPhantom();

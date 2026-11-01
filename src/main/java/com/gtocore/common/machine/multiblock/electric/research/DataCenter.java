@@ -217,7 +217,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         button.disabled(() -> {
             var gui = section.getGui();
             return gui != null && gui.entityPlayer != null && TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(gui.entityPlayer), node);
-        }, TechNodeDetails.ALREADY_UNLOCKED);
+        }, TechNodeDetails.ALREADY_UNLOCKED_TIP);
         section.disabled(() -> {
             var gui = section.getGui();
             return gui != null && gui.entityPlayer != null && selectedNode != node &&
@@ -327,7 +327,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         if (selectedNode != null) {
             textList.add(Component.translatable(LANG_DATA_ACCESS_CURRENT_NODE, selectedNode.getDisplayName().withStyle(ChatFormatting.AQUA))
                     .withStyle(ChatFormatting.GRAY));
-            if (isResearchBlocked()) textList.add(Component.translatable(LANG_PREREQUISITES_NOT_RESEARCHED).withStyle(ChatFormatting.RED));
+            if (isResearchBlocked()) textList.add(LANG_PREREQUISITES_NOT_RESEARCHED.copy().withStyle(ChatFormatting.RED));
         }
     }
 
@@ -504,7 +504,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     })
                     .bindDetail(() -> {
                         if (machine.selectedNode == null || machine.isActive()) return Component.empty();
-                        return Component.translatable(machine.isResearchBlocked() ? LANG_PREREQUISITES_NOT_RESEARCHED : LANG_RESEARCH_IDLE);
+                        return machine.isResearchBlocked() ? LANG_PREREQUISITES_NOT_RESEARCHED : Component.translatable(LANG_RESEARCH_IDLE);
                     });
             page.addChild(status);
 
@@ -512,13 +512,13 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             var progress = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_RESEARCH_PROGRESS), UITheme.STATUS_ONLINE, machine::researchProgress);
             boolean researching = !remote && machine.selectedNode != null;
             progress.setDisplay(researching);
-            var techTree = Button.translatable(LayoutStyle.AUTO, LANG_TECH_TREE_WINDOW)
+            var techTree = Button.text(LayoutStyle.AUTO, LANG_TECH_TREE_WINDOW)
                     .setOnServerClick(() -> {
                         if (player instanceof ServerPlayer serverPlayer) MachineSubWindowFactory.open(serverPlayer, machine, WINDOW_TECH_TREE);
                     })
                     .layout(l -> l.flex(1));
-            techTree.setHoverTooltips(Component.translatable(LANG_OPEN_TECH_TREE));
-            var cancel = Button.translatable(LayoutStyle.AUTO, LANG_CANCEL_BUTTON)
+            techTree.tooltips(LANG_OPEN_TECH_TREE);
+            var cancel = Button.text(LayoutStyle.AUTO, LANG_CANCEL_BUTTON)
                     .setVariant(UITheme.ButtonVariant.DANGER)
                     .setOnServerClick(() -> machine.cancelResearch(player))
                     .disabled(() -> machine.selectedNode == null, LANG_NO_RESEARCH)
@@ -531,7 +531,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             var scroller = new ScrollerView("research.data_access", UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE)
                     .adaptiveWidth().setAdaptiveHeight(DATA_MAX_ROWS * UISizes.SLOT_SIZE);
             scroller.addScrollViewChild(slots);
-            dataBlock.addChildren(TextLine.translatable(LayoutStyle.AUTO, LANG_DATA_ITEMS), scroller);
+            dataBlock.addChildren(TextLine.constant(LayoutStyle.AUTO, LANG_DATA_ITEMS), scroller);
             page.addChild(dataBlock);
             return page;
         }
@@ -787,7 +787,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         super.attachConfigurators(configuratorPanel);
         var open = Component.translatable(LANG_OPEN_WINDOW).withStyle(ChatFormatting.GRAY);
         configuratorPanel.attachConfigurators(
-                new SubWindowButton(this, WINDOW_TECH_TREE, BaseNodes.MainTree.getIcon(), Component.translatable(LANG_TECH_TREE_WINDOW), open));
+                new SubWindowButton(this, WINDOW_TECH_TREE, BaseNodes.MainTree.getIcon(), LANG_TECH_TREE_WINDOW, open));
     }
 
     @Override
@@ -891,7 +891,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @RegisterLanguage(cn = "正在处理的研究节点：%s", en = "Currently Processing Research Node: %s")
     private static final String LANG_DATA_ACCESS_CURRENT_NODE = "gtocore.machine.data_center.data_access.current_node";
     @RegisterLanguage(cn = "科技树", en = "Tech Tree")
-    private static final String LANG_TECH_TREE_WINDOW = "gtocore.machine.data_center.window.tech_tree";
+    private static final Component LANG_TECH_TREE_WINDOW = Component.translatable("gtocore.machine.data_center.window.tech_tree");
     @RegisterLanguage(cn = "点击打开独立窗口", en = "Click to open in its own window")
     private static final String LANG_OPEN_WINDOW = "gtocore.machine.data_center.window.open";
     @RegisterLanguage(cn = "启动研究", en = "Launch Research")
@@ -899,7 +899,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @RegisterLanguage(cn = "正在研究中", en = "Research in Progress")
     static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
     @RegisterLanguage(cn = "前置科技未研究", en = "Prerequisites not researched")
-    static final String LANG_PREREQUISITES_NOT_RESEARCHED = "gtocore.machine.data_center.data_access.prerequisites_not_researched";
+    static final Component LANG_PREREQUISITES_NOT_RESEARCHED = Component.translatable("gtocore.machine.data_center.data_access.prerequisites_not_researched");
     @RegisterLanguage(cn = "再次点击以取消研究", en = "Click again to cancel research")
     static final String LANG_DATA_ACCESS_CANCEL_RESEARCH = "gtocore.machine.data_center.data_access.cancel_research";
     @RegisterLanguage(cn = "最大可接受算力：%s CWU/t", en = "Maximum Acceptable CWU: %s CWU/t")
@@ -910,7 +910,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_DATA_ACCESS_RESEARCH_PROGRESS = "gtocore.machine.data_center.data_access.research_progress";
     // 数据访问页：状态面板各行的名称与短状态（行内只剩约 12 个汉字宽，完整说明放悬停）
     @RegisterLanguage(cn = "状态", en = "Status")
-    static final String LANG_LINE_STATE = "gtocore.machine.data_center.data_access.line.state";
+    static final Component LANG_LINE_STATE = Component.translatable("gtocore.machine.data_center.data_access.line.state");
     @RegisterLanguage(cn = "正常", en = "Normal")
     private static final String LANG_STATE_OK = "gtocore.machine.data_center.data_access.state.ok";
     @RegisterLanguage(cn = "未成型", en = "Not formed")
@@ -920,25 +920,25 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @RegisterLanguage(cn = "无数据访问仓", en = "No hatches")
     private static final String LANG_STATE_NO_HATCH = "gtocore.machine.data_center.data_access.state.no_hatch";
     @RegisterLanguage(cn = "数据访问仓", en = "Data Access Hatches")
-    private static final String LANG_LINE_HATCHES = "gtocore.machine.data_center.data_access.line.hatches";
+    private static final Component LANG_LINE_HATCHES = Component.translatable("gtocore.machine.data_center.data_access.line.hatches");
     @RegisterLanguage(cn = "数据槽位", en = "Data slots")
-    static final String LANG_LINE_SLOTS = "gtocore.machine.data_center.data_access.line.slots";
+    static final Component LANG_LINE_SLOTS = Component.translatable("gtocore.machine.data_center.data_access.line.slots");
     @RegisterLanguage(cn = "已存配方", en = "Stored recipes")
-    static final String LANG_LINE_RECIPES = "gtocore.machine.data_center.data_access.line.recipes";
+    static final Component LANG_LINE_RECIPES = Component.translatable("gtocore.machine.data_center.data_access.line.recipes");
     @RegisterLanguage(cn = "算力上限", en = "Max CWU")
-    static final String LANG_LINE_MAX_CWU = "gtocore.machine.data_center.data_access.line.max_cwu";
+    static final Component LANG_LINE_MAX_CWU = Component.translatable("gtocore.machine.data_center.data_access.line.max_cwu");
     @RegisterLanguage(cn = "当前研究", en = "Research")
-    static final String LANG_LINE_RESEARCH = "gtocore.machine.data_center.data_access.line.research";
+    static final Component LANG_LINE_RESEARCH = Component.translatable("gtocore.machine.data_center.data_access.line.research");
     @RegisterLanguage(cn = "数据中心未在运行，研究暂停", en = "The Data Center is not running; research is paused")
     static final String LANG_RESEARCH_IDLE = "gtocore.machine.data_center.data_access.research_idle";
     @RegisterLanguage(cn = "研究进度", en = "Progress")
     static final String LANG_RESEARCH_PROGRESS = "gtocore.machine.data_center.data_access.progress";
     @RegisterLanguage(cn = "打开科技树，选择要研究的节点", en = "Open the Tech Tree to choose a node to research")
-    private static final String LANG_OPEN_TECH_TREE = "gtocore.machine.data_center.data_access.open_tech_tree";
+    private static final Component LANG_OPEN_TECH_TREE = Component.translatable("gtocore.machine.data_center.data_access.open_tech_tree");
     @RegisterLanguage(cn = "取消研究", en = "Cancel")
-    static final String LANG_CANCEL_BUTTON = "gtocore.machine.data_center.data_access.cancel";
+    static final Component LANG_CANCEL_BUTTON = Component.translatable("gtocore.machine.data_center.data_access.cancel");
     @RegisterLanguage(cn = "当前没有进行中的研究", en = "No research in progress")
-    private static final String LANG_NO_RESEARCH = "gtocore.machine.data_center.data_access.no_research";
+    private static final Component LANG_NO_RESEARCH = Component.translatable("gtocore.machine.data_center.data_access.no_research");
     @RegisterLanguage(cn = "数据物品", en = "Data Items")
-    private static final String LANG_DATA_ITEMS = "gtocore.machine.data_center.data_access.data_items";
+    private static final Component LANG_DATA_ITEMS = Component.translatable("gtocore.machine.data_center.data_access.data_items");
 }

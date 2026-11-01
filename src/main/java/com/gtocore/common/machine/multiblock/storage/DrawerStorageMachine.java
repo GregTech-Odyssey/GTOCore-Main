@@ -65,7 +65,7 @@ import java.util.List;
 public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IStorageMultiblock, IFancyUIMachine, IDisplayUIMachine {
 
     @RegisterLanguage(cn = "超级箱 / 超级缸", en = "Super Chest / Super Tank")
-    private static final String SLOT_LABEL = "gtocore.machine.drawer_storage.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.drawer_storage.slot");
 
     /// 主机槽（超级箱/缸）的数量上限
     public static final int CONTROLLER_LIMIT = 64;
@@ -91,9 +91,9 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @RegisterLanguage(cn = "溢出销毁：%s", en = "Overflow voiding: %s")
     public static final String OVERFLOW = "gtocore.machine.drawer_storage.overflow";
     @RegisterLanguage(cn = "开启后，放不下的内容（超过每种类容量，或种类已满放不进新种类）会被直接销毁，调用方不会收回", en = "When enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned")
-    public static final String OVERFLOW_TOOLTIP = "gtocore.machine.drawer_storage.overflow.tooltip";
+    public static final Component OVERFLOW_TOOLTIP = Component.translatable("gtocore.machine.drawer_storage.overflow.tooltip");
     @RegisterLanguage(cn = "溢出销毁", en = "Overflow Voiding")
-    private static final String OVERFLOW_LABEL = "gtocore.machine.drawer_storage.overflow.label";
+    private static final Component OVERFLOW_LABEL = Component.translatable("gtocore.machine.drawer_storage.overflow.label");
 
     /// 主机槽（超级箱/缸）：一格，最多 {@link #CONTROLLER_LIMIT} 个
     @SaveToDisk
@@ -411,7 +411,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

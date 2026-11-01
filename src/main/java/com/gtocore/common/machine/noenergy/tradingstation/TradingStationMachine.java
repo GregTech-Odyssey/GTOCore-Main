@@ -192,7 +192,10 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private static final String TEXT_HEADER = "gtocore.trading_station.textList.";
     private static final String CURRENCY_HEADER = "gtocore.currency.";
     private static final String HELP_TITLE = "gtocore.trading_station.help";
-    private static final String OPEN_HELP = "gtocore.trading_station.open_help";
+    private static final Component OPEN_HELP = Component.translatable("gtocore.trading_station.open_help");
+    private static final Component ITEM_STORAGE = Component.translatable("gtocore.trading_station.item_storage");
+    private static final Component FLUID_STORAGE = Component.translatable("gtocore.trading_station.fluid_storage");
+    private static final Component UNLOCK_HEADER = Component.translatable(TEXT_HEADER + 21);
     private static final String UNKNOWN_PLAYER = "Unknown";
     /// 没有值时的占位
     private static final Component NO_VALUE = Component.literal("—");
@@ -216,7 +219,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         var page = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
         page.addChild(memberSection());
         page.addChild(shopGroupSection());
-        page.addChild(Button.translatable(LayoutStyle.AUTO, OPEN_HELP)
+        page.addChild(Button.text(LayoutStyle.AUTO, OPEN_HELP)
                 .setOnClientClick(() -> openPage(widget, helpTab)));
         return page;
     }
@@ -225,9 +228,9 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
     private Widget memberSection() {
         var section = UIElement.section(UISizes.CONTENT_WIDTH);
         var card = ItemSlot.of(cardHandler, 0, true, true);
-        card.setHoverTooltips(trans(11));
-        var refresh = Button.translatable(LayoutStyle.AUTO, "↻").layout(l -> l.flex(1));
-        refresh.setHoverTooltips(trans(8));
+        card.tooltips(trans(11));
+        var refresh = Button.glyph("↻").layout(l -> l.flex(1));
+        refresh.tooltips(trans(8));
         refresh.setOnServerClick(clickData -> refreshMembership(refresh));
         var row = UIElement.centeredRow(UISizes.SLOT_SIZE);
         row.addChildren(card, refresh);
@@ -362,9 +365,9 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         }
 
         private static UIElement helpSection(String titleKey, String... lineKeys) {
-            var section = Form.section(titleKey);
+            var section = Form.section(Component.translatable(titleKey));
             int width = UISizes.CONTENT_WIDTH - ScrollerView.SCROLL_BAR_SPACE - 2 * UISizes.PANEL_PADDING;
-            for (String key : lineKeys) section.addChild(Label.translatable(width, key).bindClientColor(UITheme::panelText));
+            for (String key : lineKeys) section.addChild(Label.constant(width, Component.translatable(key)).bindClientColor(UITheme::panelText));
             return section;
         }
 
@@ -399,7 +402,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             public Widget createMainPage(FancyMachineUIWidget widget) {
                 if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
                 var page = Form.page();
-                page.addChild(TextLine.translatable(LayoutStyle.AUTO, "gtocore.trading_station.item_storage"));
+                page.addChild(TextLine.constant(LayoutStyle.AUTO, ITEM_STORAGE));
                 var scroller = new ScrollerView("trading_station.items", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
                         .setAdaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
                         .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
@@ -437,7 +440,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
             public Widget createMainPage(FancyMachineUIWidget widget) {
                 if (widget instanceof MachineWindow window) window.setInventoryGutter(ScrollerView.SCROLL_BAR_SPACE);
                 var page = Form.page();
-                page.addChild(TextLine.translatable(LayoutStyle.AUTO, "gtocore.trading_station.fluid_storage"));
+                page.addChild(TextLine.constant(LayoutStyle.AUTO, FLUID_STORAGE));
                 var scroller = new ScrollerView("trading_station.fluids", UISizes.SLOT_ROW_WIDTH + ScrollerView.SCROLL_BAR_SPACE, UISizes.MACHINE_PAGE_HEIGHT)
                         .setAdaptiveHeight(UISizes.MACHINE_PAGE_HEIGHT)
                         .setVerticalScrollDisplay(ScrollerView.ScrollDisplay.ALWAYS);
@@ -518,7 +521,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = UIElement.column(UISizes.CONTENT_WIDTH).layout(l -> l.gapAll(UISizes.SECTION_GAP));
             page.addChild(UIElement.section(UISizes.CONTENT_WIDTH).addChildren(
-                    TextLine.translatable(LayoutStyle.AUTO, TEXT_HEADER + 21),
+                    TextLine.constant(LayoutStyle.AUTO, UNLOCK_HEADER),
                     keyListView()));
             page.addChild(TextLine.of(LayoutStyle.AUTO, this::selectedKeyName));
             page.addChild(grid);
@@ -541,7 +544,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
         private Widget keyButton(String key) {
             var cell = new UIElement();
             var selected = cell.addSyncValue(SyncValue.ofBool(() -> key.equals(selectedKey)));
-            cell.addChild(Button.translatable(LayoutStyle.AUTO, key)
+            cell.addChild(Button.text(LayoutStyle.AUTO, Component.translatable(key))
                     .bindClientVariant(() -> selected.getValue() ? UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT)
                     .setOnClientClick(() -> grid.selectKey(key)));
             return cell;
@@ -612,7 +615,7 @@ public class TradingStationMachine extends MetaMachine implements IFancyUIMachin
                 String[] currencyIds = currencies.toArray(new String[0]);
                 Arrays.sort(currencyIds);
                 for (String currency : currencyIds) {
-                    status.addLine(CURRENCY_HEADER + currency, () -> currencyAmount(currency));
+                    status.addLine(Component.translatable(CURRENCY_HEADER + currency), () -> currencyAmount(currency));
                 }
             }
             return status;

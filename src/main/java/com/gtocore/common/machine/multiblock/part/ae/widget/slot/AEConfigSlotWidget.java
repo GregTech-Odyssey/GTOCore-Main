@@ -36,9 +36,9 @@ import java.util.List;
 public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
 
     @RegisterLanguage(cn = "配置由 ME 自动拉取管理", en = "The configuration is managed by ME auto-pull")
-    public static final String CONFIG_MANAGED = "gtocore.gui.ae_config_slot.config_managed";
+    public static final Component CONFIG_MANAGED = Component.translatable("gtocore.gui.ae_config_slot.config_managed");
     @RegisterLanguage(cn = "配置格为空，先放入要配置的物品或流体", en = "The config slot is empty. Set an item or fluid first")
-    public static final String NO_CONFIG = "gtocore.gui.ae_config_slot.no_config";
+    public static final Component NO_CONFIG = Component.translatable("gtocore.gui.ae_config_slot.no_config");
     @RegisterLanguage(cn = "库存由 ME 网络自动补充，不能直接取放", en = "The stock is filled from the ME network and cannot be taken or placed directly")
     private static final String STOCK_MANAGED = "gtocore.gui.ae_config_slot.stock_managed";
 
@@ -82,7 +82,7 @@ public class AEConfigSlotWidget extends Widget implements IIngredientSlot {
             }
         }
         // 禁用格（画了斜纹）：与标准控件一样先"禁止操作"、再原因
-        if (overConfig && isConfigDisabled()) ElementState.appendDisabledLines(lines, Component.translatable(CONFIG_MANAGED));
+        if (overConfig && isConfigDisabled()) ElementState.appendDisabledLines(lines, CONFIG_MANAGED);
         if (overStock && isStockDisabled()) ElementState.appendDisabledLines(lines, Component.translatable(STOCK_MANAGED));
         setHoverTooltips(lines);
     }

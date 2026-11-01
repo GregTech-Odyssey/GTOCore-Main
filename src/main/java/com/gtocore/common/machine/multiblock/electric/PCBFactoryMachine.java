@@ -61,9 +61,9 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
     @RegisterLanguage(cn = "生效等级：%s（取结构等级与纳米蜂群等级中的较低者）", en = "Effective Tier: %s (lower of structure tier and nanoswarm tier)")
     private static final String EFFECTIVE_TIER = "gtocore.pcb_factory.effective_tier";
     @RegisterLanguage(cn = "生效等级", en = "Effective Tier")
-    private static final String EFFECTIVE_TIER_NAME = "gtocore.machine.pcb_factory.effective_tier";
+    private static final Component EFFECTIVE_TIER_NAME = Component.translatable("gtocore.machine.pcb_factory.effective_tier");
     @RegisterLanguage(cn = "取结构等级与纳米蜂群等级中的较低者", en = "The lower of the structure tier and the nanoswarm tier")
-    private static final String EFFECTIVE_TIER_DESC = "gtocore.machine.pcb_factory.effective_tier.desc";
+    private static final Component EFFECTIVE_TIER_DESC = Component.translatable("gtocore.machine.pcb_factory.effective_tier.desc");
 
     @RegisterLanguage(cn = "二级扩展结构", en = "Tier 2 Extension")
     private static final String TIER2_NAME = "gtocore.multiblock.pcb_factory.tier2";
@@ -277,7 +277,7 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_NANITES;
     }
 }

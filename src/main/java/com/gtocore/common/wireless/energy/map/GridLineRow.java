@@ -44,7 +44,7 @@ final class GridLineRow extends UIElement {
         var peerText = TextLine.of(0, this::peer).bindClientColor(UITheme::panelText);
         var tierText = TextLine.of(TIER_WIDTH, this::tier).styled().setTextAlign(Horizontal.RIGHT);
         var flowText = TextLine.of(LayoutStyle.AUTO, this::flow).bindClientColor(UITheme::textSecondary);
-        var bar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(GridMapLang.LINE_USAGE), 0, this::usage).percent();
+        var bar = ProgressBar.of(LayoutStyle.AUTO, GridMapLang.LINE_USAGE, 0, this::usage).percent();
         bar.bindClientColor(() -> bar.getProgress().ratio() >= SATURATED ? UITheme.MAP_SATURATED : UITheme.MAP_LINK_HIGH);
         addChildren(UIElement.row(TextLine.HEIGHT).addChildren(peerText.layout(l -> l.flex(1)), tierText), flowText,
                 bar);

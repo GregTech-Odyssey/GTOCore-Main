@@ -9,6 +9,8 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 
+import net.minecraft.network.chat.Component;
+
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 @DataGeneratorScanned
@@ -20,9 +22,9 @@ public final class IntegratedOreProcessor extends CrossRecipeMultiblockMachine {
     private static final String EXT_DESC = "gtocore.multiblock.integrated_ore_processor.extension.desc";
     public static final ParamKey EXTENSION = ParamKey.of(EXT_NAME, EXT_DESC);
     @RegisterLanguage(cn = "并行重复配方", en = "Parallel Repeated Recipes")
-    private static final String REPEATED_RECIPES = "gtocore.multiblock.integrated_ore_processor.repeated_recipes";
+    private static final Component REPEATED_RECIPES = Component.translatable("gtocore.multiblock.integrated_ore_processor.repeated_recipes");
     @RegisterLanguage(cn = "需要搭建扩展处理线", en = "Requires the Extended Processing Line")
-    private static final String REPEATED_RECIPES_UNAVAILABLE = "gtocore.multiblock.integrated_ore_processor.repeated_recipes.unavailable";
+    private static final Component REPEATED_RECIPES_UNAVAILABLE = Component.translatable("gtocore.multiblock.integrated_ore_processor.repeated_recipes.unavailable");
 
     @SaveToDisk(defaultValue = "true")
     private boolean repeatedRecipes = true;

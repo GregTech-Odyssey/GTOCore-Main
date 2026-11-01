@@ -74,7 +74,7 @@ final class WildcardMaterialGrid extends UIElement {
     private static final int VIEW_WIDTH = GRID_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
 
     @RegisterLanguage(cn = "搜索材料名称或注册名", en = "Search material name or registry ID")
-    private static final String SEARCH = "gtocore.ae.wildcard_materials.search";
+    private static final Component SEARCH = Component.translatable("gtocore.ae.wildcard_materials.search");
     @RegisterLanguage(cn = "拖入材料物品、流体或机器；右键/中键清空", en = "Drop a material item, fluid or machine; right/middle click to clear")
     private static final String SLOT_SEARCH = "gtocore.ae.wildcard_materials.slot_search";
     @RegisterLanguage(cn = "机器按当前扫描配方的实际输出形式筛选材料；材料物品或流体只筛选对应材料。", en = "Machines filter materials by the actual output forms of scanned recipes; material items and fluids select their material.")
@@ -88,9 +88,9 @@ final class WildcardMaterialGrid extends UIElement {
     @RegisterLanguage(cn = "筛选材料", en = "Filters")
     private static final String FILTER = "gtocore.ae.wildcard_materials.filter";
     @RegisterLanguage(cn = "材料状态", en = "Material state")
-    private static final String MATERIAL_STATE = "gtocore.ae.wildcard_materials.material_state";
+    private static final Component MATERIAL_STATE = Component.translatable("gtocore.ae.wildcard_materials.material_state");
     @RegisterLanguage(cn = "材料类型", en = "Material type")
-    private static final String MATERIAL_TYPE = "gtocore.ae.wildcard_materials.material_type";
+    private static final Component MATERIAL_TYPE = Component.translatable("gtocore.ae.wildcard_materials.material_type");
     @RegisterLanguage(cn = "按字母表", en = "Alphabetical")
     private static final String ALPHABETICAL = "gtocore.ae.wildcard_materials.alphabetical";
     @RegisterLanguage(cn = "按颜色色相", en = "Color hue")
@@ -106,7 +106,7 @@ final class WildcardMaterialGrid extends UIElement {
     @RegisterLanguage(cn = "仅修改当前搜索、搜索槽和筛选条件下的全部材料（含滚动区域外的结果）。", en = "Applies to all materials matching the current search, search slot and filters, including results outside the scroll viewport.")
     private static final String PAGE_SELECTION_HINT = "gtocore.ae.wildcard_materials.page_selection_hint";
     @RegisterLanguage(cn = "反转排序方向", en = "Reverse sort direction")
-    private static final String REVERSE = "gtocore.ae.wildcard_materials.reverse";
+    private static final Component REVERSE = Component.translatable("gtocore.ae.wildcard_materials.reverse");
     @RegisterLanguage(cn = "没有匹配的可运行材料", en = "No matching runnable materials")
     private static final String EMPTY = "gtocore.ae.wildcard_materials.empty";
     @RegisterLanguage(cn = "已启用；单击禁用此材料", en = "Enabled; click to disable this material")
@@ -278,7 +278,7 @@ final class WildcardMaterialGrid extends UIElement {
         var field = TextField.of(LayoutStyle.AUTO, () -> grid.search, text -> {
             grid.search = text;
             grid.refilter();
-        }).bindClientPlaceholder(() -> Component.translatable(SEARCH));
+        }).bindClientPlaceholder(() -> SEARCH);
         field.layout(l -> l.flex(1));
         field.tooltips(SEARCH);
         field.getInput().setMaxStringLength(64);
@@ -296,7 +296,7 @@ final class WildcardMaterialGrid extends UIElement {
                     if (selectAll) Collections.addAll(grid.materialTypes, BASE_TYPES);
                     grid.refilter();
                 }));
-        checklist.addScrollViewChild(TextLine.translatable(LayoutStyle.AUTO, MATERIAL_STATE));
+        checklist.addScrollViewChild(TextLine.constant(LayoutStyle.AUTO, MATERIAL_STATE));
         checklist.addScrollViewChild(new FilterOption(Component.translatable(ENABLED_ONLY), () -> grid.showEnabled, () -> {
             grid.showEnabled = !grid.showEnabled;
             grid.refilter();
@@ -305,7 +305,7 @@ final class WildcardMaterialGrid extends UIElement {
             grid.showDisabled = !grid.showDisabled;
             grid.refilter();
         }));
-        checklist.addScrollViewChild(TextLine.translatable(LayoutStyle.AUTO, MATERIAL_TYPE));
+        checklist.addScrollViewChild(TextLine.constant(LayoutStyle.AUTO, MATERIAL_TYPE));
         for (var type : BASE_TYPES) {
             checklist.addScrollViewChild(new FilterOption(Component.translatable("gtocore.material.base_type.name." + type.name()),
                     () -> grid.materialTypes.contains(type), () -> {

@@ -81,10 +81,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class SlaughterhouseMachine extends StorageMultiblockMachine implements ITierCasingMachine, ICustomRecipeLogicHolder {
 
     @RegisterLanguage(cn = "刷怪蛋 / 生物罐 / Boss 召唤物", en = "Spawn Egg / Mob Jar / Boss Summoner")
-    private static final String SLOT_LABEL = "gtocore.machine.slaughterhouse.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.slaughterhouse.slot");
 
     @RegisterLanguage(cn = "所用武器", en = "Weapon")
-    private static final String WEAPON = "gtocore.machine.slaughterhouse.weapon";
+    private static final Component WEAPON = Component.translatable("gtocore.machine.slaughterhouse.weapon");
+    private static final Component FILTER_NBT = Component.translatable("gtocore.machine.slaughterhouse.filter_nbt");
 
     private int attackDamage;
     private DamageSource damageSource;
@@ -227,7 +228,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     @Override
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
-        controls.addToggle("gtocore.machine.slaughterhouse.filter_nbt", () -> filterNbt, value -> filterNbt = value);
+        controls.addToggle(FILTER_NBT, () -> filterNbt, value -> filterNbt = value);
     }
 
     @Override
@@ -360,7 +361,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

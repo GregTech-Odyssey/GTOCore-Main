@@ -38,10 +38,10 @@ import java.util.List;
 public final class GameLeaderboardsPage implements IFancyUIProvider {
 
     @RegisterLanguage(cn = "全部榜单", en = "All leaderboards")
-    private static final String PAGE_TITLE = "gtocore.machine.game.page.all_leaderboards";
+    private static final Component PAGE_TITLE = Component.translatable("gtocore.machine.game.page.all_leaderboards");
     @RegisterLanguage(cn = "汇总所有游戏机的全服排行榜，顶部按游戏与维度逐级筛选",
                       en = "Every game machine's global leaderboard in one place, filtered by game and category")
-    private static final String PAGE_TOOLTIP = "gtocore.machine.game.page.all_leaderboards.tooltip";
+    private static final Component PAGE_TOOLTIP = Component.translatable("gtocore.machine.game.page.all_leaderboards.tooltip");
 
     /** 选择项打包：游戏与两级维度各占 {@link #LEVEL_BITS} 位。 */
     private static final int LEVEL_BITS = 6;
@@ -66,12 +66,12 @@ public final class GameLeaderboardsPage implements IFancyUIProvider {
 
     @Override
     public Component getTitle() {
-        return Component.translatable(PAGE_TITLE);
+        return PAGE_TITLE;
     }
 
     @Override
     public List<Component> getTabTooltips() {
-        return List.of(Component.translatable(PAGE_TOOLTIP));
+        return List.of(PAGE_TOOLTIP);
     }
 
     @Override
@@ -97,18 +97,18 @@ public final class GameLeaderboardsPage implements IFancyUIProvider {
         int width = (UISizes.CONTENT_WIDTH - (levels - 1) * UISizes.GAP) / levels;
         var row = UIElement.row(Button.HEIGHT).layout(l -> l.gapAll(UISizes.GAP)
                 .justifyContent(AlignContent.CENTER));
-        row.addChild(new SelectBox(width, GameBoardCatalog.GAMES.titleKey(), GameBoardCatalog.GAMES.nameKeys(),
+        row.addChild(new SelectBox(width, GameBoardCatalog.GAMES.title(), GameBoardCatalog.GAMES.names(),
                 selectedGame, this::selectGame));
         if (group.first() != null) {
-            row.addChild(new SelectBox(width, group.first().titleKey(), group.first().nameKeys(),
+            row.addChild(new SelectBox(width, group.first().title(), group.first().names(),
                     selectedFirst, this::selectFirst));
         }
         if (group.second() != null) {
-            row.addChild(new SelectBox(width, group.second().titleKey(), group.second().nameKeys(),
+            row.addChild(new SelectBox(width, group.second().title(), group.second().names(),
                     selectedSecond, this::selectSecond));
         }
 
-        var section = Form.section(boardTitleKey(group, selectedFirst, selectedSecond));
+        var section = Form.section(boardTitle(group, selectedFirst, selectedSecond));
         section.addChild(AbstractGameMachine.milestoneTable("game_all_leaderboards_" + key, group.board().columns(),
                 () -> group.board().version(server()),
                 () -> group.board().rows(server(), selectedFirst, selectedSecond)));
@@ -120,10 +120,10 @@ public final class GameLeaderboardsPage implements IFancyUIProvider {
     }
 
     /** 区块标题：有二级维度用它，否则用一级维度，再否则用游戏名。 */
-    private static String boardTitleKey(GameBoardCatalog.Group group, int selectedFirst, int selectedSecond) {
-        if (group.second() != null) return group.second().nameKey(selectedSecond);
-        if (group.first() != null) return group.first().nameKey(selectedFirst);
-        return group.nameKey();
+    private static Component boardTitle(GameBoardCatalog.Group group, int selectedFirst, int selectedSecond) {
+        if (group.second() != null) return group.second().name(selectedSecond);
+        if (group.first() != null) return group.first().name(selectedFirst);
+        return group.name();
     }
 
     /** 换游戏：两级维度都回到第一项。 */

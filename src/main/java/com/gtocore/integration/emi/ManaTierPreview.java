@@ -17,9 +17,9 @@ import java.util.List;
 
 public final class ManaTierPreview implements RecipeTierPreview {
 
-    private static final String MANA_USAGE = "gtocore.recipe.info.mana_usage";
-    private static final String MANA_GENERATION = "gtocore.recipe.info.mana_generation";
-    private static final String TOTAL_MANA = "gtocore.recipe.info.total_mana";
+    private static final Component MANA_USAGE = Component.translatable("gtocore.recipe.info.mana_usage");
+    private static final Component MANA_GENERATION = Component.translatable("gtocore.recipe.info.mana_generation");
+    private static final Component TOTAL_MANA = Component.translatable("gtocore.recipe.info.total_mana");
     private static final String MANA_OVERCLOCK = "gtocore.recipe.info.mana_overclock";
     private static final String MANA_TIER = "gtocore.recipe.info.mana_tier.";
 
@@ -88,7 +88,7 @@ public final class ManaTierPreview implements RecipeTierPreview {
     }
 
     @Override
-    public List<String> rowLabels() {
+    public List<Component> rowLabels() {
         return List.of(mana > 0 ? MANA_USAGE : MANA_GENERATION, TOTAL_MANA);
     }
 

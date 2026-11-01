@@ -781,12 +781,12 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 int width = PatternEditor.CONTENT_WIDTH;
                 if ((panels & MATERIALS_PANEL) != 0) {
                     column.addChild(PopupHost.standalonePanel("wildcard.materials",
-                            Popup.of(() -> Component.translatable(LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST), content -> WildcardMaterialGrid.build(this, content)).setContentWidth(width),
+                            Popup.of(() -> LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST, content -> WildcardMaterialGrid.build(this, content)).setContentWidth(width),
                             () -> toggleToolPanel(window, MATERIALS_PANEL)));
                 }
                 if ((panels & EDITOR_PANEL) != 0) {
                     column.addChild(PopupHost.standalonePanel("wildcard.editor",
-                            Popup.of(() -> Component.translatable(PatternEditor.TITLE), content -> PatternEditor.build(this, 0, content)).setContentWidth(width),
+                            Popup.of(() -> PatternEditor.TITLE, content -> PatternEditor.build(this, 0, content)).setContentWidth(width),
                             () -> toggleToolPanel(window, EDITOR_PANEL)));
                 }
             }).setContentWidth(PatternEditor.CONTENT_WIDTH + 2 * UISizes.POPUP_PADDING);
@@ -806,13 +806,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private static final String LANG_WILDCARD_TOOLS = "gtocore.ae.appeng.wildcard_pattern_buffer.tools";
 
     @RegisterLanguage(cn = "样板优先级：", en = "Pattern Priority: ")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_PRIORITY = "gtocore.ae.appeng.pattern.priority";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_PRIORITY = Component.translatable("gtocore.ae.appeng.pattern.priority");
     @RegisterLanguage(cn = "此样板总成提供的样板优先级。合成计算将优先考虑优先级最高的样板。", en = "The priority for the patterns offered by this provider. The crafting calculation will prioritize patterns with the highest priority.")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC = "gtocore.ae.appeng.pattern.priority.desc";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC = Component.translatable("gtocore.ae.appeng.pattern.priority.desc");
     @RegisterLanguage(cn = "通配符样板总成材料黑名单", en = "Wildcard Pattern Provider Material Blacklist")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST = Component.translatable("gtocore.ae.appeng.wildcard_pattern_buffer.blacklist");
     @RegisterLanguage(cn = "添加到黑名单中的材料将不会被通配符样板总成所使用。", en = "Materials added to the blacklist will not be used by the Wildcard Pattern Provider.")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.desc";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC = Component.translatable("gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.desc");
     @RegisterLanguage(cn = "编辑", en = "Edit")
     private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.open";
     @RegisterLanguage(cn = "物品黑名单（按材料）", en = "Item Blacklist (by material)")
@@ -820,7 +820,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     @RegisterLanguage(cn = "流体黑名单（按材料）", en = "Fluid Blacklist (by material)")
     private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_FLUIDS = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.fluids";
     @RegisterLanguage(cn = "已加载通配符样板", en = "Loaded wildcard patterns")
-    static final String LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS = "gtocore.ae.appeng.wildcard_pattern_buffer.loaded_patterns";
+    static final Component LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS = Component.translatable("gtocore.ae.appeng.wildcard_pattern_buffer.loaded_patterns");
     @RegisterLanguage(cn = "%s 种", en = "%s")
     static final String LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS_VALUE = "gtocore.ae.appeng.wildcard_pattern_buffer.loaded_patterns.value";
 }

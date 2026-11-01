@@ -102,15 +102,21 @@ public class LargeAlgaeFarm extends ElectricMultiblockMachine implements ITierCa
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        algaeLine(page, "gtocore.algae.short.BlueAlgae", Algae.BlueAlgae);
-        algaeLine(page, "gtocore.algae.short.BrownAlgae", Algae.BrownAlgae);
-        algaeLine(page, "gtocore.algae.short.GoldAlgae", Algae.GoldAlgae);
-        algaeLine(page, "gtocore.algae.short.GreenAlgae", Algae.GreenAlgae);
-        algaeLine(page, "gtocore.algae.short.RedAlgae", Algae.RedAlgae);
+        algaeLine(page, BLUE_ALGAE, Algae.BlueAlgae);
+        algaeLine(page, BROWN_ALGAE, Algae.BrownAlgae);
+        algaeLine(page, GOLD_ALGAE, Algae.GoldAlgae);
+        algaeLine(page, GREEN_ALGAE, Algae.GreenAlgae);
+        algaeLine(page, RED_ALGAE, Algae.RedAlgae);
     }
 
-    private void algaeLine(MultiblockPage page, String labelKey, Algae algae) {
-        page.addNumber(labelKey, () -> algaeAccessHatch != null ? algaeAccessHatch.getAvailableStacks().get(algae.aeKey()) : 0, "");
+    private static final Component BLUE_ALGAE = Component.translatable("gtocore.algae.short.BlueAlgae");
+    private static final Component BROWN_ALGAE = Component.translatable("gtocore.algae.short.BrownAlgae");
+    private static final Component GOLD_ALGAE = Component.translatable("gtocore.algae.short.GoldAlgae");
+    private static final Component GREEN_ALGAE = Component.translatable("gtocore.algae.short.GreenAlgae");
+    private static final Component RED_ALGAE = Component.translatable("gtocore.algae.short.RedAlgae");
+
+    private void algaeLine(MultiblockPage page, Component label, Algae algae) {
+        page.addNumber(label, () -> algaeAccessHatch != null ? algaeAccessHatch.getAvailableStacks().get(algae.aeKey()) : 0, "");
     }
 
     @Override

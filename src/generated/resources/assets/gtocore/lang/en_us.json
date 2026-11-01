@@ -6321,6 +6321,8 @@
   "gtocore.machine.hu_input": "Heat Input: %s HU",
   "gtocore.machine.hu_output": "Heat Output: %s HU",
   "gtocore.machine.hu_stored": "Total Heat: %s HU",
+  "gtocore.machine.huge_bus.empty": "Empty",
+  "gtocore.machine.huge_bus.item": "Item",
   "gtocore.machine.hv_arc_generator.tooltip": "§7Friction Electricity",
   "gtocore.machine.hv_cluster.tooltip": "§7Produces Foils",
   "gtocore.machine.hv_dehydrator.tooltip": "§7Dehydrate, Dehydrate!",

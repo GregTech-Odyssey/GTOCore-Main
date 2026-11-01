@@ -63,10 +63,12 @@ public final class SpaceStationFlowPage {
 
     @RegisterLanguage(cn = "空间站运行", en = "Station Operation")
     private static final String LANG_STATION = "gtocore.machine.space_station.flow.station";
+    private static final Component STATION = Component.translatable(LANG_STATION);
     @RegisterLanguage(cn = "状态", en = "State")
     private static final String LANG_STATE = "gtocore.machine.space_station.flow.state";
     @RegisterLanguage(cn = "舱内环境", en = "Environment")
     private static final String LANG_ENVIRONMENT = "gtocore.machine.space_station.flow.environment";
+    private static final Component ENVIRONMENT = Component.translatable(LANG_ENVIRONMENT);
     @RegisterLanguage(cn = "供氧", en = "Oxygen")
     private static final String LANG_OXYGEN = "gtocore.machine.space_station.flow.oxygen";
     @RegisterLanguage(cn = "温度", en = "Temp")
@@ -115,26 +117,36 @@ public final class SpaceStationFlowPage {
     private static final String LANG_READINESS_HINT = "gtocore.machine.space_station.flow.readiness.hint";
     @RegisterLanguage(cn = "电力", en = "Power")
     private static final String LANG_ENERGY = "gtocore.machine.space_station.flow.energy";
+    private static final Component ENERGY = Component.translatable(LANG_ENERGY);
     @RegisterLanguage(cn = "耗能", en = "Usage")
     private static final String LANG_USAGE = "gtocore.machine.space_station.flow.usage";
+    private static final Component USAGE = Component.translatable(LANG_USAGE);
     @RegisterLanguage(cn = "功率", en = "Input")
     private static final String LANG_POWER = "gtocore.machine.space_station.flow.power";
+    private static final Component POWER = Component.translatable(LANG_POWER);
     @RegisterLanguage(cn = "电压", en = "Tier")
     private static final String LANG_VOLTAGE = "gtocore.machine.space_station.flow.voltage";
+    private static final Component VOLTAGE = Component.translatable(LANG_VOLTAGE);
     @RegisterLanguage(cn = "要求", en = "Needs")
     private static final String LANG_REQUIRED_TIER = "gtocore.machine.space_station.flow.required_tier";
+    private static final Component REQUIRED_TIER = Component.translatable(LANG_REQUIRED_TIER);
     @RegisterLanguage(cn = "蒸馏水供给", en = "Water Supply")
     private static final String LANG_WATER = "gtocore.machine.space_station.flow.water_supply";
+    private static final Component WATER = Component.translatable(LANG_WATER);
     @RegisterLanguage(cn = "每仓", en = "Each")
     private static final String LANG_PER_HATCH = "gtocore.machine.space_station.flow.per_hatch";
+    private static final Component PER_HATCH = Component.translatable(LANG_PER_HATCH);
     @RegisterLanguage(cn = "每仓每秒供水量（mB）", en = "Supply per hatch per second (mB)")
     private static final String LANG_PER_HATCH_TOOLTIP = "gtocore.machine.space_station.flow.per_hatch.tooltip";
     @RegisterLanguage(cn = "供水仓", en = "Hatches")
     private static final String LANG_HATCHES = "gtocore.machine.space_station.flow.hatches";
+    private static final Component HATCHES = Component.translatable(LANG_HATCHES);
     @RegisterLanguage(cn = "每秒", en = "Per Second")
     private static final String LANG_PER_SECOND = "gtocore.machine.space_station.flow.per_second";
+    private static final Component PER_SECOND = Component.translatable(LANG_PER_SECOND);
     @RegisterLanguage(cn = "帆板", en = "Sails")
     private static final String LANG_SAILS = "gtocore.machine.space_station.flow.sails";
+    private static final Component SAILS = Component.translatable(LANG_SAILS);
     @RegisterLanguage(cn = "光伏帆板：已成型 %s 台，帆板接口共 %s 个。", en = "Photovoltaic sails: %s formed, %s sail docks in total.")
     private static final String LANG_SAILS_DETAIL = "gtocore.machine.space_station.flow.sails_detail";
     @RegisterLanguage(cn = "点左侧「探索者号空间站总览」可在空位上安装光伏帆板。", en = "Use \"Explorer Station Overview\" on the left to install sails at free docks.")
@@ -223,7 +235,7 @@ public final class SpaceStationFlowPage {
 
     private static FlowNode stationNode(FlowChart chart, SimpleSpaceStationMachine machine, Status status, int columns) {
         var node = chart.node(1, 1, columns - 1).bindState(status.live(() -> status.station)).bindDetail(status.live(() -> status.stationDetail));
-        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_STATION),
+        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), STATION),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.stationView)),
                 ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
                 ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness))
@@ -242,19 +254,19 @@ public final class SpaceStationFlowPage {
     private static FlowNode energyNode(FlowChart chart, Status status) {
         var diagnoser = status.diagnoser;
         var node = chart.node(1, 0).bindState(status.live(() -> diagnoser.energyIssue().state())).bindDetail(status.live(() -> status.energyDetail));
-        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY), new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.energyIssue().view())),
-                StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, () -> status.usageText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status.live(() -> status.powerText))
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), ENERGY), new IssueLine(LayoutStyle.AUTO, null, status.live(() -> diagnoser.energyIssue().view())),
+                StatusLine.of(LayoutStyle.AUTO, USAGE, () -> status.usageText),
+                StatusLine.of(LayoutStyle.AUTO, POWER, status.live(() -> status.powerText))
                         .bindLevel(status.live(() -> diagnoser.energyIssue() == RecipeIssue.LOW_POWER ? Level.ERROR : Level.NORMAL)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText)).bindLevel(status.live(status::voltageLevel)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_REQUIRED_TIER, () -> status.requiredTierText),
+                StatusLine.of(LayoutStyle.AUTO, VOLTAGE, status.live(() -> status.voltageText)).bindLevel(status.live(status::voltageLevel)),
+                StatusLine.of(LayoutStyle.AUTO, REQUIRED_TIER, () -> status.requiredTierText),
                 ProgressBar.of(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.buffer)).percent());
         return node;
     }
 
     private static FlowNode environmentNode(FlowChart chart, Status status, int column) {
         var node = chart.node(1, column).bindState(status.live(() -> status.environment)).bindDetail(status.live(() -> status.environmentDetail));
-        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), LANG_ENVIRONMENT),
+        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), ENVIRONMENT),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_OXYGEN), status.live(() -> status.oxygenView)),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_TEMPERATURE), status.live(() -> status.temperatureView)),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_CLEANROOM), status.live(() -> status.cleanroomView)),
@@ -274,19 +286,19 @@ public final class SpaceStationFlowPage {
     private static FlowNode waterNode(FlowChart chart, SimpleSpaceStationMachine machine, Status status, int span, boolean remote) {
         var node = chart.node(2, 0, span).bindState(status.live(() -> status.waterState)).bindDetail(status.live(() -> status.waterDetail));
         var header = UIElement.centeredRow(UISizes.SLOT_SIZE);
-        header.addChildren(FlowParts.fluidSlot(remote ? null : DistilledWater.getFluid(1)), TextLine.translatable(0, LANG_WATER).layout(l -> l.flex(1)));
+        header.addChildren(FlowParts.fluidSlot(remote ? null : DistilledWater.getFluid(1)), TextLine.constant(0, WATER).layout(l -> l.flex(1)));
         int fieldWidth = chart.widthFor(span) - 2 * UISizes.FLOW_NODE_PADDING - LABEL_WIDTH - UISizes.GAP;
         var field = NumberField.ofInt(fieldWidth, machine::getWaterAmountPerHatch, machine::setWaterAmountPerHatch, 0, SimpleSpaceStationMachine.MAX_WATER_PER_HATCH);
         field.setHoverTooltips(Component.translatable(LANG_PER_HATCH_TOOLTIP));
         var amountRow = UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
-                .addChildren(TextLine.translatable(LABEL_WIDTH, LANG_PER_HATCH).bindClientColor(UITheme::textSecondary), field);
+                .addChildren(TextLine.constant(LABEL_WIDTH, PER_HATCH).bindClientColor(UITheme::textSecondary), field);
         node.addChildren(header,
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.waterView)),
                 amountRow,
-                StatusLine.of(LayoutStyle.AUTO, LANG_HATCHES, status.live(() -> status.hatchesText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_SAILS, status.live(() -> status.sailsText))
+                StatusLine.of(LayoutStyle.AUTO, HATCHES, status.live(() -> status.hatchesText)),
+                StatusLine.of(LayoutStyle.AUTO, SAILS, status.live(() -> status.sailsText))
                         .bindLevel(status.live(() -> status.sailsFormed > 0 ? Level.GOOD : Level.NORMAL)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_PER_SECOND, status.live(() -> status.rateText)).bindLevel(status.live(() -> status.waterState.getLevel())));
+                StatusLine.of(LayoutStyle.AUTO, PER_SECOND, status.live(() -> status.rateText)).bindLevel(status.live(() -> status.waterState.getLevel())));
         return node;
     }
 
