@@ -70,6 +70,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 主仓、子模块和本地 GTM 仓库（如有）均遵守上述要求。禁止先裸跑 Gradle 等待 `JAVA_HOME` 报错后再重试；仓库文档与命令示例禁止写入具体用户名或用户目录绝对路径。
 - Gradle 会写入用户级缓存。若当前宿主限制实际缓存路径，按宿主权限机制在第一次调用时处理；不要先运行一个已知会因缓存权限失败的试跑。
 - `build` / `assemble` 只构建，不会自动运行单测。单测须显式执行 `test` 或 `testCrafting`；禁止添加凑数、明显正确或与行为无关的测试。
+- 禁止在 `src/test/java/com/gtolib/` 或 `src/gametest/java/com/gtolib/` 下创建持久文件。
 - `src/test/` 下的 `com.gtolib.*` 测试需要明文 GTOLib 字节码，只在 `-PgtolibUnprotected=true` 下运行，加密构建会自动跳过。
 - GameTest 类放在 `com.gtocore.gametest.*`，不要与独立 GTOLib 模组共用 `com.gtolib.*` 包；保护模式的包冲突会连 `runData` 一起阻断，见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
 - 验证应与改动范围相称。通常只需 `compileJava`、`compileKotlin`、相关测试或专题文档要求的 `runData` / `buildGtolibProtected`，不要为纯说明修改运行 Gradle。

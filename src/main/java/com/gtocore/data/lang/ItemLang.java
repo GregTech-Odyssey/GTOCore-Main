@@ -145,7 +145,7 @@ final class ItemLang {
         addCNEN("gtocore.tooltip.unknown", "未知", "Unknown");
         addCNEN("gtocore.tooltip.drone", "无人机远程操控", "Drone Remote Control");
         addCNEN("gtocore.tooltip.drone.control", "右键启用飞控台，按下§6§l[Escape]§r键可退出", "Right click to enable the flight control console; press §6§l[Escape]§r to exit.");
-        addCNEN("gtocore.tooltip.drone.control.1", "在无人机饰品槽中时，通过§6§l[%s]§r键进入或退出无人机控制台", "In the Curios drone slot, enter or exit by pressing §6§l[%s]§r.");
+        addCNEN("gtocore.tooltip.drone.control.1", "在无人机饰品槽中时，通过§6§l[%s§6§l]§r键进入或退出无人机控制台", "In the Curios drone slot, enter or exit by pressing §6§l[%s§6§l]§r.");
         addCNEN("gtocore.tooltip.drone.range", "取景范围：%s 格", "Viewing Range: %s blocks");
         addCNEN("gtocore.tooltip.drone.attack", "攻击伤害：%s", "Attack Damage: %s");
         addCNEN("gtocore.tooltip.drone.speed", "最大飞行速度：%s", "Max Flight Speed: %s");

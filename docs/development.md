@@ -42,12 +42,15 @@ gradlew.bat build
 | 目的 | macOS / Linux 命令 |
 |------|--------------------|
 | 格式化源码与资源 | `bash ./gradlew spotlessApply` |
+| 刷新依赖缓存 | `bash ./gradlew refreshDependencies` |
 | 完整构建 | `bash ./gradlew build` |
 | 启动开发客户端 | `bash ./gradlew runClient` |
 | 启动开发服务端 | `bash ./gradlew runServer` |
 | 生成数据 | `bash ./gradlew runData` |
 
 `runData` 会写入 `src/generated/resources/`。提交前请检查生成结果，只保留与本次改动有关的文件。
+
+`refreshDependencies`（也可全小写写作 `refreshdependencies`）在依赖解析前启用 Gradle 原生 `--refresh-dependencies`，并重新解析项目中所有可解析的依赖配置。它会重新检查仓库中的依赖，下载发生变化的文件，复用校验一致的文件，不删除整个 Gradle 用户缓存。任务需要联网，不能与 `--offline` 同用；请使用完整任务名。
 
 ## 字段同步与持久化（DataSyncLib）
 

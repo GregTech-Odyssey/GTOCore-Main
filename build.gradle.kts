@@ -233,6 +233,24 @@ repositories {
 
 // ---------- 依赖 ----------
 
+tasks.register("refreshDependencies") {
+    group = "build setup"
+    description = "Refreshes all resolvable project dependencies using Gradle's native cache refresh."
+    notCompatibleWithConfigurationCache("Resolves project configurations during execution.")
+    val dependencyConfigurations = configurations
+    val startParameter = gradle.startParameter
+    doLast {
+        check(!startParameter.isOffline) { "refreshDependencies requires network access; remove --offline." }
+        check(startParameter.isRefreshDependencies) { "Use the full task name refreshDependencies to enable dependency refresh." }
+        dependencyConfigurations.forEach { configuration ->
+            if (configuration.isCanBeResolved) {
+                logger.lifecycle("Refreshing dependencies: {}", configuration.name)
+                configuration.resolve()
+            }
+        }
+    }
+}
+
 /** 编译期可见，运行时只进客户端 */
 fun DependencyHandler.clientMod(notation: String) {
     add("modCompileOnly", notation)
