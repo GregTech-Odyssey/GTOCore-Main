@@ -15,6 +15,7 @@ import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
+import com.gtocore.common.item.misc.WingTrails;
 import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.common.machine.noenergy.game.GameLeaderboardBrowser;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
@@ -139,6 +140,7 @@ public class CommonProxy {
         Manager.init();
         StarMapCommand.init();
         StarMapDysonSync.init();
+        WingTrails.init();
         TesseractTargetMarker.init();
         DroneServer.init();
         TravelEvents.init();

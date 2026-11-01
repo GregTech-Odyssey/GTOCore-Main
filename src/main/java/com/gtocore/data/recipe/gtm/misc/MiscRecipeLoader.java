@@ -456,7 +456,7 @@ public final class MiscRecipeLoader {
     private static void nanoSaber(String id, ItemEntry<?> output, int tier, TagKey<Item> circuit,
                                   TagKey<Item> battery, ItemEntry<?> sensor, ItemEntry<?> fieldGenerator,
                                   Material plateMaterial) {
-        armorPiece(id, output, 5, tier, armorCostMultiplier(tier) * 1.5, circuit, battery, sensor, 2, fieldGenerator,
+        armorPiece(id, output, 5, tier, armorCostMultiplier(tier) * 1.5 / 2.5, circuit, battery, sensor, 2, fieldGenerator,
                 1, plateMaterial, 6).save();
     }
 

@@ -224,6 +224,7 @@
     "mc.LanguageMixin",
     "mc.MappedRegistryAccessor",
     "mc.MinecraftServerMixin",
+    "mc.ServerGamePacketListenerImplMixin",
     "mc.ServerLevelWeatherMixin",
     "mc.SharedConstantsMixin",
     "mc.mob.AbstractSkeletonMixin",

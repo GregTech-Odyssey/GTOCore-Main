@@ -29,6 +29,7 @@ import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
+import com.gtocore.common.item.misc.WingTrails;
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
 import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.client.TravelParticleHandler;
@@ -150,6 +151,7 @@ public final class ClientProxy extends CommonProxy {
         TravelTargetsClientHandler.init();
         TesseractClientHandler.init();
         TravelEvents.Client.init();
+        WingTrails.Client.init();
         TravelParticleHandler.init();
         IMoveableHUD.EventHandler.init();
         DroneClient.init();

@@ -550,6 +550,9 @@
     },
     "com/gtolib/mixin/jade/DroneJadeBlockAccessorMixin": {
       "Lnet/minecraft/core/BlockPos;distSqr(Lnet/minecraft/core/Vec3i;)D": "Lnet/minecraft/core/BlockPos;m_123331_(Lnet/minecraft/core/Vec3i;)D"
+    },
+    "com/gtocore/mixin/mc/ServerGamePacketListenerImplMixin": {
+      "handlePlayerAbilities": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_6828_(Lnet/minecraft/network/protocol/game/ServerboundPlayerAbilitiesPacket;)V"
     }
   },
   "data": {
@@ -1104,6 +1107,9 @@
       },
       "com/gtolib/mixin/jade/DroneJadeBlockAccessorMixin": {
         "Lnet/minecraft/core/BlockPos;distSqr(Lnet/minecraft/core/Vec3i;)D": "Lnet/minecraft/core/BlockPos;m_123331_(Lnet/minecraft/core/Vec3i;)D"
+      },
+      "com/gtocore/mixin/mc/ServerGamePacketListenerImplMixin": {
+        "handlePlayerAbilities": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_6828_(Lnet/minecraft/network/protocol/game/ServerboundPlayerAbilitiesPacket;)V"
       }
     }
   }

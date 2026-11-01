@@ -6,6 +6,7 @@ import com.gtocore.common.item.misc.OrganItemBase;
 import com.gtocore.common.item.misc.OrganType;
 import com.gtocore.common.item.misc.TierOrganItem;
 import com.gtocore.common.item.misc.WingOrganItem;
+import com.gtocore.common.item.misc.WingTrails;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.player.OrganTier;
@@ -38,11 +39,11 @@ public final class GTOOrganItems {
     // 翅膀：耐久型的耐久即可飞行的秒数
 
     public static final ItemEntry<WingOrganItem> FAIRY_WING = registerOrgan("fairy_wing", OrganType.WING, "fairy_wing", "翅膀 妖精之翼", "Fairy Wing",
-            p -> WingOrganItem.durability(p.durability(4 * 3600), 0.15F), item -> {});
+            p -> WingOrganItem.durability(p.durability(4 * 3600), 0.15F, WingTrails.FAIRY), item -> {});
     public static final ItemEntry<WingOrganItem> MANA_STEEL_WING = registerOrgan("mana_steel_wing", OrganType.WING, "mana_steel_wing", "翅膀 魔力钢之翼", "Mana Steel Wing",
-            p -> WingOrganItem.durability(p.durability(15 * 60), 0.15F), item -> {});
+            p -> WingOrganItem.durability(p.durability(15 * 60), 0.15F, WingTrails.MANA_STEEL), item -> {});
     public static final ItemEntry<WingOrganItem> MECHANICAL_WING = registerOrgan("mechanical_wing", OrganType.WING, "mechanical_wing", "翅膀 电动机械之翼", "Mechanical Wing",
-            p -> WingOrganItem.electric(p, 0.25F, GTValues.EV, MECHANICAL_WING_FLIGHT_HOURS),
+            p -> WingOrganItem.electric(p, 0.25F, GTValues.EV, MECHANICAL_WING_FLIGHT_HOURS, WingTrails.MECHANICAL),
             attach(ElectricStats.createElectricItem(GTValues.V[GTValues.EV] * MECHANICAL_WING_FLIGHT_HOURS * 3600L, GTValues.EV)));
 
     public static final ItemEntry<ComponentItem> ORGAN_MODIFIER = item("organ_modifier", "器官修改器", p -> ComponentItem.create(p.stacksTo(1).setNoRepair()))
