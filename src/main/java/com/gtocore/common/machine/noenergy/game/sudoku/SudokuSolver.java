@@ -10,7 +10,7 @@ import net.minecraft.util.RandomSource;
  * 「已填和 + 剩余格最小/最大候选和」做区间剪枝。出题、评级与判题共用这一套。
  * 非杀手出题按唯一解挖空，判题只查填满 + 约束合法（杀手允许多解）。
  */
-public final class SudokuSolver {
+final class SudokuSolver {
 
     private SudokuSolver() {}
 

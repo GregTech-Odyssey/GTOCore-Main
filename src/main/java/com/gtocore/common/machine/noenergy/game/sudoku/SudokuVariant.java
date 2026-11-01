@@ -10,23 +10,30 @@ import org.jetbrains.annotations.Nullable;
 public enum SudokuVariant {
 
     /** 标准数独：只有行、列、3×3 宫。 */
-    STANDARD,
+    STANDARD(100),
     /** DX 对角线：两条对角线各自 1~9 不重复。 */
-    DIAGONAL_X,
+    DIAGONAL_X(200),
     /** CD 中心点：9 个宫的中心格组成一组 1~9。 */
-    CENTER_DOTS,
+    CENTER_DOTS(200),
     /** HY 窗口：4 个错位的 3×3 窗口，每窗 1~9。 */
-    WINDOW,
+    WINDOW(250),
     /** CO 彩色：9 个固定分区，每组取各宫同一偏移位置的 9 格。 */
-    COLOR,
+    COLOR(300),
     /** JG 锯齿：用 9 个 180° 对称的不规则区域替换标准 3×3 宫。 */
-    JIGSAW,
+    JIGSAW(400),
     /** CS 连续：相邻格之间的标记边两侧数字必须相差 1。 */
-    CONSECUTIVE,
+    CONSECUTIVE(500),
     /** KL 杀手：笼内数字之和等于角标，且笼内不重复。 */
-    KILLER;
+    KILLER(800);
 
     public static final SudokuVariant[] ALL = values();
+
+    /** 完成奖励倍率，百分数：100 表示 ×1，110 表示 ×1.1；越难的变体倍率越高。 */
+    private final int rewardPercent;
+
+    SudokuVariant(int rewardPercent) {
+        this.rewardPercent = rewardPercent;
+    }
 
     private static final int SIZE = SudokuRules.SIZE;
     private static final int[][] NONE = new int[0][];
@@ -86,6 +93,11 @@ public enum SudokuVariant {
     /** 规则位掩码：标准为 0，其余按序数左移（ordinal - 1）；多规则按位或。 */
     public int mask() {
         return this == STANDARD ? 0 : 1 << (ordinal() - 1);
+    }
+
+    /** 完成奖励的变体倍率（百分数）：100 为 ×1，110 为 ×1.1。 */
+    public int rewardPercent() {
+        return rewardPercent;
     }
 
     /** 是否用不规则区域替换标准 3×3 宫；仅锯齿为 true。 */

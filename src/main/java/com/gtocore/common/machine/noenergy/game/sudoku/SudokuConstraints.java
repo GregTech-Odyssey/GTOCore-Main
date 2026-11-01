@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
  * 固定变体与锯齿经 {@link SudokuRuleSet} 组装；杀手笼作为额外全异单元挂入，连续标记存成每格方位掩码。
  * 求解器只从这里取约束，叠加规则无需另写求解逻辑；界面目前只传单条规则。
  */
-public final class SudokuConstraints {
+final class SudokuConstraints {
 
     /** 相邻格方位：格号按行优先，上下左右各占一位。 */
     public static final int DIR_UP = 1;

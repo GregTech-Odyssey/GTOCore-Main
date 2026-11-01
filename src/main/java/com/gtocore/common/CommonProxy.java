@@ -16,6 +16,7 @@ import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.machine.monitor.Manager;
+import com.gtocore.common.machine.noenergy.game.GameLeaderboardBrowser;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 import com.gtocore.common.website.BugReportServer;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
@@ -132,6 +133,7 @@ public class CommonProxy {
         IPushResultsHandler.init();
         TechTreeCommands.init();
         TechTreeBrowser.init();
+        GameLeaderboardBrowser.init();
         GridMapUIFactory.init();
         RecipeEditorUIFactory.init();
         Manager.init();

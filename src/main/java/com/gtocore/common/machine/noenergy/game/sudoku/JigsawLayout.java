@@ -15,7 +15,7 @@ import java.util.Arrays;
  * 一对区域完成后要求剩余连通块都能按 9 格切分，否则换候选或整局重来。
  * 区域全部由相邻格生长，因此连通、每区 9 格、覆盖全盘且整体 180° 对称；结果还会拒绝退化成标准九宫。
  */
-public final class JigsawLayout {
+final class JigsawLayout {
 
     private static final int ATTEMPTS = 512;
     private static final int SIZE = SudokuRules.SIZE;

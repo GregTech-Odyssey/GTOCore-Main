@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy.game.game2048;
 
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -59,6 +60,12 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
             MilestoneColumn.left(COLUMN_PLAYER, 42),
             MilestoneColumn.right(COLUMN_BEST_SCORE, 54),
             MilestoneColumn.right(COLUMN_BEST_MERGED, 40) };
+
+    /** 「全部榜单」页里的 2048 榜：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(MILESTONE_COLUMNS, server -> GameMilestones.get(server).modCount(),
+                (server, first, second) -> buildMilestoneRows(GameMilestones.get(server), server));
+    }
 
     /** 盘面区宽度：15 档图例 × {@link #LEGEND_ICON_SIZE} 正好铺满，4×4 的格子按它摊满整框。 */
     private static final int FRAME_SIZE = 156;
@@ -342,13 +349,13 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
         protected Widget boardContent() {
             var section = Form.section(SECTION_MILESTONES);
             section.addChild(milestoneTable("game_milestones_game_2048",
-                    MILESTONE_COLUMNS, Game2048Machine.this::buildMilestoneRows));
+                    MILESTONE_COLUMNS, Game2048Machine::buildMilestoneRows));
             return section;
         }
     }
 
     /** 里程碑表格的行（服务端构建）：最高分榜，一人一行，名次由表格补，达成时间进悬停提示。 */
-    private List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server) {
+    private static List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server) {
         var board = store.game2048Board();
         var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
         for (var stat : board) {

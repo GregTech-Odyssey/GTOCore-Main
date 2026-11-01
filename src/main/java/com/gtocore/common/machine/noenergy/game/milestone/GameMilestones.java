@@ -34,9 +34,9 @@ import java.util.UUID;
  */
 public final class GameMilestones extends SavedData {
 
-    public static final String DATA_NAME = "gtocore_game_milestones";
+    private static final String DATA_NAME = "gtocore_game_milestones";
     /** 最高分/最大合成榜的最低积分：不超过这个分数的局不进入里程碑。 */
-    public static final int MIN_MILESTONE_SCORE = 1000;
+    private static final int MIN_MILESTONE_SCORE = 1000;
 
     /** 游戏名（榜单标识）。 */
     public static final String SLOT_MACHINE = "slot_machine";
@@ -170,19 +170,27 @@ public final class GameMilestones extends SavedData {
         return numberPuzzles;
     }
 
-    /** 解码构造：装回五张表，并把华容道的定长数组补齐到固定档数。 */
-    private static GameMilestones of(O2OOpenCacheHashMap<UUID, SlotStat> slots,
-                                     O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
-                                     O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
-                                     O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
-                                     O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles) {
+    /**
+     * 解码构造：装回五张表，并把华容道的定长数组补齐到固定档数。
+     *
+     * <p>
+     * 空表在存盘格式里写成 null（载荷为空集合的坑：{@code ValueCodec.map} 把空 Map 编成 null），
+     * 解码回来就是 {@code null}，按空表处理；否则只要任何一张表为空，整份存档都读不出来。
+     */
+    private static GameMilestones of(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
+                                     @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
+                                     @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
+                                     @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
+                                     @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles) {
         var data = new GameMilestones();
-        data.slots.putAll(slots);
-        data.justGet10.putAll(justGet10);
-        data.game2048.putAll(game2048);
-        data.puzzles.putAll(puzzles);
-        data.numberPuzzles.putAll(numberPuzzles);
-        data.numberPuzzles.replaceAll((player, stat) -> normalizeNumberPuzzle(stat));
+        if (slots != null) data.slots.putAll(slots);
+        if (justGet10 != null) data.justGet10.putAll(justGet10);
+        if (game2048 != null) data.game2048.putAll(game2048);
+        if (puzzles != null) data.puzzles.putAll(puzzles);
+        if (numberPuzzles != null) {
+            data.numberPuzzles.putAll(numberPuzzles);
+            data.numberPuzzles.replaceAll((player, stat) -> normalizeNumberPuzzle(stat));
+        }
         return data;
     }
 

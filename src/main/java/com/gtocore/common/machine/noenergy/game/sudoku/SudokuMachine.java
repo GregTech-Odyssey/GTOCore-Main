@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.sudoku;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.LiveDurationLine;
 import com.gtocore.common.machine.noenergy.game.milestone.SudokuMilestones;
 
@@ -26,6 +27,7 @@ import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -74,7 +76,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     @RegisterLanguage(cn = "大师", en = "Master")
     private static final String DIFFICULTY_MASTER = "gtocore.machine.sudoku.difficulty.master";
     /** 难度名字，下标与 {@link SudokuRules.Difficulty} 的序数一一对应。 */
-    private static final String[] DIFFICULTY_NAMES = { DIFFICULTY_BEGINNER, DIFFICULTY_EASY, DIFFICULTY_NORMAL,
+    public static final String[] DIFFICULTY_NAMES = { DIFFICULTY_BEGINNER, DIFFICULTY_EASY, DIFFICULTY_NORMAL,
             DIFFICULTY_HARD, DIFFICULTY_EXPERT, DIFFICULTY_MASTER };
 
     @RegisterLanguage(cn = "标准", en = "Standard")
@@ -94,13 +96,13 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     @RegisterLanguage(cn = "杀手", en = "Killer")
     private static final String VARIANT_KILLER = "gtocore.machine.sudoku.variant.killer";
     /** 变体名字，下标与 {@link SudokuVariant} 的序数一一对应。 */
-    private static final String[] VARIANT_NAMES = { VARIANT_STANDARD, VARIANT_DIAGONAL_X, VARIANT_CENTER_DOTS,
+    public static final String[] VARIANT_NAMES = { VARIANT_STANDARD, VARIANT_DIAGONAL_X, VARIANT_CENTER_DOTS,
             VARIANT_WINDOW, VARIANT_COLOR, VARIANT_JIGSAW, VARIANT_CONSECUTIVE, VARIANT_KILLER };
 
     @RegisterLanguage(cn = "难度", en = "Difficulty")
     private static final String SECTION_DIFFICULTY = "gtocore.machine.sudoku.section.difficulty";
     @RegisterLanguage(cn = "变体", en = "Variant")
-    private static final String PAGE_VARIANT = "gtocore.machine.sudoku.page.variant";
+    public static final String PAGE_VARIANT = "gtocore.machine.sudoku.page.variant";
     @RegisterLanguage(cn = "为这一局叠加一条附加规则", en = "Stack one extra rule on this round")
     private static final String PAGE_VARIANT_TOOLTIP = "gtocore.machine.sudoku.page.variant.tooltip";
     @RegisterLanguage(cn = "变体", en = "Variant")
@@ -121,6 +123,13 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     private static final MilestoneColumn[] LEADERBOARD_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 64),
             MilestoneColumn.center(COLUMN_DURATION, 54) };
+
+    /** 「全部榜单」页里的数独榜（一级维度难度、二级维度变体）：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(LEADERBOARD_COLUMNS, server -> SudokuMilestones.get(server).modCount(),
+                (server, difficulty, variant) -> buildLeaderboardRows(SudokuMilestones.get(server), server,
+                        difficulty, variant));
+    }
 
     private static final int CELL_SIZE = 15;
     /** 线槽宽度；粗线填满线槽，细线只填中间 1 像素。 */
@@ -279,10 +288,12 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
             return count;
         }
 
-        /** 当前难度的奖励；网络来的序数一律夹回合法范围。 */
+        /** 当前难度与变体组合的奖励；网络来的序数一律夹回合法范围。 */
         long reward() {
             var all = SudokuRules.Difficulty.ALL;
-            return all[Math.clamp(difficulty, 0, all.length - 1)].reward();
+            var variants = SudokuVariant.ALL;
+            return SudokuRules.reward(all[Math.clamp(difficulty, 0, all.length - 1)],
+                    variants[Math.clamp(variant, 0, variants.length - 1)]);
         }
 
         @Override
@@ -474,13 +485,13 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
         requestSync();
     }
 
-    /** 完成一局：按难度发奖励；单人局再记一次「难度 × 变体」的最快用时。 */
+    /** 完成一局：按「难度基础币值 × 变体倍率」发奖励；单人局再记一次「难度 × 变体」的最快用时。 */
     private void finishRound() {
         var difficulty = currentDifficulty();
         var playedVariant = currentVariant();
         status = Status.SOLVED.ordinal();
         lastElapsed = Math.max(1L, gameTime() - roundStart);
-        addBalance(difficulty.reward());
+        addBalance(SudokuRules.reward(difficulty, playedVariant));
         if (!sessionCounts()) return;
         var store = sudokuMilestones();
         if (store != null) {
@@ -645,6 +656,14 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     /** 变体名字的翻译键；越界按标准处理。 */
     private static Component variantName(int ordinal) {
         return Component.translatable(VARIANT_NAMES[Math.clamp(ordinal, 0, VARIANT_NAMES.length - 1)]);
+    }
+
+    /** 变体奖励倍率的显示文本：100 → "1"，110 → "1.1"，200 → "2"；倍率都按 10% 的整数倍配置。 */
+    private static String multiplierText(SudokuVariant variant) {
+        int percent = variant.rewardPercent();
+        int whole = percent / 100;
+        int tenth = percent % 100 / 10;
+        return tenth == 0 ? Integer.toString(whole) : whole + "." + tenth;
     }
 
     /** 盘面控件：整块自绘并接收格子点击。 */
@@ -962,15 +981,12 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
                         if (cageOf[cell] != cage) continue;
                         int x = THICK_GRID + column * CELL_PITCH;
                         int y = THICK_GRID + row * CELL_PITCH;
-                        // 边界统一只向线槽扩 1 像素；同笼相邻格间的 1 像素空隙随后补上。
-                        int left = column == 0 ? 0 : 1;
-                        int right = column == SudokuRules.SIZE - 1 ? 0 : 1;
-                        int top = row == 0 ? 0 : 1;
-                        int bottom = row == SudokuRules.SIZE - 1 ? 0 : 1;
-                        int x1 = x - left;
-                        int x2 = x + CELL_SIZE + right;
-                        int y1 = y - top;
-                        int y2 = y + CELL_SIZE + bottom;
+                        // 边界统一向线槽扩 1 像素，盘面最外圈也不例外：红框贴着格子外侧，
+                        // 不再占掉格子本身的第一像素；同笼相邻格间的 1 像素空隙随后补上。
+                        int x1 = x - 1;
+                        int x2 = x + CELL_SIZE + 1;
+                        int y1 = y - 1;
+                        int y2 = y + CELL_SIZE + 1;
                         for (int py = y1; py < y2; py++) {
                             int base = py * width;
                             for (int px = x1; px < x2; px++) {
@@ -988,16 +1004,16 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
                         int y = THICK_GRID + row * CELL_PITCH;
                         if (column < SudokuRules.SIZE - 1 && cageOf[cell + 1] == cage) {
                             int gapX = x + CELL_SIZE + 1;
-                            int y1 = y - (row == 0 ? 0 : 1);
-                            int y2 = y + CELL_SIZE + (row == SudokuRules.SIZE - 1 ? 0 : 1);
+                            int y1 = y - 1;
+                            int y2 = y + CELL_SIZE + 1;
                             for (int py = y1; py < y2; py++) {
                                 mask[py * width + gapX] = true;
                             }
                         }
                         if (row < SudokuRules.SIZE - 1 && cageOf[cell + SudokuRules.SIZE] == cage) {
                             int gapY = y + CELL_SIZE + 1;
-                            int x1 = x - (column == 0 ? 0 : 1);
-                            int x2 = x + CELL_SIZE + (column == SudokuRules.SIZE - 1 ? 0 : 1);
+                            int x1 = x - 1;
+                            int x2 = x + CELL_SIZE + 1;
                             for (int px = x1; px < x2; px++) {
                                 mask[gapY * width + px] = true;
                             }
@@ -1188,8 +1204,13 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
                 var difficulty = SudokuRules.Difficulty.ALL[index];
                 var button = choiceButton(LayoutStyle.AUTO, Component.translatable(DIFFICULTY_NAMES[index]),
                         () -> difficulty.ordinal() == view().difficulty());
-                button.setHoverTooltips(Component.translatable(TEXT_DIFFICULTY,
-                        Component.translatable(DIFFICULTY_NAMES[index]), number(difficulty.reward())));
+                button.bindTooltip(() -> {
+                    var current = SudokuVariant.ALL[Math.clamp(view().variant(), 0, SudokuVariant.ALL.length - 1)];
+                    return Component.translatable(TEXT_DIFFICULTY,
+                            Component.translatable(DIFFICULTY_NAMES[index]),
+                            number(SudokuRules.reward(difficulty, current)))
+                            .append(Component.literal(" ×" + multiplierText(current)));
+                });
                 button.setOnServerClick(() -> selectDifficulty(index, playerOf(button)));
                 section.addChild(button);
             }
@@ -1297,15 +1318,21 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
         private List<MilestoneCell[]> leaderboardRows(int difficultyOrdinal, int variantOrdinal) {
             var store = sudokuMilestones();
             var server = server();
-            if (store == null || server == null) return List.of();
-            var stats = store.board(difficultyOrdinal, variantOrdinal);
-            var rows = new ObjectArrayList<MilestoneCell[]>(stats.size());
-            for (var stat : stats) {
-                rows.add(new MilestoneCell[] {
-                        MilestoneCell.of(Component.literal(SudokuMilestones.nameOf(server, stat.player()))),
-                        MilestoneCell.achieved(duration(stat.ticks()), stat.completedGameTime()) });
-            }
-            return rows;
+            return store == null || server == null ? List.of() :
+                    buildLeaderboardRows(store, server, difficultyOrdinal, variantOrdinal);
         }
+    }
+
+    /** 单个「难度 × 变体」组合的榜单行（服务端构建），排行榜页与「全部榜单」页共用。 */
+    private static List<MilestoneCell[]> buildLeaderboardRows(SudokuMilestones store, MinecraftServer server,
+                                                              int difficulty, int variant) {
+        var stats = store.board(difficulty, variant);
+        var rows = new ObjectArrayList<MilestoneCell[]>(stats.size());
+        for (var stat : stats) {
+            rows.add(new MilestoneCell[] {
+                    MilestoneCell.of(Component.literal(SudokuMilestones.nameOf(server, stat.player()))),
+                    MilestoneCell.achieved(duration(stat.ticks()), stat.completedGameTime()) });
+        }
+        return rows;
     }
 }

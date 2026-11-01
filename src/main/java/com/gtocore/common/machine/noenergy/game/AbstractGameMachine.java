@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game;
 
 import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.api.gui.ui_element.HorizontalScroller;
 import com.gtocore.common.machine.noenergy.game.milestone.GameAccess;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 import com.gtocore.data.transaction.data.CoinExchange;
@@ -630,8 +631,8 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
      * 里程碑表格的可复用版本：数据源不一定 {@link GameMilestones}（扫雷用自己的存档），
      * 但表格外观、排名、悬停与滚动都与其他游戏机器保持一致。
      */
-    protected final ScrollerView milestoneTable(String id, MilestoneColumn[] columns, IntSupplier version,
-                                                Supplier<List<MilestoneCell[]>> builder) {
+    protected static ScrollerView milestoneTable(String id, MilestoneColumn[] columns, IntSupplier version,
+                                                 Supplier<List<MilestoneCell[]>> builder) {
         var table = new MilestoneTable(columns, version, builder);
         var scroller = new ScrollerView(id,
                 table.width() + 2 * UISizes.PANEL_PADDING + ScrollerView.SCROLL_BAR_SPACE, MILESTONE_HEIGHT)
@@ -654,7 +655,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     }
 
     /** 一张表格的行缓存：数据版本没变就复用上次构建的行，不让每个格子各自重建一遍。 */
-    private final class MilestoneTable {
+    private static final class MilestoneTable {
 
         private final MilestoneColumn[] columns;
         private final IntSupplier version;
@@ -801,7 +802,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     }
 
     /** 横向选项按钮的宽度：文字估宽 + 两侧留白 + 选中时两端绿色 {@code > <} 的宽度。 */
-    protected static int optionWidth(Component label) {
+    private static int optionWidth(Component label) {
         return UISizes.widthFor(label.getString()) + 2 * UISizes.TEXT_PADDING + 2 * UISizes.widthFor("> ");
     }
 

@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.game24;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.LiveDurationLine;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
@@ -107,7 +108,13 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     public static final int RUN_PUZZLES = 10;
 
     /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
-    private static final String[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
+    public static final String[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
+
+    /** 「全部榜单」页里的 24 点榜（一级维度是抽牌范围）：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(MILESTONE_COLUMNS, server -> GameMilestones.get(server).modCount(),
+                (server, range, unused) -> buildMilestoneRows(GameMilestones.get(server), server, range));
+    }
 
     private static final int CARD_WIDTH = 36;
     private static final int TOKEN_WIDTH = 23;
@@ -652,7 +659,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     }
 
     /** 里程碑表格的行（服务端构建）：某个抽牌档的用时榜，用时短的在前，名次由表格补，达成时间进悬停提示。 */
-    private List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server, int rangeOrdinal) {
+    private static List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server, int rangeOrdinal) {
         var board = store.puzzleBoard(rangeOrdinal);
         var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
         for (var stat : board) {

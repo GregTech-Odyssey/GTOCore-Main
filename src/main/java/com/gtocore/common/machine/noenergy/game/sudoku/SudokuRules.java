@@ -20,18 +20,18 @@ import java.util.Arrays;
  */
 public final class SudokuRules {
 
-    public static final int SIZE = 9;
-    public static final int BOX = 3;
-    public static final int CELLS = SIZE * SIZE;
-    public static final int VALUE_MIN = 1;
-    public static final int VALUE_MAX = 9;
+    static final int SIZE = 9;
+    static final int BOX = 3;
+    static final int CELLS = SIZE * SIZE;
+    static final int VALUE_MIN = 1;
+    static final int VALUE_MAX = 9;
     /** 1~9 全在的低九位。 */
-    public static final int ALL_VALUES = (1 << VALUE_MAX) - 1;
+    static final int ALL_VALUES = (1 << VALUE_MAX) - 1;
     /** 杀手笼和的合法上限：1~9 全用一遍的和。 */
-    public static final int MAX_CAGE_TOTAL = VALUE_MAX * (VALUE_MAX + 1) / 2;
+    static final int MAX_CAGE_TOTAL = VALUE_MAX * (VALUE_MAX + 1) / 2;
     /** 每局提示数的随机范围（含两端），与难度档位无关。 */
-    public static final int MIN_CLUES = 24;
-    public static final int MAX_CLUES = 28;
+    private static final int MIN_CLUES = 24;
+    private static final int MAX_CLUES = 28;
     /** 隐性唯一数不超过此值时评级为 0。 */
     static final int SINGLES_EASY_LIMIT = 8;
 
@@ -104,11 +104,19 @@ public final class SudokuRules {
     private SudokuRules() {}
 
     /**
+     * 一局完成的奖励游戏币：难度基础币值 × 变体奖励倍率，按百分数四舍五入到整数。
+     * 例如入门 2 币 × 杀手 200% = 4 币，大师 40 币 × 锯齿 150% = 60 币。
+     */
+    static long reward(Difficulty difficulty, SudokuVariant variant) {
+        return (difficulty.reward() * variant.rewardPercent() + 50L) / 100L;
+    }
+
+    /**
      * 出一局新题：返回提示盘与变体附加数据，0 表示空格。目标提示数取自 {@link #MIN_CLUES}~{@link #MAX_CLUES}，
      * 按唯一解逐格挖空后用逻辑评级筛选；没命中就朝更难/更简单方向微调提示数重试，最多 {@link Difficulty#attempts()} 次，
      * 仍未命中返回最接近的一局。杀手不挖提示：盘面全空，只靠笼和。
      */
-    public static SudokuPuzzle createPuzzle(RandomSource random, Difficulty difficulty, SudokuVariant variant) {
+    static SudokuPuzzle createPuzzle(RandomSource random, Difficulty difficulty, SudokuVariant variant) {
         return createPuzzle(random, difficulty, variant.mask());
     }
 
@@ -116,7 +124,7 @@ public final class SudokuRules {
      * 出一局新题：{@code variantMask} 是 {@link SudokuVariant#mask()} 的位或，可叠加多条规则（界面目前只传单条）。
      * 叠加杀手时盘面没有提示数字，难度只由该档的笼尺寸决定，不走逻辑评级筛选。
      */
-    public static SudokuPuzzle createPuzzle(RandomSource random, Difficulty difficulty, int variantMask) {
+    static SudokuPuzzle createPuzzle(RandomSource random, Difficulty difficulty, int variantMask) {
         int mask = SudokuRuleSet.normalizeMask(variantMask);
         // 杀手用笼和代替提示数字：零提示盘面无法用唯一解计数或逻辑评级筛选（解搜索量指数级放大），
         // 直接按完整解切笼并返回空提示盘，判题只要求满足行/列/宫、标记与笼和。

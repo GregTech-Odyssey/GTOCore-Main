@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy.game.minesweeper;
 
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.milestone.MinesweeperMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -77,7 +78,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "自定义", en = "Custom")
     private static final String DIFFICULTY_CUSTOM = "gtocore.machine.minesweeper.difficulty.custom";
     /** 难度名字，下标与 {@link MinesweeperRules.Difficulty} 的序数一一对应。 */
-    private static final String[] DIFFICULTY_NAMES = { DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARD,
+    public static final String[] DIFFICULTY_NAMES = { DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARD,
             DIFFICULTY_EXPERT, DIFFICULTY_HELL, DIFFICULTY_CUSTOM };
 
     @RegisterLanguage(cn = "难度", en = "Difficulty")
@@ -142,7 +143,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private static final String TIER_VETERAN = "gtocore.machine.minesweeper.tier.veteran";
     @RegisterLanguage(cn = "精锐", en = "Elite")
     private static final String TIER_ELITE = "gtocore.machine.minesweeper.tier.elite";
-    private static final String[] TIER_NAMES = { TIER_NOVICE, TIER_VETERAN, TIER_ELITE };
+    public static final String[] TIER_NAMES = { TIER_NOVICE, TIER_VETERAN, TIER_ELITE };
     @RegisterLanguage(cn = "已通关 %s / %s", en = "%s / %s cleared")
     private static final String TEXT_CAMPAIGN_PROGRESS = "gtocore.machine.minesweeper.text.campaign_progress";
     @RegisterLanguage(cn = "%s×%s · %s 雷 · %s", en = "%s×%s · %s mines · %s")
@@ -1068,6 +1069,19 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
             MilestoneColumn.left(COLUMN_PLAYER, 70), MilestoneColumn.center(COLUMN_DURATION, 56) };
     private static final MilestoneColumn[] CAMPAIGN_RECORD_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 70), MilestoneColumn.center(COLUMN_TOTAL_TIME, 56) };
+
+    /** 「全部榜单」页里的扫雷基础榜：列与行和本机基础排行榜页完全一致。 */
+    public static GameBoardCatalog.Board baseLeaderboardBoard() {
+        return GameBoardCatalog.board(BASE_RECORD_COLUMNS, server -> MinesweeperMilestones.get(server).modCount(),
+                (server, difficulty, unused) -> buildBaseRows(MinesweeperMilestones.get(server), server, difficulty));
+    }
+
+    /** 「全部榜单」页里的扫雷战役榜：章节下标展开成关卡区间，与战役排行榜页一致。 */
+    public static GameBoardCatalog.Board campaignLeaderboardBoard() {
+        return GameBoardCatalog.board(CAMPAIGN_RECORD_COLUMNS, server -> MinesweeperMilestones.get(server).modCount(),
+                (server, chapter, unused) -> buildCampaignRows(MinesweeperMilestones.get(server), server,
+                        MinesweeperCampaign.tierStart(chapter), MinesweeperCampaign.tierSize(chapter)));
+    }
 
     private int minesweeperMilestonesVersion() {
         var store = minesweeperMilestones();

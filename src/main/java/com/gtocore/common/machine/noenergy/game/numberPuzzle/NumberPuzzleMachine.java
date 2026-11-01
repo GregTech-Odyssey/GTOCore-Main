@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.numberPuzzle;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.LiveDurationLine;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
@@ -57,7 +58,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private static final String SIZE_7 = "gtocore.machine.number_puzzle.size.7";
     @RegisterLanguage(cn = "8×8", en = "8×8")
     private static final String SIZE_8 = "gtocore.machine.number_puzzle.size.8";
-    private static final String[] SIZE_NAMES = { SIZE_3, SIZE_4, SIZE_5, SIZE_6, SIZE_7, SIZE_8 };
+    public static final String[] SIZE_NAMES = { SIZE_3, SIZE_4, SIZE_5, SIZE_6, SIZE_7, SIZE_8 };
 
     @RegisterLanguage(cn = "尺寸", en = "Size")
     private static final String SECTION_SIZE = "gtocore.machine.number_puzzle.section.size";
@@ -78,6 +79,12 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private static final MilestoneColumn[] LEADERBOARD_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 64),
             MilestoneColumn.center(COLUMN_DURATION, 54) };
+
+    /** 「全部榜单」页里的华容道榜（一级维度是尺寸）：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(LEADERBOARD_COLUMNS, server -> GameMilestones.get(server).modCount(),
+                (server, size, unused) -> buildLeaderboardRows(GameMilestones.get(server), server, size));
+    }
 
     private enum Status {
         IDLE,
@@ -375,8 +382,8 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     }
 
     /** 单个尺寸的榜单行：玩家 + 最快用时，悬停显示达成时刻。 */
-    private List<MilestoneCell[]> buildLeaderboardRows(GameMilestones store, MinecraftServer server,
-                                                       int sizeOrdinal) {
+    private static List<MilestoneCell[]> buildLeaderboardRows(GameMilestones store, MinecraftServer server,
+                                                              int sizeOrdinal) {
         var stats = store.numberPuzzleBoard(sizeOrdinal);
         var rows = new ObjectArrayList<MilestoneCell[]>(stats.size());
         for (var stat : stats) {

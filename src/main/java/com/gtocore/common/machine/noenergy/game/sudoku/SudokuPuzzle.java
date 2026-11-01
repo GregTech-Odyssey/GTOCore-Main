@@ -10,7 +10,7 @@ package com.gtocore.common.machine.noenergy.game.sudoku;
  * @param cageTotals 每个笼的目标和（下标 = 笼编号 - 1），仅杀手变体非空
  * @param marks      每格连续标记方位掩码，仅连续变体非空
  */
-public record SudokuPuzzle(int[] givens, int[] jigsawMap, int[] cageOf, int[] cageTotals, int[] marks) {
+record SudokuPuzzle(int[] givens, int[] jigsawMap, int[] cageOf, int[] cageTotals, int[] marks) {
 
     public SudokuConstraints constraints(SudokuVariant variant) {
         return constraints(variant.mask());

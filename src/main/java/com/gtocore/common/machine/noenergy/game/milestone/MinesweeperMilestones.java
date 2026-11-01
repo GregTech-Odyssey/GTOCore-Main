@@ -38,7 +38,7 @@ import java.util.UUID;
  */
 public final class MinesweeperMilestones extends SavedData {
 
-    public static final String DATA_NAME = "gtocore_minesweeper_milestones";
+    private static final String DATA_NAME = "gtocore_minesweeper_milestones";
 
     private static final int CATEGORY_BASE = 0;
     private static final int CATEGORY_CAMPAIGN = 1;
@@ -145,12 +145,19 @@ public final class MinesweeperMilestones extends SavedData {
         return campaignCleared;
     }
 
-    /** 解码构造：装回两张表，并按记录表重建「每开启者每关最快用时」读缓存。 */
-    private static MinesweeperMilestones of(O2OOpenCacheHashMap<BoardKey, MineStat> records,
-                                            O2OOpenCacheHashMap<UUID, Long> campaignCleared) {
+    /**
+     * 解码构造：装回两张表，并按记录表重建「每开启者每关最快用时」读缓存。
+     *
+     * <p>
+     * 空表在存盘格式里写成 null（空 Map 编成 null），解码回来就是 {@code null}，按空表处理。
+     */
+    private static MinesweeperMilestones of(@Nullable O2OOpenCacheHashMap<BoardKey, MineStat> records,
+                                            @Nullable O2OOpenCacheHashMap<UUID, Long> campaignCleared) {
         var data = new MinesweeperMilestones();
-        data.records.putAll(records);
-        campaignCleared.forEach((player, cleared) -> data.campaignCleared.put(player, cleared & MinesweeperCampaign.ALL_LEVELS_MASK));
+        if (records != null) data.records.putAll(records);
+        if (campaignCleared != null) {
+            campaignCleared.forEach((player, cleared) -> data.campaignCleared.put(player, cleared & MinesweeperCampaign.ALL_LEVELS_MASK));
+        }
         // 读缓存是推导值：直接按记录表重算，读档后 campaignLevelBestTicks 立刻正确
         for (var entry : data.records.entrySet()) {
             data.indexCampaignBest(entry.getKey(), entry.getValue());

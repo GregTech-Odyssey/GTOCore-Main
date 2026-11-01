@@ -10,7 +10,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
  * {@link #withExtraUnits(int[][])} 追加，固定几何走缓存。{@link #of(int)} 接受 {@link SudokuVariant#mask()} 的位或，
  * 界面目前只传单条掩码，多规则叠加在求解与判题层已支持。
  */
-public final class SudokuRuleSet {
+final class SudokuRuleSet {
 
     private static final int MASK_LIMIT = 1 << (SudokuVariant.ALL.length - 1);
     private static final SudokuRuleSet[] CACHE = new SudokuRuleSet[MASK_LIMIT];

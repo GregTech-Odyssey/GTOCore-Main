@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy.game.slotMachine;
 
 import com.gtocore.common.data.GTOEffects;
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.milestone.GameAccess;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 import com.gtocore.config.GTOConfig;
@@ -112,6 +113,12 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
             MilestoneColumn.right(COLUMN_STAKED, 52),
             MilestoneColumn.right(COLUMN_WON, 52),
             MilestoneColumn.right(COLUMN_RATIO, 38) };
+
+    /** 「全部榜单」页里的老虎机榜：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(MILESTONE_COLUMNS, server -> GameMilestones.get(server).modCount(),
+                (server, first, second) -> buildMilestoneRows(GameMilestones.get(server), server));
+    }
 
     /** 中奖后附赠「机械之神降临」的概率。 */
     public static final double BOOST_CHANCE = 0.3;

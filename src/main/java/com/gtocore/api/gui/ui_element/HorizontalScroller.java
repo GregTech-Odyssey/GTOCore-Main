@@ -1,4 +1,4 @@
-package com.gtocore.common.machine.noenergy.game;
+package com.gtocore.api.gui.ui_element;
 
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;

@@ -225,8 +225,8 @@ public final class GTOMachineTooltips {
             if (rewards.length() > 0) rewards.append('/');
             rewards.append(difficulty.reward());
         }
-        t.feature(t.tr("六档难度，完成奖励分别为 " + rewards + " 游戏币，并记录该难度的最快完成时间",
-                "Six difficulties pay " + rewards + " Game Coins and record the best clear time for each"));
+        t.feature(t.tr("六档难度的基础奖励分别为 " + rewards + " 游戏币，再乘所选变体的奖励倍率（标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8），并记录该难度与该变体的最快完成时间",
+                "Six difficulties pay a base of " + rewards + " Game Coins, multiplied by the selected variant (Standard ×1, Diagonal/Center dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8), and record the best clear time for each difficulty and variant"));
     });
 
     // 扫雷 - 只保留方块操作与通关条件；难度、奖励、按钮等以机器界面为准

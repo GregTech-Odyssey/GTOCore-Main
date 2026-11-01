@@ -33,7 +33,7 @@ import java.util.UUID;
  */
 public final class SudokuMilestones extends SavedData {
 
-    public static final String DATA_NAME = "gtocore_sudoku_milestones";
+    private static final String DATA_NAME = "gtocore_sudoku_milestones";
 
     /** 载荷所在键：整份数据编码后的字节数组。 */
     private static final String NBT_DATA = "data";
@@ -42,9 +42,9 @@ public final class SudokuMilestones extends SavedData {
     private static final int DATA_VERSION = 1;
 
     /** 难度档数（{@link SudokuRules.Difficulty.ALL}）；写盘时会校验越界。 */
-    public static final int DIFFICULTY_COUNT = SudokuRules.Difficulty.ALL.length;
+    private static final int DIFFICULTY_COUNT = SudokuRules.Difficulty.ALL.length;
     /** 变体数（{@link SudokuVariant.ALL}）。 */
-    public static final int VARIANT_COUNT = SudokuVariant.ALL.length;
+    private static final int VARIANT_COUNT = SudokuVariant.ALL.length;
 
     /**
      * 记录键：难度序数 × 变体序数，两维一起参与 {@code equals} 与 {@code hashCode}。
@@ -105,9 +105,13 @@ public final class SudokuMilestones extends SavedData {
 
     /**
      * 解码构造：只装回有效记录，键任一维越界的整条丢弃（旧版本档位更少，或存档损坏）。
+     *
+     * <p>
+     * 空表在存盘格式里写成 null（空 Map 编成 null），解码回来就是 {@code null}，按空表处理。
      */
-    private static SudokuMilestones of(O2OOpenCacheHashMap<Key, Record> records) {
+    private static SudokuMilestones of(@Nullable O2OOpenCacheHashMap<Key, Record> records) {
         var data = new SudokuMilestones();
+        if (records == null) return data;
         for (var entry : records.entrySet()) {
             if (!entry.getKey().isValid()) continue;
             data.records.put(entry.getKey(), entry.getValue());
