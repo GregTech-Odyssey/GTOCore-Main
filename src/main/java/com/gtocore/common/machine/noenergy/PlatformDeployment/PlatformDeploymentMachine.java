@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
-import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
@@ -791,8 +790,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             Item item = key.getItem();
             inventoryCount.put(item, inventoryCount.getOrDefault(item, 0) + (int) count);
             if (item == GTOItems.COORDINATE_CARD.asItem()) {
-                if (coordinateCards == 0) pos1 = getStoredCoordinates(Keys.displayStack(key));
-                else pos2 = getStoredCoordinates(Keys.displayStack(key));
+                if (coordinateCards == 0) pos1 = getStoredCoordinates(key.getTag());
+                else pos2 = getStoredCoordinates(key.getTag());
                 coordinateCards++;
             }
         }
@@ -881,8 +880,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
                 if (storage.amountAt(i) <= 0) continue;
                 var key = storage.keyAt(i);
                 if (key.getItem() == GTOItems.COORDINATE_CARD.asItem()) {
-                    if (p1 == null) p1 = getStoredCoordinates(Keys.displayStack(key));
-                    else p2 = getStoredCoordinates(Keys.displayStack(key));
+                    if (p1 == null) p1 = getStoredCoordinates(key.getTag());
+                    else p2 = getStoredCoordinates(key.getTag());
                 }
             }
             if (p1 != null && p2 != null) {
@@ -983,8 +982,8 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             if (storage.amountAt(i) <= 0) continue;
             var key = storage.keyAt(i);
             if (key.getItem() == GTOItems.COORDINATE_CARD.asItem()) {
-                if (pos1 == null) pos1 = getStoredCoordinates(Keys.displayStack(key));
-                else pos2 = getStoredCoordinates(Keys.displayStack(key));
+                if (pos1 == null) pos1 = getStoredCoordinates(key.getTag());
+                else pos2 = getStoredCoordinates(key.getTag());
             }
         }
         if (pos1 != null && pos2 != null) {

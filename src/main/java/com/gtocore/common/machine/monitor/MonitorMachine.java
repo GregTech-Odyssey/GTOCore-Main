@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.monitor;
 
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent;
+import com.gtocore.common.item.CoordinateCardBehavior;
 import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 
 import com.gtolib.GTOCore;
@@ -110,10 +111,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
 
     private NotifiableInventory<AEItemKey> createInventoryItemHandler() {
         NotifiableInventory<AEItemKey> storage = NotifiableInventory.items(this, 1, IO.NONE, IO.NONE);
-        storage.setFilter(k -> {
-            var tag = k instanceof AEItemKey itemKey ? itemKey.getTag() : null;
-            return tag != null && tag.getBoolean("machine");
-        });
+        storage.setFilter(k -> k instanceof AEItemKey itemKey && CoordinateCardBehavior.getStoredCoordinates(itemKey.getTag()) != null);
         return storage;
     }
 
@@ -172,11 +170,9 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
             if (card == null) {
                 return new Component[0];
             }
-            CompoundTag posTags = card.getTag();
-            if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z")) {
-                return new Component[0];
-            }
-            pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
+            var dimension = getLevel().dimension();
+            var target = CoordinateCardBehavior.getStoredGlobalPos(card.getTag(), dimension);
+            pos = target != null && target.dimension() == dimension ? target.pos() : null;
             isCardChange = false;
         }
         if (pos == null) {
