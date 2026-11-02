@@ -39,7 +39,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
+import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.api.item.SuperStorageItem;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
@@ -161,9 +161,9 @@ public final class ForgeClientEvent {
         if (item instanceof SuperStorageItem) {
             event.getToolTip().add(Tips.feature(Component.translatable("gtocore.super_storage.upgrade.tip")));
         }
-        var materialEntry = ChemicalHelper.getMaterialEntry(item);
-        if (!materialEntry.isEmpty()) {
-            event.getToolTip().add(MaterialTypeTooltips.of(materialEntry.material()));
+        // 材料基础类型只标注材料形态物品：工具与管道等方块物品不代表材料本身。
+        if (item instanceof ITagPrefixItem materialItem && !materialItem.getMaterial().isNull()) {
+            event.getToolTip().add(MaterialTypeTooltips.of(materialItem.getMaterial()));
         }
         var tips = ((IItem) item).gtolib$getTips();
         if (tips != null) event.getToolTip().addAll(1, tips.get());
