@@ -1223,9 +1223,9 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_CRYSTALLIZATION, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.ARC);
 
-    // 凝聚板（泰拉凝聚板）：最多 16 个材料 + 催化剂 -> 1
+    // 凝聚板（泰拉凝聚板）：最多 16 个材料 + 催化剂 + 1 份流体 -> 1
     public static final RecipeType TERRA_PLATE_RECIPES = register("terra_plate", "Terrestrial Agglomeration Plate", "凝聚板", MAGIC)
-            .setMaxIOSize(18, 1, 0, 0)
+            .setMaxIOSize(18, 1, 1, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_CRYSTALLIZATION, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.ARC);
 
@@ -1247,9 +1247,9 @@ public final class GTORecipeTypes {
             .setProgressBar(GuiTextures.PROGRESS_BAR_BATH, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.BATH);
 
-    // 附魔核心：1 试剂 + 最多 17 个基座物 + 5/6 号电路 -> 1（电路用于区分同输入配方）
+    // 附魔核心：1 试剂 + 最多 17 个基座物 + 最多 2 份流体 + 5/6 号电路 -> 1（电路用于区分同输入配方）
     public static final RecipeType ENCHANTING_APPARATUS_RECIPES = register("enchanting_apparatus", "Enchanting Apparatus", "附魔核心", MAGIC)
-            .setMaxIOSize(19, 1, 0, 0)
+            .setMaxIOSize(19, 1, 2, 0)
             .setProgressBar(GuiTextures.PROGRESS_BAR_CRYSTALLIZATION, LEFT_TO_RIGHT)
             .setSound(GTSoundEntries.REPLICATOR);
 
