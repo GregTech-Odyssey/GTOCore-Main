@@ -1,14 +1,17 @@
 package com.gtocore.common.machine.electric.beam;
 
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.DecimalField;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.PercentField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -63,44 +66,32 @@ final class BeamMachineUtils {
                                    Consumer<Float> setTheta,
                                    Supplier<Float> phi,
                                    Consumer<Float> setPhi) {
-        var size = base.getSize();
-        var group = new WidgetGroup(0, 0, size.width + 96, Math.max(size.height, 82));
-        group.addWidget(base);
-        int x = size.width + 4;
-        group.addWidget(new LabelWidget(x, 8, Component.translatable(BeamConfigurator.THETA)));
-        group.addWidget(angleField(x, 22, theta, setTheta, -180.0D, 180.0D));
-        group.addWidget(new LabelWidget(x, 45, Component.translatable(BeamConfigurator.PHI)));
-        group.addWidget(angleField(x, 59, phi, setPhi, -90.0D, 90.0D));
-        return group;
+        var controls = UIElement.column(NumberSettingPage.COMPACT_WIDTH)
+                .layout(l -> l.gapAll(UISizes.SECTION_GAP))
+                .addChildren(
+                        Form.numberRow(Component.translatable(BeamConfigurator.THETA), angleField(theta, setTheta, -180.0D, 180.0D)),
+                        Form.numberRow(Component.translatable(BeamConfigurator.PHI), angleField(phi, setPhi, -90.0D, 90.0D)));
+        return UIElement.row(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter())
+                .addChildren(base, controls);
     }
 
     static Widget addReflectivityControl(Widget base, Supplier<Float> value, Consumer<Float> setter) {
-        var size = base.getSize();
-        var group = new WidgetGroup(0, 0, size.width + 96, Math.max(size.height, 60));
-        group.addWidget(base);
-        int x = size.width + 4;
-        group.addWidget(new LabelWidget(x, 8, Component.translatable(BeamConfigurator.REFLECTIVITY)));
-        group.addWidget(floatField(x, 24, value, setter, 0.0D, 1.0D, 0.05f));
-        return group;
+        var controls = UIElement.column(NumberSettingPage.COMPACT_WIDTH)
+                .layout(l -> l.gapAll(UISizes.SECTION_GAP))
+                .addChild(Form.numberRow(Component.translatable(BeamConfigurator.REFLECTIVITY), reflectivityField(value, setter)));
+        return UIElement.row(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.SECTION_GAP).alignCenter())
+                .addChildren(base, controls);
     }
 
-    private static TextFieldWidget floatField(int x, int y, Supplier<Float> getter, Consumer<Float> setter,
-                                              double min, double max, float wheelDur) {
-        return new TextFieldWidget(x, y, 88, 16,
-                () -> String.valueOf(getter.get()), value -> {
-                    try {
-                        setter.accept((float) Math.clamp(Double.parseDouble(value), min, max));
-                    } catch (NumberFormatException ignored) {
-                        setter.accept(getter.get());
-                    }
-                }).setBackground(GuiTextures.NUMBER_BACKGROUND).setNumbersOnly((float) min, (float) max).setWheelDur(wheelDur);
+    private static DecimalField angleField(Supplier<Float> getter, Consumer<Float> setter,
+                                           double minDegrees, double maxDegrees) {
+        return DecimalField.of(NumberSettingPage.COMPACT_WIDTH,
+                () -> Math.toDegrees(getter.get()), degrees -> setter.accept((float) Math.toRadians(degrees)),
+                minDegrees, maxDegrees, 0.1, 1, 10, 50, 100);
     }
 
-    private static TextFieldWidget angleField(int x, int y, Supplier<Float> getter, Consumer<Float> setter,
-                                              double minDegrees, double maxDegrees) {
-        return floatField(x, y,
-                () -> (float) Math.toDegrees(getter.get()),
-                degrees -> setter.accept((float) Math.toRadians(degrees)),
-                minDegrees, maxDegrees, 5.0f);
+    private static PercentField reflectivityField(Supplier<Float> value, Consumer<Float> setter) {
+        return PercentField.of(NumberSettingPage.COMPACT_WIDTH, value::get, v -> setter.accept((float) v),
+                0.0D, 1.0D, PercentField.DEFAULT_STEP, 1, 5, 10, 50);
     }
 }

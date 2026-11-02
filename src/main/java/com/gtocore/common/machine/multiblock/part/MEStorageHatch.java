@@ -7,8 +7,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.gui.widget.PhantomSlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
@@ -18,9 +16,14 @@ import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.api.transfer.key.MEStorageKeyView;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -32,9 +35,7 @@ import appeng.api.storage.MEStorage;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
@@ -48,9 +49,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class MEStorageHatch extends MultiblockPartMachine {
 
     @RegisterLanguage(cn = "标记物品", en = "Marked Item")
-    private static final String MARK_ITEM = "gtocore.machine.vault_hatch.mark_item";
+    private static final Component MARK_ITEM = Component.translatable("gtocore.machine.vault_hatch.mark_item");
     @RegisterLanguage(cn = "标记流体", en = "Marked Fluid")
-    private static final String MARK_FLUID = "gtocore.machine.vault_hatch.mark_fluid";
+    private static final Component MARK_FLUID = Component.translatable("gtocore.machine.vault_hatch.mark_fluid");
 
     private static final int MARK_FLUID_AMOUNT = 1000;
 
@@ -224,23 +225,26 @@ public final class MEStorageHatch extends MultiblockPartMachine {
 
     @Override
     public Widget createUIWidget() {
-        var group = new WidgetGroup(0, 0, 152, 46);
-        group.addWidget(new PhantomSlotWidget(itemMark, 0, 4, 4)
-                .setChangeListener(this::onMarkChanged)
-                .setBackground(GuiTextures.SLOT));
-        group.addWidget(new LabelWidget(26, 9, () -> MARK_ITEM));
         var fluidMarkAdapter = new ForgeFluidAdapter(fluidMark);
-        group.addWidget(new PhantomFluidWidget(fluidMarkAdapter, 0, 4, 26, 18, 18,
+        var itemSlot = new PhantomSlotWidget(itemMark, 0, 0, 0)
+                .setChangeListener(this::onMarkChanged);
+        var fluidSlot = PhantomFluidSlot.of(fluidMarkAdapter, 0,
                 () -> fluidMarkAdapter.getFluidInTank(0),
                 fluid -> {
                     var key = Keys.fluid(fluid);
                     fluidMark.set(0, key, key == null ? 0 : MARK_FLUID_AMOUNT);
                 })
-                .setChangeListener(this::onMarkChanged)
-                .setShowAmount(false)
-                .setBackground(GuiTextures.FLUID_SLOT));
-        group.addWidget(new LabelWidget(26, 31, () -> MARK_FLUID));
-        return group;
+                .setChangeListener(this::onMarkChanged);
+
+        return UIElement.column(UISizes.CONTENT_WIDTH)
+                .layout(l -> l.gapAll(UISizes.GAP))
+                .addChildren(
+                        UIElement.centeredRow(UISizes.SLOT_SIZE)
+                                .layout(l -> l.gapAll(UISizes.GAP))
+                                .addChildren(itemSlot, Form.label(MARK_ITEM)),
+                        UIElement.centeredRow(UISizes.SLOT_SIZE)
+                                .layout(l -> l.gapAll(UISizes.GAP))
+                                .addChildren(fluidSlot, Form.label(MARK_FLUID)));
     }
 
     @Override

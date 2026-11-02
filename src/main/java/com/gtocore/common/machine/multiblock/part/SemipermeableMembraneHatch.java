@@ -14,6 +14,8 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +27,6 @@ import com.gto.datasynclib.datastream.codec.ValueOps;
 import com.gto.fastcollection.map.enums.Enum2IntMap;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -96,14 +97,7 @@ public class SemipermeableMembraneHatch extends ItemPartMachine {
     public Widget createUIWidget() {
         int slots = inventory.storage.getSlots();
         int columns = slots == 1 ? 1 : 3;
-        int rows = (slots + columns - 1) / columns;
-        var group = new WidgetGroup(0, 0, columns * 18 + 16, rows * 18 + 16);
-        for (int slot = 0; slot < slots; slot++) {
-            var membraneSlot = ItemSlot.of(inventory.storage, slot).disabled(() -> locked, null);
-            membraneSlot.setSelfPosition(8 + slot % columns * 18, 8 + slot / columns * 18);
-            group.addWidget(membraneSlot);
-        }
-        return group;
+        return HatchViews.page(SlotGrid.of(columns, slots, slot -> ItemSlot.of(inventory.storage, slot).disabled(() -> locked, null)));
     }
 
     public void setLocked(boolean locked) {

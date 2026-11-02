@@ -8,6 +8,8 @@ import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.MenuItemAdapter;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 
@@ -16,7 +18,6 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
 import lombok.Getter;
 
@@ -46,20 +47,10 @@ public class ThermalConductorHatchPartMachine extends MultiblockPartMachine impl
 
     @Override
     public Widget createUIWidget() {
-        int rowSize = 5;
-        var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * rowSize + 16);
-        var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * rowSize + 8);
         var handler = new MenuItemAdapter(inventory.storage);
-        int index = 0;
-        for (int y = 0; y < rowSize; y++) {
-            for (int x = 0; x < rowSize; x++) {
-                container.addWidget(new SlotWidget(handler, index, 4 + x * 18, 4 + y * 18, true, true).setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(IngredientIO.INPUT));
-                index++;
-            }
-        }
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        group.addWidget(container);
-        return group;
+        return HatchViews.page(SlotGrid.square(25, index -> new SlotWidget(handler, index, 0, 0, true, true)
+                .setBackgroundTexture(GuiTextures.SLOT)
+                .setIngredientIO(IngredientIO.INPUT)));
     }
 
     @Override

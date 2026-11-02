@@ -2,8 +2,6 @@ package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistinctPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInfiniteSource;
@@ -11,6 +9,9 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraftforge.fluids.FluidStack;
@@ -20,7 +21,6 @@ import appeng.api.stacks.AEFluidKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -81,33 +81,11 @@ public class CreativeInputHatchPartMachine extends WorkableTieredIOPartMachine i
     //////////////////////////////////////
     @Override
     public Widget createUIWidget() {
-        int rowSize = (int) Math.sqrt(slots);
-        int colSize = rowSize;
-        if (slots == 8) {
-            rowSize = 4;
-            colSize = 2;
-        }
-
-        var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * colSize + 16);
-        var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * colSize + 8);
-
-        int index = 0;
         var tankAdapter = new ForgeFluidAdapter(creativeTanks);
-        for (int y = 0; y < colSize; y++) {
-            for (int x = 0; x < rowSize; x++) {
-                int finalIndex = index++;
-                container.addWidget(new PhantomFluidWidget(
-                        tankAdapter, finalIndex,
-                        4 + x * 18, 4 + y * 18, 18, 18,
-                        () -> tankAdapter.getFluidInTank(finalIndex),
-                        fluid -> setFluid(finalIndex, fluid)).setShowAmount(false).setBackground(GuiTextures.FLUID_SLOT));
-            }
-        }
-
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        group.addWidget(container);
-
-        return group;
+        return HatchViews.page(SlotGrid.square(slots, index -> PhantomFluidSlot.of(
+                tankAdapter, index,
+                () -> tankAdapter.getFluidInTank(index),
+                fluid -> setFluid(index, fluid)).xeiPhantom()));
     }
 
     private void setFluid(int index, @Nullable FluidStack fs) {
