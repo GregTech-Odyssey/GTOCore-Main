@@ -6,6 +6,7 @@ import com.gtocore.utils.Caches;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.annotation.SaveToDataStick;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -26,10 +27,13 @@ public class METagFilterInputHatchPartMachine extends MEInputHatchPartMachine im
 
     private static final long MAX_KEEP_AMOUNT = Long.MAX_VALUE;
 
+    @SaveToDataStick(setter = "setTagWhite")
     @SaveToDisk(defaultValue = "")
     private String tagWhite = "";
+    @SaveToDataStick(setter = "setTagBlack")
     @SaveToDisk(defaultValue = "")
     private String tagBlack = "";
+    @SaveToDataStick(setter = "setKeepAmount")
     @SaveToDisk(defaultValue = "64000")
     private long keepAmount = 64000;
 
@@ -63,30 +67,6 @@ public class METagFilterInputHatchPartMachine extends MEInputHatchPartMachine im
         if (filter == null) filter = Caches.getTagPriorityList(tagWhite, tagBlack);
         METagFilterInput.refreshConfigs(aeFluidHandler.getInventory(), AEFluidKey.class, filter, keepAmount, grid.getStorageService(), getActionSourceField());
         super.syncME();
-    }
-
-    @Override
-    CompoundTag writeConfigToTag() {
-        CompoundTag tag = super.writeConfigToTag();
-        tag.remove("ConfigStacks");
-        tag.putString("TagWhite", tagWhite);
-        tag.putString("TagBlack", tagBlack);
-        tag.putLong("KeepAmount", keepAmount);
-        return tag;
-    }
-
-    @Override
-    void readConfigFromTag(CompoundTag tag) {
-        super.readConfigFromTag(tag);
-        if (tag.contains("TagWhite")) {
-            setTagWhite(tag.getString("TagWhite"));
-        }
-        if (tag.contains("TagBlack")) {
-            setTagBlack(tag.getString("TagBlack"));
-        }
-        if (tag.contains("KeepAmount")) {
-            setKeepAmount(tag.getLong("KeepAmount"));
-        }
     }
 
     @Override
