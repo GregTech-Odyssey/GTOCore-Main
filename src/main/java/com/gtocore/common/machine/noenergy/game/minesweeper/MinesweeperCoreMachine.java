@@ -165,7 +165,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     @RegisterLanguage(cn = "先完成上一关", en = "Clear the previous level first")
     private static final Component REASON_LEVEL_LOCKED = Component.translatable("gtocore.machine.minesweeper.reason.level_locked");
     @RegisterLanguage(cn = "总时间", en = "Total time")
-    private static final Component COLUMN_TOTAL_TIME = Component.translatable("gtocore.machine.minesweeper.column.total_time");
+    private static final String COLUMN_TOTAL_TIME = "gtocore.machine.minesweeper.column.total_time";
     @RegisterLanguage(cn = "参与者：%s", en = "Participants: %s")
     private static final String TOOLTIP_PARTICIPANTS = "gtocore.machine.minesweeper.tooltip.participants";
     @RegisterLanguage(cn = "已完成 %s/%s", en = "%s/%s completed")

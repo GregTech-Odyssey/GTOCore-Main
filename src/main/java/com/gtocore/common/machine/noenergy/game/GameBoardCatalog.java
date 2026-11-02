@@ -77,11 +77,11 @@ public final class GameBoardCatalog {
                     Game24Machine.leaderboardBoard()),
             new Group(GAME_NUMBER_PUZZLE, new Level(TITLE_SIZE, NumberPuzzleMachine.SIZE_NAMES), null,
                     NumberPuzzleMachine.leaderboardBoard()),
-            new Group(GAME_MINESWEEPER_BASE, new Level(AbstractGameMachine.PAGE_DIFFICULTY, baseDifficultyNames()),
+            new Group(GAME_MINESWEEPER_BASE, new Level(Component.translatable(AbstractGameMachine.PAGE_DIFFICULTY), baseDifficultyNames()),
                     null, MinesweeperCoreMachine.baseLeaderboardBoard()),
             new Group(GAME_MINESWEEPER_CAMPAIGN, new Level(TITLE_CHAPTER, MinesweeperCoreMachine.TIER_NAMES), null,
                     MinesweeperCoreMachine.campaignLeaderboardBoard()),
-            new Group(GAME_SUDOKU, new Level(AbstractGameMachine.PAGE_DIFFICULTY, SudokuMachine.DIFFICULTY_NAMES),
+            new Group(GAME_SUDOKU, new Level(Component.translatable(AbstractGameMachine.PAGE_DIFFICULTY), SudokuMachine.DIFFICULTY_NAMES),
                     new Level(SudokuMachine.PAGE_VARIANT, SudokuMachine.VARIANT_NAMES),
                     SudokuMachine.leaderboardBoard()) };
 

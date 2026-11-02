@@ -68,7 +68,7 @@ public final class SelectBox extends UIElement {
             optionSection.addChild(button);
         }
 
-        dropdown.fill(copy, options);
+        dropdown.fill(copy, optionSection);
         addChildren(header, dropdown);
     }
 
