@@ -2,7 +2,6 @@ package com.gtocore.integration.ae.client;
 
 import com.gtocore.integration.ae.PatternEncoderStats;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -10,6 +9,7 @@ import net.minecraft.util.FormattedCharSequence;
 import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.AESubScreen;
 import appeng.client.gui.Icon;
+import appeng.client.gui.style.PaletteColor;
 import appeng.client.gui.widgets.TabButton;
 import appeng.menu.AEBaseMenu;
 import appeng.menu.SlotSemantics;
@@ -45,29 +45,35 @@ public final class PatternEncoderStatsScreen<C extends AEBaseMenu, P extends AEB
     public void drawFG(GuiGraphics guiGraphics, int offsetX, int offsetY, int mouseX, int mouseY) {
         super.drawFG(guiGraphics, offsetX, offsetY, mouseX, mouseY);
 
-        List<Component> lines = stats.isEmpty() ?
-                java.util.List.of(Component.translatable("gtocore.pattern_encoder_stats.empty")
-                        .withStyle(ChatFormatting.GRAY)) :
-                stats.lines();
-        var visualLines = splitLines(lines);
+        int textColor = getStyle().getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB();
+        int mutedColor = getStyle().getColor(PaletteColor.MUTED_TEXT_COLOR).toARGB();
+
+        int y = CONTENT_TOP;
+        if (stats.isEmpty()) {
+            for (var line : font.split(Component.translatable("gtocore.pattern_encoder_stats.empty"), CONTENT_WIDTH)) {
+                guiGraphics.drawString(font, line, CONTENT_LEFT, y, mutedColor, false);
+                y += LINE_HEIGHT;
+            }
+            return;
+        }
+
+        var visualLines = splitLines(stats.lines());
         var visibleLines = visualLines;
         Component hiddenLine = null;
         if (visualLines.size() > MAX_VISIBLE_LINES) {
             int hidden = visualLines.size() - MAX_VISIBLE_LINES + 1;
             visibleLines = visualLines.subList(0, MAX_VISIBLE_LINES - 1);
-            hiddenLine = Component.translatable("gtocore.pattern_encoder_stats.hidden", hidden)
-                    .withStyle(ChatFormatting.GRAY);
+            hiddenLine = Component.translatable("gtocore.pattern_encoder_stats.hidden", hidden);
         }
 
-        int y = CONTENT_TOP;
         for (var line : visibleLines) {
-            guiGraphics.drawString(font, line, CONTENT_LEFT, y, 0x404040, false);
+            guiGraphics.drawString(font, line, CONTENT_LEFT, y, textColor, false);
             y += LINE_HEIGHT;
         }
 
         if (hiddenLine != null) {
             for (var line : font.split(hiddenLine, CONTENT_WIDTH)) {
-                guiGraphics.drawString(font, line, CONTENT_LEFT, y, 0x404040, false);
+                guiGraphics.drawString(font, line, CONTENT_LEFT, y, mutedColor, false);
                 y += LINE_HEIGHT;
             }
         }
