@@ -304,9 +304,9 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
                 (clickData -> {
                     if (player instanceof ServerPlayer) {
                         int extracted = drainFluid(storedFluid());
-                        int remainingExp = repairPlayerItems(player, extracted, extracted);
-                        if (remainingExp > 0) {
-                            experienceTank.insert(xpKey, remainingExp, false);
+                        int remainingFluid = repairPlayerItems(player, extracted);
+                        if (remainingFluid > 0) {
+                            experienceTank.insert(xpKey, remainingFluid, false);
                         }
                     }
                 }))
@@ -315,21 +315,18 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     }
 
     /// @see ExperienceOrb#repairPlayerItems(Player, int)
-    private int repairPlayerItems(Player p_147093_, int remainingExp, int initialValue) {
-        Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, p_147093_, ItemStack::isDamaged);
-        if (entry != null) {
+    private static int repairPlayerItems(Player player, int remainingFluid) {
+        while (remainingFluid > 0) {
+            Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, player, ItemStack::isDamaged);
+            if (entry == null) break;
             ItemStack itemstack = entry.getValue();
-            int i = Math.min((int) (initialValue * itemstack.getXpRepairRatio()), itemstack.getDamageValue());
-            itemstack.setDamageValue(itemstack.getDamageValue() - i);
-            int j = remainingExp - this.durabilityToXp(i);
-            return j > 0 ? this.repairPlayerItems(p_147093_, j, initialValue) : 0;
-        } else {
-            return remainingExp;
+            double ratio = itemstack.getXpRepairRatio();
+            int repaired = (int) Math.min(remainingFluid * ratio / FLUID_PER_XP, itemstack.getDamageValue());
+            if (repaired <= 0) break;
+            itemstack.setDamageValue(itemstack.getDamageValue() - repaired);
+            remainingFluid -= (int) Math.min(remainingFluid, Math.ceil(repaired * FLUID_PER_XP / ratio));
         }
-    }
-
-    private int durabilityToXp(int pDurability) {
-        return pDurability * 10;
+        return remainingFluid;
     }
 
     public void setVacuumHopperMode(boolean vacuumHopperMode) {
@@ -420,12 +417,14 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         return (int) (EnchantmentUtils.getTotalExperienceForLevel(player.experienceLevel) + (player.experienceProgress) * player.getXpNeededForNextLevel());
     }
 
+    private static final int FLUID_PER_XP = 20;
+
     private static int xpToFluid(int xp) {
-        return (int) Mth.clamp(xp * 20L, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        return (int) Mth.clamp((long) xp * FLUID_PER_XP, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     private static int fluidToXp(int fluid) {
-        return fluid / 20;
+        return fluid / FLUID_PER_XP;
     }
 
     @RegisterLanguage(cn = "单位：经验等级", en = "Unit: Experience Levels")
