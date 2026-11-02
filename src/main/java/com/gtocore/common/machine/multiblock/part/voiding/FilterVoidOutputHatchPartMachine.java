@@ -2,14 +2,13 @@ package com.gtocore.common.machine.multiblock.part.voiding;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.gui.widget.PhantomFluidWidget;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
+import com.gregtechceu.gtceu.uipro.elements.PhantomFluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
@@ -91,9 +90,13 @@ public final class FilterVoidOutputHatchPartMachine extends VoidOutputHatchPartM
     @Override
     public Widget createUIWidget() {
         var adapter = new ForgeFluidAdapter(tanks);
-        return HatchViews.page(SlotGrid.square(81, index -> new PhantomFluidWidget(adapter, index, 0, 0, 18, 18, () -> adapter.getFluidInTank(index), (fluid -> tanks.set(index, Keys.fluid(fluid), 1000)))
-                .setChangeListener(this::onSlotChanged)
-                .setShowAmount(false)
-                .setBackground(GuiTextures.FLUID_SLOT)));
+        return HatchViews.page(SlotGrid.square(81, index -> {
+            var slot = PhantomFluidSlot.of(
+                    adapter, index,
+                    () -> adapter.getFluidInTank(index),
+                    fluid -> tanks.set(index, Keys.fluid(fluid), 1000));
+            slot.setChangeListener(this::onSlotChanged);
+            return slot.xeiPhantom();
+        }));
     }
 }
