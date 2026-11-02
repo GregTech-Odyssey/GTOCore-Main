@@ -24,6 +24,7 @@ import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -143,6 +144,12 @@ public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
         @Override
         public Component getTitle() {
             return GTOOrganItems.ORGAN_MODIFIER.get().getDescription();
+        }
+
+        @Override
+        public WindowAnchor windowAnchor() {
+            // 页面高度接近小屏可用区域；标签页锚点在窗口高于可用区域时会夹取越界，导致客户端界面初始化失败。
+            return WindowAnchor.CENTER;
         }
     }
 }
