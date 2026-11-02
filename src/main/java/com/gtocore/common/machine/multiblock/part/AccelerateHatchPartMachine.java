@@ -10,24 +10,23 @@ import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMa
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import net.minecraft.network.chat.Component;
+
 import org.jetbrains.annotations.NotNull;
 
 @DataGeneratorScanned
 public final class AccelerateHatchPartMachine extends WorkableAmountConfigurationPartMachine {
 
     @RegisterLanguage(cn = "耗时百分比", en = "Percentage of duration")
-    private static final String PERCENTAGE = "gtocore.machine.accelerate_hatch.percentage";
+    private static final Component PERCENTAGE = Component.translatable("gtocore.machine.accelerate_hatch.percentage");
 
     public AccelerateHatchPartMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier, 52 - 2L * tier, 100);
     }
 
     @Override
-    public Widget createUIWidget() {
-        return ((WidgetGroup) super.createUIWidget()).addWidget(new LabelWidget(24, -16, () -> PERCENTAGE));
+    protected Component getSettingTitle() {
+        return PERCENTAGE;
     }
 
     @Override
