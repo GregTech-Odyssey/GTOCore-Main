@@ -218,15 +218,18 @@ public final class GTOMachineTooltips {
                 "Classic 9×9 Sudoku: fill 1 to 9 once in every row, column and 3×3 box; clue digits are fixed"));
         t.feature(t.tr("点格子选中，点 1~9 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
                 "Select a cell and press 1 to 9; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes"));
-        t.feature(t.tr("变体页可为一局叠加一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
-                "The Variant tab stacks one extra rule: Diagonal X, Center dots, Window, Color, Jigsaw, Consecutive or Killer"));
+        t.feature(t.tr("在变体页选择一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
+                "Choose one extra rule on the Variant tab: Diagonal X, Center Dots, Window, Color, Jigsaw, Consecutive or Killer"));
         var rewards = new StringBuilder();
         for (var difficulty : SudokuRules.Difficulty.ALL) {
             if (rewards.length() > 0) rewards.append('/');
             rewards.append(difficulty.reward());
         }
-        t.feature(t.tr("六档难度的基础奖励分别为 " + rewards + " 游戏币，再乘所选变体的奖励倍率（标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8），并记录该难度与该变体的最快完成时间",
-                "Six difficulties pay a base of " + rewards + " Game Coins, multiplied by the selected variant (Standard ×1, Diagonal/Center dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8), and record the best clear time for each difficulty and variant"));
+        t.feature(t.tr("六档难度的基础奖励依次为 " + rewards + " 游戏币，最终奖励还会乘以变体倍率",
+                "The six difficulties award " + rewards + " Game Coins before the variant multiplier"));
+        t.feature(t.tr("变体倍率：标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8",
+                "Variant multipliers: Standard ×1, Diagonal/Center Dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8"));
+        t.feature(t.tr("分别记录各难度和变体的最快完成时间", "Best completion times are recorded for each difficulty and variant"));
     });
 
     // 扫雷 - 只保留方块操作与通关条件；难度、奖励、按钮等以机器界面为准
@@ -461,11 +464,11 @@ public final class GTOMachineTooltips {
         t.detail(t.tr("古老的抽屉存储技术与现代的ME存储技术相互交融", "The ancient drawer storage technology merges with the modern ME storage technology"));
         t.line(TipRole.SUMMARY, t.tr("用超级箱/缸作存储介质的多方块仓库", "Multiblock storage that uses Super Chests/Tanks as its medium"));
 
-        t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Put Super Chests in the controller/input buses to store items, and Super Tanks to store fluids"));
+        t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Place Super Chests in input buses to store items, and Super Tanks to store fluids"));
         t.requirement(t.tr("在主机中插入升级来提升它们的总容量", "Insert upgrades into the controller to increase their total capacity"));
 
-        t.formula(t.tr("每种物品容量=输入仓内超级箱每格平均容量 × 密封等级 × 升级倍率", "Amount per type: sum of Super Chest capacities in input hatches × Hermetic Casing tier × Upgrade multiplier"));
-        t.formula(t.tr("每种流体容量=输入仓内超级缸每格平均容量 × 密封等级 × 升级倍率", "Amount per type: sum of Super Tank capacities in input hatches × Hermetic Casing tier × Upgrade multiplier"));
+        t.formula(t.tr("每种物品容量=输入仓内超级箱总容量 ÷ 物品种类数 × 密封等级 × 升级倍率", "Item capacity per type = total Super Chest capacity in input buses / item type count × Hermetic level × Upgrade multiplier"));
+        t.formula(t.tr("每种流体容量=输入仓内超级缸总容量 ÷ 流体种类数 × 密封等级 × 升级倍率", "Fluid capacity per type = total Super Tank capacity in input buses / fluid type count × Hermetic level × Upgrade multiplier"));
         t.formula(t.tr("物品/流体种类数=输入仓内超级箱/缸总格数", "Number of item/fluid types: total slots of Super Chests/Tanks in input hatches"));
 
         t.feature(t.tr("可启用溢出销毁", "Overflow destruction can be enabled"));
@@ -475,7 +478,7 @@ public final class GTOMachineTooltips {
 
     public static final TipSpec MeDiskBoxTooltips = GTOTips.of("me_disk_box", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("单方块 ME 磁盘存储器", "Single-block version of the ME Disk Storage;"));
+        t.feature(t.tr("单方块 ME 磁盘存储器", "Single-block version of the ME Disk Storage"));
         t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
     });
 

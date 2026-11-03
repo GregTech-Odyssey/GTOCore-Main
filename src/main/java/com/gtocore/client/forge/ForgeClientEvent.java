@@ -1,5 +1,6 @@
 package com.gtocore.client.forge;
 
+import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
@@ -39,7 +40,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
+import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.item.SuperStorageItem;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
@@ -158,9 +159,6 @@ public final class ForgeClientEvent {
             }
         }
         Item item = stack.getItem();
-        if (item instanceof SuperStorageItem) {
-            event.getToolTip().add(Tips.feature(Component.translatable("gtocore.super_storage.upgrade.tip")));
-        }
         // 材料基础类型只标注材料形态物品：工具与管道等方块物品不代表材料本身。
         if (item instanceof ITagPrefixItem materialItem && !materialItem.getMaterial().isNull()) {
             event.getToolTip().add(MaterialTypeTooltips.of(materialItem.getMaterial()));

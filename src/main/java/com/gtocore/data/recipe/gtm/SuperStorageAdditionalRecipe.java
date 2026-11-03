@@ -106,6 +106,12 @@ public class SuperStorageAdditionalRecipe {
                 "PDP",
                 'P', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'D', GTMachines.SUPER_CHEST[GTValues.ULV].asItem(), 'C', GTMachines.BRONZE_CRATE.asItem());
 
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("agg_storage_upgrade"), SuperStorageUpgrades.AGGREGATION.asItem(),
+                "AAA",
+                "ADA",
+                "AAA",
+                'A', SuperStorageUpgrades.BRONZE.asItem(), 'D', new MaterialEntry(TagPrefix.plate, GTMaterials.BismuthBronze));
+
         switch (GTORules.MOD_RECIPE_TIER.get()) {
             case EXPERT -> {
                 VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronze_super_storage_upgrade"), SuperStorageUpgrades.BRONZE.asItem(),
