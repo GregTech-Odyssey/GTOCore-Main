@@ -26,6 +26,7 @@ import com.gregtechceu.gtceu.utils.GTUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -66,21 +67,21 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.drawer_storage.slot");
 
     @RegisterLanguage(cn = "种类：%s / %s", en = "Types: %s / %s")
-    public static final String TYPES = "gtocore.machine.drawer_storage.types";
+    public static final Component TYPES = Component.translatable("gtocore.machine.drawer_storage.types");
     @RegisterLanguage(cn = "密封等级：%s", en = "Hermetic level: %s")
-    public static final String BONUS = "gtocore.machine.drawer_storage.bonus";
+    public static final Component BONUS = Component.translatable("gtocore.machine.drawer_storage.bonus");
     @RegisterLanguage(cn = "输入箱缸：%s 个", en = "Input storage units: %s")
-    public static final String STORAGE_COUNT = "gtocore.machine.drawer_storage.storage_count";
+    public static final Component STORAGE_COUNT = Component.translatable("gtocore.machine.drawer_storage.storage_count");
     @RegisterLanguage(cn = "升级 %s / 2 个：容量倍率 ×%s", en = "Upgrades: %s / 2, capacity multiplier x%s")
-    public static final String UPGRADES = "gtocore.machine.drawer_storage.upgrades";
+    public static final Component UPGRADES = Component.translatable("gtocore.machine.drawer_storage.upgrades");
     @RegisterLanguage(cn = "聚合：%s", en = "Aggregation: %s")
-    private static final String AGGREGATION = "gtocore.machine.drawer_storage.aggregation";
+    private static final Component AGGREGATION = Component.translatable("gtocore.machine.drawer_storage.aggregation");
     @RegisterLanguage(cn = "超级箱 %s 种：每种类容量 %s", en = "Super chests %s types: %s per type")
-    public static final String ITEM_DRAWERS = "gtocore.machine.drawer_storage.item_drawers";
+    public static final Component ITEM_DRAWERS = Component.translatable("gtocore.machine.drawer_storage.item_drawers");
     @RegisterLanguage(cn = "超级缸 %s 种：每种类容量 %s", en = "Super tanks %s types: %s per type")
-    public static final String FLUID_DRAWERS = "gtocore.machine.drawer_storage.fluid_drawers";
+    public static final Component FLUID_DRAWERS = Component.translatable("gtocore.machine.drawer_storage.fluid_drawers");
     @RegisterLanguage(cn = "溢出销毁：%s", en = "Overflow voiding: %s")
-    public static final String OVERFLOW = "gtocore.machine.drawer_storage.overflow";
+    public static final Component OVERFLOW = Component.translatable("gtocore.machine.drawer_storage.overflow");
     @RegisterLanguage(cn = "开启后，存入溢出时，多余的量会被直接销毁", en = "When enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned")
     public static final Component OVERFLOW_TOOLTIP = Component.translatable("gtocore.machine.drawer_storage.overflow.tooltip");
     @RegisterLanguage(cn = "溢出销毁", en = "Overflow Voiding")
@@ -348,20 +349,20 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Override
     public void addDisplayText(List<Component> textList) {
         IDisplayUIMachine.super.addDisplayText(textList);
-        textList.add(Component.translatable(ITEM_DRAWERS, FormattingUtil.formatNumbers(getItemTypes()),
+        textList.add(Component.translatable(((TranslatableContents) ITEM_DRAWERS.getContents()).getKey(), FormattingUtil.formatNumbers(getItemTypes()),
                 formatCapacity(false, itemPerTypeCapacity)).withStyle(ChatFormatting.GRAY));
         textList.add(typeUsage(usedItemTypes, getItemTypes()));
-        textList.add(Component.translatable(FLUID_DRAWERS, FormattingUtil.formatNumbers(getFluidTypes()),
+        textList.add(Component.translatable(((TranslatableContents) FLUID_DRAWERS.getContents()).getKey(), FormattingUtil.formatNumbers(getFluidTypes()),
                 formatCapacity(true, fluidPerTypeCapacity)).withStyle(ChatFormatting.GRAY));
         textList.add(typeUsage(usedFluidTypes, getFluidTypes()));
-        textList.add(Component.translatable(UPGRADES, upgrades().getUpgradeCount(), getUpgradeMultiplier()).withStyle(ChatFormatting.GRAY));
-        textList.add(Component.translatable(AGGREGATION,
+        textList.add(Component.translatable(((TranslatableContents) UPGRADES.getContents()).getKey(), upgrades().getUpgradeCount(), getUpgradeMultiplier()).withStyle(ChatFormatting.GRAY));
+        textList.add(Component.translatable(((TranslatableContents) AGGREGATION.getContents()).getKey(),
                 Component.translatable(upgrades().isAggregationEnabled() ? "gtocore.machine.on" : "gtocore.machine.off"))
                 .withStyle(ChatFormatting.GRAY));
     }
 
     private static Component typeUsage(int used, int types) {
-        return Component.translatable(TYPES,
+        return Component.translatable(((TranslatableContents) TYPES.getContents()).getKey(),
                 FormattingUtil.formatNumbers(used),
                 FormattingUtil.formatNumbers(types)).withStyle(used > types ? ChatFormatting.RED : ChatFormatting.GRAY);
     }
@@ -388,22 +389,22 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     @Override
     public void appendWailaTooltip(CompoundTag compoundTag, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
-        iTooltip.add(Component.translatable(ITEM_DRAWERS,
+        iTooltip.add(Component.translatable(((TranslatableContents) ITEM_DRAWERS.getContents()).getKey(),
                 FormattingUtil.formatNumbers(compoundTag.getInt("itemTypes")),
                 formatCapacity(false, compoundTag.getLong("itemPerTypeCapacity"))));
         iTooltip.add(typeUsage(compoundTag.getInt("usedItemTypes"), compoundTag.getInt("itemTypes")));
-        iTooltip.add(Component.translatable(FLUID_DRAWERS,
+        iTooltip.add(Component.translatable(((TranslatableContents) FLUID_DRAWERS.getContents()).getKey(),
                 FormattingUtil.formatNumbers(compoundTag.getInt("fluidTypes")),
                 formatCapacity(true, compoundTag.getLong("fluidPerTypeCapacity"))));
         iTooltip.add(typeUsage(compoundTag.getInt("usedFluidTypes"), compoundTag.getInt("fluidTypes")));
-        iTooltip.add(Component.translatable(STORAGE_COUNT,
+        iTooltip.add(Component.translatable(((TranslatableContents) STORAGE_COUNT.getContents()).getKey(),
                 FormattingUtil.formatNumbers(compoundTag.getLong("drawerCount"))));
-        iTooltip.add(Component.translatable(UPGRADES, FormattingUtil.formatNumbers(compoundTag.getInt("upgradeCount")),
+        iTooltip.add(Component.translatable(((TranslatableContents) UPGRADES.getContents()).getKey(), FormattingUtil.formatNumbers(compoundTag.getInt("upgradeCount")),
                 FormattingUtil.formatNumbers(compoundTag.getInt("upgradeMultiplier"))));
-        iTooltip.add(Component.translatable(AGGREGATION,
+        iTooltip.add(Component.translatable(((TranslatableContents) AGGREGATION.getContents()).getKey(),
                 Component.translatable(compoundTag.getBoolean("aggregation") ? "gtocore.machine.on" : "gtocore.machine.off")));
-        iTooltip.add(Component.translatable(BONUS, FormattingUtil.formatNumbers(compoundTag.getInt("hermeticLevel"))));
-        iTooltip.add(Component.translatable(OVERFLOW,
+        iTooltip.add(Component.translatable(((TranslatableContents) BONUS.getContents()).getKey(), FormattingUtil.formatNumbers(compoundTag.getInt("hermeticLevel"))));
+        iTooltip.add(Component.translatable(((TranslatableContents) OVERFLOW.getContents()).getKey(),
                 Component.translatable(compoundTag.getBoolean("voidOverflow") ? "gtocore.machine.on" : "gtocore.machine.off")));
     }
 }

@@ -1,6 +1,5 @@
 package com.gtocore.client.forge;
 
-import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
@@ -40,8 +39,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.item.SuperStorageItem;
+import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
