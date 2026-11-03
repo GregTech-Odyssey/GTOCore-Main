@@ -19,11 +19,12 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.item.IGTTool;
+import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -42,7 +43,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -51,6 +51,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ToolActions;
 
 import appeng.api.stacks.AEItemKey;
+import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyTypes;
 import appeng.util.Platform;
 
@@ -66,6 +67,7 @@ import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemRegistry;
 import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry;
 import earth.terrarium.adastra.common.entities.mob.GlacianRam;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.util.CommonProxy;
 
@@ -87,6 +89,10 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     private static final Component WEAPON = Component.translatable("gtocore.machine.slaughterhouse.weapon");
     private static final Component FILTER_NBT = Component.translatable("gtocore.machine.slaughterhouse.filter_nbt");
 
+    private static final int BASE_DURATION = 600;
+    private static final int MIN_DURATION = 60;
+
+    private final Reference2ObjectOpenHashMap<RecipeHandlerUnit, Armament> armaments = new Reference2ObjectOpenHashMap<>();
     private int attackDamage;
     private DamageSource damageSource;
     private ItemStack activeWeapon = ItemStack.EMPTY;
@@ -181,33 +187,49 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
 
     @Override
     public void onContentChanges(RecipeHandlerUnit unit) {
-        if (unit.handlerIO == IO.IN) {
-            attackDamage = 1;
-            activeWeapon = ItemStack.EMPTY;
-            unit.forEachKey(AEKeyTypes.ITEMS, true, (key, amount) -> {
-                var itemKey = (AEItemKey) key;
-                if (itemKey.getItem() instanceof SwordItem swordItem) {
-                    if (activeWeapon.isEmpty()) {
-                        activeWeapon = itemKey.toStack();
-                    }
-                    attackDamage += (int) swordItem.getDamage();
-                } else if (itemKey.getItem() instanceof IGTTool tool && tool.getToolType().toolActions.contains(ToolActions.SWORD_SWEEP)) {
-                    ItemStack stack = itemKey.toStack();
-                    if (activeWeapon.isEmpty()) {
-                        activeWeapon = stack;
-                    }
-                    attackDamage += (int) tool.getMaterialAttackDamage(stack);
-                }
-                return false;
-            });
+        if (unit.handlerIO != IO.IN) return;
+        armaments.clear();
+        refreshReadout();
+    }
+
+    private void refreshReadout() {
+        Armament best = null;
+        for (var input : getInputUnits()) {
+            var armament = armament(input);
+            if (best == null || armament.attackDamage > best.attackDamage) best = armament;
         }
+        attackDamage = best == null ? bareHandDamage() : best.attackDamage;
+        activeWeapon = best == null ? ItemStack.EMPTY : best.weapon;
+    }
+
+    private Armament armament(RecipeHandlerUnit unit) {
+        var armament = armaments.get(unit);
+        if (armament == null) {
+            armament = new Armament();
+            unit.forEachKey(AEKeyTypes.ITEMS, true, armament);
+            armament.seal();
+            armaments.put(unit, armament);
+        }
+        return armament;
+    }
+
+    private static int bareHandDamage() {
+        return (int) ToolHelper.getMainHandAttackDamage(ItemStack.EMPTY);
     }
 
     @Override
     public void onStructureFormed() {
+        armaments.clear();
         super.onStructureFormed();
         tier = Math.min(getCasingTier(GTORecipeDataKeys.GLASS_TIER), tier);
         onMachineChanged();
+    }
+
+    @Override
+    public void onStructureInvalid() {
+        super.onStructureInvalid();
+        armaments.clear();
+        refreshReadout();
     }
 
     @Override
@@ -303,6 +325,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
                 return null;
             }
             Player player = getFakePlayer(serverLevel);
+            var armament = armament(unit);
             DamageSource source = getDamageSource(serverLevel, player);
             ItemStackSet itemStacks = new ItemStackSet();
             Vec3 origin = MachineUtils.getOffsetPos(3, 1, getFrontFacing(), getPos()).getCenter();
@@ -331,7 +354,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
                     .withParameter(LootContextParams.ORIGIN, origin)
                     .withParameter(LootContextParams.BLOCK_STATE, getBlockState())
                     .withParameter(LootContextParams.BLOCK_ENTITY, holder)
-                    .withParameter(LootContextParams.TOOL, activeWeapon)
+                    .withParameter(LootContextParams.TOOL, armament.weapon)
                     .withLuck(player.getLuck() + tier * 0.5F)
                     .withParameter(LootContextParams.EXPLOSION_RADIUS, 0F);
 
@@ -347,7 +370,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
                 xp += (long) mob.getExperienceReward() * multiplier;
                 getAllDeathLoot(player, serverLevel, mob, source, lootParams, itemStacks, multiplier);
             }
-            int duration = Math.max(60, 600 - attackDamage);
+            int duration = Math.max(MIN_DURATION, BASE_DURATION - armament.attackDamage);
             RecipeBuilder builder = getRecipeBuilder().duration(duration).EUt(getOverclockVoltage());
             itemStacks.forEach(builder::outputItems);
             return builder.build();
@@ -368,5 +391,33 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
     @Override
     public ItemStack[] getStorageSlotGhosts() {
         return new ItemStack[] { Items.ZOMBIE_SPAWN_EGG.getDefaultInstance(), Items.SKELETON_SPAWN_EGG.getDefaultInstance(), Items.CREEPER_SPAWN_EGG.getDefaultInstance() };
+    }
+
+    private static final class Armament implements IRecipeHandler.KeyVisitor {
+
+        private double totalDamage;
+        private ItemStack weapon = ItemStack.EMPTY;
+        private int attackDamage;
+        private AEKey lastKey;
+        private boolean lastIsWeapon;
+        private double lastDamage;
+
+        @Override
+        public boolean visit(AEKey key, long amount) {
+            if (key != lastKey) {
+                lastKey = key;
+                var stack = ((AEItemKey) key).getReadOnlyStack();
+                lastIsWeapon = stack.canPerformAction(ToolActions.SWORD_SWEEP);
+                if (!lastIsWeapon) return false;
+                lastDamage = ToolHelper.getMainHandAttackDamage(stack);
+                if (weapon.isEmpty()) weapon = ((AEItemKey) key).toStack();
+            }
+            if (lastIsWeapon) totalDamage += lastDamage * amount;
+            return false;
+        }
+
+        private void seal() {
+            attackDamage = weapon.isEmpty() ? bareHandDamage() : (int) totalDamage;
+        }
     }
 }

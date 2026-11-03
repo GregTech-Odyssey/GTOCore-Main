@@ -950,9 +950,10 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("如果在机器GUI内放置了§b刷怪蛋/收容罐§r则只会刷出§b刷怪蛋/收容罐对应生物§r的内容", "If a §bspawn egg/mob jar§r is placed in the machine GUI, only §bthe corresponding mob§r will be spawned"));
         t.feature(t.tr("如果在机器GUI内放置了§b神化Boss召唤器（物品）§r，则只会刷出§b所在维度对应的神化Boss§r", "If a §bApotheosis Boss Summoner (item)§r is placed in the machine GUI, only §bthe corresponding Apotheosis Boss in that dimension§r will be spawned"));
         t.unsupported(t.tr("无法刷出boss级生物，如末影龙和凋零", "Boss-level mobs, such as the Ender Dragon and Wither, cannot be spawned"));
-        t.feature(t.tr("当输入多把剑时，只会使用检测到的第一把武器去尝试击杀其中的生物", "Will only use the first weapon detected to try to kill the creature inside when multiple swords are input"));
-        t.bonus(t.tr("其余的剑可以用来提供额外的伤害加成", "The rest of the swords can be used to provide additional damage bonus"));
-        t.feature(t.tr("每把剑提供其基础伤害点数作为伤害加成", "Each sword provides its base damage points as damage bonus"));
+        t.feature(t.tr("输入仓中的剑、刀等可横扫的武器会被使用，第一把武器用于击杀生物", "Sweeping weapons such as swords and knives in the input are used; the first one is used to kill the mobs"));
+        t.bonus(t.tr("每把武器按其面板攻击伤害计入机器攻击力，没有武器时为空手伤害", "Each weapon adds its displayed attack damage to the machine's attack damage; bare-handed damage applies without weapons"));
+        t.formula(t.tr("每次运行耗时：max(60, 600 - 攻击力) tick", "Duration per run: max(60, 600 - attack damage) ticks"));
+        t.feature(t.tr("开启区分的输入总线只使用各自内部的武器", "Distinct input buses only use the weapons inside themselves"));
         t.feature(t.tr("安装输出仓后输出经验", "Outputs XP after installing output hatch"));
     });
 
