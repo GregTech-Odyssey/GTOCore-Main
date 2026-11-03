@@ -341,7 +341,7 @@ public final class GTOItemTooltips {
         ((IItem) item).gtolib$setTips(spec);
     }
 
-    public static TipSpec droneTips(float flySpeed, int range, int damage, int interactionRange) {
+    public static TipSpec droneTips(float flySpeed, int range, int damage, int interactionRange, int searchRange) {
         return TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
                 l -> {
                     l.feature(Component.translatable("gtocore.tooltip.drone.control"));
@@ -350,6 +350,7 @@ public final class GTOItemTooltips {
                     l.stat(GTOStats.SCENE_RANGE, range);
                     l.stat(GTOStats.ATTACK_DAMAGE, damage);
                     l.stat(GTOStats.REACH_DISTANCE, interactionRange);
+                    l.stat(GTOStats.SEARCH_RANGE, searchRange);
                 }).build();
     }
 }

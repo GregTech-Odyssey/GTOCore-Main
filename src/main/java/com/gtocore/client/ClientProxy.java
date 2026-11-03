@@ -284,6 +284,7 @@ public final class ClientProxy extends CommonProxy {
         registerHUD(event, "drone_speed", DroneHud.SPEED);
         registerHUD(event, "drone_preview", DroneHud.PREVIEW);
         registerHUD(event, "drone_power", DroneHud.POWER);
+        registerHUD(event, "drone_search", DroneHud.SEARCH);
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
     }
 

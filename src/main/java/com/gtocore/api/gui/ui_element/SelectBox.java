@@ -17,6 +17,7 @@ import dev.vfyjxf.taffy.style.TaffyPosition;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
 /**
  * 下拉选择栏：一个显示当前选项的按钮，点开后紧贴它下方浮出选项列表。
@@ -40,18 +41,22 @@ public final class SelectBox extends UIElement {
      * @param select   服务端改选回调；收到的是选项序号
      */
     public SelectBox(int width, Component title, Component[] options, int selected, IntConsumer select) {
-        int current = Math.clamp(selected, 0, options.length - 1);
+        this(width, title, options, () -> selected, select);
+    }
+
+    /** Keeps the displayed selection in sync when the server changes it without rebuilding the option list. */
+    public SelectBox(int width, Component title, Component[] options, IntSupplier selected, IntConsumer select) {
         layout(l -> l.size(width, Button.HEIGHT));
 
         // 浮层先建出来：标题与选项的点击都要引用它，控件内容随后再填进去
         var dropdown = new Dropdown(width);
         var request = addRPC(ByteBufCodecs.INT, (player, index) -> select.accept(index));
 
-        var header = Button.text(width, options[current]);
+        var header = Button.of(width).bindClientText(() -> options[Math.clamp(selected.getAsInt(), 0, options.length - 1)].getString());
         header.tooltips(title);
         header.setOnClientClick(() -> dropdown.setDisplay(true));
 
-        var copy = Button.text(width, options[current]);
+        var copy = Button.of(width).bindClientText(() -> options[Math.clamp(selected.getAsInt(), 0, options.length - 1)].getString());
         copy.setOnClientClick(() -> dropdown.setDisplay(false));
 
         var optionSection = UIElement.section(width).layout(l -> l.gapAll(UISizes.GAP));
@@ -59,7 +64,7 @@ public final class SelectBox extends UIElement {
         for (int index = 0; index < options.length; index++) {
             final int option = index;
             var button = Button.text(optionWidth, options[index]);
-            button.bindClientVariant(() -> option == current ?
+            button.bindClientVariant(() -> option == selected.getAsInt() ?
                     UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT);
             button.setOnClientClick(() -> {
                 request.send(option);

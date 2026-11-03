@@ -193,7 +193,7 @@ public final class GTOItems {
             .tag(CustomTags.ULV_BATTERIES).register();
 
     public static final ItemEntry<ComponentItem> HV_DRONE = item("hv_drone", "基础无人机", ComponentItem::create)
-            .tips(GTOItemTooltips.droneTips(0.15F, 64, 20, 4))
+            .tips(GTOItemTooltips.droneTips(0.15F, 64, 20, 4, 48))
             .lang("Base Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
@@ -201,7 +201,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> EV_DRONE = item("ev_drone", "高级无人机", ComponentItem::create)
-            .tips(GTOItemTooltips.droneTips(0.25F, 256, 40, 8))
+            .tips(GTOItemTooltips.droneTips(0.25F, 256, 40, 8, 72))
             .lang("Advanced Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
@@ -209,7 +209,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> IV_DRONE = item("iv_drone", "终极无人机", ComponentItem::create)
-            .tips(GTOItemTooltips.droneTips(0.35F, 512, 80, 16))
+            .tips(GTOItemTooltips.droneTips(0.35F, 512, 80, 16, 96))
             .lang("Ultimate Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))
@@ -217,7 +217,7 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<ComponentItem> HYPERDIMENSIONAL_DRONE = item("hyperdimensional_drone", "超维度无人机", ComponentItem::create)
-            .tips(GTOItemTooltips.droneTips(1.75F, Integer.MAX_VALUE, Integer.MAX_VALUE, 256))
+            .tips(GTOItemTooltips.droneTips(1.75F, Integer.MAX_VALUE, Integer.MAX_VALUE, 256, 128))
             .lang("Hyperdimensional Drone")
             .properties(p -> p.stacksTo(1))
             .onRegister(modelPredicate(GTCEu.id("battery"), ElectricStats::getStoredPredicate))

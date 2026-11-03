@@ -23,8 +23,8 @@ public final class SuperStorageUpgrades {
     public static final ItemEntry<DrawerStorageUpgradeItem> BRONZE = upgrade("bronze", "青铜升级", "Bronze Upgrade", 2);
     public static final ItemEntry<DrawerStorageUpgradeItem> STEEL = upgrade("steel", "钢升级", "Steel Upgrade", 4);
     public static final ItemEntry<DrawerStorageUpgradeItem> ALUMINIUM = upgrade("aluminium", "铝升级", "Aluminium Upgrade", 8);
-    public static final ItemEntry<DrawerStorageUpgradeItem> TITANIUM = upgrade("titanium", "钛升级", "Titanium Upgrade", 16);
-    public static final ItemEntry<DrawerStorageUpgradeItem> TUNGSTEN_STEEL = upgrade("tungsten_steel", "钨钢升级", "Tungsten Steel Upgrade", 32);
+    public static final ItemEntry<DrawerStorageUpgradeItem> TITANIUM = upgrade("titanium", "钛升级", "Titanium Upgrade", 12);
+    public static final ItemEntry<DrawerStorageUpgradeItem> TUNGSTEN_STEEL = upgrade("tungsten_steel", "钨钢升级", "Tungsten Steel Upgrade", 16);
     public static final ItemEntry<DrawerStorageUpgradeItem> AGGREGATION = item("aggregation_super_storage_upgrade", "聚合升级", p -> new DrawerStorageUpgradeItem(p, 2, true))
             .tips(Component.translatable(CAPACITY, 2).withStyle(ChatFormatting.GRAY),
                     Component.translatable(AGGREGATION_EFFECT).withStyle(ChatFormatting.GRAY))

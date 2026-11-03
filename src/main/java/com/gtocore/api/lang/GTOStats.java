@@ -19,4 +19,6 @@ public class GTOStats {
     public final StatKind ATTACK_DAMAGE = new StatKind("attack_damage", "gtocore.tip.stat.attack_damage", 0xFF2222, null);
     @RegisterLanguage(key = "gtocore.tip.stat.reach_distance", cn = "交互距离", en = "Reach distance")
     public final StatKind REACH_DISTANCE = new StatKind("reach_distance", "gtocore.tip.stat.reach_distance", 0x22aFf7, null);
+    @RegisterLanguage(key = "gtocore.tip.stat.search_range", cn = "搜寻范围", en = "Search range")
+    public final StatKind SEARCH_RANGE = new StatKind("search_range", "gtocore.tip.stat.search_range", 0x83fa2, null);
 }
