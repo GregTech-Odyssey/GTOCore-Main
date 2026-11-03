@@ -5,8 +5,8 @@ import com.gtocore.common.item.devtool.CreativeAllFluidCellItem;
 import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -40,7 +40,7 @@ public abstract class CreativeCellInventoryMixin {
     private void init(ItemStack o, CallbackInfo ci) {
         cache.setAdder(out -> {
             if (stack.getItem() instanceof CreativeAllFluidCellItem) {
-                GTCEuAPI.materialManager.getRegisteredMaterials()
+                GTRegistries.MATERIALS.values()
                         .stream()
                         .filter(m -> m.hasProperty(PropertyKey.FLUID))
                         .map(m -> AEFluidKey.of(m.getFluid()))

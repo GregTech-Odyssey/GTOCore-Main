@@ -41,7 +41,6 @@ import com.gtolib.utils.ServerUtils;
 import com.gtolib.utils.register.BlockRegisterUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
@@ -49,6 +48,7 @@ import com.gregtechceu.gtceu.api.item.tool.GTToolItem;
 import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.TaskHandler;
@@ -544,7 +544,7 @@ public final class ForgeCommonEvent {
             if (mapping.getKey().getNamespace().equals("enderio")) {
                 var item = RegistriesUtils.getItem(GTOCore.id(mapping.getKey().getPath()));
                 if (mapping.getKey().getPath().startsWith("powdered_")) {
-                    var mat = GTCEuAPI.materialManager.getMaterial(mapping.getKey().getPath().replace("powdered_", ""));
+                    var mat = GTRegistries.MATERIALS.parse(mapping.getKey().getPath().replace("powdered_", ""));
                     if (mat == null) return;
                     item = ChemicalHelper.getItem(TagPrefix.dust, mat);
                 }

@@ -252,7 +252,10 @@ public final class PatternEditor extends UIElement {
         wildcardTarget = null;
         if (key == null || key instanceof TagPrefixKey) return null;
         // 非材料流体没有 FLUID 属性，不能交给材料形式转换器解析。
-        if (key instanceof AEFluidKey fluid && !ChemicalHelper.getMaterial(fluid.getFluid()).hasProperty(PropertyKey.FLUID)) return null;
+        if (key instanceof AEFluidKey fluid) {
+            var material = ChemicalHelper.getMaterial(fluid.getFluid());
+            if (material == null || !material.hasProperty(PropertyKey.FLUID)) return null;
+        }
         wildcardTarget = AEChemicalHelper.getTagPrefixKey(key);
         return wildcardTarget;
     }

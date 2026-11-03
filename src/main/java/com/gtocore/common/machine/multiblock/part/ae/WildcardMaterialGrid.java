@@ -9,11 +9,10 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.RecipeType;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.RPC;
@@ -58,7 +57,6 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.Collator;
@@ -131,24 +129,24 @@ final class WildcardMaterialGrid extends UIElement {
     // 网络只传材料注册整数 id，实际产物留在服务端供机器搜索使用。
     private static final StreamCodec<FriendlyByteBuf, ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial>> MATERIALS = StreamCodec.of((buf, entries) -> {
         buf.writeVarInt(entries.size());
-        for (var entry : entries) GTCEuAPI.materialManager.streamCodec().encode(buf, entry.material());
+        for (var entry : entries) GTRegistries.MATERIALS.streamCodec().encode(buf, entry.material());
     }, buf -> {
         int size = buf.readVarInt();
         var entries = new ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial>(size);
         for (int i = 0; i < size; i++) {
-            entries.add(new MEWildcardPatternBufferPartMachine.ScannedMaterial(GTCEuAPI.materialManager.streamCodec().decode(buf), NO_OUTPUTS, NO_RECIPES));
+            entries.add(new MEWildcardPatternBufferPartMachine.ScannedMaterial(GTRegistries.MATERIALS.streamCodec().decode(buf), NO_OUTPUTS, NO_RECIPES));
         }
         return entries;
     });
     private static final StreamCodec<FriendlyByteBuf, PatternPreview> PREVIEW = StreamCodec.of((buf, preview) -> {
         buf.writeBoolean(preview.material() != null);
         if (preview.material() == null) return;
-        GTCEuAPI.materialManager.streamCodec().encode(buf, preview.material());
+        GTRegistries.MATERIALS.streamCodec().encode(buf, preview.material());
         buf.writeVarInt(preview.recipes().length);
         for (var id : preview.recipes()) ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.encode(buf, id);
     }, buf -> {
         if (!buf.readBoolean()) return EMPTY_PREVIEW;
-        var material = GTCEuAPI.materialManager.streamCodec().decode(buf);
+        var material = GTRegistries.MATERIALS.streamCodec().decode(buf);
         var recipes = new ResourceLocation[buf.readVarInt()];
         for (int i = 0; i < recipes.length; i++) recipes[i] = ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.decode(buf);
         return new PatternPreview(material, recipes);
@@ -215,13 +213,13 @@ final class WildcardMaterialGrid extends UIElement {
         addSyncValue(SyncValue.of(machine::getScannedMaterials, MATERIALS, new ArrayList<>(0)).onChanged(this::collectEntries));
         disabled = addSyncValue(SyncValue.of(this::disabledFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
         matches = addSyncValue(SyncValue.of(this::matchingFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
-        toggle = addRPC(GTCEuAPI.materialManager.streamCodec(), (player, material) -> machine.toggleMaterial(material))
+        toggle = addRPC(GTRegistries.MATERIALS.streamCodec(), (player, material) -> machine.toggleMaterial(material))
                 .validate(Objects::nonNull);
         selectPage = addRPC(StreamCodec.composite(
-                UICodecs.list(GTCEuAPI.materialManager.streamCodec(), GTCEuAPI.materialManager.getRegisteredMaterials().size()), PageSelection::materials,
+                UICodecs.list(GTRegistries.MATERIALS.streamCodec(), GTRegistries.MATERIALS.values().size()), PageSelection::materials,
                 ByteBufCodecs.BOOL, PageSelection::disabled, PageSelection::new),
                 (player, selection) -> machine.setMaterialsDisabled(selection.materials(), selection.disabled()));
-        requestPreview = addRPC(GTCEuAPI.materialManager.streamCodec(), (player, material) -> previewMaterial = material)
+        requestPreview = addRPC(GTRegistries.MATERIALS.streamCodec(), (player, material) -> previewMaterial = material)
                 .validate(Objects::nonNull)
                 .onRejected(() -> lastPreviewRequest = null);
         addSyncValue(SyncValue.of(this::currentPreview, PREVIEW, EMPTY_PREVIEW).onChanged(this::receivePreview));
@@ -518,16 +516,19 @@ final class WildcardMaterialGrid extends UIElement {
         return true;
     }
 
-    private static @NotNull Material materialOf(@Nullable AEKey key) {
+    private static @Nullable Material materialOf(@Nullable AEKey key) {
         return switch (key) {
-            case AEItemKey item -> ChemicalHelper.getMaterialStack(item.getReadOnlyStack()).material();
+            case AEItemKey item -> {
+                var stack = ChemicalHelper.getMaterialStack(item.getReadOnlyStack());
+                yield stack.isEmpty() ? null : stack.material();
+            }
             case AEFluidKey fluid -> ChemicalHelper.getMaterial(fluid.getFluid());
-            case null, default -> GTMaterials.NULL;
+            case null, default -> null;
         };
     }
 
     private static boolean isSearchKey(AEKey key) {
-        return key instanceof AEItemKey item && item.getItem() instanceof MetaMachineItem || materialOf(key) != GTMaterials.NULL;
+        return key instanceof AEItemKey item && item.getItem() instanceof MetaMachineItem || materialOf(key) != null;
     }
 
     private static final class Entry {

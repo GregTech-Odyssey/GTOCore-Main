@@ -81,7 +81,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 import static com.gtocore.integration.emi.research.EmiResearchHelper.*;
 
 public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Paged {
@@ -135,8 +134,8 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
                                   List<EmiStack> researchOutputs, @Nullable TechNode eurekaNode) {
         this.id = recipeId(inputKeys.getFirst(), eurekaNode);
         this.inputKeys = inputKeys;
-        this.input = stacks.size() == 1 && material == NULL ? stacks.getFirst() : new ListEmiIngredient(stacks, 1);
-        if (material == NULL) {
+        this.input = stacks.size() == 1 && material == null ? stacks.getFirst() : new ListEmiIngredient(stacks, 1);
+        if (material == null) {
             this.materialIcon = null;
         } else {
             this.materialIcon = new AlphaBlendTextureGroup(
@@ -145,7 +144,7 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
                     new ResourceTexture("gtocore:textures/item/material_sets/dull/universal2.png"));
         }
         this.inputTooltip = input instanceof ListEmiIngredient ? List.of(
-                material == NULL ? new EmiTextTooltipWrapper(input, Component.translatable("tooltip.emi.accepts").getVisualOrderText()) :
+                material == null ? new EmiTextTooltipWrapper(input, Component.translatable("tooltip.emi.accepts").getVisualOrderText()) :
                         ClientTooltipComponent.create(material.getLocalizedName().getVisualOrderText()),
                 new IngredientTooltipComponent(stacks)) : Collections.emptyList();
         this.researchOutputs = researchOutputs;

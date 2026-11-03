@@ -9,11 +9,14 @@ import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public final class RestrictedMachineCondition extends RecipeCondition {
+
+    private static final Component LABEL = Component.translatable("gtocore.recipe.info.machine");
 
     private static final RestrictedMachineCondition MULTIBLOCK = new RestrictedMachineCondition(GTOCore.id("multiblock"));
 
@@ -31,14 +34,19 @@ public final class RestrictedMachineCondition extends RecipeCondition {
 
     @Override
     public Component getTooltips() {
-        if (id.equals(MULTIBLOCK.id)) {
-            return Component.translatable("gtocore.recipe.restricted_machine", Component.translatable("gtceu.multiblock.title"));
-        }
-        if (definition == null) {
-            definition = GTRegistries.MACHINES.get(id);
-        }
+        return Component.translatable("gtocore.recipe.restricted_machine", machineName());
+    }
+
+    private Component machineName() {
+        if (id.equals(MULTIBLOCK.id)) return Component.translatable("gtceu.multiblock.title");
+        if (definition == null) definition = GTRegistries.MACHINES.get(id);
         MachineDefinition machineDefinition = definition;
-        return Component.translatable("gtocore.recipe.restricted_machine", machineDefinition == null ? "null" : Component.translatable(machineDefinition.getDescriptionId()));
+        return machineDefinition == null ? Component.literal("null") : Component.translatable(machineDefinition.getDescriptionId());
+    }
+
+    @Override
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.requirement(LABEL, this::machineName);
     }
 
     @Override

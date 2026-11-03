@@ -10,7 +10,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.lookup.MapIngredient;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -21,10 +20,10 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
@@ -239,16 +238,16 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private void loadBlacklistData() {
         blacklistedMaterialSet.clear();
         for (var name : blacklistedMaterialNames) {
-            var material = GTCEuAPI.materialManager.getMaterial(name);
-            if (material != null && material != GTMaterials.NULL) blacklistedMaterialSet.add(material);
+            var material = GTRegistries.MATERIALS.parse(name);
+            if (material != null) blacklistedMaterialSet.add(material);
         }
         // 旧版物品/流体槽只作为迁移来源；新黑名单按材料保存，不再受槽数限制。
         boolean migrated = false;
         for (int i = 0; i < blacklistedItems.getSlots(); i++) {
             var stack = blacklistedItems.getStackInSlot(i);
             if (stack.isEmpty()) continue;
-            var mat = ChemicalHelper.getMaterialStack(stack).material();
-            if (mat != GTMaterials.NULL) blacklistedMaterialSet.add(mat);
+            var ms = ChemicalHelper.getMaterialStack(stack);
+            if (!ms.isEmpty()) blacklistedMaterialSet.add(ms.material());
             blacklistedItems.setStackInSlot(i, ItemStack.EMPTY);
             migrated = true;
         }
@@ -256,7 +255,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
             var fluid = blacklistedFluids.keyAt(i);
             if (fluid == null) continue;
             var mat = ChemicalHelper.getMaterial(fluid.getFluid());
-            if (mat != GTMaterials.NULL) blacklistedMaterialSet.add(mat);
+            if (mat != null) blacklistedMaterialSet.add(mat);
             blacklistedFluids.set(i, null, 0);
             migrated = true;
         }
@@ -324,7 +323,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         resolvedRecipeType = null;
         boolean profile = GTOConfig.INSTANCE.devMode.aeLog;
         long nanos = profile ? System.nanoTime() : 0;
-        var materials = GTCEuAPI.materialManager.getRegisteredMaterials();
+        var materials = GTRegistries.MATERIALS.values();
         var newPatterns = new ArrayList<IPatternDetails>(Math.max(scannedPatterns, materials.size()));
         var newMaterials = new ArrayList<ScannedMaterial>(materials.size());
         var templates = new WildcardPatternTemplate[patterns.size()];

@@ -40,7 +40,6 @@ import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeTierPreview;
@@ -218,9 +217,18 @@ public final class GTEMIPlugin implements EmiPlugin {
     public void register(EmiRegistry registry) {
         if (!GTORules.FLUID_TIER.isExpert()) {
             registry.removeEmiStacks(stack -> switch (stack.getKey()) {
-                case BucketItem bucket -> ChemicalHelper.getMaterial(bucket.getFluid()).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
-                case Item item -> ChemicalHelper.getMaterialEntry(item).material().hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
-                case Fluid fluid -> ChemicalHelper.getMaterial(fluid).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                case BucketItem bucket -> {
+                    var material = ChemicalHelper.getMaterial(bucket.getFluid());
+                    yield material != null && material.hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                }
+                case Item item -> {
+                    var entry = ChemicalHelper.getMaterialEntry(item);
+                    yield entry != null && entry.material().hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                }
+                case Fluid fluid -> {
+                    var material = ChemicalHelper.getMaterial(fluid);
+                    yield material != null && material.hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                }
                 default -> false;
             });
         }
@@ -278,7 +286,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.setDefaultComparison(potionFluid.getSource(), potionComparison);
         registry.setDefaultComparison(potionFluid.getFlowing(), potionComparison);
 
-        for (var material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+        for (var material : GTRegistries.MATERIALS.values()) {
             if (GTOUtils.isGeneration(TagPrefix.turbineBlade, material)) {
                 registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, material), Comparison.COMPARE_STACK_KEY);
             }

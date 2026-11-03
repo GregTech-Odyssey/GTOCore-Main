@@ -11,10 +11,13 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
 
 public final class HeatCondition extends RecipeCondition {
+
+    private static final Component LABEL = Component.translatable("gtocore.recipe.info.external_heat");
 
     private final int temperature;
     // 为 true 时检查机器自身的热容器，否则检查外部热源或线圈。
@@ -45,6 +48,11 @@ public final class HeatCondition extends RecipeCondition {
             return Component.translatable("gtocore.recipe.heat.temperature.reverse", temperature);
         }
         return Component.translatable("gtocore.recipe.heat.temperature", temperature);
+    }
+
+    @Override
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.requirement(LABEL, () -> Component.translatable(isReverse ? "gtocore.recipe.info.kelvin_below" : "gtocore.recipe.info.kelvin_at_least", temperature));
     }
 
     @Override

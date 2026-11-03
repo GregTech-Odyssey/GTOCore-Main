@@ -6,14 +6,13 @@ import com.gtolib.api.machine.part.ItemPartMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.common.data.GTItems;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -27,16 +26,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class HighEnergyLaserPurificationUnitMachine extends WaterPurificationUnitMachine {
 
     private static final List<Item> LENS = List.of(
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Red),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Orange),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Brown),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Yellow),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Green),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Cyan),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Blue),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Purple),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Magenta),
-            ChemicalHelper.getItem(TagPrefix.lens, MarkerMaterials.Color.Pink));
+            GTItems.GLASS_LENSES.get(DyeColor.RED).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.ORANGE).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.BROWN).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.YELLOW).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.GREEN).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.CYAN).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.BLUE).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.PURPLE).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.MAGENTA).get(),
+            GTItems.GLASS_LENSES.get(DyeColor.PINK).get());
 
     @SaveToDisk(defaultValue = "0")
     private int index;

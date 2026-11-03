@@ -1,16 +1,14 @@
 package com.gtocore.mixin.gtm.registry;
 
-import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOCreativeModeTabs;
 
 import com.gtolib.api.registries.GTORegistration;
 import com.gtolib.utils.register.ItemRegisterUtils;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.data.chemical.material.registry.MaterialRegistry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -55,17 +53,9 @@ public final class GTMaterialItemsMixin {
         GTORegistration.GTO.defaultCreativeTab(GTOCreativeModeTabs.GTO_MATERIAL_ITEM);
         for (var tagPrefix : TagPrefix.values()) {
             if (tagPrefix.doGenerateItem()) {
-                for (MaterialRegistry registry : GTCEuAPI.materialManager.getRegistries()) {
-                    GTRegistrate registrate;
-                    if (tagPrefix instanceof GTOTagPrefix) {
-                        registrate = GTORegistration.GTO;
-                    } else {
-                        registrate = registry.getRegistrate();
-                    }
-                    for (Material material : registry.getAllMaterials()) {
-                        if (tagPrefix.doGenerateItem(material)) {
-                            ItemRegisterUtils.generateMaterialItem(registrate, tagPrefix, material, MATERIAL_ITEMS_BUILDER);
-                        }
+                for (Material material : GTRegistries.MATERIALS) {
+                    if (tagPrefix.doGenerateItem(material)) {
+                        ItemRegisterUtils.generateMaterialItem(tagPrefix.registrate(material), tagPrefix, material, MATERIAL_ITEMS_BUILDER);
                     }
                 }
             }

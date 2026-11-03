@@ -83,7 +83,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         super(holder, false, true, false, true, MachineUtils::getHatchParallel);
         machineStorage = createMachineStorage(i -> {
             MaterialEntry entry = ChemicalHelper.getMaterialEntry(i.getItem());
-            return entry.tagPrefix() == GTOTagPrefix.NANITES && MATERIAL_MAP.containsKey(entry.material());
+            return entry != null && entry.tagPrefix() == GTOTagPrefix.NANITES && MATERIAL_MAP.containsKey(entry.material());
         });
     }
 
@@ -93,7 +93,9 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         if (isEmpty()) {
             return;
         }
-        Material material = ChemicalHelper.getMaterialEntry(getStorageStack().getItem()).material();
+        var entry = ChemicalHelper.getMaterialEntry(getStorageStack().getItem());
+        if (entry == null) return;
+        Material material = entry.material();
         if (!MATERIAL_TIER_MAP.containsKey(material) || MATERIAL_TIER_MAP.get(material) > getTier()) return;
         chance = Math.min(100, (int) (getStorageStack().getCount() * MATERIAL_MAP.get(material)));
     }

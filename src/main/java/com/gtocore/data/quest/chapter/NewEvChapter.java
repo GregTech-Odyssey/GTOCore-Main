@@ -18,7 +18,6 @@ import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
@@ -27,6 +26,7 @@ import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 
 import earth.terrarium.adastra.api.planets.Planet;
@@ -429,8 +429,8 @@ public final class NewEvChapter {
     public static final Quest BROWN_LENS = CHAPTER.quest("brown_lens", q -> q
             .at(-6, 12)
             .title("棕色透镜")
-            .icon(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Brown))
-            .task(Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Brown)))
+            .icon(GTItems.GLASS_LENSES.get(DyeColor.BROWN))
+            .task(Task.item(GTItems.GLASS_LENSES.get(DyeColor.BROWN)))
             .scaledReward(TagPrefix.dust, GTMaterials.Bentonite, 4)
             .dependsOn(BROWN_DYE));
 

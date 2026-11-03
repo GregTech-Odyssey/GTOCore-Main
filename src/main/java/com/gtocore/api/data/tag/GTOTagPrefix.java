@@ -9,7 +9,8 @@ import com.gtocore.common.machine.multiblock.generator.BioOscillationGenerator;
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.data.chemical.material.GTOMaterialBuilder;
+import com.gtolib.api.data.chemical.material.GTOPropertyKeys;
+import com.gtolib.api.registries.GTORegistration;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -20,6 +21,7 @@ import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialIconType;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.item.component.ICustomRenderer;
+import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -32,6 +34,7 @@ import net.minecraft.world.level.material.MapColor;
 import com.kyanite.deeperdarker.DeeperDarker;
 import com.kyanite.deeperdarker.content.DDBlocks;
 import earth.terrarium.adastra.common.registry.ModBlocks;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.common.block.BotaniaBlocks;
 
@@ -56,11 +59,16 @@ public final class GTOTagPrefix extends TagPrefix {
         super(name);
     }
 
+    @Override
+    public GTRegistrate registrate(@NotNull Material material) {
+        return GTORegistration.GTO;
+    }
+
     private static boolean needSmall(Material material) {
-        var properties = GTOMaterialBuilder.getProperties(material).propertyMap;
+        var properties = material.getProperties().propertyMap;
         int size = 0;
         for (var propertie : properties.keySet()) {
-            if (propertie == PropertyKey.EMPTY || propertie == PropertyKey.HAZARD) continue;
+            if (propertie == PropertyKey.EMPTY || propertie == PropertyKey.HAZARD || GTOPropertyKeys.ALL.contains(propertie)) continue;
             size++;
         }
         return size > 1;

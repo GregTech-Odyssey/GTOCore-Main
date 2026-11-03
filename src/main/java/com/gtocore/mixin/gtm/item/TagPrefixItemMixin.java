@@ -3,7 +3,7 @@ package com.gtocore.mixin.gtm.item;
 import com.gtocore.api.data.material.GTOMaterialIconSet;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 
-import com.gtolib.api.data.chemical.material.GTOMaterial;
+import com.gtolib.api.data.chemical.material.GTOPropertyKeys;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -36,12 +36,16 @@ public class TagPrefixItemMixin extends Item implements IItemRendererProvider {
     @Unique
     private ICustomRenderer gtolib$customRenderer;
 
+    @Unique
+    private boolean gtolib$glow;
+
     public TagPrefixItemMixin(Properties properties) {
         super(properties);
     }
 
     @Inject(method = "<init>(Lnet/minecraft/world/item/Item$Properties;Lcom/gregtechceu/gtceu/api/data/tag/TagPrefix;Lcom/gregtechceu/gtceu/api/data/chemical/material/Material;)V", at = @At("RETURN"), remap = false)
     private void TagPrefixItem(Properties properties, TagPrefix tagPrefix, Material material, CallbackInfo ci) {
+        gtolib$glow = GTOPropertyKeys.glow(material);
         if (GTCEu.isClientSide()) {
             if (material.getMaterialIconSet() instanceof GTOMaterialIconSet iconSet) {
                 gtolib$customRenderer = iconSet.getCustomRenderer();
@@ -53,7 +57,7 @@ public class TagPrefixItemMixin extends Item implements IItemRendererProvider {
 
     @Override
     public boolean isFoil(@NotNull ItemStack itemStack) {
-        if (material instanceof GTOMaterial gtoMaterial && gtoMaterial.gtolib$glow()) return true;
+        if (gtolib$glow) return true;
         return super.isFoil(itemStack);
     }
 

@@ -3,7 +3,6 @@ package com.gtocore.mixin.ae2.search;
 import com.gtocore.integration.ae.hooks.IAEKeyExtension;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.network.chat.Component;
 
@@ -37,6 +36,6 @@ public abstract class AEKeyMixin implements IAEKeyExtension {
 
     @Override
     public Material getGtocore$material() {
-        return GTMaterials.NULL;
+        return null;
     }
 }

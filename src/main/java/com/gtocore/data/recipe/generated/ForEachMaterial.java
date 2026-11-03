@@ -2,10 +2,10 @@ package com.gtocore.data.recipe.generated;
 
 import com.gtocore.api.data.material.MaterialType;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.data.recipe.generated.DecompositionRecipeHandler;
 import com.gregtechceu.gtceu.data.recipe.generated.PolarizingRecipeHandler;
 import com.gregtechceu.gtceu.data.recipe.generated.ToolRecipeHandler;
@@ -13,9 +13,9 @@ import com.gregtechceu.gtceu.data.recipe.generated.ToolRecipeHandler;
 public final class ForEachMaterial {
 
     public static void init() {
-        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+        for (Material material : GTRegistries.MATERIALS.values()) {
             MaterialType.init(material);
-            if (material.hasFlag(MaterialFlags.NO_UNIFICATION)) {
+            if (material.hasFlag(MaterialFlags.DISABLE_MATERIAL_RECIPES)) {
                 continue;
             }
 

@@ -158,7 +158,7 @@ public final class ForgeClientEvent {
         }
         Item item = stack.getItem();
         // 材料基础类型只标注材料形态物品：工具与管道等方块物品不代表材料本身。
-        if (item instanceof ITagPrefixItem materialItem && !materialItem.getMaterial().isNull()) {
+        if (item instanceof ITagPrefixItem materialItem && materialItem.getMaterial() != null) {
             event.getToolTip().add(MaterialTypeTooltips.of(materialItem.getMaterial()));
         }
         var tips = ((IItem) item).gtolib$getTips();

@@ -171,7 +171,7 @@ public final class GTMaterialExtend {
         Neutronium.setProperty(WIRE, new WireProperties((int) GTValues.V[GTValues.UIV], 2, 64));
         Mendelevium.setProperty(WIRE, new WireProperties((int) GTValues.V[GTValues.UHV], 4, 16));
         RutheniumTetroxide.setProperty(FLUID, new FluidProperty(FluidStorageKeys.LIQUID, new FluidBuilder()));
-        RutheniumTetroxide.addFlags(NO_UNIFICATION);
+        RutheniumTetroxide.addFlags(DISABLE_MATERIAL_RECIPES);
         Actinium.setProperty(DUST, new DustProperty());
         Actinium.setProperty(FLUID, new FluidProperty(FluidStorageKeys.LIQUID, new FluidBuilder()));
         Selenium.setProperty(DUST, new DustProperty());

@@ -55,7 +55,7 @@ public class SteamPipeBlock extends PipeBlock<SteamPipeType, SteamPipeProperties
     public static BlockColor tintedColor() {
         return (blockState, level, blockPos, index) -> {
             if (blockPos != null && level != null && level.getBlockEntity(blockPos) instanceof PipeBlockEntity<?, ?> pipe) {
-                if (!pipe.getFrameMaterial().isNull()) {
+                if (pipe.getFrameMaterial() != null) {
                     if (index == 3) return pipe.getFrameMaterial().getMaterialRGB();
                     if (index == 4) return pipe.getFrameMaterial().getMaterialSecondaryRGB();
                 }

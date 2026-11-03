@@ -68,7 +68,7 @@ public final class Tooltips {
             }
 
             var material = ChemicalHelper.getMaterial(fluid);
-            if (!material.isNull()) {
+            if (material != null) {
                 tooltips.accept(MaterialTypeTooltips.of(material));
             }
             if (FlowFuelCellGenerator.Wrapper.ELECTROLYTES_PER_MATERIAL_PER_MILLIBUCKET.containsKey(material)) {

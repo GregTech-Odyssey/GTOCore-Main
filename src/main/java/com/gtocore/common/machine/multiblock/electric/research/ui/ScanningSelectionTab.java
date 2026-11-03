@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 import static com.gtolib.utils.AEChemicalHelper.getMaterial;
 
 @DataGeneratorScanned
@@ -396,7 +395,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
                         lines.add(Component.translatable(selected ? DESELECT_TOOLTIP : SELECT_TOOLTIP).withStyle(ChatFormatting.GRAY));
                     }
                     var material = getMaterial(target.key());
-                    if (material != NULL) {
+                    if (material != null) {
                         lines.add(Component.translatable(WORK_MODE_SCAN_MATERIAL, material.getLocalizedName()).withStyle(ChatFormatting.DARK_GRAY));
                     }
                     return lines;
@@ -406,7 +405,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
                 @OnlyIn(Dist.CLIENT)
                 protected void drawSlotMark(GuiGraphics graphics, int x, int y, boolean darkSlot) {
                     var material = getMaterial(target.key());
-                    if (material != NULL) UIDraw.underline(graphics, x + 1, y + 1, SIZE - 2, material.getMaterialARGB());
+                    if (material != null) UIDraw.underline(graphics, x + 1, y + 1, SIZE - 2, material.getMaterialARGB());
                 }
 
                 @Override

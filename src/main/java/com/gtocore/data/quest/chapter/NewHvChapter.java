@@ -18,7 +18,6 @@ import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -26,6 +25,7 @@ import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 
 import appeng.core.definitions.AEBlocks;
@@ -207,8 +207,8 @@ public final class NewHvChapter {
     public static final Quest ORANGE_LENS = CHAPTER.quest("orange_lens", q -> q
             .at(26, 14)
             .title("橙色透镜")
-            .icon(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Orange))
-            .task(Task.item(GTMachines.CHEMICAL_BATH[GTValues.HV]), Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Orange)))
+            .icon(GTItems.GLASS_LENSES.get(DyeColor.ORANGE))
+            .task(Task.item(GTMachines.CHEMICAL_BATH[GTValues.HV]), Task.item(GTItems.GLASS_LENSES.get(DyeColor.ORANGE)))
             .scaledReward(Items.ORANGE_DYE, 8)
             .dependsOn(ORANGE_DYE, GLASS_LENS_COPY_1));
 
@@ -337,11 +337,11 @@ public final class NewHvChapter {
     public static final Quest DYE_LENSES = CHAPTER.quest("dye_lenses", q -> q
             .at(-4, 14)
             .title("粉色、灰色与青色透镜")
-            .icon(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Pink))
+            .icon(GTItems.GLASS_LENSES.get(DyeColor.PINK))
             .task(
-                    Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Pink)),
-                    Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Gray)),
-                    Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Cyan)))
+                    Task.item(GTItems.GLASS_LENSES.get(DyeColor.PINK)),
+                    Task.item(GTItems.GLASS_LENSES.get(DyeColor.GRAY)),
+                    Task.item(GTItems.GLASS_LENSES.get(DyeColor.CYAN)))
             .scaledReward(TagPrefix.dust, GTMaterials.Bentonite, 6)
             .dependsOn(GLASS_LENS_COPY_2));
 

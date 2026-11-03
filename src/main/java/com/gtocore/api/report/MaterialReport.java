@@ -7,11 +7,11 @@ import com.gtocore.integration.lang.LangAdaptor;
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.FluidPipeProperties;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.ToolProperty;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -42,7 +42,7 @@ public class MaterialReport {
         // 表头
         report_table.append("中文名,英文名,符号,主颜色,次颜色,图标集,基础类型,质量,流体管道吞吐量,物品管道优先级,物品管道传输速率,是否为导线材料,导线最大安培数,导线电压,导线每米损耗,是否为工具材料,工具挖掘速度,工具耐久度,工具挖掘等级,工具附魔性,是否为无尽耐久工具,工具耐久度乘数,是否为转子材料,转子耐久度,转子功率,转子效率,爆炸温度,是否有害物质\n");
 
-        for (Material material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+        for (Material material : GTRegistries.MATERIALS.values()) {
             Entry entry = Entry.fromMaterial(material);
 
             // 生成Markdown报告

@@ -12,8 +12,6 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterial;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialStack;
@@ -277,16 +275,16 @@ public final class MachineRecipeLoader {
         registerCobbleRecipe(stones, cobbles);
         registerMossRecipe(cobbles, mossCobbles);
         registerSmoothRecipe(stones, polisheds);
-        registerBricksRecipe(polisheds, bricks, MarkerMaterials.Color.LightBlue);
+        registerBricksRecipe(polisheds, bricks, DyeColor.LIGHT_BLUE);
         registerCobbleRecipe(bricks, crackedBricks);
         registerMossRecipe(bricks, mossBricks);
-        registerBricksRecipe(polisheds, chiseledBricks, MarkerMaterials.Color.White);
-        registerBricksRecipe(polisheds, tiledBricks, MarkerMaterials.Color.Red);
-        registerBricksRecipe(tiledBricks, smallTiledBricks, MarkerMaterials.Color.Red);
-        registerBricksRecipe(polisheds, windmillA, MarkerMaterials.Color.Blue);
-        registerBricksRecipe(polisheds, windmillB, MarkerMaterials.Color.Yellow);
-        registerBricksRecipe(polisheds, squareBricks, MarkerMaterials.Color.Green);
-        registerBricksRecipe(polisheds, smallBricks, MarkerMaterials.Color.Pink);
+        registerBricksRecipe(polisheds, chiseledBricks, DyeColor.WHITE);
+        registerBricksRecipe(polisheds, tiledBricks, DyeColor.RED);
+        registerBricksRecipe(tiledBricks, smallTiledBricks, DyeColor.RED);
+        registerBricksRecipe(polisheds, windmillA, DyeColor.BLUE);
+        registerBricksRecipe(polisheds, windmillB, DyeColor.YELLOW);
+        registerBricksRecipe(polisheds, squareBricks, DyeColor.GREEN);
+        registerBricksRecipe(polisheds, smallBricks, DyeColor.PINK);
 
         for (int i = 0; i < stones.size(); i++) {
             ResourceLocation bricksId = RegistriesUtils.getIdLocation(bricks.get(i).getItem());
@@ -1106,12 +1104,12 @@ public final class MachineRecipeLoader {
     }
 
     private static void registerBricksRecipe(List<ItemStack> polishedStack,
-                                             List<ItemStack> brickStack, MarkerMaterial color) {
+                                             List<ItemStack> brickStack, DyeColor color) {
         for (int i = 0; i < polishedStack.size(); i++) {
             ResourceLocation brickId = RegistriesUtils.getIdLocation(brickStack.get(i).getItem());
             LASER_ENGRAVER_RECIPES.recipeBuilder("engrave_" + brickId.getPath())
                     .inputItems(polishedStack.get(i))
-                    .notConsumable(lens, color)
+                    .notConsumable(CustomTags.lens(color))
                     .outputItems(brickStack.get(i))
                     .duration(50).EUt(16).save();
         }

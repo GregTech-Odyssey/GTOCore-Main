@@ -45,10 +45,10 @@ public final class BeamCondition extends RecipeCondition {
 
     @Override
     public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
-        info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.wavelength", minWavelength, maxWavelength));
-        info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.intensity", minIntensity));
+        info.requirement(Component.translatable("gtocore.recipe.info.ray_wavelength"), () -> Component.translatable("gtocore.recipe.info.nm_range", minWavelength, maxWavelength));
+        info.requirement(Component.translatable("gtocore.recipe.info.ray_intensity"), () -> Component.translatable("gtocore.recipe.info.au_above", minIntensity));
         if (hasPolarization) {
-            info.sentence(() -> Component.translatable("gtocore.recipe.ray_requirement.polarization", polarization));
+            info.requirement(Component.translatable("gtocore.recipe.info.ray_polarization"), () -> Component.translatable("gtocore.recipe.info.degree", polarization));
         }
     }
 
