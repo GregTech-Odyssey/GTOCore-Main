@@ -33,7 +33,7 @@ public abstract class AbstractAEInfoMonitor extends AbstractInfoProviderMonitor 
     @SyncToClient
     protected boolean isOnline;
 
-    AbstractAEInfoMonitor(MetaMachineBlockEntity holder) {
+    public AbstractAEInfoMonitor(MetaMachineBlockEntity holder) {
         super(holder);
         this.nodeHolder = new GridNodeHolder(this);
     }

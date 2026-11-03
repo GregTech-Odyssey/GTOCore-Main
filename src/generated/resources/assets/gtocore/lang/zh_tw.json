@@ -7954,6 +7954,7 @@
   "gtocore.multiblock.matter_fabricator.extension": "約束擴展段",
   "gtocore.multiblock.matter_fabricator.extension.desc": "搭建後可在其外殼上額外安裝輸入輸出倉與超頻倉",
   "gtocore.multiblock.me_energy_substation.extension.desc": "AE 能量轉換倍率翻倍，可安裝激光倉（最多四個）",
+  "gtocore.multiblock.me_storage.capacity": "容量: %s",
   "gtocore.multiblock.me_storage.layers": "存儲層數",
   "gtocore.multiblock.me_storage.layers.desc": "前端與尾端之間的存儲層數",
   "gtocore.multiblock.molecular_transformer.extension.desc": "可安裝輸入輸出倉、能源倉、激光倉與超頻倉",

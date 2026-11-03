@@ -31,10 +31,6 @@ public class MonitorCWU extends AbstractInfoProviderMonitor implements IOpticalC
 
     protected final NotifiableComputationContainer computationContainer;
 
-    public MonitorCWU(Object o) {
-        this((MetaMachineBlockEntity) o);
-    }
-
     public MonitorCWU(MetaMachineBlockEntity holder) {
         super(holder);
         this.computationContainer = new InnerComputationContainer();

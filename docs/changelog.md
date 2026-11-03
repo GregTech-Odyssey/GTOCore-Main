@@ -22,9 +22,10 @@
   - 环绕截图页支持沿用多方块预览的移动键、左键拖动转向及滚轮调速来选定相机位置，并可调节视极角 φ、预览对准中心轴。导出时保持选定相机高度与环绕半径，视线按 φ 沿直角三角形斜边指向区域中心轴；90° 水平，小于 90° 俯视，大于 90° 仰视。
   - 建模预览的截图与环绕截图入口合并为“导出截图...”，打开设置页后可选择截图模式或环绕全景模式。两种模式共用采样倍率、压缩质量与最终宽高，截图按当前视角导出透明 PNG；视极角、对准中心轴、旋转周期、帧间隔及动画格式仅在环绕全景模式显示。
 - 国际化与代码重构：完善无参数语言常量的 Component 直接声明与清理，消除超级箱/缸替换器、超频仓、线程仓、批量编码面板、合成站、ME CPU 页面、ME 存储仓、加速仓与经验方尖碑的冗余包装与重复常量；魔力增幅仓与加速仓移除旧版控件并升级为标准 NumberSettingPage 调节界面；经验方尖碑接入标准 createMainPage UI 调用流程。
-- 界面重构：全面清理废弃的 `LabelWidget` 与仓室类 `WidgetGroup` 容器并迁移至现代 `uipro` 界面框架；方块总线、催化剂仓、连杆仓、导热仓、无人机仓、机器访问终端、半透膜仓、过滤虚空输出仓/总线升级为 `HatchViews.page(SlotGrid...)` 标准槽位网格；虚空能源仓、创造能源仓、创造激光仓接入 `IFancyUIMachine` 并重写为标准 `Form.page()` / `Stepper` / `NumberField` / `Switch` 页面，创造输入仓升级为 `HatchViews.page` 槽位网格；ME 存储仓重构为 `UIElement` / `Form.label` / `PhantomFluidSlot` 布局；自定义信息监视器重写为 `Form.page()` / `TextField` / `NumberField` 页面；经验方尖碑升级为标准居中的 `createMainPage` 与 `TextLine` 布局；光束机器工具升级为 `Form.numberRow` / `DecimalField` / `PercentField`。
+- 界面重构：全面清理废弃的 `LabelWidget` 与仓室类 `WidgetGroup` 容器并迁移至现代 `uipro` 界面框架；方块总线、催化剂仓、连杆仓、导热仓、无人机仓、机器访问终端、半透膜仓、过滤虚空输出仓/总线升级为 `HatchViews.page(SlotGrid...)` 标准槽位网格；虚空能源仓、创造能源仓、创造激光仓接入 `IFancyUIMachine` 并重写为标准 `Form.page()` / `Stepper` / `NumberField` / `Switch` 页面，创造输入仓升级为 `HatchViews.page` 槽位网格；ME 存储仓重构为 `UIElement` / `Form.label` / `PhantomFluidSlot` 布局；各监控器（基础、电网、魔力、算力、通用机器、ME CPU、ME 吞吐量）全面升级为 `Form.page()`、`NumberField` 及现代控件布局；经验方尖碑升级为标准居中的 `createMainPage` 与 `TextLine` 布局；光束机器工具升级为 `Form.numberRow` / `DecimalField` / `PercentField`。
 - 无线能源塔：物品提示重写为简洁摘要，保留结构、电压、容量与吞吐、同维度合并及跨维度存取要点。
 - 裂变反应堆：物品提示精简为 6 行，合并组件、温度、冷却、超频与产出说明，保留全部公式与关键数值。
+- 监控器重构：移除各监控器类中冗余的 `Object` 转接构造器，构造函数统一规范为 `public` 的 `MetaMachineBlockEntity`；将重复的 `registerMonitor` 统一收拢到 `MachineRegisterUtils` 并清理跨模块引用；`GTOMachineBuilder` 与 `MultiblockBuilder` 补齐 `hasTESR` 链式调用方法。
 
 **修复：**
 
@@ -35,6 +36,8 @@
 - 光影包兼容（GTORenders 26.10.4）：翅膀特效在 Complementary 下发暗、在 Photon 下完全不可见（天空前的部分被覆盖），现在两者都能正常发光显示；GTO 自己的像素光点（翅膀尾迹等）在光影包下发暗或在天空前消失的问题一并修复。另修复渲染环效果在调用方未先检查可用性时会让客户端崩溃的问题。
 - 界面：修复 GTCEu 更新后无人机环绕截图界面与游戏排行榜的编译兼容问题，并修正排行榜下拉选项的构建。
 - 界面：样板编码者统计界面的文字颜色改为跟随终端主题，暗色资源包下不再与深色底图混在一起看不清。
+- 界面：修复监控器旧界面中使用 ComponentPanelWidget 渲染纯黑优先级文本时叠加字体阴影导致文字出现严重重影的问题。
+- 超立方保险库/ME多方块存储：修复 Jade 提示中容量显示键名 `gtocore.lang.template.capacity.-990262758` 缺失翻译的问题，规范为 `@RegisterLanguage` 语言常量 `gtocore.multiblock.me_storage.capacity`。
 - 界面：修复游戏窗口较小时，高度超出屏幕可用区域的界面（如器官修改器）无法打开的问题。
 - 物品提示：材料基础类型只显示在锭、粉、板、杆等材料形态物品上，工具、管道及其他方块形态材料不再显示。
 - AE（15.2610.48）：修复安装 BetterP2P 时绑定 P2P 通道导致服务器崩溃。

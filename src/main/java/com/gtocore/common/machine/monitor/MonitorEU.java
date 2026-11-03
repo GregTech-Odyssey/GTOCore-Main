@@ -82,10 +82,6 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
     @Access
     private ArrayList<String> EnergyOutputHistoryMinute = new ArrayList<>();
 
-    public MonitorEU(Object o) {
-        this((MetaMachineBlockEntity) o);
-    }
-
     public MonitorEU(MetaMachineBlockEntity holder) {
         super(holder);
     }
