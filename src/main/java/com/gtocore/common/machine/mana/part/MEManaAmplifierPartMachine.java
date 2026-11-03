@@ -79,9 +79,6 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
         updateSubs.initialize(getLevel());
     }
 
-    /// 基类"最大魔力"设置的翻译键（GTOLib 里声明为私有，这里写完整字面量）
-    private static final Component LANG_MAX_MANA = Component.translatable("gtocore.machine.mana_amplifier_part.max_mana");
-
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
         return MEPartUI.mainPage(this::isOnline, getTitle(), widget, buildPage());
@@ -96,7 +93,7 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
     private UIElement buildPage() {
         var section = UIElement.section();
         section.addChildren(
-                Form.numberRow(LANG_MAX_MANA, MEPatternPartUI.longField(0, this::getCurrent, this::setMaxMana, min)),
+                Form.numberRow(MAX, MEPatternPartUI.longField(0, this::getCurrent, this::setMaxMana, min)),
                 Form.controlRow(LANG_USE_MANA, Switch.of(() -> useMana, enabled -> useMana = enabled)),
                 Form.controlRow(LANG_USE_SOURCE, Switch.of(() -> useSource, enabled -> useSource = enabled)));
         return Form.page().addChild(section);

@@ -60,15 +60,15 @@ import java.util.*;
 public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu implements IMenuCraftingPacket, IPatterEncodingTermMenu, IExtendedPatternEncodingTerm.Menu {
 
     @Unique
-    private static final String TITLE_ENABLED = "gtocore.pattern.recipeInfoButton.title.enabled";
+    private static final Component TITLE_ENABLED = Component.translatable("gtocore.pattern.recipeInfoButton.title.enabled");
     @Unique
-    private static final String TITLE_DISABLED = "gtocore.pattern.recipeInfoButton.title.disabled";
+    private static final Component TITLE_DISABLED = Component.translatable("gtocore.pattern.recipeInfoButton.title.disabled");
     @Unique
-    private static final String CLICK_TO_ENABLE = "gtocore.pattern.recipeInfoButton.clickToEnable";
+    private static final Component CLICK_TO_ENABLE = Component.translatable("gtocore.pattern.recipeInfoButton.clickToEnable");
     @Unique
-    private static final String CLICK_TO_DISABLE = "gtocore.pattern.recipeInfoButton.clickToDisable";
+    private static final Component CLICK_TO_DISABLE = Component.translatable("gtocore.pattern.recipeInfoButton.clickToDisable");
     @Unique
-    private static final String CLICK_TO_CLEAR = "gtocore.pattern.recipeInfoButton.clickToClear";
+    private static final Component CLICK_TO_CLEAR = Component.translatable("gtocore.pattern.recipeInfoButton.clickToClear");
     // 单个目的地最多同步的样板产物数，防止大型装配矩阵集群撑爆发包
     @Unique
     private static final int GTO$MAX_OUTPUTS_PER_DESTINATION = 1024;
@@ -152,19 +152,19 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
     @Override
     public Component gtolib$getRecipeInfoTooltip() {
         var title = Component.empty();
-        title.append(this.gtolib$extraInfoEnabled ? Component.translatable(TITLE_ENABLED) : Component.translatable(TITLE_DISABLED));
+        title.append(this.gtolib$extraInfoEnabled ? TITLE_ENABLED : TITLE_DISABLED);
         title.append("\n");
         if (!this.gtolib$extraInfoEnabled) {
-            return title.append(Component.translatable(CLICK_TO_ENABLE));
+            return title.append(CLICK_TO_ENABLE);
         }
         if (!gtocore$recipe.isEmpty()) {
             var tooltip = Component.empty();
             tooltip.append(Component.translatable("gtocore.pattern.recipe")).append("\n");
             var key = RLUtils.parse(gtocore$recipe.split("/")[0]).toLanguageKey();
             tooltip.append(Component.translatable("gtocore.pattern.type", Component.translatable(key))).append("\n");
-            return title.append(tooltip.append(Component.translatable(CLICK_TO_CLEAR)));
+            return title.append(tooltip.append(CLICK_TO_CLEAR));
         } else {
-            return title.append(Component.translatable(CLICK_TO_DISABLE));
+            return title.append(CLICK_TO_DISABLE);
         }
     }
 

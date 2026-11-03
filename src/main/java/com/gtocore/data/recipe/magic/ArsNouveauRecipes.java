@@ -751,7 +751,7 @@ public final class ArsNouveauRecipes {
                     .outputItems(output)
                     .duration(source / 5)
                     .MANAt(5);
-            for (Ingredient ingredient : pedestal) build1.notConsumable(ingredient);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build1.notConsumable(entry.getKey()));
             for (FluidStack fluidStack : inputFluid) build1.inputFluids(fluidStack);
         } else {
             build1
@@ -773,7 +773,7 @@ public final class ArsNouveauRecipes {
                     .circuitMeta(circuitMeta)
                     .duration(100)
                     .MANAt(source / 25);
-            for (Ingredient ingredient : pedestal) build2.notConsumable(ingredient);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build2.notConsumable(entry.getKey()));
             for (FluidStack fluidStack : inputFluid) build2.inputFluids(fluidStack);
         } else {
             build2
@@ -806,7 +806,7 @@ public final class ArsNouveauRecipes {
                     .circuitMeta(circuitMeta)
                     .duration(80)
                     .MANAt(mana);
-            for (Ingredient ingredient : pedestal) build.notConsumable(ingredient);
+            CountMap.reference2IntEntrySet().fastForEach(entry -> build.notConsumable(entry.getKey()));
             for (FluidStack fluidStack : inputFluid) build.inputFluids(fluidStack);
         } else {
             build
