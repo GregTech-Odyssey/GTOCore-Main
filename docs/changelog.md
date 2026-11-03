@@ -21,6 +21,7 @@
 - 国际化与代码重构：完善无参数语言常量的 Component 直接声明与清理，消除超级箱/缸替换器、超频仓、线程仓、批量编码面板、合成站、ME CPU 页面、ME 存储仓、加速仓与经验方尖碑的冗余包装与重复常量；魔力增幅仓与加速仓移除旧版控件并升级为标准 NumberSettingPage 调节界面；经验方尖碑接入标准 createMainPage UI 调用流程。
 - 界面重构：全面清理废弃的 `LabelWidget` 与仓室类 `WidgetGroup` 容器并迁移至现代 `uipro` 界面框架；方块总线、催化剂仓、连杆仓、导热仓、无人机仓、机器访问终端、半透膜仓、过滤虚空输出仓/总线升级为 `HatchViews.page(SlotGrid...)` 标准槽位网格；虚空能源仓、创造能源仓、创造激光仓接入 `IFancyUIMachine` 并重写为标准 `Form.page()` / `Stepper` / `NumberField` / `Switch` 页面，创造输入仓升级为 `HatchViews.page` 槽位网格；ME 存储仓重构为 `UIElement` / `Form.label` / `PhantomFluidSlot` 布局；自定义信息监视器重写为 `Form.page()` / `TextField` / `NumberField` 页面；经验方尖碑升级为标准居中的 `createMainPage` 与 `TextLine` 布局；光束机器工具升级为 `Form.numberRow` / `DecimalField` / `PercentField`。
 - 无线能源塔：物品提示重写为简洁摘要，保留结构、电压、容量与吞吐、同维度合并及跨维度存取要点。
+- 裂变反应堆：物品提示精简为 6 行，合并组件、温度、冷却、超频与产出说明，保留全部公式与关键数值。
 
 **修复：**
 
