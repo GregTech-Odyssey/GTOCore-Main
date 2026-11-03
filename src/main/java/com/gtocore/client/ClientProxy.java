@@ -20,12 +20,14 @@ import com.gtocore.client.renderer.SolarGlobeGlowShader;
 import com.gtocore.client.renderer.entity.FrostCoatLayer;
 import com.gtocore.client.renderer.fx.DysonForceFieldRenderer;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
+import com.gtocore.client.renderer.item.WirelessEnergyUnitItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.client.website.WebsiteAccount;
 import com.gtocore.client.website.WebsiteConsent;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.block.LaurerilManaPools;
+import com.gtocore.common.block.WirelessEnergyUnitBlock;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
@@ -264,6 +266,11 @@ public final class ClientProxy extends CommonProxy {
                 event.register(BuiltInRegistries.BLOCK.get(item), MonitorItemDecorations.DECORATOR);
             }
         });
+        for (var item : BuiltInRegistries.ITEM) {
+            if (item instanceof BlockItem blockItem && blockItem.getBlock() instanceof WirelessEnergyUnitBlock unit && !unit.isSuperUnit()) {
+                event.register(item, WirelessEnergyUnitItemDecorations.DECORATOR);
+            }
+        }
     }
 
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {

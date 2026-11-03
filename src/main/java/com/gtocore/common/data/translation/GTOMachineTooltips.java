@@ -218,15 +218,18 @@ public final class GTOMachineTooltips {
                 "Classic 9×9 Sudoku: fill 1 to 9 once in every row, column and 3×3 box; clue digits are fixed"));
         t.feature(t.tr("点格子选中，点 1~9 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
                 "Select a cell and press 1 to 9; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes"));
-        t.feature(t.tr("变体页可为一局叠加一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
-                "The Variant tab stacks one extra rule: Diagonal X, Center dots, Window, Color, Jigsaw, Consecutive or Killer"));
+        t.feature(t.tr("在变体页选择一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
+                "Choose one extra rule on the Variant tab: Diagonal X, Center Dots, Window, Color, Jigsaw, Consecutive or Killer"));
         var rewards = new StringBuilder();
         for (var difficulty : SudokuRules.Difficulty.ALL) {
             if (rewards.length() > 0) rewards.append('/');
             rewards.append(difficulty.reward());
         }
-        t.feature(t.tr("六档难度的基础奖励分别为 " + rewards + " 游戏币，再乘所选变体的奖励倍率（标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8），并记录该难度与该变体的最快完成时间",
-                "Six difficulties pay a base of " + rewards + " Game Coins, multiplied by the selected variant (Standard ×1, Diagonal/Center dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8), and record the best clear time for each difficulty and variant"));
+        t.feature(t.tr("六档难度的基础奖励依次为 " + rewards + " 游戏币，最终奖励还会乘以变体倍率",
+                "The six difficulties award " + rewards + " Game Coins before the variant multiplier"));
+        t.feature(t.tr("变体倍率：标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8",
+                "Variant multipliers: Standard ×1, Diagonal/Center Dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8"));
+        t.feature(t.tr("分别记录各难度和变体的最快完成时间", "Best completion times are recorded for each difficulty and variant"));
     });
 
     // 扫雷 - 只保留方块操作与通关条件；难度、奖励、按钮等以机器界面为准
@@ -419,7 +422,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("机器将自动生成§6铁锭->铁板§r、§6金锭->金板§r等所有可制作的§6锭->板材§r配方", "The machine will automatically generate all craftable §6ingot -> plate§r recipes like §6iron ingot -> iron plate§r, §6gold ingot -> gold plate§r, etc."));
         t.attention(t.tr("注意：生成时，机器会检查当前配方类型与存储的电路/模具等是否与样板匹配", "Note: When generating, the machine will check whether the current recipe type matches the stored circuit/mold, etc. with the pattern"));
         t.feature(t.tr("不匹配的配方将不会被生成", "Mismatched recipes will not be generated"));
-        t.control(t.tr("在机器中设置黑名单材料以跳过该材料相关的配方生成", "Set blacklist materials in the machine to skip recipe generation related to that material"));
+        t.control(t.tr("可在机器中配置每个生成的样板是否启用", "Can configure whether each generated pattern is enabled in the machine"));
     });
 
     public static final TipSpec AutoConnectMETooltips = GTOTips.of("auto_connect_me", t -> {
@@ -458,50 +461,40 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
+        t.detail(t.tr("古老的抽屉存储技术与现代的ME存储技术相互交融", "The ancient drawer storage technology merges with the modern ME storage technology"));
         t.line(TipRole.SUMMARY, t.tr("用超级箱/缸作存储介质的多方块仓库", "Multiblock storage that uses Super Chests/Tanks as its medium"));
 
-        t.heading(t.tr("怎么用", "Setup"));
-        t.requirement(t.tr("主机槽放超级箱或超级缸（最多 64 个）：超级箱存物品，超级缸存流体", "Put Super Chests or Super Tanks in the controller slot (up to 64): chests store items, tanks store fluids"));
-        t.detail(t.tr("主机等级：木质按 0.25，青春版按 0.5，其余按电压等级计算", "Controller level: wooden units count as 0.25, Lite units as 0.5, and other units use their voltage tier"));
-        t.requirement(t.tr("输入总线放超级箱/缸；只有与主机同类的箱缸生效（箱配箱，缸配缸），支持木质及量子系列", "Put Super Chests/Tanks in the input buses; only the controller's kind counts (chests with chests, tanks with tanks), including wooden and quantum variants"));
-        t.requirement(t.tr("超级存储升级也放入输入总线：青铜、钢、铝、钛、钨钢分别提供 2、4、8、16、32 倍容量", "Put Super Storage Upgrades in the input buses too: Bronze, Steel, Aluminium, Titanium and Tungsten Steel provide x2, x4, x8, x16 and x32 capacity"));
-        t.unsupported(t.tr("功能存储的抽屉和存储升级不再提供收益", "Functional Storage drawers and storage upgrades no longer provide benefits"));
+        t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Place Super Chests in input buses to store items, and Super Tanks to store fluids"));
+        t.requirement(t.tr("在主机中插入升级来提升它们的总容量", "Insert upgrades into the controller to increase their total capacity"));
 
-        t.heading(t.tr("容量", "Capacity"));
-        t.feature(t.tr("能存的种类数：生效箱缸的格数之和，普通、1x2、2x2 每个分别提供 1、2、4 种", "Type count: the slot total of the counted storage units; normal, 1x2 and 2x2 units provide 1, 2 and 4 types each"));
-        t.feature(t.tr("每种能存的数量：√(主机等级 × 主机数量 × 密封等级) × 最低箱缸容量 ÷ 最大箱缸格数 × √(输入箱缸总数量) × 升级倍率", "Amount per type: sqrt(controller tier x controller count x hermetic tier) x lowest storage capacity / maximum slot count x sqrt(total input unit count) x upgrade multiplier"));
-        t.detail(t.tr("混放时最低容量与最大格数分别取值，数量只合计与主机同类的箱缸", "With mixed units, select the lowest capacity and the maximum slot count independently; count only units matching the controller's kind"));
-        t.detail(t.tr("升级倍率：所有升级倍率相乘后按生效箱缸数量均分，每个箱缸最多计入 4 个；物品和流体使用相同倍率", "Upgrade multiplier: multiply all upgrade factors and share them over the counted storage units, at most 4 upgrades per unit; items and fluids use the same multipliers"));
-        t.feature(t.tr("不限总量，只限每种的上限", "No overall limit, only a per-type cap"));
+        t.formula(t.tr("每种物品容量=输入仓内超级箱总容量 ÷ 物品种类数 × 密封等级 × 升级倍率", "Item capacity per type = total Super Chest capacity in input buses / item type count × Hermetic level × Upgrade multiplier"));
+        t.formula(t.tr("每种流体容量=输入仓内超级缸总容量 ÷ 流体种类数 × 密封等级 × 升级倍率", "Fluid capacity per type = total Super Tank capacity in input buses / fluid type count × Hermetic level × Upgrade multiplier"));
+        t.formula(t.tr("物品/流体种类数=输入仓内超级箱/缸总格数", "Number of item/fluid types: total slots of Super Chests/Tanks in input hatches"));
 
-        t.heading(t.tr("其他", "Other"));
-        t.warning(t.tr("开启溢出销毁后，超过每种上限或种类已满时，放不下的部分直接销毁", "With overflow voiding on, whatever does not fit (per-type cap reached or no free type) is destroyed"));
-        t.feature(t.tr("和保险库一样：存储挂在主机正面，外部存取用保险库仓", "Like the vault: storage is exposed on the controller's front, and the vault hatch handles external IO"));
+        t.feature(t.tr("可启用溢出销毁", "Overflow destruction can be enabled"));
+        t.feature(t.tr("安装保险库仓以连接外部IO", "Install Vault Hatches to connect external IO"));
+
     });
 
     public static final TipSpec MeDiskBoxTooltips = GTOTips.of("me_disk_box", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("ME 磁盘存储器的单方块版本，槽里的存储组件（1k…256M）提供容量", "Single-block version of the ME Disk Storage; the storage components in its slot (1k...256M) provide the capacity"));
-        t.feature(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again"));
-        t.feature(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
-        t.feature(t.tr("存储转移：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处", "Transfer Storage: moves everything held by the other ME storages in the network into this box, what does not fit stays where it is"));
+        t.feature(t.tr("单方块 ME 磁盘存储器", "Single-block version of the ME Disk Storage"));
+        t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
     });
 
     public static final TipSpec MEDiskStorageTooltips = GTOTips.of("me_disk_storage", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("以输入总线里的存储组件（1k…256m）提供容量，存储由结构里的存储访问仓承担", "Storage components in the input bus (1k...256m) provide the capacity; the Storage Access Hatch in the structure holds the data"));
-        t.formula(t.tr("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）；没有无限存储", "Capacity = the components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...); there is no infinite storage"));
-        t.feature(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，同一台重建后数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so rebuilding the same machine keeps the data"));
-        t.feature(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
+        t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
+        t.formula(t.tr("使用更高级的密封机械方块来提供更高的容量", "Use higher-tier Hermetic Casings to provide more capacity"));
+        t.formula(t.tr("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）", "Capacity = sum of component bytes x Hermetic Casing tier (ULV=1, LV=2...)"));
     });
 
     public static final TipSpec MeConfigurableStorageAccessHatchTooltips = GTOTips.of("me_configurable_storage_access_hatch", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("访问 ME 存储器内的存储，并可为每种东西单独设置上下限", "Accesses storage in ME storage and sets a limit for every key"));
+        t.feature(t.tr("可配置的 ME 存储器接口", "Configurable ME Storage Access Hatch"));
         t.formula(t.tr("输入限制：每种最多存多少；未配置 = 不限，0 = 禁止存入", "Input limit: the most of each key that may be stored; unconfigured = unlimited, 0 = forbidden"));
         t.formula(t.tr("输出限制：每种至少保留多少；未配置 = 不限，0 = 不设下限", "Output limit: the least of each key to keep; unconfigured = unlimited, 0 = no floor"));
-        t.feature(t.tr("两张表各有开关、互不影响；都不开时就是普通访问仓", "The two tables have their own switches and do not affect each other; with both off this is an ordinary access hatch"));
-        t.feature(t.tr("配置面板：81 个物品格 + 81 个流体格，选中格子后在中间的输入框改数量", "Config panel: 81 item slots + 81 fluid slots; select a slot and edit the amount in the middle field"));
+        t.feature(t.tr("提供81个可配置的物品槽位与81个可配置的流体槽位", "Provides 81 configurable item slots and 81 configurable fluid slots"));
     });
 
     public static final TipSpec fishingFarmTooltips = GTOTips.of("fishing_farm", t -> {

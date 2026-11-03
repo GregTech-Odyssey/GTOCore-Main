@@ -257,7 +257,8 @@
     },
     "com/gtolib/mixin/mc/client/MinecraftMixin": {
       "createTitle": "Lnet/minecraft/client/Minecraft;m_91270_()Ljava/lang/String;",
-      "run": "Lnet/minecraft/client/Minecraft;m_91374_()V"
+      "run": "Lnet/minecraft/client/Minecraft;m_91374_()V",
+      "reloadResourcePacks(Z)Ljava/util/concurrent/CompletableFuture;": "Lnet/minecraft/client/Minecraft;m_168019_(Z)Ljava/util/concurrent/CompletableFuture;"
     },
     "com/gtolib/mixin/mc/nbt/CompoundTagMixin$Type": {
       "load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;": "Lnet/minecraft/nbt/CompoundTag$1;m_7300_(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;",
@@ -814,7 +815,8 @@
       },
       "com/gtolib/mixin/mc/client/MinecraftMixin": {
         "createTitle": "Lnet/minecraft/client/Minecraft;m_91270_()Ljava/lang/String;",
-        "run": "Lnet/minecraft/client/Minecraft;m_91374_()V"
+        "run": "Lnet/minecraft/client/Minecraft;m_91374_()V",
+        "reloadResourcePacks(Z)Ljava/util/concurrent/CompletableFuture;": "Lnet/minecraft/client/Minecraft;m_168019_(Z)Ljava/util/concurrent/CompletableFuture;"
       },
       "com/gtolib/mixin/mc/nbt/CompoundTagMixin$Type": {
         "load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;": "Lnet/minecraft/nbt/CompoundTag$1;m_7300_(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/CompoundTag;",

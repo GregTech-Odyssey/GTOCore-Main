@@ -6,6 +6,7 @@ import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.common.machine.mana.multiblock.ResonanceFlowerMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEInputSettings;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineResult;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineState;
 
@@ -152,6 +153,7 @@ public class GTOCodecs {
     public final DataSyncCodec<KeyCounter> KEY_COUNTER_SYNC_CODEC = DataSyncCodec.of(KeyCodecs.KEY_COUNTER_STREAM_CODEC, KeyCodecs.KEY_COUNTER_DATA_CODEC);
 
     public static void init() {
+        MEInputSettings.init();
         // 字段处使用 register(...) 的类型已注册；composite(...) 构建的自定义类型在此集中注册。
         ScanningRecipeExtion.AEKEYDATACRYSTAL_CODEC.register(ScanningRecipeExtion.AEKeyDataCrystal.class);
         ResonanceFlowerMachine.addCodec();

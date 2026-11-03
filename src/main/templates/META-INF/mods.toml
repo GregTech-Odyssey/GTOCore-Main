@@ -42,7 +42,7 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "datasynclib"
 mandatory = true
-versionRange = "[1,)"
+versionRange = "[26.11.2,)"
 ordering = "NONE"
 side = "BOTH"
 

@@ -46,12 +46,12 @@ public class SuperStorageAdditionalRecipe {
 
         for (int layout = 0; layout < 2; layout++) {
             for (int tier = 0; tier < GTValues.TIER_COUNT; tier++) {
-                if (CompartmentStorageRegistration.CHESTS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.CHESTS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_CHESTS[tier] : CompartmentStorageRegistration.CHESTS[0][tier]);
-                if (CompartmentStorageRegistration.TANKS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.TANKS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_TANKS[tier] : CompartmentStorageRegistration.TANKS[0][tier]);
+                if (CompartmentStorageRegistration.CHESTS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.CHESTS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_CHESTS[tier] : CompartmentStorageRegistration.CHESTS[0][tier], false);
+                if (CompartmentStorageRegistration.TANKS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.TANKS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_TANKS[tier] : CompartmentStorageRegistration.TANKS[0][tier], false);
             }
             for (int wood = 0; wood < CompartmentStorageRegistration.WOODEN_CHESTS[layout].length; wood++) {
-                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_CHESTS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.CHESTS[wood] : CompartmentStorageRegistration.WOODEN_CHESTS[0][wood]);
-                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_TANKS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.TANKS[wood] : CompartmentStorageRegistration.WOODEN_TANKS[0][wood]);
+                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_CHESTS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.CHESTS[wood] : CompartmentStorageRegistration.WOODEN_CHESTS[0][wood], true);
+                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_TANKS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.TANKS[wood] : CompartmentStorageRegistration.WOODEN_TANKS[0][wood], true);
             }
         }
         for (var wood : WoodenSuperStorageRegistration.Wood.values()) {
@@ -105,6 +105,12 @@ public class SuperStorageAdditionalRecipe {
                 "DCD",
                 "PDP",
                 'P', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'D', GTMachines.SUPER_CHEST[GTValues.ULV].asItem(), 'C', GTMachines.BRONZE_CRATE.asItem());
+
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("agg_storage_upgrade"), SuperStorageUpgrades.AGGREGATION.asItem(),
+                "AAA",
+                "ADA",
+                "AAA",
+                'A', SuperStorageUpgrades.BRONZE.asItem(), 'D', new MaterialEntry(TagPrefix.plate, GTMaterials.BismuthBronze));
 
         switch (GTORules.MOD_RECIPE_TIER.get()) {
             case EXPERT -> {
@@ -197,8 +203,8 @@ public class SuperStorageAdditionalRecipe {
         }
     }
 
-    private static void compartmentSuperChest(MachineDefinition result, MachineDefinition source) {
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id(result.getId().getPath()), result.asStack(), " G ", " C ", " G ", 'G', Items.GLASS_PANE, 'C', StrictNBTIngredient.of(source.asStack()));
+    private static void compartmentSuperChest(MachineDefinition result, MachineDefinition source, boolean isWood) {
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id(result.getId().getPath()), result.asStack(), " G ", " C ", " G ", 'G', isWood ? Items.STICK : Items.GLASS_PANE, 'C', StrictNBTIngredient.of(source.asStack()));
     }
 
     private static void superChestReplacer(ItemEntry<ComponentItem> item, MachineDefinition machine) {

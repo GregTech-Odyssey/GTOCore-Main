@@ -10,7 +10,6 @@ import com.gtolib.api.rule.RulePreset;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.item.StorageUpgradeItem;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -112,7 +111,7 @@ public final class DungeonLoot {
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, treasure ? 12 : 6))));
         for (int i = 0; i < SuperStorageUpgrades.UPGRADES.length; i++) {
             if (upgWeights[i] <= 0) continue;
-            StorageUpgradeItem upgi = SuperStorageUpgrades.UPGRADES[i].get();
+            var upgi = SuperStorageUpgrades.UPGRADES[i].get();
             pool.add(LootItem.lootTableItem(upgi)
                     .setWeight(upgWeights[i])
                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, treasure ? (GTORules.LOOT.get() == RulePreset.EXPERT ? 3 : 8) : 2))));

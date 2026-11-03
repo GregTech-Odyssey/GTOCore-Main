@@ -51,10 +51,13 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
     private static final String STORED_DETAIL = "gtocore.block.wireless_energy_unit.stored.detail";
 
     public static final ItemDataComponentKey<BigInteger, Tag> ENERGY = ItemDataComponentKey.create("gtocore_wireless_unit_energy", WirelessEnergyUnitBlockEntity::write, WirelessEnergyUnitBlockEntity::read);
+    public static final ItemDataComponentKey<BigInteger, Tag> CAPACITY = ItemDataComponentKey.create("gtocore_wireless_unit_capacity", WirelessEnergyUnitBlockEntity::write, WirelessEnergyUnitBlockEntity::read);
     private static final String ENERGY_TAG = "energy";
+    private static final String CAPACITY_TAG = "capacity";
     private static final double TICKS_PER_HOUR = 20 * 3600;
 
     private BigInteger energy = BigInteger.ZERO;
+    private BigInteger capacity = BigInteger.ZERO;
 
     public WirelessEnergyUnitBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -76,12 +79,15 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
         super.load(tag);
         var value = tag.contains(ENERGY_TAG) ? read(tag.get(ENERGY_TAG)) : null;
         energy = value == null ? BigInteger.ZERO : value;
+        var max = tag.contains(CAPACITY_TAG) ? read(tag.get(CAPACITY_TAG)) : null;
+        capacity = max == null ? BigInteger.ZERO : max;
     }
 
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag) {
         super.saveAdditional(tag);
         if (energy.signum() > 0) tag.put(ENERGY_TAG, write(energy));
+        if (capacity.signum() > 0) tag.put(CAPACITY_TAG, write(capacity));
     }
 
     public static void onPlaced(Level level, BlockPos pos, ItemStack stack) {
@@ -89,6 +95,8 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
         var value = IDataComponentItem.get(stack, ENERGY);
         if (value != null && level.getBlockEntity(pos) instanceof WirelessEnergyUnitBlockEntity unit) {
             unit.energy = value;
+            var max = IDataComponentItem.get(stack, CAPACITY);
+            unit.capacity = max == null ? BigInteger.ZERO : max;
             unit.setChanged();
         }
     }
@@ -98,6 +106,7 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
         for (var stack : drops) {
             if (stack.is(item)) {
                 IDataComponentItem.set(stack, ENERGY, unit.energy);
+                if (unit.capacity.signum() > 0) IDataComponentItem.set(stack, CAPACITY, unit.capacity);
                 break;
             }
         }
@@ -107,6 +116,11 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
     @Nullable
     public static BigInteger stored(ItemStack stack) {
         return IDataComponentItem.get(stack, ENERGY);
+    }
+
+    public static BigInteger capacity(ItemStack stack, WirelessEnergyUnitBlock block, BigInteger stored) {
+        var max = IDataComponentItem.get(stack, CAPACITY);
+        return (max == null ? block.getCapacity() : max).max(stored);
     }
 
     public static void appendTooltip(ItemStack stack, int tier, List<Component> tooltip) {
@@ -175,6 +189,7 @@ public final class WirelessEnergyUnitBlockEntity extends BlockEntity {
         if (room.signum() <= 0) return left;
         var put = room.min(left);
         unit.energy = unit.energy.add(put);
+        unit.capacity = capacity;
         unit.setChanged();
         return left.subtract(put);
     }
