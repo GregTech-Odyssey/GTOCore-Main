@@ -1169,31 +1169,19 @@ public final class GTOMachineTooltips {
 
     // 无线能源塔
     public static final TipSpec WirelessEnergySubstationTooltips = GTOTips.of("wireless_energy_substation", t -> {
-        t.line(TipRole.SUMMARY, t.tr("所在维度的储能设施，本维度的无线设备由此存取电量", "Energy storage for its dimension; wireless devices there store and draw energy from it"));
+        t.line(TipRole.SUMMARY, t.tr("所在维度的储能设施，本维度的无线设备由此存取电量", "Energy storage for its dimension; wireless devices here store into and draw from it"));
 
-        t.heading(t.tr("结构", "Structure"));
-        t.requirement(t.tr("宽为 3 至 11 之间的奇数，深为 3 至 11，高为 3 至 20", "Width is an odd number from 3 to 11, depth 3 to 11, height 3 to 20"));
-        t.requirement(t.tr("棱使用无线能源塔框架，六个面使用同一等级的玻璃", "Edges use Wireless Energy Tower Frames; all six faces use glass of a single tier"));
-        t.requirement(t.tr("控制器位于正面底边的正中", "The controller sits at the middle of the front bottom edge"));
-        t.supported(t.tr("内部放存储单元与传输单元，无需全部填满", "Storage and transfer units go inside; the interior does not need to be filled"));
-        t.heading(t.tr("电压", "Voltage"));
-        t.feature(t.tr("提供电压 = 内部生效普通单元的最高等级 + 1，最高为 MAX；超级单元不提高提供电压", "Supplied voltage = highest effective ordinary unit tier + 1, at most MAX; super units do not raise the supplied voltage"));
-        t.requirement(t.tr("玻璃等级是单元等级的上限，高于玻璃等级的单元不生效", "The glass tier caps the unit tier; units above it have no effect"));
-        t.detail(t.tr("例如 HV 玻璃中放 HV 单元，能源塔提供 EV", "For example, HV units inside HV glass make the tower supply EV"));
-        t.heading(t.tr("容量与吞吐", "Capacity and Throughput"));
-        t.feature(t.tr("基础容量为全部生效普通存储单元的容量之和，损耗按容量加权平均", "Base capacity is the sum over the effective ordinary storage units; loss is averaged by capacity"));
-        t.feature(t.tr("每个普通存储单元提供本单元电压 4A 的吞吐，普通传输单元按等级提供更大的吞吐", "Each ordinary storage unit adds 4A at its own voltage; ordinary transfer units add more throughput by tier"));
-        t.detail(t.tr("吞吐按功率计：以更高电压取电时安数按电压折算，例如 HV 4A 相当于 EV 1A", "Throughput is power: drawing at a higher voltage converts the amps, e.g. 4A of HV equals 1A of EV"));
-        t.bonus(t.tr("UHV 起可使用超级储存与超级传输单元，分别为本站整体容量与吞吐提供额外的叠加乘区", "From UHV, super storage and transfer units add separate tower-wide multipliers to capacity and throughput; multipliers of the same kind add together"));
-        t.detail(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
-        t.detail(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
-        t.heading(t.tr("同维度合并", "Combining in a Dimension"));
-        t.feature(t.tr("同一维度中提供电压相同的能源塔合为一档：容量、存量与吞吐相加", "Towers in one dimension that supply the same voltage form one tier: capacity, stored energy and throughput add up"));
-        t.heading(t.tr("存取规则", "Access Rules"));
-        t.requirement(t.tr("取电：设备电压不能高于档位电压，从满足条件的最低档开始取，受各档输出吞吐限制", "Drawing: the device voltage may not exceed the tier voltage; the lowest qualifying tier is used first, limited by each tier's output throughput"));
-        t.supported(t.tr("存电：不限电压，只受各档输入吞吐限制，从最高档开始存", "Storing: any voltage, limited only by each tier's input throughput, highest tier first"));
-        t.detail(t.tr("本维度不够时，经维度中继器的线路就近从其他维度存取电，取电时线路电压也不能低于设备电压", "When this dimension falls short, energy moves to or from the nearest dimensions over relay lines; for drawing, the line voltage may not be below the device voltage either"));
-        t.detail(t.tr("跨维度存取计入电量所在维度的吞吐", "Cross-dimension draws and stores count against the throughput of the dimension holding the energy"));
+        t.requirement(t.tr("宽 3–11 奇数、深 3–11、高 3–20", "Width 3–11 (odd), depth 3–11, height 3–20"));
+        t.requirement(t.tr("棱用无线能源塔框架，六面同等级玻璃，控制器在正面底边正中", "Edges use Wireless Energy Tower Frames; all six faces use glass of one tier; controller at the middle of the front bottom edge"));
+        t.requirement(t.tr("玻璃等级限制了最高单元等级，超出不生效", "Glass tier caps the unit tier; units above it have no effect"));
+        t.feature(t.tr("提供电压 = 内部生效普通单元最高等级 + 1，最高为 MAX；超级单元不提高提供电压", "Supplied voltage = highest effective ordinary unit tier + 1, up to MAX; super units do not raise it"));
+        t.requirement(t.tr("取电：设备电压不能高于提供电压，从满足条件的最低档取", "Draw: device voltage may not exceed the supplied voltage; the lowest qualifying tier is used first"));
+        t.supported(t.tr("存电：不限电压，从最高档存，受输入吞吐限制", "Store: any voltage, highest tier first, limited by input throughput"));
+        t.feature(t.tr("容量由存储单元决定，总吞吐由存储与传输单元决定，损耗按单元容量加权平均", "Capacity comes from storage units; total throughput from storage and transfer units; loss is capacity-weighted"));
+        t.detail(t.tr("更高电压取电时按功率折算，例如 4A @ HV = 1A @ EV", "Drawing at higher voltage converts by power, e.g. 4A @ HV = 1A @ EV"));
+        t.bonus(t.tr("UHV 起超级存储/传输单元为本站容量/吞吐提供额外叠加乘区", "From UHV, super storage/transfer units add extra stacking multipliers to capacity/throughput"));
+        t.feature(t.tr("同一维度中提供电压相同的能源塔合为一档：容量、存量和总吞吐相加", "Towers in one dimension with the same supplied voltage merge into one tier: capacity, stored energy and total throughput add up"));
+        t.detail(t.tr("当前维度存量或容量不足时，经维度中继器就近从其他维度存取电，设备电压不能高于线路电压；跨维度存取计入电量所在维度的总吞吐", "When this dimension lacks stored energy or capacity, relays move energy to or from the nearest dimensions; device voltage may not exceed the line voltage; cross-dimension access counts against the total throughput of the dimension holding the energy"));
     });
 
     // 无线电网维度中继器
