@@ -34,21 +34,21 @@ public final class GTOMachineTooltipsA {
     public static final TipSpec BioOscillationGeneratorTooltips = GTOTips.of("bio_oscillation_generator", t -> {
         t.heading(MainFunction);
         t.feature(t.tr("将生物组织的生长与培养液转化为电能", "Converts biological tissue growth and culture medium into electrical energy"));
-        t.requirement(t.tr("生物组织与培养液均需要一次性装入机器；每次装填最多吸收64个组织与1,000,000,000mB培养液", "Biological tissue and culture medium must be loaded into the machine at once; each filling accepts up to 64 tissues and 1,000,000,000mB of culture medium"));
-        t.feature(t.tr("组织从0点开始生长，依次经历幼年、成年、壮年和老年阶段；达到老年阶段上限后组织死亡并被清除", "Tissue starts growing from 0 points and passes through Juvenile, Adult, Mature, and Elderly stages; it dies and is cleared after exceeding the Elderly stage limit"));
+        t.requirement(t.tr("生物组织与培养液运行前需要一次性装入最多64个组织与1,000,000,000mB培养液", "Before running, biological tissue and culture medium need to be loaded once with up to 64 tissues and 1,000,000,000mB of culture medium"));
+        t.feature(t.tr("组织从0点开始生长，依次经历幼年、成年、壮年和老年阶段，最终死亡", "Tissue starts growing from 0 points and passes through Juvenile, Adult, Mature, and Elderly stages before eventually dying"));
         t.feature(t.tr("可以通过组织传感器监测组织的生长点数", "Tissue growth points can be monitored through the Tissue Sensor"));
 
         t.heading(TipSlot.REQUIREMENTS, RunningRequirements);
-        t.requirement(t.tr("运行需要同时放入生物组织、匹配等级的培养液和连接杆；培养液等级与机加工控制模块等级均不得低于组织要求", "Running requires biological tissue, culture medium of a matching tier, and a connecting rod; both the medium tier and machining control module tier must meet the tissue requirement"));
-        t.requirement(t.tr("组织每5ticks生长一次；培养液营养可用率初始为100%，每秒降低0.1%，低于设定阈值后培养液会被清空并输出对应废液", "Tissue grows every 5 ticks; culture medium starts at 100% nutrient availability and decreases by 0.1% per second, then is cleared and converted into its corresponding waste fluid below the configured threshold"));
-        t.requirement(t.tr("连接杆每20ticks损耗1点耐久；连接杆材料等级越高，发电乘数越高", "The connecting rod loses 1 durability every 20 ticks; higher-tier connecting rod materials provide a higher generation multiplier"));
+        t.requirement(t.tr("运行需要同时放入生物组织、匹配等级的培养液和连接杆", "Running requires biological tissue, culture medium of a matching tier, and a connecting rod"));
+        t.requirement(t.tr("培养液营养可用率初始为100%，每秒降低0.1%，低于设定阈值后培养液会被清空并输出对应废液", "The nutrient availability of the culture medium starts at 100% and decreases by 0.1% per second; when it falls below the set threshold, the culture medium will be emptied and the corresponding waste liquid will be output"));
+        t.requirement(t.tr("组织每5ticks进行一次生长", "Tissue grows every 5 ticks"));
+        t.requirement(t.tr("连接杆每20ticks损耗1点耐久", "The connecting rod loses 1 durability point every 20 ticks"));
 
         t.heading(EfficiencyBonus);
         t.formula(t.tr("基础发电量 = 组织等级^连接杆等级 × 组织数量 × 培养液数量 × 8EU/t", "Base power = tissue tier^connecting rod tier × tissue amount × culture medium amount × 8EU/t"));
         t.formula(t.tr("组织生长量 = 最大生长速率 × 营养可用率 ÷（饱和因子 + 营养可用率）/5ticks", "Tissue growth = maximum growth rate × nutrient availability × (saturation factor + nutrient availability) per 5 ticks"));
         t.bonus(t.tr("能量控制模块等级为2时发电量×1.2，等级为3时发电量×1.5", "An energy control module tier of 2 multiplies power by 1.2, and tier 3 by 1.5"));
         t.bonus(t.tr("通过电刺激模块对组织进行电刺激，可进一步提升发电量", "Electrical stimulation of tissue through the electrical stimulation module can further increase power generation"));
-        t.feature(t.tr("组织阶段决定电刺激增幅；组织数量和培养液数量决定基础发电量，营养可用率主要影响组织生长", "The tissue stage determines the stimulation boost; tissue amount and culture medium amount determine base power, while nutrient availability mainly affects tissue growth"));
     });
 
     public static final TipSpec BioOscillationElectricStimulatorTooltips = GTOTips.of("bio_oscillation_electric_stimulator", t -> {
@@ -361,7 +361,7 @@ public final class GTOMachineTooltipsA {
         t.requirement(t.tr("耗能：(电压等级对应电压/2) EU/t", "Energy consumption: (voltage level corresponding voltage / 2) EU/t"));
         t.unsupported(t.tr("因配方时间固定，不支持超频时间", "Recipe duration is fixed; overclock duration is not supported"));
         t.feature(t.tr("提高电压等级可加快藻类增长", "Higher voltage tiers speed up algae growth"));
-        t.attention(t.tr("每种藻类每次繁殖需要消耗1mb/个体/秒的生物质，请确保输入总线提供足够的生物质，否则藻类可能会死亡", "Each type of algae requires 1mb/individual/second of biomass for each reproduction. Please ensure that the input bus provides enough biomass, otherwise the algae may die"));
+        t.attention(t.tr("每种藻类每次繁殖需要消耗1mb/个体/秒的生物质", "Each type of algae requires 1mb/individual/second of biomass for each reproduction."));
 
         t.heading(t.tr("藻类生长机制", "Algae Growth Mechanism"));
         t.feature(t.tr("每秒更新一次藻类生长状态", "Updates algae growth status once per second"));

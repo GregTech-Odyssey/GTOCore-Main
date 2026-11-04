@@ -662,12 +662,16 @@ public final class GTOMachineTooltips {
 
     // 裂变反应堆
     public static final TipSpec FissionReactorTooltips = GTOTips.of("fission_reactor", t -> {
-        t.requirement(t.tr("组件：内部放燃料组件与冷却组件；冷却组件须紧邻燃料并决定冷却上限，燃料组件提供最大并行，相邻越多产热越高", "Components: place fuel and cooling components inside; cooling components must be adjacent to fuel and determine the cooling limit; fuel components provide maximum parallelism, and more adjacent fuel components generate more heat"));
+        t.requirement(t.tr("组件：内部可以放燃料组件与冷却组件", "Components: place fuel and cooling components inside"));
+        t.requirement(t.tr("冷却组件须紧邻燃料组件，与燃料组件接触的面数量决定冷却上限", "Cooling components must be adjacent to fuel components; the number of faces in contact with fuel components determines the cooling limit"));
+        t.requirement(t.tr("燃料组件的数量决定最大并行，但燃料组件两两相邻会提高产热", "The number of fuel components determines the maximum parallelism, but adjacent fuel components increase heat production"));
         t.warning(t.tr("温度：初始 298K，停机每秒降 1K；超 1500K 持续损坏，完全损坏时爆炸", "Temperature: starts at 298K, drops 1K per second while idle; above 1500K the reactor takes continuous damage and explodes when fully damaged"));
         t.formula(t.tr("升温：冷却不生效时每秒升温 = 配方基础产热 × (相邻燃料组件数 + 1)，基础产热见配方页面", "Heating: when cooling is inactive, heat per second = base recipe heat × (adjacent fuel components + 1); base heat is shown on the recipe page"));
         t.formula(t.tr("冷却：输入量大于冷却需求时生效，需求 = 基础产热 × 实际并行 × 当前温度 / 1500，上限 = (冷却组件数 - 相邻数 / 3) × 8", "Cooling: activates when input exceeds the cooling demand; demand = base heat × actual parallel × current temperature / 1500; limit = (cooling components - adjacency / 3) × 8"));
-        t.feature(t.tr("超频与消耗：800 mB 蒸馏水或 20 mB 钠钾合金 = 1 单位冷却需求；输入量 ≥ n × 需求时额外增加 n 倍基础运行速度", "Overclock and consumption: 800 mB of Distilled Water or 20 mB of Sodium Potassium = 1 unit of cooling demand; input ≥ n × demand adds n times the base processing speed"));
-        t.detail(t.tr("产出：蒸馏水冷却产出蒸汽 = 消耗量 × min(160, 160 / 1.4^(373-温度))；钠钾合金 ≤825K 产热钠钾合金，>825K 产超临界钠钾合金", "Output: Distilled Water cooling produces steam = consumption × min(160, 160 / 1.4^(373 - temperature)); Sodium Potassium yields Hot Sodium Potassium at ≤825K and Supercritical Sodium Potassium above 825K"));
+        t.feature(t.tr("超频与消耗：1 单位冷却需求 = 800 mB 蒸馏水或 20 mB 钠钾合金", "Overclock and consumption: 1 unit of cooling demand = 800 mB Distilled Water or 20 mB Sodium Potassium"));
+        t.feature(t.tr("输入量 ≥ n 单位需求时额外增加 n 倍基础运行速度", "When input is ≥ n units of demand, the base processing speed is increased by n times"));
+        t.detail(t.tr("输入蒸馏水：产生蒸汽，产量 = 消耗量 × min(160, 160 / 1.4^(373-温度))", "Input Distilled Water: produces steam, output = input × min(160, 160 / 1.4^(373-temperature))"));
+        t.detail(t.tr("输入钠钾合金：≤825K 产热钠钾合金，>825K 产超临界钠钾合金，产量 = 消耗量", "Input Sodium Potassium: produces Hot Sodium Potassium at ≤825K and Supercritical Sodium Potassium above 825K, output = input"));
     });
 
     // 计算中心
@@ -695,6 +699,7 @@ public final class GTOMachineTooltips {
         t.statText(t.tr("Cascade-MFPC效率: 块(0.54) 条(0.06) 粒(0.0066)", "Cascade-MFPC efficiency: Block(0.54) Ingot(0.06) Nugget(0.0066)"));
         t.statText(t.tr("寒冰碎片: 0.0001 (极低效率)", "Ice Shards: 0.0001 (extremely low efficiency)"));
 
+        t.details(t.tr("等级与组件详情", "Tier and component details"));
         // Tier 1 组件支持
         t.heading(t.tr("Tier 1 : 支持HPCA系列组件", "Tier 1 : Supports HPCA Series Components"));
         t.statText(t.tr("槽位需求: 无", "Slot requirement: None"));
@@ -1151,17 +1156,16 @@ public final class GTOMachineTooltips {
     public static final TipSpec WirelessEnergySubstationTooltips = GTOTips.of("wireless_energy_substation", t -> {
         t.line(TipRole.SUMMARY, t.tr("所在维度的储能设施，本维度的无线设备由此存取电量", "Energy storage for its dimension; wireless devices here store into and draw from it"));
 
-        t.requirement(t.tr("宽 3–11 奇数、深 3–11、高 3–20", "Width 3–11 (odd), depth 3–11, height 3–20"));
-        t.requirement(t.tr("棱用无线能源塔框架，六面同等级玻璃，控制器在正面底边正中", "Edges use Wireless Energy Tower Frames; all six faces use glass of one tier; controller at the middle of the front bottom edge"));
-        t.requirement(t.tr("玻璃等级限制了最高单元等级，超出不生效", "Glass tier caps the unit tier; units above it have no effect"));
-        t.feature(t.tr("提供电压 = 内部生效普通单元最高等级 + 1，最高为 MAX；超级单元不提高提供电压", "Supplied voltage = highest effective ordinary unit tier + 1, up to MAX; super units do not raise it"));
+        t.requirement(t.tr("结构要求：宽 3–11 奇数、深 3–11、高 3–20", "Structure requirements: width 3–11 odd, depth 3–11, height 3–20"));
+        t.feature(t.tr("其中的空间可填入不同效果的单元", "The space inside can be filled with units of different effects"));
+        t.requirement(t.tr("最高单元等级不能高于玻璃等级", "The highest unit tier may not exceed the glass tier"));
+        t.feature(t.tr("提供电压 = 内部生效普通单元最高等级 + 1，最高为 MAX", "Supplied voltage = highest effective ordinary unit tier + 1, up to MAX"));
         t.requirement(t.tr("取电：设备电压不能高于提供电压，从满足条件的最低档取", "Draw: device voltage may not exceed the supplied voltage; the lowest qualifying tier is used first"));
         t.supported(t.tr("存电：不限电压，从最高档存，受输入吞吐限制", "Store: any voltage, highest tier first, limited by input throughput"));
-        t.feature(t.tr("容量由存储单元决定，总吞吐由存储与传输单元决定，损耗按单元容量加权平均", "Capacity comes from storage units; total throughput from storage and transfer units; loss is capacity-weighted"));
         t.detail(t.tr("更高电压取电时按功率折算，例如 4A @ HV = 1A @ EV", "Drawing at higher voltage converts by power, e.g. 4A @ HV = 1A @ EV"));
         t.bonus(t.tr("UHV 起超级存储/传输单元为本站容量/吞吐提供额外叠加乘区", "From UHV, super storage/transfer units add extra stacking multipliers to capacity/throughput"));
         t.feature(t.tr("同一维度中提供电压相同的能源塔合为一档：容量、存量和总吞吐相加", "Towers in one dimension with the same supplied voltage merge into one tier: capacity, stored energy and total throughput add up"));
-        t.detail(t.tr("当前维度存量或容量不足时，经维度中继器就近从其他维度存取电，设备电压不能高于线路电压；跨维度存取计入电量所在维度的总吞吐", "When this dimension lacks stored energy or capacity, relays move energy to or from the nearest dimensions; device voltage may not exceed the line voltage; cross-dimension access counts against the total throughput of the dimension holding the energy"));
+        t.detail(t.tr("当前维度存量或容量不足时，维度中继器会就近从其他维度的能源塔存取", "When the current dimension's stored energy or capacity is insufficient, the dimension repeater will draw from nearby towers in other dimensions"));
     });
 
     // 无线电网维度中继器
@@ -1724,7 +1728,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("且提供的燃料效率乘数会与转化的热值相乘，影响总反应的能量储存", "And the provided fuel efficiency multiplier will multiply with the converted heat value, affecting the total energy storage of the reaction"));
         t.penalty(t.tr("每次总反应消耗膜耐久：普通仓为⌈√(总反应并行数)⌉，高级仓为⌈(总反应并行数)^0.25⌉", "Membrane durability consumed per total reaction: ceil(sqrt(total reaction parallels)) with a basic hatch, or ceil((total reaction parallels)^0.25) with an advanced hatch"));
         t.supported(t.tr("本机器模式提供无限并行数", "This machine mode provides unlimited parallelism"));
-        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜；反应期间膜被锁定", "Place a membrane permeable to the paired ions in a membrane hatch at the top center; membranes are locked during reactions"));
+        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜", "Place a membrane permeable to the paired ions in a membrane hatch at the top center; membranes are locked during reactions"));
         t.heading(t.tr("模式二：放电", "Mode 2: Energy Release"));
         t.requirement(t.tr("放电需要半透膜仓内有膜，任意膜均可使配方运行", "Discharge requires a membrane in the membrane hatch; any membrane allows the recipe to run"));
         t.requirement(t.tr("此时的最大并行数由膜的放电并行度决定", "The maximum parallelism at this time is determined by the discharge parallelism of the membrane"));

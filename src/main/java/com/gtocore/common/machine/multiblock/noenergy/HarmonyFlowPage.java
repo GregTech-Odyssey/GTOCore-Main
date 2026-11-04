@@ -149,7 +149,7 @@ public final class HarmonyFlowPage {
     private static final String LANG_FLUID_SHORT = "gtocore.machine.eye_of_harmony.flow.fluid_short";
     @RegisterLanguage(cn = "储量不低于 1,024 KB，可供下一次配方启动。", en = "The reserve holds at least 1,024 KB, enough for the next recipe start.")
     private static final String LANG_FLUID_OK_DESC = "gtocore.machine.eye_of_harmony.flow.fluid_ok.desc";
-    @RegisterLanguage(cn = "储量低于 1,024 KB，配方无法启动。补充至输入仓后，每秒自动抽入。", en = "The reserve is below 1,024 KB; no recipe can start. Fluid added to the input hatches is drawn in every second.")
+    @RegisterLanguage(cn = "储量低于 1,024 KB，配方无法启动。", en = "The reserve is below 1,024 KB; no recipe can start.")
     private static final String LANG_FLUID_SHORT_DESC = "gtocore.machine.eye_of_harmony.flow.fluid_short.desc";
     @RegisterLanguage(cn = "每秒将输入仓中的全部%s抽入内部储量，储量没有上限。", en = "Every second, all %s in the input hatches is drawn into the internal reserve, which has no limit.")
     private static final String LANG_FLUID_RULE_DRAW = "gtocore.machine.eye_of_harmony.flow.fluid_rule_draw";
@@ -168,7 +168,7 @@ public final class HarmonyFlowPage {
     private static final String LANG_OC_COUNT = "gtocore.machine.eye_of_harmony.flow.oc_count";
     @RegisterLanguage(cn = "耗时与启动耗能按当前电路编号计算。", en = "Duration and startup energy follow the current circuit number.")
     private static final String LANG_OC_SET_DESC = "gtocore.machine.eye_of_harmony.flow.oc_set.desc";
-    @RegisterLanguage(cn = "编程电路 1~4 对应超频 0~3 次；输入单元中同时存在多个时，取编号最大者。", en = "Programmed circuits 1~4 give 0~3 overclocks; if several are present in the input units, the highest number applies.")
+    @RegisterLanguage(cn = "编程电路 1~4 对应超频 0~3 次", en = "Programmed circuits 1~4 give 0~3 overclocks")
     private static final String LANG_OC_RULE_CIRCUIT = "gtocore.machine.eye_of_harmony.flow.oc_rule_circuit";
     @RegisterLanguage(cn = "每次超频：耗时 ×1/2，启动耗能 ×8，平均功率 ×16。", en = "Each overclock: duration ×1/2, startup energy ×8, average power ×16.")
     private static final String LANG_OC_RULE_EFFECT = "gtocore.machine.eye_of_harmony.flow.oc_rule_effect";
