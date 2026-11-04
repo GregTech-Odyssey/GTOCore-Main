@@ -461,15 +461,12 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
-        t.detail(t.tr("古老的抽屉存储技术与现代的ME存储技术相互交融", "The ancient drawer storage technology merges with the modern ME storage technology"));
-        t.line(TipRole.SUMMARY, t.tr("用超级箱/缸作存储介质的多方块仓库", "Multiblock storage that uses Super Chests/Tanks as its medium"));
-
+        t.line(TipRole.SUMMARY, t.tr("整合超级箱与超级缸，独立设置物品和流体种类上限", "Integrates Super Chests and Tanks with separate item and fluid type limits"));
         t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Place Super Chests in input buses to store items, and Super Tanks to store fluids"));
-        t.requirement(t.tr("在主机中插入升级来提升它们的总容量", "Insert upgrades into the controller to increase their total capacity"));
-
-        t.formula(t.tr("每种物品容量=输入仓内超级箱总容量 ÷ 物品种类数 × 密封等级 × 升级倍率", "Item capacity per type = total Super Chest capacity in input buses / item type count × Hermetic level × Upgrade multiplier"));
-        t.formula(t.tr("每种流体容量=输入仓内超级缸总容量 ÷ 流体种类数 × 密封等级 × 升级倍率", "Fluid capacity per type = total Super Tank capacity in input buses / fluid type count × Hermetic level × Upgrade multiplier"));
-        t.formula(t.tr("物品/流体种类数=输入仓内超级箱/缸总格数", "Number of item/fluid types: total slots of Super Chests/Tanks in input hatches"));
+        t.feature(t.tr("可混用不同等级及分格型号，无需升级物品；同等级同介质箱缸合并计算", "Mix tiers and compartment layouts without upgrade items; containers of the same tier and medium are grouped together"));
+        t.formula(t.tr("物品/流体种类上限分别最多为对应箱/缸数量的四倍", "Each item/fluid type limit can be at most four times the corresponding container count"));
+        t.formula(t.tr("每种类容量 = 密封等级 × Σ[该等级箱缸总容量 × √max(1, 4 × 该等级箱缸数量 / 设置种类数)] / 设置种类数", "Capacity per type = hermetic level × sum[tier capacity × sqrt(max(1, 4 × tier container count / configured types))] / configured types"));
+        t.feature(t.tr("减少设置种类数可提升每种类容量；降低上限或移除箱缸不会删除已有内容", "Fewer configured types increase per-type capacity; reducing limits or removing containers preserves stored contents"));
 
         t.feature(t.tr("可启用溢出销毁", "Overflow destruction can be enabled"));
         t.feature(t.tr("安装保险库仓以连接外部IO", "Install Vault Hatches to connect external IO"));

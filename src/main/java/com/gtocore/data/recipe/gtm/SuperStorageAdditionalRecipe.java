@@ -3,7 +3,6 @@ package com.gtocore.data.recipe.gtm;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
-import com.gtocore.common.data.SuperStorageUpgrades;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.config.GTORules;
 
@@ -12,7 +11,6 @@ import com.gtolib.api.data.storage.CompartmentStorageRegistration;
 import com.gtolib.api.data.storage.SuperStorageRegistration;
 import com.gtolib.api.data.storage.SuperStorageReplacerRegistration;
 import com.gtolib.api.data.storage.WoodenSuperStorageRegistration;
-import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -26,6 +24,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.crafting.StrictNBTIngredient;
 
@@ -49,16 +48,22 @@ public class SuperStorageAdditionalRecipe {
                 if (CompartmentStorageRegistration.CHESTS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.CHESTS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_CHESTS[tier] : CompartmentStorageRegistration.CHESTS[0][tier], false);
                 if (CompartmentStorageRegistration.TANKS[layout][tier] != null) compartmentSuperChest(CompartmentStorageRegistration.TANKS[layout][tier], layout == 0 ? CompartmentStorageRegistration.NORMAL_TANKS[tier] : CompartmentStorageRegistration.TANKS[0][tier], false);
             }
-            for (int wood = 0; wood < CompartmentStorageRegistration.WOODEN_CHESTS[layout].length; wood++) {
-                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_CHESTS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.CHESTS[wood] : CompartmentStorageRegistration.WOODEN_CHESTS[0][wood], true);
-                compartmentSuperChest(CompartmentStorageRegistration.WOODEN_TANKS[layout][wood], layout == 0 ? WoodenSuperStorageRegistration.TANKS[wood] : CompartmentStorageRegistration.WOODEN_TANKS[0][wood], true);
-            }
         }
-        for (var wood : WoodenSuperStorageRegistration.Wood.values()) {
-            VanillaRecipeHelper.addShapedRecipe(GTOCore.id(wood.getId() + "_super_chest"), WoodenSuperStorageRegistration.CHESTS[wood.ordinal()].asStack(),
-                    "PPP", "PCP", "PPP", 'P', wood.getPlanks(), 'C', Items.CHEST);
-            VanillaRecipeHelper.addShapedRecipe(GTOCore.id(wood.getId() + "_super_tank"), WoodenSuperStorageRegistration.TANKS[wood.ordinal()].asStack(),
-                    "PPP", "PGP", "PBP", 'P', wood.getPlanks(), 'G', easy ? Items.GLASS.asItem() : GTMachines.STEEL_DRUM.asItem(), 'B', easy ? Items.BUCKET.asItem() : new MaterialEntry(TagPrefix.pipeLargeFluid, GTMaterials.Steel));
+        compartmentSuperChest(CompartmentStorageRegistration.WOODEN_CHEST_1X2, WoodenSuperStorageRegistration.CHEST, true);
+        compartmentSuperChest(CompartmentStorageRegistration.WOODEN_TANK_1X2, WoodenSuperStorageRegistration.TANK, true);
+        compartmentSuperChest(CompartmentStorageRegistration.WOODEN_CHEST_2X2, CompartmentStorageRegistration.WOODEN_CHEST_1X2, true);
+        compartmentSuperChest(CompartmentStorageRegistration.WOODEN_TANK_2X2, CompartmentStorageRegistration.WOODEN_TANK_1X2, true);
+
+        if (easy) {
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wod_super_chest"), WoodenSuperStorageRegistration.CHEST.asStack(),
+                    "PPP", "PCP", "PPP", 'P', ItemTags.PLANKS, 'C', Items.CHEST);
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wod_super_tank"), WoodenSuperStorageRegistration.TANK.asStack(),
+                    "PPP", "PGP", "PBP", 'P', ItemTags.PLANKS, 'G', Items.GLASS.asItem(), 'B', Items.BUCKET.asItem());
+        } else {
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wd_super_chest"), WoodenSuperStorageRegistration.CHEST.asStack(),
+                    "PIP", "ICI", "PIP", 'P', ItemTags.PLANKS, 'I', new MaterialEntry(TagPrefix.plate, GTMaterials.Iron), 'C', GTMachines.WOODEN_CRATE.asItem());
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wd_super_tank"), WoodenSuperStorageRegistration.TANK.asStack(),
+                    "PIP", "IBI", "PIG", 'P', ItemTags.PLANKS, 'I', new MaterialEntry(TagPrefix.plate, GTMaterials.Iron), 'B', GTMachines.WOODEN_DRUM.asItem(), 'G', new MaterialEntry(TagPrefix.pipeHugeFluid, GTMaterials.Lead));
         }
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("ulv_super_tank"), GTMachines.SUPER_TANK[GTValues.ULV].asItem(),
                 "ABA",
@@ -77,7 +82,7 @@ public class SuperStorageAdditionalRecipe {
                     "ABA",
                     'A', new MaterialEntry(TagPrefix.ingot, GTMaterials.Iron), 'B', new MaterialEntry(TagPrefix.block, GTMaterials.NetherQuartz), 'C', Items.COMPARATOR);
 
-            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("super_chest_controller"), SuperStorageRegistration.EXTENSION.asItem(),
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("super_chest_controller_extension"), SuperStorageRegistration.EXTENSION.asItem(),
                     "ABA",
                     "C C",
                     "ABA",
@@ -92,7 +97,7 @@ public class SuperStorageAdditionalRecipe {
                     "ABA",
                     "CDC",
                     "EFE",
-                    'A', new MaterialEntry(TagPrefix.plate, GTMaterials.EnderPearl), 'B', GTItems.FLUID_REGULATOR_MV.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Aluminium), 'D', RegistriesUtils.getItem("gtocore:super_chest_controller"), 'E', CustomTags.MV_CIRCUITS, 'F', GTItems.ROBOT_ARM_MV.asItem());
+                    'A', new MaterialEntry(TagPrefix.plate, GTMaterials.EnderPearl), 'B', GTItems.FLUID_REGULATOR_MV.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Aluminium), 'D', SuperStorageRegistration.CONTROLLER.asItem(), 'E', CustomTags.MV_CIRCUITS, 'F', GTItems.ROBOT_ARM_MV.asItem());
         }
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("quantum_chest_configurator"), SuperStorageRegistration.TOOL.asItem(),
                 " AB",
@@ -105,102 +110,6 @@ public class SuperStorageAdditionalRecipe {
                 "DCD",
                 "PDP",
                 'P', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'D', GTMachines.SUPER_CHEST[GTValues.ULV].asItem(), 'C', GTMachines.BRONZE_CRATE.asItem());
-
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("agg_storage_upgrade"), SuperStorageUpgrades.AGGREGATION.asItem(),
-                "AAA",
-                "ADA",
-                "AAA",
-                'A', SuperStorageUpgrades.BRONZE.asItem(), 'D', new MaterialEntry(TagPrefix.plate, GTMaterials.BismuthBronze));
-
-        switch (GTORules.MOD_RECIPE_TIER.get()) {
-            case EXPERT -> {
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronze_super_storage_upgrade"), SuperStorageUpgrades.BRONZE.asItem(),
-                        "ABC",
-                        "ADC",
-                        "EEE",
-                        'A', GTMachines.BRONZE_CRATE.asItem(), 'B', CustomTags.ULV_CIRCUITS, 'C', GTMachines.BRONZE_DRUM.asItem(), 'D', new MaterialEntry(TagPrefix.gear, GTMaterials.Bronze), 'E', new MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Bronze));
-
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronzee_super_storage_upgrade"), SuperStorageUpgrades.STEEL.asItem(),
-                        "ABC",
-                        "ADC",
-                        "EEE",
-                        'A', GTMachines.STEEL_CRATE.asItem(), 'B', CustomTags.LV_CIRCUITS, 'C', GTMachines.STEEL_DRUM.asItem(), 'D', new MaterialEntry(TagPrefix.gear, GTMaterials.Steel), 'E', new MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Steel));
-
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), SuperStorageUpgrades.ALUMINIUM.asItem(),
-                        "ABC",
-                        "ADC",
-                        "EEE",
-                        'A', GTMachines.ALUMINIUM_CRATE.asItem(), 'B', CustomTags.MV_CIRCUITS, 'C', GTMachines.ALUMINIUM_DRUM.asItem(), 'D', new MaterialEntry(TagPrefix.gear, GTMaterials.Aluminium), 'E', new MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Aluminium));
-
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), SuperStorageUpgrades.TITANIUM.asItem(),
-                        "ABC",
-                        "ADC",
-                        "EEE",
-                        'A', GTMachines.TITANIUM_CRATE.asItem(), 'B', CustomTags.HV_CIRCUITS, 'C', GTMachines.TITANIUM_DRUM.asItem(), 'D', new MaterialEntry(TagPrefix.gear, GTMaterials.Titanium), 'E', new MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.Titanium));
-
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), SuperStorageUpgrades.TUNGSTEN_STEEL.asItem(),
-                        "ABC",
-                        "ADC",
-                        "EEE",
-                        'A', GTMachines.TUNGSTENSTEEL_CRATE.asItem(), 'B', CustomTags.EV_CIRCUITS, 'C', GTMachines.TUNGSTENSTEEL_DRUM.asItem(), 'D', new MaterialEntry(TagPrefix.gear, GTMaterials.TungstenSteel), 'E', new MaterialEntry(TagPrefix.pipeNonupleFluid, GTMaterials.TungstenSteel));
-            }
-            case NORMAL -> {
-
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronze_super_storage_upgrade"), SuperStorageUpgrades.BRONZE.asItem(),
-                        "ABA",
-                        "A A",
-                        "CDC",
-                        'A', new MaterialEntry(TagPrefix.foil, GTMaterials.Bronze), 'B', GTMachines.BRONZE_CRATE.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Bronze), 'D', GTMachines.BRONZE_DRUM.asItem());
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronzee_super_storage_upgrade"), SuperStorageUpgrades.STEEL.asItem(),
-                        "ABA",
-                        "A A",
-                        "CDC",
-                        'A', new MaterialEntry(TagPrefix.foil, GTMaterials.Steel), 'B', GTMachines.STEEL_CRATE.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'D', GTMachines.STEEL_DRUM.asItem());
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), SuperStorageUpgrades.ALUMINIUM.asItem(),
-                        "ABA",
-                        "A A",
-                        "CDC",
-                        'A', new MaterialEntry(TagPrefix.foil, GTMaterials.Aluminium), 'B', GTMachines.ALUMINIUM_CRATE.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Aluminium), 'D', GTMachines.ALUMINIUM_DRUM.asItem());
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("titanium_super_storage_upgrade"), SuperStorageUpgrades.TITANIUM.asItem(),
-                        "ABA",
-                        "A A",
-                        "CDC",
-                        'A', new MaterialEntry(TagPrefix.foil, GTMaterials.Titanium), 'B', GTMachines.TITANIUM_CRATE.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Titanium), 'D', GTMachines.TITANIUM_DRUM.asItem());
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("tungstensteel_super_storage_upgrade"), SuperStorageUpgrades.TUNGSTEN_STEEL.asItem(),
-                        "ABA",
-                        "A A",
-                        "CDC",
-                        'A', new MaterialEntry(TagPrefix.foil, GTMaterials.TungstenSteel), 'B', GTMachines.TUNGSTENSTEEL_CRATE.asItem(), 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.TungstenSteel), 'D', GTMachines.TUNGSTENSTEEL_DRUM.asItem());
-            }
-            case EASY -> {
-
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronze_super_storage_upgrade"), SuperStorageUpgrades.BRONZE.asItem(),
-                        "A A",
-                        " B ",
-                        "A A",
-                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Bronze), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Bronze));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("bronzee_super_storage_upgrade"), SuperStorageUpgrades.STEEL.asItem(),
-                        "A A",
-                        " B ",
-                        "A A",
-                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Steel));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("steel_super_storage_upgrade"), SuperStorageUpgrades.ALUMINIUM.asItem(),
-                        "A A",
-                        " B ",
-                        "A A",
-                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Aluminium), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Aluminium));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("titanium_super_storage_upgrade"), SuperStorageUpgrades.TITANIUM.asItem(),
-                        "A A",
-                        " B ",
-                        "A A",
-                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.Titanium), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.Titanium));
-                VanillaRecipeHelper.addShapedRecipe(GTOCore.id("tungstensteel_super_storage_upgrade"), SuperStorageUpgrades.TUNGSTEN_STEEL.asItem(),
-                        "A A",
-                        " B ",
-                        "A A",
-                        'A', new MaterialEntry(TagPrefix.plate, GTMaterials.TungstenSteel), 'B', new MaterialEntry(TagPrefix.gear, GTMaterials.TungstenSteel));
-            }
-        }
     }
 
     private static void compartmentSuperChest(MachineDefinition result, MachineDefinition source, boolean isWood) {
