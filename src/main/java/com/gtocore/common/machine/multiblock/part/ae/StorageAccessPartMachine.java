@@ -681,21 +681,21 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
         @RegisterLanguage(cn = "输入限制", en = "Input Limit")
         private static final Component LANG_INPUT_LIMIT = Component.translatable("gtocore.machine.configurable_storage_access_hatch.input_limit");
-        @RegisterLanguage(cn = "按输入表限制存入：每种最多存多少（0 = 禁止存入）", en = "Limits insertion by the input table: the most of each key that may be stored (0 = forbidden)")
+        @RegisterLanguage(cn = "按输入表决定每种存量上限（0 = 禁止存入）", en = "Limits insertion by the input table: the most of each key that may be stored (0 = forbidden)")
         private static final Component LANG_INPUT_LIMIT_TOOLTIP = Component.translatable("gtocore.machine.configurable_storage_access_hatch.input_limit_tooltip");
-        @RegisterLanguage(cn = "开关：关着时不看输入表", en = "Switch: the input table is ignored while off")
+        @RegisterLanguage(cn = "开启时将读取输入表限制", en = "Switch: the input table is read while on")
         private static final String LANG_INPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.input_switch_tooltip";
         @RegisterLanguage(cn = "输出限制", en = "Output Limit")
         private static final Component LANG_OUTPUT_LIMIT = Component.translatable("gtocore.machine.configurable_storage_access_hatch.output_limit");
-        @RegisterLanguage(cn = "按输出表限制取出：每种至少保留多少（0 = 不设下限）", en = "Limits extraction by the output table: the least of each key to keep (0 = no floor)")
+        @RegisterLanguage(cn = "按输出表决定每种存量下限：（0 = 不设下限）", en = "Limits extraction by the output table: the least of each key to keep (0 = no floor)")
         private static final Component LANG_OUTPUT_LIMIT_TOOLTIP = Component.translatable("gtocore.machine.configurable_storage_access_hatch.output_limit_tooltip");
-        @RegisterLanguage(cn = "开关：关着时不看输出表", en = "Switch: the output table is ignored while off")
+        @RegisterLanguage(cn = "开启时将读取输出表限制", en = "Switch: the output table is read while on")
         private static final String LANG_OUTPUT_SWITCH_TOOLTIP = "gtocore.machine.configurable_storage_access_hatch.output_switch_tooltip";
         @RegisterLanguage(cn = "配置", en = "Configure")
         private static final Component LANG_CONFIG = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config");
-        @RegisterLanguage(cn = "在弹出面板里编辑这张表", en = "Edit this table in the popup")
+        @RegisterLanguage(cn = "编辑...", en = "Edit...")
         private static final Component LANG_CONFIG_TOOLTIP = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_tooltip");
-        @RegisterLanguage(cn = "点格子放东西、在中间的输入框里改数量；右键清掉格子 = 不限", en = "Click a slot to set a key, edit the amount in the middle field; right-click a slot to clear it (unlimited)")
+        @RegisterLanguage(cn = "点击设置配置与数量，右键清除", en = "Click to set configuration and amount, right click to clear")
         private static final Component LANG_CONFIG_HINT = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_hint");
         @RegisterLanguage(cn = "物品格", en = "Item Slots")
         private static final Component LANG_CONFIG_ITEMS = Component.translatable("gtocore.machine.configurable_storage_access_hatch.config_items");
