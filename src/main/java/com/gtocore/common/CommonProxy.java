@@ -50,6 +50,7 @@ import com.gtolib.api.ae2.me2in1.Me2in1Menu;
 import com.gtolib.api.ae2.me2in1.Wireless;
 import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
+import com.gtolib.api.data.storage.SuperStorageMigration;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
@@ -116,6 +117,7 @@ public class CommonProxy {
         GTONumberProviders.NUMBER_PROVIDERS.register(eventBus);
         eventBus.addListener(EventPriority.HIGHEST, CommonProxy::commonSetup);
         eventBus.addListener(CommonProxy::initMenu);
+        eventBus.addListener(SuperStorageMigration::aliases);
         eventBus.addListener(Datagen::onGatherData);
         eventBus.addListener(CommonProxy::modConstruct);
         ForgeCommonEvent.init();

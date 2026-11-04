@@ -28,7 +28,7 @@ import com.gregtechceu.gtceu.uipro.animation.UIClock;
 import com.gregtechceu.gtceu.uipro.render.UILayers;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
-import com.gregtechceu.gtceu.uiwidgets.recipe.RecipeSpecPanel;
+import com.gregtechceu.gtceu.uiwidgets.recipe.RecipeSpecGrid;
 import com.gregtechceu.gtceu.uiwidgets.recipe.SlotAmountGrid;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -490,14 +490,14 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             }
 
             var left = new UIElement().layout(l -> l.column().flexGrow(1).flexShrink(1).minWidth(0).gapAll(UISizes.SECTION_GAP));
-            left.addChild(createPanel());
+            left.addChild(createPanel(frame.besideNotch(pageWidth)));
             var lower = new UIElement().layout(l -> l.row().gapAll(UISizes.SECTION_GAP).minHeight(frame.notchHeight()));
             lower.addChild(left);
             if (frame.sideButtons() > 0) lower.addChild(UIElement.spacer(GTRecipeWidget.PageFrame.NOTCH_WIDTH, 0));
             addChild(lower);
         }
 
-        private Widget createPanel() {
+        private Widget createPanel(int width) {
             long eut = scanEUt(1);
             long repeatEUt = scanEUt(DataScanningManager.getRepeatedScanPenalty());
             var power = ElectricText.power(eut);
@@ -506,18 +506,18 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             var repeatAmperage = ElectricText.flowOf(repeatEUt, GTUtil.getTierByVoltage(repeatEUt));
             var scanned = Component.translatable(SCAN_STATE_REPEAT, repeatYield());
             var notScanned = Component.translatable(SCAN_STATE_NEW);
-            var panel = new RecipeSpecPanel();
-            panel.layout(l -> l.flexGrow(1));
-            panel.value(Component.translatable(SCAN_POWER), () -> hasScanned() ? repeatPower : power);
-            panel.value(Component.translatable(AMPERAGE), () -> hasScanned() ? repeatAmperage : amperage);
-            panel.value(Component.translatable(SCAN_STATE), () -> hasScanned() ? scanned : notScanned);
+            var rate = RecipeSpecGrid.Cell.stat(Component.translatable(SCAN_POWER), () -> hasScanned() ? repeatPower : power);
+            var extras = new ArrayList<RecipeSpecGrid.Cell>(3);
+            extras.add(RecipeSpecGrid.Cell.stat(Component.translatable(AMPERAGE), () -> hasScanned() ? repeatAmperage : amperage));
+            extras.add(new RecipeSpecGrid.Cell(RecipeSpecGrid.Kind.PROPERTY, Component.translatable(SCAN_STATE),
+                    () -> hasScanned() ? scanned : notScanned, null));
             if (eurekaNode != null && eurekaOutput != null) {
-                panel.divider();
                 var eureka = Component.translatable(EUREKA_UNLOCK, eurekaOutput.getName());
                 var node = eurekaNode;
-                panel.link(() -> eureka, () -> EmiResearchHelper.openTechNode(node));
+                extras.add(new RecipeSpecGrid.Cell(RecipeSpecGrid.Kind.LINK, null, () -> eureka, () -> EmiResearchHelper.openTechNode(node)));
             }
-            return panel;
+            var plan = RecipeSpecGrid.plan(rate, null, null, false, extras, width, Integer.MAX_VALUE);
+            return new RecipeSpecGrid(plan, width, null);
         }
 
         @Override

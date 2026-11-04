@@ -217,7 +217,7 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     /** 建页：外框在这里定下（悬停预览等会改写 {@link #frame}），各方案都按最大尺寸建，切换时沿用同一外框。 */
     private Widget createVariantWidget() {
         var size = measure(frame);
-        var pageFrame = new GTRecipeWidget.PageFrame(size.width, size.height, frame.sideButtons(), frame.card(), 0, frame.inlineButtons());
+        var pageFrame = new GTRecipeWidget.PageFrame(size.width, size.height, frame.sideButtons(), frame.card());
         var root = new WidgetGroup(0, 0, size.width, size.height);
         root.addWidget(createSelectedRecipeWidget(root, pageFrame, false));
         return root;
