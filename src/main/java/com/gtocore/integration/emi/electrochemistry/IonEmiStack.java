@@ -3,6 +3,8 @@ package com.gtocore.integration.emi.electrochemistry;
 import com.gtocore.api.electrochemistry.IonDefinition;
 import com.gtocore.api.electrochemistry.Ions;
 
+import com.gtolib.api.client.FluidNameOverlay;
+
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -63,6 +65,7 @@ public final class IonEmiStack extends EmiStack {
             var green = (color >> 8 & 0xFF) / 255F;
             var blue = (color & 0xFF) / 255F;
             graphics.blit(x, y, 0, 16, 16, sprite, red, green, blue, 1);
+            FluidNameOverlay.render(graphics, this, x, y, 16, 16, 0);
         }
         if ((flags & RENDER_AMOUNT) != 0) {
             if (amountWidth < 0) amountWidth = minecraft.font.width(amountText);
