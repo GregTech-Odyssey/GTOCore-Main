@@ -122,7 +122,7 @@ final class RocketMapHost extends UIElement implements ILocalUI, ILayoutHost {
 
     private Component rocketText() {
         var travel = PlanetTravel.of(planets);
-        return travel != null ? Component.translatable(travel.source().getTranslationKey(), travel.tier()) : Component.translatable(RocketLang.NO_ROCKET);
+        return travel != null ? Component.translatable(travel.source().getTranslationKey(), travel.tier()) : RocketLang.NO_ROCKET;
     }
 
     private void select(int body) {

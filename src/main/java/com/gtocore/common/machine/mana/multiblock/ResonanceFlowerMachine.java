@@ -6,7 +6,6 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
-import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
@@ -31,8 +30,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEItemKey;
@@ -41,12 +38,12 @@ import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
+
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -56,7 +53,7 @@ import static com.lowdragmc.lowdraglib.LDLib.random;
 public class ResonanceFlowerMachine extends ManaMultiblockMachine implements IStorageMultiblock, IDropSaveMachine {
 
     @RegisterLanguage(cn = "下界之星 / 稳定核心", en = "Nether Star / Stabilizer Core")
-    private static final String SLOT_LABEL = "gtocore.machine.resonance_flower.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.resonance_flower.slot");
 
     // 进度表最多保留的配方条数
     private static final int MAX_SIZE = 10;
@@ -326,11 +323,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
             root.put(KEY_STACK, stackTag);
         } else if (stack instanceof FluidStack fluidStack) {
             root.putString(KEY_TYPE, TYPE_FLUID);
-            CompoundTag stackTag = new CompoundTag();
-            stackTag.putString("FluidName", Objects.requireNonNull(RegistriesUtils.getIdLocation(fluidStack.getFluid())).toString());
-            stackTag.putInt(KEY_AMOUNT, fluidStack.getAmount());
-            if (fluidStack.hasTag()) stackTag.put("tag", fluidStack.getTag().copy());
-            root.put(KEY_STACK, stackTag);
+            root.put(KEY_STACK, fluidStack.writeToNBT(new CompoundTag()));
         }
         return root;
     }
@@ -346,11 +339,9 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
         if (type.equals(TYPE_ITEM)) {
             stack = ItemStack.of(stackTag);
         } else if (type.equals(TYPE_FLUID)) {
-            Fluid fluid = RegistriesUtils.getFluid(stackTag.getString("FluidName"));
-            if (fluid != null && fluid != Fluids.EMPTY) {
-                int amount = stackTag.getInt(KEY_AMOUNT);
-                CompoundTag extraTag = stackTag.contains("tag", Tag.TAG_COMPOUND) ? stackTag.getCompound("tag") : null;
-                stack = new FluidStack(fluid, amount, extraTag);
+            FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(stackTag);
+            if (!fluidStack.isEmpty()) {
+                stack = fluidStack;
             }
         }
         return new Object[] { stack, frequency };
@@ -527,7 +518,7 @@ public class ResonanceFlowerMachine extends ManaMultiblockMachine implements ISt
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 

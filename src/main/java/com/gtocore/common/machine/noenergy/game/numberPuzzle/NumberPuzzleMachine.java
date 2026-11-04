@@ -1,6 +1,8 @@
 package com.gtocore.common.machine.noenergy.game.numberPuzzle;
 
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
+import com.gtocore.common.machine.noenergy.game.LiveDurationLine;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -8,17 +10,14 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.SwitchedContent;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
-import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -27,9 +26,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
-import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -38,8 +38,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 数字华容道游戏机：3×3 到 8×8 六档，点击空格相邻的数字块滑动，按行排好即完成。
- * 完成一局按尺寸发放游戏币，并把最快完成时间记入该尺寸的里程碑。
+ * 数字华容道游戏机：3×3 到 8×8 六档，点击与空格相邻的数字块滑动，把 1..n²-1 按序排好、空格归位即完成。
+ * 完成一局按尺寸发放游戏币，并把该尺寸的最快完成时间记入里程碑。
  */
 @DataGeneratorScanned
 public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine.BoardSnapshot> {
@@ -47,33 +47,25 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private static final int CELL_SIZE = 20;
 
     @RegisterLanguage(cn = "3×3", en = "3×3")
-    private static final String SIZE_3 = "gtocore.machine.number_puzzle.size.3";
+    private static final Component SIZE_3 = Component.translatable("gtocore.machine.number_puzzle.size.3");
     @RegisterLanguage(cn = "4×4", en = "4×4")
-    private static final String SIZE_4 = "gtocore.machine.number_puzzle.size.4";
+    private static final Component SIZE_4 = Component.translatable("gtocore.machine.number_puzzle.size.4");
     @RegisterLanguage(cn = "5×5", en = "5×5")
-    private static final String SIZE_5 = "gtocore.machine.number_puzzle.size.5";
+    private static final Component SIZE_5 = Component.translatable("gtocore.machine.number_puzzle.size.5");
     @RegisterLanguage(cn = "6×6", en = "6×6")
-    private static final String SIZE_6 = "gtocore.machine.number_puzzle.size.6";
+    private static final Component SIZE_6 = Component.translatable("gtocore.machine.number_puzzle.size.6");
     @RegisterLanguage(cn = "7×7", en = "7×7")
-    private static final String SIZE_7 = "gtocore.machine.number_puzzle.size.7";
+    private static final Component SIZE_7 = Component.translatable("gtocore.machine.number_puzzle.size.7");
     @RegisterLanguage(cn = "8×8", en = "8×8")
-    private static final String SIZE_8 = "gtocore.machine.number_puzzle.size.8";
-    private static final String[] SIZE_NAMES = { SIZE_3, SIZE_4, SIZE_5, SIZE_6, SIZE_7, SIZE_8 };
+    private static final Component SIZE_8 = Component.translatable("gtocore.machine.number_puzzle.size.8");
+    public static final Component[] SIZE_NAMES = { SIZE_3, SIZE_4, SIZE_5, SIZE_6, SIZE_7, SIZE_8 };
 
     @RegisterLanguage(cn = "尺寸", en = "Size")
-    private static final String SECTION_SIZE = "gtocore.machine.number_puzzle.section.size";
-    @RegisterLanguage(cn = "尺寸", en = "Sizes")
-    private static final String PAGE_SIZE = "gtocore.machine.number_puzzle.page.sizes";
-    @RegisterLanguage(cn = "数字华容道尺寸", en = "Number puzzle sizes")
-    private static final String PAGE_SIZE_TOOLTIP = "gtocore.machine.number_puzzle.page.sizes.tooltip";
-    @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
-    private static final String PAGE_LEADERBOARD = "gtocore.machine.number_puzzle.page.leaderboard";
-    @RegisterLanguage(cn = "数字华容道排行榜", en = "Number puzzle leaderboard")
-    private static final String PAGE_LEADERBOARD_TOOLTIP = "gtocore.machine.number_puzzle.page.leaderboard.tooltip";
+    private static final Component SECTION_SIZE = Component.translatable("gtocore.machine.number_puzzle.section.size");
     @RegisterLanguage(cn = "步数", en = "Moves")
-    private static final String LINE_MOVES = "gtocore.machine.number_puzzle.line.moves";
+    private static final Component LINE_MOVES = Component.translatable("gtocore.machine.number_puzzle.line.moves");
     @RegisterLanguage(cn = "用时", en = "Time")
-    private static final String LINE_TIME = "gtocore.machine.number_puzzle.line.time";
+    private static final Component LINE_TIME = Component.translatable("gtocore.machine.number_puzzle.line.time");
     @RegisterLanguage(cn = "进行中", en = "Playing")
     private static final String TEXT_PLAYING = "gtocore.machine.number_puzzle.text.playing";
     @RegisterLanguage(cn = "完成！用时 %s", en = "Solved! %s")
@@ -81,12 +73,18 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     @RegisterLanguage(cn = "完成奖励：%s 游戏币", en = "Clear reward: %s Game Coins")
     private static final String TEXT_SIZE_REWARD = "gtocore.machine.number_puzzle.text.size_reward";
     @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final String BUTTON_RESTART = "gtocore.machine.number_puzzle.button.restart";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.number_puzzle.button.restart");
 
     /** 单个尺寸的排行榜只有两列：玩家与最快用时。 */
     private static final MilestoneColumn[] LEADERBOARD_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 64),
             MilestoneColumn.center(COLUMN_DURATION, 54) };
+
+    /** 「全部榜单」页里的华容道榜（一级维度是尺寸）：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(LEADERBOARD_COLUMNS, server -> GameMilestones.get(server).modCount(),
+                (server, size, unused) -> buildLeaderboardRows(GameMilestones.get(server), server, size));
+    }
 
     private enum Status {
         IDLE,
@@ -94,9 +92,14 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         SOLVED
     }
 
+    /**
+     * 下发的界面快照：{@link #board} 只带当前尺寸的 {@code size²} 个有效格，不发整块
+     * {@link NumberPuzzleRules#CELL_CAPACITY}（客户端只按 {@code sizeOrdinal} 读前 {@code size²} 格）；
+     * {@code equals} 只看版本号，省掉逐元素比数组。
+     */
     public record BoardSnapshot(int revision, int sizeOrdinal, int[] board, int moves, long elapsedTicks, int status) {
 
-        private static final BoardSnapshot EMPTY = new BoardSnapshot(-1, 0, new int[NumberPuzzleRules.CELL_CAPACITY],
+        private static final BoardSnapshot EMPTY = new BoardSnapshot(-1, 0, new int[0],
                 0, 0L, Status.IDLE.ordinal());
         private static final StreamCodec<FriendlyByteBuf, BoardSnapshot> CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, BoardSnapshot::revision,
@@ -122,21 +125,22 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         }
     }
 
-    /** 当前尺寸档；基础值为 3×3。 */
-    @SaveToDisk
+    /** 当前尺寸档；默认 3×3（序数 0）。 */
+    @SaveToDisk(defaultValue = "0")
     private int sizeOrdinal = NumberPuzzleRules.Difficulty.THREE.ordinal();
     /** 固定长度盘面，前 size² 格有效；0 为空格。 */
     @SaveToDisk
     private int[] board = new int[NumberPuzzleRules.CELL_CAPACITY];
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int blankCell;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int moves;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
+    @SyncToClient(scheduleUpdate = true)
     private long roundStart;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private long lastElapsed;
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     private int status = Status.IDLE.ordinal();
 
     public NumberPuzzleMachine(MetaMachineBlockEntity holder) {
@@ -161,14 +165,24 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         } else {
             blankCell = NumberPuzzleRules.findBlank(board, size);
             moves = Math.max(0, moves);
-            if (status == Status.PLAYING.ordinal() && roundStart <= 0L) roundStart = gameTime();
+            if (status == Status.PLAYING.ordinal() &&
+                    (roundStart <= 0L || roundStart > gameTime())) {
+                roundStart = gameTime();
+            }
             if (status == Status.SOLVED.ordinal()) lastElapsed = Math.max(1L, lastElapsed);
         }
     }
 
     @Override
     protected BoardSnapshot createView() {
-        return new BoardSnapshot(revision(), sizeOrdinal, board, moves, elapsedTicks(), status);
+        return new BoardSnapshot(revision(), sizeOrdinal, activeBoard(), moves, elapsedTicks(), status);
+    }
+
+    /** 只取当前尺寸的有效格：客户端按 {@code sizeOrdinal} 读的正是这一段，后面的定长填充不必下发。 */
+    private int[] activeBoard() {
+        int size = NumberPuzzleRules.sizeOf(sizeOrdinal);
+        int area = size * size;
+        return area >= board.length ? board : Arrays.copyOf(board, area);
     }
 
     private boolean isPlaying() {
@@ -178,6 +192,14 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private long elapsedTicks() {
         if (status == Status.SOLVED.ordinal()) return lastElapsed;
         if (status != Status.PLAYING.ordinal() || roundStart <= 0L) return 0L;
+        return Math.max(0L, gameTime() - roundStart);
+    }
+
+    /** 计时行：进行中按世界刻现算，已完成用快照里的最终用时。 */
+    private long displayElapsedTicks() {
+        var snapshot = view();
+        if (snapshot.isSolved()) return snapshot.elapsedTicks();
+        if (snapshot.status() != Status.PLAYING.ordinal() || roundStart <= 0L) return 0L;
         return Math.max(0L, gameTime() - roundStart);
     }
 
@@ -192,6 +214,8 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         roundStart = gameTime();
         status = Status.PLAYING.ordinal();
         beginSession(starter);
+        // 开局时刻单独同步一次，计时行才能在客户端本地读秒。
+        requestSync();
         syncAndMarkChanged();
     }
 
@@ -199,7 +223,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         if (status == Status.IDLE.ordinal()) startRound(null);
     }
 
-    /** 服务端：结掉旧局（未完成不给币）并换到指定尺寸。 */
+    /** 服务端：切到指定尺寸并立即开新局；旧局未完成不给币。 */
     private void selectSize(int ordinal, @Nullable ServerPlayer player) {
         if (isRemote() || player == null || !guard(player)) return;
         if (ordinal < 0 || ordinal >= NumberPuzzleRules.SIZE_COUNT || sizeOrdinal == ordinal) return;
@@ -258,11 +282,11 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_MOVES, () -> number(view().moves()));
-        status.addLine(LINE_TIME, () -> duration(view().elapsedTicks()));
+        status.addChild(new LiveDurationLine(LINE_TIME, this::displayElapsedTicks));
         status.addChild(TextLine.of(LayoutStyle.AUTO, () -> view().isSolved() ?
                 Component.translatable(TEXT_SOLVED, duration(view().elapsedTicks())) :
                 Component.translatable(TEXT_PLAYING)).styled());
-        var restart = Button.translatable(77, BUTTON_RESTART);
+        var restart = Button.text(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRound(playerOf(restart)));
         status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));
         return status;
@@ -289,9 +313,10 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
                 var cell = Button.of(CELL_SIZE, CELL_SIZE);
                 cell.bindClientText(() -> {
                     var snapshot = view();
-                    int cellSize = NumberPuzzleRules.sizeOf(snapshot.sizeOrdinal());
-                    if (index >= cellSize * cellSize) return "";
-                    int value = snapshot.board()[index];
+                    // 快照只带有效格；未下发时是空数组，越界一律当空格。
+                    var cellss = snapshot.board();
+                    if (index < 0 || index >= cellss.length) return "";
+                    int value = cellss[index];
                     return value == 0 ? "" : Integer.toString(value);
                 });
                 cell.setOnServerClick(() -> moveTile(index, playerOf(cell)));
@@ -302,110 +327,63 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         return rows;
     }
 
-    private static StatusPanel panel() {
-        var panel = new StatusPanel();
-        panel.getLayoutStyle().gapAll(2);
-        return panel;
-    }
+    /** 难度页：六个尺寸纵向排列，选中的那个两端带绿色 > <，切换后立即开新局。 */
+    private final class SizePage extends GamePage {
 
-    /** 尺寸页：六个难度纵向排列，切换后立即开新局。 */
-    private final class SizePage implements IFancyUIProvider {
+        private SizePage() {
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
-            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
-                    Switch.of(NumberPuzzleMachine.this::allowOthers, NumberPuzzleMachine.this::setAllowOthers),
-                    TOOLTIP_ALLOW_OTHERS));
+            page.addChild(allowOthersRow());
 
             var section = Form.section(SECTION_SIZE);
             for (int ordinal = 0; ordinal < NumberPuzzleRules.SIZE_COUNT; ordinal++) {
                 final int index = ordinal;
-                var button = Button.translatable(120, SIZE_NAMES[ordinal]);
-                button.setSelected(() -> view().sizeOrdinal() == index);
+                var button = choiceButton(120, SIZE_NAMES[index], () -> sizeOrdinal == index);
                 button.setHoverTooltips(Component.translatable(TEXT_SIZE_REWARD,
-                        NumberPuzzleRules.Difficulty.ALL[ordinal].reward()));
+                        NumberPuzzleRules.Difficulty.ALL[index].reward()));
                 button.setOnServerClick(() -> selectSize(index, playerOf(button)));
                 section.addChild(button);
             }
             page.addChild(section);
 
-            var balancePanel = panel();
-            balancePanel.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(balancePanel);
+            page.addChild(balancePanel());
             return page;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_SIZE);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SIZE_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
         }
     }
 
-    /** 排行榜页：六档尺寸各一张两列表，按两列三排摆放。 */
-    private final class LeaderboardPage implements IFancyUIProvider {
+    /** 排行榜页：顶上一排尺寸选项，下面只显示选中的那张表。 */
+    private final class LeaderboardPage extends LeaderboardTabPage {
 
-        @Override
-        public Widget createMainPage(FancyMachineUIWidget widget) {
-            var page = Form.page();
-            for (int rowIndex = 0; rowIndex < 3; rowIndex++) {
-                var row = new UIElement().layout(style -> style.row().gapAll(UISizes.SECTION_GAP));
-                for (int col = 0; col < 2; col++) {
-                    int ordinal = rowIndex * 2 + col;
-                    var section = Form.section(SIZE_NAMES[ordinal]);
-                    section.addChild(milestoneTable("game_milestones_number_puzzle_" + ordinal,
-                            LEADERBOARD_COLUMNS,
-                            (store, server) -> buildLeaderboardRows(store, server, ordinal)));
-                    row.addChild(section);
-                }
-                page.addChild(row);
-            }
-
-            var balancePanel = panel();
-            balancePanel.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(balancePanel);
-            return page;
+        private LeaderboardPage() {
+            super(PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
         }
 
         @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.INFO;
+        protected int boardCount() {
+            return NumberPuzzleRules.SIZE_COUNT;
         }
 
         @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_LEADERBOARD);
+        protected Component boardName(int index) {
+            return SIZE_NAMES[index];
         }
 
         @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_LEADERBOARD_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
+        protected Widget boardContent(int index) {
+            var section = Form.section(SIZE_NAMES[index]);
+            section.addChild(milestoneTable("game_milestones_number_puzzle_" + index, LEADERBOARD_COLUMNS,
+                    (store, server) -> buildLeaderboardRows(store, server, index)));
+            return section;
         }
     }
 
-    /** 单个尺寸的排行榜：玩家 + 最快用时，用时悬停显示达成时刻。 */
-    private List<MilestoneCell[]> buildLeaderboardRows(GameMilestones store, MinecraftServer server,
-                                                       int sizeOrdinal) {
+    /** 单个尺寸的榜单行：玩家 + 最快用时，悬停显示达成时刻。 */
+    private static List<MilestoneCell[]> buildLeaderboardRows(GameMilestones store, MinecraftServer server,
+                                                              int sizeOrdinal) {
         var stats = store.numberPuzzleBoard(sizeOrdinal);
         var rows = new ObjectArrayList<MilestoneCell[]>(stats.size());
         for (var stat : stats) {

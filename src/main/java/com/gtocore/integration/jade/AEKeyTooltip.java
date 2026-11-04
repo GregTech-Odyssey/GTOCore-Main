@@ -70,7 +70,7 @@ public final class AEKeyTooltip {
             if (key == null) continue;
             var amount = tag.getLong(AMOUNT);
             if (amount < 1) continue;
-            tooltip.add(GTElementHelper.smallFluid(JadeFluidObject.of(key.getFluid())));
+            tooltip.add(GTElementHelper.smallFluid(JadeFluidObject.of(key.getFluid(), amount, key.getTag())));
             tooltip.append(Component.literal(" ")
                     .append(Component.literal(FormattingUtil.formatBuckets(amount)))
                     .withStyle(ChatFormatting.DARK_PURPLE)

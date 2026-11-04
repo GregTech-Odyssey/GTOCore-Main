@@ -5,6 +5,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.network.FriendlyByteBuf;
 
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jetbrains.annotations.NotNull;

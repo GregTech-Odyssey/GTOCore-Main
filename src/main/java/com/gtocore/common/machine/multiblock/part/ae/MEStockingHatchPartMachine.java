@@ -8,14 +8,13 @@ import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
+import com.gregtechceu.gtceu.api.machine.annotation.SaveToDataStick;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
-import com.gregtechceu.gtceu.api.recipe.content.Circuits;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.multiblock.IMEStockingPart;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlotList;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,6 +29,7 @@ import appeng.api.stacks.GenericStack;
 import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
@@ -42,6 +42,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class MEStockingHatchPartMachine extends MEInputHatchPartMachine implements IMEStockingPart {
 
+    @SaveToDataStick(setter = "setAutoPull", order = -1)
     @SaveToDisk(defaultValue = "false")
     private boolean autoPull;
 
@@ -219,48 +220,6 @@ public class MEStockingHatchPartMachine extends MEInputHatchPartMachine implemen
             }
         }
         return InteractionResult.sidedSuccess(isRemote());
-    }
-
-    ////////////////////////////////
-    // ****** Configuration ******//
-    ////////////////////////////////
-    @Override
-    protected CompoundTag writeConfigToTag() {
-        if (!autoPull) {
-            CompoundTag tag = super.writeConfigToTag();
-            tag.putBoolean("AutoPull", false);
-            return tag;
-        }
-        // if in auto-pull, no need to write actual configured slots, but still need to write the ghost circuit
-        CompoundTag tag = new CompoundTag();
-        tag.putBoolean("AutoPull", true);
-        tag.putBoolean("DistinctBuses", isDistinct());
-        int circuit = Circuits.get(circuitInventory.storage, 0);
-        if (circuit >= 0) {
-            tag.putByte("GhostCircuit", (byte) circuit);
-        }
-        return tag;
-    }
-
-    @Override
-    protected void readConfigFromTag(CompoundTag tag) {
-        if (tag.getBoolean("AutoPull")) {
-            // if being set to auto-pull, no need to read the configured slots
-            this.setAutoPull(true);
-            if (tag.contains("DistinctBuses")) {
-                setDistinct(tag.getBoolean("DistinctBuses"));
-            }
-            if (tag.contains("GhostCircuit")) {
-                int circuit = tag.getByte("GhostCircuit");
-                Circuits.set(circuitInventory.storage, 0, circuit <= Circuits.MAX ? circuit : -1);
-            } else {
-                Circuits.set(circuitInventory.storage, 0, -1);
-            }
-            return;
-        }
-        // set auto pull first to avoid issues with clearing the config after reading from the data stick
-        this.setAutoPull(false);
-        super.readConfigFromTag(tag);
     }
 
     @Override

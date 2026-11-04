@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+
 import com.lowdragmc.lowdraglib.gui.modular.IUIHolder;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 

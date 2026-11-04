@@ -2,7 +2,7 @@ package com.gtocore.mixin.gtm.item;
 
 import com.gtocore.api.data.material.GTOMaterialIconSet;
 
-import com.gtolib.api.data.chemical.material.GTOMaterial;
+import com.gtolib.api.data.chemical.material.GTOPropertyKeys;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.block.MaterialBlock;
@@ -37,21 +37,23 @@ public abstract class MaterialBlockItemMixin extends BlockItem {
     @Unique
     private ICustomRenderer gtolib$customRenderer;
 
+    @Unique
+    private boolean gtolib$glow;
+
     protected MaterialBlockItemMixin(Block block, Properties properties) {
         super(block, properties);
     }
 
     @ModifyVariable(method = "<init>", at = @At("HEAD"), index = 2, argsOnly = true, remap = false)
     private static Properties init(Properties value, @Local(argsOnly = true) Material mat) {
-        if (mat instanceof GTOMaterial material) {
-            Rarity rarity = material.gtolib$rarity();
-            if (rarity != null) value.rarity(rarity);
-        }
+        Rarity rarity = GTOPropertyKeys.rarity(mat);
+        if (rarity != null) value.rarity(rarity);
         return value;
     }
 
     @Inject(method = "<init>", at = @At("RETURN"), remap = false)
     private void MaterialBlockItem(Block block, Properties properties, TagPrefix tagPrefix, Material material, CallbackInfo ci) {
+        gtolib$glow = GTOPropertyKeys.glow(material);
         if (GTCEu.isClientSide()) {
             if (material.getMaterialIconSet() instanceof GTOMaterialIconSet iconSet) {
                 gtolib$customRenderer = iconSet.getCustomRenderer();
@@ -68,7 +70,7 @@ public abstract class MaterialBlockItemMixin extends BlockItem {
 
     @Override
     public boolean isFoil(@NotNull ItemStack itemStack) {
-        if (getBlock().material instanceof GTOMaterial gtoMaterial && gtoMaterial.gtolib$glow()) return true;
+        if (gtolib$glow) return true;
         return super.isFoil(itemStack);
     }
 }

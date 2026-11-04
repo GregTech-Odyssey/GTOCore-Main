@@ -52,20 +52,20 @@ public final class ShopChapter {
 
     public static final Quest PROSPECTOR_MANA_ULV = CHAPTER.quest("prospector_mana_ulv", q -> q
             .at(-11.5, 3.5)
-            .iconStack(() -> QuestStacks.withNbt(new ItemStack(GTOItems.PROSPECTOR_MANA_ULV), "{mana:500000}"))
+            .iconStack(() -> QuestStacks.mana(GTOItems.PROSPECTOR_MANA_ULV, 500000))
             .title("魔力钢探矿仪")
             .desc(d -> d.line("主线送了一个，如果你丢了可以在这里买"))
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
-            .reward(Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTOItems.PROSPECTOR_MANA_ULV), "{mana:500000}"), 1))
+            .reward(Reward.stack(() -> QuestStacks.mana(GTOItems.PROSPECTOR_MANA_ULV, 500000), 1))
             .repeatable());
 
     public static final Quest Q_16K_PORTABLE_ITEM_CELL = CHAPTER.quest("q_16k_portable_item_cell", q -> q
             .at(-9.5, 3.5)
-            .iconStack(() -> QuestStacks.withNbt(new ItemStack(AEItems.PORTABLE_ITEM_CELL16K), "{internalCurrentPower:20000.0d}"))
+            .iconStack(() -> QuestStacks.aeCharged(AEItems.PORTABLE_ITEM_CELL16K, 20000.0d))
             .title("16k便携物品元件")
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 128L))
             .reward(
-                    Reward.stack(() -> QuestStacks.withNbt(new ItemStack(AEItems.PORTABLE_ITEM_CELL16K), "{internalCurrentPower:20000.0d}"), 1).personal()));
+                    Reward.stack(() -> QuestStacks.aeCharged(AEItems.PORTABLE_ITEM_CELL16K, 20000.0d), 1).personal()));
 
     public static final Quest SUPER_TANK_I = CHAPTER.quest("super_tank_i", q -> q
             .at(-9.5, 7.5)
@@ -86,7 +86,7 @@ public final class ShopChapter {
             .subtitle("概不退换")
             .desc(d -> d.line("建议完全用完了魔力再来这里兑换，当然如果你有自己的植物魔法产线就最好了"))
             .task(Task.item(GTOItems.PROSPECTOR_MANA_ULV), Task.item(TagPrefix.ingot, GTMaterials.Bronze, 32))
-            .reward(Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTOItems.PROSPECTOR_MANA_ULV), "{mana:500000}"), 1)));
+            .reward(Reward.stack(() -> QuestStacks.mana(GTOItems.PROSPECTOR_MANA_ULV, 500000), 1)));
 
     public static final Quest COLA_BOX_I = CHAPTER.quest("cola_box_i", q -> q
             .at(-1.5, 5.5)
@@ -114,11 +114,11 @@ public final class ShopChapter {
 
     public static final Quest Q_16K_PORTABLE_FLUID_CELL = CHAPTER.quest("q_16k_portable_fluid_cell", q -> q
             .at(-7.5, 3.5)
-            .iconStack(() -> QuestStacks.withNbt(new ItemStack(AEItems.PORTABLE_FLUID_CELL16K), "{internalCurrentPower:20000.0d}"))
+            .iconStack(() -> QuestStacks.aeCharged(AEItems.PORTABLE_FLUID_CELL16K, 20000.0d))
             .title("16k便携流体元件")
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 128L))
             .reward(
-                    Reward.stack(() -> QuestStacks.withNbt(new ItemStack(AEItems.PORTABLE_FLUID_CELL16K), "{internalCurrentPower:20000.0d}"), 1).personal()));
+                    Reward.stack(() -> QuestStacks.aeCharged(AEItems.PORTABLE_FLUID_CELL16K, 20000.0d), 1).personal()));
 
     public static final Quest ENDER_PEARL = CHAPTER.quest("ender_pearl", q -> q
             .at(-9.5, 5.5)

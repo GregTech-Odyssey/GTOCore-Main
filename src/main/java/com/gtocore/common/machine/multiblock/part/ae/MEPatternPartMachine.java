@@ -71,12 +71,13 @@ import appeng.core.definitions.AEItems;
 import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.gto.datasynclib.AbstractDataSerializable;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
@@ -119,21 +120,21 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @RegisterLanguage(cn = "中键点击：打开此样板的独立配置", en = "Middle-click: open this pattern's settings")
     public static final String SLOT_CONFIG_HINT = "gtocore.pattern_part.slot_config.hint";
     @RegisterLanguage(cn = "点击箭头或滚动滚轮切换电路编号", en = "Click the arrows or scroll to change the circuit number")
-    public static final String CIRCUIT_HINT = "gtocore.pattern_part.circuit_hint";
+    public static final Component CIRCUIT_HINT = Component.translatable("gtocore.pattern_part.circuit_hint");
     @RegisterLanguage(cn = "-1 表示不放电路；0~32 为对应编号的编程电路", en = "-1 means no circuit; 0-32 select the programmed circuit with that number")
-    public static final String CIRCUIT_NONE = "gtocore.pattern_part.circuit_none";
+    public static final Component CIRCUIT_NONE = Component.translatable("gtocore.pattern_part.circuit_none");
     @RegisterLanguage(cn = "电路由右侧的编号设置，不能直接放取", en = "The circuit is set by the number on the right; it cannot be placed or taken directly")
-    public static final String CIRCUIT_READ_ONLY = "gtocore.pattern_part.circuit_read_only";
+    public static final Component CIRCUIT_READ_ONLY = Component.translatable("gtocore.pattern_part.circuit_read_only");
     @RegisterLanguage(cn = "此槽已缓存配方", en = "Recipe cached in this slot")
     private static final String RECIPE_CACHED = "gtocore.pattern_buffer.cache";
     @RegisterLanguage(cn = "重置缓存", en = "Recache")
-    public static final String CLEAR_MACHINE_RECIPE_CACHE = "gtceu.ae.pattern_part_machine.clear_machine_recipe_cache";
+    public static final Component CLEAR_MACHINE_RECIPE_CACHE = Component.translatable("gtceu.ae.pattern_part_machine.clear_machine_recipe_cache");
     @RegisterLanguage(cn = "重置机器的所有配方缓存，不会改变样板的任何数据内容", en = "Clear all recipe cache of the machine, will not change any data content in pattern")
-    public static final String CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP = "gtceu.ae.pattern_part_machine.clear_machine_recipe_cache_tooltip";
+    public static final Component CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP = Component.translatable("gtceu.ae.pattern_part_machine.clear_machine_recipe_cache_tooltip");
     @RegisterLanguage(cn = "清除配方", en = "Clear")
-    public static final String CLEAR_PATTERN_RECIPE_CACHE = "gtceu.ae.pattern_part_machine.clear_pattern_recipe_cache";
+    public static final Component CLEAR_PATTERN_RECIPE_CACHE = Component.translatable("gtceu.ae.pattern_part_machine.clear_pattern_recipe_cache");
     @RegisterLanguage(cn = "重置样板内的配方缓存，会清除样板内的编写的配方（不会改变原料与产物内容）", en = "Clear recipe cache in pattern, will clear the recipe written in pattern (will not change input and output)")
-    public static final String CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP = "gtceu.ae.pattern_part_machine.clear_pattern_recipe_cache_tooltip";
+    public static final Component CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP = Component.translatable("gtceu.ae.pattern_part_machine.clear_pattern_recipe_cache_tooltip");
 
     /// 单槽配置弹出面板的键，参数为样板槽号
     public static final String SLOT_CONFIG_POPUP = "pattern_slot_config";
@@ -702,9 +703,9 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         root.addChild(pages);
 
         Widget[] actions = hasRecipeCacheButtons() ? new Widget[] {
-                Button.translatable(UISizes.BUTTON_WIDTH, CLEAR_MACHINE_RECIPE_CACHE).setOnServerClick(this::clearMachineRecipeCache)
+                Button.text(UISizes.BUTTON_WIDTH, CLEAR_MACHINE_RECIPE_CACHE).setOnServerClick(this::clearMachineRecipeCache)
                         .tooltips(CLEAR_MACHINE_RECIPE_CACHE_TOOLTIP),
-                ConfirmButton.translatable(UISizes.BUTTON_WIDTH, CLEAR_PATTERN_RECIPE_CACHE).setOnServerConfirm(this::clearPatternRecipeCache)
+                ConfirmButton.of(UISizes.BUTTON_WIDTH, CLEAR_PATTERN_RECIPE_CACHE).setOnServerConfirm(this::clearPatternRecipeCache)
                         .setVariant(UITheme.ButtonVariant.DANGER).tooltips(CLEAR_PATTERN_RECIPE_CACHE_TOOLTIP)
         } : new Widget[0];
         var footer = MEPatternPartUI.footer(this, width, pages, actions);

@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.Block;
 
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.ByteBufCodecExtends;
+
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Size;
@@ -57,7 +58,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
     @RegisterLanguage(cn = "这个接口不能接入这一类", en = "This port does not accept this kind")
     public static final String LANG_CATEGORY_UNAVAILABLE = "gtocore.overview.category_unavailable";
     @RegisterLanguage(cn = "没有可接入的结构", en = "Nothing fits this port")
-    public static final String LANG_NONE = "gtocore.overview.none";
+    public static final Component LANG_NONE = Component.translatable("gtocore.overview.none");
     @RegisterLanguage(cn = "朝向 %s / %s", en = "Orientation %s / %s")
     public static final String LANG_ORIENTATION = "gtocore.overview.orientation";
     @RegisterLanguage(cn = "旋转", en = "Rotate")
@@ -71,7 +72,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
     @RegisterLanguage(cn = "只有一种可行朝向", en = "Only one orientation fits")
     public static final String LANG_SINGLE = "gtocore.overview.single";
     @RegisterLanguage(cn = "返回机器界面", en = "Back to the machine")
-    public static final String LANG_BACK = "gtocore.overview.back";
+    public static final Component LANG_BACK = Component.translatable("gtocore.overview.back");
     @RegisterLanguage(cn = "缺少控制器：%s", en = "Missing controller: %s")
     public static final String LANG_NO_CONTROLLER = "gtocore.overview.no_controller";
     @RegisterLanguage(cn = "缺少方块：%s", en = "Missing block: %s")
@@ -242,7 +243,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
         var layout = structure == null ? null : structure.layout(values);
         var choices = layout == null ? null : BuildUpload.take(player, upload, definition, values, layout.cells().size());
         if (choices == null) {
-            player.sendSystemMessage(Component.translatable(StructureBuild.INVALID));
+            player.sendSystemMessage(StructureBuild.INVALID);
             return;
         }
         if (OverviewCapture.occupied(level, anchor.cells())) {
@@ -255,7 +256,7 @@ public final class OverviewWidget extends WidgetGroup implements UIChannel.Host 
         }
         var controllerItem = definition.asItem();
         if (network && !player.isCreative() && !PlayerSupply.hasNetwork(player)) {
-            player.sendSystemMessage(Component.translatable(StructureBuild.NO_NETWORK));
+            player.sendSystemMessage(StructureBuild.NO_NETWORK);
             network = false;
         }
         var supply = player.isCreative() ? null : PlayerSupply.of(player, true, network);

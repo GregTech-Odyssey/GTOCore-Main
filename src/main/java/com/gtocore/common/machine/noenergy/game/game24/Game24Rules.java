@@ -9,22 +9,17 @@ import java.util.ArrayDeque;
 
 /**
  * 「24点」的规则：{@link #NUMBER_COUNT} 张 {@link #VALUE_MIN}~{@link #VALUE_MAX} 的数字牌，用 + − × ÷ 与括号把它们
- * 各用一次拼成 {@link #TARGET}。
+ * 各用一次拼成 {@link #TARGET}；求值用精确有理数（{@link Frac}），没有浮点误差。
  *
  * <p>
- * 玩家拼出来的表达式编码成 {@code int[]}：前 {@link #NUMBER_COUNT} 个编码是「第几张牌」的下标（0~3，所以两张同样的牌
- * 也能分清），其余是 {@link #ADD}~{@link #RIGHT}，符号字形见 {@link #TOKEN_TEXT}。
+ * 表达式编码成 {@code int[]}：{@code 0 ~ NUMBER_COUNT - 1} 是「第几张牌」的下标（两张同样的牌也能分清），
+ * 其余是 {@link #ADD}~{@link #RIGHT}，字形见 {@link #TOKEN_TEXT}。
  *
  * <p>
- * 求值全程用精确有理数（{@link Frac}）而不是浮点：牌面与运算都只是若干个小整数的乘除加减，分子分母远不到 {@code long}
- * 的量级，所以既不会溢出，也不需要参考实现里那个 epsilon 容差。
- *
- * <p>
- * 纯逻辑，不持有机器状态；只在机器所在的服务端线程调用，不要求线程安全，临时容器按实例复用。
+ * 纯逻辑，不持有机器状态；只在服务端线程调用，不要求线程安全，临时容器按实例复用。
  */
 public final class Game24Rules {
 
-    /** 数字牌张数。 */
     public static final int NUMBER_COUNT = 4;
     /** 牌面下限。 */
     public static final int VALUE_MIN = 1;
@@ -33,8 +28,8 @@ public final class Game24Rules {
     public static final int MAX_TOKENS = NUMBER_COUNT * 2 - 1 + 6;
 
     /**
-     * 抽牌范围：1~10 只用小数字，1~13 是完整的 A~K。范围越大越容易摸到 11~13 这类不好凑 24 的牌，所以
-     * {@link #runReward()}（连解一轮的奖励）稍高一点。
+     * 抽牌范围：1~10 只用小数字，1~13 是完整的 A~K。范围越大越容易摸到 11~13 这类不好凑 24 的牌，
+     * 所以 {@link #runReward()} 稍高。
      */
     public enum DrawRange {
 
@@ -59,7 +54,7 @@ public final class Game24Rules {
             return max;
         }
 
-        /** 连解一轮（{@code Game24Machine#RUN_PUZZLES} 题）给多少游戏币；中途用提示或换题这一轮就作废。 */
+        /** 每解出 {@code Game24Machine#RUN_PUZZLES} 题给多少游戏币；用过提示的题不计，换题与多人局不影响。 */
         public long runReward() {
             return runReward;
         }
@@ -79,7 +74,7 @@ public final class Game24Rules {
     public static final int RIGHT = NUMBER_COUNT + 5;
     public static final int TOKEN_COUNT = NUMBER_COUNT + 6;
 
-    /** 非数字 token 的字形，下标是 {@code token - ADD}；加减用真正的减号，和按钮上的字一致。 */
+    /** 非数字 token 的字形，下标是 {@code token - ADD}；减法用真正的减号，乘除用 × ÷，与按钮一致。 */
     private static final String[] TOKEN_TEXT = { "+", "−", "×", "÷", "(", ")" };
 
     private Game24Rules() {}
@@ -108,7 +103,7 @@ public final class Game24Rules {
         return isToken(token) && !isNumberToken(token) ? TOKEN_TEXT[token - ADD] : null;
     }
 
-    /** 发一局：按 {@code range} 随机 4 张牌，重摇到有解为止（和参考实现一样保证玩家不会拿到死局）。 */
+    /** 发一局：在 {@code range} 内随机 {@link #NUMBER_COUNT} 张牌，重摇到有解为止（玩家不会拿到死局）。 */
     public int[] deal(RandomSource random, DrawRange range) {
         int[] numbers = new int[NUMBER_COUNT];
         int span = range.max() - range.min() + 1;
@@ -162,10 +157,10 @@ public final class Game24Rules {
     }
 
     /**
-     * 一个解法表达式（形如 {@code (3 + 5) × (4 − 1)}）；同一组牌每次给同一个解，无解时返回空串。
+     * 一个解法表达式（形如 {@code (3 + 5) × (4 − 1)}），无解时返回空串；同一份牌面每次给出同一个解。
      *
      * <p>
-     * 加减的结果上下都套括号，所以拼出来的字符串本身不受运算符优先级影响；乘除按参考实现的写法不套括号。
+     * 加减的结果上下都套括号，所以拼出来的字符串本身不受运算符优先级影响；乘除不套括号。
      */
     public String hint(int[] numbers) {
         if (numbers.length != NUMBER_COUNT) return "";
@@ -182,8 +177,8 @@ public final class Game24Rules {
      * 每次挑两张牌、按六种组合（a+b、a−b、b−a、a×b、a÷b、b÷a）合成一张再递归。
      *
      * <p>
-     * 和参考实现一样把当前最后一张挪到 {@code j}、结果写回 {@code i}，递归只碰前 {@code count - 1} 张；
-     * 每层退出前把 {@code i}、{@code j} 原位复原，因此同一层的其它组合看到的是原始牌面。
+     * 先把当前最后一张挪到 {@code j}、结果写回 {@code i}，递归只碰前 {@code count - 1} 张；每层退出前把
+     * {@code i}、{@code j} 原位复原，同一层的其它组合看到的是原始牌面。
      */
     private static String solve(Frac[] values, String[] texts, int count) {
         if (count == 1) return values[0].isTarget() ? texts[0] : "";

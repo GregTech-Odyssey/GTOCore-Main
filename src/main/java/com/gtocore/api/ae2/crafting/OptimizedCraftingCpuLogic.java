@@ -40,12 +40,13 @@ import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.helpers.CraftingJobSource;
 import appeng.me.service.CraftingService;
 
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 import com.gto.datasynclib.util.holder.IntHolder;
 import com.gto.datasynclib.util.holder.LongHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 
@@ -530,6 +531,14 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
     @Override
     public boolean hasJob() {
         return this.job != null;
+    }
+
+    public long getJobStartedAt() {
+        return job == null ? 0 : job.startedAt;
+    }
+
+    public long getJobUsedBytes() {
+        return job == null ? -1 : job.usedBytes;
     }
 
     @Override

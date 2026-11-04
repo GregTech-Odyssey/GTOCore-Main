@@ -144,7 +144,12 @@ public final class MiscRecipe {
                 'P', new MaterialEntry(bolt, Steel),
                 'T', GLASS_TUBE.asItem(),
                 'W', new MaterialEntry(wireGtSingle, Copper));
-
+        if (GTORules.GTM_WEATHER_EXPLOSION.get()) {
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("rain_film"), GTOItems.RAIN_FILM.asItem(),
+                    " R ", "RPR", " R ",
+                    'R', new MaterialEntry(rod, TreatedWood),
+                    'P', new MaterialEntry(plate, Polyethylene));
+        }
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("air_vent"), GTOItems.AIR_VENT.asItem(),
                 "RRR", "ROR", "RRR",
                 'R', new MaterialEntry(rod, Steel),

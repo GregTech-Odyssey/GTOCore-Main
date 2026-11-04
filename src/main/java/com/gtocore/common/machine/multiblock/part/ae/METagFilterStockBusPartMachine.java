@@ -5,15 +5,16 @@ import com.gtocore.utils.Caches;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.machine.annotation.SaveToDataStick;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.nbt.CompoundTag;
 
 import appeng.api.stacks.AEKey;
 import appeng.util.prioritylist.IPartitionList;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -22,8 +23,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class METagFilterStockBusPartMachine extends MEStockingBusPartMachine implements ITagFilterMachine {
 
+    @SaveToDataStick(setter = "setTagWhite")
     @SaveToDisk(defaultValue = "")
     private String tagWhite = "";
+    @SaveToDataStick(setter = "setTagBlack")
     @SaveToDisk(defaultValue = "")
     private String tagBlack = "";
 
@@ -42,25 +45,6 @@ public class METagFilterStockBusPartMachine extends MEStockingBusPartMachine imp
     boolean test(AEKey what) {
         if (filter == null) filter = Caches.getTagPriorityList(tagWhite, tagBlack);
         return filter.isListed(what);
-    }
-
-    @Override
-    protected CompoundTag writeConfigToTag() {
-        CompoundTag tag = super.writeConfigToTag();
-        tag.putString("TagWhite", tagWhite);
-        tag.putString("TagBlack", tagBlack);
-        return tag;
-    }
-
-    @Override
-    protected void readConfigFromTag(CompoundTag tag) {
-        super.readConfigFromTag(tag);
-        if (tag.contains("TagWhite")) {
-            setTagWhite(tag.getString("TagWhite"));
-        }
-        if (tag.contains("TagBlack")) {
-            setTagBlack(tag.getString("TagBlack"));
-        }
     }
 
     @Override

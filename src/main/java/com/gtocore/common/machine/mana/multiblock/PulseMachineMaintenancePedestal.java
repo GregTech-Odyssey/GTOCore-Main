@@ -28,6 +28,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
@@ -159,15 +160,16 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
     @Override
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
-        controls.addClientButton(RANGE, "gtocore.digital_miner.show_range", () -> ClientUtil.highlighting(getPos().above(5), RANGE_RADIUS), RANGE_TOOLTIP);
+        controls.addClientButton(RANGE, SHOW_RANGE, () -> ClientUtil.highlighting(getPos().above(5), RANGE_RADIUS), RANGE_TOOLTIP);
     }
 
     @RegisterLanguage(cn = "总分发维护用魔力：%s 次", en = "Total mana used for maintenance: %s times")
     public static final String TIMES = "gtocore.pulse_machine_maintenance.times";
     @RegisterLanguage(cn = "维护半径", en = "Maintenance Radius")
-    private static final String RADIUS = "gtocore.machine.pulse_machine_maintenance_pedestal.radius";
+    private static final Component RADIUS = Component.translatable("gtocore.machine.pulse_machine_maintenance_pedestal.radius");
     @RegisterLanguage(cn = "维护范围", en = "Maintenance Range")
-    private static final String RANGE = "gtocore.machine.pulse_machine_maintenance_pedestal.range";
+    private static final Component RANGE = Component.translatable("gtocore.machine.pulse_machine_maintenance_pedestal.range");
     @RegisterLanguage(cn = "在世界中高亮显示维护范围", en = "Highlights the maintenance range in the world")
-    private static final String RANGE_TOOLTIP = "gtocore.machine.pulse_machine_maintenance_pedestal.range.tooltip";
+    private static final Component RANGE_TOOLTIP = Component.translatable("gtocore.machine.pulse_machine_maintenance_pedestal.range.tooltip");
+    private static final Component SHOW_RANGE = Component.translatable("gtocore.digital_miner.show_range");
 }

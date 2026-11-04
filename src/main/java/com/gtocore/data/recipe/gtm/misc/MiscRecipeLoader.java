@@ -3,7 +3,6 @@ package com.gtocore.data.recipe.gtm.misc;
 import com.gtolib.api.recipe.RecipeBuilder;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidContainerIngredient;
@@ -14,6 +13,7 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,6 +22,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.Tags;
 
 import com.gto.registrate.util.entry.ItemEntry;
+
 import org.jetbrains.annotations.Nullable;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -246,7 +247,7 @@ public final class MiscRecipeLoader {
         // skip white lens
         for (int i = 1; i < CHEMICAL_DYES.length; i++) {
             builder.copy(CHEMICAL_DYES[i].getName() + "_lens").inputFluids(CHEMICAL_DYES[i].getFluid(dyeAmount))
-                    .outputItems(GLASS_LENSES.get(Color.VALUES[i]))
+                    .outputItems(GLASS_LENSES.get(DyeColor.values()[i]))
                     .save();
         }
 
@@ -455,7 +456,7 @@ public final class MiscRecipeLoader {
     private static void nanoSaber(String id, ItemEntry<?> output, int tier, TagKey<Item> circuit,
                                   TagKey<Item> battery, ItemEntry<?> sensor, ItemEntry<?> fieldGenerator,
                                   Material plateMaterial) {
-        armorPiece(id, output, 5, tier, armorCostMultiplier(tier) * 1.5, circuit, battery, sensor, 2, fieldGenerator,
+        armorPiece(id, output, 5, tier, armorCostMultiplier(tier) * 1.5 / 2.5, circuit, battery, sensor, 2, fieldGenerator,
                 1, plateMaterial, 6).save();
     }
 

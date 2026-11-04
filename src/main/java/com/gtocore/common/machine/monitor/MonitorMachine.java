@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.monitor;
 
 import com.gtocore.api.gui.graphic.impl.GTOProgressToolTipComponent;
+import com.gtocore.common.item.CoordinateCardBehavior;
 import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 
 import com.gtolib.GTOCore;
@@ -12,7 +13,6 @@ import com.gtolib.utils.GTOUtils;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
-import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineModifyDrops;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
@@ -20,6 +20,12 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
 import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
@@ -46,13 +52,12 @@ import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.stacks.AEItemKey;
 
-import com.google.common.collect.ImmutableBiMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.google.common.collect.ImmutableBiMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.BlockAccessor;
@@ -103,16 +108,9 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
         isCardChange = true;
     }
 
-    public MonitorMachine(Object o) {
-        this((MetaMachineBlockEntity) o);
-    }
-
     private NotifiableInventory<AEItemKey> createInventoryItemHandler() {
         NotifiableInventory<AEItemKey> storage = NotifiableInventory.items(this, 1, IO.NONE, IO.NONE);
-        storage.setFilter(k -> {
-            var tag = k instanceof AEItemKey itemKey ? itemKey.getTag() : null;
-            return tag != null && tag.getBoolean("machine");
-        });
+        storage.setFilter(k -> k instanceof AEItemKey itemKey && CoordinateCardBehavior.getStoredCoordinates(itemKey.getTag()) != null);
         return storage;
     }
 
@@ -171,11 +169,9 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
             if (card == null) {
                 return new Component[0];
             }
-            CompoundTag posTags = card.getTag();
-            if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z")) {
-                return new Component[0];
-            }
-            pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
+            var dimension = getLevel().dimension();
+            var target = CoordinateCardBehavior.getStoredGlobalPos(card.getTag(), dimension);
+            pos = target != null && target.dimension() == dimension ? target.pos() : null;
             isCardChange = false;
         }
         if (pos == null) {
@@ -534,14 +530,22 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
     }
 
     @Override
-    public Widget createUIWidget() {
-        WidgetGroup baseWidget = (WidgetGroup) super.createUIWidget();
-        SlotWidget slot = new SlotWidget(inventory.storage, 0, 16, 144, true, true);
-        slot.appendHoverTooltips(Component.translatable("gtocore.machine.machine_monitor.slot"));
-        slot.setChangeListener(() -> isCardChange = true);
-        slot.setBackground(GuiTextures.SLOT.copy().scale(18 / 16f), MACHINE_COORDS_OVERLAY);
-        baseWidget.addWidget(slot);
-        return baseWidget;
+    protected UIElement createPriorityRow() {
+        var cardSlot = ItemSlot.of(inventory.storage, 0, true, true);
+        cardSlot.appendHoverTooltips(Component.translatable("gtocore.machine.machine_monitor.slot"));
+        cardSlot.setChangeListener(() -> isCardChange = true);
+        cardSlot.setBackground(GuiTextures.SLOT.copy().scale(18 / 16f), MACHINE_COORDS_OVERLAY);
+
+        var priorityField = NumberField.ofLong(UISizes.CONTENT_WIDTH - UISizes.SLOT_SIZE - UISizes.GAP,
+                this::getPriority, this::setPriority, (long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE);
+
+        var priorityColumn = UIElement.column(LayoutStyle.AUTO)
+                .layout(l -> l.gapAll(UISizes.GAP).flex(1))
+                .addChildren(Form.fieldLabel(Component.translatable("gtocore.machine.monitor.priority")), priorityField);
+
+        return UIElement.row(LayoutStyle.AUTO)
+                .layout(l -> l.gapAll(UISizes.GAP).alignEnd())
+                .addChildren(cardSlot, priorityColumn);
     }
 
     private static final IGuiTexture MACHINE_COORDS_OVERLAY = new ResourceTexture(GTOCore.id("textures/gui/machine_coords_overlay.png")).scale(15 / 16f);

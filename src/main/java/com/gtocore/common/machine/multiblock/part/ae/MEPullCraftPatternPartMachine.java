@@ -29,6 +29,7 @@ import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -53,13 +54,13 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
     @RegisterLanguage(cn = "拉取", en = "Pull")
     private static final String PULL_TITLE = "gtocore.pull_pattern_hatch.title";
     @RegisterLanguage(cn = "拉取模式", en = "Pull Mode")
-    private static final String PULL_MODE = "gtocore.pull_pattern_hatch.pull_mode";
+    private static final Component PULL_MODE = Component.translatable("gtocore.pull_pattern_hatch.pull_mode");
     @RegisterLanguage(cn = "开启后，该样板的产物在网络里不足阈值时自动从网络拉取原料补足", en = "When enabled, ingredients are pulled from the network to top this pattern's product up to the threshold")
-    private static final String PULL_MODE_TOOLTIP = "gtocore.pull_pattern_hatch.pull_mode_tooltip";
+    private static final Component PULL_MODE_TOOLTIP = Component.translatable("gtocore.pull_pattern_hatch.pull_mode_tooltip");
     @RegisterLanguage(cn = "产物阈值", en = "Product Threshold")
-    private static final String PULL_THRESHOLD = "gtocore.pull_pattern_hatch.threshold";
+    private static final Component PULL_THRESHOLD = Component.translatable("gtocore.pull_pattern_hatch.threshold");
     @RegisterLanguage(cn = "网络中该产物的目标库存量，不足时按差额拉取原料；0 表示不补货", en = "Target amount of this product in the network; the deficit is pulled when lower. 0 disables restocking")
-    private static final String PULL_THRESHOLD_TOOLTIP = "gtocore.pull_pattern_hatch.threshold_tooltip";
+    private static final Component PULL_THRESHOLD_TOOLTIP = Component.translatable("gtocore.pull_pattern_hatch.threshold_tooltip");
     @RegisterLanguage(cn = "拉取模式：目标库存 %s", en = "Pull mode: target stock %s")
     private static final String PULL_SLOT_HINT = "gtocore.pull_pattern_hatch.slot_hint";
 
@@ -272,8 +273,7 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
         var section = MEPatternPartUI.section(column, PULL_TITLE);
         var threshold = MEPatternPartUI.longField(0, () -> pullThresholds[index], value -> setPullThreshold(index, value), 0);
         section.addChildren(
-                MEPatternPartUI.labeledRow(section.getContentWidth(), PULL_MODE, PULL_MODE_TOOLTIP,
-                        Switch.of(() -> pullModes[index], enabled -> setPullMode(index, enabled))),
+                MEPatternPartUI.labeledRow(section.getContentWidth(), PULL_MODE, Switch.of(() -> pullModes[index], enabled -> setPullMode(index, enabled)), PULL_MODE_TOOLTIP),
                 Form.numberRow(PULL_THRESHOLD, threshold, PULL_THRESHOLD_TOOLTIP));
     }
 }

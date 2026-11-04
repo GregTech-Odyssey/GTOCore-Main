@@ -59,14 +59,12 @@ public final class GridLegendPanel extends UIElement {
         row(Kind.TREND, GridMapLang.LEGEND_TREND);
     }
 
-    private static UIElement title(String key, int indent, int gap, IntSupplier color) {
-        var text = Component.translatable(key);
+    private static UIElement title(Component text, int indent, int gap, IntSupplier color) {
         var line = TextLine.constant(UISizes.widthFor(text.getString()), text).bindClientColor(color);
         return line.layout(l -> l.marginLeft(indent).marginTop(gap));
     }
 
-    private void row(Kind kind, String key) {
-        var text = Component.translatable(key);
+    private void row(Kind kind, Component text) {
         var label = TextLine.constant(UISizes.widthFor(text.getString()), text).bindClientColor(UITheme::panelText);
         addChild(UIElement.centeredRow(ROW_HEIGHT).layout(l -> l.marginLeft(INDENT)).addChildren(new Sample(kind), label));
     }

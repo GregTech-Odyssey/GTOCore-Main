@@ -9,17 +9,12 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * 一套不可变的老虎机规则：盘面布局、固定卷轴与按布局的赔付表。
+ * 一套不可变的老虎机规则：盘面布局、固定卷轴与按布局的赔付表；每台机器构造时注入一份，规则本身不参与存档。
  *
  * <p>
- * 布局（{@link SlotMachineLayout}）决定列数、行数、中奖线与滚动时长；卷轴带与赔付表决定长期回报率。
- * 每台机器在构造时注入一份规则，所以同一个 {@link SlotMachine} 类可以同时驱动 3 列与 5 列的盘面，
- * 规则本身不参与存档（存档只保存开奖结果里的布局 id 与盘面符号）。
- *
- * <p>
- * 赔付倍率的单位是「本局下注」：单条中奖线的奖励 = 下注 × 该线倍率，整局奖励是各中奖线之和。每条中奖线
- * 只读每根卷轴上的一个格子，而卷轴停点在带上均匀分布，因此每条线的期望收益完全相同，整机回报率
- * = 中奖线数 × 单线期望。下面各表的百分比都是按这个式子精确求和得到的，不是模拟值。
+ * 单线奖励 = 下注 × 该线倍率，整局奖励是各中奖线之和。每条线只从每根卷轴取一格，卷轴停点均匀分布，
+ * 因此各线期望相同：整机回报率 = 中奖线数 × 单线期望。按此精确求和，3 列为 94.87%、5 列为 95.00%，
+ * 改卷轴次数或赔付表都会改变它。
  */
 public final class SlotMachineRules {
 
@@ -27,18 +22,14 @@ public final class SlotMachineRules {
     public static final int DEFAULT_MAX_BET = 78125;
 
     /**
-     * 3 列布局每档左卷轴的符号次数，下标就是稳定 id（SYMBOL0~SYMBOL8），对应物品见
-     * {@link SlotSymbol#symbolItem(SlotSymbol)}。每行共 99 格；中、右两列把 SYMBOL0 的次数与 SYMBOL1、
-     * SYMBOL2 对调，也就是让最便宜的三个符号在各列之间错开。
-     * 高档减弱三列之间的比例差异，中高奖符号和百搭的次数保持固定。
-     * 档位后的百分比是按五条线、固定赔率精确求出的长期回报率，只作记录，不参与开奖。
+     * 3 列布局左卷轴的符号次数，下标即稳定 id（SYMBOL0~SYMBOL8），对应物品见 {@link SlotSymbol#symbolItem(SlotSymbol)}。
+     * 每根卷轴共 99 格；中、右两列把 SYMBOL0 的次数与 SYMBOL1、SYMBOL2 对调，让最便宜的三个符号在各列错开。
      */
     private static final int[] TIER_SYMBOL_COUNTS = { 46, 10, 10, 14, 9, 5, 3, 1, 1 };
 
     /**
-     * 5 列布局每根卷轴的符号次数（下标同 {@link #TIER_SYMBOL_COUNTS}，每根合计 100）：最便宜的三个符号
-     * 在两两错开的卷轴上轮流占主导，避免它们在前两列上频繁对上；中高奖符号的频率比 3 列布局略高，
-     * 因为 5 列要连中三格更难。最后一位是百搭（SYMBOL8），每根卷轴固定 2 格，比 3 列布局的 1 格稍多。
+     * 5 列布局每根卷轴的符号次数（下标同上，每根合计 100）：最便宜的三个符号在两两错开的卷轴上轮流占主导，
+     * 避免它们在前两列频繁对上。中高奖符号的次数与 3 列布局相同，百搭（SYMBOL8）每根 2 格，比 3 列的 1 格多。
      */
     private static final int[][] WIDE_SYMBOL_COUNTS = {
             { 42, 12, 12, 14, 9, 5, 3, 1, 2 },
@@ -49,14 +40,8 @@ public final class SlotMachineRules {
     };
 
     /**
-     * 5 列布局的赔付表，行是三连/四连/五连，列是符号 id（顺序同上；百搭 SYMBOL8 自身不赔付）。
-     * 5 列沿用视频老虎机的惯例只赔三连以上：二连不赔付，连得越长赔得越多。
-     *
-     * <p>
-     * 与 {@link #WIDE_SYMBOL_COUNTS} 配套的长期回报率是 1899999999/2000000000 = 94.99999995%
-     * （三连 52.4681%、四连 27.1305%、五连 15.4014%），比 95% 低 5e-10；整机中奖率约 25.4%，
-     * 随卷轴排列在 25.2%~25.5% 之间。改这两张表的任何一格都会改变回报率，改前先按停点均匀分布精确求和复核
-     * （1000 万局模拟的交叉验证为 95.05%±0.11pp）。倍率是整数，凑不出正好 19/20。
+     * 5 列布局的赔付表：行是三连/四连/五连，列是符号 id（顺序同上；百搭 SYMBOL8 自身不赔付）。
+     * 5 列只赔三连以上，连得越长赔得越多；配套回报率恰为 1899999999/2000000000，改动任意一格都会改变它。
      */
     private static final int[][] WIDE_PAYTABLE = {
             { 2, 2, 2, 3, 4, 6, 15, 25, 0 },
@@ -64,23 +49,20 @@ public final class SlotMachineRules {
             { 10, 10, 10, 30, 80, 150, 300, 800, 0 },
     };
 
-    /** 经典三列三行（3 列 5 线，默认回报档位）。 */
+    /** 经典三列三行，5 条中奖线。 */
     public static final SlotMachineRules CLASSIC = new SlotMachineRules(SlotMachineLayout.CLASSIC, classicReels(), classicPaytable());
-    /** 宽幅五列三行（5 列 9 线，只赔三连以上）。 */
+    /** 宽幅五列三行，9 条中奖线，只赔三连以上。 */
     public static final SlotMachineRules WIDE = new SlotMachineRules(SlotMachineLayout.WIDE, wideReels(), widePaytable());
 
-    /** 不向外暴露可变数组，开奖只经 {@link #spin} 读取。 */
+    /** 各列固定卷轴；开奖只经 {@link #spin} 读取，不对外暴露。 */
     private final SlotSymbol[][] reelStrips;
     private final SlotMachineLayout layout;
     /**
-     * 赔付表：第一维是连中长度、第二维是符号 id，0 表示该长度不赔付。
-     *
-     * <p>
-     * 直接按长度寻址（而不是按「第几档」），3 列与 5 列因此共用同一条查表路径：3 列只填 2/3 两行，
-     * 5 列只填 3/4/5 三行，没填的组合自然不中奖。百搭同样按被替代符号查表。
+     * 赔付表：第一维是连中长度、第二维是符号 id，0 表示该长度不赔付。3 列只填 2/3 两行，5 列只填 3/4/5 三行，
+     * 没填的组合自然不中奖；百搭按被替代符号查表。
      */
     private final int[][] paytable;
-    /** 单条中奖线的最高倍率：中奖附赠效果时拿它当「满档」的参照。 */
+    /** 单条中奖线的最高倍率，附赠效果拿它当「满档」参照。 */
     private final int maxLineMultiplier;
 
     private SlotMachineRules(SlotMachineLayout layout, SlotSymbol[][] reelStrips, int[][] paytable) {
@@ -104,7 +86,7 @@ public final class SlotMachineRules {
         return layout;
     }
 
-    /** 单条中奖线的最高倍率（多线相加还可能更高）。 */
+    /** 单线最高倍率；多线相加的实际倍率还可能更高。 */
     int maxLineMultiplier() {
         return maxLineMultiplier;
     }
@@ -113,12 +95,12 @@ public final class SlotMachineRules {
         return layout.spinTicks();
     }
 
-    /** 符号在某个连中长度上的赔付倍率；{@code 0} 表示该长度不赔付。 */
+    /** 符号在某个连中长度上的倍率；{@code 0} 表示该长度不赔付。 */
     public int multiplier(SlotSymbol symbol, int matchCount) {
         return paytable[matchCount][symbol.id()];
     }
 
-    /** 3 列布局的三根固定卷轴只在这里生成一次，之后每局复用，不在开奖时重建。 */
+    /** 3 列的固定卷轴只在这里生成一次，之后每局复用。 */
     private static SlotSymbol[][] classicReels() {
         int[] leftCounts = TIER_SYMBOL_COUNTS;
         SlotSymbol[][] reels = new SlotSymbol[SlotMachineLayout.CLASSIC.reelCount()][];
@@ -139,7 +121,7 @@ public final class SlotMachineRules {
         return reels;
     }
 
-    /** 3 列布局的赔付表来自符号自身的赔率；2 连、3 连两行，其余长度为 0。 */
+    /** 3 列赔付表：2 连、3 连两行取自符号自身倍率，其余长度为 0。 */
     private static int[][] classicPaytable() {
         int[][] table = new int[SlotMachineLayout.MAX_REEL_COUNT + 1][SlotSymbol.count()];
         for (int i = 0; i < SlotSymbol.count(); i++) {
@@ -150,7 +132,7 @@ public final class SlotMachineRules {
         return table;
     }
 
-    /** 5 列布局的赔付表只有 3/4/5 连三行，直接搬 {@link #WIDE_PAYTABLE}。 */
+    /** 5 列赔付表只有 3/4/5 连三行，直接搬 {@link #WIDE_PAYTABLE}。 */
     private static int[][] widePaytable() {
         int[][] table = new int[SlotMachineLayout.MAX_REEL_COUNT + 1][SlotSymbol.count()];
         for (int i = 0; i < WIDE_PAYTABLE.length; i++) {
@@ -163,7 +145,7 @@ public final class SlotMachineRules {
         return Math.clamp(bet, DEFAULT_BET, DEFAULT_MAX_BET);
     }
 
-    /** 每列只随机一次停点，连续三格组成可见窗口，再逐条中奖线汇总奖励。 */
+    /** 每列随机一个停点，取连续 visibleRows 格作窗口，再逐条中奖线汇总。 */
     SlotMachineResult spin(RandomSource random, int bet) {
         Objects.requireNonNull(random, "random");
         int clampedBet = clampBet(bet);
@@ -192,7 +174,7 @@ public final class SlotMachineRules {
         return new SlotMachineResult(layout, clampedBet, reward, symbols, lines, lineCount);
     }
 
-    /** 目标符号取最左侧的非百搭符号；整条线全是百搭时按最高奖符号（SYMBOL7）结算。 */
+    /** 目标取最左侧的非百搭符号；整条线全百搭时按最高奖符号 SYMBOL7 结算。 */
     private SlotSymbol chooseTarget(SlotSymbol[] symbols, Payline payline) {
         for (int reel = 0; reel < layout.reelCount(); reel++) {
             SlotSymbol symbol = symbols[layout.symbolIndex(reel, payline.row(reel))];
@@ -201,7 +183,7 @@ public final class SlotMachineRules {
         return SlotSymbol.SYMBOL7;
     }
 
-    /** 只认从左开始的连续匹配：百搭可替代目标符号，遇到别的符号就断，断在第一格即整条线不中奖。 */
+    /** 只认从左开始的连续匹配：百搭可替代目标，遇到别的符号即断，第一格就断则整线不中。 */
     private int matchCount(SlotSymbol[] symbols, Payline payline, SlotSymbol target) {
         int count = 0;
         for (int reel = 0; reel < layout.reelCount(); reel++) {
@@ -213,8 +195,8 @@ public final class SlotMachineRules {
     }
 
     /**
-     * 按次数生成固定、分散的卷轴：各符号等间距放置后按相位交错合并，占比过高的符号再均匀插入其他符号之间。
-     * 种子只决定排列，卷轴本身不随后续开奖变化。
+     * 按次数生成固定卷轴：各符号等间距放置后按相位交错合并，占比过高的符号再均匀插入其他符号之间。
+     * 种子只决定排列，卷轴不随后续开奖变化。
      */
     private static SlotSymbol[] createReel(SlotMachineLayout layout, int[] symbolCounts, long layoutSeed) {
         int size = 0;

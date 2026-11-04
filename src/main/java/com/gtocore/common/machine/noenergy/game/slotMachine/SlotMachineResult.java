@@ -4,6 +4,7 @@ import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineLayout.Pa
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -11,25 +12,19 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * 一次老虎机开奖的完整结果。
- *
- * <p>
- * 不可变快照：构造时复制数组，只按格提供读取，避免机器或界面误改历史结果。{@link #bet}、{@link #reward}
- * 由 Lombok 生成同名取值方法，盘面与中奖线则刻意不生成，只能经 {@link #symbolAt(int, int)} /
+ * 一次老虎机开奖的完整结果，不可变快照：构造时复制数组，只按格提供读取，避免机器或界面误改历史结果。
+ * 只对 {@link #bet}、{@link #reward} 生成取值方法；盘面与中奖线只能经 {@link #symbolAt(int, int)} /
  * {@link #isWinningCell(int, int)} 读取。
  *
  * <p>
- * 结果带着产生它的 {@link SlotMachineLayout}：盘面尺寸与中奖线走向都按布局读取。布局只以 id 写进载荷，
- * 因此读档时不需要机器实例就能还原盘面，换布局也不会让旧结果错位。
+ * 结果带着产生它的 {@link SlotMachineLayout}（载荷里只存布局 id），因此读档不需要机器实例就能还原盘面，
+ * 换布局也不会让旧结果错位。
  */
 public final class SlotMachineResult {
 
     /**
-     * 盘面与线奖共用的编解码器；包内可见，{@link SlotMachineState} 在它外面再包一层空值表达。
-     *
-     * <p>
-     * 布局 id 是最前面的一个分量：读档时没有机器实例，只能靠它还原盘面尺寸。分量顺序就是存档布局，
-     * 再改一次就要连同旧档一起处理。
+     * 盘面与线奖的编解码器；{@link SlotMachineState} 在它外面再包一层可空表达。
+     * 首分量是布局 id：读档没有机器实例，只能靠它还原盘面尺寸。分量顺序即存档布局，改动要连旧档一起处理。
      */
     static final DataSyncCodec<SlotMachineResult> CODEC = CombinedCodec.composite(
             DataSyncCodec.INT_CODEC, result -> result.layout.id(),
@@ -42,7 +37,7 @@ public final class SlotMachineResult {
                 }
                 return ids;
             },
-            CombinedCodec.array(WinningLine.class, WinningLine.CODEC), result -> result.winningLines,
+            WinningLine.CODEC.array(WinningLine.class), result -> result.winningLines,
             SlotMachineResult::fromEncoded);
 
     @Getter
@@ -56,7 +51,7 @@ public final class SlotMachineResult {
     private final WinningLine[] winningLines;
 
     /**
-     * {@code symbols} 必须刚好是布局的格子数（排列见 {@link SlotMachineLayout#symbolIndex(int, int)}）；
+     * {@code symbols} 必须刚好是布局的格子数（排列见 {@link SlotMachineLayout#symbolIndex(int, int)}），
      * 中奖线只复制前 {@code lineCount} 项。
      */
     SlotMachineResult(SlotMachineLayout layout, int bet, long reward, SlotSymbol[] symbols, WinningLine[] winningLines, int lineCount) {
@@ -104,12 +99,12 @@ public final class SlotMachineResult {
         return false;
     }
 
-    /** 与其他机器的自定义数据类型一起，在字段扫描前注册。 */
+    /** 与其它自定义类型一起，在字段扫描前注册。 */
     public static void addCodec() {
         CODEC.register(SlotMachineResult.class);
     }
 
-    /** 先还原布局，再按布局补齐盘面；跨布局或损坏的中奖线在补齐时剔除，不让它带进展示与结算。 */
+    /** 先还原布局，再按布局补齐盘面；跨布局或损坏的中奖线在这里剔除，不带进展示与结算。 */
     private static SlotMachineResult fromEncoded(int layoutId, int bet, long reward, int[] encodedSymbols, WinningLine[] lines) {
         SlotMachineLayout layout = SlotMachineLayout.byId(layoutId);
         SlotSymbol[] loadedSymbols = new SlotSymbol[layout.symbolCount()];
@@ -127,7 +122,7 @@ public final class SlotMachineResult {
      * 单条中奖线的结算结果。
      *
      * @param symbol     本线按哪个符号结算；百搭会被换成它替代的目标符号
-     * @param matchCount 匹配数量，从最左列数起；只有赔付表里不为 0 的长度才会生成中奖线
+     * @param matchCount 从最左列数起的匹配数；只有赔付表里非 0 的长度才会生成中奖线
      * @param reward     本线奖励 = 下注 × 倍率；读档时不重算
      */
     record WinningLine(Payline payline, SlotSymbol symbol, int matchCount, int multiplier, long reward) {
@@ -141,7 +136,7 @@ public final class SlotMachineResult {
                 (payline, symbol, count, multiplier, reward) -> new WinningLine(
                         Payline.byId(payline), SlotSymbol.byId(symbol), count, Math.max(1, multiplier), Math.max(0L, reward)));
 
-        /** 校验由规则或 codec 还原出的中奖线，避免非法数据继续参与展示或发奖。 */
+        /** 校验规则或 codec 还原出的中奖线，避免非法数据参与展示或发奖。 */
         WinningLine {
             if (payline == null) throw new IllegalArgumentException("payline must not be null");
             if (symbol == null) throw new IllegalArgumentException("symbol must not be null");

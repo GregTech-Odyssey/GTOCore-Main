@@ -11,6 +11,7 @@ import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Rules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotSymbol;
+import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.utils.NumberUtils;
@@ -210,6 +211,27 @@ public final class GTOMachineTooltips {
                 "Each clear pays 1/4/8/15/25/40 Game Coins by size and records the best time for that size"));
     });
 
+    // 数独 - 只保留盘面规则与奖励概览
+    public static final TipSpec SudokuTooltips = GTOTips.of("sudoku", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("数独", "Sudoku")));
+        t.feature(t.tr("标准 9×9 数独：每行、每列、每个 3×3 宫都填 1~9 各一次，提示数字不能修改",
+                "Classic 9×9 Sudoku: fill 1 to 9 once in every row, column and 3×3 box; clue digits are fixed"));
+        t.feature(t.tr("点格子选中，点 1~9 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
+                "Select a cell and press 1 to 9; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes"));
+        t.feature(t.tr("在变体页选择一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
+                "Choose one extra rule on the Variant tab: Diagonal X, Center Dots, Window, Color, Jigsaw, Consecutive or Killer"));
+        var rewards = new StringBuilder();
+        for (var difficulty : SudokuRules.Difficulty.ALL) {
+            if (rewards.length() > 0) rewards.append('/');
+            rewards.append(difficulty.reward());
+        }
+        t.feature(t.tr("六档难度的基础奖励依次为 " + rewards + " 游戏币，最终奖励还会乘以变体倍率",
+                "The six difficulties award " + rewards + " Game Coins before the variant multiplier"));
+        t.feature(t.tr("变体倍率：标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8",
+                "Variant multipliers: Standard ×1, Diagonal/Center Dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8"));
+        t.feature(t.tr("分别记录各难度和变体的最快完成时间", "Best completion times are recorded for each difficulty and variant"));
+    });
+
     // 扫雷 - 只保留方块操作与通关条件；难度、奖励、按钮等以机器界面为准
     public static final TipSpec MinesweeperCoreTooltips = GTOTips.of("minesweeper_core", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("扫雷", "Minesweeper")));
@@ -400,7 +422,7 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("机器将自动生成§6铁锭->铁板§r、§6金锭->金板§r等所有可制作的§6锭->板材§r配方", "The machine will automatically generate all craftable §6ingot -> plate§r recipes like §6iron ingot -> iron plate§r, §6gold ingot -> gold plate§r, etc."));
         t.attention(t.tr("注意：生成时，机器会检查当前配方类型与存储的电路/模具等是否与样板匹配", "Note: When generating, the machine will check whether the current recipe type matches the stored circuit/mold, etc. with the pattern"));
         t.feature(t.tr("不匹配的配方将不会被生成", "Mismatched recipes will not be generated"));
-        t.control(t.tr("在机器中设置黑名单材料以跳过该材料相关的配方生成", "Set blacklist materials in the machine to skip recipe generation related to that material"));
+        t.control(t.tr("可在机器中配置每个生成的样板是否启用", "Can configure whether each generated pattern is enabled in the machine"));
     });
 
     public static final TipSpec AutoConnectMETooltips = GTOTips.of("auto_connect_me", t -> {
@@ -439,50 +461,37 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
-        t.line(TipRole.SUMMARY, t.tr("用超级箱/缸作存储介质的多方块仓库", "Multiblock storage that uses Super Chests/Tanks as its medium"));
+        t.line(TipRole.SUMMARY, t.tr("整合超级箱与超级缸，独立设置物品和流体种类上限", "Integrates Super Chests and Tanks with separate item and fluid type limits"));
+        t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Place Super Chests in input buses to store items, and Super Tanks to store fluids"));
+        t.feature(t.tr("可混用不同等级及分格型号，无需升级物品；同等级同介质箱缸合并计算", "Mix tiers and compartment layouts without upgrade items; containers of the same tier and medium are grouped together"));
+        t.formula(t.tr("物品/流体种类上限分别最多为对应箱/缸数量的四倍", "Each item/fluid type limit can be at most four times the corresponding container count"));
+        t.formula(t.tr("每种类容量 = 密封等级 × Σ[该等级箱缸总容量 × √max(1, 4 × 该等级箱缸数量 / 设置种类数)] / 设置种类数", "Capacity per type = hermetic level × sum[tier capacity × sqrt(max(1, 4 × tier container count / configured types))] / configured types"));
+        t.feature(t.tr("减少设置种类数可提升每种类容量；降低上限或移除箱缸不会删除已有内容", "Fewer configured types increase per-type capacity; reducing limits or removing containers preserves stored contents"));
 
-        t.heading(t.tr("怎么用", "Setup"));
-        t.requirement(t.tr("主机槽放超级箱或超级缸（最多 64 个）：超级箱存物品，超级缸存流体", "Put Super Chests or Super Tanks in the controller slot (up to 64): chests store items, tanks store fluids"));
-        t.detail(t.tr("主机等级：木质按 0.25，青春版按 0.5，其余按电压等级计算", "Controller level: wooden units count as 0.25, Lite units as 0.5, and other units use their voltage tier"));
-        t.requirement(t.tr("输入总线放超级箱/缸；只有与主机同类的箱缸生效（箱配箱，缸配缸），支持木质及量子系列", "Put Super Chests/Tanks in the input buses; only the controller's kind counts (chests with chests, tanks with tanks), including wooden and quantum variants"));
-        t.requirement(t.tr("超级存储升级也放入输入总线：青铜、钢、铝、钛、钨钢分别提供 2、4、8、16、32 倍容量", "Put Super Storage Upgrades in the input buses too: Bronze, Steel, Aluminium, Titanium and Tungsten Steel provide x2, x4, x8, x16 and x32 capacity"));
-        t.unsupported(t.tr("功能存储的抽屉和存储升级不再提供收益", "Functional Storage drawers and storage upgrades no longer provide benefits"));
+        t.feature(t.tr("可启用溢出销毁", "Overflow destruction can be enabled"));
+        t.feature(t.tr("安装保险库仓以连接外部IO", "Install Vault Hatches to connect external IO"));
 
-        t.heading(t.tr("容量", "Capacity"));
-        t.feature(t.tr("能存的种类数：生效箱缸的格数之和，普通、1x2、2x2 每个分别提供 1、2、4 种", "Type count: the slot total of the counted storage units; normal, 1x2 and 2x2 units provide 1, 2 and 4 types each"));
-        t.feature(t.tr("每种能存的数量：√(主机等级 × 主机数量 × 密封等级) × 最低箱缸容量 ÷ 最大箱缸格数 × √(输入箱缸总数量) × 升级倍率", "Amount per type: sqrt(controller tier x controller count x hermetic tier) x lowest storage capacity / maximum slot count x sqrt(total input unit count) x upgrade multiplier"));
-        t.detail(t.tr("混放时最低容量与最大格数分别取值，数量只合计与主机同类的箱缸", "With mixed units, select the lowest capacity and the maximum slot count independently; count only units matching the controller's kind"));
-        t.detail(t.tr("升级倍率：所有升级倍率相乘后按生效箱缸数量均分，每个箱缸最多计入 4 个；物品和流体使用相同倍率", "Upgrade multiplier: multiply all upgrade factors and share them over the counted storage units, at most 4 upgrades per unit; items and fluids use the same multipliers"));
-        t.feature(t.tr("不限总量，只限每种的上限", "No overall limit, only a per-type cap"));
-
-        t.heading(t.tr("其他", "Other"));
-        t.warning(t.tr("开启溢出销毁后，超过每种上限或种类已满时，放不下的部分直接销毁", "With overflow voiding on, whatever does not fit (per-type cap reached or no free type) is destroyed"));
-        t.feature(t.tr("和保险库一样：存储挂在主机正面，外部存取用保险库仓", "Like the vault: storage is exposed on the controller's front, and the vault hatch handles external IO"));
     });
 
     public static final TipSpec MeDiskBoxTooltips = GTOTips.of("me_disk_box", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("ME 磁盘存储器的单方块版本，槽里的存储组件（1k…256M）提供容量", "Single-block version of the ME Disk Storage; the storage components in its slot (1k...256M) provide the capacity"));
-        t.feature(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，拆下再放数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so the data survives being broken and placed again"));
-        t.feature(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
-        t.feature(t.tr("存储转移：把网络里其它 ME 存储的内容全部搬进本箱，装不下的留在原处", "Transfer Storage: moves everything held by the other ME storages in the network into this box, what does not fit stays where it is"));
+        t.feature(t.tr("单方块 ME 磁盘存储器", "Single-block version of the ME Disk Storage"));
+        t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
     });
 
     public static final TipSpec MEDiskStorageTooltips = GTOTips.of("me_disk_storage", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("以输入总线里的存储组件（1k…256m）提供容量，存储由结构里的存储访问仓承担", "Storage components in the input bus (1k...256m) provide the capacity; the Storage Access Hatch in the structure holds the data"));
-        t.formula(t.tr("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）；没有无限存储", "Capacity = the components' bytes x Hermetic Casing tier (ULV=1, LV=2, ...); there is no infinite storage"));
-        t.feature(t.tr("数据索引可选玩家或机器；机器模式的索引随物品带走，同一台重建后数据还在", "The data index can be the player or the machine; in machine mode the index travels with the item, so rebuilding the same machine keeps the data"));
-        t.feature(t.tr("数据索引选玩家时，同一玩家的这类设备共用同一份存储：不同 ME 网络之间可以共通", "With the player data index, such machines of the same player share one storage, so different ME networks can share contents"));
+        t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
+        t.formula(t.tr("使用更高级的密封机械方块来提供更高的容量", "Use higher-tier Hermetic Casings to provide more capacity"));
+        t.formula(t.tr("容量 = 组件字节之和 × 密封机械方块等级（ULV=1、LV=2…）", "Capacity = sum of component bytes x Hermetic Casing tier (ULV=1, LV=2...)"));
     });
 
     public static final TipSpec MeConfigurableStorageAccessHatchTooltips = GTOTips.of("me_configurable_storage_access_hatch", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("访问 ME 存储器内的存储，并可为每种东西单独设置上下限", "Accesses storage in ME storage and sets a limit for every key"));
+        t.feature(t.tr("可配置的 ME 存储器接口", "Configurable ME Storage Access Hatch"));
         t.formula(t.tr("输入限制：每种最多存多少；未配置 = 不限，0 = 禁止存入", "Input limit: the most of each key that may be stored; unconfigured = unlimited, 0 = forbidden"));
         t.formula(t.tr("输出限制：每种至少保留多少；未配置 = 不限，0 = 不设下限", "Output limit: the least of each key to keep; unconfigured = unlimited, 0 = no floor"));
-        t.feature(t.tr("两张表各有开关、互不影响；都不开时就是普通访问仓", "The two tables have their own switches and do not affect each other; with both off this is an ordinary access hatch"));
-        t.feature(t.tr("配置面板：81 个物品格 + 81 个流体格，选中格子后在中间的输入框改数量", "Config panel: 81 item slots + 81 fluid slots; select a slot and edit the amount in the middle field"));
+        t.feature(t.tr("提供81个可配置的物品槽位与81个可配置的流体槽位", "Provides 81 configurable item slots and 81 configurable fluid slots"));
     });
 
     public static final TipSpec fishingFarmTooltips = GTOTips.of("fishing_farm", t -> {
@@ -650,33 +659,16 @@ public final class GTOMachineTooltips {
 
     // 裂变反应堆
     public static final TipSpec FissionReactorTooltips = GTOTips.of("fission_reactor", t -> {
-        t.heading(ComponentSlang.RunningRequirements);
-        t.requirement(t.tr("运行前需在反应堆内部放置燃料组件和冷却组件", "Fuel components and cooling components must be placed inside the reactor before operation"));
-        t.feature(t.tr("燃料组件：提供最大并行，相邻的燃料组件越多，反应堆产热越高", "Fuel components: provide maximum parallelism; the more adjacent fuel components there are, the more heat the reactor generates"));
-        t.requirement(t.tr("冷却组件：必须与燃料组件相邻，决定反应堆的冷却上限", "Cooling components: must be adjacent to fuel components and determine the reactor's cooling limit"));
-
-        t.heading(t.tr("温度管理系统", "Temperature Management System"));
-        t.feature(t.tr("初始温度为 298K；停机时每秒降低 1K", "Initial temperature is 298K; temperature decreases by 1K per second while idle"));
-        t.formula(t.tr("冷却不生效时，每秒升温 = 配方基础产热 × (相邻燃料组件数量 + 1)", "When cooling has no effect, heat gained per second = base recipe heat × (adjacent fuel components + 1)"));
-        t.feature(t.tr("每种燃料配方拥有不同的基础产热，可在配方页面查看", "Each fuel recipe has a different base heat value, shown on its recipe page"));
-        t.warning(Tx.join(t.tr("温度超过 1500K 后反应堆将持续损坏，完全损坏时", "Above 1500K, the reactor continuously takes damage and, when fully damaged, "), ComponentSlang.Explosion));
-
-        t.heading(t.tr("冷却系统", "Cooling System"));
-        t.feature(t.tr("冷却液输入量大于冷却需求时触发冷却；每秒冷却液消耗量受冷却上限限制", "Cooling activates when the coolant input exceeds the cooling demand; coolant consumption per second is limited by the cooling limit"));
-        t.feature(t.tr("每 800 mB 蒸馏水或 20 mB 钠钾合金可满足 1 单位冷却需求", "Every 800 mB of Distilled Water or 20 mB of Sodium Potassium can satisfy 1 unit of cooling demand"));
-        t.formula(t.tr("冷却需求 = 配方基础产热 × 实际并行 × 当前温度 / 1500", "Cooling demand = base recipe heat × actual parallel × current temperature / 1500"));
-        t.formula(t.tr("冷却上限 = (冷却组件数量 - 相邻数 / 3) × 8", "Cooling limit = (cooling components - adjacency / 3) × 8"));
-        t.penalty(t.tr("若冷却液输入量低于冷却需求，本次冷却不生效", "If the coolant input is below the cooling demand, cooling has no effect this time"));
-
-        t.heading(t.tr("超频机制", "Overclocking mechanism"));
-        t.requirement(t.tr("触发条件: 冷却液输入量 ≥ n × 冷却需求", "Trigger condition: Coolant input ≥ n × cooling demand"));
-        t.bonus(t.tr("超频效果: 额外增加基础运行速度×n", "Effect: Adds n times the base processing speed"));
-
-        t.heading(t.tr("冷却液产出", "Cooling liquid output"));
-        t.plain(t.tr("蒸馏水冷却: ", "Distilled Water cooling: "));
-        t.formula(t.tr("产出蒸汽，产量 = 消耗量 × min(160, 160/(1.4^(373-温度)))", "Produces steam, Output = consumption × min(160, 160/(1.4^(373-temperature)))"));
-        t.plain(t.tr("钠钾合金冷却:", "Sodium Potassium cooling:"));
-        t.feature(t.tr("≤825K: 热钠钾合金；>825K: 超临界钠钾合金", "≤825K: Hot Sodium Potassium; >825K: Supercritical Sodium Potassium"));
+        t.requirement(t.tr("组件：内部可以放燃料组件与冷却组件", "Components: place fuel and cooling components inside"));
+        t.requirement(t.tr("冷却组件须紧邻燃料组件，与燃料组件接触的面数量决定冷却上限", "Cooling components must be adjacent to fuel components; the number of faces in contact with fuel components determines the cooling limit"));
+        t.requirement(t.tr("燃料组件的数量决定最大并行，但燃料组件两两相邻会提高产热", "The number of fuel components determines the maximum parallelism, but adjacent fuel components increase heat production"));
+        t.warning(t.tr("温度：初始 298K，停机每秒降 1K；超 1500K 持续损坏，完全损坏时爆炸", "Temperature: starts at 298K, drops 1K per second while idle; above 1500K the reactor takes continuous damage and explodes when fully damaged"));
+        t.formula(t.tr("升温：冷却不生效时每秒升温 = 配方基础产热 × (相邻燃料组件数 + 1)，基础产热见配方页面", "Heating: when cooling is inactive, heat per second = base recipe heat × (adjacent fuel components + 1); base heat is shown on the recipe page"));
+        t.formula(t.tr("冷却：输入量大于冷却需求时生效，需求 = 基础产热 × 实际并行 × 当前温度 / 1500，上限 = (冷却组件数 - 相邻数 / 3) × 8", "Cooling: activates when input exceeds the cooling demand; demand = base heat × actual parallel × current temperature / 1500; limit = (cooling components - adjacency / 3) × 8"));
+        t.feature(t.tr("超频与消耗：1 单位冷却需求 = 800 mB 蒸馏水或 20 mB 钠钾合金", "Overclock and consumption: 1 unit of cooling demand = 800 mB Distilled Water or 20 mB Sodium Potassium"));
+        t.feature(t.tr("输入量 ≥ n 单位需求时额外增加 n 倍基础运行速度", "When input is ≥ n units of demand, the base processing speed is increased by n times"));
+        t.detail(t.tr("输入蒸馏水：产生蒸汽，产量 = 消耗量 × min(160, 160 / 1.4^(373-温度))", "Input Distilled Water: produces steam, output = input × min(160, 160 / 1.4^(373-temperature))"));
+        t.detail(t.tr("输入钠钾合金：≤825K 产热钠钾合金，>825K 产超临界钠钾合金，产量 = 消耗量", "Input Sodium Potassium: produces Hot Sodium Potassium at ≤825K and Supercritical Sodium Potassium above 825K, output = input"));
     });
 
     // 计算中心
@@ -704,6 +696,7 @@ public final class GTOMachineTooltips {
         t.statText(t.tr("Cascade-MFPC效率: 块(0.54) 条(0.06) 粒(0.0066)", "Cascade-MFPC efficiency: Block(0.54) Ingot(0.06) Nugget(0.0066)"));
         t.statText(t.tr("寒冰碎片: 0.0001 (极低效率)", "Ice Shards: 0.0001 (extremely low efficiency)"));
 
+        t.details(t.tr("等级与组件详情", "Tier and component details"));
         // Tier 1 组件支持
         t.heading(t.tr("Tier 1 : 支持HPCA系列组件", "Tier 1 : Supports HPCA Series Components"));
         t.statText(t.tr("槽位需求: 无", "Slot requirement: None"));
@@ -847,7 +840,7 @@ public final class GTOMachineTooltips {
                 t.feature(cf1);
                 t.feature(ci1);
                 t.feature(Component.translatable(TurbineMachine.DESC4));
-                t.feature(Component.translatable(TurbineMachine.DESC5));
+                t.feature(TurbineMachine.DESC5);
 
                 t.heading(cs2);
                 t.bonus(ci2);
@@ -959,9 +952,10 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("如果在机器GUI内放置了§b刷怪蛋/收容罐§r则只会刷出§b刷怪蛋/收容罐对应生物§r的内容", "If a §bspawn egg/mob jar§r is placed in the machine GUI, only §bthe corresponding mob§r will be spawned"));
         t.feature(t.tr("如果在机器GUI内放置了§b神化Boss召唤器（物品）§r，则只会刷出§b所在维度对应的神化Boss§r", "If a §bApotheosis Boss Summoner (item)§r is placed in the machine GUI, only §bthe corresponding Apotheosis Boss in that dimension§r will be spawned"));
         t.unsupported(t.tr("无法刷出boss级生物，如末影龙和凋零", "Boss-level mobs, such as the Ender Dragon and Wither, cannot be spawned"));
-        t.feature(t.tr("当输入多把剑时，只会使用检测到的第一把武器去尝试击杀其中的生物", "Will only use the first weapon detected to try to kill the creature inside when multiple swords are input"));
-        t.bonus(t.tr("其余的剑可以用来提供额外的伤害加成", "The rest of the swords can be used to provide additional damage bonus"));
-        t.feature(t.tr("每把剑提供其基础伤害点数作为伤害加成", "Each sword provides its base damage points as damage bonus"));
+        t.feature(t.tr("输入仓中的剑、刀等可横扫的武器会被使用，第一把武器用于击杀生物", "Sweeping weapons such as swords and knives in the input are used; the first one is used to kill the mobs"));
+        t.bonus(t.tr("每把武器按其面板攻击伤害计入机器攻击力，没有武器时为空手伤害", "Each weapon adds its displayed attack damage to the machine's attack damage; bare-handed damage applies without weapons"));
+        t.formula(t.tr("每次运行耗时：max(60, 600 - 攻击力) tick", "Duration per run: max(60, 600 - attack damage) ticks"));
+        t.feature(t.tr("开启区分的输入总线只使用各自内部的武器", "Distinct input buses only use the weapons inside themselves"));
         t.feature(t.tr("安装输出仓后输出经验", "Outputs XP after installing output hatch"));
     });
 
@@ -1157,31 +1151,18 @@ public final class GTOMachineTooltips {
 
     // 无线能源塔
     public static final TipSpec WirelessEnergySubstationTooltips = GTOTips.of("wireless_energy_substation", t -> {
-        t.line(TipRole.SUMMARY, t.tr("所在维度的储能设施，本维度的无线设备由此存取电量", "Energy storage for its dimension; wireless devices there store and draw energy from it"));
+        t.line(TipRole.SUMMARY, t.tr("所在维度的储能设施，本维度的无线设备由此存取电量", "Energy storage for its dimension; wireless devices here store into and draw from it"));
 
-        t.heading(t.tr("结构", "Structure"));
-        t.requirement(t.tr("宽为 3 至 11 之间的奇数，深为 3 至 11，高为 3 至 20", "Width is an odd number from 3 to 11, depth 3 to 11, height 3 to 20"));
-        t.requirement(t.tr("棱使用无线能源塔框架，六个面使用同一等级的玻璃", "Edges use Wireless Energy Tower Frames; all six faces use glass of a single tier"));
-        t.requirement(t.tr("控制器位于正面底边的正中", "The controller sits at the middle of the front bottom edge"));
-        t.supported(t.tr("内部放存储单元与传输单元，无需全部填满", "Storage and transfer units go inside; the interior does not need to be filled"));
-        t.heading(t.tr("电压", "Voltage"));
-        t.feature(t.tr("提供电压 = 内部生效普通单元的最高等级 + 1，最高为 MAX；超级单元不提高提供电压", "Supplied voltage = highest effective ordinary unit tier + 1, at most MAX; super units do not raise the supplied voltage"));
-        t.requirement(t.tr("玻璃等级是单元等级的上限，高于玻璃等级的单元不生效", "The glass tier caps the unit tier; units above it have no effect"));
-        t.detail(t.tr("例如 HV 玻璃中放 HV 单元，能源塔提供 EV", "For example, HV units inside HV glass make the tower supply EV"));
-        t.heading(t.tr("容量与吞吐", "Capacity and Throughput"));
-        t.feature(t.tr("基础容量为全部生效普通存储单元的容量之和，损耗按容量加权平均", "Base capacity is the sum over the effective ordinary storage units; loss is averaged by capacity"));
-        t.feature(t.tr("每个普通存储单元提供本单元电压 4A 的吞吐，普通传输单元按等级提供更大的吞吐", "Each ordinary storage unit adds 4A at its own voltage; ordinary transfer units add more throughput by tier"));
-        t.detail(t.tr("吞吐按功率计：以更高电压取电时安数按电压折算，例如 HV 4A 相当于 EV 1A", "Throughput is power: drawing at a higher voltage converts the amps, e.g. 4A of HV equals 1A of EV"));
-        t.bonus(t.tr("UHV 起可使用超级储存与超级传输单元，分别为本站整体容量与吞吐提供额外的叠加乘区", "From UHV, super storage and transfer units add separate tower-wide multipliers to capacity and throughput; multipliers of the same kind add together"));
-        t.detail(t.tr("输入与输出各自计算，每 tick 重新计额", "Input and output are counted separately and refresh every tick"));
-        t.detail(t.tr("有持续时间的整笔扣电在整个时长内按每 tick 功率占用吞吐，一次性的整笔扣电与存入不占用吞吐", "Lump charges with a duration hold throughput per tick for their whole duration; one-off lump charges and deposits use none"));
-        t.heading(t.tr("同维度合并", "Combining in a Dimension"));
-        t.feature(t.tr("同一维度中提供电压相同的能源塔合为一档：容量、存量与吞吐相加", "Towers in one dimension that supply the same voltage form one tier: capacity, stored energy and throughput add up"));
-        t.heading(t.tr("存取规则", "Access Rules"));
-        t.requirement(t.tr("取电：设备电压不能高于档位电压，从满足条件的最低档开始取，受各档输出吞吐限制", "Drawing: the device voltage may not exceed the tier voltage; the lowest qualifying tier is used first, limited by each tier's output throughput"));
-        t.supported(t.tr("存电：不限电压，只受各档输入吞吐限制，从最高档开始存", "Storing: any voltage, limited only by each tier's input throughput, highest tier first"));
-        t.detail(t.tr("本维度不够时，经维度中继器的线路就近从其他维度存取电，取电时线路电压也不能低于设备电压", "When this dimension falls short, energy moves to or from the nearest dimensions over relay lines; for drawing, the line voltage may not be below the device voltage either"));
-        t.detail(t.tr("跨维度存取计入电量所在维度的吞吐", "Cross-dimension draws and stores count against the throughput of the dimension holding the energy"));
+        t.requirement(t.tr("结构要求：宽 3–11 奇数、深 3–11、高 3–20", "Structure requirements: width 3–11 odd, depth 3–11, height 3–20"));
+        t.feature(t.tr("其中的空间可填入不同效果的单元", "The space inside can be filled with units of different effects"));
+        t.requirement(t.tr("最高单元等级不能高于玻璃等级", "The highest unit tier may not exceed the glass tier"));
+        t.feature(t.tr("提供电压 = 内部生效普通单元最高等级 + 1，最高为 MAX", "Supplied voltage = highest effective ordinary unit tier + 1, up to MAX"));
+        t.requirement(t.tr("取电：设备电压不能高于提供电压，从满足条件的最低档取", "Draw: device voltage may not exceed the supplied voltage; the lowest qualifying tier is used first"));
+        t.supported(t.tr("存电：不限电压，从最高档存，受输入吞吐限制", "Store: any voltage, highest tier first, limited by input throughput"));
+        t.detail(t.tr("更高电压取电时按功率折算，例如 4A @ HV = 1A @ EV", "Drawing at higher voltage converts by power, e.g. 4A @ HV = 1A @ EV"));
+        t.bonus(t.tr("UHV 起超级存储/传输单元为本站容量/吞吐提供额外叠加乘区", "From UHV, super storage/transfer units add extra stacking multipliers to capacity/throughput"));
+        t.feature(t.tr("同一维度中提供电压相同的能源塔合为一档：容量、存量和总吞吐相加", "Towers in one dimension with the same supplied voltage merge into one tier: capacity, stored energy and total throughput add up"));
+        t.detail(t.tr("当前维度存量或容量不足时，维度中继器会就近从其他维度的能源塔存取", "When the current dimension's stored energy or capacity is insufficient, the dimension repeater will draw from nearby towers in other dimensions"));
     });
 
     // 无线电网维度中继器
@@ -1737,13 +1718,14 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("机器的多方块顶部区域，以主机为中心，可以将仓室放置区划分为两侧，分别用于输入不同的半反应", "The multi-block top area of the machine, centered on the mainframe, can be divided into two sides for inputting different half-reactions"));
         t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
         t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
+        t.control(t.tr("离子中和：一个半反应生成与另一半反应所生成离子电荷符号相反的离子，或恰好消耗另一半反应生成的离子", "Ion neutralization: one half-reaction produces ions with charges opposite to those produced by the other half-reaction, or exactly consumes the ions produced by the other half-reaction"));
         t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
         t.formula(t.tr("储能基础耗时=1秒×膜的耗时乘数；", "Base storage duration = 1 second × membrane time multiplier;"));
         t.feature(t.tr("不同种类的半透膜为反应提供了不同的时间、耗电乘数", "Different types of semipermeable membranes provide different time and energy consumption multipliers for the reactions"));
         t.feature(t.tr("且提供的燃料效率乘数会与转化的热值相乘，影响总反应的能量储存", "And the provided fuel efficiency multiplier will multiply with the converted heat value, affecting the total energy storage of the reaction"));
         t.penalty(t.tr("每次总反应消耗膜耐久：普通仓为⌈√(总反应并行数)⌉，高级仓为⌈(总反应并行数)^0.25⌉", "Membrane durability consumed per total reaction: ceil(sqrt(total reaction parallels)) with a basic hatch, or ceil((total reaction parallels)^0.25) with an advanced hatch"));
         t.supported(t.tr("本机器模式提供无限并行数", "This machine mode provides unlimited parallelism"));
-        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜；反应期间膜被锁定", "Place a membrane permeable to the paired ions in a membrane hatch at the top center; membranes are locked during reactions"));
+        t.requirement(t.tr("需要在中央顶部的半透膜仓内放入可透过配对离子的膜", "Place a membrane permeable to the paired ions in a membrane hatch at the top center; membranes are locked during reactions"));
         t.heading(t.tr("模式二：放电", "Mode 2: Energy Release"));
         t.requirement(t.tr("放电需要半透膜仓内有膜，任意膜均可使配方运行", "Discharge requires a membrane in the membrane hatch; any membrane allows the recipe to run"));
         t.requirement(t.tr("此时的最大并行数由膜的放电并行度决定", "The maximum parallelism at this time is determined by the discharge parallelism of the membrane"));
@@ -1756,6 +1738,7 @@ public final class GTOMachineTooltips {
         t.requirement(t.tr("机器的多方块顶部区域，以主机为中心，可以将仓室放置区划分为两侧，分别用于输入不同的半反应", "The multi-block top area of the machine, centered on the mainframe, can be divided into two sides for inputting different half-reactions"));
         t.requirement(t.tr("两侧区域的输入原料分别独立寻找半反应配方", "The input materials in each side area independently search for half-reaction recipes"));
         t.requirement(t.tr("当两侧半反应均有配方、属于同一电解质体系、安装有半透膜、且它们产生的电荷符号相反时，会自动合成为一个总反应运行", "When both half-reactions have recipes, belong to the same electrolyte system, have a semipermeable membrane installed, and produce opposite charge signs, they will automatically combine into a total reaction"));
+        t.control(t.tr("离子中和：一个半反应生成与另一半反应所生成离子电荷符号相反的离子，或恰好消耗另一半反应生成的离子", "Ion neutralization: one half-reaction produces ions with charges opposite to those produced by the other half-reaction, or exactly consumes the ions produced by the other half-reaction"));
         t.formula(t.tr("总反应的功率=两侧半反应功率之和/2", "Total reaction power = sum of both half-reaction powers / 2"));
         t.formula(t.tr("总反应的时间=两侧半反应（时间×功率）之和/总反应功率", "Total reaction time = sum of both half-reaction (time × power) / total reaction power"));
         t.heading(t.tr("半透膜", "Semipermeable Membrane"));

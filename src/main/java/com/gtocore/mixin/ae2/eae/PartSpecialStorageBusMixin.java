@@ -10,8 +10,11 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 
 import appeng.api.parts.IPartItem;
+import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
 import appeng.me.storage.MEInventoryHandler;
+import appeng.me.storage.NetworkStorage;
+import appeng.me.storage.NullInventory;
 import appeng.parts.PartAdjacentApi;
 import appeng.parts.automation.UpgradeablePart;
 import appeng.util.Platform;
@@ -19,7 +22,9 @@ import appeng.util.Platform;
 import com.glodblock.github.extendedae.common.parts.base.PartSpecialStorageBus;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PartSpecialStorageBus.class)
 public abstract class PartSpecialStorageBusMixin extends UpgradeablePart {
@@ -38,8 +43,32 @@ public abstract class PartSpecialStorageBusMixin extends UpgradeablePart {
     @Shadow(remap = false)
     protected abstract void scheduleUpdate();
 
+    @Unique
+    private boolean gtocore$wasNetworkLink;
+
+    @Unique
+    private boolean gtocore$wasRegistered;
+
     public PartSpecialStorageBusMixin(IPartItem<?> partItem) {
         super(partItem);
+    }
+
+    @Unique
+    private boolean gtocore$isRegistered() {
+        return getMainNode().isOnline() && !(handler.getDelegate() instanceof NullInventory);
+    }
+
+    @Inject(method = "updateTarget", at = @At("HEAD"), remap = false)
+    private void gtocore$captureTarget(boolean forceFullUpdate, CallbackInfo ci) {
+        gtocore$wasNetworkLink = handler.getDelegate() instanceof NetworkStorage;
+        gtocore$wasRegistered = gtocore$isRegistered();
+    }
+
+    @Inject(method = "updateTarget", at = @At("RETURN"), remap = false)
+    private void gtocore$remountOnLinkChange(boolean forceFullUpdate, CallbackInfo ci) {
+        if (gtocore$wasRegistered == gtocore$isRegistered() && gtocore$wasNetworkLink != handler.getDelegate() instanceof NetworkStorage) {
+            IStorageProvider.requestUpdate(getMainNode());
+        }
     }
 
     @Redirect(method = "updateTarget", at = @At(value = "INVOKE", target = "Lappeng/util/Platform;areBlockEntitiesTicking(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z"), remap = false)

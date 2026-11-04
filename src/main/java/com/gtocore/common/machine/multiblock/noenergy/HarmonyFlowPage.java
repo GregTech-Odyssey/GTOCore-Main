@@ -60,53 +60,77 @@ public final class HarmonyFlowPage {
 
     @RegisterLanguage(cn = "氢储量", en = "Hydrogen Reserve")
     private static final String LANG_HYDROGEN = "gtocore.machine.eye_of_harmony.flow.hydrogen";
+    private static final Component HYDROGEN = Component.translatable(LANG_HYDROGEN);
     @RegisterLanguage(cn = "氦储量", en = "Helium Reserve")
     private static final String LANG_HELIUM = "gtocore.machine.eye_of_harmony.flow.helium";
+    private static final Component HELIUM = Component.translatable(LANG_HELIUM);
     @RegisterLanguage(cn = "物料输入", en = "Material Input")
     private static final String LANG_INPUT = "gtocore.machine.eye_of_harmony.flow.input";
+    private static final Component INPUT = Component.translatable(LANG_INPUT);
     @RegisterLanguage(cn = "超频设定", en = "Overclock")
     private static final String LANG_OVERCLOCK = "gtocore.machine.eye_of_harmony.flow.overclock";
+    private static final Component OVERCLOCK = Component.translatable(LANG_OVERCLOCK);
     @RegisterLanguage(cn = "宇宙模拟", en = "Cosmos Simulation")
     private static final String LANG_RECIPE = "gtocore.machine.eye_of_harmony.flow.recipe";
+    private static final Component RECIPE = Component.translatable(LANG_RECIPE);
     @RegisterLanguage(cn = "无线电网", en = "Wireless Grid")
     private static final String LANG_ENERGY = "gtocore.machine.eye_of_harmony.flow.energy";
+    private static final Component ENERGY = Component.translatable(LANG_ENERGY);
     @RegisterLanguage(cn = "模拟等级", en = "Simulation Tier")
     private static final String LANG_TIER = "gtocore.machine.eye_of_harmony.flow.tier";
+    private static final Component TIER = Component.translatable(LANG_TIER);
     @RegisterLanguage(cn = "产物输出", en = "Product Output")
     private static final String LANG_OUTPUT = "gtocore.machine.eye_of_harmony.flow.output";
+    private static final Component OUTPUT = Component.translatable(LANG_OUTPUT);
 
     @RegisterLanguage(cn = "状态", en = "State")
     private static final String LANG_STATE = "gtocore.machine.eye_of_harmony.flow.state";
+    private static final Component STATE = Component.translatable(LANG_STATE);
     @RegisterLanguage(cn = "储量", en = "Stored")
     private static final String LANG_STOCK = "gtocore.machine.eye_of_harmony.flow.stock";
+    private static final Component STOCK = Component.translatable(LANG_STOCK);
     @RegisterLanguage(cn = "可供", en = "Covers")
     private static final String LANG_RUNS = "gtocore.machine.eye_of_harmony.flow.runs";
+    private static final Component RUNS = Component.translatable(LANG_RUNS);
     @RegisterLanguage(cn = "电路", en = "Circuit")
     private static final String LANG_CIRCUIT = "gtocore.machine.eye_of_harmony.flow.circuit";
+    private static final Component CIRCUIT = Component.translatable(LANG_CIRCUIT);
     @RegisterLanguage(cn = "耗时", en = "Duration")
     private static final String LANG_DURATION = "gtocore.machine.eye_of_harmony.flow.duration";
+    private static final Component DURATION = Component.translatable(LANG_DURATION);
     @RegisterLanguage(cn = "耗能倍率", en = "Energy")
     private static final String LANG_ENERGY_FACTOR = "gtocore.machine.eye_of_harmony.flow.energy_factor";
+    private static final Component ENERGY_FACTOR = Component.translatable(LANG_ENERGY_FACTOR);
     @RegisterLanguage(cn = "最低耗能", en = "Minimum")
     private static final String LANG_STARTUP = "gtocore.machine.eye_of_harmony.flow.startup";
+    private static final Component STARTUP = Component.translatable(LANG_STARTUP);
     @RegisterLanguage(cn = "进度", en = "Progress")
     private static final String LANG_PROGRESS = "gtocore.machine.eye_of_harmony.flow.progress";
+    private static final Component PROGRESS = Component.translatable(LANG_PROGRESS);
     @RegisterLanguage(cn = "配方等级", en = "Recipe Tier")
     private static final String LANG_RECIPE_TIER = "gtocore.machine.eye_of_harmony.flow.recipe_tier";
+    private static final Component RECIPE_TIER = Component.translatable(LANG_RECIPE_TIER);
     @RegisterLanguage(cn = "本次耗能", en = "This Run")
     private static final String LANG_RUN_ENERGY = "gtocore.machine.eye_of_harmony.flow.run_energy";
+    private static final Component RUN_ENERGY = Component.translatable(LANG_RUN_ENERGY);
     @RegisterLanguage(cn = "所有者", en = "Owner")
     private static final String LANG_OWNER = "gtocore.machine.eye_of_harmony.flow.owner";
+    private static final Component OWNER = Component.translatable(LANG_OWNER);
     @RegisterLanguage(cn = "储能", en = "Stored")
     private static final String LANG_STORED = "gtocore.machine.eye_of_harmony.flow.stored";
+    private static final Component STORED = Component.translatable(LANG_STORED);
     @RegisterLanguage(cn = "升级进度", en = "Advance")
     private static final String LANG_ADVANCE = "gtocore.machine.eye_of_harmony.flow.advance";
+    private static final Component ADVANCE = Component.translatable(LANG_ADVANCE);
     @RegisterLanguage(cn = "可运行", en = "Runs")
     private static final String LANG_ALLOWED = "gtocore.machine.eye_of_harmony.flow.allowed";
+    private static final Component ALLOWED = Component.translatable(LANG_ALLOWED);
     @RegisterLanguage(cn = "输入单元", en = "Units")
     private static final String LANG_INPUT_UNITS = "gtocore.machine.eye_of_harmony.flow.input_units";
+    private static final Component INPUT_UNITS = Component.translatable(LANG_INPUT_UNITS);
     @RegisterLanguage(cn = "输出单元", en = "Units")
     private static final String LANG_OUTPUT_UNITS = "gtocore.machine.eye_of_harmony.flow.output_units";
+    private static final Component OUTPUT_UNITS = Component.translatable(LANG_OUTPUT_UNITS);
 
     @RegisterLanguage(cn = "%s 次", en = "%s runs")
     private static final String LANG_TIMES = "gtocore.machine.eye_of_harmony.flow.times";
@@ -125,7 +149,7 @@ public final class HarmonyFlowPage {
     private static final String LANG_FLUID_SHORT = "gtocore.machine.eye_of_harmony.flow.fluid_short";
     @RegisterLanguage(cn = "储量不低于 1,024 KB，可供下一次配方启动。", en = "The reserve holds at least 1,024 KB, enough for the next recipe start.")
     private static final String LANG_FLUID_OK_DESC = "gtocore.machine.eye_of_harmony.flow.fluid_ok.desc";
-    @RegisterLanguage(cn = "储量低于 1,024 KB，配方无法启动。补充至输入仓后，每秒自动抽入。", en = "The reserve is below 1,024 KB; no recipe can start. Fluid added to the input hatches is drawn in every second.")
+    @RegisterLanguage(cn = "储量低于 1,024 KB，配方无法启动。", en = "The reserve is below 1,024 KB; no recipe can start.")
     private static final String LANG_FLUID_SHORT_DESC = "gtocore.machine.eye_of_harmony.flow.fluid_short.desc";
     @RegisterLanguage(cn = "每秒将输入仓中的全部%s抽入内部储量，储量没有上限。", en = "Every second, all %s in the input hatches is drawn into the internal reserve, which has no limit.")
     private static final String LANG_FLUID_RULE_DRAW = "gtocore.machine.eye_of_harmony.flow.fluid_rule_draw";
@@ -144,7 +168,7 @@ public final class HarmonyFlowPage {
     private static final String LANG_OC_COUNT = "gtocore.machine.eye_of_harmony.flow.oc_count";
     @RegisterLanguage(cn = "耗时与启动耗能按当前电路编号计算。", en = "Duration and startup energy follow the current circuit number.")
     private static final String LANG_OC_SET_DESC = "gtocore.machine.eye_of_harmony.flow.oc_set.desc";
-    @RegisterLanguage(cn = "编程电路 1~4 对应超频 0~3 次；输入单元中同时存在多个时，取编号最大者。", en = "Programmed circuits 1~4 give 0~3 overclocks; if several are present in the input units, the highest number applies.")
+    @RegisterLanguage(cn = "编程电路 1~4 对应超频 0~3 次", en = "Programmed circuits 1~4 give 0~3 overclocks")
     private static final String LANG_OC_RULE_CIRCUIT = "gtocore.machine.eye_of_harmony.flow.oc_rule_circuit";
     @RegisterLanguage(cn = "每次超频：耗时 ×1/2，启动耗能 ×8，平均功率 ×16。", en = "Each overclock: duration ×1/2, startup energy ×8, average power ×16.")
     private static final String LANG_OC_RULE_EFFECT = "gtocore.machine.eye_of_harmony.flow.oc_rule_effect";
@@ -223,9 +247,9 @@ public final class HarmonyFlowPage {
         boolean remote = window.isRemote();
         var status = new Status(machine);
         var chart = new FlowChart(0, SIDE_WIDTH, CORE_WIDTH, SIDE_WIDTH);
-        var hydrogen = fluidNode(chart, 0, remote, HarmonyMachine.HYDROGEN, LANG_HYDROGEN, status.hydrogen);
+        var hydrogen = fluidNode(chart, 0, remote, HarmonyMachine.HYDROGEN, HYDROGEN, status.hydrogen);
         var input = inputNode(chart, status);
-        var helium = fluidNode(chart, 2, remote, HarmonyMachine.HELIUM, LANG_HELIUM, status.helium);
+        var helium = fluidNode(chart, 2, remote, HarmonyMachine.HELIUM, HELIUM, status.helium);
         var overclock = overclockNode(chart, status);
         var recipe = recipeNode(chart, machine, status);
         var energy = energyNode(chart, status);
@@ -241,69 +265,69 @@ public final class HarmonyFlowPage {
         return UIElement.column(LayoutStyle.AUTO).addChild(chart.toView(window, false, machine.getDefinition().getId().toString()));
     }
 
-    private static FlowNode fluidNode(FlowChart chart, int column, boolean remote, Fluid fluid, String title, Reserve reserve) {
+    private static FlowNode fluidNode(FlowChart chart, int column, boolean remote, Fluid fluid, Component title, Reserve reserve) {
         var node = chart.node(0, column).bindState(reserve::state).bindDetail(reserve::detail);
         var header = UIElement.centeredRow(UISizes.SLOT_SIZE);
-        header.addChildren(FlowParts.fluidSlot(remote ? null : new FluidStack(fluid, 1)), TextLine.translatable(0, title).layout(l -> l.flex(1)));
+        header.addChildren(FlowParts.fluidSlot(remote ? null : new FluidStack(fluid, 1)), TextLine.constant(0, title).layout(l -> l.flex(1)));
         node.addChildren(header,
                 new IssueLine(LayoutStyle.AUTO, null, reserve::view),
-                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_STOCK), UITheme.FLOW_CYAN_LIGHT, reserve::progress).currentOnly().setUnit("B"),
-                StatusLine.of(LayoutStyle.AUTO, LANG_RUNS, reserve::runsText).bindLevel(reserve::runsLevel));
+                ProgressBar.of(LayoutStyle.AUTO, STOCK, UITheme.FLOW_CYAN_LIGHT, reserve::progress).currentOnly().setUnit("B"),
+                StatusLine.of(LayoutStyle.AUTO, RUNS, reserve::runsText).bindLevel(reserve::runsLevel));
         return node;
     }
 
     private static FlowNode inputNode(FlowChart chart, Status status) {
         var node = chart.node(0, 1).bindState(status::inputState).bindDetail(status::inputDetail);
-        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_IMPORT_BUS[GTValues.LV].asStack()), LANG_INPUT),
+        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_IMPORT_BUS[GTValues.LV].asStack()), INPUT),
                 new IssueLine(LayoutStyle.AUTO, null, status::inputView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_INPUT_UNITS, status::inputUnitsText));
+                StatusLine.of(LayoutStyle.AUTO, INPUT_UNITS, status::inputUnitsText));
         return node;
     }
 
     private static FlowNode overclockNode(FlowChart chart, Status status) {
         var node = chart.node(1, 0).bindState(status::overclockState).bindDetail(status::overclockDetail);
-        node.addChildren(FlowParts.header(ItemView.of(GTItems.PROGRAMMED_CIRCUIT.asStack()), LANG_OVERCLOCK),
+        node.addChildren(FlowParts.header(ItemView.of(GTItems.PROGRAMMED_CIRCUIT.asStack()), OVERCLOCK),
                 new IssueLine(LayoutStyle.AUTO, null, status::overclockView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_CIRCUIT, status::circuitText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_DURATION, status::durationText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_ENERGY_FACTOR, status::energyFactorText));
+                StatusLine.of(LayoutStyle.AUTO, CIRCUIT, status::circuitText),
+                StatusLine.of(LayoutStyle.AUTO, DURATION, status::durationText),
+                StatusLine.of(LayoutStyle.AUTO, ENERGY_FACTOR, status::energyFactorText));
         return node;
     }
 
     private static FlowNode recipeNode(FlowChart chart, HarmonyMachine machine, Status status) {
         var node = chart.node(1, 1).bindState(status::recipeState).bindDetail(status::recipeDetail);
-        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_RECIPE),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::recipeView),
-                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status::progress),
-                StatusLine.of(LayoutStyle.AUTO, LANG_RECIPE_TIER, status::recipeTierText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_RUN_ENERGY, status::runEnergyText));
+        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), RECIPE),
+                new IssueLine(LayoutStyle.AUTO, STATE, status::recipeView),
+                ProgressBar.of(LayoutStyle.AUTO, PROGRESS, UITheme.FLOW_CYAN_LIGHT, status::progress),
+                StatusLine.of(LayoutStyle.AUTO, RECIPE_TIER, status::recipeTierText),
+                StatusLine.of(LayoutStyle.AUTO, RUN_ENERGY, status::runEnergyText));
         return node;
     }
 
     private static FlowNode energyNode(FlowChart chart, Status status) {
         var node = chart.node(1, 2).bindState(status::energyState).bindDetail(status::energyDetail);
-        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY),
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), ENERGY),
                 new IssueLine(LayoutStyle.AUTO, null, status::energyView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_OWNER, status::ownerText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_STORED, status::storedText).bindLevel(status::storedLevel),
-                StatusLine.of(LayoutStyle.AUTO, LANG_STARTUP, status::startupText));
+                StatusLine.of(LayoutStyle.AUTO, OWNER, status::ownerText),
+                StatusLine.of(LayoutStyle.AUTO, STORED, status::storedText).bindLevel(status::storedLevel),
+                StatusLine.of(LayoutStyle.AUTO, STARTUP, status::startupText));
         return node;
     }
 
     private static FlowNode tierNode(FlowChart chart, Status status) {
         var node = chart.node(2, 0).bindState(status::tierState).bindDetail(status::tierDetail);
-        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(Items.EXPERIENCE_BOTTLE)), LANG_TIER),
+        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(Items.EXPERIENCE_BOTTLE)), TIER),
                 new IssueLine(LayoutStyle.AUTO, null, status::tierView),
-                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_ADVANCE), UITheme.STATUS_ONLINE, status::advance),
-                StatusLine.of(LayoutStyle.AUTO, LANG_ALLOWED, status::allowedText));
+                ProgressBar.of(LayoutStyle.AUTO, ADVANCE, UITheme.STATUS_ONLINE, status::advance),
+                StatusLine.of(LayoutStyle.AUTO, ALLOWED, status::allowedText));
         return node;
     }
 
     private static FlowNode outputNode(FlowChart chart, Status status) {
         var node = chart.node(2, 1).bindState(status::outputState).bindDetail(status::outputDetail);
-        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asStack()), LANG_OUTPUT),
+        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asStack()), OUTPUT),
                 new IssueLine(LayoutStyle.AUTO, null, status::outputView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_OUTPUT_UNITS, status::outputUnitsText));
+                StatusLine.of(LayoutStyle.AUTO, OUTPUT_UNITS, status::outputUnitsText));
         return node;
     }
 

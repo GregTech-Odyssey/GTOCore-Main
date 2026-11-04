@@ -2,6 +2,7 @@ package com.gtocore.common.machine.noenergy.game.slotMachine;
 
 import com.gtocore.common.data.GTOEffects;
 import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
+import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.milestone.GameAccess;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 import com.gtocore.config.GTOConfig;
@@ -14,7 +15,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
@@ -30,7 +30,6 @@ import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ItemView;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
-import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -53,6 +52,7 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+
 import com.lowdragmc.lowdraglib.gui.texture.DynamicTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -66,38 +66,32 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 基于 {@link SlotMachineState} 的老虎机机器，余额、取出、权限、会话与里程碑都来自 {@link AbstractGameMachine}。
- *
- * <p>
- * 本类只处理机器层职责：服务端状态、tick 订阅、DataSyncLib 字段存盘、拆除掉落与 Fancy UI；
- * 开奖、赔率与结果结构都在同包的底层逻辑类里。收付用的是技术员币（{@link #currency()}），往硬币槽投币即入账，
- * 拆机器时槽里的硬币原样掉出、余额按面额换成实体币一起掉回世界。
- *
- * <p>
- * 盘面由构造时注入的 {@link SlotMachineRules} 决定（列数、行数、卷轴与赔付表），界面按规则的布局铺格子，
- * 所以同一个类同时驱动 3 列与 5 列老虎机；规则不参与存档，读档时由方块的机器工厂重新注入。
+ * 老虎机：余额、取出、权限、会话与里程碑由 {@link AbstractGameMachine} 提供，本类只管服务端状态、tick、存盘与 UI。
+ * 开奖、赔率与结果结构在同包底层类里。收付技术员币（{@link #currency()}），投币入槽即入账，拆机时槽里的硬币原样掉出。
+ * 盘面由构造时注入的 {@link SlotMachineRules} 决定，同一个类因此同时驱动 3 列与 5 列机器；规则不参与存档，读档时由机器工厂重新注入。
  */
 @DataGeneratorScanned
 public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     @RegisterLanguage(cn = "上一局奖励", en = "Last payout")
-    private static final String LINE_LAST_REWARD = "gtocore.machine.slot_machine.line.last_reward";
+    private static final Component LINE_LAST_REWARD = Component.translatable("gtocore.machine.slot_machine.line.last_reward");
     @RegisterLanguage(cn = "下注数量", en = "Bet amount")
-    private static final String ROW_BET = "gtocore.machine.slot_machine.row.bet";
+    private static final Component ROW_BET = Component.translatable("gtocore.machine.slot_machine.row.bet");
     @RegisterLanguage(cn = "下注会在开始滚动时扣除，滚动结束后按中奖线返还奖励", en = "The bet is consumed when a spin starts; payout is returned after the spin")
-    private static final String ROW_BET_TOOLTIP = "gtocore.machine.slot_machine.row.bet.tooltip";
+    private static final Component ROW_BET_TOOLTIP = Component.translatable("gtocore.machine.slot_machine.row.bet.tooltip");
     @RegisterLanguage(cn = "开始", en = "Spin")
-    private static final String BUTTON_SPIN = "gtocore.machine.slot_machine.button.spin";
+    private static final Component BUTTON_SPIN = Component.translatable("gtocore.machine.slot_machine.button.spin");
     @RegisterLanguage(cn = "当前无法开始：机器关闭、正在滚动或余额不足", en = "Cannot start: disabled, spinning, or insufficient credits")
-    private static final String REASON_CANNOT_START = "gtocore.machine.slot_machine.reason.cannot_start";
+    private static final Component REASON_CANNOT_START = Component.translatable("gtocore.machine.slot_machine.reason.cannot_start");
     @RegisterLanguage(cn = "正在滚动，暂不能取出余额", en = "Cannot withdraw while spinning")
-    private static final String REASON_SPINNING = "gtocore.machine.slot_machine.reason.spinning";
+    private static final Component REASON_SPINNING = Component.translatable("gtocore.machine.slot_machine.reason.spinning");
     @RegisterLanguage(cn = "当前无法开始：服务器已禁用老虎机", en = "Cannot start: the slot machine is disabled on this server")
-    private static final String REASON_DISABLED = "gtocore.machine.slot_machine.reason.disabled";
+    private static final Component REASON_DISABLED = Component.translatable("gtocore.machine.slot_machine.reason.disabled");
     @RegisterLanguage(cn = "老虎机已被禁用", en = "Slot machine disabled")
-    private static final String NOTICE_DISABLED_TITLE = "gtocore.machine.slot_machine.notice.disabled.title";
+    private static final Component NOTICE_DISABLED_TITLE = Component.translatable("gtocore.machine.slot_machine.notice.disabled.title");
     @RegisterLanguage(cn = "本服务器已关闭老虎机，禁止赌博；余额仍可取出", en = "This server has disabled the slot machine; credits can still be withdrawn")
-    private static final String NOTICE_DISABLED_DETAIL = "gtocore.machine.slot_machine.notice.disabled.detail";
+    private static final Component NOTICE_DISABLED_DETAIL = Component.translatable("gtocore.machine.slot_machine.notice.disabled.detail");
+
     @RegisterLanguage(cn = "无", en = "None")
     private static final String VALUE_NONE = "gtocore.machine.slot_machine.value.none";
     @RegisterLanguage(cn = "%s (倍率 ×%s)", en = "%s (multiplier ×%s)")
@@ -113,7 +107,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     @RegisterLanguage(cn = "回报比", en = "Return")
     private static final String COLUMN_RATIO = "gtocore.machine.slot_machine.column.ratio";
 
-    /** 里程碑表格的列（名次由表格自动加在最前）：玩家 + 次数、投入、获得与回报比。 */
+    /** 里程碑表格的列；名次列由表格自动加在最前。 */
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 42),
             MilestoneColumn.right(COLUMN_SPINS, 40),
@@ -121,27 +115,26 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
             MilestoneColumn.right(COLUMN_WON, 52),
             MilestoneColumn.right(COLUMN_RATIO, 38) };
 
+    /** 「全部榜单」页里的老虎机榜：列与行和本机排行榜页完全一致。 */
+    public static GameBoardCatalog.Board leaderboardBoard() {
+        return GameBoardCatalog.board(MILESTONE_COLUMNS, server -> GameMilestones.get(server).modCount(),
+                (server, first, second) -> buildMilestoneRows(GameMilestones.get(server), server));
+    }
+
     /** 中奖后附赠「机械之神降临」的概率。 */
     public static final double BOOST_CHANCE = 0.3;
-    /**
-     * 下注在效果档位里的权重，剩下的给倍率。倍率决定大方向，投注额度把同一倍率的效果再拉开一截——
-     * 小额小奖只给脚下那台机器加个速，豪赌的大奖才能顶到满级。
-     */
+    /** 下注在档位权重里的占比，其余给倍率。 */
     private static final double BOOST_BET_WEIGHT = 0.3;
-    /** 效果上限：14 级（与满档监工可乐同档，能加速到 GT tier 14 的配方）、15 分钟；下限 1 级、半分钟。 */
+    /** 效果上限：14 级（放大器即配方可加速的电压档上限）、15 分钟；下限 1 级、30 秒。 */
     public static final int BOOST_MAX_AMPLIFIER = 14;
     private static final int BOOST_MIN_AMPLIFIER = 1;
     private static final int BOOST_MIN_DURATION = 20 * 30;
     public static final int BOOST_MAX_DURATION = 20 * 60 * 15;
-    /** 档位过半时换成「大瓶」的范围版（5×5×5）；低倍率只给自己脚下那台机器加速。 */
+    /** 曲线后的档位过半时换成「大瓶」范围版（周围 5×5×5）；低档只作用于脚下那台。 */
     private static final double BOOST_LARGE_THRESHOLD = 0.5;
-    /** 同一档位内的随机浮动：倍率相近的两局也可能差一档。 */
+    /** 档位权重的随机抖动（±0.1），避免相近的两局完全同档。 */
     private static final double BOOST_JITTER = 0.1;
-    /**
-     * 档位曲线：加权后的档位再取这个幂。指数越大，中低档被压得越狠，满档不受影响（{@code 1^n = 1}）。
-     * 当前 2.5 档把奖励整体压下一大截：最低档（×2 + 最小注）落在 1 级、约半分钟，中档 2~6 级，
-     * 只有满注 + 本机最高倍率才摸得到 14 级 / 15 分钟。
-     */
+    /** 档位曲线的指数：加权档位再取这个幂，中低档被压得更狠，满档不变（{@code 1^n = 1}）。 */
     private static final double BOOST_CURVE = 2.5;
 
     private static final long[] CREDIT_STEPS = { 5, 25, 625 };
@@ -155,12 +148,11 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     private static final int WIN_SOUND_INTERVAL = 2;
     private static final float[] WIN_SOUND_PITCHES = { 1.0F, 1.25F, 1.5F, 1.25F, 1.5F, 1.75F, 1.5F, 2.0F };
 
-    // 状态是自定义元素：SlotMachineState 为整份状态注册了自己的 codec，DataSyncLib 按字段类型找到它，
-    // 字段不能是 final：final 字段只查 access 工厂（嵌套 holder、容器），不查 codec 工厂，会在字段扫描期
-    // 直接抛异常；非 final 才允许读盘时整体替换实例。
+    // 状态是自定义元素：SlotMachineState 自带 codec，DataSyncLib 按字段类型找到它。
+    // 字段不能是 final：final 只查 access 工厂、不查 codec 工厂，且读档要整体替换实例。
     @SaveToDisk
     private SlotMachineState state = new SlotMachineState();
-    // 硬币槽随机器存盘，槽里没换完的硬币不能丢。
+    // 硬币槽随机器存盘：槽里没入账的硬币不能丢。
     @SaveToDisk
     private final KeyInventory<AEItemKey> depositInventory = KeyInventory.items(1);
     private final Runnable machineTick = this::tickMachine;
@@ -168,10 +160,10 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     @Nullable
     private TickableSubscription tickSubs;
     private int winSoundTicksRemaining;
-    /** 开这一局的人：中奖附赠的效果给他；不存盘，读档中断的一局就退回机器主人。 */
+    /** 开这一局的人：附赠效果给他；不存盘，读档后回退到机器主人。 */
     @Nullable
     private UUID spinnerUUID;
-    // 盘面规则由方块类型决定，不参与存档：读档时机器工厂会重新注入同一份规则。
+    // 盘面规则由方块类型决定，不参与存档：读档时机器工厂重新注入。
     private final SlotMachineRules rules;
 
     public SlotMachine(MetaMachineBlockEntity holder, SlotMachineRules rules) {
@@ -180,7 +172,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         depositInventory.setOnChanged(this::onDepositInventoryChanged);
     }
 
-    /** 老虎机收付技术员币：投币入账、取出与拆除掉币都按它的面额来。 */
+    /** 老虎机收付技术员币：入账、取出与拆机掉币都按它的面额。 */
     @Override
     protected String currencyId() {
         return TradeLang.TECH_OPERATOR_COIN;
@@ -191,9 +183,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         return CoinExchange.techOperator();
     }
 
-    /**
-     * 通道里下发的界面快照：下注、上一局奖励与倍率；余额由基类的同步字段提供，不在这里重复。相等性只看版本号。
-     */
+    /** 下发的界面快照：下注、上一局奖励与倍率；余额由基类同步，相等性只看版本号。 */
     public record Snapshot(int revision, boolean hasResult, int bet, long lastReward, double lastRewardMultiplier) {
 
         private static final Snapshot EMPTY = new Snapshot(-1, false, SlotMachineRules.DEFAULT_BET, 0L, 0D);
@@ -223,7 +213,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
                 last == null ? 0D : last.reward() / (double) last.bet());
     }
 
-    /** 状态一变就重排 tick 订阅：滚动中、还有中奖音效、或槽里有能入账的硬币时才需要每 tick 干活。 */
+    /** 状态一变就重排 tick 订阅：滚动中、有中奖音效或槽里有币可入账时才需要每 tick 干活。 */
     @Override
     protected void onGameStateChanged() {
         if (!isRemote()) updateTickSubscription();
@@ -244,7 +234,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         winSoundTicksRemaining = 0;
     }
 
-    /** 拆除时硬币槽里的硬币原样掉出；余额由基类按面额换成实体币掉回世界。 */
+    /** 拆机时槽里的硬币原样掉出；余额由基类按面额换成实体币。 */
     @Override
     public void onMachineRemoved() {
         clearInventory(depositInventory);
@@ -253,7 +243,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     // ==================== 余额迁移 ====================
 
-    /** 旧存档的余额还压在 {@code state} 里：读档时搬到基类的余额字段上，并把那个位置清零免得下次重复搬。 */
+    /** 旧存档的余额还压在 {@code state} 里：搬到基类余额上并清零，避免下次读档重复加。 */
     private void migrateLegacyBalance() {
         long legacy = state.takeLegacyBalance();
         if (legacy <= 0) return;
@@ -283,7 +273,6 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         depositCredits();
         if (state.tickSpin()) {
             SlotMachineResult result = state.lastResult();
-            // 奖励先落进余额，再放音效与附赠效果：这一步之前余额里还没有这一局的钱
             if (result != null) addBalance(result.reward());
             if (result != null && result.hasWin()) {
                 winSoundTicksRemaining = WIN_SOUND_PITCHES.length * WIN_SOUND_INTERVAL;
@@ -293,14 +282,14 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
             spinnerUUID = null;
             syncAndMarkChanged();
         } else if (state.isSpinning()) {
-            // 倒计时也进入区块存盘，重载后从实际剩余时间继续。
+            // 倒计时也进存盘，重载后从剩余时间继续。
             onChanged();
         }
         tickWinSound();
         updateTickSubscription();
     }
 
-    /** 一次旋转结束：单人局才把次数、抽奖消耗（这一把的下注）与赢得记进里程碑。 */
+    /** 旋转结束：单人局才把次数、本把下注与赢得记进里程碑。 */
     private void recordSpin(@Nullable SlotMachineResult result) {
         if (!sessionCounts()) return;
         var milestones = milestones();
@@ -321,12 +310,11 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     // ==================== 玩法 ====================
 
-    /** 服务器可以在配置里关闭老虎机：关闭后只显示禁赌提示，且永远不能开始（余额与硬币槽照常可用）。 */
+    /** 服务器可在配置里关掉老虎机：关闭后不能开始，余额与硬币槽照常可用。 */
     private static boolean slotMachineEnabled() {
         return GTOConfig.INSTANCE.gamePlay.slotMachineEnabled;
     }
 
-    /** 现在能不能开一局：没在滚动，且余额够这一注。 */
     private boolean canStart() {
         return state.canStart(balance());
     }
@@ -335,7 +323,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         var level = getLevel();
         if (level == null || isRemote() || !slotMachineEnabled() || !guard(player)) return;
         if (!canStart()) return;
-        // 先预生成结果再扣注：canStart 已经拦过滚动中与余额不足，这里不会再失败
+        // 先预生成结果再扣注：canStart 已拦过滚动与余额不足，这里不会失败。
         if (!state.startSpin(level.getRandom(), rules)) return;
         removeBalance(state.bet());
         spinnerUUID = player == null ? null : player.getUUID();
@@ -344,15 +332,10 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     }
 
     /**
-     * 中奖附赠「机械之神降临」：{@link #BOOST_CHANCE} 的概率，等级与时长由这一局的倍率和下注一起决定。
-     *
-     * <p>
-     * 倍率与下注各按对数压到 0~1 再加权（倍率占七成，见 {@link #BOOST_BET_WEIGHT}）：倍率从「随便中一点」到单线满档、
-     * 下注从最小到最大，都会线性地铺满整个区间，不会出现「小倍率永远 0 级、大倍率永远满级」。算完再抖一档，
-     * 封顶 {@link #BOOST_MAX_AMPLIFIER} 级 / {@link #BOOST_MAX_DURATION} tick（15 分钟）。
-     *
-     * <p>
-     * 档位过半给「大瓶」的范围版（周围 5×5×5 的单方块机器都能加速），低档只给「小瓶」，作用在玩家脚下那一台。
+     * 中奖附赠「机械之神降临」：{@link #BOOST_CHANCE} 的概率，等级与时长由本局倍率和下注决定：两者各按对数归一
+     * 后加权（倍率占七成，权重见 {@link #BOOST_BET_WEIGHT}），加抖动、取 {@link #BOOST_CURVE} 次幂，再映射到
+     * 1~{@link #BOOST_MAX_AMPLIFIER} 级、30 秒~15 分钟（{@link #BOOST_MAX_DURATION} tick）；
+     * 曲线后档位 ≥ {@link #BOOST_LARGE_THRESHOLD} 时换成大瓶范围版（5×5×5），否则只作用于玩家脚下那台。
      */
     private void grantBoost(SlotMachineResult result) {
         if (!(getLevel() instanceof ServerLevel level)) return;
@@ -377,7 +360,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
                 Component.translatable(effect.getDescriptionId())), true);
     }
 
-    /** 开这一局的人优先（还在线的话），否则退回机器主人；都不在线就不给。 */
+    /** 开这一局的人优先（须在线），否则退回机器主人；都不在线就不给。 */
     @Nullable
     private ServerPlayer resolveSpinner(ServerLevel level) {
         var server = level.getServer();
@@ -394,7 +377,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     private void onDepositInventoryChanged() {
         if (getLevel() == null || isRemote()) return;
-        // 这里只调度；槽位容量探测和 Shift 转移完成后，才在服务端 tick 中消耗物品。
+        // 只调度 tick：此时槽位可能处于 Shift 转移中途，物品留到服务端 tick 再消耗。
         onChanged();
         updateTickSubscription();
     }
@@ -410,11 +393,11 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         CoinSeries coins = currency();
         int tier = coins.tierOf(Keys.displayStack(key));
         if (tier < 0) return;
-        // 没权限的玩家开着界面时别动槽里的币（锁机后仍留着他之前塞进去的硬币）。
+        // 查看者没权限时不动槽里的币（锁机后仍留着他之前塞进去的硬币）。
         var player = viewer();
         if (player != null && !GameAccess.canPlay(this, allowOthers(), player)) return;
         long value = coins.value(tier);
-        // 只接收能完整入账的硬币，不能吞掉一枚高面值币后只加剩余额度。
+        // 只收能完整入账的硬币：不能吞掉高面值币却只加剩余额度。
         long amount = Math.min(depositInventory.amountAt(0), (Long.MAX_VALUE - balance()) / value);
         if (amount <= 0) return;
         long deposited = depositInventory.extract(0, key, amount, false);
@@ -432,11 +415,11 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     // ==================== 界面 ====================
 
-    /** 关闭老虎机时，卷轴位置改为禁赌提示；其余控件（余额、硬币槽、取出）保持不变。 */
+    /** 关闭老虎机时卷轴位置换成禁赌提示；余额、硬币槽、取出等控件不变。 */
     private UIElement createReels() {
         if (!slotMachineEnabled()) return createDisabledNotice();
         SlotMachineLayout layout = rules.layout();
-        // 物品材质只在开界面时构建一次，渲染与滚动期间复用。
+        // 物品材质只在开界面时构建一次，渲染与滚动复用。
         var textures = new ItemStackTexture[SlotSymbol.count()];
         for (int i = 0; i < textures.length; i++) {
             textures[i] = new ItemStackTexture(SlotSymbol.symbolItem(SlotSymbol.byId(i)));
@@ -453,12 +436,12 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         return board;
     }
 
-    /** 禁用时的禁赌提示：固定文字，两端显示相同内容，不需要下发。 */
+    /** 禁赌提示：固定文本，两端各自翻译，不需要下发。 */
     private static UIElement createDisabledNotice() {
         var notice = UIElement.column(LayoutStyle.AUTO).layout(style -> style.alignCenter().gapAll(UISizes.GAP));
-        notice.addChild(TextLine.translatable(LayoutStyle.AUTO, NOTICE_DISABLED_TITLE)
+        notice.addChild(TextLine.constant(LayoutStyle.AUTO, NOTICE_DISABLED_TITLE)
                 .styled().bindClientColor(() -> UITheme.STATUS_TEXT_ERROR));
-        notice.addChild(TextLine.translatable(LayoutStyle.AUTO, NOTICE_DISABLED_DETAIL)
+        notice.addChild(TextLine.constant(LayoutStyle.AUTO, NOTICE_DISABLED_DETAIL)
                 .bindClientColor(() -> UITheme.TEXT_SECONDARY));
         return notice;
     }
@@ -473,7 +456,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         });
         var icon = ItemView.of(REEL_ICON_SIZE, new DynamicTexture(() -> {
             int id = display.getValue();
-            // 滚动只是客户端装饰，不读取也没提前同步尚未结算的结果。
+            // 滚动只是客户端动画，不读取待结算结果。
             if (id == REEL_SPINNING) {
                 id = (int) ((UIClock.millis() / 100 + reel * layout.visibleRows() + row) % textures.length);
             }
@@ -491,7 +474,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         status.addLine(LINE_BALANCE, () -> number(balance()));
         status.addLine(LINE_LAST_REWARD, this::lastRewardText);
 
-        var spinButton = Button.translatable(LayoutStyle.AUTO, BUTTON_SPIN)
+        var spinButton = Button.text(LayoutStyle.AUTO, BUTTON_SPIN)
                 .disabled(() -> !slotMachineEnabled() || !canStart(),
                         slotMachineEnabled() ? REASON_CANNOT_START : REASON_DISABLED);
         spinButton.setOnServerClick(() -> startSpin(playerOf(spinButton)));
@@ -499,16 +482,16 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         var credits = UIElement.centeredRow(UISizes.SLOT_SIZE).layout(layout -> layout.justifyContent(AlignContent.CENTER));
         var deposit = ItemSlot.of(depositInventory, 0, true, true);
         deposit.setGhosts(currency().itemStacks())
-                .setChangeListener(this::onDepositInventoryChanged)
-                .setHoverTooltips(currencyName());
-        var withdraw = Button.translatable(136, BUTTON_WITHDRAW)
+                .tooltips(Component.translatable(currencyName()))
+                .setChangeListener(this::onDepositInventoryChanged);
+        var withdraw = Button.text(136, BUTTON_WITHDRAW)
                 .disabled(() -> state.isSpinning(), REASON_SPINNING);
         withdraw.setOnServerClick(() -> {
-            // 滚动中不取币：界面上按钮是禁用的，服务端再挡一次，免得网络请求绕过禁用态
+            // 界面已禁用，服务端再挡一次，防网络请求绕过。
             if (state.isSpinning() || !guard(playerOf(withdraw))) return;
             withdrawAll(withdraw);
         });
-        withdraw.setHoverTooltips(currencyName());
+        withdraw.tooltips(Component.translatable(currencyName()));
         credits.addChildren(deposit, withdraw);
 
         status.addChildren(
@@ -520,55 +503,47 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         return Form.page().addChildren(reels, status);
     }
 
-    /** 主页之外再挂一个「配置」子页：游玩权限开关 + 全服里程碑榜单。 */
+    /** 挂「配置」与「排行榜」两个子页。 */
     @Override
     public void attachSideTabs(TabsWidget sideTabs) {
         super.attachSideTabs(sideTabs);
         sideTabs.attachSubTab(new ConfigPage());
+        sideTabs.attachSubTab(new LeaderboardPage());
     }
 
-    /** 配置页：游玩权限开关 + 里程碑榜单（按回报比降序，文字由服务端整表下发）。 */
-    private final class ConfigPage implements IFancyUIProvider {
+    /** 配置页：游玩权限开关与余额。 */
+    private final class ConfigPage extends GamePage {
+
+        private ConfigPage() {
+            super(WidgetIcons.SETTINGS, PAGE_SETTINGS, PAGE_SETTINGS_TOOLTIP);
+        }
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             var page = Form.page();
-            page.addChild(Form.controlRow(LINE_ALLOW_OTHERS,
-                    Switch.of(SlotMachine.this::allowOthers, SlotMachine.this::setAllowOthers), TOOLTIP_ALLOW_OTHERS));
-
-            var section = Form.section(SECTION_MILESTONES);
-            section.addChild(milestoneTable("game_milestones_slot_machine", MILESTONE_COLUMNS,
-                    SlotMachine::buildMilestoneRows));
-            page.addChild(section);
-
-            var status = new StatusPanel();
-            status.addLine(LINE_BALANCE, () -> number(balance()));
-            page.addChild(status);
+            page.addChild(allowOthersRow());
+            page.addChild(balancePanel());
             return page;
-        }
-
-        @Override
-        public IGuiTexture getTabIcon() {
-            return WidgetIcons.SETTINGS;
-        }
-
-        @Override
-        public Component getTitle() {
-            return Component.translatable(PAGE_SETTINGS);
-        }
-
-        @Override
-        public List<Component> getTabTooltips() {
-            return List.of(Component.translatable(PAGE_SETTINGS_TOOLTIP));
-        }
-
-        @Override
-        public boolean hasPlayerInventory() {
-            return false;
         }
     }
 
-    /** 里程碑表格的行（服务端构建）：回报比榜，一人一行，名次由表格补。 */
+    /** 排行榜页：回报比榜，按回报比降序。 */
+    private final class LeaderboardPage extends SingleLeaderboardPage {
+
+        private LeaderboardPage() {
+            super(PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
+        }
+
+        @Override
+        protected Widget boardContent() {
+            var section = Form.section(SECTION_MILESTONES);
+            section.addChild(milestoneTable("game_milestones_slot_machine", MILESTONE_COLUMNS,
+                    SlotMachine::buildMilestoneRows));
+            return section;
+        }
+    }
+
+    /** 服务端构建榜单行：一人一行，顺序由 {@code slotBoard} 排好。 */
     private static List<MilestoneCell[]> buildMilestoneRows(GameMilestones store, MinecraftServer server) {
         var board = store.slotBoard();
         var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
@@ -598,17 +573,13 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
         if (state.isSpinning()) return REEL_SPINNING;
         SlotMachineResult result = state.lastResult();
         if (result == null) return REEL_EMPTY;
-        // 符号与中奖标记打包在同一个同步值里，避免两者显示错位。
+        // 符号与中奖标记打包在同一个同步值里，避免显示错位。
         return result.symbolAt(reel, row).id() | (result.isWinningCell(reel, row) ? REEL_WINNING_FLAG : 0);
     }
 
     /**
-     * 卷轴面板：同时兼作键盘入口，按空格等同于点「开始」，快照也挂在这一层上。
-     *
-     * <p>
-     * 键盘事件由 LDLib 从界面根控件逐层向下派发（{@code WidgetGroup.keyPressed}），本元素在派发链上，所以不需要焦点；
-     * 请求经 RPC 上行，服务端在 {@link #startSpin} 里照旧自己校验能不能开（禁赌、滚动中、余额不足都拦得住），
-     * 因此这里不做客户端的预判，界面上的禁用态仍由「开始」按钮自己显示。
+     * 卷轴面板：兼作键盘入口，按空格等同于点「开始」，界面快照也挂在这一层。
+     * 请求走 RPC，服务端在 {@link #startSpin} 里重新校验（禁赌、滚动中、余额不足）；客户端不做预判。
      */
     private final class ReelPanel extends StatusPanel {
 

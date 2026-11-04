@@ -2,7 +2,6 @@ package com.gtocore.data.loot;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.common.data.SuperStorageUpgrades;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.api.annotation.Register;
@@ -10,7 +9,6 @@ import com.gtolib.api.rule.RulePreset;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.item.StorageUpgradeItem;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -93,12 +91,6 @@ public final class DungeonLoot {
         if (table.getPool(WDA_LOOT_POOL) != null) {
             return;
         }
-        var upgWeights = switch (GTORules.LOOT.get()) {
-            case EASY -> new int[] { 16, 8, 6, 5, 4 };
-            case NORMAL -> new int[] { 8, 6, 4, 2, 0 };
-            case EXPERT -> new int[] { 6, 4, 1, 0, 0 };
-            default -> new int[] { 0, 0, 0, 0, 0 };
-        };
         boolean treasure = id.getPath().contains("treasure") || id.getPath().contains("elite") || id.getPath().contains("top");
         LootPool.Builder pool = LootPool.lootPool()
                 .name(WDA_LOOT_POOL)
@@ -110,13 +102,6 @@ public final class DungeonLoot {
                 .add(LootItem.lootTableItem(ChemicalHelper.get(GTOTagPrefix.COIN, GTMaterials.Copper).getItem())
                         .setWeight(8)
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, treasure ? 12 : 6))));
-        for (int i = 0; i < SuperStorageUpgrades.UPGRADES.length; i++) {
-            if (upgWeights[i] <= 0) continue;
-            StorageUpgradeItem upgi = SuperStorageUpgrades.UPGRADES[i].get();
-            pool.add(LootItem.lootTableItem(upgi)
-                    .setWeight(upgWeights[i])
-                    .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, treasure ? (GTORules.LOOT.get() == RulePreset.EXPERT ? 3 : 8) : 2))));
-        }
         table.addPool(pool.build());
     }
 }

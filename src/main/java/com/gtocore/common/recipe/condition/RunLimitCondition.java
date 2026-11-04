@@ -7,12 +7,15 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
 
 import java.util.UUID;
 
 public final class RunLimitCondition extends RecipeCondition {
+
+    private static final Component LABEL = Component.translatable("gtocore.recipe.info.run_limit");
 
     private final int count;
 
@@ -23,6 +26,11 @@ public final class RunLimitCondition extends RecipeCondition {
     @Override
     public Component getTooltips() {
         return Component.translatable("gtocore.recipe.runlimit.count", count);
+    }
+
+    @Override
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.requirement(LABEL, () -> Component.literal(String.valueOf(count)));
     }
 
     @Override

@@ -23,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -177,8 +178,8 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
     }
 
     @Override
-    public String getStorageSlotLabel() {
-        return BotaniaBlocks.motifDaybloom.asItem().getDescriptionId();
+    public Component getStorageSlotLabel() {
+        return Component.translatable(BotaniaBlocks.motifDaybloom.asItem().getDescriptionId());
     }
 
     @Override

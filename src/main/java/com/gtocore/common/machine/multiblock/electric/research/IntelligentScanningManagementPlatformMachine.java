@@ -36,6 +36,7 @@ import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.ObjHolder;
+
 import com.hepdd.gtmthings.utils.TeamUtil;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -45,7 +46,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
 import static com.gtocore.api.research.scanning.DataScanningManager.hasScanned;
 
 public class IntelligentScanningManagementPlatformMachine extends ElectricMultiblockMachine implements ScanningInfoProvider, ICustomRecipeLogicHolder {
@@ -173,7 +173,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                 var k = iterator.next();
                 var mat = AEChemicalHelper.getMaterial(k);
                 var containsMaterial = false;
-                if (mat != NULL) {
+                if (mat != null) {
                     containsMaterial = !materials.add(mat);
                 }
                 if (containsMaterial) {
@@ -227,7 +227,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                 var k = scanQueue.poll();
                 var mat = AEChemicalHelper.getMaterial(k);
                 var containsMaterial = false;
-                if (mat != NULL) {
+                if (mat != null) {
                     containsMaterial = !materials.add(mat);
                 }
                 if (containsMaterial) {

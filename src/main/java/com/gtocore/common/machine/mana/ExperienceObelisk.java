@@ -9,9 +9,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.gui.widget.IntInputWidget;
-import com.gregtechceu.gtceu.api.gui.widget.ToggleButtonWidget;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
@@ -20,6 +18,9 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -43,13 +44,11 @@ import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
+import com.lowdragmc.lowdraglib.gui.widget.SwitchWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
-import com.lowdragmc.lowdraglib.gui.widget.layout.Align;
 import dev.shadowsoffire.placebo.util.EnchantmentUtils;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -150,94 +149,84 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
     }
 
     @Override
-    public ModularUI createUI(Player entityPlayer) {
-        var widgetsOuter = new WidgetGroup(0, 0, 100, 100);
-        var widgets = new WidgetGroup(38, 8, 100, 92);
-        widgetsOuter.addWidget(widgets);
-
-        // 配置输入组件
-        widgets.addWidget(new WidgetGroup(0, 0, 100, 12).addWidget(new LabelWidget(0, 0, LANG_CONFIGURE_AMOUNT).setAlign(Align.CENTER)));
-        widgets.addWidget(createConfigAmountWidget());
-
-        // 切换等级/经验点模式
-        widgets.addWidget(createLevelsModeToggleButton());
-        widgets.addWidget(new LabelWidget(20, 44, () -> Component.translatable(LANG_STORED_EXPERIENCE, EnchantmentUtils.getLevelForExperience(fluidToXp(storedFluid()))).getString()));
-
-        // 经验转移按钮
-        widgets.addWidget(createTransferConfiguredButton(entityPlayer, true, 0));
-        widgets.addWidget(createTransferConfiguredButton(entityPlayer, false, 20));
-        widgets.addWidget(createTransferAllButton(entityPlayer, true, 40));
-        widgets.addWidget(createTransferAllButton(entityPlayer, false, 60));
-
-        // 真空模式按钮
-        widgets.addWidget(createVacuumHopperModeButton(80));
-        widgets.addWidget(fixToolsWithMendingEnchantmentButton(entityPlayer, 100));
-
-        return new ModularUI(176, 166, this, entityPlayer)
-                .widget(new FancyMachineUIWidget(this, 176, 166))
-                .widget(widgetsOuter);
-    }
-
-    @Override
-    public void attachSideTabs(TabsWidget sideTabs) {
-        sideTabs.setMainTab(this);
-    }
-
-    @Override
-    public Widget createUIWidget() {
-        return new WidgetGroup();
+    public Widget createMainPage(FancyMachineUIWidget widget) {
+        var player = widget.getGui().entityPlayer;
+        return UIElement.column(116).layout(l -> l.gapAll(4).alignCenter())
+                .addChildren(
+                        TextLine.constant(116, LANG_CONFIGURE_AMOUNT).bindClientColor(UITheme::panelText),
+                        createConfigAmountWidget(),
+                        UIElement.centeredRow(16).layout(l -> l.gapAll(4)).addChildren(
+                                createLevelsModeToggleButton(),
+                                TextLine.of(96, () -> Component.translatable(LANG_STORED_EXPERIENCE, EnchantmentUtils.getLevelForExperience(fluidToXp(storedFluid())))).bindClientColor(UITheme::panelText)),
+                        UIElement.centeredRow(16).layout(l -> l.gapAll(4)).addChildren(
+                                createTransferConfiguredButton(player, true),
+                                createTransferConfiguredButton(player, false),
+                                createTransferAllButton(player, true),
+                                createTransferAllButton(player, false),
+                                createVacuumHopperModeButton(),
+                                fixToolsWithMendingEnchantmentButton(player)));
     }
 
     private IntInputWidget createConfigAmountWidget() {
         var intWidget = new IntInputWidget(this::getCurrentConfigAmount, this::setCurrentConfigAmount);
-        intWidget.setSelfPosition(0, 12);
         intWidget.setMax(100000000);
         intWidget.setMin(0);
         intWidget.setValue(currentConfigAmount);
         return intWidget;
     }
 
-    private ToggleButtonWidget createLevelsModeToggleButton() {
-        ToggleButtonWidget toggleButton = new ToggleButtonWidget(
-                0, 40, 16, 16,
-                this::isConfiguringLevels,
-                pressed -> isConfiguringLevels = pressed);
-        toggleButton.setPressed(isConfiguringLevels);
+    private SwitchWidget createLevelsModeToggleButton() {
+        SwitchWidget[] holder = new SwitchWidget[1];
+        SwitchWidget toggleButton = new SwitchWidget(
+                0, 0, 16, 16,
+                (clickData, pressed) -> {
+                    isConfiguringLevels = pressed;
+                    if (holder[0] != null) {
+                        updateLevelsModeTooltip(holder[0], pressed);
+                    }
+                });
+        holder[0] = toggleButton;
+        toggleButton.setSupplier(this::isConfiguringLevels);
         toggleButton.setTexture(new GuiTextureGroup(GuiTextures.BUTTON, GTOGuiTextures.SMALL_XP_ORB),
                 new GuiTextureGroup(GuiTextures.BUTTON, GTOGuiTextures.LARGE_XP_ORB.scale(0.8f)));
-        toggleButton.setTooltipText("gtocore.machine.experience_obelisk.configure");
+        updateLevelsModeTooltip(toggleButton, isConfiguringLevels);
         return toggleButton;
     }
 
-    private ButtonWidget createTransferConfiguredButton(Player player, boolean toPlayer, int x) {
-        var button = createTransferButton(player, () -> calculateConfiguredAmount(player, toPlayer), x);
+    private static void updateLevelsModeTooltip(SwitchWidget widget, boolean levels) {
+        widget.setHoverTooltips(levels ? LANG_CONFIGURE_LEVELS : LANG_CONFIGURE_POINTS);
+    }
+
+    private ButtonWidget createTransferConfiguredButton(Player player, boolean toPlayer) {
+        var button = createTransferButton(player, () -> calculateConfiguredAmount(player, toPlayer));
         if (toPlayer) {
             button.setButtonTexture(GuiTextures.BUTTON_RIGHT.copy().rotate(45));
-            button.setHoverTooltips(Component.translatable(LANG_TRANSFER_TO_PLAYER));
+            button.setHoverTooltips(LANG_TRANSFER_TO_PLAYER);
         } else {
             button.setButtonTexture(GuiTextures.BUTTON_LEFT.copy().rotate(45));
-            button.setHoverTooltips(Component.translatable(LANG_TRANSFER_TO_MACHINE));
+            button.setHoverTooltips(LANG_TRANSFER_TO_MACHINE);
         }
         return button;
     }
 
-    private ButtonWidget createTransferAllButton(Player player, boolean toPlayer, int x) {
+    private ButtonWidget createTransferAllButton(Player player, boolean toPlayer) {
         IntSupplier amountSupplier = toPlayer ? () -> fluidToXp(storedFluid()) : () -> -getExperiencePoints(player);
-        var button = createTransferButton(player, amountSupplier, x);
+        var button = createTransferButton(player, amountSupplier);
         if (toPlayer) {
             button.setButtonTexture(GuiTextures.BUTTON_RIGHT.copy().rotate(45));
-            button.setHoverTooltips(Component.translatable(LANG_TRANSFER_ALL_TO_PLAYER));
+            button.setHoverTooltips(LANG_TRANSFER_ALL_TO_PLAYER);
         } else {
             button.setButtonTexture(GuiTextures.BUTTON_LEFT.copy().rotate(45));
-            button.setHoverTooltips(Component.translatable(LANG_TRANSFER_ALL_TO_MACHINE));
+            button.setHoverTooltips(LANG_TRANSFER_ALL_TO_MACHINE);
         }
         return button;
     }
 
-    private ToggleButtonWidget createVacuumHopperModeButton(int x) {
-        ToggleButtonWidget button = new ToggleButtonWidget(x, 60, 16, 16, this::isVacuumHopperMode, this::setVacuumHopperMode);
+    private SwitchWidget createVacuumHopperModeButton() {
+        SwitchWidget button = new SwitchWidget(0, 0, 16, 16, (clickData, pressed) -> setVacuumHopperMode(pressed));
+        button.setSupplier(this::isVacuumHopperMode);
         button.setTexture(createToggleTexture(false), createToggleTexture(true));
-        button.setHoverTooltips(Component.translatable(LANG_VACUUM_HOPPER_MODE));
+        button.setHoverTooltips(LANG_VACUUM_HOPPER_MODE);
         return button;
     }
 
@@ -263,8 +252,8 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         return EnchantmentUtils.getTotalExperienceForLevel(targetLevel) - getExperiencePoints(player);
     }
 
-    private ButtonWidget createTransferButton(Player player, IntSupplier amountToPlayer, int x) {
-        return new ButtonWidget(x, 60, 16, 16,
+    private ButtonWidget createTransferButton(Player player, IntSupplier amountToPlayer) {
+        return new ButtonWidget(0, 0, 16, 16,
                 (clickData -> {
                     int amount = amountToPlayer.getAsInt();
                     if (player instanceof ServerPlayer && amount != 0) {
@@ -287,37 +276,34 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
                 }));
     }
 
-    private Widget fixToolsWithMendingEnchantmentButton(Player player, int x) {
-        return new ButtonWidget(x, 60, 16, 16,
+    private Widget fixToolsWithMendingEnchantmentButton(Player player) {
+        return new ButtonWidget(0, 0, 16, 16,
                 (clickData -> {
                     if (player instanceof ServerPlayer) {
                         int extracted = drainFluid(storedFluid());
-                        int remainingExp = repairPlayerItems(player, extracted, extracted);
-                        if (remainingExp > 0) {
-                            experienceTank.insert(xpKey, remainingExp, false);
+                        int remainingFluid = repairPlayerItems(player, extracted);
+                        if (remainingFluid > 0) {
+                            experienceTank.insert(xpKey, remainingFluid, false);
                         }
                     }
                 }))
                 .setButtonTexture(GuiTextures.BUTTON, GuiTextures.TOOL_SLOT_OVERLAY.copy().scale(0.88f))
-                .setHoverTooltips(Component.translatable(LANG_REPAIR_MENDING_TOOLS));
+                .setHoverTooltips(LANG_REPAIR_MENDING_TOOLS);
     }
 
     /// @see ExperienceOrb#repairPlayerItems(Player, int)
-    private int repairPlayerItems(Player p_147093_, int remainingExp, int initialValue) {
-        Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, p_147093_, ItemStack::isDamaged);
-        if (entry != null) {
+    private static int repairPlayerItems(Player player, int remainingFluid) {
+        while (remainingFluid > 0) {
+            Map.Entry<EquipmentSlot, ItemStack> entry = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, player, ItemStack::isDamaged);
+            if (entry == null) break;
             ItemStack itemstack = entry.getValue();
-            int i = Math.min((int) (initialValue * itemstack.getXpRepairRatio()), itemstack.getDamageValue());
-            itemstack.setDamageValue(itemstack.getDamageValue() - i);
-            int j = remainingExp - this.durabilityToXp(i);
-            return j > 0 ? this.repairPlayerItems(p_147093_, j, initialValue) : 0;
-        } else {
-            return remainingExp;
+            double ratio = itemstack.getXpRepairRatio();
+            int repaired = (int) Math.min(remainingFluid * ratio / FLUID_PER_XP, itemstack.getDamageValue());
+            if (repaired <= 0) break;
+            itemstack.setDamageValue(itemstack.getDamageValue() - repaired);
+            remainingFluid -= (int) Math.min(remainingFluid, Math.ceil(repaired * FLUID_PER_XP / ratio));
         }
-    }
-
-    private int durabilityToXp(int pDurability) {
-        return pDurability * 10;
+        return remainingFluid;
     }
 
     public void setVacuumHopperMode(boolean vacuumHopperMode) {
@@ -408,32 +394,34 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         return (int) (EnchantmentUtils.getTotalExperienceForLevel(player.experienceLevel) + (player.experienceProgress) * player.getXpNeededForNextLevel());
     }
 
+    private static final int FLUID_PER_XP = 20;
+
     private static int xpToFluid(int xp) {
-        return (int) Mth.clamp(xp * 20L, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        return (int) Mth.clamp((long) xp * FLUID_PER_XP, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     private static int fluidToXp(int fluid) {
-        return fluid / 20;
+        return fluid / FLUID_PER_XP;
     }
 
     @RegisterLanguage(cn = "单位：经验等级", en = "Unit: Experience Levels")
-    private static final String LANG_CONFIGURE_LEVELS = "gtocore.machine.experience_obelisk.configure.enabled";
+    private static final Component LANG_CONFIGURE_LEVELS = Component.translatable("gtocore.machine.experience_obelisk.configure.enabled");
     @RegisterLanguage(cn = "单位：经验值", en = "Unit: Experience Points")
-    private static final String LANG_CONFIGURE_POINTS = "gtocore.machine.experience_obelisk.configure.disabled";
+    private static final Component LANG_CONFIGURE_POINTS = Component.translatable("gtocore.machine.experience_obelisk.configure.disabled");
     @RegisterLanguage(cn = "设定经验值转移数量", en = "Transfer the configured experience amount")
-    private static final String LANG_CONFIGURE_AMOUNT = "gtocore.machine.experience_obelisk.configure_amount";
+    private static final Component LANG_CONFIGURE_AMOUNT = Component.translatable("gtocore.machine.experience_obelisk.configure_amount");
     @RegisterLanguage(cn = "从玩家转移设定的经验值到机器", en = "Transfer the configured experience from player to machine")
-    private static final String LANG_TRANSFER_TO_MACHINE = "gtocore.machine.experience_obelisk.transfer_to_machine";
+    private static final Component LANG_TRANSFER_TO_MACHINE = Component.translatable("gtocore.machine.experience_obelisk.transfer_to_machine");
     @RegisterLanguage(cn = "从机器转移设定的经验值到玩家", en = "Transfer the configured experience from machine to player")
-    private static final String LANG_TRANSFER_TO_PLAYER = "gtocore.machine.experience_obelisk.transfer_to_player";
+    private static final Component LANG_TRANSFER_TO_PLAYER = Component.translatable("gtocore.machine.experience_obelisk.transfer_to_player");
     @RegisterLanguage(cn = "转移所有的经验值到玩家", en = "Transfer all experience from machine to player")
-    private static final String LANG_TRANSFER_ALL_TO_PLAYER = "gtocore.machine.experience_obelisk.transfer_all_to_player";
+    private static final Component LANG_TRANSFER_ALL_TO_PLAYER = Component.translatable("gtocore.machine.experience_obelisk.transfer_all_to_player");
     @RegisterLanguage(cn = "转移所有的经验值到机器", en = "Transfer all experience from machine to player")
-    private static final String LANG_TRANSFER_ALL_TO_MACHINE = "gtocore.machine.experience_obelisk.transfer_all_to_machine";
+    private static final Component LANG_TRANSFER_ALL_TO_MACHINE = Component.translatable("gtocore.machine.experience_obelisk.transfer_all_to_machine");
     @RegisterLanguage(cn = "真空箱子模式", en = "Vacuum Hopper Mode")
-    private static final String LANG_VACUUM_HOPPER_MODE = "gtocore.machine.experience_obelisk.vacuum_hopper_mode";
+    private static final Component LANG_VACUUM_HOPPER_MODE = Component.translatable("gtocore.machine.experience_obelisk.vacuum_hopper_mode");
     @RegisterLanguage(cn = "已存储%s级经验", en = "Stored %s Levels of Experience")
     public static final String LANG_STORED_EXPERIENCE = "gtocore.machine.experience_obelisk.stored_experience";
     @RegisterLanguage(cn = "修复带有经验修补附魔的工具", en = "Repair tools with Mending enchantment")
-    private static final String LANG_REPAIR_MENDING_TOOLS = "gtocore.machine.experience_obelisk.repair_mending_tools";
+    private static final Component LANG_REPAIR_MENDING_TOOLS = Component.translatable("gtocore.machine.experience_obelisk.repair_mending_tools");
 }

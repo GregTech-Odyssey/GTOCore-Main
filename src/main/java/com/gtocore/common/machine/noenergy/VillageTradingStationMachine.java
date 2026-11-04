@@ -56,6 +56,7 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -368,41 +369,41 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     /////////////////////////////////////
 
     @RegisterLanguage(cn = "已锁定：村民不可取出，可选择交易并启动", en = "Locked: the villager cannot be removed; trades can be selected and started")
-    private static final String LOCKED = "gtocore.machine.village_trading_station.ui.locked";
+    private static final Component LOCKED = Component.translatable("gtocore.machine.village_trading_station.ui.locked");
     @RegisterLanguage(cn = "未锁定：可放入或取出村民，锁定后读取其交易", en = "Unlocked: the villager can be inserted or removed; locking reads its trades")
-    private static final String UNLOCKED = "gtocore.machine.village_trading_station.ui.unlocked";
+    private static final Component UNLOCKED = Component.translatable("gtocore.machine.village_trading_station.ui.unlocked");
     @RegisterLanguage(cn = "需要先放入村民", en = "Insert a villager first")
-    private static final String NEED_VILLAGER = "gtocore.machine.village_trading_station.ui.need_villager";
+    private static final Component NEED_VILLAGER = Component.translatable("gtocore.machine.village_trading_station.ui.need_villager");
     @RegisterLanguage(cn = "由当前选中的交易决定", en = "Determined by the selected trade")
-    private static final String RECIPE_SLOT = "gtocore.machine.village_trading_station.ui.recipe_slot";
+    private static final Component RECIPE_SLOT = Component.translatable("gtocore.machine.village_trading_station.ui.recipe_slot");
     @RegisterLanguage(cn = "切换到下一个交易", en = "Switch to the next trade")
-    private static final String NEXT_TRADE = "gtocore.machine.village_trading_station.ui.next_trade";
+    private static final Component NEXT_TRADE = Component.translatable("gtocore.machine.village_trading_station.ui.next_trade");
     @RegisterLanguage(cn = "需要锁定村民且未启动交易", en = "Requires a locked villager with trading stopped")
-    private static final String NEXT_UNAVAILABLE = "gtocore.machine.village_trading_station.ui.next_unavailable";
+    private static final Component NEXT_UNAVAILABLE = Component.translatable("gtocore.machine.village_trading_station.ui.next_unavailable");
     @RegisterLanguage(cn = "交易已启动：每 10 秒使用输入物品自动交易", en = "Trading active: trades automatically with input items every 10 seconds")
-    private static final String TRADING = "gtocore.machine.village_trading_station.ui.trading";
+    private static final Component TRADING = Component.translatable("gtocore.machine.village_trading_station.ui.trading");
     @RegisterLanguage(cn = "交易未启动", en = "Trading stopped")
-    private static final String NOT_TRADING = "gtocore.machine.village_trading_station.ui.not_trading";
+    private static final Component NOT_TRADING = Component.translatable("gtocore.machine.village_trading_station.ui.not_trading");
     @RegisterLanguage(cn = "需要先锁定村民", en = "Lock the villager first")
-    private static final String NEED_LOCK = "gtocore.machine.village_trading_station.ui.need_lock";
+    private static final Component NEED_LOCK = Component.translatable("gtocore.machine.village_trading_station.ui.need_lock");
     @RegisterLanguage(cn = "已交易次数（补货时清零）", en = "Trades used (reset on restock)")
-    private static final String USES = "gtocore.machine.village_trading_station.ui.uses";
+    private static final Component USES = Component.translatable("gtocore.machine.village_trading_station.ui.uses");
     @RegisterLanguage(cn = "最大交易次数", en = "Maximum trades")
-    private static final String MAX_USES = "gtocore.machine.village_trading_station.ui.max_uses";
+    private static final Component MAX_USES = Component.translatable("gtocore.machine.village_trading_station.ui.max_uses");
     @RegisterLanguage(cn = "补货与交易强化", en = "Restock and Trade Enhancement")
-    private static final String ENHANCE_SECTION = "gtocore.machine.village_trading_station.ui.enhance_section";
+    private static final Component ENHANCE_SECTION = Component.translatable("gtocore.machine.village_trading_station.ui.enhance_section");
     @RegisterLanguage(cn = "交易次数上限", en = "Trade Limit")
-    private static final String UPGRADE_SECTION = "gtocore.machine.village_trading_station.ui.upgrade_section";
+    private static final Component UPGRADE_SECTION = Component.translatable("gtocore.machine.village_trading_station.ui.upgrade_section");
     @RegisterLanguage(cn = "提升上限", en = "Raise Limit")
-    private static final String UPGRADE = "gtocore.machine.village_trading_station.ui.upgrade";
+    private static final Component UPGRADE = Component.translatable("gtocore.machine.village_trading_station.ui.upgrade");
     @RegisterLanguage(cn = "提升", en = "Raise")
-    private static final String UPGRADE_BUTTON = "gtocore.machine.village_trading_station.ui.upgrade_button";
+    private static final Component UPGRADE_BUTTON = Component.translatable("gtocore.machine.village_trading_station.ui.upgrade_button");
     @RegisterLanguage(cn = "消耗场发生器，提升左侧村民当前交易的最大交易次数，每个提升 1 次", en = "Consumes field generators to raise the maximum uses of the selected trade of the villager on the left, by 1 each")
-    private static final String UPGRADE_TIP = "gtocore.machine.village_trading_station.ui.upgrade_tip";
+    private static final Component UPGRADE_TIP = Component.translatable("gtocore.machine.village_trading_station.ui.upgrade_tip");
     @RegisterLanguage(cn = "需要锁定村民并选择交易、未达上限且放入对应的场发生器", en = "Requires a locked villager with a selected trade below the limit, and the matching field generator")
-    private static final String UPGRADE_UNAVAILABLE = "gtocore.machine.village_trading_station.ui.upgrade_unavailable";
+    private static final Component UPGRADE_UNAVAILABLE = Component.translatable("gtocore.machine.village_trading_station.ui.upgrade_unavailable");
     @RegisterLanguage(cn = "需要锁定村民并选择交易", en = "Lock the villager and select a trade")
-    private static final String NO_TRADE = "gtocore.machine.village_trading_station.ui.no_trade";
+    private static final Component NO_TRADE = Component.translatable("gtocore.machine.village_trading_station.ui.no_trade");
     @RegisterLanguage(cn = "提升 %s 次后上限为 %s", en = "+%s, new limit %s")
     private static final String UPGRADE_PREVIEW = "gtocore.machine.village_trading_station.ui.upgrade_preview";
 
@@ -455,9 +456,9 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     }
 
     private static UIElement helpSection(String titleKey, String... lineKeys) {
-        var section = Form.section(titleKey);
+        var section = Form.section(Component.translatable(titleKey));
         int width = UISizes.CONTENT_WIDTH - ScrollerView.SCROLL_BAR_SPACE - 2 * UISizes.PANEL_PADDING;
-        for (String key : lineKeys) section.addChild(Label.translatable(width, key).bindClientColor(UITheme::panelText));
+        for (String key : lineKeys) section.addChild(Label.constant(width, Component.translatable(key)).bindClientColor(UITheme::panelText));
         return section;
     }
 
@@ -610,7 +611,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     }
 
     private static Component upgradeHintText(long state) {
-        if (state == -1) return Component.translatable(NO_TRADE);
+        if (state == -1) return NO_TRADE;
         if (state == -2) return Component.translatable(UPPER_LIMIT);
         return Component.translatable(INCREASE, FIELD_GENERATOR_STACKS[(int) (state >>> 48)].getDisplayName());
     }

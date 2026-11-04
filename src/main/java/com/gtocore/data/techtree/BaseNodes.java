@@ -26,9 +26,10 @@ import net.minecraft.network.chat.Component;
 
 import appeng.core.definitions.AEParts;
 
-import com.google.common.collect.ImmutableList;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.registrate.util.entry.ItemEntry;
+
+import com.google.common.collect.ImmutableList;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import earth.terrarium.adastra.common.registry.ModItems;
 
@@ -875,7 +876,7 @@ public final class BaseNodes {
             langMap.put(node.name, new CNEN(descriptionCN, descriptionEN));
         } else {
             node.getAdditionalLines().add(
-                    Component.translatable(OTHER_REWARD_LABEL).withStyle(ChatFormatting.DARK_PURPLE)
+                    OTHER_REWARD_LABEL.copy().withStyle(ChatFormatting.DARK_PURPLE)
                             .append(Component.translatable("gtocore.data." + node.name).withStyle(ChatFormatting.GRAY)));
         }
         return node;

@@ -51,7 +51,7 @@ public enum MaterialType {
     }
 
     public static MaterialType classify(Material material) {
-        if (material.isNull() || material.hasFlag(MaterialFlags.NO_UNIFICATION)) return OTHER;
+        if (material == null || material.hasFlag(MaterialFlags.DISABLE_MATERIAL_RECIPES)) return OTHER;
 
         // 与 ForEachMaterial 一致：没有粉体属性的材料只进入分解分支。
         if (!material.hasProperty(PropertyKey.DUST)) {

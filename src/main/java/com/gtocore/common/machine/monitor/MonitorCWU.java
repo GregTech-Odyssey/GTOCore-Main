@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
@@ -29,10 +30,6 @@ public class MonitorCWU extends AbstractInfoProviderMonitor implements IOpticalC
     private long lastRequestedCWUt;
 
     protected final NotifiableComputationContainer computationContainer;
-
-    public MonitorCWU(Object o) {
-        this((MetaMachineBlockEntity) o);
-    }
 
     public MonitorCWU(MetaMachineBlockEntity holder) {
         super(holder);

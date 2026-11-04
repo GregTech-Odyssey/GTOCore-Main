@@ -17,8 +17,9 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import com.google.common.collect.ImmutableMap;
 import com.gto.registrate.util.entry.ItemEntry;
+
+import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 import java.util.ArrayList;

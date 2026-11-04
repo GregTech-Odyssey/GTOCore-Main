@@ -2,7 +2,7 @@ package com.gtocore.mixin.ae2.screen;
 
 import com.gtocore.integration.jech.PinYinUtils;
 
-import gto_ae.client.gui.me.facility_management.FacilityManagementScreen;
+import com.gto.ae.client.gui.me.facility_management.FacilityManagementScreen;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

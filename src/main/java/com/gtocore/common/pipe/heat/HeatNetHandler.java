@@ -5,6 +5,7 @@ import com.gtocore.common.blockentity.HeatPipeBlockEntity;
 import com.gtolib.api.capability.IHeatContainer;
 
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -132,5 +133,10 @@ public final class HeatNetHandler implements IHeatContainer {
     @Override
     public int getSignal() {
         return 0;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return pipe.getBlockState().getBlock().getName();
     }
 }

@@ -21,7 +21,6 @@ import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -32,8 +31,9 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 
-import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.annotations.SaveToDisk;
+
+import com.google.common.collect.ImmutableList;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,10 +94,8 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     private BlockPos readCardPos() {
         var card = inventory.storage.keyAt(0);
         if (card == null) return null;
-        CompoundTag posTags = card.getTag();
-        if (posTags == null || !posTags.contains("x") || !posTags.contains("y") || !posTags.contains("z")) return null;
-        var pos = new BlockPos(posTags.getInt("x"), posTags.getInt("y"), posTags.getInt("z"));
-        return pos.equals(getPos()) ? null : pos;
+        var pos = CoordinateCardBehavior.getStoredCoordinates(card.getTag());
+        return pos == null || pos.equals(getPos()) ? null : pos;
     }
 
     @Override
@@ -130,9 +128,9 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     private List<TesseractUI.Target> cardTargets() {
         var level = getLevel();
         var card = inventory.storage.keyAt(0);
-        var cardPos = card == null ? null : CoordinateCardBehavior.getStoredCoordinates(card.getReadOnlyStack());
-        if (level == null || cardPos == null) return Collections.singletonList(null);
-        return Collections.singletonList(new TesseractUI.Target(GlobalPos.of(level.dimension(), cardPos), null));
+        var targetPos = card == null || level == null ? null : CoordinateCardBehavior.getStoredGlobalPos(card.getReadOnlyStack(), level.dimension());
+        if (targetPos == null) return Collections.singletonList(null);
+        return Collections.singletonList(new TesseractUI.Target(targetPos, null));
     }
 
     @Override
@@ -226,11 +224,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
                 return true;
             }
         }
-        var pos = first.pos().pos();
-        CompoundTag posTags = card.getOrCreateTag();
-        posTags.putInt("x", pos.getX());
-        posTags.putInt("y", pos.getY());
-        posTags.putInt("z", pos.getZ());
+        CoordinateCardBehavior.setStoredCoordinates(card, first.pos());
         inventory.storage.set(0, AEItemKey.of(card), card.getCount());
         player.displayClientMessage(Component.translatable(WRITE_SUCCESS_TEXT), true);
         return true;

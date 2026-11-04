@@ -203,7 +203,7 @@ public final class MainStoneageChapter {
 
     public static final Quest DIG_THROUGH_THE_EARTH = CHAPTER.quest("dig_through_the_earth", q -> q
             .at(5, -2)
-            .iconStack(() -> QuestStacks.withNbt(new ItemStack(GTOItems.PROSPECTOR_MANA_ULV), "{mana:500000}"))
+            .iconStack(() -> QuestStacks.mana(GTOItems.PROSPECTOR_MANA_ULV, 500000))
             .title("挖穿地心！")
             .subtitle("麻雀虽小")
             .desc(d -> d
@@ -211,7 +211,7 @@ public final class MainStoneageChapter {
                     .line()
                     .line("可以去会员店买多一个，如果有需要的话"))
             .task(Task.item(Items.COBBLESTONE, 256L).consume())
-            .reward(Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTOItems.PROSPECTOR_MANA_ULV), "{mana:500000}"), 1).personal())
+            .reward(Reward.stack(() -> QuestStacks.mana(GTOItems.PROSPECTOR_MANA_ULV, 500000), 1).personal())
             .dependsOn(WORKBENCH));
 
     public static final Quest TIME_TO_MINE = CHAPTER.quest("time_to_mine", q -> q
@@ -574,13 +574,13 @@ public final class MainStoneageChapter {
             .task(Task.checkmark())
             .easySubsidy(
                     Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 320L),
-                    Reward.stack(() -> QuestStacks.withNbt(ToolHelper.get(GTOToolType.VAJRA_HV, GTOMaterials.DarkSteel), "{Charge:1600000L,MaxCharge:1600000L}"), 1).personal(),
-                    Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTItems.PROSPECTOR_HV), "{Charge:16000000L}"), 1).personal(),
+                    Reward.stack(() -> QuestStacks.charged(ToolHelper.get(GTOToolType.VAJRA_HV, GTOMaterials.DarkSteel), 1600000L, 1600000L), 1).personal(),
+                    Reward.stack(() -> QuestStacks.charged(GTItems.PROSPECTOR_HV, 16000000L), 1).personal(),
                     Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 320L),
                     Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 128L))
             .normalSubsidy(
                     Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 64),
-                    Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTItems.PROSPECTOR_LV), "{Charge:100000L}"), 1).personal(),
+                    Reward.stack(() -> QuestStacks.charged(GTItems.PROSPECTOR_LV, 100000L), 1).personal(),
                     Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 128L))
             .expertSubsidy(Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 1), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
             .dependsOn(SteamChapter.MISTY_MOVEMENT)

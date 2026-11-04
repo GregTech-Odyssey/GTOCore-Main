@@ -517,7 +517,7 @@ public final class MaterialA {
                 .fluidPipeProperties(2147483647, 33554431, true, true, true)
                 .element(GTOElements.SPACETIME)
                 .iconSet(new MaterialIconSet("spacetime"))
-                .flags(GTOMaterialFlags.GENERATE_NANITES, NO_UNIFICATION)
+                .flags(GTOMaterialFlags.GENERATE_NANITES, DISABLE_MATERIAL_RECIPES)
                 .cableProperties(Integer.MAX_VALUE, 524288, 0, true)
                 .buildAndRegister();
 
@@ -641,7 +641,7 @@ public final class MaterialA {
                 .liquid(new FluidBuilder().customStill())
                 .element(GTOElements.MAGMATTER)
                 .iconSet(MAGMATTER)
-                .flags(GENERATE_LONG_ROD, NO_UNIFICATION)
+                .flags(GENERATE_LONG_ROD, DISABLE_MATERIAL_RECIPES)
                 .buildAndRegister();
 
         DegenerateRhenium = material("degenerate_rhenium", "简并态铼")
@@ -653,7 +653,7 @@ public final class MaterialA {
                 .color(0x4646ff)
                 .element(GTOElements.DEGENERATE_REHENIUM)
                 .iconSet(RADIOACTIVE)
-                .flags(GENERATE_PLATE, NO_UNIFICATION)
+                .flags(GENERATE_PLATE, DISABLE_MATERIAL_RECIPES)
                 .buildAndRegister();
 
         HeavyQuarkDegenerateMatter = material("heavy_quark_degenerate_matter", "重夸克简并物质")
@@ -758,7 +758,7 @@ public final class MaterialA {
                 .liquid(new FluidBuilder().temperature(100).customStill())
                 .element(GTOElements.RAW_STAR_MATTER)
                 .iconSet(MAGNETOHYDRODYNAMICALLY_CONSTRAINED_STAR_MATTER)
-                .flags(GENERATE_FRAME, GENERATE_FOIL, NO_UNIFICATION)
+                .flags(GENERATE_FRAME, GENERATE_FOIL, DISABLE_MATERIAL_RECIPES)
                 .buildAndRegister();
 
         WhiteDwarfMatter = material("white_dwarf_mtter", "白矮星物质")
@@ -1696,7 +1696,7 @@ public final class MaterialA {
                 .color(0x3E2C2B)
                 .iconSet(METALLIC)
                 .components(SuperheavyLAlloy, 1, SuperheavyHAlloy, 1)
-                .flags(NO_UNIFICATION, FORCE_GENERATE_BLOCK, NEED_BLAST_IN_SPACE)
+                .flags(DISABLE_MATERIAL_RECIPES, FORCE_GENERATE_BLOCK, NEED_BLAST_IN_SPACE)
                 .buildAndRegister();
 
         Periodicium = material("periodicium", "錭錤錶")

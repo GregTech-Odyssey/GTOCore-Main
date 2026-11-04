@@ -29,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.stacks.AEFluidKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import lombok.Getter;
 
 import java.util.List;
@@ -42,7 +43,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine {
 
     @RegisterLanguage(cn = "钻头", en = "Drill Head")
-    private static final String SLOT_LABEL = "gtocore.machine.advanced_infinite_driller.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.advanced_infinite_driller.slot");
 
     private static final AEFluidKey DISTILLED_WATER = AEFluidKey.of(GTMaterials.DistilledWater.getFluid());
     private static final AEFluidKey OXYGEN = AEFluidKey.of(GTMaterials.Oxygen.getFluid(FluidStorageKeys.LIQUID));
@@ -54,9 +55,9 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
     private static final int MAX_HEAT = 10000;
 
     @RegisterLanguage(cn = "工作范围", en = "Working Area")
-    private static final String WORKING_AREA = "gtocore.machine.advanced_infinite_driller.working_area";
+    private static final Component WORKING_AREA = Component.translatable("gtocore.machine.advanced_infinite_driller.working_area");
     @RegisterLanguage(cn = "当前温度", en = "Current Temperature")
-    private static final String CURRENT_HEAT = "gtocore.machine.advanced_infinite_driller.current_heat";
+    private static final Component CURRENT_HEAT = Component.translatable("gtocore.machine.advanced_infinite_driller.current_heat");
     private static final Component WORKING_AREA_TEXT = Component.literal("5x5");
     @Getter
     @SaveToDisk(defaultValue = "300")
@@ -204,7 +205,12 @@ public final class AdvancedInfiniteDrillMachine extends StorageMultiblockMachine
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotComponent() {
+        return SLOT_LABEL;
+    }
+
+    @Override
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 }

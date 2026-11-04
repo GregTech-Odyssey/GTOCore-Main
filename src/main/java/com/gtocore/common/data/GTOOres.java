@@ -14,7 +14,6 @@ import com.gregtechceu.gtceu.api.data.worldgen.generator.indicators.SurfaceIndic
 import com.gregtechceu.gtceu.api.data.worldgen.generator.veins.DikeVeinGenerator;
 import com.gregtechceu.gtceu.api.data.worldgen.generator.veins.VeinedVeinGenerator;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTOres;
 
 import net.minecraft.resources.ResourceKey;
@@ -24,9 +23,11 @@ import net.minecraft.world.level.Level;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -919,13 +920,14 @@ public final class GTOOres {
         return definition;
     }
 
+    @Nullable
     public static Material selectMaterial(ResourceKey<Level> dimension) {
         MaterialSelector selector = RANDOM_ORES.computeIfAbsent(dimension, k -> {
             var ores = ALL_ORES.get(k);
             if (ores == null) return null;
             return new MaterialSelector(ores);
         });
-        if (selector == null) return GTMaterials.NULL;
+        if (selector == null) return null;
         return selector.selectMaterial();
     }
 

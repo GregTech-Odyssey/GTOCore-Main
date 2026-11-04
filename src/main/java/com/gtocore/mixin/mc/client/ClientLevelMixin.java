@@ -34,5 +34,4 @@ public abstract class ClientLevelMixin {
         float transmission = DysonSphereEffects.transmission((ClientLevel) (Object) this, partialTick);
         return transmission == 1 ? brightness : 0.5f - (0.5f - brightness) * transmission;
     }
-
 }

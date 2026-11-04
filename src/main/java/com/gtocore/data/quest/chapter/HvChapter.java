@@ -22,7 +22,6 @@ import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -30,7 +29,7 @@ import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -156,7 +155,7 @@ public final class HvChapter {
 
     public static final Quest ORANGE_GLASS_LENS = CHAPTER.quest("orange_glass_lens", q -> q
             .at(-3.5, 2.5)
-            .task(Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Orange)))
+            .task(Task.item(GTItems.GLASS_LENSES.get(DyeColor.ORANGE)))
             .dependsOn(HV_CHEMICAL_BATH));
 
     public static final Quest HV_CUTTER = CHAPTER.quest("hv_cutter", q -> q
@@ -265,7 +264,7 @@ public final class HvChapter {
 
     public static final Quest PINK_GLASS_LENS = CHAPTER.quest("pink_glass_lens", q -> q
             .at(-0.5, 2.5)
-            .task(Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Pink)))
+            .task(Task.item(GTItems.GLASS_LENSES.get(DyeColor.PINK)))
             .dependsOn(HV_CHEMICAL_BATH));
 
     public static final Quest LPIC_CHIP = CHAPTER.quest("lpic_chip", q -> q
@@ -330,12 +329,12 @@ public final class HvChapter {
 
     public static final Quest GRAY_GLASS_LENS = CHAPTER.quest("gray_glass_lens", q -> q
             .at(-2, 2.5)
-            .task(Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Gray)))
+            .task(Task.item(GTItems.GLASS_LENSES.get(DyeColor.GRAY)))
             .dependsOn(HV_CHEMICAL_BATH));
 
     public static final Quest CYAN_GLASS_LENS = CHAPTER.quest("cyan_glass_lens", q -> q
             .at(-5, 2.5)
-            .task(Task.item(GTItems.GLASS_LENSES.get(MarkerMaterials.Color.Cyan)))
+            .task(Task.item(GTItems.GLASS_LENSES.get(DyeColor.CYAN)))
             .dependsOn(HV_CHEMICAL_BATH));
 
     public static final Quest SIMPLE_SOC = CHAPTER.quest("simple_soc", q -> q
@@ -776,7 +775,7 @@ public final class HvChapter {
                     .line()
                     .line("最后着陆前注意提前{打开助推器减速}，否则在有不幸的事情发生前就会有{更不幸的事情发生}", YELLOW, DARK_RED))
             .task(Task.dimension(Dimension.MOON).title("造访月球").icon(ModItems.MOON_GLOBE.get()))
-            .reward(Reward.stack(() -> QuestStacks.withNbt(new ItemStack(GTItems.PROSPECTOR_HV), "{Charge:1600000L}"), 1))
+            .reward(Reward.stack(() -> QuestStacks.charged(GTItems.PROSPECTOR_HV, 1600000L), 1))
             .dependsOn(UNLOCK_MOON, ROCKET_FUEL_BUCKET, BeyondTheStarsChapter.FLESH_IS_WEAK_MACHINERY_ASCENDS, BeyondTheStarsChapter.BASIC_SPACE_SUIT));
 
     public static final Quest RAW_BAUXITE = CHAPTER.quest("raw_bauxite", q -> q

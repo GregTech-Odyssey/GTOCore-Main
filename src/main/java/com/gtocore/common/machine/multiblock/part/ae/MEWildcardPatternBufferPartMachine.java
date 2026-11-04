@@ -10,7 +10,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.lookup.MapIngredient;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -21,10 +20,10 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
@@ -60,6 +59,7 @@ import appeng.crafting.pattern.ProcessingPatternItem;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.gto.recipesearch.IntLongMap;
+
 import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.data.CustomItems;
@@ -238,16 +238,16 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private void loadBlacklistData() {
         blacklistedMaterialSet.clear();
         for (var name : blacklistedMaterialNames) {
-            var material = GTCEuAPI.materialManager.getMaterial(name);
-            if (material != null && material != GTMaterials.NULL) blacklistedMaterialSet.add(material);
+            var material = GTRegistries.MATERIALS.parse(name);
+            if (material != null) blacklistedMaterialSet.add(material);
         }
         // 旧版物品/流体槽只作为迁移来源；新黑名单按材料保存，不再受槽数限制。
         boolean migrated = false;
         for (int i = 0; i < blacklistedItems.getSlots(); i++) {
             var stack = blacklistedItems.getStackInSlot(i);
             if (stack.isEmpty()) continue;
-            var mat = ChemicalHelper.getMaterialStack(stack).material();
-            if (mat != GTMaterials.NULL) blacklistedMaterialSet.add(mat);
+            var ms = ChemicalHelper.getMaterialStack(stack);
+            if (!ms.isEmpty()) blacklistedMaterialSet.add(ms.material());
             blacklistedItems.setStackInSlot(i, ItemStack.EMPTY);
             migrated = true;
         }
@@ -255,7 +255,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
             var fluid = blacklistedFluids.keyAt(i);
             if (fluid == null) continue;
             var mat = ChemicalHelper.getMaterial(fluid.getFluid());
-            if (mat != GTMaterials.NULL) blacklistedMaterialSet.add(mat);
+            if (mat != null) blacklistedMaterialSet.add(mat);
             blacklistedFluids.set(i, null, 0);
             migrated = true;
         }
@@ -323,7 +323,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
         resolvedRecipeType = null;
         boolean profile = GTOConfig.INSTANCE.devMode.aeLog;
         long nanos = profile ? System.nanoTime() : 0;
-        var materials = GTCEuAPI.materialManager.getRegisteredMaterials();
+        var materials = GTRegistries.MATERIALS.values();
         var newPatterns = new ArrayList<IPatternDetails>(Math.max(scannedPatterns, materials.size()));
         var newMaterials = new ArrayList<ScannedMaterial>(materials.size());
         var templates = new WildcardPatternTemplate[patterns.size()];
@@ -780,12 +780,12 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
                 int width = PatternEditor.CONTENT_WIDTH;
                 if ((panels & MATERIALS_PANEL) != 0) {
                     column.addChild(PopupHost.standalonePanel("wildcard.materials",
-                            Popup.of(() -> Component.translatable(LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST), content -> WildcardMaterialGrid.build(this, content)).setContentWidth(width),
+                            Popup.of(() -> LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST, content -> WildcardMaterialGrid.build(this, content)).setContentWidth(width),
                             () -> toggleToolPanel(window, MATERIALS_PANEL)));
                 }
                 if ((panels & EDITOR_PANEL) != 0) {
                     column.addChild(PopupHost.standalonePanel("wildcard.editor",
-                            Popup.of(() -> Component.translatable(PatternEditor.TITLE), content -> PatternEditor.build(this, 0, content)).setContentWidth(width),
+                            Popup.of(() -> PatternEditor.TITLE, content -> PatternEditor.build(this, 0, content)).setContentWidth(width),
                             () -> toggleToolPanel(window, EDITOR_PANEL)));
                 }
             }).setContentWidth(PatternEditor.CONTENT_WIDTH + 2 * UISizes.POPUP_PADDING);
@@ -805,13 +805,13 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     private static final String LANG_WILDCARD_TOOLS = "gtocore.ae.appeng.wildcard_pattern_buffer.tools";
 
     @RegisterLanguage(cn = "样板优先级：", en = "Pattern Priority: ")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_PRIORITY = "gtocore.ae.appeng.pattern.priority";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_PRIORITY = Component.translatable("gtocore.ae.appeng.pattern.priority");
     @RegisterLanguage(cn = "此样板总成提供的样板优先级。合成计算将优先考虑优先级最高的样板。", en = "The priority for the patterns offered by this provider. The crafting calculation will prioritize patterns with the highest priority.")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC = "gtocore.ae.appeng.pattern.priority.desc";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_PRIORITY_DESC = Component.translatable("gtocore.ae.appeng.pattern.priority.desc");
     @RegisterLanguage(cn = "通配符样板总成材料黑名单", en = "Wildcard Pattern Provider Material Blacklist")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST = Component.translatable("gtocore.ae.appeng.wildcard_pattern_buffer.blacklist");
     @RegisterLanguage(cn = "添加到黑名单中的材料将不会被通配符样板总成所使用。", en = "Materials added to the blacklist will not be used by the Wildcard Pattern Provider.")
-    private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.desc";
+    private static final Component LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_DESC = Component.translatable("gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.desc");
     @RegisterLanguage(cn = "编辑", en = "Edit")
     private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_OPEN = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.open";
     @RegisterLanguage(cn = "物品黑名单（按材料）", en = "Item Blacklist (by material)")
@@ -819,7 +819,7 @@ public class MEWildcardPatternBufferPartMachine extends MEPatternBufferPartMachi
     @RegisterLanguage(cn = "流体黑名单（按材料）", en = "Fluid Blacklist (by material)")
     private static final String LANG_WILDCARD_PATTERN_BUFFER_BLACKLIST_FLUIDS = "gtocore.ae.appeng.wildcard_pattern_buffer.blacklist.fluids";
     @RegisterLanguage(cn = "已加载通配符样板", en = "Loaded wildcard patterns")
-    static final String LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS = "gtocore.ae.appeng.wildcard_pattern_buffer.loaded_patterns";
+    static final Component LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS = Component.translatable("gtocore.ae.appeng.wildcard_pattern_buffer.loaded_patterns");
     @RegisterLanguage(cn = "%s 种", en = "%s")
     static final String LANG_WILDCARD_PATTERN_BUFFER_LOADED_PATTERNS_VALUE = "gtocore.ae.appeng.wildcard_pattern_buffer.loaded_patterns.value";
 }

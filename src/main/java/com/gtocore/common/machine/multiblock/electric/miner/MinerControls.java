@@ -15,6 +15,8 @@ import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
+import net.minecraft.network.chat.Component;
+
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
 import java.util.function.BooleanSupplier;
@@ -28,11 +30,11 @@ import java.util.function.IntSupplier;
 final class MinerControls {
 
     @RegisterLanguage(cn = "过滤器", en = "Filter")
-    static final String FILTER = "gtocore.digital_miner.filter";
+    static final Component FILTER = Component.translatable("gtocore.digital_miner.filter");
     @RegisterLanguage(cn = "流体", en = "Fluids")
-    static final String FLUID = "gtocore.digital_miner.fluid";
+    static final Component FLUID = Component.translatable("gtocore.digital_miner.fluid");
     @RegisterLanguage(cn = "采集半径", en = "Mining radius")
-    static final String RADIUS = "gtocore.digital_miner.radius";
+    static final Component RADIUS = Component.translatable("gtocore.digital_miner.radius");
 
     private static final int SLOT_ROW = UISizes.SLOT_SIZE + 2;
     private static final int CELL_WIDTH = (UISizes.CONTENT_WIDTH - 14 - UISizes.GAP) / 2;
@@ -54,17 +56,21 @@ final class MinerControls {
         return UIElement.row(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(left, right);
     }
 
-    static UIElement cell(MetaMachine machine, String labelKey, IntSupplier getter, IntConsumer setter, IntSupplier min, IntSupplier max) {
+    static UIElement cell(MetaMachine machine, Component label, IntSupplier getter, IntConsumer setter, IntSupplier min, IntSupplier max) {
         var field = NumberField.ofInt(CELL_WIDTH, getter, value -> {
             if (value == getter.getAsInt()) return;
             setter.accept(value);
             machine.onChanged();
         }, min, max).setSteps(1, 8);
-        return UIElement.column(CELL_WIDTH).layout(l -> l.gapAll(1)).addChildren(Form.fieldLabel(labelKey), field);
+        return UIElement.column(CELL_WIDTH).layout(l -> l.gapAll(1)).addChildren(Form.fieldLabel(label), field);
+    }
+
+    static UIElement cell(MetaMachine machine, String labelKey, IntSupplier getter, IntConsumer setter, IntSupplier min, IntSupplier max) {
+        return cell(machine, Component.translatable(labelKey), getter, setter, min, max);
     }
 
     static Button resetButton(MetaMachine machine, Runnable reset) {
-        var button = Button.translatable(LayoutStyle.AUTO, IDigitalMiner.RESET).setOnServerClick(() -> {
+        var button = Button.text(LayoutStyle.AUTO, IDigitalMiner.RESET).setOnServerClick(() -> {
             reset.run();
             machine.onChanged();
         });
@@ -73,12 +79,16 @@ final class MinerControls {
         return button;
     }
 
-    static UIElement switchAndButton(MetaMachine machine, String labelKey, String tooltipKey, BooleanSupplier getter, BooleanConsumer setter, Button button) {
+    static UIElement switchAndButton(MetaMachine machine, Component label, Component tooltip, BooleanSupplier getter, BooleanConsumer setter, Button button) {
         var toggle = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).layout(l -> l.flex(1))
-                .addChildren(Form.label(labelKey, tooltipKey), Switch.of(getter, value -> {
+                .addChildren(Form.label(label, tooltip), Switch.of(getter, value -> {
                     setter.accept(value);
                     machine.onChanged();
                 }));
         return UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.SECTION_GAP)).addChildren(toggle, button);
+    }
+
+    static UIElement switchAndButton(MetaMachine machine, String labelKey, String tooltipKey, BooleanSupplier getter, BooleanConsumer setter, Button button) {
+        return switchAndButton(machine, Component.translatable(labelKey), Component.translatable(tooltipKey), getter, setter, button);
     }
 }

@@ -4,6 +4,7 @@ import com.gtocore.api.research.ResarchTagCommands;
 import com.gtocore.api.research.techtree.TechTreeCommands;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.forge.ServerLangHook;
+import com.gtocore.common.machine.noenergy.game.GameLeaderboardBrowser;
 import com.gtocore.common.saved.DysonSphereSavaedData;
 import com.gtocore.common.saved.VoidWorldTimeSavedData;
 
@@ -133,6 +134,7 @@ public final class GTOCommands {
                     return lines.size();
                 }))
                 .then(TechTreeCommands.register())
+                .then(GameLeaderboardBrowser.register())
                 .then(ResarchTagCommands.register())
                 .then(ResarchTagCommands.registerScan());
         if (!FMLEnvironment.production) root.then(GridDemoCommand.create());

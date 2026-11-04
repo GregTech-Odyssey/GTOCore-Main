@@ -40,7 +40,6 @@ import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeTierPreview;
@@ -72,10 +71,11 @@ import appeng.integration.modules.emi.EmiUseCraftingRecipeHandler;
 import appeng.integration.modules.emi.IStackInteractionScreen;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 
+import com.gto.datasynclib.util.ByteBufCodecExtends;
+
 import com.arsmeteorites.arsmeteorites.ArsMeteorites;
 import com.arsmeteorites.arsmeteorites.emi.MeteoritesEmiPlugin;
-import com.glodblock.github.extendedae.container.ContainerExCraftingTerminal;
-import com.gto.datasynclib.util.ByteBufCodecExtends;
+import com.glodblock.github.extendedae.xmod.emi.ExtendedAEEmiPlugin;
 import com.hollingsworth.arsnouveau.client.jei.JEIArsNouveauPlugin;
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.emi.EMIPlugin;
@@ -194,6 +194,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         list.accept(new EmiPluginContainer(new GTEMIPlugin(), GTCEu.MOD_ID));
         list.accept(new EmiPluginContainer(new MeteoritesEmiPlugin(), ArsMeteorites.MOD_ID));
         list.accept(new EmiPluginContainer(new AppEngEmiPlugin(), AppEng.MOD_ID));
+        list.accept(new EmiPluginContainer(new ExtendedAEEmiPlugin(), "expatternprovider"));
         list.accept(new EmiPluginContainer(new vectorwing.farmersdelight.integration.emi.EMIPlugin(), FarmersDelight.MODID));
         try {
             list.accept(new EmiPluginContainer(new fzzyhmstrs.emi_loot.emi.EmiClientPlugin(), fzzyhmstrs.emi_loot.EMILoot.MOD_ID));
@@ -216,9 +217,18 @@ public final class GTEMIPlugin implements EmiPlugin {
     public void register(EmiRegistry registry) {
         if (!GTORules.FLUID_TIER.isExpert()) {
             registry.removeEmiStacks(stack -> switch (stack.getKey()) {
-                case BucketItem bucket -> ChemicalHelper.getMaterial(bucket.getFluid()).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
-                case Item item -> ChemicalHelper.getMaterialEntry(item).material().hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
-                case Fluid fluid -> ChemicalHelper.getMaterial(fluid).hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                case BucketItem bucket -> {
+                    var material = ChemicalHelper.getMaterial(bucket.getFluid());
+                    yield material != null && material.hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                }
+                case Item item -> {
+                    var entry = ChemicalHelper.getMaterialEntry(item);
+                    yield entry != null && entry.material().hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                }
+                case Fluid fluid -> {
+                    var material = ChemicalHelper.getMaterial(fluid);
+                    yield material != null && material.hasFlag(GTOMaterialFlags.FLUID_TIER_EXCLUSIVE);
+                }
                 default -> false;
             });
         }
@@ -249,7 +259,6 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addRecipeHandler(WCTMenu.TYPE, new EmiUseCraftingRecipeHandler<>(WCTMenu.class));
         registry.addRecipeHandler(WETMenu.TYPE, new EmiEncodePatternHandler<>(WETMenu.class));
         registry.addRecipeHandler(PatternEncodingTermMenu.TYPE, new EmiEncodePatternHandler<>(PatternEncodingTermMenu.class));
-        registry.addRecipeHandler(ContainerExCraftingTerminal.TYPE, new XModTransferHandlers.ExCraftingTransferHandler<>(ContainerExCraftingTerminal.class));
         registry.addCategory(GTProgrammedCircuitCategory.CATEGORY);
 
         OreProcessingEmiCategory.registerDisplays(registry);
@@ -277,7 +286,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.setDefaultComparison(potionFluid.getSource(), potionComparison);
         registry.setDefaultComparison(potionFluid.getFlowing(), potionComparison);
 
-        for (var material : GTCEuAPI.materialManager.getRegisteredMaterials()) {
+        for (var material : GTRegistries.MATERIALS.values()) {
             if (GTOUtils.isGeneration(TagPrefix.turbineBlade, material)) {
                 registry.setDefaultComparison(ChemicalHelper.get(TagPrefix.turbineRotorCoated, material), Comparison.COMPARE_STACK_KEY);
             }

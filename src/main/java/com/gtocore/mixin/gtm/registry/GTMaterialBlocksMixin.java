@@ -8,10 +8,9 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtolib.api.registries.GTORegistration;
 import com.gtolib.utils.register.BlockRegisterUtils;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.data.chemical.material.registry.MaterialRegistry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gregtechceu.gtceu.common.data.GTMaterialBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -19,13 +18,14 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableTable;
 import com.gto.registrate.builders.ItemBuilder;
 import com.gto.registrate.providers.DataGenContext;
 import com.gto.registrate.providers.RegistrateItemModelProvider;
 import com.gto.registrate.util.entry.BlockEntry;
 import com.gto.registrate.util.nullness.NonNullBiConsumer;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.llamalad7.mixinextras.sugar.Local;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -76,17 +76,9 @@ public abstract class GTMaterialBlocksMixin {
         GTORegistration.GTO.defaultCreativeTab(GTOCreativeModeTabs.GTO_MATERIAL_BLOCK);
         for (TagPrefix tagPrefix : TagPrefix.values()) {
             if (tagPrefix.doGenerateBlock() && !TagPrefix.ORES.containsKey(tagPrefix)) {
-                for (MaterialRegistry registry : GTCEuAPI.materialManager.getRegistries()) {
-                    GTRegistrate registrate;
-                    if (tagPrefix instanceof GTOTagPrefix) {
-                        registrate = GTORegistration.GTO;
-                    } else {
-                        registrate = registry.getRegistrate();
-                    }
-                    for (Material material : registry.getAllMaterials()) {
-                        if (tagPrefix.doGenerateBlock(material)) {
-                            registerMaterialBlock(tagPrefix, material, registrate);
-                        }
+                for (Material material : GTRegistries.MATERIALS) {
+                    if (tagPrefix.doGenerateBlock(material)) {
+                        registerMaterialBlock(tagPrefix, material, tagPrefix.registrate(material));
                     }
                 }
             }

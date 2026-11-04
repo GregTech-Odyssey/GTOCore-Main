@@ -40,22 +40,35 @@ import com.gtolib.quest.QuestServerLang;
 import com.gtolib.utils.ChineseConverter;
 import com.gtolib.utils.register.BlockRegisterUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;
-import com.gtolib.utils.register.MaterialsRegisterUtils;
 import com.gtolib.utils.register.RecipeTypeRegisterUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 
 import net.minecraftforge.common.data.LanguageProvider;
 
-import gto_ae.core.localization.ExtendedLangs;
-
+import com.gto.ae.core.localization.ExtendedLangs;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.util.Map;
 
 public final class LangHandler {
 
     private static final Map<String, CNEN> LANGS = new O2OOpenCacheHashMap<>();
+
+    private static void initMaterialLang() {
+        var seen = new ObjectOpenHashSet<CNEN>();
+        for (Material material : GTRegistries.MATERIALS) {
+            var cn = material.getChineseName();
+            if (cn == null || !material.getModid().equals(GTOCore.MOD_ID)) continue;
+            var lang = new CNEN(cn, material.getEnglishName());
+            if (!seen.add(lang)) throw new IllegalStateException("Repetitive material name " + lang + " of " + material);
+            addCNEN(material.getUnlocalizedName(), lang);
+        }
+    }
 
     private static void addCNEN(String key, CNEN CNEN) {
         if (LANGS.containsKey(key)) throw new IllegalArgumentException("Duplicate key: " + key);
@@ -96,7 +109,7 @@ public final class LangHandler {
             addCN("item.gtocore." + k + "_bucket", v + "桶");
             addCN("block.gtocore." + k, v);
         });
-        MaterialsRegisterUtils.LANG.forEach((k, v) -> addCNEN("material.gtocore." + k, v));
+        initMaterialLang();
         RecipeTypeRegisterUtils.LANG.forEach((k, v) -> addCNEN("gtceu." + k, v));
         GTOBedrockFluids.LANG.forEach((k, v) -> addCNEN("gtceu.jei.bedrock_fluid." + k, v));
         ItemRegisterUtils.LANG.forEach((k, v) -> addCN("item.gtocore." + k, v));
@@ -142,10 +155,6 @@ public final class LangHandler {
             if (reason.getDescEn() != null) addCNEN(reason.getDescKey(), reason.getDescCn(), reason.getDescEn());
         }
 
-        for (var l : ExtendedLangs.values()) {
-            addCN(l.getTranslationKey(), l.getChineseText());
-        }
-
         addCN("entity.gtocore.task_entity", "任务执行实体");
         addCN("itemGroup.gtocore.block", "GTO | 方块");
         addCN("itemGroup.gtocore.item", "GTO | 物品");
@@ -167,6 +176,8 @@ public final class LangHandler {
         addCNEN("key.gtocore.nightvision", "夜视开关", "Night Vision Toggle");
         addCNEN("key.gtocore.drift", "飞行惯性", "Flight Inertia");
         addCNEN("key.gtocore.debug_inspect", "调试检查GUI槽位", "Debug Inspect GUI Slot");
+        addCNEN("key.gtocore.drone_toggle", "切换无人机模式", "Toggle Drone Mode");
+        addCNEN("curios.identifier.drone", "无人机", "Drone");
         addCNEN("key.keybinding.gtocore", "GTO按键绑定", "GTO Key Bindings");
 
         addCNEN("selectWorld.self_restraint_mode.enabled", "自我约束模式开！", "Self-restraint mode enabled!");
@@ -260,6 +271,66 @@ public final class LangHandler {
         addCNEN("gtocore.recipe.heat.temperature", "需要外部热源：%s K", "External heat source is required: %s K");
         addCNEN("gtocore.recipe.heat.temperature.reverse", "外部热源温度不能超过：%s K", "External heat source temperature cannot exceed: %s K");
         addCNEN("gtocore.recipe.runlimit.count", "运行次数限制：%s", "Run Limit: %s times");
+        addCNEN("gtocore.recipe.info.radiation", "辐射剂量", "Radiation");
+        addCNEN("gtocore.recipe.info.radiation_end", "结束剂量", "End Dose");
+        addCNEN("gtocore.recipe.info.sievert", "%s Sv", "%s Sv");
+        addCNEN("gtocore.recipe.info.ev_min", "最小动能", "Min Energy");
+        addCNEN("gtocore.recipe.info.ev_max", "最大动能", "Max Energy");
+        addCNEN("gtocore.recipe.info.mev", "%s MeV", "%s MeV");
+        addCNEN("gtocore.recipe.info.kev", "%s keV", "%s keV");
+        addCNEN("gtocore.recipe.info.evt", "中子动能", "Neutron Energy");
+        addCNEN("gtocore.recipe.info.kev_per_tick", "%s keV/t", "%s keV/t");
+        addCNEN("gtocore.recipe.info.kev_per_second", "%s keV/s", "%s keV/s");
+        addCNEN("gtocore.recipe.info.base_heat", "基础产热", "Base Heat");
+        addCNEN("gtocore.recipe.info.kelvin_per_second", "%s K/s", "%s K/s");
+        addCNEN("gtocore.recipe.info.containment", "容器等级", "Containment");
+        addCNEN("gtocore.recipe.info.casing", "外壳等级", "Casing");
+        addCNEN("gtocore.recipe.info.power_module", "模块等级", "Module Tier");
+        addCNEN("gtocore.recipe.info.drone_tier", "无人机", "Drone Tier");
+        addCNEN("gtocore.recipe.info.factory_tier", "工厂等级", "Factory Tier");
+        addCNEN("gtocore.recipe.info.forge_tier", "锻炉等级", "Forge Tier");
+        addCNEN("gtocore.recipe.info.grind_ball", "研磨球", "Grinding Ball");
+        addCNEN("gtocore.recipe.info.neutron_flux", "中子通量", "Neutron Flux");
+        addCNEN("gtocore.recipe.info.flux_change", "通量变化", "Flux Change");
+        addCNEN("gtocore.recipe.info.heat_change", "产热", "Heat");
+        addCNEN("gtocore.recipe.info.convertible", "可转换", "Convertible");
+        addCNEN("gtocore.recipe.info.data_capacity", "数据容量", "Data Capacity");
+        addCNEN("gtocore.recipe.info.bytes", "%s 字节", "%s bytes");
+        addCNEN("gtocore.recipe.info.ray_intensity", "光束强度", "Intensity");
+        addCNEN("gtocore.recipe.info.ray_wavelength", "光束波长", "Wavelength");
+        addCNEN("gtocore.recipe.info.ray_polarization", "光束偏振", "Polarization");
+        addCNEN("gtocore.recipe.info.au", "%s a.u.", "%s a.u.");
+        addCNEN("gtocore.recipe.info.au_above", "> %s a.u.", "> %s a.u.");
+        addCNEN("gtocore.recipe.info.nm", "%s nm", "%s nm");
+        addCNEN("gtocore.recipe.info.nm_range", "%s ~ %s nm", "%s ~ %s nm");
+        addCNEN("gtocore.recipe.info.degree", "%s°", "%s°");
+        addCNEN("gtocore.recipe.info.galaxy", "星系", "Galaxy");
+        addCNEN("gtocore.recipe.info.gravity", "重力", "Gravity");
+        addCNEN("gtocore.recipe.info.zero_gravity", "无重力", "Zero");
+        addCNEN("gtocore.recipe.info.strong_gravity", "强重力", "Strong");
+        addCNEN("gtocore.recipe.info.external_heat", "外部热源", "External Heat");
+        addCNEN("gtocore.recipe.info.kelvin_at_least", "≥ %s K", "≥ %s K");
+        addCNEN("gtocore.recipe.info.kelvin_below", "< %s K", "< %s K");
+        addCNEN("gtocore.recipe.info.machine", "限定机器", "Machine");
+        addCNEN("gtocore.recipe.info.run_limit", "运行次数", "Run Limit");
+        addCNEN("gtocore.recipe.info.vacuum", "真空等级", "Vacuum");
+        addCNEN("gtocore.recipe.info.space_workspace", "太空工作区", "Space Workspace");
+        addCNEN("gtocore.recipe.info.solaris", "曦煌", "Solaris");
+        addCNEN("gtocore.recipe.info.lunara", "胧华", "Lunara");
+        addCNEN("gtocore.recipe.info.voidflux", "虚湮", "Voidflux");
+        addCNEN("gtocore.recipe.info.stellarm", "星髓", "Stellarm");
+        addCNEN("gtocore.recipe.info.any_element", "任意元素", "Any");
+        addCNEN("gtocore.recipe.info.resonance", "共鸣消耗", "Resonance");
+        addCNEN("gtocore.recipe.info.per_ticks", "%s / %s t", "%s / %s t");
+        addCNEN("gtocore.recipe.info.charge", "总电荷", "Charge");
+        addCNEN("gtocore.recipe.info.electrolyte", "电解体系", "Electrolyte");
+        addCNEN("gtocore.recipe.info.hu_in", "耗热", "Heat In");
+        addCNEN("gtocore.recipe.info.hu_out", "产热", "Heat Out");
+        addCNEN("gtocore.recipe.info.hu_total", "总热量", "Total Heat");
+        addCNEN("gtocore.recipe.info.hu", "%s HU", "%s HU");
+        addCNEN("gtocore.recipe.info.hu_per_tick", "%s HU/t", "%s HU/t");
+        addCNEN("gtocore.recipe.info.mana", "%s", "%s");
+        addCNEN("gtocore.recipe.info.mana_per_tick", "%s /t", "%s /t");
         addCNEN("gtocore.recipe.mana_consumption", "魔力消耗", "Mana Consumption");
         addCNEN("gtocore.recipe.mana_production", "魔力产出", "Mana Production");
         addCNEN("gtocore.recipe.ray_intensity", "光束强度：%s a.u.", "Ray Intensity: %s a.u.");
@@ -466,6 +537,7 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.craft.pause_job.desc", "暂停正在进行中的发配；已推送的样板不会被撤回", "Pause the ongoing crafting; pushed patterns will not be withdrawn");
         addCNEN("gtocore.ae.appeng.craft.resume_job.desc", "继续已暂停的发配", "Resume the paused crafting");
         addCNEN("gtocore.ae.appeng.craft.temp_order", "中键点击以创建临时合成订单，下单一份该配方的原材料", "Middle-click: order one set of materials for this recipe");
+        addCNEN("gtocore.ae.appeng.craft.highlight_pending_provider", "Shift + 左键：在世界中高亮其所在样板供应器", "Shift + Left-Click: Highlight pattern provider in the world");
         addCNEN("gtocore.ae.appeng.craft.encode_send", "§a§o[右键点击] 编码并发送样板§r", "§a§o[Right Click] Encode and send pattern§r");
         addCNEN("gtocore.ae.appeng.craft.encode_send.desc", "点击将样板发送至该目的地", "Click to send the pattern to this destination");
         addCNEN("gtocore.ae.appeng.craft.encode_send.full", "满", "Full");
@@ -618,6 +690,9 @@ public final class LangHandler {
     }
 
     public static void twInitialize(TraditionalChineseLanguageProvider provider) {
+        for (var l : ExtendedLangs.values()) {
+            provider.add(l.getTranslationKey(), ChineseConverter.convert(l.getChineseText()));
+        }
         LANGS.forEach((k, v) -> {
             if (v.cn() == null) return;
             provider.add(k, ChineseConverter.convert(v.cn()));

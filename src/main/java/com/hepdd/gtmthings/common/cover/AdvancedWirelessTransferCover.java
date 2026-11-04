@@ -24,7 +24,6 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -40,6 +39,8 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.hepdd.gtmthings.common.item.Behaviour.WirelessTransferCoverPlaceBehavior;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -59,6 +60,11 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
 
     public static final int TRANSFER_ITEM = 1;
     public static final int TRANSFER_FLUID = 2;
+
+    private static final Component STATUS = Component.translatable("gtocore.cover.advanced_wireless_transfer.status");
+    private static final Component TARGET = Component.translatable("gtocore.cover.advanced_wireless_transfer.target");
+    private static final Component POSITION = Component.translatable("gtocore.cover.advanced_wireless_transfer.position");
+    private static final Component DIMENSION = Component.translatable("gtocore.cover.advanced_wireless_transfer.dimension");
 
     protected final int transferType;
     private TickableSubscription subscription;
@@ -103,14 +109,11 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
 
     @Override
     public void onAttached(ItemStack itemStack, ServerPlayer player) {
-        CompoundTag tag = itemStack.getTag();
-        if (tag != null) {
-            this.dimensionId = tag.getString("dimensionid");
-            var intX = tag.getInt("x");
-            var intY = tag.getInt("y");
-            var intZ = tag.getInt("z");
-            this.targetPos = new BlockPos(intX, intY, intZ);
-            this.facing = readFacingOrFallback(tag.getString("facing"), attachedSide);
+        var globalPos = WirelessTransferCoverPlaceBehavior.getStoredGlobalPos(itemStack.getTag());
+        if (globalPos != null) {
+            this.dimensionId = globalPos.dimension().location().toString();
+            this.targetPos = globalPos.pos();
+            this.facing = readFacingOrFallback(itemStack.getTag().getString(WirelessTransferCoverPlaceBehavior.TAG_FACING), attachedSide);
             getTargetLevel();
         }
         var targetMachine = MetaMachine.getMachine(coverHolder.holder());
@@ -209,12 +212,12 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     @Override
     public Widget createUIWidget() {
         var status = new StatusPanel();
-        status.addLine("gtocore.cover.advanced_wireless_transfer.status", this::connectionText).bindLevel(this::connectionLevel);
-        status.addLine("gtocore.cover.advanced_wireless_transfer.target",
+        status.addLine(STATUS, this::connectionText).bindLevel(this::connectionLevel);
+        status.addLine(TARGET,
                 new Memo<>(() -> isBound() ? target.blockEntity() : null, be -> be.getBlockState().getBlock().getName()));
-        status.addLine("gtocore.cover.advanced_wireless_transfer.position",
+        status.addLine(POSITION,
                 new Memo<>(() -> targetPos, pos -> Component.literal(pos.toShortString())));
-        status.addLine("gtocore.cover.advanced_wireless_transfer.dimension",
+        status.addLine(DIMENSION,
                 new Memo<>(() -> dimensionId, Component::literal));
         return Form.page().addChildren(status,
                 CoverUIs.filterSection(transferType == TRANSFER_ITEM ? filterHandlerItem : filterHandlerFluid));

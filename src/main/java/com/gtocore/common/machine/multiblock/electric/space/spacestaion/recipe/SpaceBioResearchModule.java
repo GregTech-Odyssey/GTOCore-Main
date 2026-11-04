@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -69,7 +70,7 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     @Override
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
-        controls.addInt(LANGUAGE_RADIATION_INTENSITY_CONTROL, () -> radioactivity, value -> radioactivity = value, 0, 80);
+        controls.addInt(RADIATION_INTENSITY_CONTROL, () -> radioactivity, value -> radioactivity = value, 0, 80);
     }
 
     @Override
@@ -117,4 +118,5 @@ public class SpaceBioResearchModule extends RecipeExtension implements IResearch
     private static final String LANGUAGE_SPACE_RADIATION_INTENSITY = "gtocore.machine.space_bio_research_module.space_radiation_intensity";
     @RegisterLanguage(cn = "宇宙辐射强度（Sv）", en = "Space Radiation Intensity (Sv)")
     private static final String LANGUAGE_RADIATION_INTENSITY_CONTROL = "gtocore.machine.space_bio_research_module.radiation_intensity_control";
+    private static final Component RADIATION_INTENSITY_CONTROL = Component.translatable(LANGUAGE_RADIATION_INTENSITY_CONTROL);
 }

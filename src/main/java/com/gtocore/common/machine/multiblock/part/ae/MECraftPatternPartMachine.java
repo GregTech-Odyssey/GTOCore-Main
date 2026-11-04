@@ -23,6 +23,7 @@ import appeng.crafting.pattern.ProcessingPatternItem;
 
 import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.datastream.codec.ValueOps;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;

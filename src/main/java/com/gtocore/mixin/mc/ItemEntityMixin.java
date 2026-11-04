@@ -64,7 +64,8 @@ public abstract class ItemEntityMixin extends Entity {
 
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V", shift = At.Shift.AFTER))
     private void tickInject(CallbackInfo ci) {
-        if (ChemicalHelper.getMaterialEntry(getItem().getItem()).material() == GTOMaterials.Amprosium) {
+        var entry = ChemicalHelper.getMaterialEntry(getItem().getItem());
+        if (entry != null && entry.material() == GTOMaterials.Amprosium) {
             setNoGravity(true);
         }
         gtocore$discardedTick = false;

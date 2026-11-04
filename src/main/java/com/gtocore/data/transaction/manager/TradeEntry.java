@@ -21,8 +21,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
 
-import com.google.common.collect.ImmutableList;
 import com.gto.fastcollection.fastutil.O2LOpenCacheHashMap;
+
+import com.google.common.collect.ImmutableList;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 
 import java.math.BigInteger;

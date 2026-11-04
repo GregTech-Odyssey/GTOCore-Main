@@ -8,8 +8,8 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.utils.AEChemicalHelper;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.api.transfer.key.KeyCodecs;
 
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +23,7 @@ import appeng.api.stacks.AEKey;
 
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.DecoderException;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -138,7 +139,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         int scannedMaterialCount = buf.readInt();
         Set<Material> scannedMaterials = new ReferenceOpenHashSet<>();
         for (int i = 0; i < scannedMaterialCount; i++) {
-            Material material = GTCEuAPI.materialManager.getMaterial(LegacyResearchIO.readUtf(buf));
+            Material material = GTRegistries.MATERIALS.parse(LegacyResearchIO.readUtf(buf));
             if (material != null) {
                 scannedMaterials.add(material);
             }
@@ -261,7 +262,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         Set<Material> scannedMaterials = new ReferenceOpenHashSet<>();
         for (int i = 0; i < scannedMaterialCount; i++) {
             String materialName = buf.readUtf();
-            Material material = GTCEuAPI.materialManager.getMaterial(materialName);
+            Material material = GTRegistries.MATERIALS.parse(materialName);
             if (material != null) {
                 scannedMaterials.add(material);
             }

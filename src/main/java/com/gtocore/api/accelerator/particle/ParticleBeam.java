@@ -7,6 +7,7 @@ import net.minecraft.world.phys.Vec3;
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.datasynclib.datastream.codec.ValueCodec;
+
 import lombok.Getter;
 
 /**

@@ -32,6 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -92,21 +93,25 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
     @RegisterLanguage(cn = "增产模式 : ", en = "Is Multiply Mode Enabled : ")
     private static final String IS_MULTIPLY = "gtocore.machine.large_steam_circuit_assembler.is_multiply";
     @RegisterLanguage(cn = "电路铭刻", en = "Circuit Engraving")
-    private static final String ENGRAVING = "gtocore.machine.large_steam_circuit_assembler.engraving";
+    private static final Component ENGRAVING = Component.translatable("gtocore.machine.large_steam_circuit_assembler.engraving");
     @RegisterLanguage(cn = "已铭刻", en = "Engraved")
-    private static final String ENGRAVED = "gtocore.machine.large_steam_circuit_assembler.engraved";
+    private static final Component ENGRAVED = Component.translatable("gtocore.machine.large_steam_circuit_assembler.engraved");
     @RegisterLanguage(cn = "增产模式", en = "Multiply Mode")
-    private static final String MULTIPLY_MODE = "gtocore.machine.large_steam_circuit_assembler.multiply_mode";
+    private static final Component MULTIPLY_MODE = Component.translatable("gtocore.machine.large_steam_circuit_assembler.multiply_mode");
     @RegisterLanguage(cn = "从输入总线取出电路，铭刻数量达到要求后只生产该电路", en = "Takes circuits from input buses; once enough are engraved, only that circuit is produced")
-    private static final String ENGRAVE_HINT = "gtocore.machine.large_steam_circuit_assembler.engrave_hint";
+    private static final Component ENGRAVE_HINT = Component.translatable("gtocore.machine.large_steam_circuit_assembler.engrave_hint");
     @RegisterLanguage(cn = "产量与耗时按规则倍增，蒸汽消耗同步增加", en = "Output and duration are multiplied by the rules; steam usage increases accordingly")
-    private static final String MULTIPLY_HINT = "gtocore.machine.large_steam_circuit_assembler.multiply_hint";
+    private static final Component MULTIPLY_HINT = Component.translatable("gtocore.machine.large_steam_circuit_assembler.multiply_hint");
+    @RegisterLanguage(cn = "铭刻电路", en = "Engrave Circuit")
+    private static final Component ENGRAVE_CIRCUIT = Component.translatable("gtocore.machine.large_steam_circuit_assembler.engrave_circuit");
+    @RegisterLanguage(cn = "已铭刻电路: %s", en = "Inscribed Circuit: %s")
+    private static final String CIRCUIT = "gtocore.machine.large_steam_circuit_assembler.circuit";
 
     @Override
     public void addDisplayText(List<Component> textList) {
         super.addDisplayText(textList);
         if (isFormed()) {
-            textList.add(Component.translatable("gtocore.machine.large_steam_circuit_assembler.circuit", (item == null ? "null" : Component.translatable(item.getDescriptionId()))));
+            textList.add(Component.translatable(CIRCUIT, (item == null ? "null" : Component.translatable(item.getDescriptionId()))));
             if (item != null && count < GTORules.STEAM_CIRCUIT_ENGRAVING.get()) {
                 textList.add(Component.translatable("gui.ae2.Missing", GTORules.STEAM_CIRCUIT_ENGRAVING.get() - count));
             }
@@ -118,10 +123,10 @@ public final class LargeSteamCircuitAssemblerMachine extends BaseSteamMultiblock
     protected void addPageContent(MultiblockPage page) {
         super.addPageContent(page);
         var circuit = ItemCell.of(this::getCircuitStack);
-        var progress = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(ENGRAVED), 0,
+        var progress = ProgressBar.of(LayoutStyle.AUTO, ENGRAVED, 0,
                 () -> new ProgressBar.Progress(count, GTORules.STEAM_CIRCUIT_ENGRAVING.get(), 0)).bindClientColor(UITheme::barProgress);
         progress.layout(l -> l.flex(1));
-        var engrave = Button.translatable(UISizes.BUTTON_WIDTH, "gtocore.machine.large_steam_circuit_assembler.engrave_circuit")
+        var engrave = Button.text(UISizes.BUTTON_WIDTH, ENGRAVE_CIRCUIT)
                 .setOnServerClick(this::engraveCircuit);
         engrave.tooltips(ENGRAVE_HINT);
         var row = UIElement.centeredRow(UISizes.SLOT_SIZE).layout(l -> l.width(LayoutStyle.AUTO))

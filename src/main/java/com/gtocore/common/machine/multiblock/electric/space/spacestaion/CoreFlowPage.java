@@ -52,8 +52,10 @@ final class CoreFlowPage {
 
     @RegisterLanguage(cn = "空间站核心", en = "Station Core")
     private static final String LANG_CORE = "gtocore.machine.space_station.core.flow.core";
+    private static final Component CORE = Component.translatable(LANG_CORE);
     @RegisterLanguage(cn = "全站服务", en = "Station Services")
     private static final String LANG_SERVICES = "gtocore.machine.space_station.core.flow.services";
+    private static final Component SERVICES = Component.translatable(LANG_SERVICES);
     @RegisterLanguage(cn = "超净", en = "Clean")
     private static final String LANG_CLEAN = "gtocore.machine.space_station.core.flow.clean";
     @RegisterLanguage(cn = "电梯", en = "Elevator")
@@ -70,16 +72,22 @@ final class CoreFlowPage {
     private static final String LANG_NONE = "gtocore.machine.space_station.core.flow.none";
     @RegisterLanguage(cn = "舱段", en = "Segments")
     private static final String LANG_SEGMENTS = "gtocore.machine.space_station.core.flow.segments";
+    private static final Component SEGMENTS = Component.translatable(LANG_SEGMENTS);
     @RegisterLanguage(cn = "已接入", en = "Attached")
     private static final String LANG_ATTACHED = "gtocore.machine.space_station.core.flow.attached";
+    private static final Component ATTACHED = Component.translatable(LANG_ATTACHED);
     @RegisterLanguage(cn = "成型", en = "Formed")
     private static final String LANG_FORMED = "gtocore.machine.space_station.core.flow.formed";
+    private static final Component FORMED = Component.translatable(LANG_FORMED);
     @RegisterLanguage(cn = "连接舱", en = "Connectors")
     private static final String LANG_CONNECTORS = "gtocore.machine.space_station.core.flow.connectors";
+    private static final Component CONNECTORS = Component.translatable(LANG_CONNECTORS);
     @RegisterLanguage(cn = "功能舱", en = "Functional")
     private static final String LANG_FUNCTIONAL = "gtocore.machine.space_station.core.flow.functional";
+    private static final Component FUNCTIONAL = Component.translatable(LANG_FUNCTIONAL);
     @RegisterLanguage(cn = "点左侧「空间站总览」查看整座空间站并扩建", en = "Use \"Station Overview\" on the left to view and extend the station")
     private static final String LANG_HINT = "gtocore.machine.space_station.core.flow.hint";
+    private static final Component HINT = Component.translatable(LANG_HINT);
     @RegisterLanguage(cn = "舱段未成型：%s", en = "Unformed: %s")
     private static final String LANG_UNFORMED = "gtocore.machine.space_station.core.flow.unformed";
     @RegisterLanguage(cn = "每轮输入与耗电随已接入舱段数增加：%s 份。", en = "Inputs and power per cycle grow with attached segments: %s shares.")
@@ -92,12 +100,16 @@ final class CoreFlowPage {
     private static final String LANG_READINESS = "gtocore.machine.space_station.core.flow.readiness";
     @RegisterLanguage(cn = "电力", en = "Power")
     private static final String LANG_ENERGY = "gtocore.machine.space_station.core.flow.energy";
+    private static final Component ENERGY = Component.translatable(LANG_ENERGY);
     @RegisterLanguage(cn = "耗能", en = "Usage")
     private static final String LANG_USAGE = "gtocore.machine.space_station.core.flow.usage";
+    private static final Component USAGE = Component.translatable(LANG_USAGE);
     @RegisterLanguage(cn = "功率", en = "Input")
     private static final String LANG_POWER = "gtocore.machine.space_station.core.flow.power";
+    private static final Component POWER = Component.translatable(LANG_POWER);
     @RegisterLanguage(cn = "电压", en = "Tier")
     private static final String LANG_VOLTAGE = "gtocore.machine.space_station.core.flow.voltage";
+    private static final Component VOLTAGE = Component.translatable(LANG_VOLTAGE);
     @RegisterLanguage(cn = "不在太空", en = "Not in Space")
     private static final String LANG_NOT_IN_SPACE = "gtocore.machine.space_station.core.flow.not_in_space";
     @RegisterLanguage(cn = "等待就绪", en = "Warming Up")
@@ -132,7 +144,7 @@ final class CoreFlowPage {
 
     private static FlowNode stationNode(FlowChart chart, Core core, Status status, int columns) {
         var node = chart.node(1, 1, columns - 1).bindState(status.live(() -> status.station)).bindDetail(status.live(() -> status.stationDetail));
-        node.addChildren(FlowParts.header(ItemView.of(core.getDefinition().asStack()), LANG_CORE),
+        node.addChildren(FlowParts.header(ItemView.of(core.getDefinition().asStack()), CORE),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status.live(() -> status.stationView)),
                 ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status.live(() -> status.recipeProgress)),
                 ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_READINESS), UITheme.STATUS_ONLINE, status.live(() -> status.readiness)).percent());
@@ -159,17 +171,17 @@ final class CoreFlowPage {
 
     private static FlowNode energyNode(FlowChart chart, Status status) {
         var node = chart.node(1, 0).bindState(status.live(() -> status.diagnoser.energyIssue().state())).bindDetail(status.live(() -> status.energyDetail));
-        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY),
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), ENERGY),
                 new IssueLine(LayoutStyle.AUTO, null, status.live(() -> status.diagnoser.energyIssue().view())),
-                StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, status.live(() -> status.usageText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_POWER, status.live(() -> status.powerText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status.live(() -> status.voltageText)));
+                StatusLine.of(LayoutStyle.AUTO, USAGE, status.live(() -> status.usageText)),
+                StatusLine.of(LayoutStyle.AUTO, POWER, status.live(() -> status.powerText)),
+                StatusLine.of(LayoutStyle.AUTO, VOLTAGE, status.live(() -> status.voltageText)));
         return node;
     }
 
     private static FlowNode servicesNode(FlowChart chart, Status status, int column) {
         var node = chart.node(1, column).bindState(status.live(() -> status.services));
-        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), LANG_SERVICES),
+        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(ModBlocks.OXYGEN_DISTRIBUTOR.get())), SERVICES),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_CLEAN), status.live(() -> status.cleanView)),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_ELEVATOR), status.live(() -> status.elevatorView)),
                 new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_LASER), status.live(() -> status.laserView)));
@@ -178,13 +190,13 @@ final class CoreFlowPage {
 
     private static FlowNode segmentsNode(FlowChart chart, Status status, int column, int span) {
         var node = chart.node(2, column, span).bindState(status.live(() -> status.segments)).bindDetail(status.live(() -> status.segmentsDetail));
-        node.addChildren(FlowParts.header(ItemView.of(SpaceMultiblock.SPACE_STATION_DOCKING_MODULE.asStack()), LANG_SEGMENTS),
-                StatusLine.of(LayoutStyle.AUTO, LANG_ATTACHED, status.live(() -> status.attachedText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_FORMED, status.live(() -> status.formedText))
+        node.addChildren(FlowParts.header(ItemView.of(SpaceMultiblock.SPACE_STATION_DOCKING_MODULE.asStack()), SEGMENTS),
+                StatusLine.of(LayoutStyle.AUTO, ATTACHED, status.live(() -> status.attachedText)),
+                StatusLine.of(LayoutStyle.AUTO, FORMED, status.live(() -> status.formedText))
                         .bindLevel(status.live(() -> status.allFormed ? Level.GOOD : Level.ERROR)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_CONNECTORS, status.live(() -> status.connectorText)),
-                StatusLine.of(LayoutStyle.AUTO, LANG_FUNCTIONAL, status.live(() -> status.functionalText)),
-                TextLine.translatable(LayoutStyle.AUTO, LANG_HINT).setColor(UITheme.TEXT_SECONDARY));
+                StatusLine.of(LayoutStyle.AUTO, CONNECTORS, status.live(() -> status.connectorText)),
+                StatusLine.of(LayoutStyle.AUTO, FUNCTIONAL, status.live(() -> status.functionalText)),
+                TextLine.constant(LayoutStyle.AUTO, HINT).setColor(UITheme.TEXT_SECONDARY));
         return node;
     }
 

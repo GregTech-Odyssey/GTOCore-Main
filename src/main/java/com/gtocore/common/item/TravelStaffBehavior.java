@@ -80,6 +80,18 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
     @RegisterLanguage(cn = "服务器配置已关闭样板节点传送", en = "Disabled in the server config")
     private static final String PATTERN_NODE_DISABLED = "gtocore.travel_staff.target.pattern_node.disabled";
 
+    private static final Component TARGETS_LABEL = Component.translatable(TARGETS);
+    private static final Component SHOW_HIDDEN_LABEL = Component.translatable(SHOW_HIDDEN);
+    private static final Component SHOW_HIDDEN_TIP_C = Component.translatable(SHOW_HIDDEN_TIP);
+    private static final Component PATTERN_NODE_DISABLED_TIP = Component.translatable(PATTERN_NODE_DISABLED);
+
+    private static final Component ANCHOR_LABEL = Component.translatable(ANCHOR);
+    private static final Component ANCHOR_TIP_C = Component.translatable(ANCHOR_TIP);
+    private static final Component TEAMMATE_LABEL = Component.translatable(TEAMMATE);
+    private static final Component TEAMMATE_TIP_C = Component.translatable(TEAMMATE_TIP);
+    private static final Component PATTERN_NODE_LABEL = Component.translatable(PATTERN_NODE);
+    private static final Component PATTERN_NODE_TIP_C = Component.translatable(PATTERN_NODE_TIP);
+
     protected TravelStaffBehavior(long maxCharge, int tier, boolean chargeable, boolean dischargeable) {
         super(maxCharge, tier, chargeable, dischargeable);
     }
@@ -207,11 +219,19 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
         };
     }
 
-    private static String tipKey(TravelTargetType type) {
+    private static Component labelComponent(TravelTargetType type) {
         return switch (type) {
-            case ANCHOR -> ANCHOR_TIP;
-            case TEAMMATE -> TEAMMATE_TIP;
-            case PATTERN_NODE -> PATTERN_NODE_TIP;
+            case ANCHOR -> ANCHOR_LABEL;
+            case TEAMMATE -> TEAMMATE_LABEL;
+            case PATTERN_NODE -> PATTERN_NODE_LABEL;
+        };
+    }
+
+    private static Component tipComponent(TravelTargetType type) {
+        return switch (type) {
+            case ANCHOR -> ANCHOR_TIP_C;
+            case TEAMMATE -> TEAMMATE_TIP_C;
+            case PATTERN_NODE -> PATTERN_NODE_TIP_C;
         };
     }
 
@@ -219,15 +239,15 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
-            var targets = Form.section(TARGETS);
+            var targets = Form.section(TARGETS_LABEL);
             for (var type : TravelTargetType.VALUES) {
-                var row = Form.controlRow(labelKey(type), Switch.of(() -> type.isEnabled(holder.held), on -> setEnabled(type, on)), tipKey(type));
+                var row = Form.controlRow(labelComponent(type), Switch.of(() -> type.isEnabled(holder.held), on -> setEnabled(type, on)), tipComponent(type));
                 if (type == TravelTargetType.PATTERN_NODE) {
-                    row.disabled(() -> !GTOConfig.INSTANCE.travelConfig.staffOfTravellingPatternNodes, PATTERN_NODE_DISABLED);
+                    row.disabled(() -> !GTOConfig.INSTANCE.travelConfig.staffOfTravellingPatternNodes, PATTERN_NODE_DISABLED_TIP);
                 }
                 targets.addChild(row);
             }
-            targets.addChild(Form.controlRow(SHOW_HIDDEN, Switch.of(() -> TravelTargetType.showsHidden(holder.held), this::setShowHidden), SHOW_HIDDEN_TIP));
+            targets.addChild(Form.controlRow(SHOW_HIDDEN_LABEL, Switch.of(() -> TravelTargetType.showsHidden(holder.held), this::setShowHidden), SHOW_HIDDEN_TIP_C));
             var scroller = ScrollerView.page("travel_staff.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
             scroller.addScrollViewChild(Form.page().addChild(targets));
             return UIElement.column(LayoutStyle.AUTO).addChild(scroller);

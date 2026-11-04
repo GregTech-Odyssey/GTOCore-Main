@@ -20,15 +20,18 @@ import com.gtocore.client.renderer.SolarGlobeGlowShader;
 import com.gtocore.client.renderer.entity.FrostCoatLayer;
 import com.gtocore.client.renderer.fx.DysonForceFieldRenderer;
 import com.gtocore.client.renderer.item.MonitorItemDecorations;
+import com.gtocore.client.renderer.item.WirelessEnergyUnitItemDecorations;
 import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.client.website.WebsiteAccount;
 import com.gtocore.client.website.WebsiteConsent;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.block.LaurerilManaPools;
+import com.gtocore.common.block.WirelessEnergyUnitBlock;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
+import com.gtocore.common.item.misc.WingTrails;
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
 import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.client.TravelParticleHandler;
@@ -36,7 +39,10 @@ import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
 import com.gtocore.integration.ae.PatternContentAccessTerminalScreen;
+import com.gtocore.integration.ae.PatternEncoderStats;
 import com.gtocore.integration.ae.TieredInterfaces;
+import com.gtocore.integration.ae.client.PatternEncoderStatsButton;
+import com.gtocore.integration.ae.client.PatternEncoderStatsScreen;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
@@ -51,9 +57,13 @@ import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
 import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubScreen;
 import com.gtolib.api.ae2.stacks.TagPrefixKey;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
+import com.gtolib.api.client.FluidNameOverlay;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
+import com.gtolib.api.gui.hud.ScalableHud;
 import com.gtolib.api.machine.storage.SuperStorageClient;
+import com.gtolib.drone.client.DroneClient;
+import com.gtolib.drone.client.DroneHud;
 import com.gtolib.quest.client.QuestPinnedHud;
 import com.gtolib.quest.client.book.QuestBookStyle;
 
@@ -90,6 +100,7 @@ import appeng.client.render.StaticItemColor;
 import appeng.init.client.InitScreens;
 
 import com.almostreliable.merequester.MERequester;
+import com.glodblock.github.extendedae.client.gui.GuiExPatternTerminal;
 import com.lowdragmc.shimmer.client.light.ColorPointLight;
 import com.lowdragmc.shimmer.client.light.LightManager;
 import com.lowdragmc.shimmer.event.ShimmerReloadEvent.ReloadType;
@@ -127,8 +138,10 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void init() {
+        GuiExPatternTerminal.setSortProviderGroups(false);
+        GuiExPatternTerminal.setScreenInitializer(screen -> screen.addToLeftToolbar(new PatternEncoderStatsButton(button -> screen.switchToScreen(new PatternEncoderStatsScreen<>(screen, PatternEncoderStats.collect(screen.getPatternRecords().values()))))));
         SuperStorageClient.init();
-        KeyBind.init();
+        GTOKeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
         GTORender.init();
@@ -140,8 +153,10 @@ public final class ClientProxy extends CommonProxy {
         TravelTargetsClientHandler.init();
         TesseractClientHandler.init();
         TravelEvents.Client.init();
+        WingTrails.Client.init();
         TravelParticleHandler.init();
         IMoveableHUD.EventHandler.init();
+        DroneClient.init();
         QuestHotReload.init();
         ClientForge.init();
         ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
@@ -251,15 +266,25 @@ public final class ClientProxy extends CommonProxy {
                 event.register(BuiltInRegistries.BLOCK.get(item), MonitorItemDecorations.DECORATOR);
             }
         });
+        for (var item : BuiltInRegistries.ITEM) {
+            if (item instanceof BlockItem blockItem && blockItem.getBlock() instanceof WirelessEnergyUnitBlock unit && !unit.isSuperUnit()) {
+                event.register(item, WirelessEnergyUnitItemDecorations.DECORATOR);
+            }
+        }
     }
 
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-        registerHUD(event, "wireless_energy_hud", WirelessEnergyHUD.INSTANCE);
-        registerHUD(event, "research_points_hud", ResearchPointsHUD.INSTANCE);
-        registerHUD(event, "medical_condition_hud", MedicalConditionHUD.INSTANCE);
-        registerHUD(event, "adastra_hud", AdAstraHUD.gto$INSTANCE);
-        registerHUD(event, "client_property_hud", PlayerAttrHUD.INSTANCE);
-        registerHUD(event, "quest_pinned_hud", QuestPinnedHud.INSTANCE);
+        registerHUD(event, "wireless_energy_hud", new ScalableHud("wireless_energy_hud", WirelessEnergyHUD.INSTANCE));
+        registerHUD(event, "research_points_hud", new ScalableHud("research_points_hud", ResearchPointsHUD.INSTANCE));
+        registerHUD(event, "medical_condition_hud", new ScalableHud("medical_condition_hud", MedicalConditionHUD.INSTANCE));
+        registerHUD(event, "adastra_hud", new ScalableHud("adastra_hud", AdAstraHUD.gto$INSTANCE));
+        registerHUD(event, "client_property_hud", new ScalableHud("client_property_hud", PlayerAttrHUD.INSTANCE));
+        registerHUD(event, "quest_pinned_hud", new ScalableHud("quest_pinned_hud", QuestPinnedHud.INSTANCE));
+        registerHUD(event, "drone_mode", DroneHud.MODE);
+        registerHUD(event, "drone_speed", DroneHud.SPEED);
+        registerHUD(event, "drone_preview", DroneHud.PREVIEW);
+        registerHUD(event, "drone_power", DroneHud.POWER);
+        registerHUD(event, "drone_search", DroneHud.SEARCH);
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
     }
 
@@ -302,6 +327,7 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(FluidNameOverlay.RELOAD_LISTENER);
         event.registerReloadListener(TechTreeStyle.RELOAD_LISTENER);
         event.registerReloadListener(QuestBookStyle.RELOAD_LISTENER);
     }

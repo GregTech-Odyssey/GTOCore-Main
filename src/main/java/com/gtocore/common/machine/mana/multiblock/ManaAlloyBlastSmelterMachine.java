@@ -22,6 +22,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +31,8 @@ import vazkii.botania.common.item.BotaniaItems;
 import java.util.List;
 
 public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultiblockMachine implements IManaMultiblock {
+
+    private static final Component MANA_CONSUMPTION = Component.translatable("gtocore.recipe.mana_consumption");
 
     public static Component getRunes() {
         var c = Component.empty();
@@ -137,7 +140,7 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addNumber("gtocore.recipe.mana_consumption", () -> mana, "");
+        page.addNumber(MANA_CONSUMPTION, () -> mana, "");
     }
 
     @Override

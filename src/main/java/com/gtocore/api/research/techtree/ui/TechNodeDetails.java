@@ -113,6 +113,13 @@ public final class TechNodeDetails {
     @RegisterLanguage(cn = "该科技已解锁", en = "This node is already unlocked")
     public static final String ALREADY_UNLOCKED = "gtocore.techtree.details.already_unlocked";
 
+    private static final Component STATE_LABEL = Component.translatable(STATE);
+    private static final Component TIER_LABEL = Component.translatable(TIER);
+    private static final Component FORCE_UNLOCK_LABEL = Component.translatable(FORCE_UNLOCK);
+    public static final Component ALREADY_UNLOCKED_TIP = Component.translatable(ALREADY_UNLOCKED);
+    private static final Component REQUIREMENTS_LABEL_TEXT = Component.translatable(REQUIREMENTS_LABEL);
+    private static final Component PREREQUISITES_LABEL_TEXT = Component.translatable(PREREQUISITES_LABEL);
+
     /// 标题、说明文字的最大宽度：一个装满 9 槽的区块的内宽
     private static final int TEXT_WIDTH = UISizes.SLOT_ROW_WIDTH;
 
@@ -136,7 +143,7 @@ public final class TechNodeDetails {
         column.addChild(header);
 
         var status = new StatusPanel();
-        status.addLine(STATE, () -> Component.translatable(TechTreeView.stateKey(state.get(player.get()))))
+        status.addLine(STATE_LABEL, () -> Component.translatable(TechTreeView.stateKey(state.get(player.get()))))
                 .bindLevel(() -> switch (state.get(player.get())) {
                     case TechTreeView.UNLOCKED -> Level.GOOD;
                     case TechTreeView.AVAILABLE -> Level.WARNING;
@@ -147,7 +154,7 @@ public final class TechNodeDetails {
                     case TechTreeView.AVAILABLE -> Component.translatable(AVAILABLE_REASON);
                     default -> Component.translatable(LOCKED_REASON);
                 });
-        var tierLine = status.addLine(TIER, () -> Component.literal(Integer.toString(node.getTier())));
+        var tierLine = status.addLine(TIER_LABEL, () -> Component.literal(Integer.toString(node.getTier())));
         var tierItem = node.getTierItem();
         if (!tierItem.isEmpty()) tierLine.bindDetail(() -> Component.translatable(TIER_DESC, tierItem.getHoverName()));
         column.addChild(status);
@@ -163,12 +170,12 @@ public final class TechNodeDetails {
 
         if (!node.prerequisites.isEmpty()) {
             var slots = SlotGrid.of(UISizes.SLOTS_PER_ROW, node.prerequisites.size(), i -> new NodeSlot(node.prerequisites.get(i), player, navigator));
-            column.addChild(UIElement.section().addChildren(TextLine.translatable(LayoutStyle.AUTO, PREREQUISITES_LABEL), slots));
+            column.addChild(UIElement.section().addChildren(TextLine.constant(LayoutStyle.AUTO, PREREQUISITES_LABEL_TEXT), slots));
         }
 
         var requirements = node.getRequirements();
         if (requirements != null && (requirements.getCwuNeeded() > 0 || !requirements.getMaterialNeeded().isEmpty())) {
-            var section = UIElement.section().addChild(TextLine.translatable(LayoutStyle.AUTO, REQUIREMENTS_LABEL));
+            var section = UIElement.section().addChild(TextLine.constant(LayoutStyle.AUTO, REQUIREMENTS_LABEL_TEXT));
             if (requirements.getCwuNeeded() > 0) {
                 section.addChild(cwuBar(node, player));
                 if (requirements.getEurekaItem() != null) section.addChild(eurekaRow(requirements, player));
@@ -179,7 +186,7 @@ public final class TechNodeDetails {
 
         // 可解锁：配方产物取决于配方数据（两端可能不同），区块与格子照建，由服务端判定显示
         boolean hasRewards = !node.getRecipePrimaryOutputs().isEmpty() || !node.getAdditionalLines().isEmpty();
-        var rewards = UIElement.section().addChildren(TextLine.translatable(LayoutStyle.AUTO, TechNode.UNLOCKABLE_LABEL), new StackGrid(node.getRecipePrimaryOutputs()));
+        var rewards = UIElement.section().addChildren(TextLine.constant(LayoutStyle.AUTO, TechNode.UNLOCKABLE_LABEL), new StackGrid(node.getRecipePrimaryOutputs()));
         for (var line : node.getAdditionalLines()) rewards.addChild(Label.of(TEXT_WIDTH, () -> line));
         column.addChild(rewards);
         bindDisplay(column, rewards, () -> hasRewards);
@@ -191,13 +198,13 @@ public final class TechNodeDetails {
         }
 
         if (force) {
-            var unlock = Button.translatable(LayoutStyle.AUTO, FORCE_UNLOCK)
+            var unlock = Button.text(LayoutStyle.AUTO, FORCE_UNLOCK_LABEL)
                     .setVariant(UITheme.ButtonVariant.DANGER)
                     .setOnServerClick(() -> {
                         var p = player.get();
                         if (p != null) TechTreeSavedData.forceUnlock(TechTreeSavedData.getTeamUUID(p), node);
                     })
-                    .disabled(() -> state.get(player.get()) == TechTreeView.UNLOCKED, ALREADY_UNLOCKED);
+                    .disabled(() -> state.get(player.get()) == TechTreeView.UNLOCKED, ALREADY_UNLOCKED_TIP);
             column.addChild(unlock);
         }
     }

@@ -40,6 +40,7 @@ import net.minecraft.world.level.Level;
 
 import com.gto.fastcollection.fastutil.O2LOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -187,7 +188,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
         hasWallet.onChanged(value -> missing.setDisplay(!value));
         page.addChild(status);
 
-        page.addChild(Button.translatable(LayoutStyle.AUTO, text(8))
+        page.addChild(Button.text(LayoutStyle.AUTO, trans(8))
                 .setVariant(UITheme.ButtonVariant.CONFIRM)
                 .disabled(() -> serverDisabled(player, () -> WalletUtils.hasWallet(player)), null)
                 .setOnServerClick(() -> {
@@ -305,7 +306,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                         .layout(l -> l.flex(1));
                 page.addChild(UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
                         field,
-                        Button.translatable(LayoutStyle.AUTO, text(54))
+                        Button.text(LayoutStyle.AUTO, trans(54))
                                 .setVariant(UITheme.ButtonVariant.CONFIRM)
                                 .layout(l -> l.flex(1))
                                 .disabled(() -> serverDisabled(player, () -> target == null || currency == null || amount <= 0 || WalletUtils.getCurrencyAmount(player, currency) < amount), null)
@@ -451,7 +452,7 @@ public class PalmSizedBankBehavior implements IItemUIFactory, IFancyUIProvider {
                 if (player == null) return page;
                 boolean remote = player.level().isClientSide;
 
-                page.addChild(Button.translatable(LayoutStyle.AUTO, text(41))
+                page.addChild(Button.text(LayoutStyle.AUTO, trans(41))
                         .setVariant(UITheme.ButtonVariant.CONFIRM)
                         .disabled(() -> serverDisabled(player, () -> WalletUtils.getCurrencyAmount(player, TECH_OPERATOR_COIN) < 15), null)
                         .bindTooltip(() -> trans(40, currencyName(TECH_OPERATOR_COIN), literal(15)))

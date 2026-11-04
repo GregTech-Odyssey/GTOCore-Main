@@ -1,8 +1,11 @@
 package com.hepdd.gtmthings.common.item.Behaviour;
 
+import com.gtolib.api.data.GTODimensions;
+
 import com.gregtechceu.gtceu.api.item.component.IAddInformation;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -29,12 +32,10 @@ public class WirelessTransferCoverTooltipBehavior implements IAddInformation {
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents,
                                TooltipFlag isAdvanced) {
         var tag = stack.getTag();
-        if (tag != null) {
-            String itemId = tag.getString("blockid");
-            String pos = tag.getString("pos");
-            if (!itemId.isEmpty() && !pos.isEmpty()) {
-                tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.wireless_transfer.tooltip.1", Component.translatable(itemId), pos)));
-            }
+        GlobalPos globalPos = WirelessTransferCoverPlaceBehavior.getStoredGlobalPos(tag);
+        if (globalPos != null) {
+            tooltipComponents.add(Tips.stat(Component.translatable("item.gtmthings.wireless_transfer.tooltip.1", Component.translatable(tag.getString(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID)), globalPos.pos().toShortString())));
+            tooltipComponents.add(Tips.stat(Component.translatable("recipe.condition.dimension.tooltip", Component.translatable(GTODimensions.getTranslationKey(globalPos.dimension())))));
         }
         tooltips.accept(tooltipComponents);
     }

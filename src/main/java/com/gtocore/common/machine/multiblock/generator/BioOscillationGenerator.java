@@ -40,9 +40,10 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
 
-import com.google.common.collect.ImmutableMap;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import lombok.Getter;
 import lombok.Setter;
@@ -414,7 +415,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
         controls.addDecimal(BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_LABEL, () -> mediumUsageThreshold / 10.0,
-                value -> mediumUsageThreshold = (short) Math.round(value * 10), 0, 100, 0.1, BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_TOOLTIP);
+                value -> mediumUsageThreshold = (short) Math.round(value * 10), 0.0, 100.0, 0.1, BioOscillationElectricStimulator.NUTRIENT_THRESHOLD_TOOLTIP);
     }
 
     @Override

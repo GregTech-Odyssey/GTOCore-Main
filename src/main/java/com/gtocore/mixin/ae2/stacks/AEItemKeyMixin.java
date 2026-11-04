@@ -14,6 +14,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 
 import com.gto.recipesearch.IntLongMap;
+
 import me.kall.duplicationless.ext.RegistryEntry;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;

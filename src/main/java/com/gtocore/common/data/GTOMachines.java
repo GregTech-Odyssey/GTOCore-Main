@@ -31,6 +31,7 @@ import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachi
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
+import com.gtocore.common.machine.noenergy.game.sudoku.SudokuMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
@@ -48,18 +49,12 @@ import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.api.machine.impl.part.*;
 import com.gtolib.api.machine.part.ItemPartMachine;
-import com.gtolib.api.registries.GTOMachineBuilder;
-import com.gtolib.api.registries.GTORegistration;
-import com.gtolib.utils.register.BlockRegisterUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
@@ -87,7 +82,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import com.hepdd.gtmthings.GTMThings;
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.Pair;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -1279,6 +1273,16 @@ public final class GTOMachines {
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
 
+    public static final MachineDefinition SUDOKU = machine("sudoku_machine", "数独游戏机", SudokuMachine::new)
+            .langValue("Sudoku Game Machine")
+            .tips(GTOMachineTooltips.SudokuTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/sudoku")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
     public static final MachineDefinition MINESWEEPER_CORE = machine("minesweeper_core", "扫雷核心方块", MinesweeperCoreMachine::new)
             .langValue("Minesweeper Core")
             .tips(GTOMachineTooltips.MinesweeperCoreTooltips)
@@ -1354,20 +1358,4 @@ public final class GTOMachines {
     public static final MachineDefinition MONITOR_MACHINE = registerMonitor("monitor_machine", "监控器通用机器组件", MonitorMachine::new)
             .tips(GTOMachineTooltips.MonitorMachineComponentTooltips)
             .register();
-
-    private static GTOMachineBuilder registerMonitor(String id, String cn, Function<MetaMachineBlockEntity, MetaMachine> monitorConstructor) {
-        BlockRegisterUtils.addLang(id, cn);
-        MonitorBlockItem.addItem(GTOCore.id(id));
-        return (GTOMachineBuilder) new GTOMachineBuilder(
-                GTORegistration.GTO,
-                id,
-                MachineDefinition::createDefinition,
-                monitorConstructor,
-                MonitorBlock::new,
-                MonitorBlockItem::new,
-                MetaMachineBlockEntity::createBlockEntity)
-                .rotationState(RotationState.NON_Y_AXIS)
-                .renderer(MonitorRenderer::new)
-                .hasTESR(true);
-    }
 }

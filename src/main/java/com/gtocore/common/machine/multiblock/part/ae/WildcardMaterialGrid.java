@@ -9,11 +9,10 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.recipe.RecipeType;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.RPC;
@@ -51,13 +50,13 @@ import appeng.hooks.IUnique;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.ByteBufCodecExtends;
+
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.TaffyPosition;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.Collator;
@@ -73,7 +72,7 @@ final class WildcardMaterialGrid extends UIElement {
     private static final int VIEW_WIDTH = GRID_WIDTH + ScrollerView.SCROLL_BAR_SPACE;
 
     @RegisterLanguage(cn = "搜索材料名称或注册名", en = "Search material name or registry ID")
-    private static final String SEARCH = "gtocore.ae.wildcard_materials.search";
+    private static final Component SEARCH = Component.translatable("gtocore.ae.wildcard_materials.search");
     @RegisterLanguage(cn = "拖入材料物品、流体或机器；右键/中键清空", en = "Drop a material item, fluid or machine; right/middle click to clear")
     private static final String SLOT_SEARCH = "gtocore.ae.wildcard_materials.slot_search";
     @RegisterLanguage(cn = "机器按当前扫描配方的实际输出形式筛选材料；材料物品或流体只筛选对应材料。", en = "Machines filter materials by the actual output forms of scanned recipes; material items and fluids select their material.")
@@ -87,9 +86,9 @@ final class WildcardMaterialGrid extends UIElement {
     @RegisterLanguage(cn = "筛选材料", en = "Filters")
     private static final String FILTER = "gtocore.ae.wildcard_materials.filter";
     @RegisterLanguage(cn = "材料状态", en = "Material state")
-    private static final String MATERIAL_STATE = "gtocore.ae.wildcard_materials.material_state";
+    private static final Component MATERIAL_STATE = Component.translatable("gtocore.ae.wildcard_materials.material_state");
     @RegisterLanguage(cn = "材料类型", en = "Material type")
-    private static final String MATERIAL_TYPE = "gtocore.ae.wildcard_materials.material_type";
+    private static final Component MATERIAL_TYPE = Component.translatable("gtocore.ae.wildcard_materials.material_type");
     @RegisterLanguage(cn = "按字母表", en = "Alphabetical")
     private static final String ALPHABETICAL = "gtocore.ae.wildcard_materials.alphabetical";
     @RegisterLanguage(cn = "按颜色色相", en = "Color hue")
@@ -105,7 +104,7 @@ final class WildcardMaterialGrid extends UIElement {
     @RegisterLanguage(cn = "仅修改当前搜索、搜索槽和筛选条件下的全部材料（含滚动区域外的结果）。", en = "Applies to all materials matching the current search, search slot and filters, including results outside the scroll viewport.")
     private static final String PAGE_SELECTION_HINT = "gtocore.ae.wildcard_materials.page_selection_hint";
     @RegisterLanguage(cn = "反转排序方向", en = "Reverse sort direction")
-    private static final String REVERSE = "gtocore.ae.wildcard_materials.reverse";
+    private static final Component REVERSE = Component.translatable("gtocore.ae.wildcard_materials.reverse");
     @RegisterLanguage(cn = "没有匹配的可运行材料", en = "No matching runnable materials")
     private static final String EMPTY = "gtocore.ae.wildcard_materials.empty";
     @RegisterLanguage(cn = "已启用；单击禁用此材料", en = "Enabled; click to disable this material")
@@ -130,24 +129,24 @@ final class WildcardMaterialGrid extends UIElement {
     // 网络只传材料注册整数 id，实际产物留在服务端供机器搜索使用。
     private static final StreamCodec<FriendlyByteBuf, ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial>> MATERIALS = StreamCodec.of((buf, entries) -> {
         buf.writeVarInt(entries.size());
-        for (var entry : entries) GTCEuAPI.materialManager.streamCodec().encode(buf, entry.material());
+        for (var entry : entries) GTRegistries.MATERIALS.streamCodec().encode(buf, entry.material());
     }, buf -> {
         int size = buf.readVarInt();
         var entries = new ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial>(size);
         for (int i = 0; i < size; i++) {
-            entries.add(new MEWildcardPatternBufferPartMachine.ScannedMaterial(GTCEuAPI.materialManager.streamCodec().decode(buf), NO_OUTPUTS, NO_RECIPES));
+            entries.add(new MEWildcardPatternBufferPartMachine.ScannedMaterial(GTRegistries.MATERIALS.streamCodec().decode(buf), NO_OUTPUTS, NO_RECIPES));
         }
         return entries;
     });
     private static final StreamCodec<FriendlyByteBuf, PatternPreview> PREVIEW = StreamCodec.of((buf, preview) -> {
         buf.writeBoolean(preview.material() != null);
         if (preview.material() == null) return;
-        GTCEuAPI.materialManager.streamCodec().encode(buf, preview.material());
+        GTRegistries.MATERIALS.streamCodec().encode(buf, preview.material());
         buf.writeVarInt(preview.recipes().length);
         for (var id : preview.recipes()) ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.encode(buf, id);
     }, buf -> {
         if (!buf.readBoolean()) return EMPTY_PREVIEW;
-        var material = GTCEuAPI.materialManager.streamCodec().decode(buf);
+        var material = GTRegistries.MATERIALS.streamCodec().decode(buf);
         var recipes = new ResourceLocation[buf.readVarInt()];
         for (int i = 0; i < recipes.length; i++) recipes[i] = ByteBufCodecExtends.RESOURCE_LOCATION_CODEC.decode(buf);
         return new PatternPreview(material, recipes);
@@ -214,13 +213,13 @@ final class WildcardMaterialGrid extends UIElement {
         addSyncValue(SyncValue.of(machine::getScannedMaterials, MATERIALS, new ArrayList<>(0)).onChanged(this::collectEntries));
         disabled = addSyncValue(SyncValue.of(this::disabledFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
         matches = addSyncValue(SyncValue.of(this::matchingFlags, BITSET, new BitSet()).onChanged(value -> refilter()));
-        toggle = addRPC(GTCEuAPI.materialManager.streamCodec(), (player, material) -> machine.toggleMaterial(material))
+        toggle = addRPC(GTRegistries.MATERIALS.streamCodec(), (player, material) -> machine.toggleMaterial(material))
                 .validate(Objects::nonNull);
         selectPage = addRPC(StreamCodec.composite(
-                UICodecs.list(GTCEuAPI.materialManager.streamCodec(), GTCEuAPI.materialManager.getRegisteredMaterials().size()), PageSelection::materials,
+                UICodecs.list(GTRegistries.MATERIALS.streamCodec(), GTRegistries.MATERIALS.values().size()), PageSelection::materials,
                 ByteBufCodecs.BOOL, PageSelection::disabled, PageSelection::new),
                 (player, selection) -> machine.setMaterialsDisabled(selection.materials(), selection.disabled()));
-        requestPreview = addRPC(GTCEuAPI.materialManager.streamCodec(), (player, material) -> previewMaterial = material)
+        requestPreview = addRPC(GTRegistries.MATERIALS.streamCodec(), (player, material) -> previewMaterial = material)
                 .validate(Objects::nonNull)
                 .onRejected(() -> lastPreviewRequest = null);
         addSyncValue(SyncValue.of(this::currentPreview, PREVIEW, EMPTY_PREVIEW).onChanged(this::receivePreview));
@@ -277,7 +276,7 @@ final class WildcardMaterialGrid extends UIElement {
         var field = TextField.of(LayoutStyle.AUTO, () -> grid.search, text -> {
             grid.search = text;
             grid.refilter();
-        }).bindClientPlaceholder(() -> Component.translatable(SEARCH));
+        }).bindClientPlaceholder(() -> SEARCH);
         field.layout(l -> l.flex(1));
         field.tooltips(SEARCH);
         field.getInput().setMaxStringLength(64);
@@ -295,7 +294,7 @@ final class WildcardMaterialGrid extends UIElement {
                     if (selectAll) Collections.addAll(grid.materialTypes, BASE_TYPES);
                     grid.refilter();
                 }));
-        checklist.addScrollViewChild(TextLine.translatable(LayoutStyle.AUTO, MATERIAL_STATE));
+        checklist.addScrollViewChild(TextLine.constant(LayoutStyle.AUTO, MATERIAL_STATE));
         checklist.addScrollViewChild(new FilterOption(Component.translatable(ENABLED_ONLY), () -> grid.showEnabled, () -> {
             grid.showEnabled = !grid.showEnabled;
             grid.refilter();
@@ -304,7 +303,7 @@ final class WildcardMaterialGrid extends UIElement {
             grid.showDisabled = !grid.showDisabled;
             grid.refilter();
         }));
-        checklist.addScrollViewChild(TextLine.translatable(LayoutStyle.AUTO, MATERIAL_TYPE));
+        checklist.addScrollViewChild(TextLine.constant(LayoutStyle.AUTO, MATERIAL_TYPE));
         for (var type : BASE_TYPES) {
             checklist.addScrollViewChild(new FilterOption(Component.translatable("gtocore.material.base_type.name." + type.name()),
                     () -> grid.materialTypes.contains(type), () -> {
@@ -517,16 +516,19 @@ final class WildcardMaterialGrid extends UIElement {
         return true;
     }
 
-    private static @NotNull Material materialOf(@Nullable AEKey key) {
+    private static @Nullable Material materialOf(@Nullable AEKey key) {
         return switch (key) {
-            case AEItemKey item -> ChemicalHelper.getMaterialStack(item.getReadOnlyStack()).material();
+            case AEItemKey item -> {
+                var stack = ChemicalHelper.getMaterialStack(item.getReadOnlyStack());
+                yield stack.isEmpty() ? null : stack.material();
+            }
             case AEFluidKey fluid -> ChemicalHelper.getMaterial(fluid.getFluid());
-            case null, default -> GTMaterials.NULL;
+            case null, default -> null;
         };
     }
 
     private static boolean isSearchKey(AEKey key) {
-        return key instanceof AEItemKey item && item.getItem() instanceof MetaMachineItem || materialOf(key) != GTMaterials.NULL;
+        return key instanceof AEItemKey item && item.getItem() instanceof MetaMachineItem || materialOf(key) != null;
     }
 
     private static final class Entry {

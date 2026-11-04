@@ -135,6 +135,20 @@ public final class WelcomeGroup {
                 .build());
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                .texture(new StackTexture(NUMBER_PUZZLE.asStack()))
+                .unlockCondition(UNLOCK_BASE)
+                .inputCurrency(TECH_OPERATOR_COIN, 25)
+                .outputItem(NUMBER_PUZZLE.asStack())
+                .build());
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                .texture(new StackTexture(SUDOKU.asStack()))
+                .unlockCondition(UNLOCK_BASE)
+                .inputCurrency(TECH_OPERATOR_COIN, 25)
+                .outputItem(SUDOKU.asStack())
+                .build());
+
+        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
                 .texture(new StackTexture(MINESWEEPER_CORE.asStack()))
                 .unlockCondition(UNLOCK_BASE)
                 .inputCurrency(TECH_OPERATOR_COIN, 25)

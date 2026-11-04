@@ -17,9 +17,10 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.machine.steam.SteamLiquidBoilerMachine;
 import com.gregtechceu.gtceu.common.machine.steam.SteamSolidBoilerMachine;
+import com.gregtechceu.gtceu.utils.FormattingUtil;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluid;
@@ -168,12 +169,9 @@ public final class RecipeTypeModify {
             }
         });
 
-        LARGE_BOILER_RECIPES.addDataInfo(data -> {
+        LARGE_BOILER_RECIPES.addDataProperty(Component.translatable("gtceu.recipe.info.temperature"), data -> {
             int temperature = data.data.getInt(GTORecipeDataKeys.TEMPERATURE);
-            if (temperature > 0) {
-                return I18n.get("gtceu.multiblock.hpca.temperature", temperature);
-            }
-            return "";
+            return temperature > 0 ? Component.literal(FormattingUtil.formatNumbers(temperature)) : null;
         });
 
         GTRecipeTypes.FORMING_PRESS_RECIPES.getCustomRecipeLogicRunners().clear();

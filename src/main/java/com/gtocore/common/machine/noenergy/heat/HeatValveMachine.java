@@ -22,6 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +46,11 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
     public HeatValveMachine(MetaMachineBlockEntity holder) {
         super(holder, LV, (t) -> 0);
         heatContainer = new ValveHeatContainer();
+    }
+
+    @Override
+    public boolean isRecipeLogicAvailable() {
+        return false;
     }
 
     @Override
@@ -227,6 +233,11 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
         @Override
         public int getSignal() {
             return 0;
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return getBlockState().getBlock().getName();
         }
     }
 }

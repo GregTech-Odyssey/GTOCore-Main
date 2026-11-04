@@ -1,4 +1,9 @@
 pluginManagement {
+    // 在插件与项目依赖解析前启用刷新，不能等到任务执行阶段再设置。
+    if (gradle.startParameter.taskNames.any { it.substringAfterLast(':').equals("refreshDependencies", ignoreCase = true) }) {
+        gradle.startParameter.isRefreshDependencies = true
+    }
+
     repositories {
         mavenLocal()
         gradlePluginPortal()
@@ -17,7 +22,7 @@ dependencyResolutionManagement {
             version("jetbrains-annotations", "26.0.2")
             version("kotlin", "2.3.20")
             version("kotlin-plugin", "2.3.20")
-            version("gtopublishgradleplugin", "1.0.27")
+            version("gtopublishgradleplugin", "1.0.29")
 
             plugin("modDevGradleLegacy", "net.neoforged.moddev.legacyforge").versionRef("modDevGradleLegacy")
             plugin("lombok", "io.freefair.lombok").versionRef("lombok")

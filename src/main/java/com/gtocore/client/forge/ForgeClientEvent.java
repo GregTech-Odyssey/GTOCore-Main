@@ -1,11 +1,12 @@
 package com.gtocore.client.forge;
 
 import com.gtocore.api.research.TeamResearchSavedData;
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.ClientCache;
 import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
-import com.gtocore.client.KeyBind;
+import com.gtocore.client.GTOKeyBind;
 import com.gtocore.client.MaterialTypeTooltips;
 import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
@@ -16,8 +17,8 @@ import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.client.renderer.fx.FXManager;
 import com.gtocore.client.screen.GTOTitleScreen;
 import com.gtocore.client.screen.starmap.rocket.RocketMapScreen;
-import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.translation.GTOItemTooltips;
+import com.gtocore.common.item.ICoordinateHolder;
 import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
@@ -38,12 +39,12 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.item.SuperStorageItem;
+import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -54,6 +55,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
@@ -75,8 +77,10 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
+import appeng.api.stacks.AEItemKey;
+
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
-import com.hepdd.gtmthings.data.CustomItems;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import earth.terrarium.adastra.client.screens.PlanetsScreen;
@@ -85,7 +89,6 @@ import org.lwjgl.glfw.GLFW;
 import snownee.jade.util.Color;
 
 import java.util.List;
-import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public final class ForgeClientEvent {
@@ -154,12 +157,9 @@ public final class ForgeClientEvent {
             }
         }
         Item item = stack.getItem();
-        if (item instanceof SuperStorageItem) {
-            event.getToolTip().add(Tips.feature(Component.translatable("gtocore.super_storage.upgrade.tip")));
-        }
-        var materialEntry = ChemicalHelper.getMaterialEntry(item);
-        if (!materialEntry.isEmpty()) {
-            event.getToolTip().add(MaterialTypeTooltips.of(materialEntry.material()));
+        // 材料基础类型只标注材料形态物品：工具与管道等方块物品不代表材料本身。
+        if (item instanceof ITagPrefixItem materialItem && materialItem.getMaterial() != null) {
+            event.getToolTip().add(MaterialTypeTooltips.of(materialItem.getMaterial()));
         }
         var tips = ((IItem) item).gtolib$getTips();
         if (tips != null) event.getToolTip().addAll(1, tips.get());
@@ -171,6 +171,10 @@ public final class ForgeClientEvent {
         } else {
             List<Component> tooltips = Tooltips.TOOL_TIPS_KEY_MAP.get(item);
             if (tooltips != null) event.getToolTip().addAll(tooltips);
+        }
+        var key = AEItemKey.of(stack);
+        if (key != null && !TeamResearchSavedData.getOrCreateContext(player).hasScanned(key) && DataScanningManager.canScanUnscanned(key)) {
+            event.getToolTip().add(Component.translatable("gtocore.research.scanning_selection_tab.unscanned").withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         if (HiddenItems.isItemDeprecated(item)) {
             event.getToolTip().addAll(GTOItemTooltips.DeprecatedItemTooltips.get());
@@ -235,10 +239,12 @@ public final class ForgeClientEvent {
                             RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, pos, pos);
                         }
                     }
-                } else if (Highlighting.HIGHLIGHTING_ITEM.contains(item)) {
-                    var tag = itemStack.getTag();
-                    BlockPos blockPos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
-                    RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, blockPos, blockPos);
+                } else {
+                    GlobalPos targetPos = ICoordinateHolder.getGlobalPos(itemStack);
+                    if (targetPos != null && targetPos.dimension() == level.dimension()) {
+                        BlockPos blockPos = targetPos.pos();
+                        RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, blockPos, blockPos);
+                    }
                 }
             }
             CUstomHighlightNeeds.object2IntEntrySet().fastForEach(
@@ -347,16 +353,6 @@ public final class ForgeClientEvent {
         CUstomHighlightNeeds.object2IntEntrySet().removeIf(entry -> entry.getKey().start.equals(start) && entry.getKey().end.equals(end));
     }
 
-    private static class Highlighting {
-
-        private static final Set<Item> HIGHLIGHTING_ITEM = Set.of(
-                CustomItems.WIRELESS_ITEM_TRANSFER_COVER.asItem(),
-                CustomItems.WIRELESS_FLUID_TRANSFER_COVER.asItem(),
-                CustomItems.ADVANCED_WIRELESS_ITEM_TRANSFER_COVER.asItem(),
-                CustomItems.ADVANCED_WIRELESS_FLUID_TRANSFER_COVER.asItem(),
-                GTOItems.COORDINATE_CARD.asItem());
-    }
-
     public record HighlightNeed(BlockPos start, BlockPos end, int color) {}
 
     private static void updateHudScreen(Minecraft mc) {
@@ -374,7 +370,7 @@ public final class ForgeClientEvent {
     }
 
     private static boolean isMovableHudTogglePhysicallyDown(Minecraft mc) {
-        var key = KeyBind.movableHudToggle.getKey();
+        var key = GTOKeyBind.movableHudToggle.getKey();
         long window = mc.getWindow().getWindow();
         if (key == InputConstants.UNKNOWN) {
             return false;
@@ -382,7 +378,7 @@ public final class ForgeClientEvent {
         return switch (key.getType()) {
             case KEYSYM -> InputConstants.isKeyDown(window, key.getValue());
             case MOUSE -> GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
-            case SCANCODE -> KeyBind.movableHudToggle.isDown();
+            case SCANCODE -> GTOKeyBind.movableHudToggle.isDown();
         };
     }
 }

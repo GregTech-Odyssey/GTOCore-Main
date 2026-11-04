@@ -15,6 +15,8 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.item.tool.GTToolType;
+import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidContainerIngredient;
 import com.gregtechceu.gtceu.common.data.*;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
@@ -535,7 +537,7 @@ final class Vanilla {
                 "CDC",
                 "EFE",
                 'A', GTItems.ROBOT_ARM_HV.asItem(), 'B', GTItems.EMITTER_HV.asItem(), 'C', new ItemStack(Blocks.REDSTONE_TORCH.asItem()), 'D', AEBlocks.MOLECULAR_ASSEMBLER.asItem(), 'E', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Steel), 'F', new MaterialEntry(TagPrefix.block, GTMaterials.Steel));
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("flint_axe"), RegistriesUtils.getItemStack("gtceu:flint_axe", 1, "{DisallowContainerItem:0b,GT.Behaviours:{DisableShields:1b},GT.Tool:{AttackDamage:6.0f,AttackSpeed:-3.2f,Damage:0,HarvestLevel:2,MaxDamage:64,ToolSpeed:3.5f},HideFlags:2}"),
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("flint_axe"), ToolHelper.get(GTToolType.AXE, GTMaterials.Flint),
                 "AA",
                 "BC",
                 'A', new MaterialEntry(TagPrefix.gem, GTMaterials.Flint), 'B', GTOItems.PLANT_FIBER.asItem(), 'C', new MaterialEntry(TagPrefix.rod, GTMaterials.Wood));

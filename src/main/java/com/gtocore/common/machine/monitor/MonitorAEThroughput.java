@@ -10,6 +10,10 @@ import com.gtolib.api.wireless.energy.EnergyStats;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.PowerSubstationMachine;
+import com.gregtechceu.gtceu.uipro.Horizontal;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -21,12 +25,11 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AmountFormat;
 
-import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
+
+import com.google.common.collect.ImmutableList;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,10 +70,6 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
         super(holder);
         aeItem.addChangedListener(() -> onFilterChanged(0));
         aeFluid.addChangedListener(() -> onFilterChanged(1));
-    }
-
-    public MonitorAEThroughput(Object o) {
-        this((MetaMachineBlockEntity) o);
     }
 
     @Override
@@ -243,15 +242,23 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
 
     @Override
     public Widget createUIWidget() {
-        var superWidget = super.createUIWidget();
-        var itemWidget = new AEItemConfigWidget(50, 186, aeItem);
-        var fluidWidget = new AEFluidConfigWidget(132, 186, aeFluid);
-        var panel = new ComponentPanelWidget(
-                96 + fluidWidget.getSizeWidth(), 171,
-                List.of(Component.translatable("gtocore.machine.monitor.ae.set_filter").withStyle(ChatFormatting.BLACK)))
-                .setCenter(true)
-                .setClientSideWidget();
-        return (new WidgetGroup(0, 0, 200, 216)).addWidget(superWidget).addWidget(itemWidget).addWidget(fluidWidget).addWidget(panel);
+        var itemWidget = new AEItemConfigWidget(0, 0, aeItem);
+        var fluidWidget = new AEFluidConfigWidget(0, 0, aeFluid);
+
+        var filterRow = UIElement.centeredRow(36)
+                .layout(l -> l.gapAll(UISizes.GAP))
+                .addChildren(itemWidget, fluidWidget);
+
+        var filterSection = UIElement.column(UISizes.CONTENT_WIDTH)
+                .layout(l -> l.gapAll(UISizes.GAP))
+                .addChildren(
+                        Form.fieldLabel(Component.translatable("gtocore.machine.monitor.ae.set_filter")).setTextAlign(Horizontal.CENTER),
+                        filterRow);
+
+        return Form.page().addChildren(
+                UIElement.centeredRow(108).addChild(new UIElement().layout(l -> l.size(168, 108)).addChild(createDisplayComponentGroup())),
+                filterSection,
+                createPriorityRow());
     }
 
     private void onFilterChanged(int slot) {

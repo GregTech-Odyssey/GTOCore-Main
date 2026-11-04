@@ -10,8 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import com.google.common.collect.ImmutableList;
 import com.gto.datasynclib.util.holder.IntObjectHolder;
+
+import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

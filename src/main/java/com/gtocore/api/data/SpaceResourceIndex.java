@@ -85,7 +85,7 @@ public final class SpaceResourceIndex {
             Item item = output.getItem();
             var materialEntry = ChemicalHelper.getMaterialEntry(item);
             // 只有真正的矿石方块才按材料登记，其余产物（如天空石、远古残骸）只认物品本身
-            if (TagPrefix.ORES.containsKey(materialEntry.tagPrefix())) {
+            if (materialEntry != null && TagPrefix.ORES.containsKey(materialEntry.tagPrefix())) {
                 add(BY_MATERIAL, materialEntry.material(), entry);
             } else {
                 add(BY_ITEM, item, entry);
@@ -125,7 +125,7 @@ public final class SpaceResourceIndex {
      */
     public static @Nullable ObjectArrayList<Entry> getByMaterial(Item item) {
         var materialEntry = ChemicalHelper.getMaterialEntry(item);
-        if (materialEntry.isEmpty()) return null;
+        if (materialEntry == null) return null;
         TagPrefix prefix = materialEntry.tagPrefix();
         if (prefix != TagPrefix.rawOre && prefix != TagPrefix.dust && !TagPrefix.ORES.containsKey(prefix)) return null;
         return BY_MATERIAL.get(materialEntry.material());
@@ -133,7 +133,8 @@ public final class SpaceResourceIndex {
 
     /** 矿粉要靠粉碎原矿得到，提示里须写明是「其原矿」可采，而不是矿粉本身。 */
     public static boolean isSecondaryForm(Item item) {
-        return ChemicalHelper.getMaterialEntry(item).tagPrefix() == TagPrefix.dust;
+        var entry = ChemicalHelper.getMaterialEntry(item);
+        return entry != null && entry.tagPrefix() == TagPrefix.dust;
     }
 
     public static @Nullable ObjectArrayList<Entry> getByFluid(Fluid fluid) {

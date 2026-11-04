@@ -27,20 +27,22 @@ public final class WingOrganItem extends OrganItemBase {
     private final float maxFlySpeed;
     private final int voltage;
     private final int flightHours;
+    private final WingTrails.Style trail;
 
-    private WingOrganItem(Properties properties, float maxFlySpeed, int voltage, int flightHours) {
+    private WingOrganItem(Properties properties, float maxFlySpeed, int voltage, int flightHours, WingTrails.Style trail) {
         super(properties, OrganType.WING);
         this.maxFlySpeed = maxFlySpeed;
         this.voltage = voltage;
         this.flightHours = flightHours;
+        this.trail = trail;
     }
 
-    public static WingOrganItem durability(Properties properties, float maxFlySpeed) {
-        return new WingOrganItem(properties, maxFlySpeed, -1, 0);
+    public static WingOrganItem durability(Properties properties, float maxFlySpeed, WingTrails.Style trail) {
+        return new WingOrganItem(properties, maxFlySpeed, -1, 0, trail);
     }
 
-    public static WingOrganItem electric(Properties properties, float maxFlySpeed, int voltage, int flightHours) {
-        return new WingOrganItem(properties, maxFlySpeed, voltage, flightHours);
+    public static WingOrganItem electric(Properties properties, float maxFlySpeed, int voltage, int flightHours, WingTrails.Style trail) {
+        return new WingOrganItem(properties, maxFlySpeed, voltage, flightHours, trail);
     }
 
     public float getMaxFlySpeed() {
@@ -57,6 +59,18 @@ public final class WingOrganItem extends OrganItemBase {
 
     public int getFlightHours() {
         return flightHours;
+    }
+
+    public float remaining(ItemStack stack) {
+        if (isElectric()) {
+            var electricItem = GTCapabilityHelper.getElectricItem(stack);
+            return electricItem == null || electricItem.getMaxCharge() <= 0 ? 0 : (float) electricItem.getCharge() / electricItem.getMaxCharge();
+        }
+        return stack.getMaxDamage() <= 0 ? 1 : 1 - (float) stack.getDamageValue() / stack.getMaxDamage();
+    }
+
+    public WingTrails.Style getTrail() {
+        return trail;
     }
 
     public boolean fly(ItemStack stack, int slot, ServerPlayer player, PlayerData data) {

@@ -46,7 +46,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     private TickTimeMonitor meEnergyMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_ENERGY, this::tick);
 
     @RegisterLanguage(cn = "能量缓存", en = "Energy buffer")
-    private static final String LINE_ENERGY = "gtocore.machine.me_energy_access.line.energy";
+    private static final Component LINE_ENERGY = Component.translatable("gtocore.machine.me_energy_access.line.energy");
     @RegisterLanguage(cn = "未接入多方块", en = "Not attached to a multiblock")
     private static final String VALUE_NO_CONTROLLER = "gtocore.machine.me_energy_access.no_controller";
 

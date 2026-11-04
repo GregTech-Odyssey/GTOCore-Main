@@ -211,7 +211,7 @@ final class QuestItemSyntax {
     @Nullable
     private static Syntax fromMaterial(Item item) {
         var entry = ChemicalHelper.getMaterialEntry(item);
-        if (entry == null || entry.isEmpty()) return null;
+        if (entry == null) return null;
         var prefix = staticField(PREFIX_HOLDERS, TagPrefix.class, entry.tagPrefix());
         var material = staticField(MATERIAL_HOLDERS, Material.class, entry.material());
         if (prefix == null || material == null) return null;

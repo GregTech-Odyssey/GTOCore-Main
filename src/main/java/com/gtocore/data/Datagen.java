@@ -1,6 +1,7 @@
 package com.gtocore.data;
 
 import com.gtocore.data.blockstate.AdAstraCompatBlockStateProvider;
+import com.gtocore.data.curios.DroneCuriosDataProvider;
 import com.gtocore.data.lang.LangHandler;
 import com.gtocore.data.lootTables.AdAstraCompatLootTableProvider;
 import com.gtocore.data.tag.DamageTypeTagsProvider;
@@ -21,6 +22,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 
 import com.gto.registrate.providers.ProviderType;
+
 import com.hollingsworth.arsnouveau.common.datagen.BlockTagProvider;
 
 import java.util.Set;
@@ -46,6 +48,7 @@ public final class Datagen {
         DataGenerator generator = event.getGenerator();
         CompletableFuture<HolderLookup.Provider> future = event.getLookupProvider();
         if (event.includeServer()) {
+            generator.addProvider(true, new DroneCuriosDataProvider(generator.getPackOutput(), event.getExistingFileHelper(), future));
             var registries = generator.addProvider(true, new DatapackBuiltinEntriesProvider(generator.getPackOutput(), future, DAMAGE_TYPES_BUILDER, Set.of("minecraft", GTOCore.MOD_ID)));
             generator.addProvider(true, new DamageTypeTagsProvider(generator.getPackOutput(), registries.getRegistryProvider(), event.getExistingFileHelper()));
             generator.addProvider(true, new AdAstraCompatLootTableProvider(generator.getPackOutput()));

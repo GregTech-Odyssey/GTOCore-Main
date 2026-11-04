@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 
 import java.math.BigDecimal;
@@ -42,17 +43,17 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
     private static final double DURATION_STEP = 0.01;
 
     @RegisterLanguage(cn = "处理耗时倍率", en = "Duration Multiplier")
-    private static final String DURATION = "gtocore.machine.maintenance_hatch.duration_multiplier";
+    private static final Component DURATION = Component.translatable("gtocore.machine.maintenance_hatch.duration_multiplier");
     @RegisterLanguage(cn = "数值越低配方越快，自动维护不累积损坏程度", en = "Lower values mean faster recipes; automatic maintenance accumulates no damage")
-    private static final String DURATION_TOOLTIP = "gtocore.machine.maintenance_hatch.duration_multiplier.tooltip";
+    private static final Component DURATION_TOOLTIP = Component.translatable("gtocore.machine.maintenance_hatch.duration_multiplier.tooltip");
     @RegisterLanguage(cn = "洁净环境", en = "Cleanroom")
-    protected static final String READ_CLEANROOM = "gtocore.machine.maintenance_hatch.read.cleanroom";
+    protected static final Component READ_CLEANROOM = Component.translatable("gtocore.machine.maintenance_hatch.read.cleanroom");
     @RegisterLanguage(cn = "重力", en = "Gravity")
-    protected static final String READ_GRAVITY = "gtocore.machine.maintenance_hatch.read.gravity";
+    protected static final Component READ_GRAVITY = Component.translatable("gtocore.machine.maintenance_hatch.read.gravity");
     @RegisterLanguage(cn = "真空等级", en = "Vacuum Tier")
-    protected static final String READ_VACUUM = "gtocore.machine.maintenance_hatch.read.vacuum";
+    protected static final Component READ_VACUUM = Component.translatable("gtocore.machine.maintenance_hatch.read.vacuum");
     @RegisterLanguage(cn = "温度", en = "Temperature")
-    protected static final String READ_TEMPERATURE = "gtocore.machine.maintenance_hatch.read.temperature";
+    protected static final Component READ_TEMPERATURE = Component.translatable("gtocore.machine.maintenance_hatch.read.temperature");
 
     @SaveToDisk(defaultValue = "1.0")
     @SyncToClient
@@ -130,7 +131,7 @@ public class ACMHatchPartMachine extends WorkableTieredPartMachine implements IM
 
     protected void addMaintenanceControls(ControlPanel controls) {
         controls.addDecimal(DURATION, () -> durationMultiplier, value -> durationMultiplier = (float) value,
-                () -> GTORules.CONFIGURABLE_MAINTENANCE_MIN.get(), () -> GTORules.CONFIGURABLE_MAINTENANCE_MAX.get(), DURATION_STEP, DURATION_TOOLTIP);
+                GTORules.CONFIGURABLE_MAINTENANCE_MIN::get, GTORules.CONFIGURABLE_MAINTENANCE_MAX::get, DURATION_STEP, DURATION_TOOLTIP);
     }
 
     @Override

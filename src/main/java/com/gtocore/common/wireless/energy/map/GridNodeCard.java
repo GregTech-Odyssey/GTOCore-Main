@@ -13,8 +13,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 
-import net.minecraft.network.chat.Component;
-
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 
 /**
@@ -22,8 +20,6 @@ import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
  */
 public final class GridNodeCard {
 
-    private static final Component TOP_PORTS = Component.translatable(GridMapLang.TOP_PORTS);
-    private static final Component NO_PORTS = Component.translatable(GridMapLang.NO_PORTS);
     private static final int NOTE_WIDTH = UISizes.POPUP_CONTENT_WIDTH - 4 * UISizes.PANEL_PADDING;
 
     private GridNodeCard() {}
@@ -44,7 +40,7 @@ public final class GridNodeCard {
     }
 
     private static UIElement storage(GridCardData data) {
-        var bar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(GridMapLang.STORED), 0, data::progress).percent();
+        var bar = ProgressBar.of(LayoutStyle.AUTO, GridMapLang.STORED, 0, data::progress).percent();
         bar.bindClientColor(() -> GridSummaryPanel.barColor(bar));
         bar.bindDetail(data::storedDetail);
         var status = new StatusPanel(LayoutStyle.AUTO);
@@ -67,7 +63,7 @@ public final class GridNodeCard {
     }
 
     private static UIElement flow(GridCardData data) {
-        var title = TextLine.translatable(0, GridMapLang.FLOW).bindClientColor(UITheme::panelText);
+        var title = TextLine.constant(0, GridMapLang.FLOW).bindClientColor(UITheme::panelText);
         var titleRow = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(title.layout(l -> l.flex(1)), InfoIcon.info(GridMapLang.FLOW_INFO));
         var ctx = data.ctx;
         var status = new StatusPanel(LayoutStyle.AUTO);
@@ -88,7 +84,7 @@ public final class GridNodeCard {
     }
 
     private static UIElement ports(GridCardData data) {
-        var title = TextLine.of(LayoutStyle.AUTO, () -> data.hasPorts() ? TOP_PORTS : NO_PORTS).bindClientColor(UITheme::panelText);
+        var title = TextLine.of(LayoutStyle.AUTO, () -> data.hasPorts() ? GridMapLang.TOP_PORTS : GridMapLang.NO_PORTS).bindClientColor(UITheme::panelText);
         var list = ServerList.of(ByteBufCodecs.VAR_INT, () -> data.detail().portKeys(), key -> new GridPortRow(data, key))
                 .version(() -> data.detail().revision());
         var section = UIElement.section().addChildren(title, list);

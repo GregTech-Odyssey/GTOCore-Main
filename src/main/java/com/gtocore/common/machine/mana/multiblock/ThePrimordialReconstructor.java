@@ -33,6 +33,7 @@ import com.gto.datasynclib.util.holder.LongHolder;
 import com.gto.datasynclib.util.holder.ObjHolder;
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 import com.gto.registrate.util.entry.ItemEntry;
+
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
 import dev.shadowsoffire.apotheosis.adventure.affix.Affix;
 import dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper;
@@ -132,7 +133,7 @@ public class ThePrimordialReconstructor extends ManaMultiblockMachine implements
                 if (disassembleEquipment(stack, inputsItems, outputsItems, budget)) {
                     inputsItems.add(stack);
                 }
-            } else if (circuit == 4 && stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("Damage")) {
+            } else if (circuit == 4 && stack.isDamaged()) {
                 inputsItems.add(Keys.toStack((AEItemKey) key, amount));
             }
             if (circuit == 2 || circuit == 4)

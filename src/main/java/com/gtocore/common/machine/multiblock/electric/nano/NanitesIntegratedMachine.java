@@ -30,6 +30,7 @@ import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,7 @@ import java.util.Map;
 public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMachine implements IStorageMultiblock {
 
     @RegisterLanguage(cn = "损失概率", en = "Consumption Chance")
-    static final String CONSUME_CHANCE = "gtocore.machine.nanites_integrated_processing_center.consume_chance";
+    static final Component CONSUME_CHANCE = Component.translatable("gtocore.machine.nanites_integrated_processing_center.consume_chance");
 
     private static final Int2ObjectOpenHashMap<MachineDefinition> MODULE_MAP = new Int2ObjectOpenHashMap<>();
 
@@ -82,7 +83,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         super(holder, false, true, false, true, MachineUtils::getHatchParallel);
         machineStorage = createMachineStorage(i -> {
             MaterialEntry entry = ChemicalHelper.getMaterialEntry(i.getItem());
-            return entry.tagPrefix() == GTOTagPrefix.NANITES && MATERIAL_MAP.containsKey(entry.material());
+            return entry != null && entry.tagPrefix() == GTOTagPrefix.NANITES && MATERIAL_MAP.containsKey(entry.material());
         });
     }
 
@@ -92,7 +93,9 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
         if (isEmpty()) {
             return;
         }
-        Material material = ChemicalHelper.getMaterialEntry(getStorageStack().getItem()).material();
+        var entry = ChemicalHelper.getMaterialEntry(getStorageStack().getItem());
+        if (entry == null) return;
+        Material material = entry.material();
         if (!MATERIAL_TIER_MAP.containsKey(material) || MATERIAL_TIER_MAP.get(material) > getTier()) return;
         chance = Math.min(100, (int) (getStorageStack().getCount() * MATERIAL_MAP.get(material)));
     }
@@ -156,7 +159,7 @@ public final class NanitesIntegratedMachine extends CoilCrossRecipeMultiblockMac
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_NANITES;
     }
 }

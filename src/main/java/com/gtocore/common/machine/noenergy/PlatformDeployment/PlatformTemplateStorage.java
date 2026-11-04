@@ -23,6 +23,7 @@ public final class PlatformTemplateStorage {
     static final List<PlatformPreset> preset = new ArrayList<>();
 
     private static final String platform = add("平台", "platform");
+    private static final String platform_2_2 = add("平台(2*2)", "platform(2*2)");
     private static final String platform_3_3 = add("平台(3*3)", "platform(3*3)");
     private static final String platform_large = add("平台(大)", "platform(large)");
     private static final String road = add("道路", "road");
@@ -345,6 +346,94 @@ public final class PlatformTemplateStorage {
                                     .symbolMap(GTOCore.id(in("long_corridor_factory_building.json")))
                                     .materials(0, 800)
                                     .materials(1, 800)
+                                    .build())
+                            .build());
+        }
+        // 暗色粉纹平台系列（玩家 shelwind 投稿）
+        {
+            presets.add(
+                    PlatformPreset.preset("shelwind_dark_pink_pattern_platforms")
+                            .displayName(add("暗色粉纹平台系列", "Dark pink pattern platforms"))
+                            .description(add("玩家 shelwind 投稿，暗色粉纹地砖风格的平台，可按区块无缝拼接", "Submitted by player shelwind, dark pink pattern platforms tileable per chunk"))
+                            .addStructure(structure("dark_pink_pattern_small_platform")
+                                    .type(platform)
+                                    .displayName(add("暗色粉纹小平台", "Dark pink pattern small platform"))
+                                    .description(add("80×80，5×5 区块", "80x80 blocks in 5x5 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_small_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_small_platform.json")))
+                                    .materials(0, 3600)
+                                    .build())
+                            .addStructure(structure("dark_pink_pattern_3x3_small_platform")
+                                    .type(platform_3_3)
+                                    .displayName(add("暗色粉纹3x3小平台", "Dark pink pattern 3x3 small platform"))
+                                    .description(add("208×208，13×13 区块", "208x208 blocks in 13x13 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform.json")))
+                                    .materials(0, 24336)
+                                    .build())
+                            .addStructure(structure("dark_pink_pattern_3x3_small_platform_framed")
+                                    .type(platform_3_3)
+                                    .displayName(add("暗色粉纹3x3小平台（含边框）", "Dark pink pattern 3x3 small platform framed"))
+                                    .description(add("208×208，13×13 区块，四周带边框", "208x208 blocks in 13x13 chunks with frame"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform_framed")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_3x3_small_platform_framed.json")))
+                                    .materials(0, 24336)
+                                    .build())
+                            .addStructure(structure("dark_pink_pattern_large_platform")
+                                    .type(platform_large)
+                                    .displayName(add("暗色粉纹大平台", "Dark pink pattern large platform"))
+                                    .description(add("208×208，13×13 区块", "208x208 blocks in 13x13 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_pink_pattern_large_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_pink_pattern_large_platform.json")))
+                                    .materials(0, 24336)
+                                    .build())
+                            .build());
+        }
+        // 暗色锯齿棋盘平台系列（玩家 shelwind 投稿）
+        {
+            presets.add(
+                    PlatformPreset.preset("shelwind_dark_zigzag_chessboard_platforms")
+                            .displayName(add("暗色锯齿棋盘平台系列", "Dark zigzag chessboard platforms"))
+                            .description(add("玩家 shelwind 投稿，暗色锯齿棋盘地砖风格的平台，可按区块无缝拼接", "Submitted by player shelwind, dark zigzag chessboard platforms tileable per chunk"))
+                            .addStructure(structure("dark_zigzag_chessboard_small_platform")
+                                    .type(platform)
+                                    .displayName(add("暗色锯齿棋盘小平台", "Dark zigzag chessboard small platform"))
+                                    .description(add("64×64，4×4 区块", "64x64 blocks in 4x4 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_zigzag_chessboard_small_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_zigzag_chessboard_small_platform.json")))
+                                    .materials(0, 2304)
+                                    .build())
+                            .addStructure(structure("dark_zigzag_chessboard_large_platform")
+                                    .type(platform_large)
+                                    .displayName(add("暗色锯齿棋盘大平台", "Dark zigzag chessboard large platform"))
+                                    .description(add("96×96，6×6 区块", "96x96 blocks in 6x6 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_zigzag_chessboard_large_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_zigzag_chessboard_large_platform.json")))
+                                    .materials(0, 5184)
+                                    .build())
+                            .addStructure(structure("dark_zigzag_chessboard_2x2_large_platform")
+                                    .type(platform_2_2)
+                                    .displayName(add("暗色锯齿棋盘2x2大平台", "Dark zigzag chessboard 2x2 large platform"))
+                                    .description(add("192×192，12×12 区块", "192x192 blocks in 12x12 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_zigzag_chessboard_2x2_large_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_zigzag_chessboard_2x2_large_platform.json")))
+                                    .materials(0, 20736)
+                                    .build())
+                            .addStructure(structure("dark_zigzag_chessboard_3x3_small_platform")
+                                    .type(platform_3_3)
+                                    .displayName(add("暗色锯齿棋盘3x3小平台", "Dark zigzag chessboard 3x3 small platform"))
+                                    .description(add("192×192，12×12 区块", "192x192 blocks in 12x12 chunks"))
+                                    .source("shelwind")
+                                    .resource(GTOCore.id(in("shelwind/dark_zigzag_chessboard_3x3_small_platform")))
+                                    .symbolMap(GTOCore.id(in("shelwind/dark_zigzag_chessboard_3x3_small_platform.json")))
+                                    .materials(0, 20736)
                                     .build())
                             .build());
         }

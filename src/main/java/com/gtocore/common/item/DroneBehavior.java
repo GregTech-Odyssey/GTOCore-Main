@@ -1,13 +1,17 @@
 package com.gtocore.common.item;
 
 import com.gtolib.api.machine.impl.DroneControlCenterMachine;
+import com.gtolib.drone.DroneServer;
+import com.gtolib.drone.DroneText;
 
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.ElectricStats;
 import com.gregtechceu.gtceu.api.item.component.IItemComponent;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -44,7 +48,10 @@ public final class DroneBehavior extends ElectricStats {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Item item, Level level, Player player, InteractionHand usedHand) {
-        return InteractionResultHolder.pass(player.getItemInHand(usedHand));
+        ItemStack stack = player.getItemInHand(usedHand);
+        if (level.isClientSide) return InteractionResultHolder.success(stack);
+        return player instanceof ServerPlayer serverPlayer && DroneServer.toggle(serverPlayer, stack, usedHand) ?
+                InteractionResultHolder.consume(stack) : InteractionResultHolder.fail(stack);
     }
 
     @Override
@@ -53,6 +60,8 @@ public final class DroneBehavior extends ElectricStats {
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         super.appendTooltips(stack, level, tooltipComponents, isAdvanced);
+        tooltipComponents.add(Component.translatable(DroneText.TOOLTIP).withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Component.translatable(DroneText.TOOLTIP1).withStyle(ChatFormatting.GOLD));
         tooltipComponents.add(Tips.stat(Component.translatable("gui.ae2.WirelessRange", range)));
         if (stack.getOrCreateTag().getInt("work") > 0) {
             tooltipComponents.add(Tips.stat(Component.translatable("gtceu.multiblock.large_miner.working")));

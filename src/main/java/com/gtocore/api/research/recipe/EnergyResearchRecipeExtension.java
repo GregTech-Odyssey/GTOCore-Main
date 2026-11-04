@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 
 import com.gto.recipesearch.IntLongMap;
+
 import org.jetbrains.annotations.NotNull;
 
 public final class EnergyResearchRecipeExtension extends RecipeExtension<Void> {

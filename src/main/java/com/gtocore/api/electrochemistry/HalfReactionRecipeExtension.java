@@ -52,7 +52,7 @@ public final class HalfReactionRecipeExtension extends RecipeExtension<HalfReact
                 info.panelSlot(() -> new IonSlot(ion, IO.OUT));
             }
         }
-        info.sentence(Component.translatable("gtocore.recipe.half_reaction.charge", reaction.charge()));
-        info.sentence(Component.translatable("gtocore.recipe.half_reaction.electrolyte_type", Component.translatable(reaction.electrolyteType().translationKey())));
+        info.line(Component.translatable("gtocore.recipe.info.charge"), () -> Component.literal(String.valueOf(reaction.charge())));
+        info.line(Component.translatable("gtocore.recipe.info.electrolyte"), () -> Component.translatable(reaction.electrolyteType().translationKey()));
     }
 }

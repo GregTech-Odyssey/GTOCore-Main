@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.DataComponentKey;
+
 import earth.terrarium.adastra.api.planets.PlanetApi;
 
 public record CelestialHandler(long maxCapacity) {

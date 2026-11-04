@@ -1,10 +1,10 @@
 package com.gtocore.data.recipe.gtm.chemistry;
 
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
@@ -537,8 +537,8 @@ final class ReactorRecipes {
 
         // Dyes
         for (int i = 0; i < GTMaterials.CHEMICAL_DYES.length; i++) {
-            CHEMICAL_RECIPES.recipeBuilder("chemical_dye_" + MarkerMaterials.Color.VALUES[i].getName())
-                    .inputItems(dye, MarkerMaterials.Color.VALUES[i])
+            CHEMICAL_RECIPES.recipeBuilder("chemical_dye_" + DyeColor.values()[i].getName())
+                    .inputItems(DyeColor.values()[i].getTag())
                     .inputItems(dust, Bentonite, 2)
                     .inputFluids(SulfuricAcid, 250)
                     .outputFluids(GTMaterials.CHEMICAL_DYES[i], 288)

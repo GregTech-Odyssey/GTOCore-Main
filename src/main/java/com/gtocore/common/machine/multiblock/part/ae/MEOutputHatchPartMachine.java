@@ -19,6 +19,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IGridNodeListener;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
@@ -101,6 +102,6 @@ public class MEOutputHatchPartMachine extends StatusTrackedMEPartMachine {
 
     /** 页面："等待输出"网格（每行 9 格，只读）。 */
     private UIElement buildPage() {
-        return Form.page().addChild(MEPartUI.waitingList("me.output_hatch.waiting", this.internalBuffer, true, null));
+        return Form.page().addChild(MEPartUI.waitingList("me.output_hatch.waiting", this.internalBuffer, true));
     }
 }

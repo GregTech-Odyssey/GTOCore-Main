@@ -17,11 +17,13 @@ import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.network.chat.Component;
 
 import appeng.api.config.Actionable;
 import appeng.api.networking.IGridNodeListener;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
@@ -33,9 +35,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class MEDualOutputPartMachine extends StatusTrackedMEPartMachine {
 
     @RegisterLanguage(cn = "等待送入网络的物品", en = "Items waiting for the network")
-    private static final String WAITING_ITEMS = "gtocore.machine.me_dual_output.waiting_items";
+    private static final Component WAITING_ITEMS = Component.translatable("gtocore.machine.me_dual_output.waiting_items");
     @RegisterLanguage(cn = "等待送入网络的流体", en = "Fluids waiting for the network")
-    private static final String WAITING_FLUIDS = "gtocore.machine.me_dual_output.waiting_fluids";
+    private static final Component WAITING_FLUIDS = Component.translatable("gtocore.machine.me_dual_output.waiting_fluids");
 
     @SaveToDisk
     private final KeyStorage internalBuffer;

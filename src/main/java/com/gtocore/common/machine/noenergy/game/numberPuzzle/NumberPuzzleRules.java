@@ -3,8 +3,8 @@ package com.gtocore.common.machine.noenergy.game.numberPuzzle;
 import net.minecraft.util.RandomSource;
 
 /**
- * 数字华容道规则：n×n 盘面，数字 1..n²-1 加一个空格，目标按行排好、空格在右下。
- * 生成用 Fisher-Yates 随机排列，再按轮换奇偶性修正；判定与移动都是 O(n²) 以内的本地操作。
+ * 数字华容道规则：n×n 盘面，数字 1..n²-1 加一个空格，目标为按序排好、空格在右下。
+ * 生成用 Fisher-Yates 洗牌，再按排列奇偶性修正；判定与移动都在 O(n²) 以内。
  */
 public final class NumberPuzzleRules {
 
@@ -13,7 +13,7 @@ public final class NumberPuzzleRules {
     public static final int SIZE_COUNT = MAX_SIZE - MIN_SIZE + 1;
     public static final int CELL_CAPACITY = MAX_SIZE * MAX_SIZE;
 
-    /** 六档尺寸与通关奖励。 */
+    /** 六档尺寸与通关奖励（游戏币）。 */
     public enum Difficulty {
 
         THREE(MIN_SIZE, 1),
@@ -112,7 +112,7 @@ public final class NumberPuzzleRules {
         return (tiles.length - cycles) & 1;
     }
 
-    /** 传统奇偶判据，供生成测试与外部校验使用。 */
+    /** 奇偶判据校验盘面是否可解：奇数阶要求排列为偶，偶数阶还要看空格所在行。 */
     public static boolean isSolvable(int[] board, int size) {
         int blank = findBlank(board, size);
         if (blank < 0) return false;
@@ -127,7 +127,7 @@ public final class NumberPuzzleRules {
         return (size & 1) == 1 ? parity == 0 : parity != (blankRow & 1);
     }
 
-    /** 把所有方块按 1..n²-1、空格右下的顺序排好。 */
+    /** 是否已排好：前 n²-1 格为 1..n²-1，最后一格是空格。 */
     public static boolean isSolved(int[] board, int size) {
         int cellCount = size * size;
         for (int index = 0; index < cellCount - 1; index++) {
@@ -136,7 +136,7 @@ public final class NumberPuzzleRules {
         return board[cellCount - 1] == 0;
     }
 
-    /** 找到空格；没有则返回 -1。 */
+    /** 找到空格下标；没有则返回 -1。 */
     public static int findBlank(int[] board, int size) {
         int cellCount = size * size;
         for (int index = 0; index < cellCount; index++) {
@@ -145,7 +145,7 @@ public final class NumberPuzzleRules {
         return -1;
     }
 
-    /** 把与空格上下左右相邻的格子滑进空格；返回新的空格下标，非法移动返回 -1。 */
+    /** 把与空格四向相邻的格子滑进空格；返回新的空格下标，非法移动返回 -1。 */
     public static int move(int[] board, int size, int blank, int clicked) {
         int cellCount = size * size;
         if (blank < 0 || blank >= cellCount || clicked < 0 || clicked >= cellCount) return -1;
@@ -159,7 +159,7 @@ public final class NumberPuzzleRules {
         return clicked;
     }
 
-    /** 盘面是否是合法的 0..n²-1 排列。 */
+    /** 前 size² 格是否恰为 0..n²-1 的一个排列；长度不足也算非法。 */
     public static boolean isValid(int[] board, int size) {
         int cellCount = size * size;
         if (board.length < cellCount) return false;

@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.Direction;
@@ -21,6 +22,8 @@ import earth.terrarium.adastra.api.systems.OxygenApi;
 
 public final class VacuumCondition extends RecipeCondition {
 
+    private static final Component LABEL = Component.translatable("gtocore.recipe.info.vacuum");
+
     private final int tier;
 
     public VacuumCondition(int tier) {
@@ -30,6 +33,11 @@ public final class VacuumCondition extends RecipeCondition {
     @Override
     public Component getTooltips() {
         return Component.translatable("gtocore.recipe.vacuum.tier", tier);
+    }
+
+    @Override
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.requirement(LABEL, () -> Component.literal(String.valueOf(tier)));
     }
 
     @Override

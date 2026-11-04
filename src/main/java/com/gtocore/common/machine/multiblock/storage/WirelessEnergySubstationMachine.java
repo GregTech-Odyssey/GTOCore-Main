@@ -82,9 +82,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.data.WirelessMachines;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
@@ -153,27 +154,27 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     @RegisterLanguage(cn = "本站", en = "This Tower")
     private static final String STATION = "gtocore.machine.wireless_energy_substation.station";
     @RegisterLanguage(cn = "提供电压", en = "Supplied voltage")
-    private static final String STATION_TIER = "gtocore.machine.wireless_energy_substation.tier";
+    private static final Component STATION_TIER = Component.translatable("gtocore.machine.wireless_energy_substation.tier");
     @RegisterLanguage(cn = "内部生效普通单元的最高等级 + 1，最高为 MAX；超级单元仅提供乘区", en = "Highest effective ordinary unit tier + 1, at most MAX; super units only provide multipliers")
     private static final String STATION_TIER_DETAIL = "gtocore.machine.wireless_energy_substation.tier.detail";
     @RegisterLanguage(cn = "单元上限", en = "Unit tier limit")
-    private static final String STATION_LIMIT = "gtocore.machine.wireless_energy_substation.limit";
+    private static final Component STATION_LIMIT = Component.translatable("gtocore.machine.wireless_energy_substation.limit");
     @RegisterLanguage(cn = "%s（玻璃等级 %s）", en = "%s (glass tier %s)")
     private static final String STATION_LIMIT_VALUE = "gtocore.machine.wireless_energy_substation.limit.value";
     @RegisterLanguage(cn = "高于此等级的单元不生效", en = "Units above this tier have no effect")
     private static final String STATION_LIMIT_DETAIL = "gtocore.machine.wireless_energy_substation.limit.detail";
     @RegisterLanguage(cn = "存储单元", en = "Storage units")
-    private static final String STATION_UNITS = "gtocore.machine.wireless_energy_substation.units";
+    private static final Component STATION_UNITS = Component.translatable("gtocore.machine.wireless_energy_substation.units");
     @RegisterLanguage(cn = "传输单元", en = "Transfer units")
-    private static final String STATION_TRANSFER_UNITS = "gtocore.machine.wireless_energy_substation.transfer_units";
+    private static final Component STATION_TRANSFER_UNITS = Component.translatable("gtocore.machine.wireless_energy_substation.transfer_units");
     @RegisterLanguage(cn = "%s×%s", en = "%s×%s")
     private static final String UNIT_COUNT = "gtocore.machine.wireless_energy_substation.unit_count";
     @RegisterLanguage(cn = "超级 %s×%s", en = "Super %s×%s")
     private static final String SUPER_UNIT_COUNT = "gtocore.machine.wireless_energy_substation.super_unit_count";
     @RegisterLanguage(cn = "本站容量", en = "Tower capacity")
-    private static final String STATION_CAPACITY = "gtocore.machine.wireless_energy_substation.capacity";
+    private static final Component STATION_CAPACITY = Component.translatable("gtocore.machine.wireless_energy_substation.capacity");
     @RegisterLanguage(cn = "本站吞吐", en = "Tower throughput")
-    private static final String STATION_THROUGHPUT = "gtocore.machine.wireless_energy_substation.throughput";
+    private static final Component STATION_THROUGHPUT = Component.translatable("gtocore.machine.wireless_energy_substation.throughput");
     @RegisterLanguage(cn = "输入、输出各 %s", en = "%s each for input and output")
     private static final String STATION_THROUGHPUT_VALUE = "gtocore.machine.wireless_energy_substation.throughput.value";
     @RegisterLanguage(cn = "容量公式", en = "Capacity calculation")
@@ -191,13 +192,13 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     @RegisterLanguage(cn = "本维度（同维度能源塔合并计算）", en = "This Dimension (towers here combine)")
     private static final String DIMENSION = "gtocore.machine.wireless_energy_substation.dimension";
     @RegisterLanguage(cn = "本档输出", en = "Tier output")
-    private static final String BANK_OUTPUT = "gtocore.machine.wireless_energy_substation.bank_output";
+    private static final Component BANK_OUTPUT = Component.translatable("gtocore.machine.wireless_energy_substation.bank_output");
     @RegisterLanguage(cn = "本档输入", en = "Tier input")
-    private static final String BANK_INPUT = "gtocore.machine.wireless_energy_substation.bank_input";
+    private static final Component BANK_INPUT = Component.translatable("gtocore.machine.wireless_energy_substation.bank_input");
     @RegisterLanguage(cn = "本站提供电压所在档位在本维度的吞吐，按已用 / 额度显示，同档能源塔合并计算", en = "Throughput of this tower's tier (its supplied voltage) here: used / budget, pooled over the towers of that tier")
     private static final String BANK_DETAIL = "gtocore.machine.wireless_energy_substation.bank_detail";
     @RegisterLanguage(cn = "本维度储能", en = "Storage here")
-    private static final String DIMENSION_STORAGE = "gtocore.machine.wireless_energy_substation.dimension_storage";
+    private static final Component DIMENSION_STORAGE = Component.translatable("gtocore.machine.wireless_energy_substation.dimension_storage");
     @RegisterLanguage(cn = "最高 %s · %s", en = "Up to %s · %s")
     private static final String DIMENSION_STORAGE_VALUE = "gtocore.machine.wireless_energy_substation.dimension_storage.value";
     @RegisterLanguage(cn = "本维度所有能源塔的存量与容量；最高档决定本维度能供电的最高电压", en = "Stored energy and capacity of every tower here; the highest tier is the highest voltage this dimension can supply")
@@ -484,11 +485,11 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
                 .bindDetail(() -> unitsOverTier ? STATION_LIMIT_DETAIL_TEXT : NONE);
         panel.addLine(STATION_CAPACITY, MultiblockPage.cachedRef(() -> ProviderRegistry.towerCapacity(this), ElectricText::energyExact));
         panel.addLine(STATION_THROUGHPUT, MultiblockPage.cached(() -> throughput, value -> Component.translatable(STATION_THROUGHPUT_VALUE, WirelessText.power(value, glassLimit, GTValues.VN))));
-        return section(STATION, panel).addChildren(calculationButton(CAPACITY_CALCULATION), calculationButton(TRANSFER_CALCULATION));
+        return section(STATION, panel).addChildren(calculationButton(CAPACITY_CALCULATION, CAPACITY_CALCULATION_TEXT), calculationButton(TRANSFER_CALCULATION, TRANSFER_CALCULATION_TEXT));
     }
 
-    private static Button calculationButton(String key) {
-        var button = Button.translatable(LayoutStyle.AUTO, key);
+    private static Button calculationButton(String key, Component title) {
+        var button = Button.text(LayoutStyle.AUTO, title);
         button.setOnClientClick(() -> {
             var window = MachineWindow.of(button);
             if (window != null) window.togglePopup(key, 0);
@@ -539,9 +540,13 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         return section(DIMENSION, panel);
     }
 
-    private static UIElement section(String title, StatusPanel panel) {
+    private static UIElement section(String titleKey, StatusPanel panel) {
+        return section(Component.translatable(titleKey), panel);
+    }
+
+    private static UIElement section(Component title, StatusPanel panel) {
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, title).bindClientColor(UITheme::panelText), panel);
+                .addChildren(TextLine.constant(LayoutStyle.AUTO, title).bindClientColor(UITheme::panelText), panel);
     }
 
     private static Component tierName(long tier) {

@@ -43,10 +43,9 @@ public class GalaxyCondition extends DimensionCondition {
         return Component.translatable("gtocore.condition.within_galaxy", Component.translatable(galaxy.getTranslationKey()));
     }
 
-    /** 配方页：一句说明，并以展示槽轮流显示该星系各维度的标志物品。 */
     @Override
     public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
-        info.sentence(this::getTooltips);
+        info.requirement(Component.translatable("gtocore.recipe.info.galaxy"), () -> Component.translatable(galaxy.getTranslationKey()));
         info.slot(this::createDimensionSlot);
     }
 

@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy.game;
 
+import com.gtocore.api.gui.GTOGuiTextures;
+import com.gtocore.api.gui.ui_element.HorizontalScroller;
 import com.gtocore.common.machine.noenergy.game.milestone.GameAccess;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 import com.gtocore.data.transaction.data.CoinExchange;
@@ -11,6 +13,8 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
+import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -19,17 +23,23 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.SwitchedContent;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
+import com.gregtechceu.gtceu.uipro.render.UIText;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +49,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
@@ -46,67 +58,73 @@ import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
+
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.ColorRectTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import dev.vfyjxf.taffy.style.AlignContent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 /**
- * 游戏机的公共底座：钱、下发通道、游玩权限与「这一局是谁在玩」，玩法、局面字段、界面排版与配置页都写在各自的机器里。
+ * 游戏机的公共底座：余额与取出、界面快照通道、游玩权限、单局发起者与多人局判定，以及里程碑表格、
+ * 选项按钮、余额面板等共用件；玩法、局面字段与页面内容都写在各自的机器里。
  *
  * <p>
- * 本类提供的部分：
- * <ul>
- * <li>余额：{@link #balance()} / {@link #addBalance(long)}，拆除时先 {@link #cashOut()} 兑现再按面额掉回世界；</li>
- * <li>取出：{@link #createWithdrawButton(int)} 那块「取出全部」按钮与它背后的取币逻辑；</li>
- * <li>界面快照：{@link #registerView} 在界面上注册一项同步值，子类给 {@link #createView()}，版本号没变就复用实例；</li>
- * <li>里程碑榜单：{@link #registerBoard} 把服务端构建好的全服榜单挂到界面上；</li>
- * <li>游玩权限：{@link #allowOthers()} 开关与 {@link #canPlay} 判定，锁上后非主人打不开也玩不了；</li>
- * <li>会话：{@link #beginSession} 记发起者、{@link #noteOpener} 记参与者，多人局用 {@link #sessionCounts()} 挡掉记录；</li>
- * <li>共用的文案与小工具：{@link #random()}、{@link #number(long)}、{@link #dayTime(long)}、{@link #duration(long)}。</li>
- * </ul>
+ * 余额等字段声明在本类：DataSyncLib 沿父类链合并注解字段，存盘键取字段名，位置不影响旧存档；
+ * {@link RegisterLanguage} 只扫描类自身的字段，所以本类也要带 {@link DataGeneratorScanned}。
  *
- * <p>
- * 余额等字段声明在本类：DataSyncLib 会沿父类链合并注解字段，存盘键就是字段名（{@code field.getName()}），所以字段
- * 位置不影响旧存档。{@link RegisterLanguage} 的扫描只看类自身的字段，所以本类同样要带 {@link DataGeneratorScanned}，
- * 共用的那几条文案才不会漏生成。
- *
- * @param <VIEW> 这类机器下发给客户端的界面快照类型
+ * @param <VIEW> 下发给客户端的界面快照类型
  */
 @DataGeneratorScanned
 public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements IFancyUIMachine, IMachineLife {
 
     @RegisterLanguage(cn = "余额", en = "Credits")
-    protected static final String LINE_BALANCE = "gtocore.machine.game.line.balance";
+    protected static final Component LINE_BALANCE = Component.translatable("gtocore.machine.game.line.balance");
     @RegisterLanguage(cn = "取出全部", en = "Withdraw all")
-    protected static final String BUTTON_WITHDRAW = "gtocore.machine.game.button.withdraw";
+    protected static final Component BUTTON_WITHDRAW = Component.translatable("gtocore.machine.game.button.withdraw");
     @RegisterLanguage(cn = "没有余额可取出", en = "Nothing to withdraw")
-    protected static final String REASON_NOTHING_TO_WITHDRAW = "gtocore.machine.game.reason.nothing_to_withdraw";
+    protected static final Component REASON_NOTHING_TO_WITHDRAW = Component.translatable("gtocore.machine.game.reason.nothing_to_withdraw");
     /** 「配置」子页的标题与标签提示：三个游戏都挂同一个子页，文案也共用。 */
     @RegisterLanguage(cn = "配置", en = "Config")
     protected static final String PAGE_SETTINGS = "gtocore.machine.game.page.settings";
     @RegisterLanguage(cn = "游戏设置", en = "Game settings")
     protected static final String PAGE_SETTINGS_TOOLTIP = "gtocore.machine.game.page.settings.tooltip";
+    /** 难度页：有档位的游戏共用同一个标题，图标统一用齿轮。 */
+    @RegisterLanguage(cn = "难度", en = "Difficulty")
+    protected static final String PAGE_DIFFICULTY = "gtocore.machine.game.page.difficulty";
+    @RegisterLanguage(cn = "选择本局难度", en = "Choose the difficulty for this game")
+    protected static final String PAGE_DIFFICULTY_TOOLTIP = "gtocore.machine.game.page.difficulty.tooltip";
+    /** 排行榜页：所有游戏共用同一个标题，图标统一用金银铜柱。 */
+    @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
+    protected static final String PAGE_LEADERBOARD = "gtocore.machine.game.page.leaderboard";
+    @RegisterLanguage(cn = "全服排行榜", en = "Global leaderboards")
+    protected static final String PAGE_LEADERBOARD_TOOLTIP = "gtocore.machine.game.page.leaderboard.tooltip";
+    /** 排行榜页签图标：金银铜三色柱，放在 GTOCore 自己的小组件图集里。 */
+    protected static final IGuiTexture LEADERBOARD_ICON = GTOGuiTextures.LEADERBOARD;
     @RegisterLanguage(cn = "允许其他玩家游玩", en = "Allow other players")
-    protected static final String LINE_ALLOW_OTHERS = "gtocore.machine.game.allow_others";
+    protected static final Component LINE_ALLOW_OTHERS = Component.translatable("gtocore.machine.game.allow_others");
     @RegisterLanguage(cn = "关闭后只有机器主人（含同队、好友与管理员）能打开并游玩这台机器",
                       en = "When off, only the machine owner (plus their team, friends and operators) can open and play it")
-    protected static final String TOOLTIP_ALLOW_OTHERS = "gtocore.machine.game.allow_others.tooltip";
+    protected static final Component TOOLTIP_ALLOW_OTHERS = Component.translatable("gtocore.machine.game.allow_others.tooltip");
     @RegisterLanguage(cn = "只有机器主人能改这个开关", en = "Only the machine owner can change this")
     protected static final String REASON_ONLY_OWNER = "gtocore.machine.game.reason.only_owner";
     @RegisterLanguage(cn = "这台机器不允许你游玩", en = "You are not allowed to play this machine")
     protected static final String MSG_NO_PERMISSION = "gtocore.machine.game.msg.no_permission";
     @RegisterLanguage(cn = "里程碑", en = "Milestones")
-    protected static final String SECTION_MILESTONES = "gtocore.machine.game.section.milestones";
+    protected static final Component SECTION_MILESTONES = Component.translatable("gtocore.machine.game.section.milestones");
     @RegisterLanguage(cn = "暂无记录", en = "No records yet")
-    protected static final String TEXT_NO_RECORD = "gtocore.machine.game.text.no_record";
+    protected static final Component TEXT_NO_RECORD = Component.translatable("gtocore.machine.game.text.no_record");
+
     @RegisterLanguage(cn = "%s天%s", en = "D%s %s")
     protected static final String TEXT_DAY_TIME = "gtocore.machine.game.text.day_time";
     /** 里程碑表格的列标题：几台游戏机共用的那几列。 */
@@ -125,7 +143,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     private static final RandomSource FALLBACK_RANDOM = RandomSource.create();
 
     /** 未取出的游戏币余额。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "0")
     @SyncToClient(scheduleUpdate = true)
     private long balance;
     /** 是否允许主人以外的玩家打开并游玩；默认允许。 */
@@ -137,7 +155,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     @Nullable
     private UUID sessionStarter;
     /** 本局是否出现过第二个玩家；置位后本局不写任何里程碑。 */
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "false")
     private boolean sessionMultiplayer;
     /** 最近打开界面的玩家（不存盘）：配置页改开关时的操作者、以及本局发起者的来源。 */
     @Nullable
@@ -148,7 +166,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 界面快照版本号：只在服务端递增，靠它决定要不要重建 {@link #cachedView}。 */
     private int revision;
 
-    /** 服务端当前快照；版本号没变就复用同一实例，不白复制。 */
+    /** 服务端当前快照；版本号没变就复用同一实例。 */
     @Nullable
     private SyncValue<VIEW> viewSync;
     @Nullable
@@ -374,12 +392,126 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
         return value < 10L ? "0" + value : Long.toString(value);
     }
 
+    // ==================== 页面 ====================
+
+    /** 带底图的面板，行距 2px；各游戏机的主页、设置页与排行榜页共用。 */
+    protected static StatusPanel panel() {
+        var panel = new StatusPanel();
+        panel.getLayoutStyle().gapAll(2);
+        return panel;
+    }
+
+    /** 标准余额面板：各游戏机的设置页、难度页与排行榜页都把它放在最下面，样子统一。 */
+    protected final StatusPanel balancePanel() {
+        var panel = panel();
+        panel.addLine(LINE_BALANCE, () -> number(balance()));
+        return panel;
+    }
+
+    /** 「允许其他玩家游玩」那一行；各设置/难度页共用。 */
+    protected final Widget allowOthersRow() {
+        return Form.controlRow(LINE_ALLOW_OTHERS, Switch.of(this::allowOthers, this::setAllowOthers), TOOLTIP_ALLOW_OTHERS);
+    }
+
+    /**
+     * 游戏机子页的公共外壳：图标、标题、页签提示在构造时定下，子类只写 {@link #createMainPage}。
+     */
+    protected abstract static class GamePage implements IFancyUIProvider {
+
+        private final IGuiTexture icon;
+        private final Component title;
+        private final Component tooltip;
+
+        protected GamePage(IGuiTexture icon, Component title, Component tooltip) {
+            this.icon = icon;
+            this.title = title;
+            this.tooltip = tooltip;
+        }
+
+        protected GamePage(IGuiTexture icon, String titleKey, String tooltipKey) {
+            this(icon, Component.translatable(titleKey), Component.translatable(tooltipKey));
+        }
+
+        @Override
+        public final IGuiTexture getTabIcon() {
+            return icon;
+        }
+
+        @Override
+        public final Component getTitle() {
+            return title;
+        }
+
+        @Override
+        public final List<Component> getTabTooltips() {
+            return List.of(tooltip);
+        }
+
+        @Override
+        public final boolean hasPlayerInventory() {
+            return false;
+        }
+    }
+
+    /**
+     * 多榜排行榜页：顶上一排横向选项（滚轮横滚），下面只显示选中的那张榜，最后是余额。
+     * 子类只回答「有几张榜、每张叫什么、第 i 张怎么建」。
+     */
+    protected abstract class LeaderboardTabPage extends GamePage {
+
+        /** 当前选中的榜；服务端改动后由 SwitchedContent 下发给客户端。 */
+        private int board;
+
+        protected LeaderboardTabPage(Component title, Component tooltip) {
+            super(LEADERBOARD_ICON, title, tooltip);
+        }
+
+        protected LeaderboardTabPage(String titleKey, String tooltipKey) {
+            super(LEADERBOARD_ICON, titleKey, tooltipKey);
+        }
+
+        @Override
+        public final Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            page.addChild(optionRow(optionStrip(boardCount(), this::boardName, () -> board, index -> board = index)));
+            page.addChild(new SwitchedContent(() -> board, (index, remote) -> boardContent(index)));
+            return page;
+        }
+
+        protected abstract int boardCount();
+
+        protected abstract Component boardName(int index);
+
+        protected abstract Widget boardContent(int index);
+    }
+
+    /** 单榜排行榜页：一张表。 */
+    protected abstract class SingleLeaderboardPage extends GamePage {
+
+        protected SingleLeaderboardPage(Component title, Component tooltip) {
+            super(LEADERBOARD_ICON, title, tooltip);
+        }
+
+        protected SingleLeaderboardPage(String titleKey, String tooltipKey) {
+            super(LEADERBOARD_ICON, titleKey, tooltipKey);
+        }
+
+        @Override
+        public final Widget createMainPage(FancyMachineUIWidget widget) {
+            var page = Form.page();
+            page.addChild(boardContent());
+            return page;
+        }
+
+        protected abstract Widget boardContent();
+    }
+
     // ==================== 取出 ====================
 
     /** 「取出全部」按钮：余额为 0 时禁用；点一下把余额按面额从大到小塞进玩家背包，塞不下的留在余额里。 */
     protected final Button createWithdrawButton(int width) {
-        var withdraw = Button.translatable(width, BUTTON_WITHDRAW);
-        withdraw.setHoverTooltips(currencyName());
+        var withdraw = Button.text(width, BUTTON_WITHDRAW);
+        withdraw.tooltips(Component.translatable(currencyName()));
         withdraw.disabled(() -> balance == 0, REASON_NOTHING_TO_WITHDRAW);
         withdraw.setOnServerClick(() -> withdrawAll(withdraw));
         return withdraw;
@@ -440,31 +572,27 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     private static final int MILESTONE_MAX_HEIGHT = UISizes.SLOT_SIZE * 7;
     /** 名次列宽度：{@code #99} 放得下。 */
     private static final int MILESTONE_RANK_WIDTH = 16;
-    /** 单元格之间的间隙。 */
     private static final int MILESTONE_GAP = 2;
     /** 隔行的淡色条纹：一眼看得出表格是一行一行的。 */
     private static final IGuiTexture MILESTONE_STRIPE = new ColorRectTexture(0x0A000000);
 
     /**
-     * 里程碑表格的一列：表头文案、宽度与对齐。
+     * 里程碑表格的一列：表头、宽度与对齐。
      *
      * <p>
-     * 列宽全部写死：服务端量不到字体，写死的尺寸两端才会搭出同一份布局（{@code LayoutStyle.AUTO} 配 {@code flex}
-     * 在两端的文字测量结果不同，会错位）。宽了由 {@link TextLine} 截断加省略号，鼠标停上去看全文。
+     * 列宽必须写死：服务端量不到字体，{@code AUTO} + {@code flex} 在两端测出的宽度不同会错位。
+     * 文字超宽由 {@link TextLine} 截断加省略号，悬停看全文。
      */
     protected record MilestoneColumn(String headerKey, int width, Horizontal align) {
 
-        /** 左对齐的列（玩家名这类文字）。 */
         public static MilestoneColumn left(String headerKey, int width) {
             return new MilestoneColumn(headerKey, width, Horizontal.LEFT);
         }
 
-        /** 右对齐的列（数字）。 */
         public static MilestoneColumn right(String headerKey, int width) {
             return new MilestoneColumn(headerKey, width, Horizontal.RIGHT);
         }
 
-        /** 居中的列（时间这类定长文字）。 */
         public static MilestoneColumn center(String headerKey, int width) {
             return new MilestoneColumn(headerKey, width, Horizontal.CENTER);
         }
@@ -477,12 +605,10 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         private static final MilestoneCell EMPTY = new MilestoneCell(Component.empty(), Component.empty());
 
-        /** 只有字的格子。 */
         public static MilestoneCell of(Component text) {
             return new MilestoneCell(text, Component.empty());
         }
 
-        /** 带自定义悬停提示的格子。 */
         public static MilestoneCell of(Component text, Component hint) {
             return new MilestoneCell(text, hint);
         }
@@ -502,14 +628,11 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
      * 里程碑表格：表头 + 每人一行，列宽固定、数值右对齐，整表可滚动。
      *
      * <p>
-     * 表格由 {@link UIElement#row} 套 {@link TextLine} 搭出来（uipro 没有现成的表格控件，仓库里其它「表格」也是这么拼的）：
-     * 表头用 {@link TextLine#constant} 两端同文、不加同步；数据格由服务端取值下发，带提示的格子再挂一项提示的同步值。
-     *
-     * <p>
-     * 人数是 {@link SwitchedContent} 的键：人数变了才重建表格；同一行里数值变了由格子自己的同步值刷，不必重建。
+     * 用 {@link UIElement#row} 套 {@link TextLine} 拼成（uipro 没有表格控件）：表头两端同文、不加同步，
+     * 数据格与悬停提示各挂自己的同步值。人数是 {@link SwitchedContent} 的键，人数变了才重建表格。
      *
      * @param id      滚动区 id（拖动缩放的记忆键）
-     * @param columns 列定义（不含名次列：名次由表格自动加在最前）
+     * @param columns 列定义（名次列由表格自动加在最前）
      * @param builder 服务端构建每一行的格子，顺序与 {@code columns} 一致
      */
     protected final ScrollerView milestoneTable(String id, MilestoneColumn[] columns,
@@ -521,8 +644,8 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
      * 里程碑表格的可复用版本：数据源不一定 {@link GameMilestones}（扫雷用自己的存档），
      * 但表格外观、排名、悬停与滚动都与其他游戏机器保持一致。
      */
-    protected final ScrollerView milestoneTable(String id, MilestoneColumn[] columns, IntSupplier version,
-                                                Supplier<List<MilestoneCell[]>> builder) {
+    protected static ScrollerView milestoneTable(String id, MilestoneColumn[] columns, IntSupplier version,
+                                                 Supplier<List<MilestoneCell[]>> builder) {
         var table = new MilestoneTable(columns, version, builder);
         var scroller = new ScrollerView(id,
                 table.width() + 2 * UISizes.PANEL_PADDING + ScrollerView.SCROLL_BAR_SPACE, MILESTONE_HEIGHT)
@@ -545,7 +668,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     }
 
     /** 一张表格的行缓存：数据版本没变就复用上次构建的行，不让每个格子各自重建一遍。 */
-    private final class MilestoneTable {
+    private static final class MilestoneTable {
 
         private final MilestoneColumn[] columns;
         private final IntSupplier version;
@@ -592,7 +715,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
             var table = UIElement.column(LayoutStyle.AUTO).layout(layout -> layout.gapAll(MILESTONE_GAP));
             table.addChild(headerRow());
             if (rowCount <= 0) {
-                table.addChild(TextLine.translatable(LayoutStyle.AUTO, TEXT_NO_RECORD).setTextAlign(Horizontal.CENTER));
+                table.addChild(TextLine.constant(LayoutStyle.AUTO, TEXT_NO_RECORD).setTextAlign(Horizontal.CENTER));
                 return table;
             }
             for (int row = 0; row < rowCount; row++) {
@@ -645,6 +768,101 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
                 }
                 setHoverTooltips(hint);
             }
+        }
+    }
+
+    // ==================== 选项按钮 ====================
+
+    /** 选中项两侧的绿色符号：比状态灯那档深，按钮面上看得清。 */
+    private static final Style CHOICE_MARK_STYLE = Style.EMPTY.withColor(TextColor.fromRgb(UITheme.STATUS_TEXT_GOOD & 0xFFFFFF));
+
+    /**
+     * 列表里的一个选项按钮：选中时文字两端各带绿色 {@code > <}，按钮本身不画高光。
+     *
+     * <p>
+     * 两端只同步「选没选中」一个布尔，文字在客户端现拼。标记不能写进按钮静态文字
+     * ——{@link Button} 的标签会被 {@code FittedText} 拍平成纯字符串、丢掉样式——所以这里自己画。
+     *
+     * @param width    按钮宽度；{@link LayoutStyle#AUTO} 表示由布局拉伸
+     * @param text     未选中时的文字（两端各建一次，翻译键由客户端解析）
+     * @param selected 服务端：这一项是不是当前选中项
+     */
+    protected static Button choiceButton(int width, Component text, BooleanSupplier selected) {
+        return new ChoiceButton(width, text, selected);
+    }
+
+    /**
+     * 横向选项条：{@code count} 个按钮，选中的那个带绿色 {@code > <}；点击在服务端把选中项改成该下标。
+     */
+    protected static HorizontalScroller optionStrip(int count, IntFunction<Component> name,
+                                                    IntSupplier selected, IntConsumer select) {
+        var strip = new HorizontalScroller(UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING);
+        for (int index = 0; index < count; index++) {
+            final int option = index;
+            var label = name.apply(option);
+            var button = choiceButton(optionWidth(label), label, () -> selected.getAsInt() == option);
+            button.setOnServerClick(() -> select.accept(option));
+            strip.addOption(button);
+        }
+        return strip;
+    }
+
+    /** 把横向选项条居中放进一行，和区块内容左右对齐。 */
+    protected static UIElement optionRow(HorizontalScroller strip) {
+        return UIElement.row(HorizontalScroller.HEIGHT)
+                .layout(l -> l.justifyContent(AlignContent.CENTER))
+                .addChild(strip);
+    }
+
+    /** 横向选项按钮的宽度：文字估宽 + 两侧留白 + 选中时两端绿色 {@code > <} 的宽度。 */
+    private static int optionWidth(Component label) {
+        return UISizes.widthFor(label.getString()) + 2 * UISizes.TEXT_PADDING + 2 * UISizes.widthFor("> ");
+    }
+
+    /** 选项按钮本体：按钮底照常画，文字按同步来的选中状态拼好，居中画在按钮面上。 */
+    private static final class ChoiceButton extends Button {
+
+        private final Component plain;
+        private final SyncValue<Boolean> selected;
+        /** 上次拼好的文字；选中状态没变就复用，不每帧重新拼。 */
+        private Component cached;
+        private boolean cachedSelected;
+
+        private ChoiceButton(int width, Component plain, BooleanSupplier selected) {
+            super(width, HEIGHT, null, null);
+            this.plain = plain;
+            this.selected = addSyncValue(SyncValue.ofBool(selected));
+            cached = plain;
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private Component currentText() {
+            boolean on = selected.getValue();
+            if (on != cachedSelected) {
+                cachedSelected = on;
+                cached = on ? marked(plain) : plain;
+            }
+            return cached;
+        }
+
+        private static Component marked(Component text) {
+            // 根必须是空样式：样式会向 siblings 继承，把绿色挂在根上会把中间的文字也染绿
+            return Component.empty()
+                    .append(Component.literal("> ").withStyle(CHOICE_MARK_STYLE))
+                    .append(text)
+                    .append(Component.literal(" <").withStyle(CHOICE_MARK_STYLE));
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+            var text = currentText();
+            int textWidth = UIText.width(text);
+            if (textWidth <= 0 || textWidth > getSizeWidth() - 2 * UISizes.TEXT_PADDING) return;
+            int faceHeight = getSizeHeight() - UISizes.BUTTON_LIP_HEIGHT;
+            UIText.drawLeft(graphics, text, getPositionX() + (getSizeWidth() - textWidth) / 2,
+                    UIText.centerY(getPositionY(), faceHeight), getTextColor(isMouseOverElement(mouseX, mouseY), true));
         }
     }
 

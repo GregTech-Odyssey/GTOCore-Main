@@ -30,6 +30,7 @@ import appeng.api.stacks.AEFluidKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,9 +70,9 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
     @RegisterLanguage(cn = "搭建后可在此模块上安装超频仓与线程仓", en = "Allows Overclock Hatches and Thread Hatches to be installed on this module")
     private static final String OVERCLOCK_DESC = "gtocore.multiblock.kuangbiao_one.overclock.desc";
     @RegisterLanguage(cn = "反应堆储能", en = "Reactor Energy Buffer")
-    private static final String ENERGY_BUFFER = "gtocore.machine.kuangbiao_one.energy_buffer";
+    private static final Component ENERGY_BUFFER = Component.translatable("gtocore.machine.kuangbiao_one.energy_buffer");
     @RegisterLanguage(cn = "热量", en = "Heat")
-    private static final String HEAT = "gtocore.machine.kuangbiao_one.heat";
+    private static final Component HEAT = Component.translatable("gtocore.machine.kuangbiao_one.heat");
 
     public static final ParamKey HIGH_ENERGY_1 = ParamKey.of(HIGH_ENERGY_1_NAME, HIGH_ENERGY_1_DESC);
     public static final ParamKey HIGH_ENERGY_2 = ParamKey.of(HIGH_ENERGY_2_NAME, HIGH_ENERGY_2_DESC);

@@ -44,6 +44,13 @@ import java.util.function.Supplier;
 
 public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
 
+    private static final Component AT_MAX = Component.translatable("gtceu.uipro.stepper.at_max");
+    private static final Component AT_MIN = Component.translatable("gtceu.uipro.stepper.at_min");
+    private static final Component NEXT_DRONE = Component.translatable("gtocore.emi.space_elevator.next_drone");
+    private static final Component PREV_DRONE = Component.translatable("gtocore.emi.space_elevator.prev_drone");
+    private static final Component NEXT_FUEL = Component.translatable("gtocore.emi.space_elevator.next_fuel");
+    private static final Component PREV_FUEL = Component.translatable("gtocore.emi.space_elevator.prev_fuel");
+
     private final List<GTRecipeDefinition> variants;
     private GTRecipeDefinition selectedRecipe;
     private final EmiIngredient selectedDrone;
@@ -210,7 +217,7 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
     /** 建页：外框在这里定下（悬停预览等会改写 {@link #frame}），各方案都按最大尺寸建，切换时沿用同一外框。 */
     private Widget createVariantWidget() {
         var size = measure(frame);
-        var pageFrame = new GTRecipeWidget.PageFrame(size.width, size.height, frame.sideButtons(), frame.card());
+        var pageFrame = new GTRecipeWidget.PageFrame(size.width, size.height, frame.sideButtons(), frame.card(), 0, frame.inlineButtons());
         var root = new WidgetGroup(0, 0, size.width, size.height);
         root.addWidget(createSelectedRecipeWidget(root, pageFrame, false));
         return root;
@@ -260,10 +267,9 @@ public final class SpaceModuleGTEMIRecipe extends GTEMIRecipe {
         boolean up = direction > 0;
         var button = Button.icon(up ? UITheme.ARROW_UP : UITheme.ARROW_DOWN);
         button.setOnClientClick(click -> selectVariant(root, pageFrame, drone, direction));
-        button.disabled(() -> neighbor(drone, direction) == null, up ? "gtceu.uipro.stepper.at_max" : "gtceu.uipro.stepper.at_min");
-        String key = drone ? (up ? "gtocore.emi.space_elevator.next_drone" : "gtocore.emi.space_elevator.prev_drone") :
-                (up ? "gtocore.emi.space_elevator.next_fuel" : "gtocore.emi.space_elevator.prev_fuel");
-        button.tooltips(key);
+        button.disabled(() -> neighbor(drone, direction) == null, up ? AT_MAX : AT_MIN);
+        Component tip = drone ? (up ? NEXT_DRONE : PREV_DRONE) : (up ? NEXT_FUEL : PREV_FUEL);
+        button.tooltips(tip);
         return button;
     }
 

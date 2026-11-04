@@ -13,7 +13,6 @@ import static com.gtocore.data.lang.LangHandler.addCNEN;
 final class MachineLang {
 
     static void init() {
-        addCNEN("gtocore.super_storage.upgrade.tip", "可插入升级提升容量", "Insert upgrades to increase capacity");
         addCNEN("gtocore.structure.deprecated", "该结构已弃用", "This structure has been deprecated");
         addCNEN("gui.tooltips.redstone_mode.enabled", "启用红石模式，机器接收红石信号", "Enable redstone mode, the machine will receive redstone signals");
         addCNEN("gui.tooltips.redstone_mode.disabled", "禁用红石模式，机器无视红石信号", "Disable redstone mode, the machine will ignore redstone signals");
@@ -54,8 +53,6 @@ final class MachineLang {
         addCNEN("gtocore.machine.greenhouse.SkyLight", "当前光照: %s", "Current Illumination: %s");
         addCNEN("gtocore.machine.large_combustion_engine.Joint_boosted", "§b联合促燃中", "§bJoint Combustion Boosted");
         addCNEN("gtocore.machine.large_combustion_engine.supply_dinitrogen_tetroxide_to_boost", "提供四氧化二氮来联合促燃", "Provide Dinitrogen Tetroxide to joint combustion");
-        addCNEN("gtocore.machine.large_steam_circuit_assembler.circuit", "已铭刻电路: %s", "Inscribed Circuit: %s");
-        addCNEN("gtocore.machine.large_steam_circuit_assembler.engrave_circuit", "铭刻电路", "Engrave Circuit");
         addCNEN("gtocore.machine.lightning_rod.tooltip.0", "上方避雷针被雷击后产生大量能量", "Large amounts of energy are generated after the lightning rod above is struck");
         addCNEN("gtocore.machine.lightning_rod.tooltip.1", "每0.5秒只能产生一次能量，且有一定几率破坏上方避雷针", "Can only generate energy once every 0.5 seconds, with a chance to damage the lightning rod above");
         addCNEN("gtocore.machine.lightning_rod.tooltip.2", "如果存储能量已满，机器将会爆炸", "If the stored energy is full, the machine will explode");

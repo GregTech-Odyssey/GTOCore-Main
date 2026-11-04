@@ -39,6 +39,7 @@ import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -254,7 +255,7 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_NANITES;
     }
 }

@@ -5,13 +5,13 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
-import static com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color.Cyan;
-import static com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials.Color.Gray;
+import net.minecraft.world.item.DyeColor;
+
 import static com.gregtechceu.gtceu.common.data.GTMaterials.NetherStar;
 import static com.gtocore.common.data.GTORecipeTypes.LASER_ENGRAVER_RECIPES;
 
@@ -20,7 +20,7 @@ final class LaserEngraver {
     public static void init() {
         LASER_ENGRAVER_RECIPES.recipeBuilder("advanced_soc_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Purple)
+                .notConsumable(CustomTags.lens(DyeColor.PURPLE))
                 .outputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP_WAFER, 8)
                 .EUt(122880)
                 .duration(125)
@@ -29,7 +29,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("soc_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Yellow)
+                .notConsumable(CustomTags.lens(DyeColor.YELLOW))
                 .outputItems(GTItems.SYSTEM_ON_CHIP_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
@@ -38,7 +38,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ilc_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Red)
+                .notConsumable(CustomTags.lens(DyeColor.RED))
                 .outputItems(GTItems.INTEGRATED_LOGIC_CIRCUIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
@@ -47,7 +47,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ulpic_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Blue)
+                .notConsumable(CustomTags.lens(DyeColor.BLUE))
                 .outputItems(GTItems.ULTRA_LOW_POWER_INTEGRATED_CIRCUIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
@@ -67,7 +67,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("lpic_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Orange)
+                .notConsumable(CustomTags.lens(DyeColor.ORANGE))
                 .outputItems(GTItems.LOW_POWER_INTEGRATED_CIRCUIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
@@ -76,7 +76,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("nor_memory_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Pink)
+                .notConsumable(CustomTags.lens(DyeColor.PINK))
                 .outputItems(GTItems.NOR_MEMORY_CHIP_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
@@ -85,7 +85,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("cpu_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.LightBlue)
+                .notConsumable(CustomTags.lens(DyeColor.LIGHT_BLUE))
                 .outputItems(GTItems.CENTRAL_PROCESSING_UNIT_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
@@ -105,7 +105,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("nand_memory_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, Gray)
+                .notConsumable(CustomTags.lens(DyeColor.GRAY))
                 .outputItems(GTItems.NAND_MEMORY_CHIP_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
@@ -114,7 +114,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("highly_advanced_soc_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Black)
+                .notConsumable(CustomTags.lens(DyeColor.BLACK))
                 .outputItems(GTItems.HIGHLY_ADVANCED_SOC_WAFER, 4)
                 .EUt(122880)
                 .duration(225)
@@ -123,7 +123,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("ram_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Green)
+                .notConsumable(CustomTags.lens(DyeColor.GREEN))
                 .outputItems(GTItems.RANDOM_ACCESS_MEMORY_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
@@ -132,7 +132,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("mpic_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Brown)
+                .notConsumable(CustomTags.lens(DyeColor.BROWN))
                 .outputItems(GTItems.POWER_INTEGRATED_CIRCUIT_WAFER, 32)
                 .EUt(122880)
                 .duration(50)
@@ -149,7 +149,7 @@ final class LaserEngraver {
                 .save();
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("exotic_wafer")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Magenta)
+                .notConsumable(CustomTags.lens(DyeColor.MAGENTA))
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC_WAFER)
                 .outputItems(GTOItems.EXOTIC_WAFER)
                 .EUt(1966080)
@@ -159,7 +159,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.recipeBuilder("simple_soc_wafer")
                 .inputItems(GTOItems.TARANIUM_WAFER)
-                .notConsumable(TagPrefix.lens, Cyan)
+                .notConsumable(CustomTags.lens(DyeColor.CYAN))
                 .outputItems(GTItems.SIMPLE_SYSTEM_ON_CHIP_WAFER, 64)
                 .EUt(122880)
                 .duration(13)
@@ -212,7 +212,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.builder("fpga_wafer")
                 .inputItems(GTOItems.GERMANIUM_DOPED_SILICON_WAFER)
-                .notConsumable(GTOTagPrefix.lens, Gray)
+                .notConsumable(CustomTags.lens(DyeColor.GRAY))
                 .outputItems(GTOItems.FPGA_WAFER)
                 .cleanroom(1)
                 .EUt(131000)
@@ -221,7 +221,7 @@ final class LaserEngraver {
 
         LASER_ENGRAVER_RECIPES.builder("igbt_wafer")
                 .inputItems(GTOItems.SIC_WIDE_BANDGAP_SEMICONDUCTOR_WAFER)
-                .notConsumable(GTOTagPrefix.lens, Cyan)
+                .notConsumable(CustomTags.lens(DyeColor.CYAN))
                 .outputItems(GTOItems.IGBT_WAFER)
                 .cleanroom(1)
                 .EUt(131000)

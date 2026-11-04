@@ -31,6 +31,7 @@ import appeng.api.stacks.AEKey;
 import appeng.api.stacks.U126;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.hepdd.gtmthings.api.capability.IBindable;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +45,9 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
 
     public static final long infinite = 1000000000000L; // 1T
     @RegisterLanguage(en = "Data Index Position", cn = "数据索引位置")
-    private static final String MODE = "gtocore.machine.me_storage.mode";
+    private static final Component MODE = Component.translatable("gtocore.machine.me_storage.mode");
+    private static final Component MACHINES = Component.translatable("config.gtceu.option.machines");
+    private static final Component PLAYER = Component.translatable("gtceu.ownership.name.player");
     @SaveToDisk
     private final NotifiableStackInventory machineStorage;
     @SaveToDisk
@@ -151,7 +154,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     public UIElement createUIWidget() {
         var controls = ControlPanel.of(this);
         addStorageSlot(controls);
-        controls.addChoice(MODE, 2, i -> Component.translatable(i == 0 ? "config.gtceu.option.machines" : "gtceu.ownership.name.player"),
+        controls.addChoice(MODE, 2, i -> i == 0 ? MACHINES : PLAYER,
                 () -> player ? 1 : 0, i -> {
                     player = i == 1;
                     onMachineChanged();
@@ -217,8 +220,8 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
     }
 
     @Override
-    public String getStorageSlotLabel() {
-        return GTOItems.INFINITE_CELL_COMPONENT.asItem().getDescriptionId();
+    public Component getStorageSlotLabel() {
+        return Component.translatable(GTOItems.INFINITE_CELL_COMPONENT.asItem().getDescriptionId());
     }
 
     @Override

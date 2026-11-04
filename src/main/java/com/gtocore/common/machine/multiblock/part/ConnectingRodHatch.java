@@ -8,12 +8,14 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
+import com.gregtechceu.gtceu.uiwidgets.inventory.HatchViews;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
 
 import javax.annotation.Nullable;
@@ -40,14 +42,8 @@ public final class ConnectingRodHatch extends WorkableTieredIOPartMachine {
 
     @Override
     public Widget createUIWidget() {
-        int rowSize = 1;
-        var group = new WidgetGroup(0, 0, 18 * rowSize + 16, 18 * rowSize + 16);
-        var container = new WidgetGroup(4, 4, 18 * rowSize + 8, 18 * rowSize + 8);
-        container.addWidget(new SlotWidget(inventory.storage, 0, 4, 4, true, io.support(IO.IN))
-                .setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(this.io == IO.IN ? IngredientIO.INPUT : IngredientIO.OUTPUT));
-        container.setBackground(GuiTextures.BACKGROUND_INVERSE);
-        group.addWidget(container);
-        return group;
+        return HatchViews.page(SlotGrid.square(1, index -> new SlotWidget(inventory.storage, 0, 0, 0, true, io.support(IO.IN))
+                .setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(this.io == IO.IN ? IngredientIO.INPUT : IngredientIO.OUTPUT)));
     }
 
     @Override

@@ -44,6 +44,7 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
@@ -331,6 +332,6 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
                                 need, k -> 20 * 10);
                     }
                 })
-                .setTooltipsSupplier(pressed -> Collections.singletonList(Component.translatable(SHOW_RANGE_TOOLTIP))));
+                .setTooltipsSupplier(pressed -> Collections.singletonList(SHOW_RANGE_TOOLTIP)));
     }
 }

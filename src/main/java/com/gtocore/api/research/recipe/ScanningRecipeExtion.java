@@ -24,6 +24,7 @@ import appeng.api.stacks.KeyCounter;
 import com.gto.datasynclib.DataSyncCodec;
 import com.gto.datasynclib.datastream.codec.CombinedCodec;
 import com.gto.recipesearch.IntLongMap;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -80,7 +81,7 @@ public class ScanningRecipeExtion extends RecipeExtension<ScanningRecipeExtion.A
 
     @Override
     public long getParallel(IRecipeHandlerHolder holder, RecipeHandlerUnit unit, GTRecipe recipe, long parallel) {
-        return 0;
+        return Math.min(parallel, 1);
     }
 
     @Override

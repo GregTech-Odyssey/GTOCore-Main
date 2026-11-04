@@ -69,53 +69,77 @@ public final class NeutronActivatorFlowPage {
 
     @RegisterLanguage(cn = "中子加速器", en = "Neutron Accelerators")
     private static final String LANG_ACCELERATOR = "gtocore.machine.neutron_activator.flow.accelerator";
+    private static final Component ACCELERATOR = Component.translatable(LANG_ACCELERATOR);
     @RegisterLanguage(cn = "中子动能", en = "Kinetic Energy")
     private static final String LANG_KINETIC = "gtocore.machine.neutron_activator.flow.kinetic";
+    private static final Component KINETIC = Component.translatable(LANG_KINETIC);
     @RegisterLanguage(cn = "衰减与慢化", en = "Decay & Moderation")
     private static final String LANG_LOSS = "gtocore.machine.neutron_activator.flow.loss";
+    private static final Component LOSS = Component.translatable(LANG_LOSS);
     @RegisterLanguage(cn = "物料输入", en = "Material Input")
     private static final String LANG_INPUT = "gtocore.machine.neutron_activator.flow.input";
+    private static final Component INPUT = Component.translatable(LANG_INPUT);
     @RegisterLanguage(cn = "中子活化", en = "Activation")
     private static final String LANG_RECIPE = "gtocore.machine.neutron_activator.flow.recipe";
+    private static final Component RECIPE = Component.translatable(LANG_RECIPE);
     @RegisterLanguage(cn = "产物输出", en = "Product Output")
     private static final String LANG_OUTPUT = "gtocore.machine.neutron_activator.flow.output";
+    private static final Component OUTPUT = Component.translatable(LANG_OUTPUT);
     @RegisterLanguage(cn = "能源接收器", en = "Energy Acceptor")
     private static final String LANG_ENERGY = "gtocore.machine.neutron_activator.flow.energy";
+    private static final Component ENERGY = Component.translatable(LANG_ENERGY);
 
     @RegisterLanguage(cn = "状态", en = "State")
     private static final String LANG_STATE = "gtocore.machine.neutron_activator.flow.state";
+    private static final Component STATE = Component.translatable(LANG_STATE);
     @RegisterLanguage(cn = "动能", en = "Energy")
     private static final String LANG_ENERGY_BAR = "gtocore.machine.neutron_activator.flow.energy_bar";
+    private static final Component ENERGY_BAR = Component.translatable(LANG_ENERGY_BAR);
     @RegisterLanguage(cn = "进度", en = "Progress")
     private static final String LANG_PROGRESS = "gtocore.machine.neutron_activator.flow.progress";
+    private static final Component PROGRESS = Component.translatable(LANG_PROGRESS);
     @RegisterLanguage(cn = "已安装", en = "Installed")
     private static final String LANG_INSTALLED = "gtocore.machine.neutron_activator.flow.installed";
+    private static final Component INSTALLED = Component.translatable(LANG_INSTALLED);
     @RegisterLanguage(cn = "有电", en = "Powered")
     private static final String LANG_POWERED = "gtocore.machine.neutron_activator.flow.powered";
+    private static final Component POWERED = Component.translatable(LANG_POWERED);
     @RegisterLanguage(cn = "增速", en = "Gain")
     private static final String LANG_GAIN = "gtocore.machine.neutron_activator.flow.gain";
+    private static final Component GAIN = Component.translatable(LANG_GAIN);
     @RegisterLanguage(cn = "目标", en = "Target")
     private static final String LANG_TARGET = "gtocore.machine.neutron_activator.flow.target";
+    private static final Component TARGET = Component.translatable(LANG_TARGET);
     @RegisterLanguage(cn = "净变化", en = "Net")
     private static final String LANG_NET = "gtocore.machine.neutron_activator.flow.net";
+    private static final Component NET = Component.translatable(LANG_NET);
     @RegisterLanguage(cn = "衰减", en = "Decay")
     private static final String LANG_DECAY = "gtocore.machine.neutron_activator.flow.decay";
+    private static final Component DECAY = Component.translatable(LANG_DECAY);
     @RegisterLanguage(cn = "慢化剂", en = "Moderator")
     private static final String LANG_MODERATOR = "gtocore.machine.neutron_activator.flow.moderator";
+    private static final Component MODERATOR = Component.translatable(LANG_MODERATOR);
     @RegisterLanguage(cn = "可吸收", en = "Absorbs")
     private static final String LANG_ABSORB = "gtocore.machine.neutron_activator.flow.absorb";
+    private static final Component ABSORB = Component.translatable(LANG_ABSORB);
     @RegisterLanguage(cn = "输入单元", en = "Units")
     private static final String LANG_INPUT_UNITS = "gtocore.machine.neutron_activator.flow.input_units";
+    private static final Component INPUT_UNITS = Component.translatable(LANG_INPUT_UNITS);
     @RegisterLanguage(cn = "输出单元", en = "Units")
     private static final String LANG_OUTPUT_UNITS = "gtocore.machine.neutron_activator.flow.output_units";
+    private static final Component OUTPUT_UNITS = Component.translatable(LANG_OUTPUT_UNITS);
     @RegisterLanguage(cn = "动能消耗", en = "Drain")
     private static final String LANG_DRAIN = "gtocore.machine.neutron_activator.flow.drain";
+    private static final Component DRAIN = Component.translatable(LANG_DRAIN);
     @RegisterLanguage(cn = "耗时", en = "Duration")
     private static final String LANG_DURATION = "gtocore.machine.neutron_activator.flow.duration";
+    private static final Component DURATION = Component.translatable(LANG_DURATION);
     @RegisterLanguage(cn = "耗能", en = "Usage")
     private static final String LANG_USAGE = "gtocore.machine.neutron_activator.flow.usage";
+    private static final Component USAGE = Component.translatable(LANG_USAGE);
     @RegisterLanguage(cn = "电压", en = "Tier")
     private static final String LANG_VOLTAGE = "gtocore.machine.neutron_activator.flow.voltage";
+    private static final Component VOLTAGE = Component.translatable(LANG_VOLTAGE);
 
     @RegisterLanguage(cn = "%s ~ %s MeV", en = "%s ~ %s MeV")
     private static final String LANG_RANGE = "gtocore.machine.neutron_activator.flow.range";
@@ -281,8 +305,10 @@ public final class NeutronActivatorFlowPage {
     private static final String LANG_ENERGY_RULE = "gtocore.machine.neutron_activator.flow.energy_rule";
     @RegisterLanguage(cn = "启用能源接收器", en = "Enable Energy Acceptor")
     private static final String LANG_ENERGY_SWITCH = "gtocore.machine.neutron_activator.flow.energy_switch";
+    private static final Component ENERGY_SWITCH = Component.translatable(LANG_ENERGY_SWITCH);
     @RegisterLanguage(cn = "能源接收段未搭建", en = "Energy Acceptor Section not built")
     private static final String LANG_NO_RECEIVER = "gtocore.machine.neutron_activator.flow.no_receiver";
+    private static final Component NO_RECEIVER = Component.translatable(LANG_NO_RECEIVER);
     @RegisterLanguage(cn = "结构中没有能源接收段，能源接收器不可用，中子动能由加速器提供。", en = "The structure has no Energy Acceptor Section; the Energy Acceptor is unavailable and accelerators supply kinetic energy.")
     private static final String LANG_NO_RECEIVER_DESC = "gtocore.machine.neutron_activator.flow.no_receiver.desc";
 
@@ -312,63 +338,63 @@ public final class NeutronActivatorFlowPage {
     }
 
     private static ProgressBar kineticBar(Status status) {
-        return ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_ENERGY_BAR), UITheme.FLOW_CYAN_LIGHT, status::kinetic)
+        return ProgressBar.of(LayoutStyle.AUTO, ENERGY_BAR, UITheme.FLOW_CYAN_LIGHT, status::kinetic)
                 .currentOnly().setUnit("eV").bindRange(status::window, RANGE_COLOR).addMarker(NeutronActivatorMachine.EXPLOSION_EV, EXPLOSION_COLOR, status::explosionCallout);
     }
 
     private static FlowNode acceleratorNode(FlowChart chart, Status status) {
         var node = chart.node(0, 0).bindState(status::acceleratorState).bindDetail(status::acceleratorDetail);
-        node.addChildren(FlowParts.header(ItemView.of(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asStack()), LANG_ACCELERATOR),
+        node.addChildren(FlowParts.header(ItemView.of(GTOMachines.NEUTRON_ACCELERATOR[GTValues.IV].asStack()), ACCELERATOR),
                 new IssueLine(LayoutStyle.AUTO, null, status::acceleratorView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_INSTALLED, status::installedText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_POWERED, status::poweredText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_GAIN, status::gainText));
+                StatusLine.of(LayoutStyle.AUTO, INSTALLED, status::installedText),
+                StatusLine.of(LayoutStyle.AUTO, POWERED, status::poweredText),
+                StatusLine.of(LayoutStyle.AUTO, GAIN, status::gainText));
         return node;
     }
 
     private static FlowNode kineticNode(FlowChart chart, Status status) {
         var node = chart.node(0, 1).bindState(status::kineticState).bindDetail(status::kineticDetail);
-        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(GTOBlocks.SPEEDING_PIPE.get())), LANG_KINETIC),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::kineticView),
+        node.addChildren(FlowParts.header(ItemView.of(new ItemStack(GTOBlocks.SPEEDING_PIPE.get())), KINETIC),
+                new IssueLine(LayoutStyle.AUTO, STATE, status::kineticView),
                 kineticBar(status),
-                StatusLine.of(LayoutStyle.AUTO, LANG_TARGET, status::targetText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_NET, status::netText).bindLevel(status::netLevel));
+                StatusLine.of(LayoutStyle.AUTO, TARGET, status::targetText),
+                StatusLine.of(LayoutStyle.AUTO, NET, status::netText).bindLevel(status::netLevel));
         return node;
     }
 
     private static FlowNode lossNode(FlowChart chart, Status status) {
         var node = chart.node(0, 2).bindState(status::lossState).bindDetail(status::lossDetail);
-        node.addChildren(FlowParts.header(ItemView.of(ChemicalHelper.get(TagPrefix.dust, GTMaterials.Graphite)), LANG_LOSS),
+        node.addChildren(FlowParts.header(ItemView.of(ChemicalHelper.get(TagPrefix.dust, GTMaterials.Graphite)), LOSS),
                 new IssueLine(LayoutStyle.AUTO, null, status::lossView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_DECAY, status::decayText).bindLevel(status::decayLevel),
-                StatusLine.of(LayoutStyle.AUTO, LANG_MODERATOR, status::moderatorText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_ABSORB, status::absorbText));
+                StatusLine.of(LayoutStyle.AUTO, DECAY, status::decayText).bindLevel(status::decayLevel),
+                StatusLine.of(LayoutStyle.AUTO, MODERATOR, status::moderatorText),
+                StatusLine.of(LayoutStyle.AUTO, ABSORB, status::absorbText));
         return node;
     }
 
     private static FlowNode inputNode(FlowChart chart, Status status) {
         var node = chart.node(1, 0).bindState(status::inputState).bindDetail(status::inputDetail);
-        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_IMPORT_BUS[GTValues.LV].asStack()), LANG_INPUT),
+        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_IMPORT_BUS[GTValues.LV].asStack()), INPUT),
                 new IssueLine(LayoutStyle.AUTO, null, status::inputView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_INPUT_UNITS, status::inputUnitsText));
+                StatusLine.of(LayoutStyle.AUTO, INPUT_UNITS, status::inputUnitsText));
         return node;
     }
 
     private static FlowNode recipeNode(FlowChart chart, NeutronActivatorMachine machine, Status status) {
         var node = chart.node(1, 1).bindState(status::recipeState).bindDetail(status::recipeDetail);
-        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), LANG_RECIPE),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::recipeView),
-                ProgressBar.of(LayoutStyle.AUTO, Component.translatable(LANG_PROGRESS), UITheme.FLOW_CYAN_LIGHT, status::progress),
-                StatusLine.of(LayoutStyle.AUTO, LANG_DRAIN, status::drainText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_DURATION, status::durationText));
+        node.addChildren(FlowParts.header(ItemView.of(machine.getDefinition().asStack()), RECIPE),
+                new IssueLine(LayoutStyle.AUTO, STATE, status::recipeView),
+                ProgressBar.of(LayoutStyle.AUTO, PROGRESS, UITheme.FLOW_CYAN_LIGHT, status::progress),
+                StatusLine.of(LayoutStyle.AUTO, DRAIN, status::drainText),
+                StatusLine.of(LayoutStyle.AUTO, DURATION, status::durationText));
         return node;
     }
 
     private static FlowNode outputNode(FlowChart chart, Status status) {
         var node = chart.node(1, 2).bindState(status::outputState).bindDetail(status::outputDetail);
-        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asStack()), LANG_OUTPUT),
+        node.addChildren(FlowParts.header(ItemView.of(GTMachines.ITEM_EXPORT_BUS[GTValues.LV].asStack()), OUTPUT),
                 new IssueLine(LayoutStyle.AUTO, null, status::outputView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_OUTPUT_UNITS, status::outputUnitsText));
+                StatusLine.of(LayoutStyle.AUTO, OUTPUT_UNITS, status::outputUnitsText));
         return node;
     }
 
@@ -376,13 +402,13 @@ public final class NeutronActivatorFlowPage {
         var node = chart.node(2, 1).bindState(status::energyState).bindDetail(status::energyDetail);
         var vortex = status.vortex;
         var toggle = Switch.of(vortex::isEnergySwitchOn, vortex::setEnergySwitch)
-                .disabled(() -> !vortex.hasEnergyReceiver(), LANG_NO_RECEIVER);
-        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), LANG_ENERGY),
+                .disabled(() -> !vortex.hasEnergyReceiver(), NO_RECEIVER);
+        node.addChildren(FlowParts.header(ItemView.of(FlowParts.energyIcon(node)), ENERGY),
                 UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
-                        .addChildren(TextLine.translatable(0, LANG_ENERGY_SWITCH).layout(l -> l.flex(1)), toggle),
-                new IssueLine(LayoutStyle.AUTO, Component.translatable(LANG_STATE), status::energyView),
-                StatusLine.of(LayoutStyle.AUTO, LANG_USAGE, status::usageText),
-                StatusLine.of(LayoutStyle.AUTO, LANG_VOLTAGE, status::voltageText),
+                        .addChildren(TextLine.constant(0, ENERGY_SWITCH).layout(l -> l.flex(1)), toggle),
+                new IssueLine(LayoutStyle.AUTO, STATE, status::energyView),
+                StatusLine.of(LayoutStyle.AUTO, USAGE, status::usageText),
+                StatusLine.of(LayoutStyle.AUTO, VOLTAGE, status::voltageText),
                 ProgressBar.of(LayoutStyle.AUTO, Component.empty(), UITheme.FLOW_CYAN_LIGHT, status::buffer).percent());
         return node;
     }

@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,13 +26,13 @@ import java.util.List;
 public class LargeSteamCracker extends BaseSteamMultiblockMachine {
 
     @RegisterLanguage(cn = "温度并行上限", en = "Temperature Parallel Limit")
-    private static final String PARALLEL_LIMIT = "gtocore.machine.steam_cracker.parallel_limit";
+    private static final Component PARALLEL_LIMIT = Component.translatable("gtocore.machine.steam_cracker.parallel_limit");
     @RegisterLanguage(cn = "原料效率：%s", en = "Raw Material Efficiency: %s")
     private static final String EFFICIENCY = "gtocore.machine.steam_cracker.efficiency";
     @RegisterLanguage(cn = "重度裂化产物占比：%s", en = "Severely Cracked Product Share: %s")
     private static final String SEVERE_SHARE = "gtocore.machine.steam_cracker.severe_share";
     @RegisterLanguage(cn = "连续完成批数", en = "Consecutive Completed Batches")
-    private static final String COMPLETED_BATCHES = "gtocore.machine.steam_cracker.completed_batches";
+    private static final Component COMPLETED_BATCHES = Component.translatable("gtocore.machine.steam_cracker.completed_batches");
 
     @SaveToDisk(defaultValue = "0")
     private int completedBatches;

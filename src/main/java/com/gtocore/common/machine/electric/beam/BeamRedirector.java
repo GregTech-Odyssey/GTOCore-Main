@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

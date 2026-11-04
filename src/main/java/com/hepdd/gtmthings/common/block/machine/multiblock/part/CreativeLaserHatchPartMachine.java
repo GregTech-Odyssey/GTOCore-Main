@@ -2,9 +2,10 @@ package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableLaserContainer;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -12,38 +13,30 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.Stepper;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.editor.ColorPattern;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceBorderTexture;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.SelectorWidget;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
+
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import lombok.Getter;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import static net.minecraft.ChatFormatting.*;
-
 @ParametersAreNonnullByDefault
-public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine implements IDataInfoProvider {
+public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine implements IDataInfoProvider, IFancyUIMachine {
 
     @SaveToDisk
     private final NotifiableLaserContainer buffer;
@@ -61,18 +54,6 @@ public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine i
     private int amps = 256;
     @SaveToDisk
     private int setTier = GTValues.IV;
-
-    public static final String[] VNF = new String[] {
-            BLUE + "IV",
-            LIGHT_PURPLE + "LuV",
-            RED + "ZPM",
-            DARK_AQUA + "UV",
-            DARK_RED + "UHV",
-            GREEN + "UEV",
-            DARK_GREEN + "UIV",
-            YELLOW + "UXV",
-            BLUE.toString() + BOLD + "OpV",
-            RED.toString() + BOLD + "MAX" };
 
     public CreativeLaserHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.MAX, IO.IN);
@@ -93,6 +74,7 @@ public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine i
     @Override
     public void onLoad() {
         super.onLoad();
+        updateLaserContainer();
         LaserListener = buffer.addChangedListener(this::AddEngerySubscription);
         AddEngerySubscription();
     }
@@ -118,38 +100,42 @@ public class CreativeLaserHatchPartMachine extends WorkableTieredIOPartMachine i
     }
 
     @Override
-    public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 136, this, entityPlayer)
-                .background(GuiTextures.BACKGROUND)
-                .widget(new LabelWidget(7, 32, "gtceu.creative.energy.voltage"))
-                .widget(new TextFieldWidget(9, 47, 152, 16, () -> String.valueOf(voltage),
-                        value -> {
-                            voltage = Long.parseLong(value);
-                            setTier = GTUtil.getTierByVoltage(voltage);
-                        }).setNumbersOnly(8192L, Long.MAX_VALUE))
-                .widget(new LabelWidget(7, 74, "gtceu.creative.energy.amperage"))
-                .widget(new ButtonWidget(7, 87, 20, 20,
-                        new GuiTextureGroup(ResourceBorderTexture.BUTTON_COMMON, new TextTexture("-")),
-                        cd -> amps = --amps == -1 ? 0 : amps))
-                .widget(new TextFieldWidget(31, 89, 114, 16, () -> String.valueOf(amps),
-                        value -> amps = Integer.parseInt(value)).setNumbersOnly(256, 67108864))
-                .widget(new ButtonWidget(149, 87, 20, 20,
-                        new GuiTextureGroup(ResourceBorderTexture.BUTTON_COMMON, new TextTexture("+")),
-                        cd -> {
-                            if (amps < Integer.MAX_VALUE) {
-                                amps++;
-                            }
-                        }))
+    public Widget createUIWidget() {
+        return Form.page().addChildren(
+                Form.controlRow(Component.translatable("gtceu.creative.energy.tier"),
+                        Stepper.of(50, () -> Math.max(0, setTier - GTValues.IV), idx -> {
+                            setTier = idx + GTValues.IV;
+                            setVoltage(GTValues.VEX[setTier]);
+                        }, 0, GTValues.VNF.length - 1 - GTValues.IV).setFormatter(idx -> GTValues.VNF[idx + GTValues.IV])),
+                Form.numberRow(Component.translatable("gtceu.creative.energy.voltage"),
+                        NumberField.ofLong(UISizes.CONTENT_WIDTH, () -> voltage, v -> {
+                            setVoltage(v);
+                            setTier = GTUtil.getTierByVoltage(this.voltage);
+                        }, GTValues.VEX[GTValues.IV], Long.MAX_VALUE)),
+                Form.numberRow(Component.translatable("gtceu.creative.energy.amperage"),
+                        NumberField.ofInt(UISizes.CONTENT_WIDTH, () -> amps, this::setAmps, 256, 67108864)));
+    }
 
-                .widget(new SelectorWidget(7, 7, 30, 20, Arrays.stream(VNF).toList(), -1)
-                        .setOnChanged(tier -> {
-                            setTier = ArrayUtils.indexOf(VNF, tier) + 5;
-                            voltage = GTValues.VEX[setTier];
-                        })
-                        .setSupplier(() -> VNF[setTier - 5])
-                        .setButtonBackground(ResourceBorderTexture.BUTTON_COMMON)
-                        .setBackground(ColorPattern.BLACK.rectTexture())
-                        .setValue(VNF[setTier - 5]));
+    private void setVoltage(long voltage) {
+        this.voltage = voltage;
+        this.maxEnergy = this.voltage * 64L * this.amps;
+        updateMachine();
+    }
+
+    private void setAmps(int amps) {
+        this.amps = amps;
+        this.maxEnergy = this.voltage * 64L * this.amps;
+        updateMachine();
+    }
+
+    private void updateLaserContainer() {
+        this.buffer.resetBasicInfo(this.maxEnergy, this.voltage, this.amps, 0, 0);
+        this.buffer.setEnergyStored(this.maxEnergy);
+    }
+
+    private void updateMachine() {
+        updateLaserContainer();
+        getControllers().forEach(IMultiController::requestCheck);
     }
 
     @NotNull

@@ -4,38 +4,30 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 扫雷盘面规则：只持有难度，雷盘与显示盘由调用方按行优先保存。
+ * 扫雷盘面规则：只持有模式与尺寸/雷数，雷盘与显示盘由调用方按行优先保存。
  * 格子值：未翻开 0、空 -1、数字 1~8、旗 -2、雷 -3、踩中的雷 -4；旗数、踩雷、通关都从数组推导。
- *
- * <p>
- * 数组可以长于 {@link #cellCount()}，查询与落子只看前 {@code cellCount} 格。
- * 每次落子把改动格写入 {@link IntArrayList}，调用方只刷新这些显示方块。
- * 首点 3×3 由生成器保证无雷，{@link #open} 不负责布雷；纯逻辑，只在服务端线程调用。
+ * 数组可长于 {@link #cellCount()}，查询与落子只看前 {@code cellCount} 格；改动格记进 {@link IntArrayList} 供调用方刷新。
+ * 首点 3×3 由生成器保证无雷，{@link #open} 不负责布雷；纯逻辑无同步，调用方须保证单线程。
  */
 public final class MinesweeperRules {
 
-    /** 未翻开。 */
     public static final int UNOPENED = 0;
-    /** 翻开后是空格（周围没有雷）。 */
+    /** 翻开后的空格（周围无雷）。 */
     public static final int OPEN_EMPTY = -1;
-    /** 插旗。 */
     public static final int FLAGGED = -2;
-    /** 结束时亮出来的雷（不是踩中的那颗）。 */
+    /** 结束时亮出的雷（不含踩中的那颗）。 */
     public static final int BOMB = -3;
     /** 踩中的那颗雷。 */
     public static final int DEATH_BOMB = -4;
     /** 数字格就是 1~8 本身。 */
     public static final int NUMBER_MIN = 1;
 
-    /** 八向邻居的个数：配合 {@link #neighbour} 用。 */
     public static final int DIRECTIONS = 8;
 
-    /** 自定义盘面的边长下限。 */
     public static final int CUSTOM_MIN_SIDE = 5;
-    /** 自定义盘面的边长上限（宽高各自）。 */
     public static final int CUSTOM_MAX_SIDE = 64;
 
-    /** 八向邻居的行/列偏移。 */
+    /** 八向邻居的列/行偏移，两组顺序一一对应。 */
     private static final int[] NEIGHBOR_COL = { -1, 0, 1, -1, 1, -1, 0, 1 };
     private static final int[] NEIGHBOR_ROW = { -1, -1, -1, 0, 0, 1, 1, 1 };
 
@@ -53,10 +45,7 @@ public final class MinesweeperRules {
         }
     }
 
-    /**
-     * 难度档位：尺寸、雷数与通关奖励；前五档固定，{@link #CUSTOM} 由玩家给尺寸/雷数且不计奖励。
-     * 密度逐档提高：12.3% / 15.6% / 20.6% / 24.9% / 27.7%。
-     */
+    /** 难度档位：尺寸、雷数与奖励；{@link #CUSTOM} 由玩家给尺寸/雷数且不计奖励，前五档密度逐档提高（约 12%→28%）。 */
     public enum Difficulty {
 
         EASY(9, 9, 10, 3),
@@ -96,12 +85,11 @@ public final class MinesweeperRules {
             return mineCount;
         }
 
-        /** 全部完成（或整局通关）时给多少游戏币；{@link #CUSTOM} 不计奖励，返回 0。 */
+        /** 全部完成时的奖励额；{@link #CUSTOM} 恒为 0。 */
         public long maxReward() {
             return maxReward;
         }
 
-        /** 尺寸与雷数是否由玩家给。 */
         public boolean custom() {
             return this == CUSTOM;
         }
@@ -112,7 +100,6 @@ public final class MinesweeperRules {
         }
     }
 
-    /** 模式。 */
     private final Mode mode;
     /** 预设档位；战役/自定义为 {@code null}。 */
     @Nullable
@@ -144,21 +131,21 @@ public final class MinesweeperRules {
         this.queue = new int[cellCount];
     }
 
-    /** 调用方按档位持有一份实例；换档位时重建，临时容器跟着盘面尺寸分配。 */
+    /** 机器按当前档位持有一份实例，换档位时重建（队列按盘面尺寸分配）。 */
     public static MinesweeperRules create(Difficulty preset) {
         return new MinesweeperRules(Mode.PRESET, preset, null,
                 preset.width(), preset.height(), preset.mineCount(), preset.maxReward());
     }
 
-    /** 战役关卡：尺寸/雷数来自静态关卡表，按里程碑记录单独发首通奖励，本规则不产生基础奖励。 */
+    /** 战役关卡：尺寸/雷数取自静态关卡表；首通奖励由里程碑记录另发，本规则不产生奖励。 */
     public static MinesweeperRules createCampaign(MinesweeperCampaign.Level level) {
         return new MinesweeperRules(Mode.CAMPAIGN, null, level,
                 level.width(), level.height(), level.minesCount(), 0L);
     }
 
     /**
-     * 自定义档：尺寸与雷数由玩家给，宽高夹到 {@link #CUSTOM_MIN_SIDE}~{@link #CUSTOM_MAX_SIDE}、雷数夹到
-     * {@link #clampMines} 的范围，一律不计奖励。调用方把夹好的值写回自己的字段，界面与规则才不会各说一套。
+     * 自定义档：宽高夹到 {@link #CUSTOM_MIN_SIDE}~{@link #CUSTOM_MAX_SIDE}、雷数夹到 {@link #clampMines}，不计奖励；
+     * 调用方要把夹好的值写回字段，界面与规则才不会各说一套。
      */
     public static MinesweeperRules createCustom(int width, int height, int mineCount) {
         int clampedWidth = Math.clamp(width, CUSTOM_MIN_SIDE, CUSTOM_MAX_SIDE);
@@ -167,7 +154,7 @@ public final class MinesweeperRules {
                 clampMines(clampedWidth, clampedHeight, mineCount), 0);
     }
 
-    /** 雷数上限：留出首点 3×3 的安全区，至少 1 颗。 */
+    /** 把雷数夹到 1 ~ 格数-9：上限给首点 3×3 留出安全区。 */
     public static int clampMines(int width, int height, int mineCount) {
         int max = Math.max(1, width * height - 9);
         return Math.clamp(mineCount, 1, max);
@@ -209,7 +196,6 @@ public final class MinesweeperRules {
         return mineCount;
     }
 
-    /** 全部完成时的奖励；自定义档为 0。 */
     public long maxReward() {
         return maxReward;
     }
@@ -217,9 +203,9 @@ public final class MinesweeperRules {
     // ==================== 落子 ====================
 
     /**
-     * 翻开一格：已翻开或插了旗的格子不动；雷盘必须由调用方提前生成好。
+     * 翻开一格：已翻开或插旗的格子不动；雷盘必须由调用方先布好。
      *
-     * @param touched 改动过的格子都记进来（调用方先清空），可能重复
+     * @param touched 改动格都记进来，可能重复；调用方先清空
      * @return 盘面是否真的变了
      */
     public boolean open(boolean[] mines, int[] cells, int cell, IntArrayList touched) {
@@ -236,9 +222,9 @@ public final class MinesweeperRules {
     }
 
     /**
-     * 插旗/拔旗：旗子最多插到雷数那么多（插满就不能再插，免得靠满屏旗子碰运气）。
+     * 插旗/拔旗：旗数上限为雷数，插满后不能再插（免得靠满屏旗子碰运气）。
      *
-     * @param touched 改动过的格子都记进来（调用方先清空）
+     * @param touched 改动格都记进来；调用方先清空
      * @return 盘面是否真的变了
      */
     public boolean toggleFlag(int[] cells, int cell, IntArrayList touched) {
@@ -264,7 +250,7 @@ public final class MinesweeperRules {
 
     // ==================== 局面查询 ====================
 
-    /** 已插旗数。 */
+    /** 已插旗数（含插错的旗）。 */
     public int flags(int[] cells) {
         int count = 0;
         for (int state : cells) {
@@ -273,7 +259,7 @@ public final class MinesweeperRules {
         return count;
     }
 
-    /** 插对的旗（插在雷上的旗）数，也就是「找到的雷」。 */
+    /** 插对的旗数（旗落在雷上），即「找到的雷」。 */
     public int foundMines(boolean[] mines, int[] cells) {
         int count = 0;
         for (int cell = 0; cell < cellCount; cell++) {
@@ -282,7 +268,6 @@ public final class MinesweeperRules {
         return count;
     }
 
-    /** 踩雷了。 */
     public boolean isLost(int[] cells) {
         for (int state : cells) {
             if (state == DEATH_BOMB) return true;
@@ -300,15 +285,11 @@ public final class MinesweeperRules {
         return true;
     }
 
-    /** 这一局结束了吗（踩雷或翻完）。 */
     public boolean isOver(boolean[] mines, int[] cells) {
         return isLost(cells) || isWon(mines, cells);
     }
 
-    /**
-     * 本局能兑现多少币：只有<b>全部完成</b>才给满额——雷全部找到，或者整局通关（所有非雷格翻开）。
-     * 没走完的一律不给，所以中途重开、提前收摊都拿不到币；自定义档 {@link #maxReward()} 为 0，同样一分不给。
-     */
+    /** 本局能兑现多少币：只有<b>全部完成</b>（雷全找到，或所有非雷格翻开）才给满额，其余一律 0；自定义档恒为 0。 */
     public long payout(int foundMines, boolean won) {
         if (maxReward <= 0 || mineCount <= 0) return 0;
         return won || foundMines >= mineCount ? maxReward : 0;
@@ -341,7 +322,7 @@ public final class MinesweeperRules {
         }
     }
 
-    /** 踩雷了：所有雷亮出来（踩中的那颗单独一张图），插错的旗换成它本来的数字。 */
+    /** 踩雷：亮出所有雷（踩中的那颗单独一张图），插错的旗换回本来的数字。 */
     private void revealMines(boolean[] mines, int[] cells, int deathCell, IntArrayList touched) {
         for (int cell = 0; cell < cellCount; cell++) {
             if (mines[cell]) {
@@ -355,7 +336,7 @@ public final class MinesweeperRules {
         }
     }
 
-    /** 通关：把还没插旗的雷都插上旗，界面上一眼看得出还剩几颗雷。 */
+    /** 通关：给还没插旗的雷补上旗，界面上一眼看得出雷已找齐。 */
     private void flagAllMines(boolean[] mines, int[] cells, IntArrayList touched) {
         for (int cell = 0; cell < cellCount; cell++) {
             if (mines[cell] && cells[cell] == UNOPENED) {
@@ -365,7 +346,6 @@ public final class MinesweeperRules {
         }
     }
 
-    /** 一格周围八向的雷数。 */
     private int adjacentMines(boolean[] mines, int cell) {
         int count = 0;
         for (int direction = 0; direction < DIRECTIONS; direction++) {

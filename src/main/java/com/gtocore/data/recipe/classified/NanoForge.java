@@ -5,12 +5,13 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeDataKeys;
 
-import com.gregtechceu.gtceu.api.data.chemical.material.MarkerMaterials;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
+
+import net.minecraft.world.item.DyeColor;
 
 import static com.gtocore.common.data.GTORecipeTypes.NANO_FORGE_RECIPES;
 
@@ -18,7 +19,7 @@ final class NanoForge {
 
     public static void init() {
         NANO_FORGE_RECIPES.recipeBuilder("gold_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Yellow)
+                .notConsumable(CustomTags.lens(DyeColor.YELLOW))
                 .inputItems(TagPrefix.block, GTMaterials.Gold, 8)
                 .inputItems(GTItems.SYSTEM_ON_CHIP, 16)
                 .inputFluids(GTMaterials.NaquadahEnriched, 2000)
@@ -44,7 +45,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("infuscolium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Pink)
+                .notConsumable(CustomTags.lens(DyeColor.PINK))
                 .inputItems(TagPrefix.block, GTOMaterials.Infuscolium, 8)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC, 32)
@@ -58,7 +59,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("draconium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Purple)
+                .notConsumable(CustomTags.lens(DyeColor.PURPLE))
                 .inputItems(TagPrefix.block, GTOMaterials.Draconium, 8)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC_WAFER, 32)
                 .inputItems(GTOItems.OPTICAL_RAM_WAFER, 32)
@@ -117,7 +118,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("carbon_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Lime)
+                .notConsumable(CustomTags.lens(DyeColor.LIME))
                 .inputItems(TagPrefix.block, GTMaterials.Carbon, 64)
                 .inputItems(GTItems.SYSTEM_ON_CHIP, 64)
                 .inputFluids(GTMaterials.SolderingAlloy, 20000)
@@ -129,7 +130,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("starmetal_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Red)
+                .notConsumable(CustomTags.lens(DyeColor.RED))
                 .inputItems(TagPrefix.block, GTOMaterials.Starmetal, 8)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC, 64)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC, 64)
@@ -145,7 +146,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("silver_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.LightGray)
+                .notConsumable(CustomTags.lens(DyeColor.LIGHT_GRAY))
                 .inputItems(TagPrefix.block, GTMaterials.Silver, 8)
                 .inputItems(GTItems.SYSTEM_ON_CHIP, 16)
                 .inputFluids(GTMaterials.NaquadahEnriched, 2000)
@@ -158,7 +159,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("orichalcum_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Magenta)
+                .notConsumable(CustomTags.lens(DyeColor.MAGENTA))
                 .inputItems(TagPrefix.block, GTOMaterials.Orichalcum, 8)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
@@ -198,7 +199,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("copper_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Brown)
+                .notConsumable(CustomTags.lens(DyeColor.BROWN))
                 .inputItems(TagPrefix.block, GTMaterials.Copper, 8)
                 .inputItems(GTItems.SYSTEM_ON_CHIP, 8)
                 .inputFluids(GTMaterials.Naquadah, 2000)
@@ -211,7 +212,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("rhenium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Cyan)
+                .notConsumable(CustomTags.lens(DyeColor.CYAN))
                 .inputItems(TagPrefix.block, GTMaterials.Rhenium, 8)
                 .inputItems(GTItems.SYSTEM_ON_CHIP, 64)
                 .inputFluids(GTMaterials.Naquadria, 2000)
@@ -224,7 +225,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("iron_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Gray)
+                .notConsumable(CustomTags.lens(DyeColor.GRAY))
                 .inputItems(TagPrefix.block, GTMaterials.Iron, 8)
                 .inputItems(GTItems.SYSTEM_ON_CHIP, 8)
                 .inputFluids(GTMaterials.Naquadah, 2000)
@@ -237,7 +238,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("enderium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Green)
+                .notConsumable(CustomTags.lens(DyeColor.GREEN))
                 .inputItems(TagPrefix.block, GTOMaterials.Enderium, 8)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
@@ -267,7 +268,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("eternity_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Blue)
+                .notConsumable(CustomTags.lens(DyeColor.BLUE))
                 .notConsumable(GTOItems.QUANTUM_ANOMALY.asItem())
                 .notConsumable(GTOItems.ETERNITY_CATALYST.asItem())
                 .inputItems(GTOTagPrefix.NANITES, GTMaterials.Neutronium)
@@ -283,7 +284,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("cosmic_neutronium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Black)
+                .notConsumable(CustomTags.lens(DyeColor.BLACK))
                 .inputItems(TagPrefix.block, GTOMaterials.CosmicNeutronium, 8)
                 .inputItems(GTOItems.SIMPLE_OPTICAL_SOC, 32)
                 .inputItems(GTOItems.EXOTIC_WAFER, 32)
@@ -299,7 +300,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("vibranium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.LightBlue)
+                .notConsumable(CustomTags.lens(DyeColor.LIGHT_BLUE))
                 .inputItems(TagPrefix.block, GTOMaterials.Vibranium, 8)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC, 64)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC, 64)
@@ -326,7 +327,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("uruium_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.LightBlue)
+                .notConsumable(CustomTags.lens(DyeColor.LIGHT_BLUE))
                 .inputItems(TagPrefix.block, GTOMaterials.Uruium, 8)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
                 .inputItems(GTItems.HIGHLY_ADVANCED_SOC, 64)
@@ -340,7 +341,7 @@ final class NanoForge {
                 .save();
 
         NANO_FORGE_RECIPES.recipeBuilder("glowstone_nanites")
-                .notConsumable(TagPrefix.lens, MarkerMaterials.Color.Orange)
+                .notConsumable(CustomTags.lens(DyeColor.ORANGE))
                 .inputItems(TagPrefix.block, GTMaterials.Glowstone, 64)
                 .inputItems(GTItems.ADVANCED_SYSTEM_ON_CHIP, 64)
                 .inputFluids(GTOMaterials.UuAmplifier, 10000)

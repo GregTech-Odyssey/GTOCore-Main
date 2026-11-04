@@ -778,11 +778,11 @@ final class ChemicaRreactor {
                 .duration(200)
                 .save();
 
+        // C16H33Br + C3H9N -> C19H42NBr
         CHEMICAL_RECIPES.recipeBuilder("ctab_dust")
                 .inputItems(TagPrefix.dust, GTOMaterials.HexadecylBromide, 1)
                 .inputFluids(GTOMaterials.Trimethylamine, 1000)
                 .outputItems(TagPrefix.dust, GTOMaterials.CTAB, 1)
-                .outputFluids(GTOMaterials.HydrobromicAcid, 1000)
                 .EUt(480)
                 .duration(200)
                 .save();
@@ -798,9 +798,10 @@ final class ChemicaRreactor {
                 .duration(111)
                 .save();
 
+        // C16H34 + 2 Br -> C16H33Br + HBr
         CHEMICAL_RECIPES.recipeBuilder("hexadecyl_bromide")
                 .inputItems(TagPrefix.dust, GTOMaterials.Cetane, 1)
-                .inputFluids(GTMaterials.Bromine, 1000)
+                .inputFluids(GTMaterials.Bromine, 2000)
                 .outputItems(TagPrefix.dust, GTOMaterials.HexadecylBromide, 1)
                 .outputFluids(GTOMaterials.HydrobromicAcid, 1000)
                 .EUt(480)

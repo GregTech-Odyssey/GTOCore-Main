@@ -3,19 +3,17 @@ package com.gtocore.client.hud;
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.gui.hud.OxygenHudRenderer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 import appeng.client.gui.Rects;
 
 import com.teamresourceful.resourcefulconfig.common.config.impl.ConfigParser;
 import earth.terrarium.adastra.client.config.AdAstraConfigClient;
-import earth.terrarium.adastra.client.screens.player.OverlayScreen;
-import earth.terrarium.adastra.common.items.armor.JetSuitItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -28,8 +26,6 @@ public class AdAstraHUD implements IMoveableHUD {
     @RegisterLanguage(en = "Ad Astra Oxygen HUD", cn = "Ad Astra 氧气 HUD")
     public static final String DISPLAY_NAME = "gtocore.hud.adastra.name";
 
-    private boolean gto$containerScreenEnv = false;
-    private boolean gto$hudEnv = false;
     private boolean gto$dragging = false;
     private int gto$dragStartX = 0;
     private int gto$dragStartY = 0;
@@ -46,29 +42,13 @@ public class AdAstraHUD implements IMoveableHUD {
         Minecraft mc = Minecraft.getInstance();
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
-        try {
-            gto$containerScreenEnv = true;
-            renderGeneral(guiGraphics, v,
-                    screenWidth,
-                    screenHeight);
-        } finally {
-            gto$containerScreenEnv = false;
-        }
-    }
-
-    @Override
-    public void render(ForgeGui forgeGui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
-        try {
-            gto$hudEnv = true;
-            renderGeneral(guiGraphics, partialTick, screenWidth, screenHeight);
-        } finally {
-            gto$hudEnv = false;
-        }
+        renderGeneral(guiGraphics, v, screenWidth, screenHeight);
     }
 
     @Override
     public void renderGeneral(GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
-        OverlayScreen.render(guiGraphics, partialTick);
+        OxygenHudRenderer.render(guiGraphics, AdAstraConfigClient.oxygenBarX + gto$pendingMovedX,
+                AdAstraConfigClient.oxygenBarY + gto$pendingMovedY);
     }
 
     @Override
@@ -101,11 +81,11 @@ public class AdAstraHUD implements IMoveableHUD {
 
     @Override
     public Rect2i getBounds(int screenWidth, int screenHeight) {
-        if (Minecraft.getInstance().player != null && !JetSuitItem.hasFullSet(Minecraft.getInstance().player)) {
+        if (!OxygenHudRenderer.visible()) {
             return Rects.ZERO;
         }
-        int x = AdAstraConfigClient.oxygenBarX;
-        int y = AdAstraConfigClient.oxygenBarY;
+        int x = Math.round(AdAstraConfigClient.oxygenBarX * AdAstraConfigClient.oxygenBarScale);
+        int y = Math.round(AdAstraConfigClient.oxygenBarY * AdAstraConfigClient.oxygenBarScale);
         return new Rect2i(x, y, getHudWidth(), getHudHeight());
     }
 
@@ -178,7 +158,7 @@ public class AdAstraHUD implements IMoveableHUD {
     }
 
     private int getHudHeight() {
-        return (int) (52 * AdAstraConfigClient.oxygenBarScale);
+        return (int) ((55 + Minecraft.getInstance().font.lineHeight) * AdAstraConfigClient.oxygenBarScale);
     }
 
     private static void set(int oxygenBarX, int oxygenBarY) {

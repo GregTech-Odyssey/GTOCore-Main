@@ -1,6 +1,8 @@
 package com.gtocore.common.item;
 
 import com.gregtechceu.gtceu.api.gui.misc.ProspectorMode;
+import com.gregtechceu.gtceu.api.item.IDataComponentItem;
+import com.gregtechceu.gtceu.api.item.ItemDataComponentKey;
 import com.gregtechceu.gtceu.api.item.component.IDurabilityBar;
 import com.gregtechceu.gtceu.api.item.component.IItemLifeCycle;
 import com.gregtechceu.gtceu.api.item.component.forge.IComponentCapability;
@@ -8,6 +10,7 @@ import com.gregtechceu.gtceu.api.tooltip.Tips;
 import com.gregtechceu.gtceu.common.item.ProspectorScannerBehavior;
 import com.gregtechceu.gtceu.uiwidgets.prospector.ProspectorMapView;
 
+import net.minecraft.nbt.IntTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -35,6 +38,7 @@ import java.util.List;
 public final class ManaProspectorBehavior extends ProspectorScannerBehavior implements IComponentCapability, IItemLifeCycle, IDurabilityBar {
 
     private static final String MANA_KEY = "mana";
+    public static final ItemDataComponentKey<Integer, IntTag> MANA = ItemDataComponentKey.create(MANA_KEY, IntTag::valueOf, IntTag::getAsInt);
     private static final int CONSUMPTION_PER_TICK = 10;
     private static final int CONSUMPTION_PER_CHUNK = 500;
 
@@ -55,13 +59,11 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
     }
 
     private static int getMana(ItemStack stack) {
-        // Placeholder for actual mana retrieval logic
-        return stack.getOrCreateTag().getInt(MANA_KEY);
+        return IDataComponentItem.getInt(stack, MANA);
     }
 
     private static void addMana(ItemStack stack, int mana) {
-        // Placeholder for actual mana setting logic
-        stack.getOrCreateTag().putInt(MANA_KEY, Math.max(0, getMana(stack) + mana));
+        IDataComponentItem.set(stack, MANA, Math.max(0, getMana(stack) + mana));
     }
 
     private static boolean checkAndConsumeMana(ItemStack stack, int consumption) {

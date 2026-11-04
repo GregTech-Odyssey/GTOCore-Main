@@ -29,6 +29,8 @@ public final class GTOCovers {
 
     static final CoverDefinition CREATIVE_POWER_AMPLIFIER = GTCovers.register("creative_power_amplifier", CreativePowerAmplifierCover::new, POWER_AMPLIFIER);
 
+    public static final CoverDefinition RAIN_FILM = GTCovers.register("rain_film", RainFilmCover::new, new SimpleCoverRenderer(GTCEu.id("block/cover/overlay_shutter")));
+
     static final CoverDefinition AIR_VENT = GTCovers.register("air_vent", AirVentCover::new, new SimpleCoverRenderer(GTOCore.id("block/machines/vacuum_pump/overlay_top")));
 
     static final CoverDefinition HEAT_INTERFACE = GTCovers.register("heat_interface", HeatInterfaceCover::new, new SimpleCoverRenderer(GTCEu.id("block/cover/overlay_activity_detector")));

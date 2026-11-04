@@ -3,11 +3,12 @@ package com.gtocore.data.tag;
 import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.common.data.*;
 
+import com.gtolib.drone.DroneSlot;
 import com.gtolib.utils.TagUtils;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTTags;
@@ -62,10 +63,11 @@ public final class TagsHandler {
                 GTOItems.CRUDELY_SHAPED_REMNANT_SPIRIT_STONE_ORE.asItem());
         create(ResourceLocation.fromNamespaceAndPath("curios", "curio"),
                 GTOItems.WIRELESS_ME2IN1.asItem());
+        create(ResourceLocation.fromNamespaceAndPath("curios", DroneSlot.CURIOS_SLOT),
+                GTOItems.HV_DRONE.asItem(), GTOItems.EV_DRONE.asItem(), GTOItems.IV_DRONE.asItem(), GTOItems.HYPERDIMENSIONAL_DRONE.asItem());
         create(ResourceLocation.parse("forge:ingots/redstone_alloy"),
                 ChemicalHelper.getItem(TagPrefix.ingot, GTMaterials.RedAlloy));
-        Item[] isaProcessableItems = GTCEuAPI.materialManager.getRegistries().stream()
-                .flatMap(registry -> registry.getAllMaterials().stream())
+        Item[] isaProcessableItems = GTRegistries.MATERIALS.values().stream()
                 .filter(material -> material.hasFlag(GTOMaterialFlags.GENERATE_MILLED))
                 .flatMap(material -> TagPrefix.ORES.keySet().stream().map(tagPrefix -> ChemicalHelper.getItem(tagPrefix, material)).filter(item -> item != Items.AIR))
                 .sorted(Comparator.comparing(Item::toString))

@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.Block;
 import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import lombok.Getter;
 
@@ -41,10 +42,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class RadiationHatchPartMachine extends MultiblockPartMachine implements IMachineLife, IRadiationHatch {
 
     @RegisterLanguage(cn = "放射源", en = "Radiation Source")
-    private static final String SOURCE = "gtocore.machine.radiation_hatch.source";
+    private static final Component SOURCE = Component.translatable("gtocore.machine.radiation_hatch.source");
 
     @RegisterLanguage(cn = "抑制量（Sv）", en = "Inhibition Amount (Sv)")
-    private static final String INHIBITION = "gtocore.machine.radiation_hatch.inhibition";
+    private static final Component INHIBITION = Component.translatable("gtocore.machine.radiation_hatch.inhibition");
 
     @SaveToDisk
     private final NotifiableInventory<AEItemKey> inventory;

@@ -26,6 +26,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
@@ -61,11 +62,11 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     private static final int UNKNOWN_RECEIVER_CAPACITY = 10000000;
 
     @RegisterLanguage(cn = "魔力存量", en = "Stored Mana")
-    private static final String LINE_MANA = "gtocore.machine.super_mana_tank.mana";
+    private static final Component LINE_MANA = Component.translatable("gtocore.machine.super_mana_tank.mana");
     @RegisterLanguage(cn = "可折魔源", en = "Convertible Source")
-    private static final String LINE_SOURCE = "gtocore.machine.super_mana_tank.source";
+    private static final Component LINE_SOURCE = Component.translatable("gtocore.machine.super_mana_tank.source");
     @RegisterLanguage(cn = "自动输出", en = "Auto Output")
-    private static final String ROW_OUTPUT = "gtocore.machine.super_mana_tank.output";
+    private static final Component ROW_OUTPUT = Component.translatable("gtocore.machine.super_mana_tank.output");
 
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;

@@ -37,9 +37,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
+import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 
@@ -70,6 +71,13 @@ public final class StructureWriteBehavior implements IItemUIFactory {
     @RegisterLanguage(cn = "尚未选定区域", en = "No area selected")
     private static final String NO_AREA = "gtocore.structure_writer.no_area";
 
+    private static final Component SCALE_LABEL = Component.translatable(SCALE);
+    private static final Component ORDER_LABEL = Component.translatable(ORDER);
+    private static final Component ROTATE_X_LABEL = Component.translatable(ROTATE_X);
+    private static final Component ROTATE_Y_LABEL = Component.translatable(ROTATE_Y);
+    private static final Component EXPORT_LABEL = Component.translatable(EXPORT);
+    private static final Component NO_AREA_TIP = Component.translatable(NO_AREA);
+
     private static final String EXPORT_MBS_FILE = "structure_pattern.mbs";
     private static final String EXPORT_TEXT_FILE = "structure_pattern.txt";
 
@@ -87,23 +95,23 @@ public final class StructureWriteBehavior implements IItemUIFactory {
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player entityPlayer) {
         return new HeldItemPage(holder, window -> {
             var status = new StatusPanel(LayoutStyle.AUTO);
-            status.addLine(SCALE, () -> {
+            status.addLine(SCALE_LABEL, () -> {
                 var pos = getPos(holder.getHeld());
-                if (pos == null) return Component.translatable(NO_AREA);
+                if (pos == null) return NO_AREA_TIP;
                 return Component.literal((1 + pos[1].getX() - pos[0].getX()) + " × " + (1 + pos[1].getY() - pos[0].getY()) + " × " + (1 + pos[1].getZ() - pos[0].getZ()));
             });
-            status.addLine(ORDER, () -> {
+            status.addLine(ORDER_LABEL, () -> {
                 var dirs = StructureScan.getDir(getDir(holder.getHeld()));
                 return Component.literal("C:" + dirs[0].name() + "  S:" + dirs[1].name() + "  A:" + dirs[2].name());
             });
             var mode = ButtonGroup.single(2, i -> Component.translatable(i == 0 ? MODE_BIND : MODE_EXPORT),
                     () -> holder.getHeld().getOrCreateTag().getBoolean("export") ? 1 : 0, i -> switchMode(holder)).horizontal();
             var rotate = UIElement.row(UISizes.CONTROL_HEIGHT).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                    Button.translatable(LayoutStyle.AUTO, ROTATE_X).layout(l -> l.flex(1)).setOnServerClick(() -> changeDirX(holder)),
-                    Button.translatable(LayoutStyle.AUTO, ROTATE_Y).layout(l -> l.flex(1)).setOnServerClick(() -> changeDirY(holder)));
-            rotate.disabled(() -> getPos(holder.getHeld()) == null, NO_AREA);
-            var export = Button.translatable(LayoutStyle.AUTO, EXPORT).setVariant(UITheme.ButtonVariant.CONFIRM)
-                    .disabled(() -> getPos(holder.getHeld()) == null, NO_AREA)
+                    Button.text(LayoutStyle.AUTO, ROTATE_X_LABEL).layout(l -> l.flex(1)).setOnServerClick(() -> changeDirX(holder)),
+                    Button.text(LayoutStyle.AUTO, ROTATE_Y_LABEL).layout(l -> l.flex(1)).setOnServerClick(() -> changeDirY(holder)));
+            rotate.disabled(() -> getPos(holder.getHeld()) == null, NO_AREA_TIP);
+            var export = Button.text(LayoutStyle.AUTO, EXPORT_LABEL).setVariant(UITheme.ButtonVariant.CONFIRM)
+                    .disabled(() -> getPos(holder.getHeld()) == null, NO_AREA_TIP)
                     .setOnServerClick(() -> exportLog(holder));
             return Form.page()
                     .addChildren(status, UIElement.section().addChildren(mode, rotate), export);

@@ -9,11 +9,10 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.GTORecipeCategories;
 
-import com.gtolib.api.data.chemical.material.GTOMaterialBuilder;
+import com.gtolib.api.data.chemical.material.GTOPropertyKeys;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.utils.GTOUtils;
 
-import com.gregtechceu.gtceu.api.GTCEuAPI;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -21,6 +20,7 @@ import com.gregtechceu.gtceu.api.data.chemical.material.info.MaterialFlags;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeCategories;
@@ -59,7 +59,7 @@ final class GTOPartsRecipeHandler {
         }
 
         if (rotors == null) {
-            rotors = GTCEuAPI.materialManager.getRegisteredMaterials().stream()
+            rotors = GTRegistries.MATERIALS.values().stream()
                     .filter(m -> GTOUtils.isGeneration(turbineRotor, m)).toList();
         }
         if (GTOUtils.isGeneration(turbineBlade, material)) {
@@ -952,7 +952,7 @@ final class GTOPartsRecipeHandler {
                 .outputItems(stack1)
                 .duration(400)
                 .EUt(120)
-                .blastFurnaceTemp(GTOMaterialBuilder.getTemp(material))
+                .blastFurnaceTemp(GTOPropertyKeys.temperature(material))
                 .save();
 
         CUTTER_RECIPES.recipeBuilder(material.getName() + "_brick")

@@ -15,7 +15,9 @@ import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
+import com.gtocore.common.item.misc.WingTrails;
 import com.gtocore.common.machine.monitor.Manager;
+import com.gtocore.common.machine.noenergy.game.GameLeaderboardBrowser;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 import com.gtocore.common.website.BugReportServer;
 import com.gtocore.common.wireless.energy.map.GridMapUIFactory;
@@ -51,6 +53,7 @@ import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
+import com.gtolib.drone.DroneServer;
 import com.gtolib.gtm.recipe.editor.RecipeEditorUIFactory;
 import com.gtolib.quest.QuestNetwork;
 
@@ -86,6 +89,7 @@ import appeng.hotkeys.HotkeyActions;
 import appeng.items.tools.powered.WirelessTerminalItem;
 
 import com.gto.datasynclib.DataSyncCodec;
+
 import de.mari_023.ae2wtlib.AE2wtlib;
 import de.mari_023.ae2wtlib.TextConstants;
 import de.mari_023.ae2wtlib.hotkeys.Ae2WTLibLocatingService;
@@ -130,12 +134,15 @@ public class CommonProxy {
         IPushResultsHandler.init();
         TechTreeCommands.init();
         TechTreeBrowser.init();
+        GameLeaderboardBrowser.init();
         GridMapUIFactory.init();
         RecipeEditorUIFactory.init();
         Manager.init();
         StarMapCommand.init();
         StarMapDysonSync.init();
+        WingTrails.init();
         TesseractTargetMarker.init();
+        DroneServer.init();
         TravelEvents.init();
         BugReportServer.init();
         PendingItemRewardDelivery.Events.init();

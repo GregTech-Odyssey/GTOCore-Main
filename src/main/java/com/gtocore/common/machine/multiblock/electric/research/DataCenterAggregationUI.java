@@ -48,6 +48,7 @@ import net.minecraft.world.item.ItemStack;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.ByteBufCodecExtends;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -73,15 +74,15 @@ public final class DataCenterAggregationUI {
     @RegisterLanguage(cn = "数据中心总览", en = "Data Center Overview")
     private static final String TITLE = "gtocore.data_center_aggregation.title";
     @RegisterLanguage(cn = "已绑定", en = "Bound")
-    private static final String LINE_BOUND = "gtocore.data_center_aggregation.line.bound";
+    private static final Component LINE_BOUND = Component.translatable("gtocore.data_center_aggregation.line.bound");
     @RegisterLanguage(cn = "研究中", en = "Researching")
-    private static final String LINE_RESEARCHING = "gtocore.data_center_aggregation.line.researching";
+    private static final Component LINE_RESEARCHING = Component.translatable("gtocore.data_center_aggregation.line.researching");
     @RegisterLanguage(cn = "空闲可用", en = "Idle")
-    private static final String LINE_IDLE = "gtocore.data_center_aggregation.line.idle";
+    private static final Component LINE_IDLE = Component.translatable("gtocore.data_center_aggregation.line.idle");
     @RegisterLanguage(cn = "算力上限合计", en = "Total max CWU")
-    private static final String LINE_TOTAL_CWU = "gtocore.data_center_aggregation.line.total_cwu";
+    private static final Component LINE_TOTAL_CWU = Component.translatable("gtocore.data_center_aggregation.line.total_cwu");
     @RegisterLanguage(cn = "发起人", en = "Initiator")
-    private static final String LINE_REQUESTER = "gtocore.data_center_aggregation.line.requester";
+    private static final Component LINE_REQUESTER = Component.translatable("gtocore.data_center_aggregation.line.requester");
     @RegisterLanguage(cn = "%s / %s", en = "%s / %s")
     private static final String VALUE_BOUND = "gtocore.data_center_aggregation.value.bound";
     @RegisterLanguage(cn = "%s 台", en = "%s")
@@ -91,28 +92,29 @@ public final class DataCenterAggregationUI {
     @RegisterLanguage(cn = "玻璃 %s · 数据槽位 %s · 已存配方 %s", en = "Glass %s · Data slots %s · Recipes %s")
     private static final String DETAIL_CAPACITY = "gtocore.data_center_aggregation.detail.capacity";
     @RegisterLanguage(cn = "已绑定的数据中心", en = "Bound Data Centers")
-    private static final String HEADER_CARDS = "gtocore.data_center_aggregation.header.cards";
+    private static final Component HEADER_CARDS = Component.translatable("gtocore.data_center_aggregation.header.cards");
     @RegisterLanguage(cn = "没有绑定的数据中心", en = "No bound Data Centers")
-    private static final String EMPTY = "gtocore.data_center_aggregation.empty";
+    private static final Component EMPTY = Component.translatable("gtocore.data_center_aggregation.empty");
     @RegisterLanguage(cn = "全部解除", en = "Unbind all")
-    private static final String UNBIND_ALL = "gtocore.data_center_aggregation.unbind_all";
+    private static final Component UNBIND_ALL = Component.translatable("gtocore.data_center_aggregation.unbind_all");
     @RegisterLanguage(cn = "再次点击确认", en = "Click to confirm")
-    private static final String UNBIND_ALL_CONFIRM = "gtocore.data_center_aggregation.unbind_all.confirm";
+    private static final Component UNBIND_ALL_CONFIRM = Component.translatable("gtocore.data_center_aggregation.unbind_all.confirm");
     @RegisterLanguage(cn = "解除终端与所有数据中心的绑定，不影响它们正在进行的研究", en = "Unbind every Data Center from this terminal; their ongoing research is not affected")
-    private static final String UNBIND_ALL_TIP = "gtocore.data_center_aggregation.unbind_all.tip";
+    private static final Component UNBIND_ALL_TIP = Component.translatable("gtocore.data_center_aggregation.unbind_all.tip");
     @RegisterLanguage(cn = "没有绑定的数据中心", en = "No bound Data Centers")
-    private static final String NOTHING_BOUND = "gtocore.data_center_aggregation.nothing_bound";
+    private static final Component NOTHING_BOUND = Component.translatable("gtocore.data_center_aggregation.nothing_bound");
     @RegisterLanguage(cn = "解除绑定（不影响正在进行的研究）", en = "Unbind (ongoing research is not affected)")
-    private static final String UNBIND_TIP = "gtocore.data_center_aggregation.unbind.tip";
+    private static final Component UNBIND_TIP = Component.translatable("gtocore.data_center_aggregation.unbind.tip");
+
     @RegisterLanguage(cn = "研究任务存在各台数据中心上：它们各自记录研究节点与发起人，消耗电力与冷却液、从算力网络获取 CWU，并累加到团队进度",
                       en = "Research runs on each Data Center: each keeps its own node and initiator, consumes power and coolant, draws CWU from its computation network and adds it to team progress")
-    private static final String HELP_TASK = "gtocore.data_center_aggregation.help.task";
+    private static final Component HELP_TASK = Component.translatable("gtocore.data_center_aggregation.help.task");
     @RegisterLanguage(cn = "每台一次研究一个节点，多台可同时研究不同节点", en = "Each researches one node at a time; several can research different nodes at once")
-    private static final String HELP_PARALLEL = "gtocore.data_center_aggregation.help.parallel";
+    private static final Component HELP_PARALLEL = Component.translatable("gtocore.data_center_aggregation.help.parallel");
     @RegisterLanguage(cn = "算力上限取决于玻璃等级、数据访问仓的槽位数与已存配方数", en = "The CWU cap depends on glass tier, Data Access Hatch slots and stored recipes")
-    private static final String HELP_CAPACITY = "gtocore.data_center_aggregation.help.capacity";
+    private static final Component HELP_CAPACITY = Component.translatable("gtocore.data_center_aggregation.help.capacity");
     @RegisterLanguage(cn = "启动研究时交给空闲且算力上限最高的一台", en = "Launching research goes to the idle one with the highest CWU cap")
-    private static final String HELP_DISPATCH = "gtocore.data_center_aggregation.help.dispatch";
+    private static final Component HELP_DISPATCH = Component.translatable("gtocore.data_center_aggregation.help.dispatch");
 
     @RegisterLanguage(cn = "研究中", en = "Researching")
     private static final String STATE_RESEARCHING = "gtocore.data_center_aggregation.state.researching";
@@ -138,7 +140,7 @@ public final class DataCenterAggregationUI {
     @RegisterLanguage(cn = "交给空闲且算力上限最高的数据中心研究", en = "Assign to the idle Data Center with the highest CWU cap")
     private static final String TIP_LAUNCH = "gtocore.data_center_aggregation.research.tip_launch";
     @RegisterLanguage(cn = "没有空闲的数据中心", en = "No idle Data Center")
-    private static final String NO_IDLE = "gtocore.data_center_aggregation.research.no_idle";
+    private static final Component NO_IDLE = Component.translatable("gtocore.data_center_aggregation.research.no_idle");
 
     private static final StreamCodec<FriendlyByteBuf, Binding> BINDING_CODEC = new StreamCodec<>() {
 
@@ -258,7 +260,7 @@ public final class DataCenterAggregationUI {
                 maxCwuText = shownCwu < 0 ? NONE : Component.literal(FormattingUtil.formatNumbers(shownCwu) + " CWU/t");
             }
             detailText = switch (state) {
-                case PAUSED -> Component.translatable(machine != null && machine.isResearchBlocked() ? DataCenter.LANG_PREREQUISITES_NOT_RESEARCHED : DataCenter.LANG_RESEARCH_IDLE);
+                case PAUSED -> machine != null && machine.isResearchBlocked() ? DataCenter.LANG_PREREQUISITES_NOT_RESEARCHED : Component.translatable(DataCenter.LANG_RESEARCH_IDLE);
                 case UNLOADED -> Component.translatable(DETAIL_UNLOADED);
                 case MISSING -> Component.translatable(DETAIL_MISSING);
                 default -> Component.empty();
@@ -420,7 +422,7 @@ public final class DataCenterAggregationUI {
                     .bindClientVariant(() -> count.getValue() > 0 ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
                     .setOnServerClick(() -> toggleResearch(node))
                     .bindTooltip(() -> Component.translatable(researchingCount(node) > 0 ? TIP_CANCEL : TIP_LAUNCH));
-            button.disabled(() -> TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(player), node), TechNodeDetails.ALREADY_UNLOCKED);
+            button.disabled(() -> TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(player), node), TechNodeDetails.ALREADY_UNLOCKED_TIP);
             var gate = UIElement.column(LayoutStyle.AUTO).addChild(button);
             gate.disabled(() -> researchingCount(node) == 0 && bestIdle() == null, NO_IDLE);
             section.disabled(() -> researchingCount(node) == 0 && !TechTreeSavedData.isPrerequisitesUnlocked(TechTreeSavedData.getTeamUUID(player), node),
@@ -483,13 +485,13 @@ public final class DataCenterAggregationUI {
             });
             page.addChild(summary);
 
-            var unbindAll = ConfirmButton.translatable(LayoutStyle.AUTO, UNBIND_ALL, UNBIND_ALL_CONFIRM)
+            var unbindAll = ConfirmButton.of(LayoutStyle.AUTO, UNBIND_ALL, UNBIND_ALL_CONFIRM)
                     .setOnServerConfirm(context::unbindAll)
                     .disabled(() -> context.bindings().isEmpty(), NOTHING_BOUND);
             unbindAll.layout(l -> l.width(UISizes.BUTTON_WIDTH * 3 / 2));
-            unbindAll.setHoverTooltips(Component.translatable(UNBIND_ALL_TIP));
+            unbindAll.tooltips(UNBIND_ALL_TIP);
             var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
-            var title = TextLine.translatable(0, HEADER_CARDS);
+            var title = TextLine.constant(0, HEADER_CARDS);
             title.layout(l -> l.flex(1));
             header.addChildren(title, InfoIcon.info(HELP_TASK, HELP_PARALLEL, HELP_CAPACITY, HELP_DISPATCH), unbindAll);
             page.addChild(header);
@@ -529,7 +531,7 @@ public final class DataCenterAggregationUI {
         var card = UIElement.section(CARD_WIDTH);
 
         var unbind = Button.glyph("×").setOnServerClick(() -> context.unbind(binding));
-        unbind.setHoverTooltips(Component.translatable(UNBIND_TIP));
+        unbind.tooltips(UNBIND_TIP);
         var location = TextLine.constant(0, DataCenterAggregationTerminal.location(binding));
         location.layout(l -> l.flex(1));
         var header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT);
@@ -569,7 +571,7 @@ public final class DataCenterAggregationUI {
             return entry == null || entry.machine == null || entry.node == null ? ProgressBar.Progress.EMPTY : entry.machine.researchProgress();
         });
         progress.layout(l -> l.flex(1));
-        var cancel = Button.translatable(UISizes.BUTTON_WIDTH, DataCenter.LANG_CANCEL_BUTTON)
+        var cancel = Button.text(UISizes.BUTTON_WIDTH, DataCenter.LANG_CANCEL_BUTTON)
                 .setVariant(UITheme.ButtonVariant.DANGER)
                 .setOnServerClick(() -> {
                     var entry = context.entry(binding);

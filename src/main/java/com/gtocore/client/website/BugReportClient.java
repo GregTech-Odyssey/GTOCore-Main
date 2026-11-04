@@ -87,6 +87,9 @@ public final class BugReportClient {
     static final String OPEN = "gtocore.bug.open";
     @RegisterLanguage(cn = "关闭", en = "Close")
     static final String CLOSE = "gtocore.bug.close";
+
+    private static final Component OPEN_LABEL = Component.translatable(OPEN);
+    private static final Component CLOSE_LABEL = Component.translatable(CLOSE);
     @RegisterLanguage(cn = "已有一次bug反馈正在进行。", en = "A bug report is already in progress.")
     static final String BUSY = "gtocore.bug.busy";
     @RegisterLanguage(cn = "日志%s超过5MB，已保留开头1MB与末尾2MB上传。", en = "The log %s was over 5 MB; its first 1 MB and last 2 MB were uploaded.")
@@ -381,8 +384,8 @@ public final class BugReportClient {
             content.addChild(section);
         }
         int action = 2 * UISizes.BUTTON_WIDTH;
-        var closeButton = Button.translatable(action, CLOSE).setOnClientClick(close);
-        var open = Button.translatable(action, OPEN).setVariant(UITheme.ButtonVariant.CONFIRM).setOnClientClick(() -> {
+        var closeButton = Button.text(action, CLOSE_LABEL).setOnClientClick(close);
+        var open = Button.text(action, OPEN_LABEL).setVariant(UITheme.ButtonVariant.CONFIRM).setOnClientClick(() -> {
             String url = current.url;
             if (url == null || !current.finished) return;
             Util.getPlatform().openUri(url);

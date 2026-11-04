@@ -42,12 +42,29 @@ gradlew.bat build
 | 目的 | macOS / Linux 命令 |
 |------|--------------------|
 | 格式化源码与资源 | `bash ./gradlew spotlessApply` |
+| 刷新依赖缓存 | `bash ./gradlew refreshDependencies` |
 | 完整构建 | `bash ./gradlew build` |
 | 启动开发客户端 | `bash ./gradlew runClient` |
 | 启动开发服务端 | `bash ./gradlew runServer` |
 | 生成数据 | `bash ./gradlew runData` |
 
 `runData` 会写入 `src/generated/resources/`。提交前请检查生成结果，只保留与本次改动有关的文件。
+
+`refreshDependencies`（也可全小写写作 `refreshdependencies`）在依赖解析前启用 Gradle 原生 `--refresh-dependencies`，并重新解析项目中所有可解析的依赖配置。它会重新检查仓库中的依赖，下载发生变化的文件，复用校验一致的文件，不删除整个 Gradle 用户缓存。任务需要联网，不能与 `--offline` 同用；请使用完整任务名。
+
+## 字段同步与持久化（DataSyncLib）
+
+给机器/BlockEntity 加需要存档或同步的字段时，用 DataSyncLib 的注解（`@SaveToDisk` /
+`@SyncToClient` / `@Access` 等），不要手写 `tag.putInt(...)` 或自己拼 `FriendlyByteBuf`。
+完整功能参考与目录见 [docs/datasynclib/00-overview.md](datasynclib/00-overview.md)。
+
+本仓几条既定约定：
+
+- 机器的 `@SaveToDisk` 字段**几乎都应配 `defaultValue`**（大量机器停在默认值，能显著缩小存档）。
+- 机器的同步用 `requestSync()`（标脏，下一 tick 走完整流程）或 `syncToClient()`
+  （立即发包，但**不跑自动检测**，需先 `markFieldsForSync`）。
+- 容器字段引用不变、内容变时，加 `@Access` 或声明为 `final`。
+- 新增自定义类型的 `DataSyncCodec.register(...)` 必须放在模组构造期，晚于字段首次扫描会被缓存遮蔽。
 
 ## 推荐开发流程
 

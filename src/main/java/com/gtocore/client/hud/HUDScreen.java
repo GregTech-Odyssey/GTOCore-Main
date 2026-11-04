@@ -4,6 +4,7 @@ import com.gtocore.utils.GuiHelper;
 
 import com.gtolib.api.gui.HudUIStyle;
 import com.gtolib.api.gui.WirelessEnergyFormatControl;
+import com.gtolib.api.gui.hud.ScalableHud;
 
 import com.gregtechceu.gtceu.uipro.render.UIDraw;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -69,7 +70,7 @@ public class HUDScreen extends Screen {
 
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, 0, 2000);
-        if (selectedHud != null && selectedHud.isEnabled()) {
+        if (selectedHud != null && selectedHud.isAvailable() && selectedHud.isEnabled()) {
             var bounds = selectedHud.getPropertyAnchorBounds(width, height);
             UIDraw.strokeRoundRect(guiGraphics, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), HudUIStyle.get().accent);
         }
@@ -160,6 +161,7 @@ public class HUDScreen extends Screen {
     @Override
     public void removed() {
         releaseActiveHudAtCursor();
+        if (selectedHud != null) selectedHud.setFocused(false);
         dropdownOpen = false;
         super.removed();
         if (stylePushed) {
@@ -254,11 +256,12 @@ public class HUDScreen extends Screen {
     }
 
     private void ensureSelectedHud() {
-        if (selectedHud != null && selectedHud.isEnabled()) {
+        if (selectedHud != null && selectedHud.isAvailable() && selectedHud.isEnabled()) {
             return;
         }
         selectedHud = null;
         for (IMoveableHUD hud : IMoveableHUD.REGISTERED_HUDS.values()) {
+            if (!hud.isAvailable()) continue;
             if (hud.isEnabled()) {
                 selectedHud = hud;
                 break;
@@ -267,11 +270,13 @@ public class HUDScreen extends Screen {
     }
 
     private void setSelectedHud(IMoveableHUD hud) {
+        if (selectedHud != null) selectedHud.setFocused(false);
         selectedHud = hud;
+        hud.setFocused(true);
     }
 
     private void updateWirelessEnergyFormat() {
-        wirelessEnergyFormat.visible = selectedHud == WirelessEnergyHUD.INSTANCE && selectedHud.isEnabled() &&
+        wirelessEnergyFormat.visible = selectedHud instanceof ScalableHud panel && panel.wraps(WirelessEnergyHUD.INSTANCE) && selectedHud.isEnabled() &&
                 !isPositionDragActive() && !dropdownOpen;
         wirelessEnergyFormat.active = wirelessEnergyFormat.visible;
         if (wirelessEnergyFormat.visible) {
@@ -283,12 +288,19 @@ public class HUDScreen extends Screen {
         enabledHuds.clear();
         hiddenHuds.clear();
         for (IMoveableHUD hud : IMoveableHUD.REGISTERED_HUDS.values()) {
+            if (!hud.isAvailable()) continue;
             if (hud.isEnabled()) {
                 enabledHuds.add(hud);
             } else {
                 hiddenHuds.add(hud);
             }
         }
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        return selectedHud != null && selectedHud.isAvailable() && selectedHud.mouseScrolled(mouseX, mouseY, delta) ||
+                super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     private IMoveableHUD getHiddenHudAt(double mouseX, double mouseY, ObjectArrayList<IMoveableHUD> hiddenHuds) {

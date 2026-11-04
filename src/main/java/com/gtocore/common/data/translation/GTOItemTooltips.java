@@ -1,5 +1,6 @@
 package com.gtocore.common.data.translation;
 
+import com.gtocore.api.lang.GTOStats;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
 import com.gtocore.common.block.ChargeBomb;
@@ -29,7 +30,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Blocks;
 
-import appeng.block.crafting.ICraftingUnitType;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 import appeng.core.definitions.AEParts;
@@ -201,14 +201,10 @@ public final class GTOItemTooltips {
             }));
         }
 
-        craftingStorageTips(AEBlocks.CRAFTING_STORAGE_1K.asItem(), AEBlocks.CRAFTING_STORAGE_1K.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_STORAGE_4K.asItem(), AEBlocks.CRAFTING_STORAGE_4K.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_STORAGE_16K.asItem(), AEBlocks.CRAFTING_STORAGE_16K.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_STORAGE_64K.asItem(), AEBlocks.CRAFTING_STORAGE_64K.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_STORAGE_256K.asItem(), AEBlocks.CRAFTING_STORAGE_256K.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_ACCELERATOR.asItem(), AEBlocks.CRAFTING_ACCELERATOR.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_UNIT.asItem(), AEBlocks.CRAFTING_UNIT.block().type);
-        craftingStorageTips(AEBlocks.CRAFTING_MONITOR.asItem(), AEBlocks.CRAFTING_MONITOR.block().type);
+        setTips(AEBlocks.CRAFTING_ACCELERATOR.asItem(), GTOTips.of("crafting_accelerator", t -> {
+            t.feature(t.tr("提供§b16§r并行处理", "Provides §b16§r parallel processing"));
+            t.edition();
+        }));
 
         for (ChargeBomb bomb : ChargeBomb.values()) bomb(bomb);
 
@@ -227,7 +223,7 @@ public final class GTOItemTooltips {
                 t.keepOrder();
                 t.rightClick(t.tr("Shift+右键方块可以复制其名称", "Shift+Right click a block to copy its name"));
                 t.rightClick(t.tr("右键物品可以复制其名称", "Right click an item to copy its name"));
-                t.control(t.tr("重命名以 + 开头可添加后缀", "Rename with a + prefix to add a suffix"));
+                t.control(t.tr("以 + 开头会以后缀形式重命名样板供应器", "Prefixing with + will rename Pattern Providers as a suffix"));
                 t.edition();
             }));
         }
@@ -337,23 +333,24 @@ public final class GTOItemTooltips {
         }));
     }
 
-    private static void craftingStorageTips(Item item, ICraftingUnitType type) {
-        int threads = type.getAcceleratorThreads();
-        long bytes = type.getStorageBytes();
-        setTips(item, GTOTips.of("crafting_storage_" + threads + "_" + bytes, t -> {
-            t.feature(t.tr("提供§b" + threads + "§r并行处理", "Provides §b" + threads + "§r parallel processing"));
-            if (bytes > 0) {
-                t.feature(t.tr("提供§b" + bytes / 1024 + "K§r存储容量", "Provides §b" + bytes / 1024 + "K§r storage capacity"));
-            }
-            t.edition();
-        }));
-    }
-
     private static void miraculousTools(GTOTips t, Component name) {
         t.heading(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), name));
     }
 
     private static void setTips(Item item, TipSpec spec) {
         ((IItem) item).gtolib$setTips(spec);
+    }
+
+    public static TipSpec droneTips(float flySpeed, int range, int damage, int interactionRange, int searchRange) {
+        return TipSpec.builder().group(Component.translatable("gtocore.tooltip.drone"),
+                l -> {
+                    l.feature(Component.translatable("gtocore.tooltip.drone.control"));
+                    l.feature(Component.translatable("gtocore.tooltip.drone.control.1", Component.keybind("key.gtocore.drone_toggle").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+                    l.stat(GTOStats.FLY_SPEED, flySpeed);
+                    l.stat(GTOStats.SCENE_RANGE, range);
+                    l.stat(GTOStats.ATTACK_DAMAGE, damage);
+                    l.stat(GTOStats.REACH_DISTANCE, interactionRange);
+                    l.stat(GTOStats.SEARCH_RANGE, searchRange);
+                }).build();
     }
 }

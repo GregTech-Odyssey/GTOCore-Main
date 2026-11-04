@@ -16,6 +16,7 @@ import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +28,7 @@ import java.util.function.Predicate;
 public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
 
     @RegisterLanguage(cn = "电路组装机器人", en = "Circuit Assembly Robot")
-    private static final String SLOT_LABEL = "gtocore.machine.circuit_assembly_line.slot";
+    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.circuit_assembly_line.slot");
 
     private int inputEUt;
 
@@ -86,7 +87,7 @@ public final class CircuitAssemblyLineMachine extends StorageMultiblockMachine {
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return SLOT_LABEL;
     }
 }

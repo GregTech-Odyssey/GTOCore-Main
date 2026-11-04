@@ -21,6 +21,7 @@ import appeng.core.definitions.AEItems;
 import appeng.items.materials.NamePressItem;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
+
 import org.jetbrains.annotations.Nullable;
 
 public final class FormingPressLogic implements GTRecipeType.ICustomRecipeLogic {

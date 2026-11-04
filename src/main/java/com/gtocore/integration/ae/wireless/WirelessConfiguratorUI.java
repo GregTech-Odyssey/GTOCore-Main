@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 public final class WirelessConfiguratorUI {
 
     @RegisterLanguage(cn = "目标网络", en = "Target Network")
-    static final String TARGET = "gtocore.wireless.configurator.target";
+    static final Component TARGET = Component.translatable("gtocore.wireless.configurator.target");
     @RegisterLanguage(cn = "未选择", en = "None selected")
     static final String NONE = "gtocore.wireless.configurator.none";
     @RegisterLanguage(cn = "选择", en = "Select")
@@ -42,9 +42,9 @@ public final class WirelessConfiguratorUI {
     @RegisterLanguage(cn = "取消选择", en = "Clear")
     static final String CLEAR = "gtocore.wireless.configurator.clear";
     @RegisterLanguage(cn = "右键无线机器：加入目标网络", en = "Right-click a machine: join target")
-    static final String HINT = "gtocore.wireless.configurator.hint";
+    static final Component HINT = Component.translatable("gtocore.wireless.configurator.hint");
     @RegisterLanguage(cn = "潜行右键：读取机器的网络", en = "Sneak-right-click: copy its network")
-    static final String HINT_SNEAK = "gtocore.wireless.configurator.hint_sneak";
+    static final Component HINT_SNEAK = Component.translatable("gtocore.wireless.configurator.hint_sneak");
     @RegisterLanguage(cn = "未选择目标网络，手持配置器右键空气打开界面进行选择", en = "No target network selected; right-click the air with the configurator to choose one")
     public static final String NO_TARGET = "gtocore.wireless.configurator.no_target";
 
@@ -106,8 +106,8 @@ public final class WirelessConfiguratorUI {
                 from -> clear(ctx, hand),
                 null, null));
         root.addChild(UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, HINT).bindClientColor(UITheme::textSecondary),
-                TextLine.translatable(LayoutStyle.AUTO, HINT_SNEAK).bindClientColor(UITheme::textSecondary)));
+                TextLine.constant(LayoutStyle.AUTO, HINT).bindClientColor(UITheme::textSecondary),
+                TextLine.constant(LayoutStyle.AUTO, HINT_SNEAK).bindClientColor(UITheme::textSecondary)));
         return root;
     }
 

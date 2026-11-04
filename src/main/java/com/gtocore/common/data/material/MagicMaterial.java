@@ -80,7 +80,7 @@ public final class MagicMaterial {
                 .liquid(new FluidBuilder().translation("fluid.gtocore.liquid_aether"))
                 .color(0xfbedff)
                 .iconSet(BRIGHT)
-                .flags(NO_UNIFICATION)
+                .flags(DISABLE_MATERIAL_RECIPES)
                 .buildAndRegister()
                 .setFormula("*Ae*", false);
 

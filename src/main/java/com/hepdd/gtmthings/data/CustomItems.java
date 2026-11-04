@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 
 import com.gto.registrate.util.entry.ItemEntry;
 import com.gto.registrate.util.nullness.NonNullConsumer;
+
 import com.hepdd.gtmthings.client.VirtualFluidProviderRenderer;
 import com.hepdd.gtmthings.client.VirtualItemProviderRenderer;
 import com.hepdd.gtmthings.common.item.*;

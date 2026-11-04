@@ -4,6 +4,7 @@ import com.gtocore.client.Message;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 import com.gtocore.integration.jech.PinYinUtils;
 
+import com.gtolib.api.ae2.gui.BlitterHelper;
 import com.gtolib.api.ae2.gui.MePanelFrame;
 
 import net.minecraft.ChatFormatting;
@@ -69,15 +70,25 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static final int MAX_ROWS = 16;
     private static final int MIN_WIDTH = 140;
     private static final int MAX_WIDTH = 420;
-    private static final int TEXT_COLOR = 0x404040;
-    private static final int MATCH_COLOR = 0xFFFF55;
-    private static final int PROVIDER_MATCH_COLOR = 0x55FF55;
-    private static final int MACHINE_MATCH_COLOR = 0x7FD7FF;
-    // 已有相同样板的行：底色偏暗、文字灰色、图标盖一层半透明底色
-    private static final int GREYED_ROW_COLOR = 0xFF7A7A7A;
-    private static final int GREYED_TEXT_COLOR = 0xB4B4B4;
-    private static final int GREYED_SUB_TEXT_COLOR = 0x969696;
+    // 行底色贴图：左框 2px、中段 1px 横向拉伸、右框 2px；整行外观由资源包决定，文字色走 screens 调色板
+    private static final Blitter ROW_BG = Blitter.texture("guis/pattern_destination_row.png", 5, ROW_H);
+    private static final Blitter ROW_BG_LEFT = ROW_BG.copy().src(0, 0, 2, ROW_H);
+    private static final Blitter ROW_BG_MIDDLE = ROW_BG.copy().src(2, 0, 1, ROW_H);
+    private static final Blitter ROW_BG_RIGHT = ROW_BG.copy().src(3, 0, 2, ROW_H);
+    // 行内叠加：已满偏红、已有同样样板压暗、悬停提亮。半透明，跟随行底色
+    private static final int FULL_ROW_TINT = 0x408B3030;
+    private static final int GREYED_ROW_TINT = 0x48000000;
+    private static final int HOVER_ROW_TINT = 0x24FFFFFF;
     private static final int GREYED_ICON_OVERLAY = 0x907A7A7A;
+    // 命中高亮用固定色相，亮底主题要压深、暗底主题要提亮，两档在构造时按调色板选定
+    private static final int MATCH_COLOR_DARK = 0xFFFF55;
+    private static final int MATCH_COLOR_LIGHT = 0xFF8A6B00;
+    private static final int PROVIDER_COLOR_DARK = 0xFF55FF55;
+    private static final int PROVIDER_COLOR_LIGHT = 0xFF1F7A2C;
+    private static final int MACHINE_COLOR_DARK = 0xFF7FD7FF;
+    private static final int MACHINE_COLOR_LIGHT = 0xFF0E6E86;
+    // 默认文本色亮于该亮度即视为暗底主题
+    private static final int DARK_THEME_LUMA = 140;
     private static final int TOGGLE_SIZE = 16;
     // 改名后两行名称的字号缩放
     private static final float SMALL_TEXT_SCALE = 0.75f;
@@ -103,6 +114,14 @@ public class PatternDestinationPanel implements ICompositeWidget {
     // 不用 AETextField：它的背景贴图中段最多 126px，拉宽后右侧会露出断层；这里改为无边框 EditBox + 平铺同一张贴图
     private final EditBox searchField;
     private final int placeholderColor;
+    // 行配色：取自终端 screens 的调色板，资源包覆盖 palette.json 即可跟随主题
+    private final int titleColor;
+    private final int nameColor;
+    private final int subTextColor;
+    private final int fullColor;
+    private final int matchColor;
+    private final int providerMatchColor;
+    private final int machineMatchColor;
     private final Scrollbar scrollbar;
     private final List<Entry> entries = new ArrayList<>();
     private final IntArrayList visible = new IntArrayList();
@@ -153,6 +172,15 @@ public class PatternDestinationPanel implements ICompositeWidget {
         var style = screen.getStyle();
         searchField.setTextColor(style.getColor(PaletteColor.TEXTFIELD_TEXT).toARGB());
         placeholderColor = style.getColor(PaletteColor.TEXTFIELD_PLACEHOLDER).toARGB();
+        titleColor = style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB();
+        nameColor = titleColor;
+        // 弱化色压在浅色行底上对比不足（深色主题无此问题），亮底主题下退化为默认文本色
+        boolean darkTheme = isDarkTheme(titleColor);
+        subTextColor = darkTheme ? style.getColor(PaletteColor.MUTED_TEXT_COLOR).toARGB() : titleColor;
+        fullColor = style.getColor(PaletteColor.ERROR).toARGB();
+        matchColor = darkTheme ? MATCH_COLOR_DARK : MATCH_COLOR_LIGHT;
+        providerMatchColor = darkTheme ? PROVIDER_COLOR_DARK : PROVIDER_COLOR_LIGHT;
+        machineMatchColor = darkTheme ? MACHINE_COLOR_DARK : MACHINE_COLOR_LIGHT;
         searchField.setResponder(value -> {
             searchDirty = true;
             searchChangedAt = Util.getMillis();
@@ -352,7 +380,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         (dragging ? MePanelFrame.DRAG_MARK_ACTIVE : MePanelFrame.DRAG_MARK).copy().dest(x + 3, y + 1).blit(guiGraphics);
         int toggleX = getToggleX();
         int toggleY = getToggleY();
-        guiGraphics.drawString(font, title.get(font, toggleX - 4 - (x + 21)), x + 21, y + 5, TEXT_COLOR, false);
+        guiGraphics.drawString(font, title.get(font, toggleX - 4 - (x + 21)), x + 21, y + 5, titleColor, false);
         TOGGLE_BACKGROUND.copy().dest(toggleX, toggleY).blit(guiGraphics);
         (matchOutputs ? MATCH_OUTPUTS_ON : MATCH_OUTPUTS_OFF).copy().dest(toggleX, toggleY).blit(guiGraphics);
         if (inRect(mouse, toggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE)) {
@@ -415,13 +443,29 @@ public class PatternDestinationPanel implements ICompositeWidget {
 
     private static void drawRowBackground(GuiGraphics guiGraphics, int rx, int ry, int rw, boolean full, boolean greyed,
                                           boolean hovered) {
-        // 与 ME 面板物品槽一致的内凹样式：左上深色、右下白色；已满偏红，已有相同样板偏暗
-        guiGraphics.fill(rx, ry, rx + rw, ry + ROW_H, 0xFF373737);
-        guiGraphics.fill(rx + 1, ry + 1, rx + rw, ry + ROW_H, 0xFFFFFFFF);
-        guiGraphics.fill(rx + 1, ry + 1, rx + rw - 1, ry + ROW_H - 1, full ? 0xFF8B6060 : greyed ? GREYED_ROW_COLOR : 0xFF8B8B8B);
-        if (hovered) {
-            guiGraphics.fill(rx + 1, ry + 1, rx + rw - 1, ry + ROW_H - 1, 0x80FFFFFF);
+        // 与 ME 面板物品槽一致的内凹样式：底色由贴图给（资源包可换），状态只叠一层半透明色
+        BlitterHelper.of(guiGraphics).hBlit(ROW_BG_LEFT, ROW_BG_MIDDLE, ROW_BG_RIGHT, rx, ry, rw, ROW_H);
+        int innerLeft = rx + 1;
+        int innerRight = rx + rw - 1;
+        int innerBottom = ry + ROW_H - 1;
+        if (full) {
+            guiGraphics.fill(innerLeft, ry + 1, innerRight, innerBottom, FULL_ROW_TINT);
+        } else if (greyed) {
+            guiGraphics.fill(innerLeft, ry + 1, innerRight, innerBottom, GREYED_ROW_TINT);
         }
+        if (hovered) {
+            guiGraphics.fill(innerLeft, ry + 1, innerRight, innerBottom, HOVER_ROW_TINT);
+        }
+    }
+
+    /**
+     * 默认文本色偏亮说明面板是暗底主题。
+     */
+    private static boolean isDarkTheme(int textColor) {
+        int r = textColor >> 16 & 0xFF;
+        int g = textColor >> 8 & 0xFF;
+        int b = textColor & 0xFF;
+        return 0.2126F * r + 0.7152F * g + 0.0722F * b > DARK_THEME_LUMA;
     }
 
     private static String ellipsize(Font font, String text, int maxWidth) {
@@ -824,7 +868,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
             int right = rx + rw - 3;
             if (full) {
                 right -= font.width(fullText);
-                guiGraphics.drawString(font, fullText, right, textY, 0xFF5555);
+                guiGraphics.drawString(font, fullText, right, textY, fullColor);
                 right -= 4;
             }
             int nameX = rx + iconsWidth();
@@ -839,22 +883,22 @@ public class PatternDestinationPanel implements ICompositeWidget {
                 var outputName = matchedOutputText.get(font, outputNameWidth);
                 int matchWidth = fixedWidth + font.width(outputName);
                 int mx = right - matchWidth;
-                guiGraphics.drawString(font, matchPrefix, mx, textY, MATCH_COLOR);
+                guiGraphics.drawString(font, matchPrefix, mx, textY, matchColor);
                 mx += font.width(matchPrefix);
                 drawIcon(guiGraphics, mx, ry + 1, outputs[matched.getInt(0)]);
                 mx += 17;
-                mx = guiGraphics.drawString(font, outputName, mx, textY, MATCH_COLOR);
-                guiGraphics.drawString(font, matchSuffix, mx, textY, MATCH_COLOR);
+                mx = guiGraphics.drawString(font, outputName, mx, textY, matchColor);
+                guiGraphics.drawString(font, matchSuffix, mx, textY, matchColor);
                 right -= matchWidth + 8;
             }
             if (machineNameMatched) {
                 right -= font.width(machineMatchLabel);
-                guiGraphics.drawString(font, machineMatchLabel, right, textY, MACHINE_MATCH_COLOR);
+                guiGraphics.drawString(font, machineMatchLabel, right, textY, machineMatchColor);
                 right -= 8;
             }
             if (providerNameMatched) {
                 right -= font.width(providerMatchLabel);
-                guiGraphics.drawString(font, providerMatchLabel, right, textY, PROVIDER_MATCH_COLOR);
+                guiGraphics.drawString(font, providerMatchLabel, right, textY, providerMatchColor);
                 right -= 8;
             }
             // 左侧：样板供应器图标 → 对接机器图标
@@ -875,7 +919,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
             }
             if (customName == null) {
                 guiGraphics.drawString(font, nameText.get(font, right - nameX), nameX, textY,
-                        full ? 0xAAAAAA : greyed ? GREYED_TEXT_COLOR : 0xFFFFFF);
+                        full || greyed ? subTextColor : nameColor);
                 return;
             }
             // 改过名：两行小字，上为改名（亮），下为机器名（暗），体现主附关系
@@ -885,9 +929,9 @@ public class PatternDestinationPanel implements ICompositeWidget {
             pose.translate(nameX, ry + 2, 0);
             pose.scale(SMALL_TEXT_SCALE, SMALL_TEXT_SCALE, 1);
             guiGraphics.drawString(font, customNameText.get(font, scaledWidth), 0, 0,
-                    full ? 0xAAAAAA : greyed ? GREYED_TEXT_COLOR : 0xFFFFFF);
+                    full || greyed ? subTextColor : nameColor);
             guiGraphics.drawString(font, machineNameText.get(font, scaledWidth), 0, 10,
-                    full ? 0x707070 : greyed ? GREYED_SUB_TEXT_COLOR : 0xA0A0A0);
+                    subTextColor);
             pose.popPose();
         }
 

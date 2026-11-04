@@ -31,6 +31,7 @@ import net.minecraft.world.food.FoodProperties;
 
 import com.gto.registrate.Registrate;
 import com.gto.registrate.util.entry.ItemEntry;
+
 import com.suried.gtoutils.spatial.BlockRange;
 
 import java.util.ArrayList;

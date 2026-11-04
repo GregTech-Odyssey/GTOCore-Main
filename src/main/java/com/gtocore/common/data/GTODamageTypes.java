@@ -28,6 +28,7 @@ public final class GTODamageTypes {
     public static final ResourceKey<DamageType> MACHINE_HEAT_WAVE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("machine_heat_wave"));
     private static final ResourceKey<DamageType> BLAST_FURNACE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("blast_furnace"));
     private static final ResourceKey<DamageType> BLAZING_PLASMA = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("blazing_plasma"));
+    private static final ResourceKey<DamageType> DRONE = ResourceKey.create(Registries.DAMAGE_TYPE, GTOCore.id("drone"));
 
     public static final RegistrySetBuilder DAMAGE_TYPES_BUILDER = new RegistrySetBuilder()
             .add(Registries.DAMAGE_TYPE, GTODamageTypes::bootstrap);
@@ -37,6 +38,7 @@ public final class GTODamageTypes {
         context.register(MACHINE_HEAT_WAVE, new DamageType("machine_heat_wave", DamageScaling.NEVER, 0.0f, DamageEffects.BURNING, DeathMessageType.DEFAULT));
         context.register(BLAST_FURNACE, new DamageType("blast_furnace", DamageScaling.NEVER, 0.0f, DamageEffects.BURNING, DeathMessageType.DEFAULT));
         context.register(BLAZING_PLASMA, new DamageType("blazing_plasma", DamageScaling.NEVER, 0.0f, DamageEffects.BURNING, DeathMessageType.DEFAULT));
+        context.register(DRONE, new DamageType("drone", DamageScaling.NEVER, 0.0f, DamageEffects.HURT, DeathMessageType.DEFAULT));
     }
 
     public static DamageSource getGenericDamageSource(Entity entity, Component customComponent, Runnable onDeath) {
@@ -53,6 +55,10 @@ public final class GTODamageTypes {
 
     public static DamageSource getBlazingPlasmaDamageSource(Entity entity) {
         return new DamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(BLAZING_PLASMA), entity);
+    }
+
+    public static DamageSource getDroneDamageSource(Entity entity) {
+        return new DroneDamageSource(entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DRONE), entity);
     }
 
     private static final class BlastFurnaceDamageSource extends DamageSource {
@@ -82,7 +88,7 @@ public final class GTODamageTypes {
         @Override
         public @NotNull Component getLocalizedDeathMessage(@NotNull LivingEntity livingEntity) {
             if (livingEntity instanceof Player player) {
-                return Component.translatable(MACHINE_HEAT_WAVE_MSG_ID, player.getDisplayName(), container.toString(), container.getTemperature());
+                return Component.translatable(MACHINE_HEAT_WAVE_MSG_ID, player.getDisplayName(), container.getDisplayName(), container.getTemperature());
             }
             return super.getLocalizedDeathMessage(livingEntity);
         }
@@ -106,12 +112,32 @@ public final class GTODamageTypes {
         }
     }
 
+    private static final class DroneDamageSource extends DamageSource {
+
+        private DroneDamageSource(Holder<DamageType> type, Entity entity) {
+            super(type, entity);
+        }
+
+        @Override
+        public @NotNull Component getLocalizedDeathMessage(@NotNull LivingEntity livingEntity) {
+            if (this.getEntity() != null) {
+                return Component.translatable(DRONE_MSG_ID, livingEntity.getDisplayName(), this.getEntity().getDisplayName());
+            } else {
+                return Component.translatable(DRONE_MSG_NO_CAUSER_ID, livingEntity.getDisplayName());
+            }
+        }
+    }
+
     @RegisterLanguage(cn = "员工 %s 在高炉里顷刻炼化", en = "Player %s melted in a blast furnace.")
     private static final String BLAST_FURNACE_MSG_ID_1 = "gtocore.death.attack.blast_furnace.1";
     @RegisterLanguage(cn = "员工 %s 尝试在高炉里蒸桑拿", en = "Player %s tired to have a sauna in a blast furnace.")
     private static final String BLAST_FURNACE_MSG_ID_2 = "gtocore.death.attack.blast_furnace.2";
-    @RegisterLanguage(cn = "悲，员工 %s 死于%s %sK的热浪", en = "Sad, employee %s died from a heat wave of %s %sK")
+    @RegisterLanguage(cn = "悲，员工 %s 死于 %s 的 %sK热浪", en = "Alas, employee %1$s died from a %3$sK heat wave from %2$s.")
     private static final String MACHINE_HEAT_WAVE_MSG_ID = "gtocore.death.attack.machine_heat_wave";
     @RegisterLanguage(cn = "%s 成为了奔腾炽焱等离子体的一部分", en = "%s became a part of the blazing plasma.")
     private static final String BLAZING_PLASMA_MSG_ID = "death.attack.blazing_plasma";
+    @RegisterLanguage(cn = "%s 被 %s 的无人机打坠机了", en = "%s was shot down by %s's drone.")
+    private static final String DRONE_MSG_ID = "death.attack.drone";
+    @RegisterLanguage(cn = "%s 被无人机打坠机了", en = "%s was shot down by a drone.")
+    private static final String DRONE_MSG_NO_CAUSER_ID = "death.attack.drone.no_cause";
 }

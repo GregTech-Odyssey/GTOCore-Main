@@ -13,6 +13,7 @@ import appeng.api.networking.IManagedGridNode;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
@@ -32,7 +33,7 @@ public abstract class AbstractAEInfoMonitor extends AbstractInfoProviderMonitor 
     @SyncToClient
     protected boolean isOnline;
 
-    AbstractAEInfoMonitor(MetaMachineBlockEntity holder) {
+    public AbstractAEInfoMonitor(MetaMachineBlockEntity holder) {
         super(holder);
         this.nodeHolder = new GridNodeHolder(this);
     }

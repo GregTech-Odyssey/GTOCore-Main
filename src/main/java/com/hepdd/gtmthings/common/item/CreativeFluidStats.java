@@ -47,15 +47,15 @@ import java.util.List;
 public class CreativeFluidStats implements IItemComponent, IComponentCapability, IAddInformation, IItemUIFactory {
 
     @RegisterLanguage(cn = "未设置流体", en = "No fluid set")
-    private static final String EMPTY = "gtocore.creative_fluid_cell.empty";
+    private static final Component EMPTY = Component.translatable("gtocore.creative_fluid_cell.empty");
     @RegisterLanguage(cn = "精确输出", en = "Accurate output")
-    private static final String ACCURATE = "gtocore.creative_fluid_cell.accurate";
+    private static final Component ACCURATE = Component.translatable("gtocore.creative_fluid_cell.accurate");
     @RegisterLanguage(cn = "开启后，单次倾倒最多为下方设定的流体量；关闭时单次倾倒不设上限", en = "When on, each drain is capped at the amount set below; when off, drains are not capped")
-    private static final String ACCURATE_TIP = "gtocore.creative_fluid_cell.accurate.tip";
+    private static final Component ACCURATE_TIP = Component.translatable("gtocore.creative_fluid_cell.accurate.tip");
     @RegisterLanguage(cn = "单次倾倒上限（mB）", en = "Drain cap (mB)")
-    private static final String CAPACITY = "gtocore.creative_fluid_cell.capacity";
+    private static final Component CAPACITY = Component.translatable("gtocore.creative_fluid_cell.capacity");
     @RegisterLanguage(cn = "未开启精确输出", en = "Accurate output is off")
-    private static final String ACCURATE_OFF = "gtocore.creative_fluid_cell.accurate_off";
+    private static final Component ACCURATE_OFF = Component.translatable("gtocore.creative_fluid_cell.accurate_off");
 
     @Override
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
@@ -93,7 +93,7 @@ public class CreativeFluidStats implements IItemComponent, IComponentCapability,
             }).xeiPhantom();
             var name = TextLine.of(0, () -> {
                 var fluid = getStored(holder.getHeld());
-                return fluid.isEmpty() ? Component.translatable(EMPTY) : fluid.getDisplayName();
+                return fluid.isEmpty() ? EMPTY : fluid.getDisplayName();
             }).bindClientColor(UITheme::panelText);
             name.layout(l -> l.flex(1));
             var capacity = NumberField.ofInt(LayoutStyle.AUTO, () -> getCapacity(holder.getHeld()),

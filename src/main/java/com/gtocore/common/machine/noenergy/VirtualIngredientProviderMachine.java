@@ -52,6 +52,7 @@ import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.hepdd.gtmthings.common.item.VirtualFluidProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualItemProviderBehavior;
 import com.hepdd.gtmthings.common.item.VirtualProviderData;
@@ -74,7 +75,7 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     private static final String FLUID_TAG = "fluid";
     private static final int SLOT_COUNT = 288;
     private static final int FLUID_CAPACITY = 64000;
-    private static final String CONFIGURED = "gtocore.machine.virtual_ingredient_provider.configured";
+    private static final Component CONFIGURED = Component.translatable("gtocore.machine.virtual_ingredient_provider.configured");
     private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
     private static final Item VIRTUAL_FLUID_PROVIDER = CustomItems.VIRTUAL_FLUID_PROVIDER.asItem();
     private static final AEItemKey EMPTY_ITEM_PROVIDER = createEmptyProvider(VIRTUAL_ITEM_PROVIDER);

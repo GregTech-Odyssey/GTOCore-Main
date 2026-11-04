@@ -67,22 +67,28 @@ public final class MEPartUI {
                 .addChildren(MEPatternPartUI.onlineIndicator(online), name);
     }
 
+    private static final Component DEFAULT_WAITING_LIST = Component.translatable("gtceu.gui.waiting_list");
+
     /**
      * "等待输出"：还没送进 ME 网络的物品 / 流体（只读），一行标题 + 每行 9 格的网格；至少 3 行，超过 6 行滚动。
      * {@code scrollerId} 是滚动区的固定 id（锁定高度按它记）。
      */
-    public static UIElement waitingList(String scrollerId, KeyStorage storage, boolean fluid, @Nullable String titleKey) {
+    public static UIElement waitingList(String scrollerId, KeyStorage storage, boolean fluid, @Nullable Component title) {
         var scroller = new ScrollerView(scrollerId, UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE)
                 .adaptiveWidth().setAdaptiveHeight(WAITING_MAX_ROWS * UISizes.SLOT_SIZE);
         scroller.addScrollViewChild(new AEStackGrid(storage, fluid, WAITING_MIN_ROWS));
         return UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, titleKey == null ? "gtceu.gui.waiting_list" : titleKey).bindClientColor(UITheme::text),
+                TextLine.constant(LayoutStyle.AUTO, title == null ? DEFAULT_WAITING_LIST : title).bindClientColor(UITheme::text),
                 scroller);
     }
 
+    public static UIElement waitingList(String scrollerId, KeyStorage storage, boolean fluid) {
+        return waitingList(scrollerId, storage, fluid, (Component) null);
+    }
+
     /** 区块里一行"说明 …… [数值输入框]"：输入框标准按钮宽，说明悬停显示 {@code tooltipKeys}。 */
-    public static UIElement fieldRow(String labelKey, TextField field, String... tooltipKeys) {
+    public static UIElement fieldRow(Component label, TextField field, Component... tooltips) {
         field.layout(l -> l.width(UISizes.BUTTON_WIDTH));
-        return Form.controlRow(labelKey, field, tooltipKeys);
+        return Form.controlRow(label, field, tooltips);
     }
 }

@@ -17,6 +17,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
@@ -178,6 +179,11 @@ public class CreativeHeatProviderMachine extends MetaMachine implements IFancyUI
         @Override
         public int getSignal() {
             return (int) Math.min(15, 15.0 * getTemperature() / getMaxTemperature());
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return getBlockState().getBlock().getName();
         }
     }
 }

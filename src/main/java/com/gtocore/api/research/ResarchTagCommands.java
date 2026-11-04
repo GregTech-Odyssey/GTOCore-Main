@@ -27,8 +27,6 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 
-import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
-
 public final class ResarchTagCommands {
 
     private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(
@@ -134,7 +132,7 @@ public final class ResarchTagCommands {
 
         var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
-        if (mat != NULL) {
+        if (mat != null) {
             teamContext.scannedMaterials().add(mat);
         }
         teamContext.scannedItems().add(key);
@@ -149,7 +147,7 @@ public final class ResarchTagCommands {
 
         var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
-        if (mat != NULL) {
+        if (mat != null) {
             teamContext.scannedMaterials().remove(mat);
         }
         teamContext.scannedItems().remove(key);

@@ -66,6 +66,14 @@ public final class WebsiteAccount {
     @RegisterLanguage(cn = "官网登录已失效，请重新登录。", en = "Your website sign-in is no longer valid. Please sign in again.")
     static final String EXPIRED = "gtocore.website.account.expired";
 
+    private static final Component TITLE_LABEL = Component.translatable(TITLE);
+    private static final Component INTRO_LABEL = Component.translatable(INTRO);
+    private static final Component STEP_1_LABEL = Component.translatable(STEP_1);
+    private static final Component STEP_2_LABEL = Component.translatable(STEP_2);
+    private static final Component STEP_3_LABEL = Component.translatable(STEP_3);
+    private static final Component OPEN_LABEL = Component.translatable(OPEN);
+    private static final Component PASTE_LABEL = Component.translatable(PASTE);
+
     private static final Pattern TOKEN = Pattern.compile("^gtog_[0-9a-f]{64}$");
     private static final Path FILE = GTOWebsite.DIR.resolve("website").resolve("account.json");
     static final String USER_AGENT = "GTOCore-Bug/1";
@@ -104,20 +112,20 @@ public final class WebsiteAccount {
     }
 
     public static void open() {
-        Minecraft.getInstance().tell(() -> WebsitePopupScreen.open("website_account", null, close -> Popup.of(() -> Component.translatable(TITLE), content -> content(content, close))
+        Minecraft.getInstance().tell(() -> WebsitePopupScreen.open("website_account", null, close -> Popup.of(() -> TITLE_LABEL, content -> content(content, close))
                 .setContentWidth(2 * UISizes.CONTENT_WIDTH)));
     }
 
     private static void content(UIElement content, Runnable close) {
         int width = 2 * UISizes.CONTENT_WIDTH;
-        content.addChild(Label.translatable(width, INTRO));
-        content.addChild(Label.translatable(width, STEP_1));
-        content.addChild(Label.translatable(width, STEP_2));
-        content.addChild(Label.translatable(width, STEP_3));
+        content.addChild(Label.constant(width, INTRO_LABEL));
+        content.addChild(Label.constant(width, STEP_1_LABEL));
+        content.addChild(Label.constant(width, STEP_2_LABEL));
+        content.addChild(Label.constant(width, STEP_3_LABEL));
         content.addChild(Label.of(width, () -> status).bindClientColor(() -> statusColor));
         int action = 2 * UISizes.BUTTON_WIDTH;
-        var website = Button.translatable(action, OPEN).setOnClientClick(() -> Util.getPlatform().openUri(GTOWebsite.origin() + "/account/game"));
-        var paste = Button.translatable(action, PASTE).setVariant(UITheme.ButtonVariant.CONFIRM).setOnClientClick(() -> paste(close));
+        var website = Button.text(action, OPEN_LABEL).setOnClientClick(() -> Util.getPlatform().openUri(GTOWebsite.origin() + "/account/game"));
+        var paste = Button.text(action, PASTE_LABEL).setVariant(UITheme.ButtonVariant.CONFIRM).setOnClientClick(() -> paste(close));
         content.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(website, UIElement.flexSpacer(), paste));
     }
 

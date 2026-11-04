@@ -61,6 +61,7 @@ import appeng.client.gui.me.common.StackSizeRenderer;
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 import com.gto.datasynclib.datastream.codec.StreamCodec;
 import com.gto.datasynclib.util.ByteBufCodecExtends;
+
 import com.lowdragmc.lowdraglib.gui.ingredient.IIngredientSlot;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
@@ -112,6 +113,7 @@ public class RecipeExportTab implements IFancyUIProvider {
     private static final String EXPORT_TOOLTIP = "gtocore.research.recipe_export_tab.export";
     @RegisterLanguage(cn = "搜索配方主产物", en = "Search recipe outputs")
     private static final String SEARCH_TOOLTIP = "gtocore.research.recipe_export_tab.search";
+    private static final Component SEARCH_TOOLTIP_C = Component.translatable(SEARCH_TOOLTIP);
     @RegisterLanguage(cn = "没有找到匹配的配方奖励", en = "No matching recipe rewards were found.")
     private static final String FILTER_EMPTY_RECIPES = "gtocore.research.recipe_export_tab.filter_empty";
     @RegisterLanguage(cn = "已含有", en = "Included")
@@ -130,6 +132,15 @@ public class RecipeExportTab implements IFancyUIProvider {
     private static final String SELECT_FIRST = "gtocore.research.recipe_export_tab.select_first";
     @RegisterLanguage(cn = "导出研究数据", en = "Export Research Data")
     private static final String EXPORT_BUTTON = "gtocore.research.recipe_export_tab.export_button";
+
+    private static final Component INPUT_LABEL_C = Component.translatable(INPUT_LABEL);
+    private static final Component OUTPUT_LABEL_C = Component.translatable(OUTPUT_LABEL);
+    private static final Component LINE_UNLOCKED_C = Component.translatable(LINE_UNLOCKED);
+    private static final Component LINE_SELECTED_C = Component.translatable(LINE_SELECTED);
+    private static final Component LINE_DATA_ITEM_C = Component.translatable(LINE_DATA_ITEM);
+    private static final Component NO_DATA_ITEM_TIP = Component.translatable(NO_DATA_ITEM);
+    private static final Component SELECT_FIRST_TIP = Component.translatable(SELECT_FIRST);
+    private static final Component EXPORT_BUTTON_LABEL = Component.translatable(EXPORT_BUTTON);
 
     /** 状态面板里没有值时显示的占位。 */
     private static final String NO_VALUE = "—";
@@ -161,8 +172,8 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         // 筛选：只影响本端显示，搜索框是纯客户端控件（两端都建，不参与同步）
         var search = TextField.of(LayoutStyle.AUTO, () -> grid.search, grid::setSearch)
-                .bindClientPlaceholder(() -> Component.translatable(SEARCH_TOOLTIP));
-        search.tooltips(SEARCH_TOOLTIP);
+                .bindClientPlaceholder(() -> SEARCH_TOOLTIP_C);
+        search.tooltips(SEARCH_TOOLTIP_C);
         search.getInput().setMaxStringLength(SEARCH_MAX_LENGTH);
         search.setClientSideWidget();
         var filter = UIElement.section().addChild(search);
@@ -175,27 +186,27 @@ public class RecipeExportTab implements IFancyUIProvider {
 
         // 当前选择：状态面板 + 紧贴其下的整行导出按钮。没选中时整块禁用，选中了但缺数据物品时按钮禁用（原因不同）
         var status = new StatusPanel();
-        status.addLine(LINE_UNLOCKED, grid::getUnlockedText);
-        status.addLine(LINE_SELECTED, grid::getSelectedName).bindIcon(grid::getSelectedOutputIcon);
-        status.addLine(LINE_DATA_ITEM, grid::getSelectedDataItemName).bindIcon(grid::getSelectedDataItemIcon)
+        status.addLine(LINE_UNLOCKED_C, grid::getUnlockedText);
+        status.addLine(LINE_SELECTED_C, grid::getSelectedName).bindIcon(grid::getSelectedOutputIcon);
+        status.addLine(LINE_DATA_ITEM_C, grid::getSelectedDataItemName).bindIcon(grid::getSelectedDataItemIcon)
                 .bindLevel(() -> {
                     if (grid.getSelectedEntry() == null) return Level.NORMAL;
                     return grid.hasSelectedDataItem() ? Level.GOOD : Level.WARNING;
                 })
-                .bindDetail(() -> grid.getSelectedEntry() != null && !grid.hasSelectedDataItem() ? Component.translatable(NO_DATA_ITEM) : Component.empty());
-        var export = Button.translatable(LayoutStyle.AUTO, EXPORT_BUTTON)
+                .bindDetail(() -> grid.getSelectedEntry() != null && !grid.hasSelectedDataItem() ? NO_DATA_ITEM_TIP : Component.empty());
+        var export = Button.text(LayoutStyle.AUTO, EXPORT_BUTTON_LABEL)
                 .setVariant(UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(grid::exportSelected)
-                .disabled(() -> grid.getSelectedEntry() != null && !grid.hasSelectedDataItem(), NO_DATA_ITEM);
+                .disabled(() -> grid.getSelectedEntry() != null && !grid.hasSelectedDataItem(), NO_DATA_ITEM_TIP);
         var selection = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(status, export);
-        selection.disabled(() -> grid.getSelectedEntry() == null, SELECT_FIRST);
+        selection.disabled(() -> grid.getSelectedEntry() == null, SELECT_FIRST_TIP);
         page.addChild(selection);
 
         // 数据物品：输入可取可放，导出只能取
         page.addChild(UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(
-                TextLine.translatable(LayoutStyle.AUTO, INPUT_LABEL),
+                TextLine.constant(LayoutStyle.AUTO, INPUT_LABEL_C),
                 slotGrid(holder.getDataItemStorage(), true),
-                TextLine.translatable(LayoutStyle.AUTO, OUTPUT_LABEL),
+                TextLine.constant(LayoutStyle.AUTO, OUTPUT_LABEL_C),
                 slotGrid(holder.getDataOutputStorage(), false)));
         return page;
     }

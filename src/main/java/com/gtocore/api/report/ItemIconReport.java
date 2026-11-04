@@ -40,8 +40,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 
-import com.google.gson.*;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
+import com.google.gson.*;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;

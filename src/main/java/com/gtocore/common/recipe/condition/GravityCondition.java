@@ -9,12 +9,15 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.RecipeCondition;
 import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandlerHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.api.recipe.ui.RecipeInfoBuilder;
 
 import net.minecraft.network.chat.Component;
 
 import earth.terrarium.adastra.api.planets.PlanetApi;
 
 public final class GravityCondition extends RecipeCondition {
+
+    private static final Component LABEL = Component.translatable("gtocore.recipe.info.gravity");
 
     public final boolean zero;
 
@@ -25,6 +28,11 @@ public final class GravityCondition extends RecipeCondition {
     @Override
     public Component getTooltips() {
         return Component.translatable("gtocore.condition." + (zero ? "zero_" : "") + "gravity");
+    }
+
+    @Override
+    public void appendInfo(GTRecipeDefinition recipe, RecipeInfoBuilder info) {
+        info.requirement(LABEL, () -> Component.translatable(zero ? "gtocore.recipe.info.zero_gravity" : "gtocore.recipe.info.strong_gravity"));
     }
 
     @Override

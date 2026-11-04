@@ -11,10 +11,11 @@ import net.minecraft.world.level.storage.loot.LootDataManager;
 import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootTable;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.mojang.datafixers.util.Pair;
 import dev.shadowsoffire.placebo.loot.LootSystem;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;

@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.utils.LegacyIO;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -44,6 +46,7 @@ import appeng.api.storage.StorageAccess;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.ValueOps;
+
 import com.hepdd.gtmthings.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
@@ -58,9 +61,17 @@ import java.util.function.Supplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+@DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implements IDropSaveMachine {
+
+    @RegisterLanguage(cn = "物品", en = "Item")
+    private static final String LANG_ITEM = "gtocore.machine.huge_bus.item";
+    private static final Component ITEM = Component.translatable(LANG_ITEM);
+    @RegisterLanguage(cn = "无", en = "Empty")
+    private static final String LANG_EMPTY = "gtocore.machine.huge_bus.empty";
+    private static final Component EMPTY = Component.translatable(LANG_EMPTY);
 
     @SaveToDisk
     private final HugeInventory inventory;
@@ -194,7 +205,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         extract.setOnServerClick(() -> extractStack(extract.getGui() == null ? null : extract.getGui().entityPlayer));
         extract.setHoverTooltips(HatchViews.EXTRACT_STACK);
         var status = new StatusPanel();
-        status.addLine(HatchViews.ITEM, new StoredName());
+        status.addLine(ITEM, new StoredName());
         status.addLine(HatchViews.STORED, new StoredText());
         return HatchViews.page(HatchViews.operations(importSlot, HatchViews.group(storedSlot, extract)), status);
     }
@@ -217,14 +228,14 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
         @Nullable
         private AEItemKey last;
-        private Component text = Component.translatable(HatchViews.EMPTY);
+        private Component text = EMPTY;
 
         @Override
         public Component get() {
             var current = inventory.storage.keyAt(0);
             if (current != last) {
                 last = current;
-                text = current == null ? Component.translatable(HatchViews.EMPTY) : current.getReadOnlyStack().getHoverName();
+                text = current == null ? EMPTY : current.getReadOnlyStack().getHoverName();
             }
             return text;
         }

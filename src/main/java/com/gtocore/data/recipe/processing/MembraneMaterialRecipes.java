@@ -159,6 +159,7 @@ public final class MembraneMaterialRecipes {
                 .outputFluids(AceticAcid, 1000)
                 .EUt(1830L)
                 .duration(200)
+                .blastFurnaceTemp(2000)
                 .save();
 
         POLYMERIZATION_REACTOR_RECIPES.builder("polyacrylamide")

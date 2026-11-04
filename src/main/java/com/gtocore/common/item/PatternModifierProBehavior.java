@@ -70,6 +70,18 @@ public final class PatternModifierProBehavior implements IItemUIFactory {
     @RegisterLanguage(cn = "对空气右击以打开设置界面", en = "Right-click air to open the settings")
     private static final String OPEN_HINT = "gtocore.pattern_modifier_pro.open_hint";
 
+    private static final Component TITLE = Component.translatable("gtocore.patternModifierPro.0");
+    private static final Component MULTIPLIER_C = Component.translatable(MULTIPLIER);
+    private static final Component MULTIPLIER_TIP_C = Component.translatable(MULTIPLIER_TIP);
+    private static final Component DIVIDER_C = Component.translatable(DIVIDER);
+    private static final Component DIVIDER_TIP_C = Component.translatable(DIVIDER_TIP);
+    private static final Component MAX_ITEM_C = Component.translatable(MAX_ITEM);
+    private static final Component MAX_ITEM_TIP_C = Component.translatable(MAX_ITEM_TIP);
+    private static final Component MAX_FLUID_C = Component.translatable(MAX_FLUID);
+    private static final Component MAX_FLUID_TIP_C = Component.translatable(MAX_FLUID_TIP);
+    private static final Component CYCLES_C = Component.translatable(CYCLES);
+    private static final Component CYCLES_TIP_C = Component.translatable(CYCLES_TIP);
+
     private static final String KEY_SCALE = "Scale";
     private static final String KEY_DIV_SCALE = "DivScale";
     private static final String KEY_MAX_ITEM = "MaxItem";
@@ -82,13 +94,13 @@ public final class PatternModifierProBehavior implements IItemUIFactory {
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
         return new HeldItemPage(holder, window -> Form.page()
                 .addChildren(
-                        Label.translatable(UISizes.CONTENT_WIDTH, "gtocore.patternModifierPro.0"),
+                        Label.constant(UISizes.CONTENT_WIDTH, TITLE),
                         UIElement.section().addChildren(
-                                Form.inlineNumberRow(MULTIPLIER, field(holder, KEY_SCALE, 1, Integer.MAX_VALUE), MULTIPLIER_TIP),
-                                Form.inlineNumberRow(DIVIDER, field(holder, KEY_DIV_SCALE, 1, Integer.MAX_VALUE), DIVIDER_TIP),
-                                Form.inlineNumberRow(MAX_ITEM, field(holder, KEY_MAX_ITEM, LIMIT, LIMIT), MAX_ITEM_TIP),
-                                Form.inlineNumberRow(MAX_FLUID, field(holder, KEY_MAX_FLUID, LIMIT, LIMIT), MAX_FLUID_TIP),
-                                Form.inlineNumberRow(CYCLES, field(holder, KEY_CYCLES, 1, MAX_CYCLES), CYCLES_TIP))))
+                                Form.inlineNumberRow(MULTIPLIER_C, field(holder, KEY_SCALE, 1, Integer.MAX_VALUE), MULTIPLIER_TIP_C),
+                                Form.inlineNumberRow(DIVIDER_C, field(holder, KEY_DIV_SCALE, 1, Integer.MAX_VALUE), DIVIDER_TIP_C),
+                                Form.inlineNumberRow(MAX_ITEM_C, field(holder, KEY_MAX_ITEM, LIMIT, LIMIT), MAX_ITEM_TIP_C),
+                                Form.inlineNumberRow(MAX_FLUID_C, field(holder, KEY_MAX_FLUID, LIMIT, LIMIT), MAX_FLUID_TIP_C),
+                                Form.inlineNumberRow(CYCLES_C, field(holder, KEY_CYCLES, 1, MAX_CYCLES), CYCLES_TIP_C))))
                 .noInventory().createUI(player);
     }
 

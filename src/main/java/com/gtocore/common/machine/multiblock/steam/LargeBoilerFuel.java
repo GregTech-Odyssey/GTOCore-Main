@@ -33,11 +33,12 @@ public final class LargeBoilerFuel {
     @RegisterLanguage(cn = "锅炉等级", en = "Boiler tier")
     private static final String TIER = "gtocore.recipe.info.large_boiler.tier";
     @RegisterLanguage(cn = "蒸汽产量", en = "Steam output")
-    private static final String STEAM_RATE = "gtocore.recipe.info.large_boiler.steam_rate";
+    private static final Component STEAM_RATE = Component.translatable("gtocore.recipe.info.large_boiler.steam_rate");
     @RegisterLanguage(cn = "蒸汽总量", en = "Total steam")
-    private static final String TOTAL_STEAM = "gtocore.recipe.info.large_boiler.total_steam";
+    private static final Component TOTAL_STEAM = Component.translatable("gtocore.recipe.info.large_boiler.total_steam");
     @RegisterLanguage(cn = "蒸汽总量倍率", en = "Total steam multiplier")
-    private static final String MULTIPLIER = "gtocore.recipe.info.large_boiler.multiplier";
+    private static final Component MULTIPLIER = Component.translatable("gtocore.recipe.info.large_boiler.multiplier");
+    private static final List<Component> ROW_LABELS = List.of(STEAM_RATE, TOTAL_STEAM, MULTIPLIER);
     @RegisterLanguage(cn = "锅炉每比%s高一级，同一份燃料产出的蒸汽总量多 25%%", en = "Each boiler tier above the %s makes 25%% more total steam from the same fuel")
     private static final String BONUS_HINT = "gtocore.recipe.info.large_boiler.bonus_hint";
     @RegisterLanguage(cn = "同一份燃料产出的蒸汽总量：%s（%s为 ×1）", en = "Total steam from the same fuel: %s (%s: ×1)")
@@ -124,8 +125,8 @@ public final class LargeBoilerFuel {
         }
 
         @Override
-        public List<String> rowLabels() {
-            return List.of(STEAM_RATE, TOTAL_STEAM, MULTIPLIER);
+        public List<Component> rowLabels() {
+            return ROW_LABELS;
         }
 
         @Override

@@ -2,38 +2,37 @@ package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
+import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
+import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
+import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.common.item.PortableScannerBehavior;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.Stepper;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.lowdragmc.lowdraglib.gui.editor.ColorPattern;
-import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
-import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
-import com.lowdragmc.lowdraglib.gui.texture.ResourceBorderTexture;
-import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
-import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
-import com.lowdragmc.lowdraglib.gui.widget.LabelWidget;
-import com.lowdragmc.lowdraglib.gui.widget.SelectorWidget;
-import com.lowdragmc.lowdraglib.gui.widget.TextFieldWidget;
+
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import lombok.Getter;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,10 +40,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CreativeEnergyHatchPartMachine extends WorkableTieredIOPartMachine implements IDataInfoProvider {
+public class CreativeEnergyHatchPartMachine extends WorkableTieredIOPartMachine implements IDataInfoProvider, IFancyUIMachine {
 
     @SaveToDisk
     public final NotifiableEnergyContainer energyContainer;
+    @Nullable
+    protected ISubscription energyListener;
+    protected TickableSubscription energySubs;
+
+    /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
+    private TickTimeMonitor energyMonitor = holder.monitorTick(GTTickTimeMonitors.ENERGY_TRANSFER, this::addEng);
     @SaveToDisk
     private long maxEnergy;
     @SaveToDisk
@@ -73,44 +78,50 @@ public class CreativeEnergyHatchPartMachine extends WorkableTieredIOPartMachine 
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-        updateEnergyContainer();
+    public void onUnload() {
+        super.onUnload();
+        if (energyListener != null) {
+            energyListener.unsubscribe();
+            energyListener = null;
+        }
     }
 
     @Override
-    public ModularUI createUI(Player entityPlayer) {
-        return new ModularUI(176, 136, this, entityPlayer)
-                .background(GuiTextures.BACKGROUND)
-                .widget(new LabelWidget(7, 32, "gtceu.creative.energy.voltage"))
-                .widget(new TextFieldWidget(9, 47, 152, 16, () -> String.valueOf(voltage),
-                        value -> {
-                            setVoltage(Long.parseLong(value));
-                            setTier = GTUtil.getTierByVoltage(this.voltage);
-                        }).setNumbersOnly(8L, Long.MAX_VALUE))
-                .widget(new LabelWidget(7, 74, "gtceu.creative.energy.amperage"))
-                .widget(new ButtonWidget(7, 87, 20, 20,
-                        new GuiTextureGroup(ResourceBorderTexture.BUTTON_COMMON, new TextTexture("-")),
-                        cd -> setAmps(--amps == -1 ? 0 : amps)))
-                .widget(new TextFieldWidget(31, 89, 114, 16, () -> String.valueOf(amps),
-                        value -> setAmps(Integer.parseInt(value))).setNumbersOnly(1, 67108864))
-                .widget(new ButtonWidget(149, 87, 20, 20,
-                        new GuiTextureGroup(ResourceBorderTexture.BUTTON_COMMON, new TextTexture("+")),
-                        cd -> {
-                            if (amps < Integer.MAX_VALUE) {
-                                setAmps(++amps);
-                            }
-                        }))
+    public void onLoad() {
+        super.onLoad();
+        updateEnergyContainer();
+        energyListener = energyContainer.addChangedListener(this::addEnergySubscription);
+        addEnergySubscription();
+    }
 
-                .widget(new SelectorWidget(7, 7, 50, 20, Arrays.stream(GTValues.VNF).toList(), -1)
-                        .setOnChanged(tier -> {
-                            setTier = ArrayUtils.indexOf(GTValues.VNF, tier);
+    protected void addEnergySubscription() {
+        energySubs = subscribeServerTick(energySubs, energyMonitor);
+    }
+
+    protected void addEng() {
+        if (energyContainer.getInputVoltage() != voltage || energyContainer.getInputAmperage() != amps) {
+            updateEnergyContainer();
+        }
+        if (energyContainer.getEnergyStored() < this.maxEnergy) {
+            energyContainer.setEnergyStored(this.maxEnergy);
+        }
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        return Form.page().addChildren(
+                Form.controlRow(Component.translatable("gtceu.creative.energy.tier"),
+                        Stepper.of(50, () -> setTier, tier -> {
+                            setTier = tier;
                             setVoltage(GTValues.VEX[setTier]);
-                        })
-                        .setSupplier(() -> GTValues.VNF[setTier])
-                        .setButtonBackground(ResourceBorderTexture.BUTTON_COMMON)
-                        .setBackground(ColorPattern.BLACK.rectTexture())
-                        .setValue(GTValues.VNF[setTier]));
+                        }, 0, GTValues.VNF.length - 1).setFormatter(idx -> GTValues.VNF[idx])),
+                Form.numberRow(Component.translatable("gtceu.creative.energy.voltage"),
+                        NumberField.ofLong(UISizes.CONTENT_WIDTH, () -> voltage, v -> {
+                            setVoltage(v);
+                            setTier = GTUtil.getTierByVoltage(this.voltage);
+                        }, 8L, Long.MAX_VALUE)),
+                Form.numberRow(Component.translatable("gtceu.creative.energy.amperage"),
+                        NumberField.ofInt(UISizes.CONTENT_WIDTH, () -> amps, this::setAmps, 1, 67108864)));
     }
 
     private void setVoltage(long voltage) {
@@ -132,13 +143,7 @@ public class CreativeEnergyHatchPartMachine extends WorkableTieredIOPartMachine 
 
     private void updateMachine() {
         updateEnergyContainer();
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            serverLevel.getServer().execute(() -> {
-                for (var c : getControllers()) {
-                    c.requestCheck();
-                }
-            });
-        }
+        getControllers().forEach(IMultiController::requestCheck);
     }
 
     //////////////////////////////////////

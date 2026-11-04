@@ -40,8 +40,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.gregtechceu.gtceu.common.data.GTMaterials.NULL;
-
 public class DataScanningManager {
 
     private static final Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
@@ -63,7 +61,7 @@ public class DataScanningManager {
         Objects.requireNonNull(points, "points");
 
         var material = AEChemicalHelper.getMaterial(key);
-        if (material != NULL) {
+        if (material != null) {
             registerDataScanning(material, points);
             return;
         }
@@ -80,7 +78,7 @@ public class DataScanningManager {
         }
         Objects.requireNonNull(material, "material");
         Objects.requireNonNull(points, "points");
-        if (material == NULL) {
+        if (material == null) {
             throw new IllegalArgumentException("Cannot register data scanning for the null material");
         }
 
@@ -115,11 +113,11 @@ public class DataScanningManager {
     public static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
         var teamContext = TeamResearchSavedData.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
-        boolean isMaterial = mat != NULL;
+        boolean isMaterial = mat != null;
         boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
         var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
         if (!simulate) {
-            if (mat != NULL) {
+            if (mat != null) {
                 teamContext.addScannedMaterial(mat);
             }
             teamContext.addScannedItem(key);
@@ -135,12 +133,12 @@ public class DataScanningManager {
     public static ResearchPoints scanData(AEKey key, UUID team, long times, boolean simulate) {
         var teamContext = TeamResearchSavedData.getOrCreateContext(team);
         var mat = AEChemicalHelper.getMaterial(key);
-        boolean isMaterial = mat != NULL;
+        boolean isMaterial = mat != null;
         boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
         var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
         var effectiveTimes = hasScanned ? times * penalty : 1f + (times - 1) * penalty;
         if (!simulate) {
-            if (mat != NULL) {
+            if (mat != null) {
                 teamContext.addScannedMaterial(mat);
             }
             teamContext.addScannedItem(key);
@@ -157,7 +155,7 @@ public class DataScanningManager {
     }
 
     private static ResearchPoints scanDataRaw(AEKey key, Material material, float penalty) {
-        var override = material == NULL ? dataScanningMap.get(key) : materialDataScanningMap.get(material);
+        var override = material == null ? dataScanningMap.get(key) : materialDataScanningMap.get(material);
         if (override != null) {
             return override.copyWithWeight(penalty);
         }
@@ -188,6 +186,18 @@ public class DataScanningManager {
         return TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(ownerId)).hasScanned(entry);
     }
 
+    public static boolean canScanUnscanned(AEKey key) {
+        if (!ResearchRequirements.getEurekaRequirements(key).isEmpty()) return true;
+        var material = AEChemicalHelper.getMaterial(key);
+        var points = material == null ? dataScanningMap.get(key) : materialDataScanningMap.get(material);
+        if (points == null) return false;
+        long bytes = 0;
+        for (var entry : points) {
+            if (entry.getLongValue() > 0) bytes += entry.getKey().getBytePerPoint() * entry.getLongValue();
+        }
+        return bytes > 0;
+    }
+
     public record DataScanningEntry(AEKey key, ResearchPoints points) {}
 
     public static void freeze() {
@@ -205,7 +215,7 @@ public class DataScanningManager {
             var aeKey = AEItemKey.of(key);
             if (aeKey == null) return;
             var material = AEChemicalHelper.getMaterial(aeKey);
-            if (material != NULL) {
+            if (material != null) {
                 var points = materialDataScanningMap.get(material);
                 if (points == null) {
                     points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(key));
@@ -223,7 +233,7 @@ public class DataScanningManager {
             var aeKey = AEFluidKey.of(key);
             if (aeKey == null) return;
             var material = AEChemicalHelper.getMaterial(aeKey);
-            if (material != NULL) {
+            if (material != null) {
                 var points = materialDataScanningMap.get(material);
                 if (points == null) {
                     points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(key));
@@ -285,8 +295,9 @@ public class DataScanningManager {
     }
 
     private static ResearchPoints scanDataRaw(Item key) {
-        var mat = ChemicalHelper.getMaterialEntry(key).material();
-        boolean isMaterial = mat != NULL;
+        var entry = ChemicalHelper.getMaterialEntry(key);
+        var mat = entry == null ? null : entry.material();
+        boolean isMaterial = mat != null;
         var points = new ResearchPoints();
         if (isMaterial) {
             points.addTo(ResearchTag.MATERIAL, 32);
@@ -314,7 +325,7 @@ public class DataScanningManager {
 
     private static ResearchPoints scanDataRaw(Fluid key) {
         var mat = ChemicalHelper.getMaterial(key);
-        boolean isMaterial = mat != NULL;
+        boolean isMaterial = mat != null;
         var points = new ResearchPoints();
         if (isMaterial) {
             points.addTo(ResearchTag.MATERIAL, (long) (32 * (float) 1.0));

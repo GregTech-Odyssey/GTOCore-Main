@@ -34,6 +34,7 @@ import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
 import com.hepdd.gtmthings.utils.BigIntegerUtils;
 import com.hollingsworth.arsnouveau.common.compat.ae2.SourceKey;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -55,7 +56,7 @@ public final class MEManaInterface extends MetaMachine implements
                                    IFancyUIMachine {
 
     @RegisterLanguage(cn = "魔力", en = "Mana")
-    public static final String BOTANIA_MANA = "gtocore.machine.me_mana_interface.botania_mana";
+    public static final Component BOTANIA_MANA = Component.translatable("gtocore.machine.me_mana_interface.botania_mana");
 
     @Getter
     @Setter
@@ -88,8 +89,7 @@ public final class MEManaInterface extends MetaMachine implements
 
     @Override
     public Component getDescription() {
-        return Component.translatable("ars_nouveau.category.source").append("&").append(Component
-                .translatable(BOTANIA_MANA));
+        return Component.translatable("ars_nouveau.category.source").append("&").append(BOTANIA_MANA);
     }
 
     @Override
@@ -168,6 +168,9 @@ public final class MEManaInterface extends MetaMachine implements
 
     /// 优先级范围
     private static final int PRIORITY_LIMIT = 100000000;
+    private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
+    private static final Component EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
+    private static final Component INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
@@ -182,9 +185,9 @@ public final class MEManaInterface extends MetaMachine implements
     /** 页面：AE 优先级（悬停看提取 / 存入优先级说明）。 */
     private UIElement buildPage() {
         var section = UIElement.section();
-        section.addChild(Form.numberRow("gui.ae2.Priority",
+        section.addChild(Form.numberRow(PRIORITY,
                 MEPatternPartUI.intField(0, this::getPriority, value -> setPriority(Math.min(value, PRIORITY_LIMIT)), -PRIORITY_LIMIT),
-                "gui.ae2.PriorityExtractionHint", "gui.ae2.PriorityInsertionHint"));
+                EXTRACTION_HINT, INSERTION_HINT));
         return Form.page().addChild(section);
     }
 

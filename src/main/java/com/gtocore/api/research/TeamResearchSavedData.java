@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 
 import com.gto.datasynclib.util.VersionedFriendlyByteBuf;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import org.jetbrains.annotations.ApiStatus;
 

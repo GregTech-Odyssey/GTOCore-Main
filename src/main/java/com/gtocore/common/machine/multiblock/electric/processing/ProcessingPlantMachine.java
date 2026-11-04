@@ -41,6 +41,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -260,7 +261,7 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
     }
 
     @Override
-    public String getStorageSlotLabel() {
+    public Component getStorageSlotLabel() {
         return IStorageMultiblock.SLOT_MACHINE;
     }
 }

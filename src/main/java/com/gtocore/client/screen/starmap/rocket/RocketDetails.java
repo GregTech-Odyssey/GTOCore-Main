@@ -71,7 +71,7 @@ final class RocketDetails {
             info.addChild(row(RocketLang.LABEL_CURRENT_ROCKET, Component.translatable(RocketLang.TIER_VALUE, decorator.rocketTier()), () -> UITheme.STATUS_TEXT_ERROR));
         }
         info.addChild(row(RocketLang.LABEL_GRAVITY, Component.translatable(RocketLang.GRAVITY_VALUE, String.format("%.2f", planet.gravity()))));
-        info.addChild(row(RocketLang.LABEL_ATMOSPHERE, Component.translatable(planet.oxygen() ? RocketLang.BREATHABLE : RocketLang.NO_OXYGEN),
+        info.addChild(row(RocketLang.LABEL_ATMOSPHERE, planet.oxygen() ? RocketLang.BREATHABLE : RocketLang.NO_OXYGEN,
                 planet.oxygen() ? () -> UITheme.STATUS_TEXT_GOOD : UITheme::panelText));
         info.addChild(row(RocketLang.LABEL_TEMPERATURE, Component.translatable(RocketLang.TEMPERATURE_VALUE, planet.temperature())));
         info.addChild(row(RocketLang.LABEL_SOLAR, Component.literal(String.valueOf(planet.solarPower()))));
@@ -84,7 +84,7 @@ final class RocketDetails {
 
         boolean here = catalog.current() == body;
         var landing = menu.getLandingPos(dimension, true);
-        var land = Button.translatable(LayoutStyle.AUTO, RocketLang.LAND)
+        var land = Button.text(LayoutStyle.AUTO, RocketLang.LAND)
                 .setVariant(UITheme.ButtonVariant.CONFIRM)
                 .disabled(() -> !reachable || !here && !decorator.unlocked(body),
                         !reachable ? RocketLang.ROCKET_TOO_LOW : RocketLang.LOCKED)
@@ -97,10 +97,10 @@ final class RocketDetails {
     private static UIElement stations(RocketMapHost host, int body, ResourceKey<Level> orbit) {
         var menu = host.planets();
         var stations = UIElement.section();
-        stations.addChild(TextLine.translatable(LayoutStyle.AUTO, RocketLang.STATIONS).bindClientColor(UITheme::panelText));
+        stations.addChild(TextLine.constant(LayoutStyle.AUTO, RocketLang.STATIONS).bindClientColor(UITheme::panelText));
         var owned = menu.getOwnedAndTeamSpaceStations(orbit);
         if (owned.isEmpty()) {
-            stations.addChild(TextLine.translatable(LayoutStyle.AUTO, RocketLang.NO_STATION).bindClientColor(UITheme::textSecondary));
+            stations.addChild(TextLine.constant(LayoutStyle.AUTO, RocketLang.NO_STATION).bindClientColor(UITheme::textSecondary));
         }
         for (var entry : owned) {
             var station = entry.getSecond();
@@ -112,7 +112,7 @@ final class RocketDetails {
                     Component.translatable("tooltip.ad_astra.space_station_owner", entry.getFirst()).withStyle(ChatFormatting.GOLD));
             stations.addChild(button);
         }
-        var construct = Button.translatable(LayoutStyle.AUTO, RocketLang.CONSTRUCT)
+        var construct = Button.text(LayoutStyle.AUTO, RocketLang.CONSTRUCT)
                 .disabled(() -> !menu.canConstruct(orbit) || menu.isInSpaceStation(orbit), RocketLang.CONSTRUCT_UNAVAILABLE)
                 .setOnClientClick(() -> host.construct(body));
         construct.bindTooltips(() -> constructTooltip(menu, orbit));
@@ -128,15 +128,15 @@ final class RocketDetails {
             info.addChild(row(RocketLang.LABEL_TEMPERATURE, Component.translatable(RocketLang.KELVIN_VALUE, Math.round(dimension.getTemperature()))));
             column.addChild(info);
         }
-        column.addChild(TextLine.translatable(LayoutStyle.AUTO, RocketLang.NOT_TRAVELABLE).bindClientColor(UITheme::textSecondary));
+        column.addChild(TextLine.constant(LayoutStyle.AUTO, RocketLang.NOT_TRAVELABLE).bindClientColor(UITheme::textSecondary));
     }
 
-    private static UIElement row(String label, Component value) {
+    private static UIElement row(Component label, Component value) {
         return row(label, value, UITheme::panelText);
     }
 
     static int dysonContentWidth() {
-        return Math.max(UISizes.POPUP_CONTENT_WIDTH, UIText.width(Component.translatable(RocketLang.LABEL_DYSON_LAUNCHED)) +
+        return Math.max(UISizes.POPUP_CONTENT_WIDTH, UIText.width(RocketLang.LABEL_DYSON_LAUNCHED) +
                 UISizes.GAP + dysonValueWidth() + 2 * UISizes.PANEL_PADDING);
     }
 
@@ -155,7 +155,7 @@ final class RocketDetails {
             layout(l -> l.row().height(TextLine.HEIGHT).gapAll(UISizes.GAP));
             int launched = StarMapDysonSync.launched(level);
             update(launched);
-            addChildren(TextLine.translatable(LayoutStyle.AUTO, RocketLang.LABEL_DYSON_LAUNCHED).bindClientColor(UITheme::textSecondary).layout(l -> l.flex(1)),
+            addChildren(TextLine.constant(LayoutStyle.AUTO, RocketLang.LABEL_DYSON_LAUNCHED).bindClientColor(UITheme::textSecondary).layout(l -> l.flex(1)),
                     TextLine.of(dysonValueWidth(), () -> value).setTextAlign(Horizontal.RIGHT).bindClientColor(UITheme::panelText));
             // 绑定放在始终显示的信息区，零发射时隐藏的行也能在首次发射后恢复显示。
             info.addSyncValue(SyncValue.ofInt(() -> StarMapDysonSync.launched(level), launched).onChanged(this::update));
@@ -168,10 +168,10 @@ final class RocketDetails {
         }
     }
 
-    private static UIElement row(String label, Component value, IntSupplier color) {
+    private static UIElement row(Component label, Component value, IntSupplier color) {
         int width = UIText.width(value) + 2;
         return UIElement.row(TextLine.HEIGHT).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(TextLine.translatable(LayoutStyle.AUTO, label).bindClientColor(UITheme::textSecondary).layout(l -> l.flex(1)),
+                .addChildren(TextLine.constant(LayoutStyle.AUTO, label).bindClientColor(UITheme::textSecondary).layout(l -> l.flex(1)),
                         TextLine.constant(width, value).setTextAlign(Horizontal.RIGHT).bindClientColor(color));
     }
 
@@ -185,9 +185,9 @@ final class RocketDetails {
         private final RocketDecorator decorator;
         private final int body;
         private final Component subtitle;
-        private final Component here = Component.translatable(RocketLang.CURRENT);
-        private final Component unlocked = Component.translatable(RocketLang.UNLOCKED);
-        private final Component locked = Component.translatable(RocketLang.LOCKED_SHORT);
+        private final Component here = RocketLang.CURRENT;
+        private final Component unlocked = RocketLang.UNLOCKED;
+        private final Component locked = RocketLang.LOCKED_SHORT;
 
         Header(RocketMapHost host, int body) {
             this.catalog = host.catalog();
@@ -216,13 +216,13 @@ final class RocketDetails {
 
         private final StarCatalog catalog;
         private final int realm;
-        private final Component title = Component.translatable(RocketLang.REALMS);
+        private final Component title = RocketLang.REALMS;
         private final Component status;
 
         RealmHeader(StarCatalog catalog, int realm) {
             this.catalog = catalog;
             this.realm = realm;
-            this.status = Component.translatable(catalog.current() == realm ? RocketLang.CURRENT : RocketLang.NOT_TRAVELABLE);
+            this.status = catalog.current() == realm ? RocketLang.CURRENT : RocketLang.NOT_TRAVELABLE;
             layout(l -> l.height(BADGE));
         }
 

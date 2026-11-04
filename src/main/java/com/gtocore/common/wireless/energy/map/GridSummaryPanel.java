@@ -38,7 +38,7 @@ import java.util.function.Supplier;
  */
 public class GridSummaryPanel extends UIElement {
 
-    private static final Component EMPTY_HINT = Component.translatable(GridMapLang.EMPTY_TITLE);
+    private static final Component EMPTY_HINT = GridMapLang.EMPTY_TITLE;
     private static final float LOW_STORAGE = 0.1f;
 
     private final Supplier<UUID> owner;
@@ -68,7 +68,7 @@ public class GridSummaryPanel extends UIElement {
         listenUIClose();
         var name = TextLine.of(0, this::teamName).bindClientColor(UITheme::panelText);
         header = UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChild(name.layout(l -> l.flex(1)));
-        var bar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(GridMapLang.STORED), 0, this::progress).percent();
+        var bar = ProgressBar.of(LayoutStyle.AUTO, GridMapLang.STORED, 0, this::progress).percent();
         bar.bindClientColor(() -> barColor(bar));
         bar.bindDetail(this::storedDetail);
         details = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
@@ -127,8 +127,8 @@ public class GridSummaryPanel extends UIElement {
     }
 
     static ButtonGroup windowGroup(IntSupplier current, IntConsumer select) {
-        return ButtonGroup.single(GridView.WINDOWS, i -> Component.translatable(GridFormat.WINDOW_KEYS[i]), current, select)
-                .optionTooltips(i -> Collections.singletonList(Component.translatable(GridFormat.WINDOW_TIPS[i]))).horizontal().compact();
+        return ButtonGroup.single(GridView.WINDOWS, i -> GridFormat.WINDOW_KEYS[i], current, select)
+                .optionTooltips(i -> Collections.singletonList(GridFormat.WINDOW_TIPS[i])).horizontal().compact();
     }
 
     static int barColor(ProgressBar bar) {

@@ -33,7 +33,6 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import appeng.core.definitions.AEItems;
@@ -565,7 +564,7 @@ public final class LvChapter {
             .task(Task.item(MultiBlockG.TREE_GROWTH_SIMULATOR))
             .reward(
                     Reward.item(ToolHelper.get(GTToolType.AXE, GTOMaterials.Elementium).getItem()),
-                    Reward.stack(() -> QuestStacks.withNbt(ToolHelper.get(GTToolType.CHAINSAW_LV, GTMaterials.Iron), "{Charge:100000L,MaxCharge:100000L}"), 1))
+                    Reward.stack(() -> QuestStacks.charged(ToolHelper.get(GTToolType.CHAINSAW_LV, GTMaterials.Iron), 100000L, 100000L), 1))
             .dependsOn(LV_VOLTAGE_COIL, LV_CONVEYOR_MODULE, LV_ROBOT_ARM)
             .hideDependencyLines());
 
@@ -1007,7 +1006,7 @@ public final class LvChapter {
                     .line()
                     .line("{注意：拆除机器主机会直接清空机器主机上的升级！}", RED))
             .task(Task.item(GTOItems.SPEED_UPGRADE_MODULE), Task.item(GTOItems.ENERGY_UPGRADE_MODULE))
-            .reward(Reward.stack(() -> QuestStacks.withNbt(new ItemStack(AEItems.PORTABLE_ITEM_CELL4K), "{internalCurrentPower:20000.0d}"), 1))
+            .reward(Reward.stack(() -> QuestStacks.aeCharged(AEItems.PORTABLE_ITEM_CELL4K, 20000.0d), 1))
             .dependsOn(ApotheosisChapter.RARITY_FORGE, LV_POWER_AMPLIFIERS));
 
     public static final Quest WIRELESS_CHARGER = CHAPTER.quest("wireless_charger", q -> q
@@ -1169,7 +1168,7 @@ public final class LvChapter {
     public static final Quest ANY_DRILLS = CHAPTER.quest("any_drills", q -> q
             .at(-4.5, -7.5)
             .iconStack(
-                    () -> QuestStacks.withNbt(ToolHelper.get(GTToolType.DRILL_LV, GTMaterials.Steel), "{Charge:2147483647L,MaxCharge:2147483647L}"))
+                    () -> QuestStacks.charged(ToolHelper.get(GTToolType.DRILL_LV, GTMaterials.Steel), 2147483647L, 2147483647L))
             .desc(d -> d
                     .line("低压时代你可以使用可重复充电的电钻来挖矿，{电钻}有{4x}和{2^电压等级}的连锁数量加成", GOLD, DARK_GREEN, DARK_GREEN)
                     .line()
@@ -1180,7 +1179,7 @@ public final class LvChapter {
     public static final Quest ANY_CHAINSAWS = CHAPTER.quest("any_chainsaws", q -> q
             .at(-4.5, -6.5)
             .iconStack(
-                    () -> QuestStacks.withNbt(ToolHelper.get(GTToolType.CHAINSAW_LV, GTMaterials.Steel), "{Charge:2147483647L,MaxCharge:2147483647L}"))
+                    () -> QuestStacks.charged(ToolHelper.get(GTToolType.CHAINSAW_LV, GTMaterials.Steel), 2147483647L, 2147483647L))
             .desc(d -> d
                     .line("如果你需要大量原木，制作一把链锯是不错的选择")
                     .line()

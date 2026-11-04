@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.api.machine.WirelessEnergyReceiveCoverHolder;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;

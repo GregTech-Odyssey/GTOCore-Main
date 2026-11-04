@@ -98,11 +98,14 @@ public final class MEPatternPartUI {
                 .addChildren(onlineIndicator(machine::getOnlineField), nameField);
     }
 
+    private static final Component ME_OFFLINE = Component.translatable("gtceu.gui.me_network.offline");
+    private static final Component ME_ONLINE = Component.translatable("gtceu.gui.me_network.online");
+
     /** ME 网络在线指示灯（红：离线，绿：在线），标题栏行首用；{@code online} 在服务端取值。 */
     public static Indicator onlineIndicator(BooleanSupplier online) {
         return Indicator.of(() -> online.getAsBoolean() ? 1 : 0,
-                Indicator.State.of(UITheme.STATUS_OFFLINE, "gtceu.gui.me_network.offline"),
-                Indicator.State.of(UITheme.STATUS_ONLINE, "gtceu.gui.me_network.online"));
+                Indicator.State.of(UITheme.STATUS_OFFLINE, ME_OFFLINE),
+                Indicator.State.of(UITheme.STATUS_ONLINE, ME_ONLINE));
     }
 
     /** 底栏：左侧翻页（多于一页时），右侧附加按钮。两者都没有时返回 null。 */
@@ -157,11 +160,15 @@ public final class MEPatternPartUI {
     // ==================== 单槽配置（弹出面板内容） ====================
 
     /** 面板区块：深灰面板，先放一行标题，调用方再往里加内容。 */
-    public static UIElement section(UIElement parent, String titleKey) {
+    public static UIElement section(UIElement parent, Component title) {
         var section = UIElement.section(parent.getContentWidth());
-        section.addChild(Label.translatable(section.getContentWidth(), titleKey).bindClientColor(UITheme::panelText));
+        section.addChild(Label.constant(section.getContentWidth(), title).bindClientColor(UITheme::panelText));
         parent.addChild(section);
         return section;
+    }
+
+    public static UIElement section(UIElement parent, String titleKey) {
+        return section(parent, Component.translatable(titleKey));
     }
 
     /** 按每行 9 个排布 {@code count} 个槽，槽由 {@code slotFactory} 按序号创建。 */
@@ -237,16 +244,24 @@ public final class MEPatternPartUI {
     }
 
     /** 一行"说明文字 …… 控件"，控件靠右；用在面板区块里。 */
+    public static UIElement labeledRow(int width, Component labelText, Widget control, Component... tooltips) {
+        var label = Label.constant(width - control.getSizeWidth() - UISizes.GAP, labelText).bindClientColor(UITheme::panelText);
+        if (tooltips.length > 0) label.tooltips(tooltips);
+        return UIElement.centeredRow(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight())).layout(l -> l.width(width))
+                .addChildren(label, UIElement.flexSpacer(), control);
+    }
+
     public static UIElement labeledRow(int width, String key, @Nullable String tooltipKey, Widget control) {
-        return tooltipKey == null ? labeledRow(width, key, control) : labeledRow(width, key, control, tooltipKey);
+        return tooltipKey == null ? labeledRow(width, Component.translatable(key), control) : labeledRow(width, Component.translatable(key), control, Component.translatable(tooltipKey));
     }
 
     /** 同上，说明文字的悬浮提示可以有多行（每个键一行）。 */
     public static UIElement labeledRow(int width, String key, Widget control, String... tooltipKeys) {
-        var label = Label.translatable(width - control.getSizeWidth() - UISizes.GAP, key).bindClientColor(UITheme::panelText);
-        if (tooltipKeys.length > 0) label.setHoverTooltips(tooltipKeys);
-        return UIElement.centeredRow(Math.max(UISizes.CONTROL_HEIGHT, control.getSizeHeight())).layout(l -> l.width(width))
-                .addChildren(label, UIElement.flexSpacer(), control);
+        Component[] tooltips = new Component[tooltipKeys.length];
+        for (int i = 0; i < tooltipKeys.length; i++) {
+            tooltips[i] = Component.translatable(tooltipKeys[i]);
+        }
+        return labeledRow(width, Component.translatable(key), control, tooltips);
     }
 
     // ==================== 缺货标记 ====================
