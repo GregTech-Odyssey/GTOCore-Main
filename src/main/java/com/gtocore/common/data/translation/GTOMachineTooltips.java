@@ -662,12 +662,16 @@ public final class GTOMachineTooltips {
 
     // 裂变反应堆
     public static final TipSpec FissionReactorTooltips = GTOTips.of("fission_reactor", t -> {
-        t.requirement(t.tr("组件：内部放燃料组件与冷却组件；冷却组件须紧邻燃料并决定冷却上限，燃料组件提供最大并行，相邻越多产热越高", "Components: place fuel and cooling components inside; cooling components must be adjacent to fuel and determine the cooling limit; fuel components provide maximum parallelism, and more adjacent fuel components generate more heat"));
+        t.requirement(t.tr("组件：内部可以放燃料组件与冷却组件", "Components: place fuel and cooling components inside"));
+        t.requirement(t.tr("冷却组件须紧邻燃料组件，与燃料组件接触的面数量决定冷却上限", "Cooling components must be adjacent to fuel components; the number of faces in contact with fuel components determines the cooling limit"));
+        t.requirement(t.tr("燃料组件的数量决定最大并行，但燃料组件两两相邻会提高产热", "The number of fuel components determines the maximum parallelism, but adjacent fuel components increase heat production"));
         t.warning(t.tr("温度：初始 298K，停机每秒降 1K；超 1500K 持续损坏，完全损坏时爆炸", "Temperature: starts at 298K, drops 1K per second while idle; above 1500K the reactor takes continuous damage and explodes when fully damaged"));
         t.formula(t.tr("升温：冷却不生效时每秒升温 = 配方基础产热 × (相邻燃料组件数 + 1)，基础产热见配方页面", "Heating: when cooling is inactive, heat per second = base recipe heat × (adjacent fuel components + 1); base heat is shown on the recipe page"));
         t.formula(t.tr("冷却：输入量大于冷却需求时生效，需求 = 基础产热 × 实际并行 × 当前温度 / 1500，上限 = (冷却组件数 - 相邻数 / 3) × 8", "Cooling: activates when input exceeds the cooling demand; demand = base heat × actual parallel × current temperature / 1500; limit = (cooling components - adjacency / 3) × 8"));
-        t.feature(t.tr("超频与消耗：800 mB 蒸馏水或 20 mB 钠钾合金 = 1 单位冷却需求；输入量 ≥ n × 需求时额外增加 n 倍基础运行速度", "Overclock and consumption: 800 mB of Distilled Water or 20 mB of Sodium Potassium = 1 unit of cooling demand; input ≥ n × demand adds n times the base processing speed"));
-        t.detail(t.tr("产出：蒸馏水冷却产出蒸汽 = 消耗量 × min(160, 160 / 1.4^(373-温度))；钠钾合金 ≤825K 产热钠钾合金，>825K 产超临界钠钾合金", "Output: Distilled Water cooling produces steam = consumption × min(160, 160 / 1.4^(373 - temperature)); Sodium Potassium yields Hot Sodium Potassium at ≤825K and Supercritical Sodium Potassium above 825K"));
+        t.feature(t.tr("超频与消耗：1 单位冷却需求 = 800 mB 蒸馏水或 20 mB 钠钾合金", "Overclock and consumption: 1 unit of cooling demand = 800 mB Distilled Water or 20 mB Sodium Potassium"));
+        t.feature(t.tr("输入量 ≥ n 单位需求时额外增加 n 倍基础运行速度", "When input is ≥ n units of demand, the base processing speed is increased by n times"));
+        t.detail(t.tr("输入蒸馏水：产生蒸汽，产量 = 消耗量 × min(160, 160 / 1.4^(373-温度))", "Input Distilled Water: produces steam, output = input × min(160, 160 / 1.4^(373-temperature))"));
+        t.detail(t.tr("输入钠钾合金：≤825K 产热钠钾合金，>825K 产超临界钠钾合金，产量 = 消耗量", "Input Sodium Potassium: produces Hot Sodium Potassium at ≤825K and Supercritical Sodium Potassium above 825K, output = input"));
     });
 
     // 计算中心
@@ -695,6 +699,7 @@ public final class GTOMachineTooltips {
         t.statText(t.tr("Cascade-MFPC效率: 块(0.54) 条(0.06) 粒(0.0066)", "Cascade-MFPC efficiency: Block(0.54) Ingot(0.06) Nugget(0.0066)"));
         t.statText(t.tr("寒冰碎片: 0.0001 (极低效率)", "Ice Shards: 0.0001 (extremely low efficiency)"));
 
+        t.details(t.tr("等级与组件详情", "Tier and component details"));
         // Tier 1 组件支持
         t.heading(t.tr("Tier 1 : 支持HPCA系列组件", "Tier 1 : Supports HPCA Series Components"));
         t.statText(t.tr("槽位需求: 无", "Slot requirement: None"));
