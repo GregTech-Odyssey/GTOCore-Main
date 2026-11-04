@@ -477,6 +477,7 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("单方块 ME 磁盘存储器", "Single-block version of the ME Disk Storage"));
         t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
+        t.formula(t.tr("容量 = 组件字节之和 × 2", "Capacity = sum of component bytes x 2"));
     });
 
     public static final TipSpec MEDiskStorageTooltips = GTOTips.of("me_disk_storage", t -> {

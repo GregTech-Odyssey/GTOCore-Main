@@ -4554,6 +4554,7 @@
   "gtocore.lang.me_craft_pattern_part_machine.2.723093677": "Use it with Super Molecular Assembler",
   "gtocore.lang.me_disk_box.1.678392712": "Single-block version of the ME Disk Storage",
   "gtocore.lang.me_disk_box.2.1656808225": "Install storage components (1k...256M) to provide capacity",
+  "gtocore.lang.me_disk_box.3.1039463143": "Capacity = sum of component bytes x 2",
   "gtocore.lang.me_disk_storage.1.1656808225": "Install storage components (1k...256M) to provide capacity",
   "gtocore.lang.me_disk_storage.2.-656585215": "Use higher-tier Hermetic Casings to provide more capacity",
   "gtocore.lang.me_disk_storage.3.-836041704": "Capacity = sum of component bytes x Hermetic Casing tier (ULV=1, LV=2...)",

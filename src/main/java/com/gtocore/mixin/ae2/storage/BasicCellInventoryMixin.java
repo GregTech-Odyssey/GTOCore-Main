@@ -249,7 +249,7 @@ public abstract class BasicCellInventoryMixin implements StorageCell {
      * @reason .
      */
     @Overwrite(remap = false)
-    protected void saveChanges() {
+    private void saveChanges() {
         if (container != null) {
             container.saveChanges();
         } else {

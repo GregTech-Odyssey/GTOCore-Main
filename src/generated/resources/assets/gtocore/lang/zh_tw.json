@@ -4688,6 +4688,7 @@
   "gtocore.lang.me_craft_pattern_part_machine.2.723093677": "配合超級分子裝配室使用",
   "gtocore.lang.me_disk_box.1.678392712": "單方塊 ME 磁盤存儲器",
   "gtocore.lang.me_disk_box.2.1656808225": "安裝存儲組件（1k…256M）來提供容量",
+  "gtocore.lang.me_disk_box.3.1039463143": "容量 = 組件字節之和 × 2",
   "gtocore.lang.me_disk_storage.1.1656808225": "安裝存儲組件（1k…256M）來提供容量",
   "gtocore.lang.me_disk_storage.2.-656585215": "使用更高級的密封機械方塊來提供更高的容量",
   "gtocore.lang.me_disk_storage.3.-836041704": "容量 = 組件字節之和 × 密封機械方塊等級（ULV=1、LV=2…）",

@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae.slots;
 
+import appeng.api.stacks.KeyVisitor;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableContentHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;

@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import appeng.api.stacks.KeyVisitor;
 import com.gtocore.common.data.machines.GTOMachineProtocols;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -317,7 +318,7 @@ public final class SpaceStationFlowPage {
         private final Fluid water = DistilledWater.getFluid();
         private final Component usageText;
         private final Component requiredTierText;
-        private final IRecipeHandler.KeyVisitor waterCollector;
+        private final KeyVisitor waterCollector;
         private long[] unitWater = new long[0];
         private long[] unitScratch = new long[0];
         private int collectingUnit;

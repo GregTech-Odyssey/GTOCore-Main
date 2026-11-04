@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.adventure;
 
+import appeng.api.stacks.KeyVisitor;
 import com.gtocore.api.entity.ILivingEntity;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.data.GTOItems;
@@ -393,7 +394,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
         return new ItemStack[] { Items.ZOMBIE_SPAWN_EGG.getDefaultInstance(), Items.SKELETON_SPAWN_EGG.getDefaultInstance(), Items.CREEPER_SPAWN_EGG.getDefaultInstance() };
     }
 
-    private static final class Armament implements IRecipeHandler.KeyVisitor {
+    private static final class Armament implements KeyVisitor {
 
         private double totalDamage;
         private ItemStack weapon = ItemStack.EMPTY;

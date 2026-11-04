@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.mana.multiblock;
 
+import appeng.api.stacks.KeyVisitor;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.data.IdleReason;
 import com.gtocore.integration.botania.IClientPylon;

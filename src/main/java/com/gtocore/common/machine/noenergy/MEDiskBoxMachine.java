@@ -174,7 +174,7 @@ public final class MEDiskBoxMachine extends MetaMachine
             total = term > Long.MAX_VALUE / stack.getCount() ? Long.MAX_VALUE : total + term * stack.getCount();
             if (total == Long.MAX_VALUE) break;
         }
-        capacity = total;
+        capacity = total << 1;
     }
 
     /// 组件能提供的字节数；不是组件返回 0
