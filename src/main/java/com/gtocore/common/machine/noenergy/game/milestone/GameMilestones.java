@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.milestone;
 
+import com.gtocore.common.machine.noenergy.game.klotski.KlotskiRules;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -49,10 +51,14 @@ public final class GameMilestones extends SavedData {
     private static final String NBT_DATA = "data";
     /** 载荷的格式版本，读档时交给 {@link JavaValueOps#create(int)}，codec 里用 {@code ops.dataVersion()} 取。 */
     private static final String NBT_VERSION = "data_version";
-    private static final int DATA_VERSION = 1;
+    private static final int DATA_VERSION = 2;
 
     /** 华容道尺寸档数。 */
     private static final int FIXED_SLOTS = 6;
+
+    /** 经典华容道每关 2 位星级，1000 关一张表。 */
+    private static final int KLOTSKI_BITS = 2;
+    public static final int KLOTSKI_WORDS = (KlotskiRules.LEVEL_COUNT * KLOTSKI_BITS + 63) / 64;
 
     // ==================== 表项 ====================
 
@@ -67,6 +73,9 @@ public final class GameMilestones extends SavedData {
 
     /** 数字华容道：六档尺寸各自的最快用时与达成时间；0 表示该尺寸没有记录。 */
     public record NumberPuzzleStat(UUID player, long[] ticks, long[] times) {}
+
+    /** 经典华容道：一位玩家在一个模式里的总星数。 */
+    public record KlotskiStat(UUID player, int stars) {}
 
     /** 老虎机榜单：回报比降序 → 获得降序 → 次数降序。 */
     private static final Comparator<SlotStat> SLOT_ORDER = Comparator
@@ -126,14 +135,19 @@ public final class GameMilestones extends SavedData {
 
     private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, NumberPuzzleStat>> NUMBER_PUZZLES_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, NUMBER_PUZZLE_CODEC);
 
-    /** 整份数据：五张表按声明顺序串成一个 carrier；解码侧 {@link #of} 装回去。 */
+    /** 经典华容道：两种模式各一张 2 位/关的星级表。 */
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, long[]>> KLOTSKI_STARS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, DataSyncCodec.LONGS_CODEC);
+
+    /** 整份数据：五张旧表 + 经典华容道两张星级表，按声明顺序串成一个 carrier。 */
     private static final DataSyncCodec<GameMilestones> DATA_CODEC = CombinedCodec.composite(
             SLOTS_CODEC, GameMilestones::slots,
             JUST_GET_10_CODEC, GameMilestones::justGet10,
             GAME_2048_CODEC, GameMilestones::game2048,
             PUZZLES_CODEC, GameMilestones::puzzles,
             NUMBER_PUZZLES_CODEC, GameMilestones::numberPuzzles,
-            GameMilestones::of);
+            KLOTSKI_STARS_CODEC, GameMilestones::klotskiCampaign,
+            KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
+            GameMilestones::ofAll);
 
     // ==================== 数据 ====================
 
@@ -142,6 +156,8 @@ public final class GameMilestones extends SavedData {
     private final O2OOpenCacheHashMap<UUID, ScoreStat> game2048 = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge = new O2OOpenCacheHashMap<>();
 
     /** 写一次加一：界面靠它判断里程碑文字要不要重建（不存盘）。 */
     private int modCount;
@@ -170,6 +186,14 @@ public final class GameMilestones extends SavedData {
         return numberPuzzles;
     }
 
+    private O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign() {
+        return klotskiCampaign;
+    }
+
+    private O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge() {
+        return klotskiChallenge;
+    }
+
     /**
      * 解码构造：装回五张表，并把华容道的定长数组补齐到固定档数。
      *
@@ -194,11 +218,30 @@ public final class GameMilestones extends SavedData {
         return data;
     }
 
+    /** 新格式（v2）解码：先装回五张旧表，再补上经典华容道的两张星级表（位图长度补齐）。 */
+    private static GameMilestones ofAll(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
+                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
+                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
+                                        @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
+                                        @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
+                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
+                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge) {
+        var data = of(slots, justGet10, game2048, puzzles, numberPuzzles);
+        if (klotskiCampaign != null) {
+            klotskiCampaign.forEach((player, bits) -> data.klotskiCampaign.put(player, normalizeTimes(bits, KLOTSKI_WORDS)));
+        }
+        if (klotskiChallenge != null) {
+            klotskiChallenge.forEach((player, bits) -> data.klotskiChallenge.put(player, normalizeTimes(bits, KLOTSKI_WORDS)));
+        }
+        return data;
+    }
+
     // ==================== 读档 / 取实例 ====================
 
-    /** 读档：{@code data} 是整份载荷，{@code data_version} 交回 codec。 */
+    /** 读档：{@code data} 是整份载荷，{@code data_version} 交回 codec；旧版本存档直接丢弃。 */
     public static GameMilestones fromNBT(CompoundTag tag) {
-        var ops = JavaValueOps.create(tag.getInt(NBT_VERSION));
+        if (tag.getInt(NBT_VERSION) < DATA_VERSION) return new GameMilestones();
+        var ops = JavaValueOps.create(DATA_VERSION);
         return DATA_CODEC.decode(ops, ops.fromBytes(tag.getByteArray(NBT_DATA)));
     }
 
@@ -282,6 +325,83 @@ public final class GameMilestones extends SavedData {
         bestTimes[sizeOrdinal] = gameTime;
         numberPuzzles.put(player, new NumberPuzzleStat(player, bestTicks, bestTimes));
         touch();
+    }
+
+    // ==================== 经典华容道 ====================
+
+    /** 某关的星数（0~3）；空位图返回 0。 */
+    public static int klotskiStarAt(long @Nullable [] bits, int level) {
+        if (bits == null) return 0;
+        int index = Math.clamp(level, 0, KlotskiRules.LEVEL_COUNT - 1);
+        int word = index >> 5;
+        if (word >= bits.length) return 0;
+        return (int) ((bits[word] >>> ((index & 31) * KLOTSKI_BITS)) & 3L);
+    }
+
+    private static void setKlotskiStar(long[] bits, int level, int stars) {
+        int index = Math.clamp(level, 0, KlotskiRules.LEVEL_COUNT - 1);
+        int shift = (index & 31) * KLOTSKI_BITS;
+        long mask = 3L << shift;
+        bits[index >> 5] = (bits[index >> 5] & ~mask) | ((long) stars << shift);
+    }
+
+    /** 一张星级表里的总星数。 */
+    public static int klotskiTotal(long @Nullable [] bits) {
+        if (bits == null) return 0;
+        int total = 0;
+        for (int word = 0; word < Math.min(KLOTSKI_WORDS, bits.length); word++) {
+            total += Long.bitCount(bits[word] & 0x5555555555555555L) + 2 * Long.bitCount(bits[word] & 0xAAAAAAAAAAAAAAAAL);
+        }
+        return total;
+    }
+
+    private O2OOpenCacheHashMap<UUID, long[]> klotskiTable(int mode) {
+        return mode == KlotskiRules.MODE_CHALLENGE ? klotskiChallenge : klotskiCampaign;
+    }
+
+    /** 玩家某模式的星级表副本；没有记录返回空表。 */
+    public long[] klotskiStars(int mode, @Nullable UUID player) {
+        long[] bits = player == null ? null : klotskiTable(mode).get(player);
+        return bits == null ? new long[KLOTSKI_WORDS] : bits.clone();
+    }
+
+    /** 玩家某模式的总星数。 */
+    public int klotskiTotal(int mode, @Nullable UUID player) {
+        return klotskiTotal(player == null ? null : klotskiTable(mode).get(player));
+    }
+
+    /** 玩家某关的星数。 */
+    public int klotskiLevelStars(int mode, @Nullable UUID player, int level) {
+        long[] bits = player == null ? null : klotskiTable(mode).get(player);
+        return klotskiStarAt(bits, level);
+    }
+
+    /** 记录成绩：只升不降；返回本次因累计星数跨过 50 星整数倍而应发的游戏币。 */
+    public int recordKlotski(int mode, int level, int stars, @Nullable UUID player) {
+        if (player == null || stars <= 0) return 0;
+        int value = Math.clamp(stars, 1, 3);
+        var table = klotskiTable(mode);
+        long[] bits = table.computeIfAbsent(player, k -> new long[KLOTSKI_WORDS]);
+        int before = klotskiTotal(bits);
+        if (value <= klotskiStarAt(bits, level)) return 0;
+        setKlotskiStar(bits, level, value);
+        int crossed = klotskiTotal(bits) / KlotskiRules.STARS_PER_REWARD - before / KlotskiRules.STARS_PER_REWARD;
+        touch();
+        return crossed * (mode == KlotskiRules.MODE_CHALLENGE ?
+                KlotskiRules.CHALLENGE_REWARD : KlotskiRules.CAMPAIGN_REWARD);
+    }
+
+    /** 按总星数降序的榜单，跳过 0 星玩家。 */
+    public List<KlotskiStat> klotskiBoard(int mode) {
+        var table = klotskiTable(mode);
+        var board = new ObjectArrayList<KlotskiStat>(table.size());
+        for (var entry : table.entrySet()) {
+            int stars = klotskiTotal(entry.getValue());
+            if (stars > 0) board.add(new KlotskiStat(entry.getKey(), stars));
+        }
+        board.sort(Comparator.comparingInt(KlotskiStat::stars).reversed()
+                .thenComparing(stat -> stat.player().toString()));
+        return board;
     }
 
     /** 当前数据版本：变了说明有记录更新，界面该重建文字。 */

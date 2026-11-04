@@ -97,13 +97,9 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 「配置」子页的标题与标签提示：三个游戏都挂同一个子页，文案也共用。 */
     @RegisterLanguage(cn = "配置", en = "Config")
     protected static final String PAGE_SETTINGS = "gtocore.machine.game.page.settings";
-    @RegisterLanguage(cn = "游戏设置", en = "Game settings")
-    protected static final String PAGE_SETTINGS_TOOLTIP = "gtocore.machine.game.page.settings.tooltip";
     /** 难度页：有档位的游戏共用同一个标题，图标统一用齿轮。 */
     @RegisterLanguage(cn = "难度", en = "Difficulty")
     protected static final String PAGE_DIFFICULTY = "gtocore.machine.game.page.difficulty";
-    @RegisterLanguage(cn = "选择本局难度", en = "Choose the difficulty for this game")
-    protected static final String PAGE_DIFFICULTY_TOOLTIP = "gtocore.machine.game.page.difficulty.tooltip";
     /** 排行榜页：所有游戏共用同一个标题，图标统一用金银铜柱。 */
     @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
     protected static final String PAGE_LEADERBOARD = "gtocore.machine.game.page.leaderboard";
@@ -420,16 +416,14 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         private final IGuiTexture icon;
         private final Component title;
-        private final Component tooltip;
 
-        protected GamePage(IGuiTexture icon, Component title, Component tooltip) {
+        protected GamePage(IGuiTexture icon, Component title) {
             this.icon = icon;
             this.title = title;
-            this.tooltip = tooltip;
         }
 
-        protected GamePage(IGuiTexture icon, String titleKey, String tooltipKey) {
-            this(icon, Component.translatable(titleKey), Component.translatable(tooltipKey));
+        protected GamePage(IGuiTexture icon, String titleKey) {
+            this(icon, Component.translatable(titleKey));
         }
 
         @Override
@@ -444,7 +438,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
 
         @Override
         public final List<Component> getTabTooltips() {
-            return List.of(tooltip);
+            return List.of(title);
         }
 
         @Override
@@ -463,11 +457,11 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
         private int board;
 
         protected LeaderboardTabPage(Component title, Component tooltip) {
-            super(LEADERBOARD_ICON, title, tooltip);
+            super(LEADERBOARD_ICON, title);
         }
 
         protected LeaderboardTabPage(String titleKey, String tooltipKey) {
-            super(LEADERBOARD_ICON, titleKey, tooltipKey);
+            super(LEADERBOARD_ICON, titleKey);
         }
 
         @Override
@@ -488,12 +482,8 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 单榜排行榜页：一张表。 */
     protected abstract class SingleLeaderboardPage extends GamePage {
 
-        protected SingleLeaderboardPage(Component title, Component tooltip) {
-            super(LEADERBOARD_ICON, title, tooltip);
-        }
-
         protected SingleLeaderboardPage(String titleKey, String tooltipKey) {
-            super(LEADERBOARD_ICON, titleKey, tooltipKey);
+            super(LEADERBOARD_ICON, titleKey);
         }
 
         @Override

@@ -27,6 +27,7 @@ import com.gtocore.common.machine.noenergy.PlatformDeployment.PlatformDeployment
 import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
+import com.gtocore.common.machine.noenergy.game.klotski.KlotskiMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
@@ -1269,6 +1270,16 @@ public final class GTOMachines {
             .nonYAxisRotation()
             .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
                     GTOCore.id("block/machine/game/number_puzzle")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition KLOTSKI = machine("klotski_machine", "经典华容道游戏机", KlotskiMachine::new)
+            .langValue("Klotski Game Machine")
+            .tips(GTOMachineTooltips.KlotskiTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/klotski")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

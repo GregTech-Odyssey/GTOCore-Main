@@ -99,61 +99,26 @@ public final class WelcomeGroup {
                     .build());
         }
 
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(SLOT_MACHINE.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 5)
-                .outputItem(SLOT_MACHINE.asStack())
-                .build());
+        ItemStack[] gameMachine = {
+                SLOT_MACHINE.asStack(),
+                WIDE_SLOT_MACHINE.asStack(),
+                JUST_GET_10.asStack(),
+                GAME_2048.asStack(),
+                GAME_24.asStack(),
+                NUMBER_PUZZLE.asStack(),
+                KLOTSKI.asStack(),
+                SUDOKU.asStack(),
+                MINESWEEPER_CORE.asStack()
+        };
 
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(WIDE_SLOT_MACHINE.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(WIDE_SLOT_MACHINE.asStack())
-                .build());
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(JUST_GET_10.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(JUST_GET_10.asStack())
-                .build());
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(GAME_2048.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(GAME_2048.asStack())
-                .build());
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(GAME_24.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(GAME_24.asStack())
-                .build());
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(NUMBER_PUZZLE.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(NUMBER_PUZZLE.asStack())
-                .build());
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(SUDOKU.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(SUDOKU.asStack())
-                .build());
-
-        TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
-                .texture(new StackTexture(MINESWEEPER_CORE.asStack()))
-                .unlockCondition(UNLOCK_BASE)
-                .inputCurrency(TECH_OPERATOR_COIN, 25)
-                .outputItem(MINESWEEPER_CORE.asStack())
-                .build());
+        for (ItemStack itemStack : gameMachine) {
+            TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex2, new TradeEntry.Builder()
+                    .texture(new StackTexture(itemStack))
+                    .unlockCondition(UNLOCK_BASE)
+                    .inputCurrency(TECH_OPERATOR_COIN, 25)
+                    .outputItem(itemStack)
+                    .build());
+        }
     }
 
     /** 为一种货币登记各面额的「实体币换入钱包」与「钱包换出实体币」交易。 */

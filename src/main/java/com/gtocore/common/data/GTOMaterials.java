@@ -1461,6 +1461,7 @@ public final class GTOMaterials {
     public static Material ManaDiamond;
     public static Material Dragonstone;
     public static Material SourceGem;
+    public static Material FibrillationMagebloomFiber;
     public static Material Laureril;
     public static Material WhiteWax;
     public static Material Herbs;

@@ -331,7 +331,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
     private final class SizePage extends GamePage {
 
         private SizePage() {
-            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY);
         }
 
         @Override

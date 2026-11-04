@@ -1189,7 +1189,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     private final class DifficultyPage extends GamePage {
 
         private DifficultyPage() {
-            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY);
         }
 
         @Override
@@ -1224,7 +1224,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     private final class VariantPage extends GamePage {
 
         private VariantPage() {
-            super(WidgetIcons.FILTER, PAGE_VARIANT, PAGE_VARIANT_TOOLTIP);
+            super(WidgetIcons.FILTER, PAGE_VARIANT);
         }
 
         @Override
@@ -1267,7 +1267,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
         private int variant;
 
         private LeaderboardPage() {
-            super(LEADERBOARD_ICON, PAGE_LEADERBOARD, PAGE_LEADERBOARD_TOOLTIP);
+            super(LEADERBOARD_ICON, PAGE_LEADERBOARD);
         }
 
         @Override

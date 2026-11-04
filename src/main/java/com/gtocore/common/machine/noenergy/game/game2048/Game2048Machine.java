@@ -326,7 +326,7 @@ public class Game2048Machine extends AbstractGameMachine<Game2048Machine.BoardSn
     private final class ConfigPage extends GamePage {
 
         private ConfigPage() {
-            super(WidgetIcons.SETTINGS, PAGE_SETTINGS, PAGE_SETTINGS_TOOLTIP);
+            super(WidgetIcons.SETTINGS, PAGE_SETTINGS);
         }
 
         @Override

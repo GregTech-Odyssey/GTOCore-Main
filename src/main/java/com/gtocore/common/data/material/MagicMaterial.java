@@ -226,6 +226,13 @@ public final class MagicMaterial {
                 .buildAndRegister()
                 .setFormula("*Ma*2(SiO2)2");
 
+        FibrillationMagebloomFiber = material("fibrillation_magebloom", "帚化法师之花")
+                .color(0xda97fc)
+                .secondaryColor(0xae44e2)
+                .iconSet(BRIGHT)
+                .flags(GENERATE_FIBER)
+                .buildAndRegister();
+
         Livingclay = magicMaterial("livingclay", "活土")
                 .ingot()
                 .flags(MORTAR_GRINDABLE, GENERATE_ROD, GENERATE_PLATE)

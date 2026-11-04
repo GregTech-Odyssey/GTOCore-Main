@@ -1020,7 +1020,7 @@ public class MinesweeperCoreMachine extends AbstractGameMachine<MinesweeperCoreM
     private final class BoardConfigPage extends GamePage {
 
         private BoardConfigPage() {
-            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY);
         }
 
         @Override

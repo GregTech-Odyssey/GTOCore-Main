@@ -5,6 +5,7 @@ import com.gtocore.common.machine.noenergy.game.AbstractGameMachine.MilestoneCol
 import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game24.Game24Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
+import com.gtocore.common.machine.noenergy.game.klotski.KlotskiMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperRules;
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
@@ -61,10 +62,13 @@ public final class GameBoardCatalog {
     private static final Component GAME_MINESWEEPER_CAMPAIGN = Component.translatable("gtocore.machine.game.catalog.game.minesweeper_campaign");
     @RegisterLanguage(cn = "数独", en = "Sudoku")
     private static final Component GAME_SUDOKU = Component.translatable("gtocore.machine.game.catalog.game.sudoku");
+    @RegisterLanguage(cn = "经典华容道", en = "Klotski")
+    private static final Component GAME_KLOTSKI = Component.translatable("gtocore.machine.game.catalog.game.klotski");
 
     /** 游戏下拉栏：下标与 {@link #ALL} 的顺序一一对应。 */
     public static final Level GAMES = new Level(TITLE_GAME, new Component[] { GAME_SLOT, GAME_JUST_GET_10,
-            GAME_2048, GAME_24, GAME_NUMBER_PUZZLE, GAME_MINESWEEPER_BASE, GAME_MINESWEEPER_CAMPAIGN, GAME_SUDOKU });
+            GAME_2048, GAME_24, GAME_NUMBER_PUZZLE, GAME_MINESWEEPER_BASE, GAME_MINESWEEPER_CAMPAIGN, GAME_SUDOKU,
+            GAME_KLOTSKI });
 
     // ==================== 目录 ====================
 
@@ -83,7 +87,9 @@ public final class GameBoardCatalog {
                     MinesweeperCoreMachine.campaignLeaderboardBoard()),
             new Group(GAME_SUDOKU, new Level(Component.translatable(AbstractGameMachine.PAGE_DIFFICULTY), SudokuMachine.DIFFICULTY_NAMES),
                     new Level(SudokuMachine.PAGE_VARIANT, SudokuMachine.VARIANT_NAMES),
-                    SudokuMachine.leaderboardBoard()) };
+                    SudokuMachine.leaderboardBoard()),
+            new Group(GAME_KLOTSKI, new Level(KlotskiMachine.COLUMN_MODE, klotskiModeNames()),
+                    null, KlotskiMachine.leaderboardBoard()) };
 
     private GameBoardCatalog() {}
 
@@ -145,5 +151,10 @@ public final class GameBoardCatalog {
     /** 扫雷基础只有前五档有榜（自定义档不计成绩）。 */
     private static Component[] baseDifficultyNames() {
         return Arrays.copyOf(MinesweeperCoreMachine.DIFFICULTY_NAMES, MinesweeperRules.Difficulty.CUSTOM.ordinal());
+    }
+
+    /** 经典华容道的两个榜：分章节与挑战。 */
+    private static Component[] klotskiModeNames() {
+        return KlotskiMachine.MODE_KEYS.clone();
     }
 }

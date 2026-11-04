@@ -211,6 +211,23 @@ public final class GTOMachineTooltips {
                 "Each clear pays 1/4/8/15/25/40 Game Coins by size and records the best time for that size"));
     });
 
+    // 经典华容道 - 盘面与关卡规则以机器界面为准
+    public static final TipSpec KlotskiTooltips = GTOTips.of("klotski", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("经典华容道", "Klotski")));
+        t.feature(t.tr("6×6 盘面：按住滑块沿它的长边拖动，把「车」滑到右侧出口",
+                "6×6 board: drag a block along its long edge and slide the Train to the exit on the right"));
+        t.feature(t.tr("分章节模式 1000 关，每 50 关一章；整章按累计星数解锁，章内完成前一关解锁下一关",
+                "Campaign has 1000 levels, 50 per chapter; a chapter unlocks by total stars, and levels inside unlock in order"));
+        t.feature(t.tr("挑战模式另有 1000 关，按顺序完成、完成前一关解锁下一关",
+                "Challenge offers another 1000 levels in order; clearing one unlocks the next"));
+        t.feature(t.tr("按最少步数评星：达到最少步数得 3 星，多出不到 5 步得 2 星，其余通关得 1 星",
+                "Stars: 3 at the minimum move count, 2 within 4 extra moves, otherwise 1 on completion"));
+        t.feature(t.tr("累计每 50 星发一次奖励：分章节模式 20 游戏币，挑战模式 10 游戏币",
+                "Every 50 total stars grants 20 Game Coins in Campaign or 10 in Challenge"));
+        t.feature(t.tr("两个排行榜分别按分章节与挑战的星星总数排序",
+                "Two leaderboards rank players by Campaign and Challenge total stars respectively"));
+    });
+
     // 数独 - 只保留盘面规则与奖励概览
     public static final TipSpec SudokuTooltips = GTOTips.of("sudoku", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("数独", "Sudoku")));

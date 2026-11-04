@@ -109,7 +109,6 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     public static final int RUN_PUZZLES = 10;
 
     /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
-    /** 范围按钮上的名字，下标与 {@link Game24Rules.DrawRange} 的序数一一对应。 */
     public static final Component[] RANGE_NAMES = { RANGE_TEN, RANGE_THIRTEEN };
 
     /** 「全部榜单」页里的 24 点榜（一级维度是抽牌范围）：列与行和本机排行榜页完全一致。 */
@@ -605,7 +604,7 @@ public class Game24Machine extends AbstractGameMachine<Game24Machine.View> {
     private final class DifficultyPage extends GamePage {
 
         private DifficultyPage() {
-            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY, PAGE_DIFFICULTY_TOOLTIP);
+            super(WidgetIcons.SETTINGS, PAGE_DIFFICULTY);
         }
 
         @Override
