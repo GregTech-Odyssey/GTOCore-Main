@@ -2,6 +2,12 @@ package com.gtocore.common.machine.monitor;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.uipro.Horizontal;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -54,10 +60,6 @@ public class MonitorAECPU extends AbstractAEInfoMonitor {
 
     public MonitorAECPU(MetaMachineBlockEntity holder) {
         super(holder);
-    }
-
-    public MonitorAECPU(Object o) {
-        this((MetaMachineBlockEntity) o);
     }
 
     @SyncToClient
@@ -216,18 +218,31 @@ public class MonitorAECPU extends AbstractAEInfoMonitor {
 
     @Override
     public Widget createUIWidget() {
-        var superWidget = super.createUIWidget();
-        var cpuListGui = new CPUListGui(198, 16, 50, 108);
-        var panel = new ComponentPanelWidget(
-                cpuListGui.getPositionX() + cpuListGui.getSizeWidth() / 2,
-                cpuListGui.getPositionY() + 5 + cpuListGui.getSizeHeight(),
-                List.of(Component.translatable("gtocore.machine.monitor.ae.cpu.list").withStyle(ChatFormatting.BLACK)))
-                .setCenter(true)
-                .setClientSideWidget();
-        return new WidgetGroup(0, 0, superWidget.getSizeWidth() + 60, superWidget.getSizeHeight())
-                .addWidget(superWidget)
-                .addWidget(cpuListGui)
-                .addWidget(panel);
+        var cpuListGui = new CPUListGui(0, 0, 56, 108);
+
+        var topRow = UIElement.row(108)
+                .layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+                .addChildren(
+                        new UIElement().layout(l -> l.size(168, 108)).addChild(createDisplayComponentGroup()),
+                        new UIElement().layout(l -> l.size(56, 108)).addChild(cpuListGui));
+
+        var priorityField = NumberField.ofLong(LayoutStyle.AUTO,
+                this::getPriority, this::setPriority, (long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE);
+
+        var priorityColumn = UIElement.column(LayoutStyle.AUTO)
+                .layout(l -> l.gapAll(UISizes.GAP).flex(1))
+                .addChildren(Form.fieldLabel(Component.translatable("gtocore.machine.monitor.priority")), priorityField);
+
+        var cpuLabelColumn = UIElement.column(LayoutStyle.AUTO)
+                .layout(l -> l.gapAll(UISizes.GAP).width(56))
+                .addChild(Form.fieldLabel(Component.translatable("gtocore.machine.monitor.ae.cpu.list"),
+                        Component.translatable("gtocore.machine.monitor.ae.cpu.list")).setTextAlign(Horizontal.CENTER));
+
+        var bottomRow = UIElement.row(LayoutStyle.AUTO)
+                .layout(l -> l.gapAll(UISizes.GAP).alignStart())
+                .addChildren(priorityColumn, cpuLabelColumn);
+
+        return Form.page().addChildren(topRow, bottomRow);
     }
 
     /// @see CraftingStatusMenu

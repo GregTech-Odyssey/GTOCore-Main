@@ -7824,6 +7824,7 @@
   "gtocore.multiblock.matter_fabricator.extension": "约束扩展段",
   "gtocore.multiblock.matter_fabricator.extension.desc": "搭建后可在其外壳上额外安装输入输出仓与超频仓",
   "gtocore.multiblock.me_energy_substation.extension.desc": "AE 能量转换倍率翻倍，可安装激光仓（最多四个）",
+  "gtocore.multiblock.me_storage.capacity": "容量: %s",
   "gtocore.multiblock.me_storage.layers": "存储层数",
   "gtocore.multiblock.me_storage.layers.desc": "前端与尾端之间的存储层数",
   "gtocore.multiblock.molecular_transformer.extension.desc": "可安装输入输出仓、能源仓、激光仓与超频仓",

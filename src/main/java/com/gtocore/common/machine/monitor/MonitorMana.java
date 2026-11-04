@@ -38,10 +38,6 @@ public class MonitorMana extends AbstractInfoProviderMonitor implements ITeamInf
         }
     }
 
-    public MonitorMana(Object o) {
-        this((MetaMachineBlockEntity) o);
-    }
-
     @Override
     public DisplayComponentList provideInformation() {
         var informationList = ITeamInformationProvider.super.provideInformation();

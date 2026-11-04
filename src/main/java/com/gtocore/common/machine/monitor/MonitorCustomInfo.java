@@ -37,10 +37,6 @@ public class MonitorCustomInfo extends AbstractInfoProviderMonitor implements IF
         super(holder);
     }
 
-    public MonitorCustomInfo(Object o) {
-        this((MetaMachineBlockEntity) o);
-    }
-
     @Override
     public void syncInfoFromServer() {}
 

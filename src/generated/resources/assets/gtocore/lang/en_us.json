@@ -7824,6 +7824,7 @@
   "gtocore.multiblock.matter_fabricator.extension": "Restraint Extension",
   "gtocore.multiblock.matter_fabricator.extension.desc": "When built, extra input/output hatches and an overclock hatch can be installed on its casings",
   "gtocore.multiblock.me_energy_substation.extension.desc": "Doubles the AE energy conversion rate; allows up to four Laser Hatches",
+  "gtocore.multiblock.me_storage.capacity": "Capacity: %s",
   "gtocore.multiblock.me_storage.layers": "Storage Layers",
   "gtocore.multiblock.me_storage.layers.desc": "Number of storage layers between the front section and the end",
   "gtocore.multiblock.molecular_transformer.extension.desc": "Allows input and output hatches, Energy Hatches, Laser Hatches and an Overclock Hatch",

@@ -18,12 +18,8 @@ public class BasicMonitor extends MetaMachine implements IBindable, IMachineLife
 
     private TickableSubscription tickSubscription;
 
-    BasicMonitor(MetaMachineBlockEntity holder) {
+    public BasicMonitor(MetaMachineBlockEntity holder) {
         super(holder);
-    }
-
-    public BasicMonitor(Object o) {
-        this((MetaMachineBlockEntity) o);
     }
 
     @Override

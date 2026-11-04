@@ -5,19 +5,19 @@ import com.gtocore.api.gui.DisplayComponentGroup;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.widget.LongInputWidget;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
-import com.lowdragmc.lowdraglib.gui.widget.ComponentPanelWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.lowdragmc.lowdraglib.utils.Position;
 import com.lowdragmc.lowdraglib.utils.Size;
 import it.unimi.dsi.fastutil.objects.ObjectBooleanPair;
@@ -41,7 +41,7 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
 
     protected TickableSubscription tickableSubscription;
 
-    AbstractInfoProviderMonitor(MetaMachineBlockEntity holder) {
+    public AbstractInfoProviderMonitor(MetaMachineBlockEntity holder) {
         super(holder);
     }
 
@@ -120,26 +120,25 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
         return list;
     }
 
-    @Override
-    public Widget createUIWidget() {
-        final var initialPriority = this.priority;
-        LongInputWidget input = new LongInputWidget(Position.of(50, 144),
-                this::getPriority, this::setPriority);
-        input.setMax((long) Integer.MAX_VALUE).setMin((long) Integer.MIN_VALUE).setValue(initialPriority);
-        input.setHoverTooltips(Component.translatable("gtocore.machine.monitor.priority"));
-        var panel = new ComponentPanelWidget(
-                input.getPositionX() + input.getSizeWidth() / 2,
-                input.getPositionY() - 15,
-                List.of(Component.translatable("gtocore.machine.monitor.priority").withStyle(ChatFormatting.BLACK)))
-                .setCenter(true)
-                .setClientSideWidget();
-        var scrollAreaWrapper = new DisplayComponentGroup(
+    protected DisplayComponentGroup createDisplayComponentGroup() {
+        return new DisplayComponentGroup(
                 this.getAvailableRLs(),
                 this.getComponentStatesForGui(),
                 this::setComponentStateCache,
-                new Position(16, 16),
+                Position.ORIGIN,
                 new Size(168, 108));
-        return (new WidgetGroup(0, 0, 200, 160)).addWidget(panel).addWidget(input).addWidget(scrollAreaWrapper);
+    }
+
+    protected UIElement createPriorityRow() {
+        return Form.numberRow(Component.translatable("gtocore.machine.monitor.priority"),
+                NumberField.ofLong(UISizes.CONTENT_WIDTH, this::getPriority, this::setPriority, (long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE));
+    }
+
+    @Override
+    public Widget createUIWidget() {
+        return Form.page().addChildren(
+                UIElement.centeredRow(108).addChild(new UIElement().layout(l -> l.size(168, 108)).addChild(createDisplayComponentGroup())),
+                createPriorityRow());
     }
 
     private void setComponentStateCache(List<ObjectBooleanPair<ResourceLocation>> componentStates) {

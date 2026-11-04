@@ -111,6 +111,8 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     private static final String ROW_NAME = "gtocore.multiblock.vault.row";
     @RegisterLanguage(cn = "正面从下往上数，控制器在第几层", en = "Which row of the front face holds the controller, counted from the bottom")
     private static final String ROW_DESC = "gtocore.multiblock.vault.row.desc";
+    @RegisterLanguage(cn = "容量: %s", en = "Capacity: %s")
+    private static final String CAPACITY_TEXT = "gtocore.multiblock.me_storage.capacity";
 
     public static final ParamKey LEFT_EDGE = ParamKey.of(LEFT_NAME, LEFT_DESC);
     public static final ParamKey RIGHT_EDGE = ParamKey.of(RIGHT_NAME, RIGHT_DESC);
@@ -446,7 +448,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
         var storage = compoundTag.getLong("storage");
         var displayedCapacity = type == null ? FormattingUtil.formatNumbers(capacity) :
                 type.formatAmount(capacity * getAmountPerCapacity(type), AmountFormat.FULL);
-        iTooltip.add(Component.translatable("gtocore.lang.template.capacity.-990262758", displayedCapacity));
+        iTooltip.add(Component.translatable(CAPACITY_TEXT, displayedCapacity));
         iTooltip.add(Component.translatable("ae2.gto_extension.craft_used_percent", FormattingUtil.formatNumbers(capacity > 0 ? storage * 100D / capacity : 0)));
     }
 
