@@ -1140,14 +1140,17 @@ public final class MachineRecipeLoader {
         registerStorageNBTRemoval(GTMachines.SUPER_TANK);
         registerStorageNBTRemoval(GTMachines.QUANTUM_CHEST);
         registerStorageNBTRemoval(GTMachines.QUANTUM_TANK);
-        registerStorageNBTRemoval(WoodenSuperStorageRegistration.CHESTS);
-        registerStorageNBTRemoval(WoodenSuperStorageRegistration.TANKS);
+        registerStorageNBTRemoval(WoodenSuperStorageRegistration.CHEST);
+        registerStorageNBTRemoval(WoodenSuperStorageRegistration.TANK);
         for (int layout = 0; layout < CompartmentStorageRegistration.CHESTS.length; layout++) {
             registerStorageNBTRemoval(CompartmentStorageRegistration.CHESTS[layout]);
             registerStorageNBTRemoval(CompartmentStorageRegistration.TANKS[layout]);
-            registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_CHESTS[layout]);
-            registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_TANKS[layout]);
         }
+
+        registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_CHEST_1X2);
+        registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_TANK_1X2);
+        registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_CHEST_2X2);
+        registerStorageNBTRemoval(CompartmentStorageRegistration.WOODEN_TANK_2X2);
 
         // Drums
         VanillaRecipeHelper.addShapelessNBTClearingRecipe("drum_nbt_wood", GTMachines.WOODEN_DRUM.asStack(),
@@ -1227,11 +1230,13 @@ public final class MachineRecipeLoader {
 
     private static void registerStorageNBTRemoval(MachineDefinition[] definitions) {
         for (MachineDefinition definition : definitions) {
-            if (definition != null) {
-                VanillaRecipeHelper.addShapelessNBTClearingRecipe(definition.getId().getPath() + "_nbt_removal",
-                        definition.asStack(), definition.asItem());
-            }
+            if (definition != null) registerStorageNBTRemoval(definition);
         }
+    }
+
+    private static void registerStorageNBTRemoval(MachineDefinition definition) {
+        VanillaRecipeHelper.addShapelessNBTClearingRecipe(definition.getId().getPath() + "_nbt_removal",
+                definition.asStack(), definition.asItem());
     }
 
     private static void registerHatchConversion() {
