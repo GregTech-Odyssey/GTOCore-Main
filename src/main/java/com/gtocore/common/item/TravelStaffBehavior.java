@@ -192,9 +192,9 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
         if (electricItem == null) return;
         electricItem.discharge(
                 EU_COST,
-                LV,
+                electricItem.getTier(),
                 true,
-                true,
+                false,
                 false);
     }
 
