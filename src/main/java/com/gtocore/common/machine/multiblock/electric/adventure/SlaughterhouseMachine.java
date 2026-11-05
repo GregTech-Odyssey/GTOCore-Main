@@ -24,7 +24,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -53,6 +52,7 @@ import net.minecraftforge.common.ToolActions;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyTypes;
+import appeng.api.stacks.KeyVisitor;
 import appeng.util.Platform;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
@@ -393,7 +393,7 @@ public final class SlaughterhouseMachine extends StorageMultiblockMachine implem
         return new ItemStack[] { Items.ZOMBIE_SPAWN_EGG.getDefaultInstance(), Items.SKELETON_SPAWN_EGG.getDefaultInstance(), Items.CREEPER_SPAWN_EGG.getDefaultInstance() };
     }
 
-    private static final class Armament implements IRecipeHandler.KeyVisitor {
+    private static final class Armament implements KeyVisitor {
 
         private double totalDamage;
         private ItemStack weapon = ItemStack.EMPTY;

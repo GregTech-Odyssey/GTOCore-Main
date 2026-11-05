@@ -921,6 +921,7 @@ public final class GTORecipeTypes {
 
     public static final RecipeType FUEL_CELL_ENERGY_ABSORPTION_RECIPES = halfReactionType("fuel_cell_energy_absorption", "液流燃料电池半反应")
             .setEUIO(IO.IN)
+            .setPlaceholderEnergy(true)
             .setMaxIOSize(6, 6, 6, 6)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, LEFT_TO_RIGHT)
             .addDataProperty(Component.translatable("gtocore.recipe.info.convertible"), data -> ElectricText.energyExact(data.data.getLong(GTORecipeDataKeys.CONVERTED_ENERGY)))
