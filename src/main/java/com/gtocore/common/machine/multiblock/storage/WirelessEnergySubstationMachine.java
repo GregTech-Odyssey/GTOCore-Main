@@ -663,11 +663,13 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     }
 
     public int getGridWindow() {
-        return gridWindow;
+        return GridView.clampWindow(gridWindow);
     }
 
     public void setGridWindow(int window) {
         gridWindow = GridView.clampWindow(window);
+        // @SaveToDisk 只负责把字段写进存档数据，标脏才会让区块在卸载/自动存档前落盘
+        markAsDirty();
     }
 
     @Override
