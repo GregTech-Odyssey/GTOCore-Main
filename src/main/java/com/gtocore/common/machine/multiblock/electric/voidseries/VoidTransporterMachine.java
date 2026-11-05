@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.icon.IdleReasonInfo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -127,9 +128,11 @@ public final class VoidTransporterMachine extends ElectricMultiblockMachine impl
     }
 
     private void notifyInsufficientPower(Player player) {
-        if (!powerSufficient() && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.displayClientMessage(IdleReason.INSUFFICIENT_POWER.reason(eu, getOverclockVoltage()), true);
-        }
+        if (powerSufficient() || !(player instanceof ServerPlayer serverPlayer)) return;
+        var reason = IdleReason.INSUFFICIENT_POWER.reason(eu, getOverclockVoltage());
+        // 标题不带参数，数值与建议都在说明行里；IdleReasonInfo 用标题携带的参数渲染说明
+        var detail = IdleReasonInfo.description(reason);
+        serverPlayer.displayClientMessage(detail != null ? detail : reason, true);
     }
 
     @Override
