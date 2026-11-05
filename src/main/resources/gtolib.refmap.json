@@ -75,7 +75,8 @@
       "Lnet/minecraft/world/level/GameRules;getInt(Lnet/minecraft/world/level/GameRules$Key;)I": "Lnet/minecraft/world/level/GameRules;m_46215_(Lnet/minecraft/world/level/GameRules$Key;)I",
       "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z": "Lnet/minecraft/world/level/GameRules;m_46207_(Lnet/minecraft/world/level/GameRules$Key;)Z",
       "tick": "Lnet/minecraft/server/level/ServerChunkCache;m_201698_(Ljava/util/function/BooleanSupplier;Z)V",
-      "tickChunks": "Lnet/minecraft/server/level/ServerChunkCache;m_8490_()V"
+      "tickChunks": "Lnet/minecraft/server/level/ServerChunkCache;m_8490_()V",
+      "updateChunkForced": "Lnet/minecraft/server/level/ServerChunkCache;m_6692_(Lnet/minecraft/world/level/ChunkPos;Z)V"
     },
     "com/gtolib/mixin/mc/dfu/DataFixersMixin": {
       "createFixerUpper": "Lnet/minecraft/util/datafix/DataFixers;m_274588_(Ljava/util/Set;)Lcom/mojang/datafixers/DataFixer;"
@@ -565,7 +566,8 @@
       "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;": "Lnet/minecraft/server/MinecraftServer;m_129785_()Ljava/lang/Iterable;"
     },
     "com/gtolib/mixin/mc/world/DimensionEntitySaveMixin": {
-      "lambda$storeEntities$1": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_156565_(Lnet/minecraft/nbt/ListTag;Lnet/minecraft/world/entity/Entity;)V"
+      "lambda$storeEntities$1": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_156565_(Lnet/minecraft/nbt/ListTag;Lnet/minecraft/world/entity/Entity;)V",
+      "storeEntities": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_141971_(Lnet/minecraft/world/level/entity/ChunkEntities;)V"
     },
     "com/gtolib/mixin/mc/world/DimensionSavedDataMixin": {
       "save(Ljava/io/File;)V": "Lnet/minecraft/world/level/saveddata/SavedData;m_77757_(Ljava/io/File;)V"
@@ -645,6 +647,23 @@
     },
     "com/gtolib/mixin/mc/world/DimensionTicketAccessor": {
       "timedOut": "m_9434_(J)Z"
+    },
+    "com/gtolib/mixin/mc/world/DimensionChunkEditMixin": {
+      "setBlockState": "Lnet/minecraft/world/level/chunk/LevelChunk;m_6978_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;"
+    },
+    "com/gtolib/mixin/mc/world/DimensionPlayerChunkMixin": {
+      "useItem": "Lnet/minecraft/server/level/ServerPlayerGameMode;m_6261_(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;",
+      "destroyBlock": "Lnet/minecraft/server/level/ServerPlayerGameMode;m_9280_(Lnet/minecraft/core/BlockPos;)Z",
+      "useItemOn": "Lnet/minecraft/server/level/ServerPlayerGameMode;m_7179_(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"
+    },
+    "com/gtolib/mixin/mc/entity/DimensionContainerEditMixin": {
+      "handleContainerClick": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_5914_(Lnet/minecraft/network/protocol/game/ServerboundContainerClickPacket;)V"
+    },
+    "com/gtolib/mixin/mc/world/DimensionBlockEntityEditMixin": {
+      "blockEntityChanged": "Lnet/minecraft/world/level/Level;m_151543_(Lnet/minecraft/core/BlockPos;)V"
+    },
+    "com/gtolib/mixin/mc/world/DimensionSectionSaveMixin": {
+      "writeColumn(Lnet/minecraft/world/level/ChunkPos;)V": "Lnet/minecraft/world/level/chunk/storage/SectionStorage;m_63825_(Lnet/minecraft/world/level/ChunkPos;)V"
     }
   },
   "data": {
@@ -724,7 +743,8 @@
         "Lnet/minecraft/world/level/GameRules;getInt(Lnet/minecraft/world/level/GameRules$Key;)I": "Lnet/minecraft/world/level/GameRules;m_46215_(Lnet/minecraft/world/level/GameRules$Key;)I",
         "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z": "Lnet/minecraft/world/level/GameRules;m_46207_(Lnet/minecraft/world/level/GameRules$Key;)Z",
         "tick": "Lnet/minecraft/server/level/ServerChunkCache;m_201698_(Ljava/util/function/BooleanSupplier;Z)V",
-        "tickChunks": "Lnet/minecraft/server/level/ServerChunkCache;m_8490_()V"
+        "tickChunks": "Lnet/minecraft/server/level/ServerChunkCache;m_8490_()V",
+        "updateChunkForced": "Lnet/minecraft/server/level/ServerChunkCache;m_6692_(Lnet/minecraft/world/level/ChunkPos;Z)V"
       },
       "com/gtolib/mixin/mc/dfu/DataFixersMixin": {
         "createFixerUpper": "Lnet/minecraft/util/datafix/DataFixers;m_274588_(Ljava/util/Set;)Lcom/mojang/datafixers/DataFixer;"
@@ -1214,7 +1234,8 @@
         "Lnet/minecraft/server/MinecraftServer;getAllLevels()Ljava/lang/Iterable;": "Lnet/minecraft/server/MinecraftServer;m_129785_()Ljava/lang/Iterable;"
       },
       "com/gtolib/mixin/mc/world/DimensionEntitySaveMixin": {
-        "lambda$storeEntities$1": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_156565_(Lnet/minecraft/nbt/ListTag;Lnet/minecraft/world/entity/Entity;)V"
+        "lambda$storeEntities$1": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_156565_(Lnet/minecraft/nbt/ListTag;Lnet/minecraft/world/entity/Entity;)V",
+        "storeEntities": "Lnet/minecraft/world/level/chunk/storage/EntityStorage;m_141971_(Lnet/minecraft/world/level/entity/ChunkEntities;)V"
       },
       "com/gtolib/mixin/mc/world/DimensionSavedDataMixin": {
         "save(Ljava/io/File;)V": "Lnet/minecraft/world/level/saveddata/SavedData;m_77757_(Ljava/io/File;)V"
@@ -1294,6 +1315,23 @@
       },
       "com/gtolib/mixin/mc/world/DimensionTicketAccessor": {
         "timedOut": "m_9434_(J)Z"
+      },
+      "com/gtolib/mixin/mc/world/DimensionChunkEditMixin": {
+        "setBlockState": "Lnet/minecraft/world/level/chunk/LevelChunk;m_6978_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;"
+      },
+      "com/gtolib/mixin/mc/world/DimensionPlayerChunkMixin": {
+        "useItem": "Lnet/minecraft/server/level/ServerPlayerGameMode;m_6261_(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;",
+        "destroyBlock": "Lnet/minecraft/server/level/ServerPlayerGameMode;m_9280_(Lnet/minecraft/core/BlockPos;)Z",
+        "useItemOn": "Lnet/minecraft/server/level/ServerPlayerGameMode;m_7179_(Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"
+      },
+      "com/gtolib/mixin/mc/entity/DimensionContainerEditMixin": {
+        "handleContainerClick": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_5914_(Lnet/minecraft/network/protocol/game/ServerboundContainerClickPacket;)V"
+      },
+      "com/gtolib/mixin/mc/world/DimensionBlockEntityEditMixin": {
+        "blockEntityChanged": "Lnet/minecraft/world/level/Level;m_151543_(Lnet/minecraft/core/BlockPos;)V"
+      },
+      "com/gtolib/mixin/mc/world/DimensionSectionSaveMixin": {
+        "writeColumn(Lnet/minecraft/world/level/ChunkPos;)V": "Lnet/minecraft/world/level/chunk/storage/SectionStorage;m_63825_(Lnet/minecraft/world/level/ChunkPos;)V"
       }
     }
   }

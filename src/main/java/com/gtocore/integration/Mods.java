@@ -35,7 +35,8 @@ public enum Mods {
     BALM("balm"),
     XAERO_WORLDMAP("xaeroworldmap"),
     TOOLBELT("toolbelt"),
-    CORPSE("corpse");
+    CORPSE("corpse"),
+    FTB_TEAMS("ftbteams"),;
 
     @Getter
     private final boolean loaded;

@@ -223,6 +223,7 @@ sequenceDiagram
 | 同实例库的 `pending.dat` | 尚未完成创建的一个完整描述 | [InstanceStore] 的创建事务 |
 | 各维度 `data/gtolib_level.dat` | 太阳时、余量、有效 tick 锚点、周期、虚空/天空光标记、自然天气日程及天气时钟快照 | [LevelData] |
 | 主世界同名 `data/gtolib_level.dat` 的额外字段 | 共享天气时钟、两项有效昼夜计数、比邻星和巴纳德虚拟恒星日程 | [LevelData] / [WeatherSystem] |
+| 非主世界 `data/gtolib_player_chunks.dat` | 玩家实际修改过、曾取得强加载资格或含自然结构的区块坐标集合；先提交索引，再写对应内容 | [DimensionChunkEdits](../GTOLib/src/main/java/com/gtolib/api/dimension/DimensionChunkEdits.java) |
 | 原版/模组原有目录和 SavedData | 区块、实体、POI、随机序列、`chunks.dat`、空间站、AE2 空间区域等 | 原版及各模组 |
 | 主世界 `level.dat` | 游戏规则、世界级共享数据、兼容时间镜像等 | 原版；动态实例无独立完整副本 |
 
@@ -247,6 +248,20 @@ sequenceDiagram
 ### 4.3 持久化是在原版上增补，还是重写
 
 维度目录、描述、索引和创建日志是新增文件，由 `DimensionDataIO` / `InstanceStore` 直接管理；实例不靠改写 `level.dat` 的维度注册表保存。世界区块、实体、POI 和第三方 SavedData 保留原有数据格式与路径，卸载过程加强保存错误传播。
+
+除主世界外，全部固定维度与动态实例按同一规则保存：玩家实际修改过、取得强加载资格、含有效自然结构的区块，以及末地中央岛范围内的区块可以写盘。仅生成、加载、经过、自然 tick 或未取得资格区块中的机器运行，不会扩大保存范围；主世界继续沿用原版条件。玩家挖掘、方块交互、物品使用及容器点击期间，记录实际的方块或方块实体修改，同步批量工具涉及的每个区块分别记录；最外层操作结束后比较最终方块状态，取消并回滚的放置不计入。异步工具和延迟作用不自动继承此前玩家的操作作用域。
+
+强加载包括原版 `setChunkForced`、Forge 方块和实体持久化票据（ticking 与非 ticking），以及 `addRegionTicket(..., forceTicks=true)`。在实际添加或恢复票据的入口登记资格，不在每次保存时遍历全部 owner/票据，也不把附近仅因距离传播而加载的区块计入。Forge 校验移除的无效票据不会重新授予资格；已取得资格的区块解除强加载后仍可保存最终状态。首次取得资格时恢复已加载区块的 unsaved 和已有 POI 的 dirty，避免此前跳过保存后被漏写。
+
+末地中央岛采用 `EndDragonFight` 的中央竞技场范围：`minecraft:the_end` 中区块 X、Z 均在 `[-8, 8]` 的 17×17 区域自动允许保存地形、实体和 POI。此规则不加载或生成区块，不添加强加载票据；范围外继续按玩家修改、强加载与自然结构资格筛选。
+
+自然结构按原版 `Structure` 元数据判定：保存含有效 `StructureStart` 或非空结构 references 的区块；references 由生成器按结构包围盒与区块的相交关系建立，因此村庄、要塞、末地城和采用相同结构系统的模组建筑跨越的区块也会保存。无效 start 与空 references 不授予资格，不为查询结构额外生成邻居区块。区块保存直接检查传入的 `ChunkAccess`，兼容结构生成阶段的 ProtoChunk；实体/POI 保存只查询已加载的 LevelChunk。首次发现结构时提交到同一资格索引，后续保存直接命中原始坐标集合。
+
+玩家修改、强加载与自然结构资格取得后永久保留，后续机器与自然变化仍可正常保存。索引沿用既有文件名和 `chunks` 数组，绑定世界 capability，并作为该世界的 SavedData 持久化；区块、实体、POI 的写入入口先原子提交脏索引，失败时保留 dirty 并阻止本次写入。无资格区块跳过序列化并清除待保存标记；POI 跳过时清除整列 dirty，首次取得资格时重新标记已有 POI，避免漏写和刷新循环无法结束。索引损坏会传播错误，不重建为空集合。
+
+筛选不删除历史区域文件。旧存档没有索引时从空集合开始，已有内容仍可读取；相应区块须在启用后由玩家修改、添加/恢复有效强加载票据、含有效结构元数据，或位于末地中央岛范围内，才会继续写盘。描述、天气、昼夜和强加载票据等元数据不受区块筛选影响。
+
+隔离玩家区块保存探针使用 `gradlew runServer -I gradle/scripts/dimensions-probe.gradle -PdimensionPlayerChunkProbe=true -PdimensionProbeFTB=false -PgtolibUnprotected=true -PdimensionProbeDir=<隔离目录>`，在同一目录启动两次。覆盖固定定义与动态实例的玩家修改、取消回滚、原版/Forge 方块与实体强加载（含非 ticking）、强制 tick、解除票据后保存，以及被跳过的干净区块首次强加载；同时检查主世界不筛选、下界启用筛选、末地中央岛内外边界、结构起点和跨区块引用（包括 ImposterProtoChunk 包装）、无效结构与空引用不授予资格，以及三种区域文件。第二轮检查索引、内容、容器和票据恢复；以 `player-chunks-result.txt` 的 `PLAYER_CHUNKS_SAVE_PASSED` / `PLAYER_CHUNKS_RESTART_PASSED` 为准，编译不代表运行通过。执行前按根目录要求设置 JDK 21，并在隔离目录禁用 LeanObject 的 AEKey 功能。
 
 [LevelData] 继承 [DimensionSavedData]，复用 SavedData 缓存与保存调度，以一次原子写入提交天气和时间。[WeatherSystem] 是运行调度器，不继承 SavedData。[DimensionSavedDataMixin] 为普通原版 SavedData 保留 `DataVersion + data` 压缩 NBT，并统一原子提交；第三方覆写 `save(File)` 的实现仍由自己负责。[FastSavedData] 也统一原子保存，但保留 DataSyncLib 版本化协议及自己的读取语义。
 

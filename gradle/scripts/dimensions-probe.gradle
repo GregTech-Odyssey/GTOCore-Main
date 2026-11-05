@@ -30,6 +30,7 @@ allprojects { p ->
         p.tasks.named('runServer') {
             dependsOn 'dimensionProbeClasses'
             if (p.findProperty('dimensionDaylightProbe') == 'true') systemProperty 'dimensionDaylightProbe', 'true'
+            if (p.findProperty('dimensionPlayerChunkProbe') == 'true') systemProperty 'dimensionPlayerChunkProbe', 'true'
             if (p.findProperty('dimensionCrashProbe') == 'true') systemProperty 'dimensionCrashProbe', 'true'
             if (p.findProperty('dimensionSuggestionsProbe') == 'true') systemProperty 'dimensionSuggestionsProbe', 'true'
             if (p.findProperty('dimensionRestartProbe') == 'true') systemProperty 'dimensionRestartProbe', 'true'

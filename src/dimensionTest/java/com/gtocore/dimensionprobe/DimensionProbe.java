@@ -48,6 +48,10 @@ public final class DimensionProbe {
      * 注册隔离测试所需的事件监听，根据 JVM 属性选择探针场景。
      */
     public DimensionProbe() {
+        if (Boolean.getBoolean("dimensionPlayerChunkProbe")) {
+            new PlayerChunkProbe();
+            return;
+        }
         if (Boolean.getBoolean("dimensionDaylightProbe")) {
             new DaylightProbe();
             return;
@@ -160,6 +164,11 @@ public final class DimensionProbe {
             var other = manager.loadNow(comparison.dimension());
             require(terrain(other) != terrainHash, "Independent seeds generated identical sample terrain");
             require(manager.requestUnload(comparison.dimension()), "Comparison dimension cannot unload");
+            // 持久化实体的测试夹具位于玩家已修改过的区块。
+            var edits = DimensionChunkEdits.get(previous);
+            edits.begin();
+            previous.setBlockAndUpdate(new BlockPos(2, previous.getMinBuildHeight(), 2), net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK.defaultBlockState());
+            edits.finish(previous);
             var cow = net.minecraft.world.entity.EntityType.COW.create(previous);
             cow.setPos(2, 150, 2);
             animalId = cow.getUUID();

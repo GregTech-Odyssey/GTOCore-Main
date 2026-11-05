@@ -38,7 +38,10 @@ public final class RestartProbe {
                 var level = manager.loadNow(valid.dimension());
                 level.setChunkForced(0, 0, true);
                 var anchor = new BlockPos(1, 64, 1);
+                var edits = DimensionChunkEdits.get(level);
+                edits.begin();
                 level.setBlockAndUpdate(anchor, appeng.core.definitions.AEBlocks.SPATIAL_ANCHOR.block().defaultBlockState());
+                edits.finish(level);
                 require(ForgeChunkManager.forceChunk(level, "ae2", anchor, 0, 0, true, true), "AE2 force ticket was rejected");
                 var invalidLevel = manager.loadNow(invalid.dimension());
                 require(ForgeChunkManager.forceChunk(invalidLevel, "dimension_probe", BlockPos.ZERO, 0, 0, true, true), "Invalid callback candidate was not saved");
