@@ -15993,6 +15993,7 @@
   "gtocore.travel_anchor.unnamed": "未命名",
   "gtocore.travel_anchor.visible": "在旅行網路中顯示",
   "gtocore.travel_anchor.visible.tip": "關閉後不再作為傳送目標，開啟了“啟用隱藏節點”的旅行手杖除外",
+  "gtocore.travel_staff.no_energy": "電量不足",
   "gtocore.travel_staff.show_hidden": "啟用隱藏節點",
   "gtocore.travel_staff.show_hidden.tip": "方塊設定裡未開啟旅行網路顯示的旅行錨與樣板節點也作為傳送目標",
   "gtocore.travel_staff.target.anchor": "旅行錨",

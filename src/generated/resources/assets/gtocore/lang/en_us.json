@@ -9345,6 +9345,7 @@
   "gtocore.travel_anchor.unnamed": "Unnamed",
   "gtocore.travel_anchor.visible": "Show in Travel Network",
   "gtocore.travel_anchor.visible.tip": "When off, the anchor is no longer a teleport target, except for Travel Staffs with Include Hidden Nodes on",
+  "gtocore.travel_staff.no_energy": "Not enough energy",
   "gtocore.travel_staff.show_hidden": "Include Hidden Nodes",
   "gtocore.travel_staff.show_hidden.tip": "Also target travel anchors and pattern nodes that are hidden from the travel network in their own settings",
   "gtocore.travel_staff.target.anchor": "Travel Anchors",

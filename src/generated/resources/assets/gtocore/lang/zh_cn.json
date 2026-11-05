@@ -15859,6 +15859,7 @@
   "gtocore.travel_anchor.unnamed": "未命名",
   "gtocore.travel_anchor.visible": "在旅行网络中显示",
   "gtocore.travel_anchor.visible.tip": "关闭后不再作为传送目标，开启了“激活隐藏节点”的旅行手杖除外",
+  "gtocore.travel_staff.no_energy": "电量不足",
   "gtocore.travel_staff.show_hidden": "激活隐藏节点",
   "gtocore.travel_staff.show_hidden.tip": "方块设置里未开启旅行网络显示的旅行锚与样板节点也作为传送目标",
   "gtocore.travel_staff.target.anchor": "旅行锚",

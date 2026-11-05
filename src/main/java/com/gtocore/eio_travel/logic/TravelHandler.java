@@ -108,7 +108,8 @@ public class TravelHandler {
     }
 
     /**
-     * 传送到维度权杖收藏的旅行锚。收藏的锚不受权杖瞄准角度与物品传送距离限制，允许跨维度。
+     * 传送到维度权杖收藏的旅行锚。收藏的锚不受权杖瞄准角度与物品传送距离限制，允许跨维度，
+     * 但仍要求该锚在旅行网络中可见（与旅行手杖默认行为一致）。
      */
     public static boolean bookmarkTeleport(Player player, ResourceKey<Level> dimension, BlockPos pos) {
         if (player.level().isClientSide()) {
@@ -124,6 +125,10 @@ public class TravelHandler {
         }
         ITravelTarget target = TravelSavedData.getTravelData(targetLevel).getTravelTarget(pos).orElse(null);
         if (target == null || target.getTargetType() != TravelTargetType.ANCHOR) {
+            return false;
+        }
+        // 收藏可能早于锚点被隐藏，这里按锚点当前状态再校验一次
+        if (!target.canTeleportTo()) {
             return false;
         }
         if (targetLevel == player.level()) {

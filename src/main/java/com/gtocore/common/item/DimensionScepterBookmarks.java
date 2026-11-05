@@ -174,7 +174,7 @@ public final class DimensionScepterBookmarks {
     }
 
     /**
-     * 当前维度、维度权杖可传送范围内、已经命名且尚未收藏的旅行锚，按距离排序。
+     * 当前维度、维度权杖可传送范围内、已经命名、允许作为传送目标（旅行网络中可见）且尚未收藏的旅行锚，按距离排序。
      */
     public static List<AnchorTravelTarget> candidates(Level level, ItemStack scepter, BlockPos center) {
         return candidates(level, get(scepter), center);
@@ -191,6 +191,8 @@ public final class DimensionScepterBookmarks {
             if (target.getTargetType() != TravelTargetType.ANCHOR) continue;
             if (!(target instanceof AnchorTravelTarget anchor)) continue;
             if (anchor.getName().isBlank()) continue;
+            // 与旅行手杖的默认行为一致：方块设置里未开启旅行网络显示的锚不是传送目标
+            if (!anchor.canTeleportTo()) continue;
             if (center.distSqr(anchor.getPos()) > rangeSquared) continue;
             if (contains(bookmarks, level.dimension(), anchor.getPos())) continue;
             result.add(anchor);
@@ -200,7 +202,7 @@ public final class DimensionScepterBookmarks {
     }
 
     /**
-     * 校验并取得当前维度中可作为收藏目标的旅行锚；不在范围内、未命名或已收藏时返回 null。
+     * 校验并取得当前维度中可作为收藏目标的旅行锚；不在范围内、未命名、不可传送或已收藏时返回 null。
      */
     @Nullable
     public static AnchorTravelTarget findCandidate(Level level, ItemStack scepter, Player player, BlockPos pos) {
@@ -214,6 +216,7 @@ public final class DimensionScepterBookmarks {
             return null;
         }
         if (anchor.getTargetType() != TravelTargetType.ANCHOR || anchor.getName().isBlank()) return null;
+        if (!anchor.canTeleportTo()) return null;
         if (contains(bookmarks, level.dimension(), pos)) return null;
         int range = GTOConfig.INSTANCE.travelConfig.itemRange;
         return player.blockPosition().distSqr(pos) <= (long) range * range ? anchor : null;
