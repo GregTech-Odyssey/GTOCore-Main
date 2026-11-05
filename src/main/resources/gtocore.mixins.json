@@ -55,8 +55,8 @@
     "merequester.NumberFieldMixin",
     "mousetweaks.GuiContainerHandlerMixin",
     "renderblender.WrappedItemModelMixin",
-    "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",
     "sodium.SodiumWorldRendererMixin",
+    "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",
     "xaero.MapProcessorMixin",
     "xaero.WorldDataHandlerMixin"
   ],
@@ -247,7 +247,8 @@
     "pipez.FluidPipeTypeMixin",
     "pipez.ItemPipeTypeMixin",
     "sophisticatedbackpacks.ToolSwapperUpgradeWrapperMixin",
-    "sophisticatedcore.MagnetUpgradeWrapperMixin"
+    "sophisticatedcore.MagnetUpgradeWrapperMixin",
+    "xaero.MapDimensionMixin"
   ],
   "injectors": {
     "defaultRequire": 1,
