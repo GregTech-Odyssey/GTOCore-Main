@@ -25,6 +25,14 @@ import java.util.Optional;
 
 public class TravelNetworks {
 
+    /**
+     * 触发本类静态初始化，在客户端与服务端启动时注册全部旅行网络通道。
+     * <p>
+     * 这些通道原本只在首次调用本类方法时懒注册。专用服务器的客户端在登录时可能还没有加载过本类，
+     * 收到 {@code SYNC_TRAVEL} 时会因为找不到 channel handler 而丢弃数据，表现为旅行锚不渲染。
+     */
+    public static void init() {}
+
     private static final NetworkPack ADD_TRAVEL = NetworkPack.registerS2C(
             "eio_travel:add_travel",
             (player, buf) -> TravelRegistry.deserialize(buf.readNbt()).ifPresent(TravelNetworks::handleAddTravel));

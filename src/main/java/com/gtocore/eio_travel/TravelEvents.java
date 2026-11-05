@@ -27,6 +27,8 @@ public class TravelEvents {
     public static Runnable syncTask = null;
 
     public static void init() {
+        // 两端启动时就注册旅行网络通道，避免专用服务器客户端在登录同步到达时尚未加载 TravelNetworks。
+        TravelNetworks.init();
         MinecraftForge.EVENT_BUS.addListener(TravelEvents::onLeftClickBlock);
         MinecraftForge.EVENT_BUS.addListener(TravelEvents::onPlayerLogin);
         MinecraftForge.EVENT_BUS.addListener(TravelEvents::onDimensionChange);
