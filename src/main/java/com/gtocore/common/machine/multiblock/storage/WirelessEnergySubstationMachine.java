@@ -24,6 +24,7 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
 import com.gtolib.api.wireless.energy.EnergyAccount;
 import com.gtolib.api.wireless.energy.GridClock;
+import com.gtolib.api.wireless.energy.GridView;
 import com.gtolib.api.wireless.energy.IWirelessGridProvider;
 import com.gtolib.api.wireless.energy.Provider;
 import com.gtolib.api.wireless.energy.ProviderRegistry;
@@ -82,6 +83,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import com.google.common.collect.Multimap;
@@ -224,6 +226,8 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private int storageMultiplierHalf;
     private String storageMultiplierExpression = "1";
     private Component throughputFormulaText = MultiblockPage.NO_VALUE;
+    @SaveToDisk(defaultValue = "0")
+    private int gridWindow;
     @Nullable
     private WirelessEnergyUnitBlockEntity.Snapshot pendingRelease;
 
@@ -612,7 +616,8 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
             return ScrollerView.page("wireless_energy_substation.overview", UISizes.CONTENT_WIDTH).adaptiveWidth()
-                    .addScrollViewChild(Form.page().addChildren(GridSummaryPanel.of(UISizes.CONTENT_WIDTH, WirelessEnergySubstationMachine.this::getOwnerUUID)));
+                    .addScrollViewChild(Form.page().addChildren(GridSummaryPanel.of(UISizes.CONTENT_WIDTH, WirelessEnergySubstationMachine.this::getOwnerUUID,
+                            WirelessEnergySubstationMachine.this::getGridWindow, WirelessEnergySubstationMachine.this::setGridWindow)));
         }
 
         @Override
@@ -655,6 +660,14 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     @Override
     public boolean supportsBigIntEnergyValues() {
         return true;
+    }
+
+    public int getGridWindow() {
+        return gridWindow;
+    }
+
+    public void setGridWindow(int window) {
+        gridWindow = GridView.clampWindow(window);
     }
 
     @Override
