@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.multiblock.electric.adventure;
 
-import appeng.api.stacks.KeyVisitor;
 import com.gtocore.api.entity.ILivingEntity;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.data.GTOItems;
@@ -25,7 +24,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -54,6 +52,7 @@ import net.minecraftforge.common.ToolActions;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyTypes;
+import appeng.api.stacks.KeyVisitor;
 import appeng.util.Platform;
 
 import com.gto.datasynclib.annotations.SaveToDisk;

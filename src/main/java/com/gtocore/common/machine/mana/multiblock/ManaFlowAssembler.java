@@ -1,6 +1,5 @@
 package com.gtocore.common.machine.mana.multiblock;
 
-import appeng.api.stacks.KeyVisitor;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.data.IdleReason;
 import com.gtocore.integration.botania.IClientPylon;
@@ -40,6 +39,7 @@ import net.minecraft.world.phys.AABB;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.KeyVisitor;
 
 import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.recipesearch.IntLongMap;
