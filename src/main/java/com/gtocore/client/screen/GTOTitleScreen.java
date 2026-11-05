@@ -119,10 +119,6 @@ public final class GTOTitleScreen extends TitleScreen {
         if (copyright != null) addRenderableWidget(copyright);
     }
 
-    private static void openWiki(Button button) {
-        Util.getPlatform().openUri(GTOWebsite.SITE);
-    }
-
     @Override
     public void tick() {
         // This layout hides Realms, so do not start its notification overlay or warning screens.
@@ -164,6 +160,11 @@ public final class GTOTitleScreen extends TitleScreen {
         // Cover the window without stretching the 16:9 background.
         graphics.blit(BACKGROUND, (width - backgroundWidth) / 2, (height - backgroundHeight) / 2,
                 backgroundWidth, backgroundHeight, 0, 0, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT, BACKGROUND_TEXTURE_WIDTH, BACKGROUND_TEXTURE_HEIGHT);
+    }
+
+    // A named callback avoids ART mapping this lambda to TitleScreen's private lambda$init$1.
+    private static void openWiki(Button button) {
+        Util.getPlatform().openUri(GTOWebsite.SITE);
     }
 
     private record BrandingLine(String text, int x, int y) {}

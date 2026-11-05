@@ -2,6 +2,9 @@ package com.gtocore.integration.ae;
 
 import com.gtocore.common.machine.multiblock.electric.SolarStormAggregationReactor;
 
+import com.gtolib.api.weather.WeatherSystem;
+import com.gtolib.api.weather.WeatherTypes;
+
 import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.registries.Registries;
@@ -51,7 +54,7 @@ public final class SolarStormHandler {
     private long revision;
 
     private SolarStormHandler(Level level) {
-        storm = level.getLevelData().isRaining();
+        storm = WeatherSystem.current(level) == WeatherTypes.SOLAR_STORM;
     }
 
     private static SolarStormHandler get(Level level) {
@@ -81,8 +84,7 @@ public final class SolarStormHandler {
 
     public static boolean isStormActive(@Nullable Level level) {
         var solar = solarLevel(level);
-        // The weather flag also covers /weather and saved storms, without the rain fade delay.
-        return solar != null && solar.getLevelData().isRaining();
+        return solar != null && WeatherSystem.current(solar) == WeatherTypes.SOLAR_STORM;
     }
 
     private static boolean crossesSolarBoundary(IGridNode a, IGridNode b) {
@@ -163,11 +165,11 @@ public final class SolarStormHandler {
         }
     }
 
-    /** Called only when the solar Level's rain flag actually changes. */
+    /** Called only when the solar Level's WeatherSystem state changes. */
     public static void update(ServerLevel solar) {
         var state = ILevel.getCapability(solar, KEY);
         if (state == null) return;
-        boolean active = solar.getLevelData().isRaining();
+        boolean active = WeatherSystem.current(solar) == WeatherTypes.SOLAR_STORM;
         if (state.storm == active) return;
         state.storm = active;
         // Detach/merge callbacks can retire edges and mutate the live registry.

@@ -31,6 +31,7 @@ import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
+import com.gtolib.api.weather.WeatherForecastItem;
 import com.gtolib.quest.QuestBookItem;
 import com.gtolib.utils.StringUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;
@@ -445,6 +446,11 @@ public final class GTOItems {
             .register();
 
     public static final ItemEntry<PlanetDataChipItem> PLANET_DATA_CHIP = item("planet_data_chip", "星球数据芯片", PlanetDataChipItem::new)
+            .register();
+
+    public static final ItemEntry<WeatherForecastItem> WEATHER_FORECASTER = item("weather_forecaster", "天气预报仪", WeatherForecastItem::new)
+            .lang("Weather Forecaster")
+            .properties(p -> p.stacksTo(1))
             .register();
 
     public static final ItemEntry<DimensionDataItem> DIMENSION_DATA = item("dimension_data", "维度数据", DimensionDataItem::new).register();

@@ -1,9 +1,13 @@
 package com.gtocore.common.machine.tesseract;
 
+import com.gtolib.api.dimension.hooks.DimensionRemoteTarget;
+
 import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.Nullable;
@@ -54,6 +58,10 @@ public final class TesseractTargets implements RemoteKeyTarget.Listener {
 
     public void bind(int i, @Nullable Level level, @Nullable BlockPos pos) {
         targets[i].bind(level, pos);
+    }
+
+    public void bind(int i, MinecraftServer server, ResourceKey<Level> key, BlockPos pos) {
+        ((DimensionRemoteTarget) (Object) targets[i]).gtolib$bindDimension(server, key, pos);
     }
 
     public void subscribe(boolean subscribed) {

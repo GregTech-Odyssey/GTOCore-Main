@@ -1,12 +1,10 @@
 package com.gtocore.mixin.mc.client;
 
-import com.gtocore.client.renderer.fx.SolarStormFX;
 import com.gtocore.common.data.DysonSphereEffects;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.phys.Vec3;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,17 +33,5 @@ public abstract class ClientLevelMixin {
     private float revealDysonStars(float brightness, float partialTick) {
         float transmission = DysonSphereEffects.transmission((ClientLevel) (Object) this, partialTick);
         return transmission == 1 ? brightness : 0.5f - (0.5f - brightness) * transmission;
-    }
-
-    @ModifyExpressionValue(method = { "getSkyColor", "getSkyDarken", "getCloudColor" },
-                           at = { @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"),
-                                   @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F") })
-    private float preserveSolarSkyColor(float weather) {
-        return SolarStormFX.isSolarSurface((ClientLevel) (Object) this) ? 0.0F : weather;
-    }
-
-    @ModifyExpressionValue(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyFlashTime()I"))
-    private int suppressSolarLightningFlash(int flash) {
-        return SolarStormFX.isSolarSurface((ClientLevel) (Object) this) ? 0 : flash;
     }
 }

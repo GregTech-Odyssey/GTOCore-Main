@@ -11,8 +11,10 @@ import com.gtocore.common.saved.VoidWorldTimeSavedData;
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.dimension.DimensionCommands;
 import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.weather.WeatherCommands;
 import com.gtolib.quest.QuestCommands;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
@@ -55,6 +57,8 @@ public final class GTOCommands {
 
     public static void init(CommandDispatcher<CommandSourceStack> dispatcher) {
         var root = Commands.literal(GTOCore.MOD_ID)
+                .then(DimensionCommands.create())
+                .then(WeatherCommands.create())
                 .then(Commands.literal("gc").executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal("Start garbage cleanup"), false);
                     GTOUtils.gc();

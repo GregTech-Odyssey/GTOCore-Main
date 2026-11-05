@@ -29,6 +29,8 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.data.storage.SuperStorageMigration;
+import com.gtolib.api.dimension.DimensionManager;
+import com.gtolib.api.dimension.DimensionSync;
 import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 import com.gtolib.api.misc.FastSavedData;
@@ -63,7 +65,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -76,7 +77,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -133,6 +133,7 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerLoggedInEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerTickEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerChangedDimensionEvent);
+        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerRespawnEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLevelLoad);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerStoppedEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onCommandRegister);
@@ -254,7 +255,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.CRYING_OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:flat")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = server.getLevel(GTODimensions.FLAT);
+                    ServerLevel serverLevel = DimensionManager.get(server).loadFor(player, GTODimensions.FLAT);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:void") ? 1 : 10;
                         data.putDouble("y_f", player.getY() + 1);
@@ -266,7 +267,7 @@ public final class ForgeCommonEvent {
                 } else {
                     String dima = data.getString("dim_f");
                     int value = "gtocore:void".equals(dima) ? 1 : 10;
-                    ServerUtils.teleportToDimension(server.getLevel(GTODimensions.getDimensionKey(RLUtils.parse(dima))), player, new Vec3((double) pos.getX() / value, data.getDouble("y_f"), (double) pos.getZ() / value));
+                    ServerUtils.teleportToDimension(server, player, GTODimensions.getDimensionKey(RLUtils.parse(dima)), new Vec3((double) pos.getX() / value, data.getDouble("y_f"), (double) pos.getZ() / value));
                 }
                 return;
             }
@@ -274,7 +275,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:void")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = server.getLevel(GTODimensions.VOID);
+                    ServerLevel serverLevel = DimensionManager.get(server).loadFor(player, GTODimensions.VOID);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:flat") ? 1 : 10;
                         data.putDouble("y_v", player.getY() + 1);
@@ -286,7 +287,7 @@ public final class ForgeCommonEvent {
                 } else {
                     String dima = data.getString("dim_v");
                     int value = "gtocore:flat".equals(dima) ? 1 : 10;
-                    ServerUtils.teleportToDimension(server.getLevel(GTODimensions.getDimensionKey(RLUtils.parse(dima))), player, new Vec3((double) pos.getX() / value, data.getDouble("y_v"), (double) pos.getZ() / value));
+                    ServerUtils.teleportToDimension(server, player, GTODimensions.getDimensionKey(RLUtils.parse(dima)), new Vec3((double) pos.getX() / value, data.getDouble("y_v"), (double) pos.getZ() / value));
                 }
                 return;
             }
@@ -380,8 +381,14 @@ public final class ForgeCommonEvent {
         }
     }
 
+    public static void onPlayerRespawnEvent(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            syncPlayerTime(player);
+        }
+    }
+
     public static void onLevelLoad(LevelEvent.Load event) {
-        if (event.getLevel() instanceof ServerLevel level) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) {
             ServerLevel serverLevel = level.getServer().getLevel(Level.OVERWORLD);
             if (serverLevel == null) return;
             var dataStorage = serverLevel.getDataStorage();
@@ -418,18 +425,14 @@ public final class ForgeCommonEvent {
     }
 
     public static void syncVoidWorldTime(MinecraftServer server) {
-        server.getPlayerList().getPlayers().stream()
-                .filter(player -> GTODimensions.isVoid(player.serverLevel().dimension()))
-                .forEach(ForgeCommonEvent::syncPlayerTime);
+        for (var player : server.getPlayerList().getPlayers()) {
+            if (GTODimensions.isVoid(player.serverLevel().dimension())) syncPlayerTime(player);
+        }
     }
 
     @SuppressWarnings("resource")
     private static void syncPlayerTime(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
-        boolean fixedTime = VoidWorldTimeSavedData.INSTANCE.isFixedTime() && GTODimensions.isVoid(level.dimension());
-        long dayTime = fixedTime ? 1000L : level.getDayTime();
-        boolean daylightCycle = !fixedTime && level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT);
-        player.connection.send(new ClientboundSetTimePacket(level.getGameTime(), dayTime, daylightCycle));
+        DimensionSync.syncTime(player);
     }
 
     @RegisterLanguage(valuePrefix = "gtocore.lang", en = "Channel mode command banned in expert", cn = "在专家模式下，频道模式命令被禁止")
