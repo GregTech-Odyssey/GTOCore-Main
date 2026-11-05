@@ -20,8 +20,6 @@
 | 调试 gtocore 构建产物，或触发、排查、下载 Build and Sign 产物 | [云端构建与签名](docs/build-signing.md) |
 | 报错日志或崩溃报告里 `com.gtocore` / `com.gtolib` 的栈帧是代码保护后的名字，需要对回源码名 | [代码保护报错栈对回源码名](GTOLib/docs/deobfuscate-stacktrace.md)（GTOLib 仓） |
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性 | [Agent 常见坑与协作约定](docs/agent-pitfalls.md) |
-| 修改天气类型、天体天气行为、天气指令或天气预报 | [星系天气](docs/galaxy-weather.md) |
-| 修改动态维度生命周期、昼夜时钟、同步、兼容适配、实例元数据或天气存盘结构 | [动态维度系统](docs/dimensions.md) |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README | [团队开发说明](docs/development.md) |
 | 新写或修改任务章节（`data/quest`）、任务书热加载/热修改/编辑模式 | [任务书热加载与热修改](docs/quest-hot-edit.md)；章节写法不合规时开发环境启动直接崩溃 |
 

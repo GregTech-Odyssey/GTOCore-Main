@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.tesseract;
 
-import com.gtolib.api.dimension.DimensionRemoteTarget;
+import com.gtolib.api.dimension.hooks.DimensionRemoteTarget;
 
 import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 import com.gregtechceu.gtceu.utils.TaskHandler;

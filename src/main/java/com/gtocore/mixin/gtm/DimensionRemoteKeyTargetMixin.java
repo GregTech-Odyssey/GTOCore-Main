@@ -1,7 +1,7 @@
 package com.gtocore.mixin.gtm;
 
-import com.gtolib.api.dimension.DimensionRemoteTarget;
-import com.gtolib.api.dimension.DimensionRuntimeCaches;
+import com.gtolib.api.dimension.hooks.DimensionRemoteTarget;
+import com.gtolib.api.dimension.lifecycle.DimensionRuntimeCaches;
 
 import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 

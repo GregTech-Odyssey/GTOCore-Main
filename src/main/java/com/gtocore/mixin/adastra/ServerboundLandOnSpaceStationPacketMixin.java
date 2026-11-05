@@ -1,6 +1,6 @@
 package com.gtocore.mixin.adastra;
 
-import com.gtolib.api.dimension.DimensionStations;
+import com.gtolib.api.dimension.compats.DimensionStations;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

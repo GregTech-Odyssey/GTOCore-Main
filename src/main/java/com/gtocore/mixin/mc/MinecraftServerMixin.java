@@ -1,7 +1,7 @@
 package com.gtocore.mixin.mc;
 
-import com.gtolib.api.dimension.DimensionLevelData;
 import com.gtolib.api.dimension.DimensionSync;
+import com.gtolib.api.dimension.save.DimensionLevelData;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;

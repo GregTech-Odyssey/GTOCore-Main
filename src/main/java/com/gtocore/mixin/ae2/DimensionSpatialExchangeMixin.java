@@ -1,7 +1,7 @@
 package com.gtocore.mixin.ae2;
 
-import com.gtolib.api.dimension.DimensionLifecycle;
 import com.gtolib.api.dimension.DimensionManager;
+import com.gtolib.api.dimension.lifecycle.DimensionLifecycle;
 
 import net.minecraft.server.level.ServerLevel;
 

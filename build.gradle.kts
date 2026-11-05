@@ -745,7 +745,7 @@ spotless {
         target(
             "src/main/java/**/*.java", "GTOLib/src/main/java/**/*.java",
             "src/test/java/com/gtolib/api/dimension/**/*.java",
-            "src/test/java/com/gtocore/common/weather/**/*.java", "src/dimensionTest/java/**/*.java",
+            "src/test/java/com/gtocore/common/weather/**/*.java", "GTOLib/src/dimensionTest/java/**/*.java",
         )
         toggleOffOn()
         importOrderFile(file("gradle/spotless/spotless.importorder"))
