@@ -253,7 +253,7 @@ public final class ForgeCommonEvent {
             CompoundTag data = player.getPersistentData();
             if (block == Blocks.CRYING_OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:flat")) {
-                    if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
+                    if (VoidTransporterMachine.checkTransporter(pos, level, 0, player)) return;
                     ServerLevel serverLevel = server.getLevel(GTODimensions.FLAT);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:void") ? 1 : 10;
@@ -273,7 +273,7 @@ public final class ForgeCommonEvent {
 
             if (block == Blocks.OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:void")) {
-                    if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
+                    if (VoidTransporterMachine.checkTransporter(pos, level, 0, player)) return;
                     ServerLevel serverLevel = server.getLevel(GTODimensions.VOID);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:flat") ? 1 : 10;
