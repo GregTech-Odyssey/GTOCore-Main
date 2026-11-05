@@ -57,8 +57,10 @@ public final class DimensionScepterBookmarks {
         return result;
     }
 
+    /** 只取条数，不解析条目。 */
     public static int count(ItemStack stack) {
-        return get(stack).size();
+        CompoundTag tag = stack.getTag();
+        return tag == null ? 0 : tag.getList(BOOKMARKS, Tag.TAG_COMPOUND).size();
     }
 
     @Nullable
@@ -164,10 +166,10 @@ public final class DimensionScepterBookmarks {
         if (tag.isEmpty()) stack.setTag(null);
     }
 
+    /** 收藏或选中项变化的轻量签名：直接对 NBT 列表求 hash，不解析条目。 */
     public static int signature(ItemStack stack) {
-        List<Bookmark> bookmarks = get(stack);
-        int result = bookmarks.size();
-        for (Bookmark bookmark : bookmarks) result = 31 * result + bookmark.hashCode();
+        CompoundTag tag = stack.getTag();
+        int result = tag == null ? 0 : tag.getList(BOOKMARKS, Tag.TAG_COMPOUND).hashCode();
         return 31 * result + selectedIndex(stack);
     }
 
@@ -175,10 +177,14 @@ public final class DimensionScepterBookmarks {
      * 当前维度、维度权杖可传送范围内、已经命名且尚未收藏的旅行锚，按距离排序。
      */
     public static List<AnchorTravelTarget> candidates(Level level, ItemStack scepter, BlockPos center) {
+        return candidates(level, get(scepter), center);
+    }
+
+    /** 用已解析的收藏列表（界面里按签名缓存的一份）筛选附近可收藏的锚。 */
+    public static List<AnchorTravelTarget> candidates(Level level, List<Bookmark> bookmarks, BlockPos center) {
         int range = GTOConfig.INSTANCE.travelConfig.itemRange;
         List<ITravelTarget> found = TravelSavedData.getTravelData(level).getTravelTargetsWithin(center, BlockRange.sphere(range));
         if (found.isEmpty()) return Collections.emptyList();
-        List<Bookmark> bookmarks = get(scepter);
         long rangeSquared = (long) range * range;
         ArrayList<AnchorTravelTarget> result = new ArrayList<>(found.size());
         for (ITravelTarget target : found) {
@@ -198,11 +204,17 @@ public final class DimensionScepterBookmarks {
      */
     @Nullable
     public static AnchorTravelTarget findCandidate(Level level, ItemStack scepter, Player player, BlockPos pos) {
+        return findCandidate(level, get(scepter), player, pos);
+    }
+
+    /** 用已解析的收藏列表校验附近可收藏的锚。 */
+    @Nullable
+    public static AnchorTravelTarget findCandidate(Level level, List<Bookmark> bookmarks, Player player, BlockPos pos) {
         if (!(TravelSavedData.getTravelData(level).getTravelTarget(pos).orElse(null) instanceof AnchorTravelTarget anchor)) {
             return null;
         }
         if (anchor.getTargetType() != TravelTargetType.ANCHOR || anchor.getName().isBlank()) return null;
-        if (contains(get(scepter), level.dimension(), pos)) return null;
+        if (contains(bookmarks, level.dimension(), pos)) return null;
         int range = GTOConfig.INSTANCE.travelConfig.itemRange;
         return player.blockPosition().distSqr(pos) <= (long) range * range ? anchor : null;
     }

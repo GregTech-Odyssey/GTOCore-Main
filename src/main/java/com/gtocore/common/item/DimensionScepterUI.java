@@ -1,5 +1,6 @@
 package com.gtocore.common.item;
 
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.DimensionScepterBookmarks.Bookmark;
 import com.gtocore.eio_travel.implementations.AnchorTravelTarget;
 
@@ -19,6 +20,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
@@ -35,6 +37,10 @@ import java.util.List;
  */
 @DataGeneratorScanned
 public final class DimensionScepterUI {
+
+    /** 两个列表各自滚动，行数上限固定，避免界面内容随附近锚点数量无限增高。 */
+    private static final int BOOKMARK_ROWS = 6;
+    private static final int NEARBY_ROWS = 6;
 
     @RegisterLanguage(cn = "收藏的旅行锚", en = "Saved Travel Anchors")
     private static final String BOOKMARKS = "gtocore.dimension_scepter.bookmarks";
@@ -94,86 +100,94 @@ public final class DimensionScepterUI {
 
     private DimensionScepterUI() {}
 
-    public static UIElement bookmarksSection(HeldItemUIFactory.HeldItemHolder holder) {
+    public static UIElement bookmarksSection(HeldItemUIFactory.HeldItemHolder holder, BookmarkView view) {
         var section = Form.section(BOOKMARKS_LABEL);
         var selection = TextLine.of(0, () -> {
-            Bookmark bookmark = DimensionScepterBookmarks.selected(holder.getHeld());
+            Bookmark bookmark = selectedBookmark(holder, view);
             return bookmark == null ? BOOKMARKS_NONE_SELECTED_C : Component.translatable(BOOKMARKS_SELECTED, bookmarkName(holder.player.level(), bookmark));
         }).bindClientColor(UITheme::panelText);
         selection.layout(l -> l.flex(1));
         var teleport = Button.icon(UITheme.ARROW_RIGHT)
                 .setOnServerClick(() -> {
+                    if (!isHeldScepter(holder)) return;
                     int index = DimensionScepterBookmarks.selectedIndex(holder.getHeld());
                     if (index >= 0) DimensionScepterBehavior.teleportToBookmark(holder.player, holder.getHeld(), index);
                 })
-                .disabled(() -> DimensionScepterBookmarks.selected(holder.getHeld()) == null, BOOKMARK_NO_SELECTION_C);
+                .disabled(() -> selectedBookmark(holder, view) == null, BOOKMARK_NO_SELECTION_C);
         teleport.setHoverTooltips(BOOKMARK_TELEPORT_C);
         section.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT)
                 .addChildren(selection, InfoIcon.info(BOOKMARKS_TIP_C), teleport));
 
-        var list = ServerList.of(ByteBufCodecs.VAR_INT, () -> indices(DimensionScepterBookmarks.count(holder.getHeld())),
-                index -> bookmarkRow(holder, index))
+        var list = ServerList.of(ByteBufCodecs.VAR_INT, () -> indices(view.current(holder.getHeld()).size()),
+                index -> bookmarkRow(holder, index, view))
                 .version(() -> DimensionScepterBookmarks.signature(holder.getHeld()))
                 .emptyText(BOOKMARKS_EMPTY_C);
-        list.rowHeight(UISizes.SLOT_SIZE);
+        list.scroll("dimension_scepter.bookmarks", UISizes.CONTENT_WIDTH).rowHeight(UISizes.SLOT_SIZE).maxRows(BOOKMARK_ROWS);
         section.addChild(list);
         return section;
     }
 
-    public static UIElement nearbySection(HeldItemUIFactory.HeldItemHolder holder) {
+    public static UIElement nearbySection(HeldItemUIFactory.HeldItemHolder holder, BookmarkView view) {
         var section = Form.section(NEARBY_LABEL);
         var hint = TextLine.constant(0, NEARBY_HINT_C).bindClientColor(UITheme::textSecondary);
         hint.layout(l -> l.flex(1));
         section.addChild(UIElement.centeredRow(UISizes.CONTROL_HEIGHT).addChildren(hint, InfoIcon.info(NEARBY_TIP_C)));
 
-        var list = ServerList.of(ByteBufCodecs.VAR_LONG, () -> candidateKeys(holder),
-                pos -> candidateRow(holder, BlockPos.of(pos)))
+        var list = ServerList.of(ByteBufCodecs.VAR_LONG, () -> candidateKeys(holder, view),
+                pos -> candidateRow(holder, BlockPos.of(pos), view))
+                // version() 会把 rescanTicks 归零，必须先 version 再 rescanEvery，否则周期重扫不会生效。
                 .version(() -> DimensionScepterBookmarks.signature(holder.getHeld()))
                 .rescanEvery(20)
                 .emptyText(NEARBY_EMPTY_C);
-        list.rowHeight(UISizes.SLOT_SIZE);
+        list.scroll("dimension_scepter.nearby", UISizes.CONTENT_WIDTH).rowHeight(UISizes.SLOT_SIZE).maxRows(NEARBY_ROWS);
         section.addChild(list);
         return section;
     }
 
-    private static UIElement bookmarkRow(HeldItemUIFactory.HeldItemHolder holder, int index) {
+    private static UIElement bookmarkRow(HeldItemUIFactory.HeldItemHolder holder, int index, BookmarkView view) {
         var mark = TextLine.of(10, () -> Component.literal(DimensionScepterBookmarks.selectedIndex(holder.getHeld()) == index ? "▶" : " "))
                 .bindClientColor(UITheme::panelText);
         var name = TextLine.of(LayoutStyle.AUTO, () -> {
-            Bookmark bookmark = DimensionScepterBookmarks.get(holder.getHeld(), index);
+            Bookmark bookmark = view.get(holder.getHeld(), index);
             return bookmark == null ? BOOKMARK_UNAVAILABLE_C : bookmarkName(holder.player.level(), bookmark);
         }).bindClientColor(UITheme::panelText);
         var location = TextLine.of(LayoutStyle.AUTO, () -> {
-            Bookmark bookmark = DimensionScepterBookmarks.get(holder.getHeld(), index);
+            Bookmark bookmark = view.get(holder.getHeld(), index);
             return bookmark == null ? Component.empty() : location(bookmark);
         }).bindClientColor(UITheme::textSecondary);
         var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(0).flex(1)).addChildren(name, location);
 
-        var select = Button.glyph("✓")
-                .setOnServerClick(() -> DimensionScepterBookmarks.toggleSelected(holder.getHeld(), index));
+        var select = Button.glyph("✓").setOnServerClick(() -> {
+            if (isHeldScepter(holder)) DimensionScepterBookmarks.toggleSelected(holder.getHeld(), index);
+        });
         select.setHoverTooltips(BOOKMARK_SELECT_C);
         var teleport = Button.icon(UITheme.ARROW_RIGHT)
-                .setOnServerClick(() -> DimensionScepterBehavior.teleportToBookmark(holder.player, holder.getHeld(), index));
+                .setOnServerClick(() -> {
+                    if (isHeldScepter(holder)) DimensionScepterBehavior.teleportToBookmark(holder.player, holder.getHeld(), index);
+                });
         teleport.setHoverTooltips(BOOKMARK_TELEPORT_C);
-        var remove = Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER)
-                .setOnServerClick(() -> DimensionScepterBookmarks.remove(holder.getHeld(), index));
+        var remove = Button.glyph("×").setVariant(UITheme.ButtonVariant.DANGER).setOnServerClick(() -> {
+            if (isHeldScepter(holder)) DimensionScepterBookmarks.remove(holder.getHeld(), index);
+        });
         remove.setHoverTooltips(BOOKMARK_REMOVE_C);
         return row(mark, text, select, teleport, remove);
     }
 
-    private static UIElement candidateRow(HeldItemUIFactory.HeldItemHolder holder, BlockPos pos) {
+    private static UIElement candidateRow(HeldItemUIFactory.HeldItemHolder holder, BlockPos pos, BookmarkView view) {
         var name = TextLine.of(LayoutStyle.AUTO, () -> {
-            AnchorTravelTarget target = DimensionScepterBookmarks.findCandidate(holder.player.level(), holder.getHeld(), holder.player, pos);
+            AnchorTravelTarget target = candidate(holder, pos, view);
             return target == null ? BOOKMARK_UNAVAILABLE_C : Component.literal(target.getName());
         }).bindClientColor(UITheme::panelText);
         var location = TextLine.of(LayoutStyle.AUTO, () -> {
-            AnchorTravelTarget target = DimensionScepterBookmarks.findCandidate(holder.player.level(), holder.getHeld(), holder.player, pos);
+            AnchorTravelTarget target = candidate(holder, pos, view);
             return target == null ? Component.empty() : nearbyLocation(holder, target);
         }).bindClientColor(UITheme::textSecondary);
         var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(0).flex(1)).addChildren(name, location);
 
         var add = Button.glyph("+")
-                .setOnServerClick(() -> addCandidate(holder, pos))
+                .setOnServerClick(() -> {
+                    if (isHeldScepter(holder)) addCandidate(holder, pos, view);
+                })
                 .disabled(() -> DimensionScepterBookmarks.isFull(holder.getHeld()), BOOKMARK_FULL_C);
         add.setHoverTooltips(BOOKMARK_ADD_C);
         return row(null, text, add);
@@ -187,9 +201,24 @@ public final class DimensionScepterUI {
         return row;
     }
 
-    private static void addCandidate(HeldItemUIFactory.HeldItemHolder holder, BlockPos pos) {
-        AnchorTravelTarget target = DimensionScepterBookmarks.findCandidate(holder.player.level(), holder.getHeld(), holder.player, pos);
+    private static void addCandidate(HeldItemUIFactory.HeldItemHolder holder, BlockPos pos, BookmarkView view) {
+        AnchorTravelTarget target = candidate(holder, pos, view);
         if (target != null) DimensionScepterBookmarks.add(holder.getHeld(), holder.player.level(), target);
+    }
+
+    @Nullable
+    private static AnchorTravelTarget candidate(HeldItemUIFactory.HeldItemHolder holder, BlockPos pos, BookmarkView view) {
+        return DimensionScepterBookmarks.findCandidate(holder.player.level(), view.current(holder.getHeld()), holder.player, pos);
+    }
+
+    @Nullable
+    private static Bookmark selectedBookmark(HeldItemUIFactory.HeldItemHolder holder, BookmarkView view) {
+        return view.get(holder.getHeld(), DimensionScepterBookmarks.selectedIndex(holder.getHeld()));
+    }
+
+    /** 界面回调可能在玩家换手或丢出权杖后执行，跟旅行手杖界面一样先确认 holder 仍然有效。 */
+    private static boolean isHeldScepter(HeldItemUIFactory.HeldItemHolder holder) {
+        return !holder.isInvalid() && holder.getHeld().is(GTOItems.DIMENSION_SCEPTER.asItem());
     }
 
     private static List<Integer> indices(int count) {
@@ -199,12 +228,40 @@ public final class DimensionScepterUI {
         return result;
     }
 
-    private static List<Long> candidateKeys(HeldItemUIFactory.HeldItemHolder holder) {
-        var candidates = DimensionScepterBookmarks.candidates(holder.player.level(), holder.getHeld(), holder.player.blockPosition());
+    private static List<Long> candidateKeys(HeldItemUIFactory.HeldItemHolder holder, BookmarkView view) {
+        var candidates = DimensionScepterBookmarks.candidates(holder.player.level(), view.current(holder.getHeld()), holder.player.blockPosition());
         if (candidates.isEmpty()) return Collections.emptyList();
         var result = new ArrayList<Long>(candidates.size());
         for (AnchorTravelTarget candidate : candidates) result.add(candidate.getPos().asLong());
         return result;
+    }
+
+    /**
+     * 每次打开界面一份的收藏快照：签名不变时复用已解析的列表。
+     * <p>
+     * 行里的 {@code TextLine} 取值每 tick 都会执行，直接调 {@link DimensionScepterBookmarks#get} 会让每一行每 tick 都解析一遍物品 NBT。
+     */
+    static final class BookmarkView {
+
+        private ItemStack stack = ItemStack.EMPTY;
+        private int signature = Integer.MIN_VALUE;
+        private List<Bookmark> bookmarks = Collections.emptyList();
+
+        List<Bookmark> current(ItemStack held) {
+            int currentSignature = DimensionScepterBookmarks.signature(held);
+            if (held != stack || currentSignature != signature) {
+                stack = held;
+                signature = currentSignature;
+                bookmarks = DimensionScepterBookmarks.get(held);
+            }
+            return bookmarks;
+        }
+
+        @Nullable
+        Bookmark get(ItemStack held, int index) {
+            List<Bookmark> list = current(held);
+            return index >= 0 && index < list.size() ? list.get(index) : null;
+        }
     }
 
     public static Component bookmarkName(@Nullable Level level, Bookmark bookmark) {

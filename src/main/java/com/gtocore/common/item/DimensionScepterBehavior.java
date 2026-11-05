@@ -94,6 +94,9 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
     }
 
     private boolean tryPerformAction(Level level, Player player, ItemStack stack) {
+        if (player.isSpectator() || player.getCooldowns().isOnCooldown(stack.getItem())) {
+            return false;
+        }
         DimensionScepterBookmarks.Bookmark bookmark = DimensionScepterBookmarks.selected(stack);
         if (bookmark == null) {
             if (!level.isClientSide()) player.displayClientMessage(NO_SELECTION_C, true);
@@ -104,13 +107,17 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
             if (!level.isClientSide()) player.displayClientMessage(NO_ENERGY_C, true);
             return false;
         }
-        if (level.isClientSide()) return true;
+        if (level.isClientSide()) {
+            // 客户端本地先记一次冷却，右键不必等服务端下发就一直有效；服务端成功后会用同样的时长覆盖。
+            addCooldown(player, stack);
+            return true;
+        }
         if (!TravelHandler.bookmarkTeleport(player, bookmark.dimension(), bookmark.pos())) {
             player.displayClientMessage(BOOKMARK_FAILED_C, true);
             return false;
         }
         if (!isCreative) consumeResources(stack);
-        player.getCooldowns().addCooldown(stack.getItem(), GTOConfig.INSTANCE.travelConfig.travelStaffCooldown);
+        addCooldown(player, stack);
         return true;
     }
 
@@ -118,7 +125,9 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
      * 从权杖界面直接传送到指定收藏锚，并扣除电量与设置冷却。
      */
     public static boolean teleportToBookmark(Player player, ItemStack stack, int index) {
-        if (player.level().isClientSide()) return false;
+        if (player.level().isClientSide() || player.isSpectator() || player.getCooldowns().isOnCooldown(stack.getItem())) {
+            return false;
+        }
         DimensionScepterBookmarks.Bookmark bookmark = DimensionScepterBookmarks.get(stack, index);
         if (bookmark == null) return false;
         if (!player.isCreative() && !hasResources(stack)) {
@@ -130,8 +139,12 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
             return false;
         }
         if (!player.isCreative()) consumeResources(stack);
-        player.getCooldowns().addCooldown(stack.getItem(), GTOConfig.INSTANCE.travelConfig.travelStaffCooldown);
+        addCooldown(player, stack);
         return true;
+    }
+
+    private static void addCooldown(Player player, ItemStack stack) {
+        player.getCooldowns().addCooldown(stack.getItem(), GTOConfig.INSTANCE.travelConfig.travelStaffCooldown);
     }
 
     @Override
@@ -171,10 +184,11 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
+            var view = new DimensionScepterUI.BookmarkView();
             var scroller = ScrollerView.page("dimension_scepter.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
             scroller.addScrollViewChild(Form.page()
-                    .addChild(DimensionScepterUI.bookmarksSection(holder))
-                    .addChild(DimensionScepterUI.nearbySection(holder)));
+                    .addChild(DimensionScepterUI.bookmarksSection(holder, view))
+                    .addChild(DimensionScepterUI.nearbySection(holder, view)));
             return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
         }
 

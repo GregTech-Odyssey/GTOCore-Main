@@ -143,6 +143,10 @@ public class TravelHandler {
         }
         serverPlayer.teleportTo(targetLevel, eventPosition.x(), eventPosition.y(), eventPosition.z(),
                 serverPlayer.getYRot(), serverPlayer.getXRot());
+        if (serverPlayer.level() != targetLevel) {
+            // 传送可能被其它模组的 EntityTravelToDimensionEvent 取消；此时不提示成功、不扣电、不设冷却。
+            return false;
+        }
         // Stop "moved too quickly" warnings
         serverPlayer.connection.resetPosition();
         serverPlayer.resetFallDistance();
