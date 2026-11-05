@@ -29,6 +29,8 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.data.storage.SuperStorageMigration;
+import com.gtolib.api.dimension.DimensionManager;
+import com.gtolib.api.dimension.DimensionSync;
 import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 import com.gtolib.api.misc.FastSavedData;
@@ -253,7 +255,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.CRYING_OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:flat")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = com.gtolib.api.dimension.DimensionManager.get(server).loadFor(player, GTODimensions.FLAT);
+                    ServerLevel serverLevel = DimensionManager.get(server).loadFor(player, GTODimensions.FLAT);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:void") ? 1 : 10;
                         data.putDouble("y_f", player.getY() + 1);
@@ -273,7 +275,7 @@ public final class ForgeCommonEvent {
             if (block == Blocks.OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:void")) {
                     if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
-                    ServerLevel serverLevel = com.gtolib.api.dimension.DimensionManager.get(server).loadFor(player, GTODimensions.VOID);
+                    ServerLevel serverLevel = DimensionManager.get(server).loadFor(player, GTODimensions.VOID);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:flat") ? 1 : 10;
                         data.putDouble("y_v", player.getY() + 1);
@@ -430,7 +432,7 @@ public final class ForgeCommonEvent {
 
     @SuppressWarnings("resource")
     private static void syncPlayerTime(ServerPlayer player) {
-        com.gtolib.api.dimension.DimensionSync.syncTime(player);
+        DimensionSync.syncTime(player);
     }
 
     @RegisterLanguage(valuePrefix = "gtocore.lang", en = "Channel mode command banned in expert", cn = "在专家模式下，频道模式命令被禁止")

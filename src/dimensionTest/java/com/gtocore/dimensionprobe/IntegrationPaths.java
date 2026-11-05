@@ -1,10 +1,15 @@
 package com.gtocore.dimensionprobe;
 
+import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
+
 import com.gtolib.GTOCore;
 import com.gtolib.api.adastra.PlanetTravel;
 import com.gtolib.api.adastra.TravelSource;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.dimension.*;
+
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,10 +20,14 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
+import appeng.spatial.SpatialStorageHelper;
+import appeng.spatial.SpatialStoragePlotManager;
+
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import earth.terrarium.adastra.common.network.messages.ServerboundConstructSpaceStationPacket;
 import earth.terrarium.adastra.common.network.messages.ServerboundLandOnSpaceStationPacket;
 import earth.terrarium.adastra.common.network.messages.ServerboundLandPacket;
+import earth.terrarium.adastra.common.registry.ModEntityTypes;
 
 import java.util.List;
 import java.util.UUID;
@@ -70,23 +79,23 @@ final class IntegrationPaths {
             require(manager.teleport(guest, Level.OVERWORLD), "Series return failed");
             // Invoke the device's actual consumer using a placed machine block entity.
             var devicePos = new BlockPos(128, 150, 128);
-            server.overworld().setBlockAndUpdate(devicePos, com.gtocore.common.data.machines.MultiBlockG.VOID_TRANSPORTER.defaultBlockState());
-            var device = (com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine) com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(server.overworld(), devicePos);
+            server.overworld().setBlockAndUpdate(devicePos, MultiBlockG.VOID_TRANSPORTER.defaultBlockState());
+            var device = (VoidTransporterMachine) MetaMachine.getMachine(server.overworld(), devicePos);
             require(device != null, "Void transporter block entity was not constructed");
             var deviceTarget = manager.getOrCreatePrivate(new OwnerRef(OwnerRef.Kind.PLAYER, owner.getUUID()), DimensionTemplates.VOID, slot + "-device", 946L);
-            var consumer = com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine.teleportToDimension(deviceTarget.dimension(), new BlockPos(0, 70, 0));
+            var consumer = VoidTransporterMachine.teleportToDimension(deviceTarget.dimension(), new BlockPos(0, 70, 0));
             consumer.accept(device, guest);
             require(server.getLevel(deviceTarget.dimension()) == null, "Denied void device woke destination");
             consumer.accept(device, owner);
             require(owner.serverLevel().dimension() == deviceTarget.dimension(), "Void device did not load/enter destination");
             require(manager.teleport(owner, Level.OVERWORLD), "Void device return failed");
             // Actual AE2 block swap, including both scoped world leases.
-            var spatial = appeng.spatial.SpatialStoragePlotManager.INSTANCE.getLevel();
+            var spatial = SpatialStoragePlotManager.INSTANCE.getLevel();
             var mainPos = new BlockPos(64, 150, 64);
             var spatialPos = new BlockPos(64, 80, 64);
             server.overworld().setBlockAndUpdate(mainPos, Blocks.DIAMOND_BLOCK.defaultBlockState());
             spatial.setBlockAndUpdate(spatialPos, Blocks.GOLD_BLOCK.defaultBlockState());
-            appeng.spatial.SpatialStorageHelper.getInstance().swapRegions(server.overworld(), 64, 150, 64, spatial, 64, 80, 64, 0, 0, 0);
+            SpatialStorageHelper.getInstance().swapRegions(server.overworld(), 64, 150, 64, spatial, 64, 80, 64, 0, 0, 0);
             require(server.overworld().getBlockState(mainPos).is(Blocks.GOLD_BLOCK) && spatial.getBlockState(spatialPos).is(Blocks.DIAMOND_BLOCK), "AE2 did not exchange actual blocks");
             require(!manager.keepAliveReasons(spatial.dimension()).contains("SPATIAL_EXCHANGE"), "AE2 exchange retained a lease");
             // Space elevator opens the shared planet menu; the real land handler loads the planet.
@@ -96,7 +105,7 @@ final class IntegrationPaths {
             require(owner.serverLevel().getSeed() == server.overworld().getSeed(), "Existing planet seed changed");
             returnHome(owner);
             // A rocket menu follows the same real handler with an actual rocket passenger.
-            var rocket = earth.terrarium.adastra.common.registry.ModEntityTypes.TIER_1_ROCKET.get().create(server.overworld());
+            var rocket = ModEntityTypes.TIER_1_ROCKET.get().create(server.overworld());
             rocket.setPos(owner.getX(), 1100, owner.getZ());
             server.overworld().addFreshEntity(rocket);
             owner.startRiding(rocket, true);

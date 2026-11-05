@@ -29,6 +29,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 
+import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import lombok.Getter;
@@ -48,7 +49,7 @@ import static com.gtocore.client.renderer.machine.MonitorRenderer.gridToNetworkC
 
 public final class Manager {
 
-    private static final com.gto.datasynclib.datastream.DataComponentKey<MonitorState> STATE = com.gto.datasynclib.datastream.DataComponentKey.createNoCodec("monitor_networks");
+    private static final DataComponentKey<MonitorState> STATE = DataComponentKey.createNoCodec("monitor_networks");
 
     private static final class MonitorState {
 

@@ -381,6 +381,8 @@ flowchart TD
 
 新增兼容入口应先判断它是查询元数据还是要操作区块：前者用 `metadataStorage` / 描述，后者先授权、显式加载并按任务持租约。不要永久缓存 Level、区块实体或处理器；不要假设 `getAllLevels()` 是所有历史世界；不要在一次实例卸载中清空其他世界的全局数据。GTM / AE2 内部行为修复的位置仍按 [fork 修改位置](forked-dependencies.md) 判断，本图记录既有实现，不要求继续新增 Mixin。项目固定数据包，不承诺 `/reload` 重建动态定义。
 
+Xaero World Map 的单人模式默认直接从运行中的 `ServerLevel` 与存档区域文件重建地图。非主世界可能休眠，且仅探索的地形不保证写盘，因此 `MapDimensionMixin` 将非主世界的当前及未来 `isUsingWorldSave` 判定关闭，沿用 Xaero 自带的独立地图读写；维度键和地图目录不变，浏览地图不会唤醒维度。主世界保留原有存档读取方式，多人地图沿用原有独立存储。旧版仅从存档重建、尚未独立保存的地图区域需要重新探索才能形成完整的独立地图数据。
+
 ## 7. 操作与验证入口
 
 管理命令由 [GTOCommands] 接入 [DimensionCommands]，根为 `/gtocore dimensions`，均要求权限等级 2。

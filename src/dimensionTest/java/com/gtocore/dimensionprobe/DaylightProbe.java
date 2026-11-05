@@ -1,19 +1,33 @@
 package com.gtocore.dimensionprobe;
 
+import com.gtocore.common.block.HappyWaterGodStatue;
 import com.gtocore.common.saved.VoidWorldTimeSavedData;
 
 import com.gtolib.api.data.CelestialBody;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.dimension.DimensionLevelData;
 import com.gtolib.api.dimension.DimensionManager;
+import com.gtolib.api.dimension.DimensionSavedData;
 import com.gtolib.api.dimension.DimensionTemplates;
+import com.gtolib.api.dimension.LevelData;
 import com.gtolib.api.dimension.OwnerRef;
+import com.gtolib.api.weather.WeatherSystem;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
+
+import com.hollingsworth.arsnouveau.api.ritual.AbstractRitual;
+import com.hollingsworth.arsnouveau.common.block.tile.RitualBrazierTile;
+import com.hollingsworth.arsnouveau.common.ritual.RitualMoonfall;
+import com.hollingsworth.arsnouveau.common.ritual.RitualSunrise;
+import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
+import mythicbotany.alfheim.Alfheim;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -45,7 +59,7 @@ final class DaylightProbe {
 
     private static void check(MinecraftServer server) throws Throwable {
         var manager = DimensionManager.get(server);
-        var system = com.gtolib.api.weather.WeatherSystem.get(server);
+        var system = WeatherSystem.get(server);
         var earth = server.overworld();
         var moon = manager.loadNow(GTODimensions.MOON);
         var mars = manager.loadNow(GTODimensions.MARS);
@@ -97,14 +111,14 @@ final class DaylightProbe {
         require(moon.getDayTime() % 24000 == 18000 && earth.getDayTime() == 12345 && mars.getDayTime() == marsTime,
                 "FTB night shortcut changed another dimension");
         moon.setDayTime(21300);
-        var midnight = com.gtocore.common.block.HappyWaterGodStatue.class.getDeclaredMethod("midnight", ServerLevel.class);
+        var midnight = HappyWaterGodStatue.class.getDeclaredMethod("midnight", ServerLevel.class);
         midnight.setAccessible(true);
         midnight.invoke(null, moon);
         require(moon.getDayTime() == 42000 && earth.getDayTime() == 12345 && mars.getDayTime() == marsTime,
                 "Statue midnight changed another dimension");
         checkArsRituals(moon, earth, mars);
-        var alfheim = manager.loadNow(mythicbotany.alfheim.Alfheim.DIMENSION);
-        var sleepEvent = new net.minecraftforge.event.level.SleepFinishedTimeEvent(alfheim, 7000, 0);
+        var alfheim = manager.loadNow(Alfheim.DIMENSION);
+        var sleepEvent = new SleepFinishedTimeEvent(alfheim, 7000, 0);
         new mythicbotany.EventListener().sleepFinished(sleepEvent);
         require(alfheim.getDayTime() == 7000 && earth.getDayTime() == 12345 && mars.getDayTime() == marsTime,
                 "Alfheim sleep changed another dimension");
@@ -155,7 +169,7 @@ final class DaylightProbe {
         require(server.getLevel(first.dimension()) == null, "Dormant forecast loaded terrain");
         require(system.dormantDaylight(first.dimension()).dayTime() == 108004, "Dormant daylight failed to advance or ignored pauses");
         var privateRestored = manager.loadNow(first.dimension());
-        require(privateRestored.getDayTime() == 108004 && com.gtolib.api.weather.WeatherSystem.levelData(privateRestored).weather() != null,
+        require(privateRestored.getDayTime() == 108004 && WeatherSystem.levelData(privateRestored).weather() != null,
                 "Dormant forecast lost private time or weather");
         system.forecast(mercury.dimension());
         mercury.setDayTime(7000);
@@ -179,10 +193,10 @@ final class DaylightProbe {
         var restored = manager.loadNow(GTODimensions.MERCURY);
         require(restored != mercury && restored.getDayTime() == expectedTime && data(restored).remainder() == expectedRemainder,
                 "Dormancy lost clock or fractional progress");
-        var diskStorage = new net.minecraft.world.level.storage.DimensionDataStorage(
-                restored.getDataStorage().getDataFile(com.gtolib.api.dimension.LevelData.DATA_NAME).getParentFile(), server.getFixerUpper());
-        var saved = com.gtolib.api.dimension.DimensionSavedData.getFromFile(com.gtolib.api.dimension.LevelData.DATA_NAME,
-                diskStorage, com.gtolib.api.dimension.LevelData::load);
+        var diskStorage = new DimensionDataStorage(
+                restored.getDataStorage().getDataFile(LevelData.DATA_NAME).getParentFile(), server.getFixerUpper());
+        var saved = DimensionSavedData.getFromFile(LevelData.DATA_NAME,
+                diskStorage, LevelData::load);
         require(saved.remainder() == expectedRemainder, "Clock NBT round trip lost fractional progress");
         require(saved.dayTime() == expectedTime && saved.weather().periods().equals(expectedWeather),
                 "Clock and weather were not committed together");
@@ -191,13 +205,13 @@ final class DaylightProbe {
     private static void checkArsRituals(ServerLevel local, ServerLevel earth, ServerLevel other) throws Exception {
         long earthTime = earth.getDayTime();
         long otherTime = other.getDayTime();
-        var tile = new com.hollingsworth.arsnouveau.common.block.tile.RitualBrazierTile(net.minecraft.core.BlockPos.ZERO,
-                com.hollingsworth.arsnouveau.setup.registry.BlockRegistry.RITUAL_BLOCK.get().defaultBlockState());
+        var tile = new RitualBrazierTile(BlockPos.ZERO,
+                BlockRegistry.RITUAL_BLOCK.get().defaultBlockState());
         tile.setLevel(local);
-        for (var ritual : new com.hollingsworth.arsnouveau.api.ritual.AbstractRitual[] {
-                new com.hollingsworth.arsnouveau.common.ritual.RitualSunrise(),
-                new com.hollingsworth.arsnouveau.common.ritual.RitualMoonfall() }) {
-            long start = ritual instanceof com.hollingsworth.arsnouveau.common.ritual.RitualSunrise ? 18000 : 6000;
+        for (var ritual : new AbstractRitual[] {
+                new RitualSunrise(),
+                new RitualMoonfall() }) {
+            long start = ritual instanceof RitualSunrise ? 18000 : 6000;
             local.setDayTime(start);
             ritual.tile = tile;
             var method = ritual.getClass().getDeclaredMethod("tick");

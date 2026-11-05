@@ -9,6 +9,7 @@ import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.integration.ae.hooks.ICraftAmountMenu;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
 
+import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.network.NetworkPack;
 import com.gtolib.utils.ServerUtils;
 
@@ -50,7 +51,7 @@ public final class Message {
             b.readOptional(buf -> Direction.from3DDataValue(buf.readByte())).orElse(null)));
 
     private static void tryOpenMetaMachineUI(ServerPlayer p, GlobalPos globalPos, @Nullable Direction side) {
-        if (!com.gtolib.api.dimension.DimensionManager.get(p.server).canAccess(p, globalPos.dimension())) return;
+        if (!DimensionManager.get(p.server).canAccess(p, globalPos.dimension())) return;
         Level level = p.getServer().getLevel(globalPos.dimension());
         if (level != null && level.isLoaded(globalPos.pos())) {
             var be = level.getBlockEntity(globalPos.pos());

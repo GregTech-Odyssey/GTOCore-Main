@@ -1,5 +1,6 @@
 package com.gtocore.dimensionprobe;
 
+import com.gtolib.api.dimension.DimensionChunkEdits;
 import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.dimension.DimensionTemplates;
 import com.gtolib.api.dimension.OwnerRef;
@@ -41,7 +42,7 @@ final class CrashProbe {
                 var owner = new OwnerRef(OwnerRef.Kind.PLAYER, UUID.fromString("abddc7d2-d087-407d-bdbb-3a7751caab87"));
                 var instance = manager.getOrCreatePrivate(owner, DimensionTemplates.VOID, "crash-recovery", 71823L);
                 var level = manager.loadNow(instance.dimension());
-                var edits = com.gtolib.api.dimension.DimensionChunkEdits.get(level);
+                var edits = DimensionChunkEdits.get(level);
                 edits.begin();
                 level.setBlockAndUpdate(new BlockPos(0, 64, 0), Blocks.STONE.defaultBlockState());
                 edits.finish(level);

@@ -1,23 +1,53 @@
 package com.gtocore.dimensionprobe;
 
+import com.gtocore.api.research.TeamResearchSavedData;
+import com.gtocore.api.research.techtree.TechTreeSavedData;
+
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.dimension.*;
+import com.gtolib.api.weather.WeatherSystem;
+import com.gtolib.api.weather.WeatherTimeline;
+import com.gtolib.data.CommonSavaedData;
+import com.gtolib.utils.ServerUtils;
+
+import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.RandomSequences;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import appeng.spatial.SpatialStorageDimensionIds;
+import appeng.spatial.SpatialStoragePlotManager;
+
+import com.mojang.authlib.GameProfile;
+import earth.terrarium.adastra.common.entities.vehicles.Rocket;
+import earth.terrarium.adastra.common.registry.ModEntityTypes;
+import earth.terrarium.adastra.common.utils.ModUtils;
+
 import java.nio.file.*;
 import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -39,10 +69,10 @@ public final class DimensionProbe {
     private boolean failed;
     private long expectedRandom;
     private long terrainHash;
-    private com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget remote;
-    private java.util.UUID animalId;
+    private RemoteKeyTarget remote;
+    private UUID animalId;
     private TestData testData;
-    private java.util.List<com.gtolib.api.weather.WeatherTimeline.Period> weather;
+    private List<WeatherTimeline.Period> weather;
 
     /**
      * 注册隔离测试所需的事件监听，根据 JVM 属性选择探针场景。
@@ -96,19 +126,19 @@ public final class DimensionProbe {
         server = event.getServer();
         manager = DimensionManager.get(server);
         try {
-            var tech = com.gtocore.api.research.techtree.TechTreeSavedData.INSTANCE;
-            var research = com.gtocore.api.research.TeamResearchSavedData.INSTANCE;
-            var common = com.gtolib.data.CommonSavaedData.INSTANCE;
+            var tech = TechTreeSavedData.INSTANCE;
+            var research = TeamResearchSavedData.INSTANCE;
+            var common = CommonSavaedData.INSTANCE;
             String unsaved = UUID.randomUUID().toString();
-            com.gtolib.data.CommonSavaedData.getData().putString("dimension_probe_unsaved", unsaved);
+            CommonSavaedData.getData().putString("dimension_probe_unsaved", unsaved);
             common.setDirty();
             require(manager.levels().size() == 1 && server.getLevel(Level.NETHER) == null && server.getLevel(Level.END) == null,
                     "Startup eagerly loaded an unforced dimension: " + manager.levels().size() + " worlds");
             require(server.getLevel(GTODimensions.MOON) == null, "Query woke the moon");
             DimensionStations.query(server, GTODimensions.MOON);
             require(server.getLevel(GTODimensions.MOON) == null, "Station metadata woke the moon");
-            appeng.spatial.SpatialStoragePlotManager.INSTANCE.getPlots();
-            require(server.getLevel(appeng.spatial.SpatialStorageDimensionIds.WORLD_ID) == null, "Spatial metadata woke terrain: key=" + appeng.spatial.SpatialStorageDimensionIds.WORLD_ID + " level=" + server.getLevel(appeng.spatial.SpatialStorageDimensionIds.WORLD_ID) + " snapshot=" + manager.levels());
+            SpatialStoragePlotManager.INSTANCE.getPlots();
+            require(server.getLevel(SpatialStorageDimensionIds.WORLD_ID) == null, "Spatial metadata woke terrain: key=" + SpatialStorageDimensionIds.WORLD_ID + " level=" + server.getLevel(SpatialStorageDimensionIds.WORLD_ID) + " snapshot=" + manager.levels());
             var owner = new OwnerRef(OwnerRef.Kind.PLAYER, UUID.fromString("43265327-df96-48f3-81cb-130ca1dff314"));
             String slot = "probe-" + UUID.randomUUID();
             instance = manager.getOrCreatePrivate(owner, DimensionTemplates.NOISE, slot, 12345L);
@@ -123,7 +153,7 @@ public final class DimensionProbe {
             require(manager.getOrCreateSeries(new SeriesAddress(seriesId, -1)).id().equals(seriesInstance.id()), "Series identity changed");
             require(manager.instances().count() == before + 1, "Series eagerly created neighbours");
             require(!Files.exists(manager.dimensionPath(seriesInstance.dimension())), "Series metadata generated terrain");
-            com.gtolib.api.weather.WeatherSystem.get(server).forecast(seriesInstance.dimension());
+            WeatherSystem.get(server).forecast(seriesInstance.dimension());
             require(server.getLevel(seriesInstance.dimension()) == null, "Weather forecast woke terrain");
             UUID stranger = UUID.randomUUID();
             require(!manager.canAccess(stranger, false, instance.dimension()), "Private access granted to stranger");
@@ -139,8 +169,8 @@ public final class DimensionProbe {
             require(manager.canAccess(stranger, true, instance.dimension()), "Admin access denied");
             loadingKey = instance.dimension();
             previous = manager.loadNow(loadingKey);
-            require(com.gtocore.api.research.techtree.TechTreeSavedData.INSTANCE == tech && com.gtocore.api.research.TeamResearchSavedData.INSTANCE == research && com.gtolib.data.CommonSavaedData.INSTANCE == common, "Dynamic load replaced main-world global save objects");
-            require(com.gtolib.data.CommonSavaedData.getData().getString("dimension_probe_unsaved").equals(unsaved), "Dynamic load overwrote unsaved global progress");
+            require(TechTreeSavedData.INSTANCE == tech && TeamResearchSavedData.INSTANCE == research && CommonSavaedData.INSTANCE == common, "Dynamic load replaced main-world global save objects");
+            require(CommonSavaedData.getData().getString("dimension_probe_unsaved").equals(unsaved), "Dynamic load overwrote unsaved global progress");
             require(reentrant != null && reentrant.join() == previous, "Reentrant request did not merge");
             require(manager.loadNow(loadingKey) == previous, "Repeated load duplicated world");
             require(previous.getSeed() == 12345L, "Instance seed missing");
@@ -152,14 +182,14 @@ public final class DimensionProbe {
             require(seedField.getLong(structure) == 12345L, "StructureCheck seed differs");
             previous.getChunk(0, 0);
             terrainHash = terrain(previous);
-            remote = new com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget(previous, BlockPos.ZERO);
-            var deniedPlayer = new net.minecraft.server.level.ServerPlayer(server, server.overworld(), new com.mojang.authlib.GameProfile(stranger, "ProbeDenied"));
+            remote = new RemoteKeyTarget(previous, BlockPos.ZERO);
+            var deniedPlayer = new ServerPlayer(server, server.overworld(), new GameProfile(stranger, "ProbeDenied"));
             deniedPlayer.setServerLevel(previous);
             require(deniedPlayer.serverLevel() == server.overworld(), "Direct level assignment bypassed private access");
             deniedPlayer.teleportTo(previous, 0, 80, 0, 0, 0);
             require(deniedPlayer.serverLevel() == server.overworld(), "Bottom-level teleport bypassed permission");
             require(deniedPlayer.changeDimension(previous) == null, "Bottom-level changeDimension bypassed permission");
-            require(!deniedPlayer.teleportTo(previous, 0, 80, 0, java.util.Set.of(), 0, 0), "Relative teleport bypassed permission");
+            require(!deniedPlayer.teleportTo(previous, 0, 80, 0, Set.of(), 0, 0), "Relative teleport bypassed permission");
             var comparison = manager.getOrCreatePrivate(owner, DimensionTemplates.NOISE, slot + "-other", 12346L);
             var other = manager.loadNow(comparison.dimension());
             require(terrain(other) != terrainHash, "Independent seeds generated identical sample terrain");
@@ -167,24 +197,24 @@ public final class DimensionProbe {
             // 持久化实体的测试夹具位于玩家已修改过的区块。
             var edits = DimensionChunkEdits.get(previous);
             edits.begin();
-            previous.setBlockAndUpdate(new BlockPos(2, previous.getMinBuildHeight(), 2), net.minecraft.world.level.block.Blocks.DIAMOND_BLOCK.defaultBlockState());
+            previous.setBlockAndUpdate(new BlockPos(2, previous.getMinBuildHeight(), 2), Blocks.DIAMOND_BLOCK.defaultBlockState());
             edits.finish(previous);
-            var cow = net.minecraft.world.entity.EntityType.COW.create(previous);
+            var cow = EntityType.COW.create(previous);
             cow.setPos(2, 150, 2);
             animalId = cow.getUUID();
             previous.addFreshEntity(cow);
             testData = previous.getDataStorage().computeIfAbsent(tag -> new TestData(tag.getInt("value")), () -> new TestData(77), "dimension_probe_data");
             testData.setDirty();
-            weather = java.util.List.copyOf(com.gtolib.api.weather.WeatherSystem.get(server).forecast(loadingKey));
-            var rocket = earth.terrarium.adastra.common.registry.ModEntityTypes.TIER_1_ROCKET.get().create(previous);
+            weather = List.copyOf(WeatherSystem.get(server).forecast(loadingKey));
+            var rocket = ModEntityTypes.TIER_1_ROCKET.get().create(previous);
             rocket.setPos(8, 180, 8);
             previous.addFreshEntity(rocket);
-            rocket.getEntityData().set(earth.terrarium.adastra.common.entities.vehicles.Rocket.HAS_LAUNCHED, true);
+            rocket.getEntityData().set(Rocket.HAS_LAUNCHED, true);
             rocket.tick();
             require(manager.keepAliveReasons(loadingKey).contains("ROCKET"), "Active rocket has no lease");
             rocket.discard();
             require(!manager.keepAliveReasons(loadingKey).contains("ROCKET"), "Removed rocket retained lease");
-            var lander = earth.terrarium.adastra.common.registry.ModEntityTypes.LANDER.get().create(previous);
+            var lander = ModEntityTypes.LANDER.get().create(previous);
             lander.setPos(8, 180, 8);
             previous.addFreshEntity(lander);
             lander.tick();
@@ -195,7 +225,7 @@ public final class DimensionProbe {
             require(!manager.keepAliveReasons(loadingKey).contains("LANDER"), "Landed lander retained lease");
             var random = previous.getRandomSequence(GTOCore.id("probe_random"));
             random.nextLong();
-            var expected = new net.minecraft.world.RandomSequences(12345L).get(GTOCore.id("probe_random"));
+            var expected = new RandomSequences(12345L).get(GTOCore.id("probe_random"));
             expected.nextLong();
             expectedRandom = expected.nextLong();
             instance.setSpawn(new BlockPos(7, 81, -4), 37);
@@ -240,17 +270,17 @@ public final class DimensionProbe {
                 require(Files.exists(manager.dimensionPath(loadingKey).resolve("region")), "Unload removed terrain files");
                 ServerLevel reopened = manager.loadNow(loadingKey);
                 require(reopened != previous, "Unload kept runtime reference");
-                var staleTargetPlayer = new net.minecraft.server.level.ServerPlayer(server, server.overworld(), new com.mojang.authlib.GameProfile(instance.owner().id(), "StaleTarget"));
+                var staleTargetPlayer = new ServerPlayer(server, server.overworld(), new GameProfile(instance.owner().id(), "StaleTarget"));
                 var originalPosition = staleTargetPlayer.position();
                 staleTargetPlayer.setServerLevel(previous);
                 require(staleTargetPlayer.serverLevel() == server.overworld(), "Direct assignment accepted a closed level after reopen");
                 staleTargetPlayer.teleportTo(previous, 0, 80, 0, 0, 0);
                 require(staleTargetPlayer.serverLevel() == server.overworld(), "Teleport accepted a closed level after reopen");
                 require(staleTargetPlayer.changeDimension(previous) == null, "changeDimension accepted a closed level after reopen");
-                require(!staleTargetPlayer.teleportTo(previous, 0, 80, 0, java.util.Set.of(), 0, 0), "Relative teleport accepted a closed level after reopen");
-                com.gtolib.utils.ServerUtils.teleportToDimension(previous, staleTargetPlayer, new net.minecraft.world.phys.Vec3(32, 80, 32));
+                require(!staleTargetPlayer.teleportTo(previous, 0, 80, 0, Set.of(), 0, 0), "Relative teleport accepted a closed level after reopen");
+                ServerUtils.teleportToDimension(previous, staleTargetPlayer, new Vec3(32, 80, 32));
                 require(staleTargetPlayer.position().equals(originalPosition), "Stale utility target moved player in their source world");
-                earth.terrarium.adastra.common.utils.ModUtils.land(staleTargetPlayer, previous, new net.minecraft.world.phys.Vec3(32, 80, 32));
+                ModUtils.land(staleTargetPlayer, previous, new Vec3(32, 80, 32));
                 require(staleTargetPlayer.position().equals(originalPosition), "Stale planet landing moved player in their source world");
                 require(reopened.getSeed() == 12345L, "Reopened seed changed");
                 require(reopened.getSharedSpawnPos().equals(instance.spawn()), "Reopened spawn changed");
@@ -258,15 +288,15 @@ public final class DimensionProbe {
                 require(reopened.getRandomSequence(GTOCore.id("probe_random")).nextLong() == expectedRandom, "Random sequence state did not persist independently");
                 require(reopened.getDataStorage().get(tag -> new TestData(tag.getInt("value")), "dimension_probe_data").value == 77, "SavedData was not restored");
                 var chunk = reopened.getChunk(0, 0);
-                reopened.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.PORTAL, new net.minecraft.world.level.ChunkPos(0, 0), 3, BlockPos.ZERO);
+                reopened.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(0, 0), 3, BlockPos.ZERO);
                 require(!manager.requestUnload(loadingKey), "Valid temporary ticket allowed unload");
                 remote.blockEntity();
                 require(remote.level() == reopened, "Device cache failed to resolve reopened target");
-                require(com.gtolib.api.weather.WeatherSystem.get(server).forecast(loadingKey).getFirst().weather() == weather.getFirst().weather(), "Instance weather reset");
+                require(WeatherSystem.get(server).forecast(loadingKey).getFirst().weather() == weather.getFirst().weather(), "Instance weather reset");
                 previous = reopened;
                 phase = 4;
             } else if (phase == 4 && previous.getEntity(animalId) != null) {
-                previous.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.PORTAL, new net.minecraft.world.level.ChunkPos(0, 0), 3, BlockPos.ZERO);
+                previous.getChunkSource().removeRegionTicket(TicketType.PORTAL, new ChunkPos(0, 0), 3, BlockPos.ZERO);
                 require(manager.requestUnload(loadingKey), "Reopened instance cannot unload");
                 phase = 2;
             } else if (phase == 2 && manager.state(loadingKey) == DimensionLifecycle.State.DORMANT) {
@@ -294,7 +324,7 @@ public final class DimensionProbe {
 
     private void verifyVisitorSaveFailure(UUID visitor, boolean grant) throws Exception {
         String id = instance.id().toString();
-        var file = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("gtolib/dimensions/instances").resolve(id.substring(0, 2)).resolve(id + ".dat");
+        var file = server.getWorldPath(LevelResource.ROOT).resolve("gtolib/dimensions/instances").resolve(id.substring(0, 2)).resolve(id + ".dat");
         var backup = file.resolveSibling(id + ".before-failure");
         Files.move(file, backup);
         Files.createDirectory(file);
@@ -329,7 +359,7 @@ public final class DimensionProbe {
     /**
      * 保存探针专用 SavedData，可注入序列化失败或一次性重入加载回调，并校验数据随世界保存和恢复。
      */
-    public static final class TestData extends net.minecraft.world.level.saveddata.SavedData {
+    public static final class TestData extends SavedData {
 
         final int value;
         boolean fail;
@@ -348,7 +378,7 @@ public final class DimensionProbe {
          * @throws IllegalStateException 已启用保存故障注入
          */
         @Override
-        public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag) {
+        public CompoundTag save(CompoundTag tag) {
             if (fail) {
                 failureObserved = true;
                 throw new IllegalStateException("INJECTED_DIMENSION_SAVE_FAILURE");

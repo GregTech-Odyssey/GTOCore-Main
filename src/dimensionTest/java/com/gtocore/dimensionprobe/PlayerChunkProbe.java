@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.InteractionHand;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ForcedChunksSavedData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -244,7 +246,7 @@ final class PlayerChunkProbe {
             require(DimensionChunkEdits.shouldSave(level, new ChunkPos(pos)), "Structure region lost eligibility after restart");
         }
         require(level.getForcedChunks().contains(new ChunkPos(VANILLA_FORCED).toLong()), "Vanilla force was not restored");
-        var forceData = level.getDataStorage().get(net.minecraft.world.level.ForcedChunksSavedData::load, "chunks");
+        var forceData = level.getDataStorage().get(ForcedChunksSavedData::load, "chunks");
         require(!forceData.getBlockForcedChunks().getChunks().isEmpty() && !forceData.getBlockForcedChunks().getTickingChunks().isEmpty(),
                 "Forge block tickets did not survive restart");
         require(!forceData.getEntityForcedChunks().getChunks().isEmpty() && !forceData.getEntityForcedChunks().getTickingChunks().isEmpty(),
@@ -303,7 +305,7 @@ final class PlayerChunkProbe {
         if (!condition) throw new AssertionError(message);
     }
 
-    private static void fail(net.minecraft.server.MinecraftServer server, Throwable failure) {
+    private static void fail(MinecraftServer server, Throwable failure) {
         failure.printStackTrace();
         try {
             Files.writeString(Path.of("player-chunks-result.txt"), "PLAYER_CHUNKS_FAILED: " + failure);
