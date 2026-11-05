@@ -118,7 +118,7 @@ dev 轨的 `proguard-rules.pro` 保留全部类名/包名（Seal 路径键与 `S
 
 还有一类**改不了、只能保名**的：gtolib 接口的抽象方法被改名，而它的实现来自 library（gtceu/AE2 等）里同名同签名的方法——Mixin 把 gtolib 接口挂到 library 类上时实现继承自父类，library 的名字不会被改名，于是接口方法成了"没有实现的抽象方法"（`IFluidDrillLogic.getMachine()` 继承自 gtceu `MachineTrait.getMachine()` 就是这类）。给它加 `@KeepName` 即可；`verifyLibraryBackedInterfaceMethods` 会在打包时扫 jar+library 全量类层次把这一类拦下来。
 
-四道自检在打包时拦下残留：`verifyNoStaleGtolibRefs`（ProGuard 输出里不许出现已改名类的原始名）、`verifyNoOriginalGtolibNames`（最终 jar 的引用与字符串）、`verifyGtolibSamTargets`（每个指向 gtolib 接口的 lambda，SAM 名必须在代码保护后的接口层次里解析得到）、`verifyLibraryBackedInterfaceMethods`（接口方法改名后必须仍能在 jar+library 里找到实现）。
+五道自检在打包时拦下残留：`verifyNoStaleGtolibRefs`（ProGuard 输出里不许出现已改名类的原始名）、`verifyNoOriginalGtolibNames`（最终 jar 的引用与字符串）、`verifyGtolibSamTargets`（每个指向 gtolib 接口的 lambda，SAM 名必须在代码保护后的接口层次里解析得到）、`verifyLibraryBackedInterfaceMethods`（接口方法改名后必须仍能在 jar+library 里找到实现）、`verifyInterfaceMethodAccess`（接口方法必须保留 public/private；发行轨的 `-allowaccessmodification` 会把被嵌套类调用的私有接口方法放宽成包级，JVM 定义类时直接 `ClassFormatError`）。
 
 dev 轨保留真名，所以 GTOLib 源码指纹命中（不编译 GTOLib 源码）时，gtocore 直接拿 dev 轨 jar 编译/运行；发行轨改过的名字只出现在玩家包里，由打包时的 remap 与 gtocore 对齐。
 

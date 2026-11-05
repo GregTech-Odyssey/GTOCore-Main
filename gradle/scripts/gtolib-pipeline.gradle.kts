@@ -9,6 +9,7 @@ import groovy.json.JsonSlurper
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Handle
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -864,6 +865,38 @@ fun verifyNoStaleGtolibRefs(jar: File, mappingFile: File, label: String) {
     logger.lifecycle("$label: 无残留原始类名引用（扫描 $scanned class）")
 }
 
+/**
+ * ProGuard 的 -allowaccessmodification 会把被其他类调用的接口私有方法放宽成包级
+ * （访问标志只剩 ACC_STATIC 之类），接口方法只能是 public/private，JVM 加载时抛 ClassFormatError。
+ * 这类错误只在发行包触发到对应玩法时暴露，构建期直接拦下。
+ */
+fun verifyInterfaceMethodAccess(jar: File, label: String) {
+    val broken = ArrayList<String>()
+    var scanned = 0
+    ZipFile(jar).use { zf ->
+        zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { e ->
+            scanned++
+            var isInterface = false
+            ClassReader(zf.getInputStream(e).readBytes()).accept(object : ClassVisitor(Opcodes.ASM9) {
+                override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?, interfaces: Array<out String>?) {
+                    isInterface = access and Opcodes.ACC_INTERFACE != 0
+                }
+
+                override fun visitMethod(access: Int, name: String, descriptor: String, signature: String?, exceptions: Array<out String>?): MethodVisitor? {
+                    if (isInterface && name != "<clinit>" && access and (Opcodes.ACC_PUBLIC or Opcodes.ACC_PRIVATE) == 0) {
+                        broken += "${e.name} ${name}${descriptor}（access=0x${access.toString(16)}）"
+                    }
+                    return null
+                }
+            }, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+        }
+    }
+    if (broken.isNotEmpty()) {
+        throw GradleException("$label: ${broken.size} 个接口方法缺少 public/private，运行时加载会 ClassFormatError:\n" + broken.take(10).joinToString("\n") { "  - $it" })
+    }
+    logger.lifecycle("$label: 接口方法访问标志合法（扫描 $scanned class）")
+}
+
 fun registerProguard(name: String, desc: String, input: File, output: File, srgInput: Boolean, mapping: File, rules: () -> List<File>, verify: () -> Unit) =
     tasks.register<JavaExec>(name) {
         group = "gtolib"
@@ -923,6 +956,7 @@ val proguardGtolibRelease = registerProguard(
     val hidden = dev - rel
     if ((rel - dev).isEmpty() || hidden.isEmpty()) throw GradleException("proguardGtolibRelease: 类名改名未生效，检查 proguard-release-rules.pro 的 keep 面是否过宽")
     verifyNoStaleGtolibRefs(proguardReleaseJar, releaseMappingFile, "GTOLib 发行轨 ProGuard")
+    verifyInterfaceMethodAccess(proguardReleaseJar, "GTOLib 发行轨 ProGuard")
     logger.lifecycle("GTOLib release ProGuard OK: ${rel.size} class，改名/隐藏 ${hidden.size}，保名 ${rel.size - (rel - dev).size}，SRG 方法 ${srgLines.size} 个保持原名")
 }
 proguardGtolibRelease { dependsOn(reobfGtolib, "classes", prepareForgeSrgLibrary, prepareGtocoreSrgLibrary) }
