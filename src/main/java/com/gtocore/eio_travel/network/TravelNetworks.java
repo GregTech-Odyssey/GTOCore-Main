@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 
 import com.google.common.base.Predicates;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -59,7 +60,11 @@ public class TravelNetworks {
     private static final NetworkPack OPEN_STAFF_UI = NetworkPack.registerC2S(
             "eio_travel:open_staff_ui",
             (player, buf) -> {
-                if (player != null && !player.isSpectator() && player.containerMenu == player.inventoryMenu && player.getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+                if (player == null || player.isSpectator() || player.containerMenu != player.inventoryMenu) {
+                    return;
+                }
+                ItemStack held = player.getMainHandItem();
+                if (held.is(GTOItems.TRAVEL_STAFF.asItem()) || held.is(GTOItems.DIMENSION_SCEPTER.asItem())) {
                     HeldItemUIFactory.INSTANCE.openUI(player, InteractionHand.MAIN_HAND);
                 }
             });

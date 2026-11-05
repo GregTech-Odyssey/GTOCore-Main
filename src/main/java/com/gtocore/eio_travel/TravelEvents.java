@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -36,9 +37,15 @@ public class TravelEvents {
     }
 
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getEntity().getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+        if (isHeldUiStaff(event.getEntity())) {
             event.setCanceled(true);
         }
+    }
+
+    /** 旅行手杖与维度权杖都用左键打开手持物品界面，左键方块时不能顺带挖掘。 */
+    private static boolean isHeldUiStaff(Player player) {
+        ItemStack stack = player.getMainHandItem();
+        return stack.is(GTOItems.TRAVEL_STAFF.asItem()) || stack.is(GTOItems.DIMENSION_SCEPTER.asItem());
     }
 
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -78,7 +85,7 @@ public class TravelEvents {
 
         public static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
             Player player = Minecraft.getInstance().player;
-            if (!event.isAttack() || player == null || !player.getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+            if (!event.isAttack() || player == null || !isHeldUiStaff(player)) {
                 return;
             }
             event.setCanceled(true);
