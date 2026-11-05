@@ -12268,7 +12268,7 @@
   "message.gtocore.ftbq_editmode.1": "If you need to edit, please download the original task file from GitHub and place it in config/ftbquests/ for editing.",
   "message.gtocore.ftbq_editmode.2": "Welcome to submit any pull request or issue to us!",
   "message.mythicbotany.alfheim_overworld_only": "§cYou can only enter Alfheim in the Overworld!",
-  "metaitem.pipe.tooltip": "Use wrench press and hold shift while right clicking to set §eAuto Pull§r and §eRestrict Flow Direction§r",
+  "metaitem.pipe.tooltip": "Sneak + right-click with a Wrench to §eblock that face's input§r; the pipe then §eauto-pulls§r from the other faces",
   "metaitem.tool.tooltip.rotor.coating": "Coating Material: %s",
   "metaitem.tool.tooltip.rotor.coating.ench.efficiency": "Efficiency Enchantment Bonus: %s%%",
   "metaitem.tool.tooltip.rotor.coating.ench.power": "Power Enchantment Bonus: %s%%",
