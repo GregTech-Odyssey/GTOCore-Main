@@ -205,14 +205,17 @@ public class ElectrochemicalMachine extends ElectricMultiblockMachine {
         secondCandidates.clear();
         // RecipeDB reuses its search state, so finish searching before pairing candidates.
         collectHalfRecipes(type, firstUnit, firstCandidates, true);
-        if (firstUnit != secondUnit) collectHalfRecipes(type, secondUnit, secondCandidates, false);
-        var seconds = firstUnit == secondUnit ? firstCandidates : secondCandidates;
+        boolean sharedInputs = firstUnit == secondUnit;
+        if (!sharedInputs) collectHalfRecipes(type, secondUnit, secondCandidates, false);
+        var seconds = sharedInputs ? firstCandidates : secondCandidates;
         boolean found = false;
         for (int i = 0; i < firstCandidates.size(); i++) {
             var first = firstCandidates.get(i);
             var firstHalf = first.data.getData(HalfReactionRecipeExtension.INSTANCE);
-            for (int j = 0; j < seconds.size(); j++) {
+            // A shared pool has unordered pairs of distinct halves, never a half paired with itself.
+            for (int j = sharedInputs ? i + 1 : 0; j < seconds.size(); j++) {
                 var second = seconds.get(j);
+                if (sharedInputs && first == second) continue;
                 var secondHalf = second.data.getData(HalfReactionRecipeExtension.INSTANCE);
                 if (firstHalf.electrolyteType() != secondHalf.electrolyteType()) {
                     recordFailure(IdleReason.ELECTROCHEMICAL_ELECTROLYTE_MISMATCH, 2);

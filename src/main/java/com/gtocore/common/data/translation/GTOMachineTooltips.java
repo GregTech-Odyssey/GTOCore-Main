@@ -386,10 +386,9 @@ public final class GTOMachineTooltips {
 
     public static final TipSpec MePullCraftPatternHatchTooltips = GTOTips.of("molecular_assembly_factory_pull_pattern_hatch", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("拉取样板仓用于存储合成样板", "Pull Pattern Hatch is used to store crafting patterns"));
-        t.feature(t.tr("不参与 AE 发配，只在产物不足阈值时从网络拉取原料并合成", "Does not take part in AE pattern distribution; pulls ingredients from the network to craft only when the product is below the threshold"));
+        t.feature(t.tr("可以放入合成样板", "Can put crafting patterns"));
+        t.feature(t.tr("当AE中的目标存量低于设定阈值时，从网络拉取样板原料并自动合成补充库存", "When the target stock in AE falls below the set threshold, pull pattern ingredients from the network and automatically synthesize to replenish inventory"));
         t.middleClick(t.tr("对着样板按鼠标中键可单独设置拉取开关与产物阈值", "Middle-click a pattern to set its pull mode and product threshold"));
-        t.attention(t.tr("补货数量按差额补齐到阈值，上限为网络原料能支撑的次数", "Restocks by the deficit up to the threshold, capped by what the network's ingredients can support"));
         t.feature(t.tr("每 2 秒检查一次", "Checked once every 2 seconds"));
         t.statText(ComponentSlang.Capacity("18"));
     });
@@ -461,15 +460,12 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
-        t.detail(t.tr("古老的抽屉存储技术与现代的ME存储技术相互交融", "The ancient drawer storage technology merges with the modern ME storage technology"));
-        t.line(TipRole.SUMMARY, t.tr("用超级箱/缸作存储介质的多方块仓库", "Multiblock storage that uses Super Chests/Tanks as its medium"));
-
+        t.line(TipRole.SUMMARY, t.tr("整合超级箱与超级缸，独立设置物品和流体种类上限", "Integrates Super Chests and Tanks with separate item and fluid type limits"));
         t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Place Super Chests in input buses to store items, and Super Tanks to store fluids"));
-        t.requirement(t.tr("在主机中插入升级来提升它们的总容量", "Insert upgrades into the controller to increase their total capacity"));
-
-        t.formula(t.tr("每种物品容量=输入仓内超级箱总容量 ÷ 物品种类数 × 密封等级 × 升级倍率", "Item capacity per type = total Super Chest capacity in input buses / item type count × Hermetic level × Upgrade multiplier"));
-        t.formula(t.tr("每种流体容量=输入仓内超级缸总容量 ÷ 流体种类数 × 密封等级 × 升级倍率", "Fluid capacity per type = total Super Tank capacity in input buses / fluid type count × Hermetic level × Upgrade multiplier"));
-        t.formula(t.tr("物品/流体种类数=输入仓内超级箱/缸总格数", "Number of item/fluid types: total slots of Super Chests/Tanks in input hatches"));
+        t.feature(t.tr("可混用不同等级及分格型号，无需升级物品", "Mix tiers and compartment layouts without upgrade items"));
+        t.formula(t.tr("物品/流体种类上限分别最多为对应箱/缸的格数之和（普通 1、1×2 为 2、2×2 为 4）", "Each item/fluid type limit is at most the total compartments of the corresponding containers (normal 1, 1×2 is 2, 2×2 is 4)"));
+        t.formula(t.tr("每种类容量 = 对应箱缸总容量 × 密封等级 ÷ 设置种类数", "Capacity per type = total container capacity × hermetic level ÷ configured types"));
+        t.feature(t.tr("设置种类越少，每种类容量越大；不能低于已存种类数，移除箱缸不会删除已有内容", "Fewer configured types give more capacity per type; the limit cannot go below the stored types, and removing containers preserves stored contents"));
 
         t.feature(t.tr("可启用溢出销毁", "Overflow destruction can be enabled"));
         t.feature(t.tr("安装保险库仓以连接外部IO", "Install Vault Hatches to connect external IO"));
@@ -480,6 +476,7 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("单方块 ME 磁盘存储器", "Single-block version of the ME Disk Storage"));
         t.feature(t.tr("安装存储组件（1k…256M）来提供容量", "Install storage components (1k...256M) to provide capacity"));
+        t.formula(t.tr("容量 = 组件字节之和 × 2", "Capacity = sum of component bytes x 2"));
     });
 
     public static final TipSpec MEDiskStorageTooltips = GTOTips.of("me_disk_storage", t -> {

@@ -307,7 +307,7 @@ dependencies {
     modImplementation("com.gto:gtorenders-forge-1.20.1:$gtorenders_version")
     modImplementation("curse.maven:fast-recipe-search-1406509:8737025")
     modCompileOnly("com.gto.recipesearch:RecipeSearch:$recipeSearch_version")
-    implementation("com.gto.fastcollection:FastCollection:26.8.7")
+    implementation("com.gto.fastcollection:FastCollection:26.11.1")
     modImplementation("com.lowdragmc.ldlib:ldlib-forge-1.20.1:1.0.50")
     modImplementation("curse.maven:glodium-957920:5006780")
     modImplementation("curse.maven:lean-object-1703183:8929333")

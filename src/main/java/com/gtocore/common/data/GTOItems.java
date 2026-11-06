@@ -92,7 +92,6 @@ public final class GTOItems {
         GTOOrganItems.init();
         GTOAEParts.init();
         SpeedCards.init();
-        SuperStorageUpgrades.init();
         TieredInterfaces.init();
         ComponentSlang.init();
         MultiblockSlang.init();
@@ -1454,6 +1453,12 @@ public final class GTOItems {
     public static final ItemEntry<ComponentItem> TRAVEL_STAFF = item("travel_staff", "旅行手杖", p -> ComponentItem.create(p.stacksTo(1)))
             .lang("The Staff of Travelling")
             .onRegister(attach(TravelStaffBehavior.create()))
+            .model((ctx, prov) -> prov.handheld(ctx))
+            .register();
+
+    public static final ItemEntry<ComponentItem> DIMENSION_SCEPTER = item("dimension_scepter", "维度权杖", p -> ComponentItem.create(p.stacksTo(1)))
+            .lang("Dimension Scepter")
+            .onRegister(attach(DimensionScepterBehavior.create()))
             .model((ctx, prov) -> prov.handheld(ctx))
             .register();
 

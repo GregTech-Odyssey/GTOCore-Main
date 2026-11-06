@@ -1036,6 +1036,18 @@ final class Vanilla {
                 'A', GTOItems.VIBRANT_CRYSTAL.asItem(), 'B', new MaterialEntry(TagPrefix.rod, GTMaterials.Silver),
                 'C', lvBatteries);
 
+        Ingredient batteries = Ingredient.of(CustomTags.BATTERIES);
+        VanillaRecipeHelper.addShapedEnergyTransferRecipe(false, false, true, GTOCore.id("dimension_scepter"), batteries,
+                GTOItems.DIMENSION_SCEPTER.asStack(),
+                " AB",
+                " CD",
+                "E  ",
+                'A', GTOItems.ENDER_DIAMOND.asItem(),
+                'B', GTOItems.WARPED_ENDER_PEARL.asItem(),
+                'C', GTItems.FIELD_GENERATOR_HV.asStack(),
+                'D', GTOItems.ENDER_DIAMOND.asItem(),
+                'E', batteries);
+
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_wireless_machine_configurator"), GTOItems.ME_WIRELESS_MACHINE_CONFIGURATOR.asItem(),
                 " A ",
                 "BCB",

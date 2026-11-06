@@ -28,6 +28,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.data.storage.SuperStorageMigration;
 import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 import com.gtolib.api.misc.FastSavedData;
@@ -252,7 +253,7 @@ public final class ForgeCommonEvent {
             CompoundTag data = player.getPersistentData();
             if (block == Blocks.CRYING_OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:flat")) {
-                    if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
+                    if (VoidTransporterMachine.checkTransporter(pos, level, 0, player)) return;
                     ServerLevel serverLevel = server.getLevel(GTODimensions.FLAT);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:void") ? 1 : 10;
@@ -272,7 +273,7 @@ public final class ForgeCommonEvent {
 
             if (block == Blocks.OBSIDIAN) {
                 if (!Objects.equals(dim, "gtocore:void")) {
-                    if (VoidTransporterMachine.checkTransporter(pos, level, 0)) return;
+                    if (VoidTransporterMachine.checkTransporter(pos, level, 0, player)) return;
                     ServerLevel serverLevel = server.getLevel(GTODimensions.VOID);
                     if (serverLevel != null) {
                         int value = Objects.equals(dim, "gtocore:flat") ? 1 : 10;
@@ -485,6 +486,7 @@ public final class ForgeCommonEvent {
     }
 
     public static void remapIds(MissingMappingsEvent event) {
+        SuperStorageMigration.remap(event);
         ElectrochemistryMigration.remap(event);
         SpeedCards.remap(event);
         TieredInterfaces.remap(event);

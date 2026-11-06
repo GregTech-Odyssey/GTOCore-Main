@@ -47,7 +47,7 @@ public class WirelessEnergyUnitBlock extends Block implements WirelessEnergyTowe
     static final String REQUIRES_GLASS = "gtocore.block.wireless_energy_unit.requires_glass";
     @RegisterLanguage(cn = "能源塔的提供电压 = 内部生效普通单元的最高等级 + 1；超级单元不提高提供电压", en = "A tower supplies its highest effective ordinary unit tier + 1; super units do not raise its supplied voltage")
     static final String SUPPLIES = "gtocore.block.wireless_energy_unit.supplies";
-    @RegisterLanguage(cn = "同一维度内电压等级相同的能源塔中，同级或更高的单元共有 N 个时，每个按基础容量的 N 倍计", en = "With N units of this tier or higher across towers of the same voltage tier in one dimension, each counts as N times its base capacity")
+    @RegisterLanguage(cn = "当安装n个大于等于能源塔等级的单元时，每个单元提供n倍基础容量的容量", en = "When n units are installed that are at least the tower's tier, each unit provides n× its base capacity")
     private static final String SCALING = "gtocore.block.wireless_energy_unit.scaling";
     @RegisterLanguage(cn = "损耗率：%s%%", en = "Loss rate: %s%%")
     private static final String LOSS = "gtocore.block.wireless_energy_unit.loss";

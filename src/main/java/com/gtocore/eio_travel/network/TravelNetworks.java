@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 
 import com.google.common.base.Predicates;
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
@@ -24,6 +25,15 @@ import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import java.util.Optional;
 
 public class TravelNetworks {
+
+    /**
+     * 触发本类静态初始化，在启动阶段（含数据生成，客户端与服务端都会执行）注册全部旅行网络通道。
+     * <p>
+     * 这些通道原本只在首次调用本类方法时懒注册。专用服务器的客户端在登录时可能还没有加载过本类，
+     * 收到 {@code SYNC_TRAVEL} 时 {@code FromServerMessage} 在 {@code NETWORK_HANDLE} 里找不到该通道的处理器
+     * （返回 null 后直接调用），同步数据因此没有被应用，表现为旅行锚不渲染。
+     */
+    public static void init() {}
 
     private static final NetworkPack ADD_TRAVEL = NetworkPack.registerS2C(
             "eio_travel:add_travel",
@@ -51,7 +61,11 @@ public class TravelNetworks {
     private static final NetworkPack OPEN_STAFF_UI = NetworkPack.registerC2S(
             "eio_travel:open_staff_ui",
             (player, buf) -> {
-                if (player != null && !player.isSpectator() && player.containerMenu == player.inventoryMenu && player.getMainHandItem().is(GTOItems.TRAVEL_STAFF.asItem())) {
+                if (player == null || player.isSpectator() || player.containerMenu != player.inventoryMenu) {
+                    return;
+                }
+                ItemStack held = player.getMainHandItem();
+                if (held.is(GTOItems.TRAVEL_STAFF.asItem()) || held.is(GTOItems.DIMENSION_SCEPTER.asItem())) {
                     HeldItemUIFactory.INSTANCE.openUI(player, InteractionHand.MAIN_HAND);
                 }
             });

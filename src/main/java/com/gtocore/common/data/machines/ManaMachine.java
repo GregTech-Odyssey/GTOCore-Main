@@ -213,7 +213,7 @@ public final class ManaMachine {
             .tips(Tips.stat(Component.translatable("gtocore.machine.mana_stored", Component.literal("∞").withStyle(ChatFormatting.WHITE))))
             .tip(TipRole.STAT, "内部最多存放 §f2^63-1§r 魔力", "Stores up to §f2^63-1§r mana")
             .tip(TipRole.FEATURE, "每秒自动把存量输出给相邻的魔力接收方与魔源容器", "Automatically outputs to adjacent mana receivers and source containers once per second")
-            .tip(TipRole.FEATURE, "魔源按 §f4 魔源 = 1 魔力§r 折算，只输出整 4 的倍数", "Source converts at §f4 source = 1 mana§r; only whole multiples of 4 are output")
+            .tip(TipRole.FEATURE, "§f4 魔源 = 1 魔力§r", "§f4 source = 1 mana§r")
             .workableManaTieredHullRenderer(LV, GTOCore.id("block/machines/mana_tank"))
             .register();
 

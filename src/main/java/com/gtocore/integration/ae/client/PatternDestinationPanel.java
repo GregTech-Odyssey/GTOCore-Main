@@ -864,6 +864,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
 
         void draw(GuiGraphics guiGraphics, Font font, int rx, int ry, int rw) {
+            // 行底是浅色/半透明贴图，带阴影的文字会读成双层笔画；本行文字统一不画阴影（与标题、搜索框一致）
             int textY = ry + 5;
             int right = rx + rw - 3;
             if (full) {

@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 @DataGeneratorScanned
 public class WirelessEnergyTransferUnitBlock extends Block implements WirelessEnergyTowerUnit {
 
-    @RegisterLanguage(cn = "不储存电量，只提高所在能源塔的吞吐", en = "Stores no energy; only raises the throughput of its tower")
+    @RegisterLanguage(cn = "为所在能源塔提高吞吐上限", en = "Raises the throughput of its tower")
     private static final String NO_STORAGE = "gtocore.block.wireless_energy_transfer_unit.no_storage";
     @RegisterLanguage(cn = "为当前能源塔的传输上限提升×%s", en = "Raises the throughput of its tower by ×%s")
     private static final String SUPER_TRANSFER = "gtocore.block.wireless_energy_transfer_unit.super_transfer";

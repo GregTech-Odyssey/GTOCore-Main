@@ -5,6 +5,7 @@ import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 import com.gtolib.api.ae2.IPatterEncodingTermMenu;
 import com.gtolib.api.ae2.me2in1.ME2in1Helper;
 import com.gtolib.api.recipe.RecipeBuilder;
+import com.gtolib.emi.PatternTerminalEmiInventory;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.utils.GTUtil;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.inventory.Slot;
 
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
@@ -29,7 +29,6 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.handler.EmiCraftContext;
 import dev.emi.emi.api.recipe.handler.EmiRecipeHandler;
 import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.recipe.EmiCookingRecipe;
@@ -47,13 +46,10 @@ import static appeng.integration.modules.emi.AbstractRecipeHandler.isInputSlot;
 
 final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> implements EmiRecipeHandler<T> {
 
-    private List<Slot> getInputSources(T handler) {
-        return handler.slots;
-    }
-
     @Override
     public EmiPlayerInventory getInventory(AbstractContainerScreen<T> screen) {
-        return new EmiPlayerInventory(getInputSources(screen.getMenu()).stream().map(Slot::getItem).map(EmiStack::of).toList());
+        var menu = screen.getMenu();
+        return PatternTerminalEmiInventory.of(menu, menu.getClientRepo());
     }
 
     @Override

@@ -26,6 +26,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.blockentity.SaveToItem;
 
 import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -68,6 +69,7 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     @RegisterLanguage(cn = "自动输出", en = "Auto Output")
     private static final Component ROW_OUTPUT = Component.translatable("gtocore.machine.super_mana_tank.output");
 
+    @SaveToItem
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
     private final ManaEndpoint manaEndpoint;

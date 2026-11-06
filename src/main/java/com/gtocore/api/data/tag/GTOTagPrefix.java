@@ -48,7 +48,7 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.Boron;
 @SuppressWarnings("unused")
 public final class GTOTagPrefix extends TagPrefix {
 
-    @RegisterLanguage(cn = "使用扳手shift右键以设置§e自动抽取§r和§e限制传输方向§r", en = "Use wrench press and hold shift while right clicking to set §eAuto Pull§r and §eRestrict Flow Direction§r")
+    @RegisterLanguage(cn = "使用扳手潜行右键可§e阻止该面输入§r，并让管道从其余面§e自动抽取§r", en = "Sneak + right-click with a Wrench to §eblock that face's input§r; the pipe then §eauto-pulls§r from the other faces")
     public static final String PIPE_TOOLTIP = "metaitem.pipe.tooltip";
 
     private static final Pattern BoronFormula = Pattern.compile("^[A-Za-z0-9]+B[0-9]*$");

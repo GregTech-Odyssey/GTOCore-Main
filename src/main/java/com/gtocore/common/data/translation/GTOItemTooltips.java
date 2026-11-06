@@ -106,6 +106,15 @@ public final class GTOItemTooltips {
         t.leftClick(t.tr("左键：设置哪些目标可以传送", "Left click: choose which targets can be teleported to"));
     });
 
+    public static final TipSpec DimensionScepterTooltips = GTOTips.of("dimension_scepter", t -> {
+        t.lore(t.tr("以旅行锚为坐标的跨维度传送权杖", "A cross-dimensional teleportation scepter anchored to travel anchors"));
+        t.heading(ComponentSlang.MainFunction);
+        t.keepOrder();
+        t.rightClick(t.tr("右键：传送到选中的收藏旅行锚", "Right click: teleport to the selected saved travel anchor"));
+        t.leftClick(t.tr("左键：打开界面，收藏并选择旅行锚", "Left click: open the interface to save and select travel anchors"));
+        t.feature(t.tr("收藏的锚不受瞄准角度与物品传送距离限制，可跨维度传送", "Saved anchors ignore aim angle and item range, and can be reached across dimensions"));
+    });
+
     public static final TipSpec MEWirelessMachineConfigurator = GTOTips.of("me_wireless_machine_configurator", t -> {
         t.heading(ComponentSlang.MainFunction);
         t.rightClick(t.tr("右键空气打开界面配置目标网络", "Right-click air to open the interface and configure the target network"));

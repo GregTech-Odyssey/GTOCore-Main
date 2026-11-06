@@ -943,7 +943,8 @@ public final class MultiBlockG {
             .workableCasingRenderer(GTCEu.id("block/casings/steam/steel/side"), GTCEu.id("block/multiblock/multiblock_tank"))
             .register();
 
-    public static final MultiblockMachineDefinition DRAWER_STORAGE = multiblock("drawer_storage", "抽屉存储器", DrawerStorageMachine::new)
+    public static final MultiblockMachineDefinition DRAWER_STORAGE = multiblock("drawer_storage", "超级仓储整合器", DrawerStorageMachine::new)
+            .langValue("Super Storage Integrator")
             .nonYAxisRotation()
             .recipeTypes(GTORecipeTypes.DUMMY_RECIPES)
             .block(GTBlocks.STEEL_HULL)

@@ -50,6 +50,8 @@ import com.gtolib.api.ae2.me2in1.Me2in1Menu;
 import com.gtolib.api.ae2.me2in1.Wireless;
 import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
+import com.gtolib.api.ae2.storage.BigCellDataStorage;
+import com.gtolib.api.data.storage.SuperStorageMigration;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
@@ -87,6 +89,7 @@ import appeng.api.stacks.*;
 import appeng.core.AEConfig;
 import appeng.hotkeys.HotkeyActions;
 import appeng.items.tools.powered.WirelessTerminalItem;
+import appeng.me.service.StorageService;
 
 import com.gto.datasynclib.DataSyncCodec;
 
@@ -116,6 +119,7 @@ public class CommonProxy {
         GTONumberProviders.NUMBER_PROVIDERS.register(eventBus);
         eventBus.addListener(EventPriority.HIGHEST, CommonProxy::commonSetup);
         eventBus.addListener(CommonProxy::initMenu);
+        eventBus.addListener(SuperStorageMigration::aliases);
         eventBus.addListener(Datagen::onGatherData);
         eventBus.addListener(CommonProxy::modConstruct);
         ForgeCommonEvent.init();
@@ -205,6 +209,18 @@ public class CommonProxy {
         if (GTOConfig.INSTANCE.devMode.startSpark == SparkRange.MAIN_MENU) {
             SparkLaunchProfiler.stop("all");
         }
+        StorageService.LOAD_STORAGE_CONSUMER = (u, s) -> {
+            var storage = BigCellDataStorage.get(u);
+            if (storage.getStoredMap() != null && !storage.getStoredMap().isEmpty()) {
+                s.cacheInserted.clear();
+                s.cacheInserted.putAll(storage.getStoredMap());
+            }
+        };
+        StorageService.SAVE_STORAGE_CONSUMER = (u, s) -> {
+            var storage = BigCellDataStorage.get(u);
+            storage.setStoredMap(s.cacheInserted.clone());
+            storage.setDirty();
+        };
     }
 
     private static void initWTLib() {

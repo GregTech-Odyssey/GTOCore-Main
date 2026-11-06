@@ -5,23 +5,17 @@ import com.gtocore.common.machine.multiblock.part.MEStorageHatch;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.item.DrawerStorageUpgradeInventory;
-import com.gtolib.api.item.DrawerStorageUpgradeItem;
-import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.storage.DrawerStorageCapacity;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
-import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
-import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.uipro.UIElement;
-import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
-import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -29,7 +23,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.config.Actionable;
@@ -50,21 +43,18 @@ import snownee.jade.api.config.IPluginConfig;
 
 import java.util.List;
 
-/**
- * 抽屉存储器：主机提供两个升级槽，输入总线中的超级箱和超级缸分别贡献物品与流体存储。
- * <ul>
- * <li>物品与流体的可存种类数分别累计对应箱缸的格数 × 数量（普通=1、1x2=2、2x2=4）；</li>
- * <li>每种类容量 = 对应类型箱缸的总容量 ÷ 总格数 × 密封等级 × 升级倍率。</li>
- * <li>聚合升级使每个总线槽仅按一件箱缸累计格数，总容量仍按堆叠数量累计；多个升级的倍率相乘。</li>
- * <li>显示窗里可以开关「溢出销毁」：开启后，超过每种类容量或种类已满时放不下的内容会被直接销毁，
- * 调用方不会把放不下的部分收回去。</li>
- * </ul>
- */
+/** Super Storage Integrator: independent type limits. */
 @DataGeneratorScanned
-public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IStorageMultiblock, IFancyUIMachine, IDisplayUIMachine {
+public final class DrawerStorageMachine extends MultiblockMEStorageMachine implements IFancyUIMachine, IDisplayUIMachine {
 
-    @RegisterLanguage(cn = "存储升级", en = "Storage Upgrade")
-    private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.drawer_storage.slot");
+    @RegisterLanguage(cn = "物品种类上限", en = "Item Type Limit")
+    private static final Component ITEM_LIMIT = Component.translatable("gtocore.machine.drawer_storage.item_limit");
+    @RegisterLanguage(cn = "流体种类上限", en = "Fluid Type Limit")
+    private static final Component FLUID_LIMIT = Component.translatable("gtocore.machine.drawer_storage.fluid_limit");
+    @RegisterLanguage(cn = "最多为箱缸提供的格数之和；种类越少每种类容量越大，不能低于已存种类数", en = "Up to the total compartments of the containers; fewer types give more capacity per type, but never fewer than the stored types")
+    private static final Component TYPE_LIMIT_TIP = Component.translatable("gtocore.machine.drawer_storage.type_limit_tip");
+    @RegisterLanguage(cn = "可设置种类：物品 %s，流体 %s", en = "Maximum configurable types: %s items, %s fluids")
+    private static final Component MAX_TYPES = Component.translatable("gtocore.machine.drawer_storage.max_types");
 
     @RegisterLanguage(cn = "种类：%s / %s", en = "Types: %s / %s")
     public static final Component TYPES = Component.translatable("gtocore.machine.drawer_storage.types");
@@ -72,24 +62,21 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     public static final Component BONUS = Component.translatable("gtocore.machine.drawer_storage.bonus");
     @RegisterLanguage(cn = "输入箱缸：%s 个", en = "Input storage units: %s")
     public static final Component STORAGE_COUNT = Component.translatable("gtocore.machine.drawer_storage.storage_count");
-    @RegisterLanguage(cn = "升级 %s / 2 个：容量倍率 ×%s", en = "Upgrades: %s / 2, capacity multiplier x%s")
-    public static final Component UPGRADES = Component.translatable("gtocore.machine.drawer_storage.upgrades");
-    @RegisterLanguage(cn = "聚合：%s", en = "Aggregation: %s")
-    private static final Component AGGREGATION = Component.translatable("gtocore.machine.drawer_storage.aggregation");
-    @RegisterLanguage(cn = "超级箱 %s 种：每种类容量 %s", en = "Super chests %s types: %s per type")
+    @RegisterLanguage(cn = "物品上限 %s 种：每种容量 %s", en = "Items: limit %s types, %s per type")
     public static final Component ITEM_DRAWERS = Component.translatable("gtocore.machine.drawer_storage.item_drawers");
-    @RegisterLanguage(cn = "超级缸 %s 种：每种类容量 %s", en = "Super tanks %s types: %s per type")
+    @RegisterLanguage(cn = "流体上限 %s 种：每种容量 %s", en = "Fluids: limit %s types, %s per type")
     public static final Component FLUID_DRAWERS = Component.translatable("gtocore.machine.drawer_storage.fluid_drawers");
     @RegisterLanguage(cn = "溢出销毁：%s", en = "Overflow voiding: %s")
     public static final Component OVERFLOW = Component.translatable("gtocore.machine.drawer_storage.overflow");
-    @RegisterLanguage(cn = "开启后，存入溢出时，多余的量会被直接销毁", en = "When enabled, anything that does not fit (over the per-type capacity, or no free type for a new key) is voided instead of being returned")
+    @RegisterLanguage(cn = "开启后，已有种类存满时多出的量会被直接销毁；种类已满时仍不接收新种类", en = "When enabled, amounts over the per-type capacity of stored types are voided; new types are still rejected when no type is free")
     public static final Component OVERFLOW_TOOLTIP = Component.translatable("gtocore.machine.drawer_storage.overflow.tooltip");
     @RegisterLanguage(cn = "溢出销毁", en = "Overflow Voiding")
     private static final Component OVERFLOW_LABEL = Component.translatable("gtocore.machine.drawer_storage.overflow.label");
 
-    @SaveToDisk
-    @Getter
-    private final NotifiableStackInventory machineStorage;
+    @SaveToDisk(defaultValue = "0")
+    private int itemTypeLimit;
+    @SaveToDisk(defaultValue = "0")
+    private int fluidTypeLimit;
     private final DrawerStorageCapacity drawers = new DrawerStorageCapacity();
     @Getter
     private long itemPerTypeCapacity;
@@ -111,27 +98,30 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     public DrawerStorageMachine(MetaMachineBlockEntity holder) {
         super(holder, null, false);
-        machineStorage = new NotifiableStackInventory(this, new DrawerStorageUpgradeInventory(), IO.NONE, IO.BOTH);
-        machineStorage.addChangedListener(this::onMachineChanged);
-        machineStorage.setCapabilityValidator(GTUtil.NEGATIVE);
     }
 
-    @Override
-    public boolean storageFilter(ItemStack stack) {
-        return stack.getItem() instanceof DrawerStorageUpgradeItem;
+    public void setItemTypeLimit(int types) {
+        itemTypeLimit = typeLimit(types, usedItemTypes, drawers.getItemTypes());
+        onTypeLimitChanged();
     }
 
-    @Override
-    public int getSlotLimit() {
-        return 1;
+    public void setFluidTypeLimit(int types) {
+        fluidTypeLimit = typeLimit(types, usedFluidTypes, drawers.getFluidTypes());
+        onTypeLimitChanged();
     }
 
-    public int getUpgradeMultiplier() {
-        return upgrades().getCapacityMultiplier();
+    private static int typeLimit(int requested, int used, int max) {
+        return requested >= max ? 0 : Math.max(Math.max(1, used), requested);
     }
 
-    private DrawerStorageUpgradeInventory upgrades() {
-        return (DrawerStorageUpgradeInventory) machineStorage.storage;
+    private static int effectiveTypes(int limit, int max) {
+        return limit > 0 ? Math.min(limit, max) : max;
+    }
+
+    private void onTypeLimitChanged() {
+        updatePerTypeCapacity();
+        refreshHatches();
+        onChanged();
     }
 
     /// 不设总容量：只按种类卡每一种的上限
@@ -141,11 +131,10 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         return Long.MAX_VALUE;
     }
 
-    /// 输入总线或主机升级变化时，重新累计箱缸的种类数与容量。
+    /// 输入总线变化时，重新累计各等级箱缸数量。
     private void refreshDrawers() {
         hermeticLevel = getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
         drawers.clear();
-        boolean aggregation = upgrades().isAggregationEnabled();
         for (var bus : drawerBuses.buses()) {
             var inv = bus.storage;
             for (int i = 0, slots = inv.size(); i < slots; i++) {
@@ -154,24 +143,23 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
                 long count = inv.amountAt(i);
                 if (count < 1) continue;
                 var storage = DrawerStorageCapacity.get(key.getItem());
-                if (storage != null) drawers.add(storage, count, aggregation);
+                if (storage != null) drawers.add(storage, count);
             }
         }
         updatePerTypeCapacity();
     }
 
     private void updatePerTypeCapacity() {
-        int multiplier = getUpgradeMultiplier();
-        itemPerTypeCapacity = drawers.capacityOf(false, hermeticLevel, multiplier);
-        fluidPerTypeCapacity = drawers.capacityOf(true, hermeticLevel, multiplier);
+        itemPerTypeCapacity = drawers.capacityOf(false, hermeticLevel, getItemTypes());
+        fluidPerTypeCapacity = drawers.capacityOf(true, hermeticLevel, getFluidTypes());
     }
 
     public int getItemTypes() {
-        return drawers.getItemTypes();
+        return effectiveTypes(itemTypeLimit, drawers.getItemTypes());
     }
 
     public int getFluidTypes() {
-        return drawers.getFluidTypes();
+        return effectiveTypes(fluidTypeLimit, drawers.getFluidTypes());
     }
 
     private int typeLimit(AEKey what) {
@@ -208,7 +196,23 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Override
     public void loadFromItem(CompoundTag tag) {
         super.loadFromItem(tag);
+        if (tag.contains("itemTypeLimit")) itemTypeLimit = tag.getInt("itemTypeLimit");
+        if (tag.contains("fluidTypeLimit")) fluidTypeLimit = tag.getInt("fluidTypeLimit");
+        voidOverflow = tag.getBoolean("voidOverflow");
         recountUsedTypes();
+    }
+
+    @Override
+    public boolean saveBreak() {
+        return super.saveBreak() || itemTypeLimit != 0 || fluidTypeLimit != 0 || voidOverflow;
+    }
+
+    @Override
+    public void saveToItem(CompoundTag tag) {
+        super.saveToItem(tag);
+        if (itemTypeLimit != 0) tag.putInt("itemTypeLimit", itemTypeLimit);
+        if (fluidTypeLimit != 0) tag.putInt("fluidTypeLimit", fluidTypeLimit);
+        if (voidOverflow) tag.putBoolean("voidOverflow", true);
     }
 
     @Override
@@ -220,7 +224,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         long stored = map.getAmount(what);
         int used = usedTypes(what);
         if (used > types) return 0;
-        if (stored == 0 && used >= types) return voidOverflow ? amount : 0;
+        if (stored == 0 && used >= types) return 0;
         if (mode == Actionable.SIMULATE) {
             return voidOverflow ? amount : Math.clamp(perTypeCapacity - stored, 0, amount);
         }
@@ -282,14 +286,6 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         drawerBuses.unbind();
     }
 
-    @Override
-    public void onMachineChanged() {
-        onChanged();
-        if (isRemote() || !isFormed) return;
-        refreshCapacity();
-        refreshHatches();
-    }
-
     private void onDrawerBusChanged() {
         if (isRemote() || !isFormed) return;
         long oldItemCapacity = itemPerTypeCapacity;
@@ -320,25 +316,12 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     @Override
-    public Component getStorageSlotLabel() {
-        return SLOT_LABEL;
-    }
-
-    @Override
-    public void addStorageSlot(ControlPanel controls) {
-        var storage = machineStorage.storage;
-        for (int slot = 0; slot < storage.size(); slot++) {
-            controls.addSlot(ItemSlot.of(storage, slot), SLOT_LABEL, ControlPanel.contentName(storage, slot));
-        }
-    }
-
-    /// 主机提供两个升级槽，每槽限放一个。
-    @Override
     public UIElement createUIWidget() {
         var controls = ControlPanel.of(this);
-        addStorageSlot(controls);
+        controls.addInt(ITEM_LIMIT, this::getItemTypes, this::setItemTypeLimit, () -> Math.min(Math.max(1, usedItemTypes), drawers.getItemTypes()), drawers::getItemTypes, TYPE_LIMIT_TIP);
+        controls.addInt(FLUID_LIMIT, this::getFluidTypes, this::setFluidTypeLimit, () -> Math.min(Math.max(1, usedFluidTypes), drawers.getFluidTypes()), drawers::getFluidTypes, TYPE_LIMIT_TIP);
         controls.addToggle(OVERFLOW_LABEL, () -> voidOverflow, value -> voidOverflow = value, OVERFLOW_TOOLTIP);
-        return MachineDisplay.page(this).addChild(controls.build());
+        return Form.page().addChildren(MachineDisplay.page(this), controls.build());
     }
 
     @Override
@@ -355,10 +338,11 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         textList.add(Component.translatable(((TranslatableContents) FLUID_DRAWERS.getContents()).getKey(), FormattingUtil.formatNumbers(getFluidTypes()),
                 formatCapacity(true, fluidPerTypeCapacity)).withStyle(ChatFormatting.GRAY));
         textList.add(typeUsage(usedFluidTypes, getFluidTypes()));
-        textList.add(Component.translatable(((TranslatableContents) UPGRADES.getContents()).getKey(), upgrades().getUpgradeCount(), getUpgradeMultiplier()).withStyle(ChatFormatting.GRAY));
-        textList.add(Component.translatable(((TranslatableContents) AGGREGATION.getContents()).getKey(),
-                Component.translatable(upgrades().isAggregationEnabled() ? "gtocore.machine.on" : "gtocore.machine.off"))
-                .withStyle(ChatFormatting.GRAY));
+        textList.add(Component.translatable(((TranslatableContents) MAX_TYPES.getContents()).getKey(),
+                FormattingUtil.formatNumbers(drawers.getItemTypes()), FormattingUtil.formatNumbers(drawers.getFluidTypes())).withStyle(ChatFormatting.GRAY));
+        textList.add(Component.translatable(((TranslatableContents) BONUS.getContents()).getKey(), hermeticLevel).withStyle(ChatFormatting.GRAY));
+        textList.add(Component.translatable(((TranslatableContents) STORAGE_COUNT.getContents()).getKey(),
+                FormattingUtil.formatNumbers(drawers.getDrawerCount())).withStyle(ChatFormatting.GRAY));
     }
 
     private static Component typeUsage(int used, int types) {
@@ -374,9 +358,6 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Override
     public void appendWailaData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
         compoundTag.putLong("drawerCount", drawers.getDrawerCount());
-        compoundTag.putInt("upgradeCount", upgrades().getUpgradeCount());
-        compoundTag.putInt("upgradeMultiplier", getUpgradeMultiplier());
-        compoundTag.putBoolean("aggregation", upgrades().isAggregationEnabled());
         compoundTag.putInt("itemTypes", getItemTypes());
         compoundTag.putInt("fluidTypes", getFluidTypes());
         compoundTag.putInt("usedItemTypes", usedItemTypes);
@@ -399,10 +380,6 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
         iTooltip.add(typeUsage(compoundTag.getInt("usedFluidTypes"), compoundTag.getInt("fluidTypes")));
         iTooltip.add(Component.translatable(((TranslatableContents) STORAGE_COUNT.getContents()).getKey(),
                 FormattingUtil.formatNumbers(compoundTag.getLong("drawerCount"))));
-        iTooltip.add(Component.translatable(((TranslatableContents) UPGRADES.getContents()).getKey(), FormattingUtil.formatNumbers(compoundTag.getInt("upgradeCount")),
-                FormattingUtil.formatNumbers(compoundTag.getInt("upgradeMultiplier"))));
-        iTooltip.add(Component.translatable(((TranslatableContents) AGGREGATION.getContents()).getKey(),
-                Component.translatable(compoundTag.getBoolean("aggregation") ? "gtocore.machine.on" : "gtocore.machine.off")));
         iTooltip.add(Component.translatable(((TranslatableContents) BONUS.getContents()).getKey(), FormattingUtil.formatNumbers(compoundTag.getInt("hermeticLevel"))));
         iTooltip.add(Component.translatable(((TranslatableContents) OVERFLOW.getContents()).getKey(),
                 Component.translatable(compoundTag.getBoolean("voidOverflow") ? "gtocore.machine.on" : "gtocore.machine.off")));

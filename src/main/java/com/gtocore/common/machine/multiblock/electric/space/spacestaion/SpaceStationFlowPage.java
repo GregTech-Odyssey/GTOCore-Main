@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
-import com.gregtechceu.gtceu.api.recipe.handler.IRecipeHandler;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -40,6 +39,7 @@ import net.minecraft.world.level.material.Fluid;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKeyTypes;
+import appeng.api.stacks.KeyVisitor;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import earth.terrarium.adastra.common.registry.ModBlocks;
@@ -317,7 +317,7 @@ public final class SpaceStationFlowPage {
         private final Fluid water = DistilledWater.getFluid();
         private final Component usageText;
         private final Component requiredTierText;
-        private final IRecipeHandler.KeyVisitor waterCollector;
+        private final KeyVisitor waterCollector;
         private long[] unitWater = new long[0];
         private long[] unitScratch = new long[0];
         private int collectingUnit;
