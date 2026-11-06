@@ -3,6 +3,8 @@ package com.gtocore.common.wireless.energy;
 import com.gtocore.common.wireless.energy.map.GridMapMode;
 import com.gtocore.common.wireless.energy.map.GridSummaryPanel;
 
+import com.gtolib.api.wireless.energy.GridView;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
@@ -16,6 +18,8 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.world.entity.player.Player;
 
+import com.gto.datasynclib.annotations.SaveToDisk;
+
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -25,6 +29,9 @@ import java.util.UUID;
 
 public final class WirelessEnergyMonitorMachine extends MetaMachine implements IFancyUIMachine, IBindable, IMachineSubWindows {
 
+    @SaveToDisk(defaultValue = "0")
+    private int gridWindow;
+
     public WirelessEnergyMonitorMachine(MetaMachineBlockEntity holder) {
         super(holder);
     }
@@ -32,7 +39,8 @@ public final class WirelessEnergyMonitorMachine extends MetaMachine implements I
     @Override
     public Widget createUIWidget() {
         var scroller = ScrollerView.page("wireless_energy_monitor.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
-        scroller.addScrollViewChild(Form.page().addChildren(GridSummaryPanel.of(UISizes.CONTENT_WIDTH, this::getOwnerUUID),
+        scroller.addScrollViewChild(Form.page().addChildren(GridSummaryPanel.of(UISizes.CONTENT_WIDTH, this::getOwnerUUID,
+                this::getGridWindow, this::setGridWindow),
                 GridMapEntry.openButton(this, GridMapEntry.OPEN, GridMapEntry.HINT)));
         return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
     }
@@ -51,6 +59,16 @@ public final class WirelessEnergyMonitorMachine extends MetaMachine implements I
     @Override
     public @Nullable UUID getUUID() {
         return getOwnerUUID();
+    }
+
+    public int getGridWindow() {
+        return GridView.clampWindow(gridWindow);
+    }
+
+    public void setGridWindow(int window) {
+        gridWindow = GridView.clampWindow(window);
+        // @SaveToDisk 只负责把字段写进存档数据，标脏才会让区块在卸载/自动存档前落盘
+        markAsDirty();
     }
 
     @Override

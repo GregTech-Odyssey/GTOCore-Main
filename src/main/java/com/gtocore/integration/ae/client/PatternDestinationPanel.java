@@ -864,11 +864,12 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
 
         void draw(GuiGraphics guiGraphics, Font font, int rx, int ry, int rw) {
+            // 行底是浅色/半透明贴图，带阴影的文字会读成双层笔画；本行文字统一不画阴影（与标题、搜索框一致）
             int textY = ry + 5;
             int right = rx + rw - 3;
             if (full) {
                 right -= font.width(fullText);
-                guiGraphics.drawString(font, fullText, right, textY, fullColor);
+                guiGraphics.drawString(font, fullText, right, textY, fullColor, false);
                 right -= 4;
             }
             int nameX = rx + iconsWidth();
@@ -883,22 +884,22 @@ public class PatternDestinationPanel implements ICompositeWidget {
                 var outputName = matchedOutputText.get(font, outputNameWidth);
                 int matchWidth = fixedWidth + font.width(outputName);
                 int mx = right - matchWidth;
-                guiGraphics.drawString(font, matchPrefix, mx, textY, matchColor);
+                guiGraphics.drawString(font, matchPrefix, mx, textY, matchColor, false);
                 mx += font.width(matchPrefix);
                 drawIcon(guiGraphics, mx, ry + 1, outputs[matched.getInt(0)]);
                 mx += 17;
-                mx = guiGraphics.drawString(font, outputName, mx, textY, matchColor);
-                guiGraphics.drawString(font, matchSuffix, mx, textY, matchColor);
+                mx = guiGraphics.drawString(font, outputName, mx, textY, matchColor, false);
+                guiGraphics.drawString(font, matchSuffix, mx, textY, matchColor, false);
                 right -= matchWidth + 8;
             }
             if (machineNameMatched) {
                 right -= font.width(machineMatchLabel);
-                guiGraphics.drawString(font, machineMatchLabel, right, textY, machineMatchColor);
+                guiGraphics.drawString(font, machineMatchLabel, right, textY, machineMatchColor, false);
                 right -= 8;
             }
             if (providerNameMatched) {
                 right -= font.width(providerMatchLabel);
-                guiGraphics.drawString(font, providerMatchLabel, right, textY, providerMatchColor);
+                guiGraphics.drawString(font, providerMatchLabel, right, textY, providerMatchColor, false);
                 right -= 8;
             }
             // 左侧：样板供应器图标 → 对接机器图标
@@ -919,7 +920,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
             }
             if (customName == null) {
                 guiGraphics.drawString(font, nameText.get(font, right - nameX), nameX, textY,
-                        full || greyed ? subTextColor : nameColor);
+                        full || greyed ? subTextColor : nameColor, false);
                 return;
             }
             // 改过名：两行小字，上为改名（亮），下为机器名（暗），体现主附关系
@@ -929,9 +930,9 @@ public class PatternDestinationPanel implements ICompositeWidget {
             pose.translate(nameX, ry + 2, 0);
             pose.scale(SMALL_TEXT_SCALE, SMALL_TEXT_SCALE, 1);
             guiGraphics.drawString(font, customNameText.get(font, scaledWidth), 0, 0,
-                    full || greyed ? subTextColor : nameColor);
+                    full || greyed ? subTextColor : nameColor, false);
             guiGraphics.drawString(font, machineNameText.get(font, scaledWidth), 0, 10,
-                    subTextColor);
+                    subTextColor, false);
             pose.popPose();
         }
 

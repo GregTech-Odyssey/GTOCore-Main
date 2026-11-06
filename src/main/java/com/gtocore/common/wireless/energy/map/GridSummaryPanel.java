@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 /**
  * 队伍电网汇总（存量、时间窗流量、节点与线路数）；星图 HUD、无线电网监视器与变电站主页共用。
  * 每个面板在服务端持有一份共享采样器句柄（按 20 tick 重新解析所有者的账户），界面关闭时释放。
+ * 时间窗默认由面板自己保存（界面重建即回到默认）；机器托管的界面传入机器上持久化的时间窗，重开界面后沿用。
  */
 public class GridSummaryPanel extends UIElement {
 
@@ -42,6 +43,8 @@ public class GridSummaryPanel extends UIElement {
     private static final float LOW_STORAGE = 0.1f;
 
     private final Supplier<UUID> owner;
+    private final IntSupplier windowState;
+    private final IntConsumer windowSelect;
     private final UIElement header;
     private final UIElement body;
     private final UIElement details;
@@ -49,7 +52,7 @@ public class GridSummaryPanel extends UIElement {
     @Nullable
     private GridMapToggles toggles;
     private boolean emptyHidden;
-    private int window;
+    private int localWindow;
     private boolean resolved;
     private int resolvedAt;
     @Nullable
@@ -63,7 +66,17 @@ public class GridSummaryPanel extends UIElement {
             loss = GridFormat.NO_VALUE, eta = GridFormat.NO_VALUE, scale = GridFormat.NO_VALUE, coverage = GridFormat.NO_VALUE;
 
     protected GridSummaryPanel(int width, Supplier<UUID> owner) {
+        this(width, owner, null, null);
+    }
+
+    /**
+     * @param window 时间窗（服务端读取）；为空时由面板自己保存，界面重建即回到默认
+     * @param select 选中时间窗（服务端写入）；为空时写面板自己的字段
+     */
+    protected GridSummaryPanel(int width, Supplier<UUID> owner, @Nullable IntSupplier window, @Nullable IntConsumer select) {
         this.owner = owner;
+        windowState = window != null ? window : () -> localWindow;
+        windowSelect = select != null ? select : index -> localWindow = GridView.clampWindow(index);
         layout(l -> l.column().width(width).gapAll(UISizes.GAP));
         listenUIClose();
         var name = TextLine.of(0, this::teamName).bindClientColor(UITheme::panelText);
@@ -72,7 +85,7 @@ public class GridSummaryPanel extends UIElement {
         bar.bindClientColor(() -> barColor(bar));
         bar.bindDetail(this::storedDetail);
         details = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP))
-                .addChildren(windowGroup(() -> window, index -> window = GridView.clampWindow(index)), status());
+                .addChildren(windowGroup(windowState, windowSelect), status());
         empty = new StatusPanel(LayoutStyle.AUTO);
         empty.addChild(Label.of(width - 2 * UISizes.PANEL_PADDING, () -> EMPTY_HINT).bindClientColor(() -> UITheme.STATUS_TEXT_WARNING));
         body = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP)).addChildren(details, empty);
@@ -97,6 +110,13 @@ public class GridSummaryPanel extends UIElement {
 
     public static GridSummaryPanel of(int width, Supplier<UUID> owner) {
         return new GridSummaryPanel(width, owner);
+    }
+
+    /**
+     * 时间窗选择由调用方持有（如机器保存的设置），关闭界面后重开仍按调用方的值显示。
+     */
+    public static GridSummaryPanel of(int width, Supplier<UUID> owner, IntSupplier window, IntConsumer select) {
+        return new GridSummaryPanel(width, owner, window, select);
     }
 
     public GridSummaryPanel setCollapsible(GridMapToggles toggles) {
@@ -179,6 +199,7 @@ public class GridSummaryPanel extends UIElement {
     }
 
     private void refresh() {
+        int window = windowState.getAsInt();
         var summary = sampler == null ? GridView.Summary.EMPTY : sampler.summary();
         if (summary == shown && window == shownWindow) return;
         shown = summary;

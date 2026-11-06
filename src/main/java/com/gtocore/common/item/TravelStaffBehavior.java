@@ -53,6 +53,9 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
 
     private static final long EU_COST = 128L;
 
+    @RegisterLanguage(cn = "电量不足", en = "Not enough energy")
+    private static final String NO_ENERGY = "gtocore.travel_staff.no_energy";
+
     @RegisterLanguage(cn = "可传送目标", en = "Teleport Targets")
     private static final String TARGETS = "gtocore.travel_staff.targets";
     @RegisterLanguage(cn = "可传送目标：%s", en = "Teleport targets: %s")
@@ -144,7 +147,10 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
 
             return false;
         }
-
+        if (!level.isClientSide()) {
+            // 扣电生效后电量不足会直接失败，必须给一次反馈，否则玩家只会以为传送坏了
+            player.displayClientMessage(Component.translatable(NO_ENERGY), true);
+        }
         return false;
     }
 
@@ -192,9 +198,9 @@ public class TravelStaffBehavior extends ElectricStats implements IItemUIFactory
         if (electricItem == null) return;
         electricItem.discharge(
                 EU_COST,
-                LV,
+                electricItem.getTier(),
                 true,
-                true,
+                false,
                 false);
     }
 
