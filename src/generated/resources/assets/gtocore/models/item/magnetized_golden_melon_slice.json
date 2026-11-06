@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gtocore:item/magnetized_golden_melon_slice",
+    "layer1": "gtceu:item/material_sets/magnetic/magnetic_overlay"
+  }
+}

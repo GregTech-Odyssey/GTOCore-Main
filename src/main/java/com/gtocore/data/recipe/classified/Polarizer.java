@@ -3,10 +3,13 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
+import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
+
+import vazkii.botania.common.item.BotaniaItems;
 
 import static com.gtocore.common.data.GTORecipeTypes.POLARIZER_RECIPES;
 
@@ -53,6 +56,48 @@ final class Polarizer {
                 .outputItems(TagPrefix.dust, GTOMaterials.EnergeticNetherite)
                 .EUt(33554432)
                 .duration(20)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_golden_carrot")
+                .inputItems(Items.GOLDEN_CARROT)
+                .outputItems(GTOItems.MAGNETIZED_GOLDEN_CARROT)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_guanyin_soil")
+                .inputItems(TagPrefix.dust, GTMaterials.Clay, 16)
+                .outputItems(GTOItems.MAGNETIZED_GUANYIN_SOIL, 16)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_mana_cookie")
+                .inputItems(BotaniaItems.manaCookie)
+                .outputItems(GTOItems.MAGNETIZED_MANA_COOKIE)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_golden_apple")
+                .inputItems(Items.GOLDEN_APPLE)
+                .outputItems(GTOItems.MAGNETIZED_GOLDEN_APPLE)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_enchanted_golden_apple")
+                .inputItems(Items.ENCHANTED_GOLDEN_APPLE)
+                .outputItems(GTOItems.MAGNETIZED_ENCHANTED_GOLDEN_APPLE)
+                .EUt(GTValues.VA[GTValues.LV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_golden_melon_slice")
+                .inputItems(Items.GLISTERING_MELON_SLICE)
+                .outputItems(GTOItems.MAGNETIZED_GOLDEN_MELON_SLICE)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
                 .save();
     }
 }
