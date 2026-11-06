@@ -16,6 +16,7 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
@@ -61,15 +62,15 @@ public class DataFormTestingPart extends AmountConfigurationPartMachine implemen
     }
 
     @Override
+    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+        return true;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (getController() instanceof DataFormTestingPlantMachine controller) {
             return controller.insert(what, amount, mode);
         }
         return 0;
-    }
-
-    @Override
-    public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return getController() instanceof DataFormTestingPlantMachine controller && controller.isPreferredStorageFor();
     }
 }

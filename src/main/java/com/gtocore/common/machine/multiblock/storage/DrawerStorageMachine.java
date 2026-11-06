@@ -254,17 +254,6 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     }
 
     @Override
-    public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        int types = typeLimit(what);
-        long perTypeCapacity = perTypeCapacity(what);
-        if (!isFormed || types < 1 || perTypeCapacity < 1) return false;
-        var map = getKeyMap();
-        long stored = map.getAmount(what);
-        int used = usedTypes(what);
-        return used <= types && stored < perTypeCapacity && (stored > 0 || used < types);
-    }
-
-    @Override
     public void onStructureFormed() {
         // 箱缸总线要先挂上，容量里要用
         drawerBuses.bind(getMultiblockState().getMatchContext(), this, this::onDrawerBusChanged);

@@ -378,8 +378,8 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     }
 
     @Override
-    public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return capacity > storage;
+    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+        return this.type == null || aeKeyType == this.type;
     }
 
     @Override

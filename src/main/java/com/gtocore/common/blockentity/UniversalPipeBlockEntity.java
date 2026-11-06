@@ -39,15 +39,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.EnumMap;
-import java.util.function.ObjLongConsumer;
 
 public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPipeType, UniversalPipeProperties> implements MEStorageHost {
 
     private final EnumMap<Direction, NetStorage> handlers = new EnumMap<>(Direction.class);
     @SuppressWarnings("unchecked")
     private final LazyOptional<MEStorage>[] storageCache = new LazyOptional[6];
-    private final KeyCounter scratch = new KeyCounter();
-    private final ObjLongConsumer<AEKey> keyTransfer = this::transferKey;
     private WeakReference<UniversalPipeNet> currentPipeNet = new WeakReference<>(null);
     private int storageEpoch;
     private boolean routing;
@@ -225,20 +222,19 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
     private void transfer(MEStorage from, MEStorage to) {
         transferSource = from;
         transferTarget = to;
-        scratch.clear();
-        from.getAvailableStacks(scratch);
-        scratch.fastForEach(keyTransfer);
+        from.forEachKey(this::transferKey);
         transferSource = null;
         transferTarget = null;
     }
 
-    private void transferKey(AEKey key, long amount) {
-        if (amount <= 0) return;
+    private boolean transferKey(AEKey key, long amount) {
+        if (amount <= 0) return false;
         var from = transferSource;
         var to = transferTarget;
-        if (from == null || to == null) return;
-        if (available(key.getType() == AEKeyTypes.FLUIDS) <= 0) return;
+        if (from == null || to == null) return true;
+        if (available(key.getType() == AEKeyTypes.FLUIDS) <= 0) return true;
         UniversalStorages.transferKey(from, to, key, amount);
+        return false;
     }
 
     private void updateTransferredState() {
@@ -274,6 +270,11 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         private NetStorage(UniversalPipeBlockEntity pipe, Direction facing) {
             this.pipe = pipe;
             this.facing = facing;
+        }
+
+        @Override
+        public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+            return true;
         }
 
         @Override

@@ -202,6 +202,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     public abstract double getBytes();
 
     @Override
+    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+        return true;
+    }
+
+    @Override
     public void mountInventories(IStorageMounts storageMounts) {
         if (uuid == null) return;
         storageMounts.mount(this, (int) current);
@@ -293,11 +298,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             var data = getCellStorage();
             var map = data.getStoredMap();
             return data.cache.drainChanges(reader, key -> changed.accept(key, map == null ? 0 : map.getAmount(key)));
-        }
-
-        @Override
-        public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-            return isInfinite || capacity > getCellStorage().getBytes();
         }
 
         @Override
@@ -559,11 +559,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
-        public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-            return isInfinite || capacity > getCellStorage().getBytes();
-        }
-
-        @Override
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (amount == 0 || uuid == null) return 0;
             var data = getCellStorage();
@@ -646,11 +641,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
                 return 0;
             }
             return super.insert(what, amount, mode, source);
-        }
-
-        @Override
-        public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-            return (what instanceof AEItemKey i && Algae.isAlgae(i)) && super.isPreferredStorageFor(what, source);
         }
     }
 
@@ -771,16 +761,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             long limit = inputLimits.getAmount(what);
             if (limit == FORBIDDEN) return 0;
             return limit > 0 ? limit : Long.MAX_VALUE;
-        }
-
-        @Override
-        public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-            if (inputLimitEnabled) {
-                long limit = inputLimits.getAmount(what);
-                if (limit == FORBIDDEN) return false;
-                if (limit > 0 && storedAmount(what) >= limit) return false;
-            }
-            return super.isPreferredStorageFor(what, source);
         }
 
         @Override

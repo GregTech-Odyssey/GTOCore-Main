@@ -35,6 +35,7 @@ import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyLongMap;
+import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
@@ -252,8 +253,8 @@ public final class MEDiskBoxMachine extends MetaMachine
     // ==================== 存储（与存储访问仓同口径） ====================
 
     @Override
-    public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return capacity > cellStorage().getBytes();
+    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+        return true;
     }
 
     @Override

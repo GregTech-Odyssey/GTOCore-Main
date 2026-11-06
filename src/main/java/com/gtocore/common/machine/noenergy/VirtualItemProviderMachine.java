@@ -39,10 +39,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
-import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyLongMap;
-import appeng.api.stacks.KeyCounter;
+import appeng.api.stacks.*;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
@@ -229,8 +226,8 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     }
 
     @Override
-    public boolean isPreferredStorageFor(AEKey what, IActionSource source) {
-        return what instanceof AEItemKey itemKey && itemKey.getItem() == VIRTUAL_ITEM_PROVIDER && itemKey.hasTag();
+    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+        return aeKeyType == AEKeyTypes.ITEMS;
     }
 
     @Override
