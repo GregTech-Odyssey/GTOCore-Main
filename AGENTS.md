@@ -86,7 +86,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 
 ## GTOLib 与构建产物安全
 
-- 天气日程与昼夜时间统一放在 GTOLib 的 `LevelData`，按维度写入同一个 `data/gtolib_level.dat`；不要重新拆成独立天气或时钟存储。旧档导入与原子保存流程见 [动态维度系统](docs/dimensions.md)。
+- 天气日程与昼夜时间统一放在 GTOLib 的 `LevelData`，按维度写入同一个 `data/gtocore_level.dat`；不要重新拆成独立天气或时钟存储。旧档导入与原子保存流程见 [动态维度系统](docs/dimensions.md)。
 - 修改昼夜或天气推进时，维度卸载后仍须继续模拟；用有效 tick 锚点补算昼夜、沿原随机状态补齐天气，不加载地形或遍历动态历史。改变时间的道具、睡眠和快捷命令仅影响所在维度，第三方原版时间包也须保留该维度的速率与余量。
 
 - 动态维度存盘改动须保持单文件原子提交、pending 仅修复索引尾记录，以及强加载候选在 `chunks.dat` 提交后才能移除的顺序；崩溃边界与隔离探针见 [动态维度系统](docs/dimensions.md)。
