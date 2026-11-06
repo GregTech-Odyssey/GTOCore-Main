@@ -3290,6 +3290,8 @@
   "gtocore.issue.ice_short.desc": "Requires %s mB of ice, available %s mB.",
   "gtocore.issue.incorrect_direction_volta.desc": "The current facing receives no sunlight; turn the machine.",
   "gtocore.issue.insufficient_energy_buffer.desc": "Requires %s in the buffer, stored %s.",
+  "gtocore.issue.insufficient_power": "Insufficient Power",
+  "gtocore.issue.insufficient_power.desc": "Requires more than %s EU/t, current %s EU/t; use an energy hatch with a higher voltage tier or amperage.",
   "gtocore.issue.insufficient_temperature.desc": "Requires %s K, current %s K.",
   "gtocore.issue.invalid_input.desc": "The inputs cannot be used by this machine.",
   "gtocore.issue.machine_storage_empty": "No Machine Installed",
