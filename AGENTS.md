@@ -77,6 +77,10 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 任务报「另一个程序正在使用此文件」（如 `libs/gto-seal-runtime-1.0.jar`）时先 `.\gradlew.bat --stop`，再单独跑目标任务；`runData` 至少 1~3 分钟且可能因 datagen 崩溃偶发失败，先重试再排查。详见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
 - 用 PowerShell 管道接 `gradlew` 输出会让 `$LASTEXITCODE` 失真（可能拿到 -1）：先把输出存进变量，再读退出码。
 
+## 游戏内文案
+
+- 新增或修改游戏内文案时，避免过多限定定语和繁琐的说明，约定俗成的规则无需解释；生成的文案须展示给用户检查。
+
 ## 生成资源
 
 - `src/generated/resources` 是 data generator 输出。修改生成内容时必须改真实生成源并运行 `runData`；手工编辑或脚本改写生成文件只能用于诊断，不能作为最终结果。
