@@ -34,6 +34,8 @@
 - 裂变反应堆：物品提示精简为 6 行，合并组件、温度、冷却、超频与产出说明，保留全部公式与关键数值。
 - 监控器重构：移除各监控器类中冗余的 `Object` 转接构造器，构造函数统一规范为 `public` 的 `MetaMachineBlockEntity`；将重复的 `registerMonitor` 统一收拢到 `MachineRegisterUtils` 并清理跨模块引用；`GTOMachineBuilder` 与 `MultiblockBuilder` 补齐 `hasTESR` 链式调用方法。
 
+- 巨型熔炉：为燃料槽的燃烧时间查询增加按物品与 NBT 区分、最多 512 项的缓存，满时按 FIFO 逐项淘汰。
+
 **修复：**
 
 - 旅行锚：修复专用服务器多人游戏下客户端未在启动时注册旅行网络通道，登录后收不到旅行锚同步数据、手持旅行手杖时不渲染旅行锚的问题。
