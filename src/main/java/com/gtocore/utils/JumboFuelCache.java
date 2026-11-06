@@ -15,11 +15,12 @@ import java.util.concurrent.atomic.LongAdder;
 /**
  * Burn-time cache for Jumbo Furnace fuel checks.
  *
- * The sampled server hot path reaches {@code FuelItemHandler.isItemValid} from item-pipe transfers.
- * Each calling thread owns up to 512 entries so menu prediction cannot race server transfers.
- * Recipe type is part of the key because burn-time event handlers can return different values for
- * different types. Burn-time results can be any int, so a nullable entry distinguishes misses from
- * negative values. Runtime-dependent event handlers can disable this cache with its system property.
+ * Item-pipe transfers reach {@code FuelItemHandler.isItemValid} on every insert attempt and repeat
+ * the burn-time lookup. The key is item, NBT, stack count and recipe type: the lookup and the fuel
+ * event can read any of them, and 1.20.1 stores damage inside the NBT, so damage needs no key field.
+ * Burn-time results can be any int, so a nullable entry distinguishes misses from negative values.
+ * State is per thread, so an insert off the server thread cannot corrupt the server's entries.
+ * Runtime-dependent event handlers can disable this cache with its system property.
  */
 public final class JumboFuelCache {
 
@@ -39,7 +40,7 @@ public final class JumboFuelCache {
         public boolean equals(Key left, Key right) {
             if (left == right) return true;
             if (left == null || right == null) return false;
-            if (left.hash != right.hash || left.recipeType != right.recipeType) return false;
+            if (left.hash != right.hash || left.recipeType != right.recipeType || left.count != right.count) return false;
             return left.stack.getItem() == right.stack.getItem() && Objects.equals(left.stack.getTag(), right.stack.getTag());
         }
     };
@@ -70,7 +71,7 @@ public final class JumboFuelCache {
             state.size--;
             if (DEBUG) EVICTIONS.increment();
         }
-        Key key = new Key(stack.copyWithCount(1), recipeType, state.lookup.hash);
+        Key key = new Key(stack.copy(), recipeType, state.lookup.count, state.lookup.hash);
         Entry entry = new Entry(key, burnTime);
         state.cache.put(key, entry);
         state.evictionQueue[state.evictionIndex] = entry;
@@ -82,6 +83,8 @@ public final class JumboFuelCache {
     public static String debug() {
         CacheState state = ENABLED ? STATE.get() : null;
         int size = state == null ? 0 : state.size;
+        // 计数只在 DEBUG 打开时累加，关着时这些 0 没有意义，直接标明而不是让人误以为从不命中。
+        if (!DEBUG) return "enabled=" + ENABLED + ", stats=off, threadSize=" + size + '/' + LIMIT;
         return "enabled=" + ENABLED + ", hits=" + HITS.sum() + ", misses=" + MISSES.sum() + ", passthroughs=" + PASSTHROUGHS.sum() + ", evictions=" + EVICTIONS.sum() + ", threadSize=" + size + '/' + LIMIT;
     }
 
@@ -98,22 +101,25 @@ public final class JumboFuelCache {
 
         private ItemStack stack;
         private RecipeType<?> recipeType;
+        private int count;
         private int hash;
 
         private Key() {}
 
-        private Key(ItemStack stack, RecipeType<?> recipeType, int hash) {
+        private Key(ItemStack stack, RecipeType<?> recipeType, int count, int hash) {
             this.stack = stack;
             this.recipeType = recipeType;
+            this.count = count;
             this.hash = hash;
         }
 
         private void set(ItemStack stack, RecipeType<?> recipeType) {
             this.stack = stack;
             this.recipeType = recipeType;
+            this.count = stack.getCount();
             Item item = stack.getItem();
             CompoundTag tag = stack.getTag();
-            this.hash = 31 * (31 * item.hashCode() + (tag == null ? 0 : tag.hashCode())) + System.identityHashCode(recipeType);
+            this.hash = 31 * (31 * (31 * item.hashCode() + (tag == null ? 0 : tag.hashCode())) + count) + System.identityHashCode(recipeType);
         }
     }
 
