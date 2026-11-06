@@ -11,9 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * Routes the jumbo furnace fuel-slot check through {@link JumboFuelCache}: item pipes call
- * isItemValid on every insert attempt and the burn-time lookup is dominated by third-party fuel
- * events, not by the item's own value.
+ * Caches the item-pipe path measured in the server profile. The core burn-consumption and menu
+ * helper paths remain separate until profiling shows they need the same optimization.
  */
 @Mixin(value = FuelItemHandler.class, remap = false)
 public abstract class FuelItemHandlerMixin {

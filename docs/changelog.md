@@ -34,7 +34,7 @@
 - 裂变反应堆：物品提示精简为 6 行，合并组件、温度、冷却、超频与产出说明，保留全部公式与关键数值。
 - 监控器重构：移除各监控器类中冗余的 `Object` 转接构造器，构造函数统一规范为 `public` 的 `MetaMachineBlockEntity`；将重复的 `registerMonitor` 统一收拢到 `MachineRegisterUtils` 并清理跨模块引用；`GTOMachineBuilder` 与 `MultiblockBuilder` 补齐 `hasTESR` 链式调用方法。
 
-- 巨型熔炉：为燃料槽的燃烧时间查询增加按物品与 NBT 区分、最多 512 项的缓存，满时按 FIFO 逐项淘汰。
+- 巨型熔炉：物品管道向燃料槽输送物品时缓存燃料判定，避免重复插入同一种（含 NBT）燃料时重复触发各模组的燃料事件。
 
 **修复：**
 

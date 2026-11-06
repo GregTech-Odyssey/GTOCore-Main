@@ -7,6 +7,7 @@ import com.gtocore.common.forge.ServerLangHook;
 import com.gtocore.common.machine.noenergy.game.GameLeaderboardBrowser;
 import com.gtocore.common.saved.DysonSphereSavaedData;
 import com.gtocore.common.saved.VoidWorldTimeSavedData;
+import com.gtocore.utils.JumboFuelCache;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.Dimension;
@@ -69,6 +70,12 @@ public final class GTOCommands {
                     SparkLaunchProfiler.stop("all");
                     return 1;
                 })))
+                .then(Commands.literal("debug")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("jumbo-fuel-cache").executes(ctx -> {
+                            ctx.getSource().sendSuccess(() -> Component.literal("Jumbo fuel cache: " + JumboFuelCache.debug()), false);
+                            return 1;
+                        })))
                 .then(Commands.literal("space")
                         .then(StarMapCommand.create())
                         .then(Commands.literal("planet").then(Commands.literal("unlock").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player()).then(Commands.argument("id", StringArgumentType.greedyString()).suggests((context, builder) -> SharedSuggestionProvider.suggest(Dimension.all().stream().filter(Dimension::isWithinGalaxy).map(Dimension::getLocation).map(ResourceLocation::toString), builder)).executes(ctx -> {
