@@ -9,6 +9,9 @@ import com.gtocore.eio_travel.network.TravelNetworks;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -102,6 +105,77 @@ public class TravelHandler {
             return blockTeleportTo(level, player, ground.relative(side), false) || blockTeleportAround(level, player, ground, false);
         }
         return anchor.filter(target -> blockTeleportAround(level, player, target.getPos(), false)).isPresent();
+    }
+
+    /**
+     * 传送到维度权杖收藏的旅行锚。收藏的锚不受权杖瞄准角度与物品传送距离限制，允许跨维度，
+     * 但仍要求该锚在旅行网络中可见（与旅行手杖默认行为一致）。
+     */
+    public static boolean bookmarkTeleport(Player player, ResourceKey<Level> dimension, BlockPos pos) {
+        if (player.level().isClientSide()) {
+            return false;
+        }
+        MinecraftServer server = player.getServer();
+        if (server == null) {
+            return false;
+        }
+        ServerLevel targetLevel = server.getLevel(dimension);
+        if (targetLevel == null) {
+            return false;
+        }
+        ITravelTarget target = TravelSavedData.getTravelData(targetLevel).getTravelTarget(pos).orElse(null);
+        if (target == null || target.getTargetType() != TravelTargetType.ANCHOR) {
+            return false;
+        }
+        // 收藏可能早于锚点被隐藏，这里按锚点当前状态再校验一次
+        if (!target.canTeleportTo()) {
+            return false;
+        }
+        if (targetLevel == player.level()) {
+            return blockTeleportAround(targetLevel, player, pos, false);
+        }
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return false;
+        }
+
+        Vec3 destination = findTeleportPositionAround(targetLevel, pos);
+        if (destination == null) {
+            return false;
+        }
+        Vec3 eventPosition = teleportEvent(player, destination).orElse(null);
+        if (eventPosition == null) {
+            return false;
+        }
+        serverPlayer.teleportTo(targetLevel, eventPosition.x(), eventPosition.y(), eventPosition.z(),
+                serverPlayer.getYRot(), serverPlayer.getXRot());
+        if (serverPlayer.level() != targetLevel) {
+            // 传送可能被其它模组的 EntityTravelToDimensionEvent 取消；此时不提示成功、不扣电、不设冷却。
+            return false;
+        }
+        // Stop "moved too quickly" warnings
+        serverPlayer.connection.resetPosition();
+        serverPlayer.resetFallDistance();
+        targetLevel.playSound(null, BlockPos.containing(eventPosition), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1F);
+        return true;
+    }
+
+    @Nullable
+    private static Vec3 findTeleportPosition(Level level, BlockPos pos) {
+        Optional<Double> height = isTeleportPositionClear(level, pos);
+        return height.map(value -> new Vec3(pos.getX() + 0.5f, pos.getY() + value + 1, pos.getZ() + 0.5f)).orElse(null);
+    }
+
+    @Nullable
+    private static Vec3 findTeleportPositionAround(Level level, BlockPos pos) {
+        Vec3 result = findTeleportPosition(level, pos);
+        if (result != null) return result;
+        result = findTeleportPosition(level, pos.relative(Direction.NORTH));
+        if (result != null) return result;
+        result = findTeleportPosition(level, pos.relative(Direction.SOUTH));
+        if (result != null) return result;
+        result = findTeleportPosition(level, pos.relative(Direction.EAST));
+        if (result != null) return result;
+        return findTeleportPosition(level, pos.relative(Direction.WEST));
     }
 
     public static boolean isAimingAtTeammate(Player player) {

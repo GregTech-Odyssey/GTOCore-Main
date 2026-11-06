@@ -33,12 +33,12 @@ final class BlockLang {
         // 管道工具提示，格式对齐 GT 的物品/流体管道（一条速率行）
         addCNEN("gtocore.universal_pipe.item_transfer_rate", "物品传输速率：§f%s 个/s", "Item Transfer Rate: §f%s/s");
         addCNEN("gtocore.universal_pipe.fluid_transfer_rate", "流体传输速率：§f%s 桶/s", "Fluid Transfer Rate: §f%s B/s");
-        addCNEN("gtocore.universal_pipe.pull_mode", "管道不存货；shift+扳手把一面设为堵住后，改从其余相邻存储主动抽取",
-                "No buffer. Block a face with shift + wrench to pull from the other neighbours instead");
+        addCNEN("gtocore.universal_pipe.pull_mode", "对管道shift使用扳手设置管道方向时，会尝试自动按方向来源抽取内容",
+                "When shift + wrench is used to set the pipe direction, it will try to pull from the source in that direction");
         addCNEN("gtocore.mana_pipe.transfer_rate", "传输速率：§f%s 魔力/s（约 %s 池/s）", "Transfer Rate: §f%s mana/s (~%s pools/s)");
         addCNEN("gtocore.mana_pipe.source_rate", "魔源传输速率：§f%s 魔源/s", "Source Transfer Rate: §f%s source/s");
         addCNEN("gtocore.mana_pipe.conversion", "魔力与魔源可互相换算：§f4 魔源 = 1 魔力", "Mana and source convert into each other: §f4 source = 1 mana");
         addCNEN("gtocore.steam_pipe.only_steam", "只能传输§f蒸汽§r", "Only transports §fsteam§r");
-        addCNEN("gtocore.steam_pipe.unlimited", "无限传输速度：不按每秒限量，来多少过多少", "Unlimited transfer speed: no per-second throughput limit");
+        addCNEN("gtocore.steam_pipe.unlimited", "传输速度：无限", "Transfer Rate: Unlimited");
     }
 }

@@ -55,7 +55,7 @@ public final class PatternEditor extends UIElement {
 
     @RegisterLanguage(cn = "样板编辑器", en = "Pattern Editor")
     static final Component TITLE = Component.translatable("gtocore.ae.pattern_editor.title");
-    @RegisterLanguage(cn = "拖入物品、流体或通配符；点击槽位在下方修改数量，中键清空。每次修改立即生效，主产物不能与其他样板槽重复。", en = "Drop items, fluids or wildcards; select a slot to edit its amount below, or middle-click to clear. Changes take effect immediately; primary outputs must be unique across pattern slots.")
+    @RegisterLanguage(cn = "拖入物品、流体或通配符；点击槽位在下方修改数量，中键清空。", en = "Drag items, fluids or wildcards into the slots; click a slot to edit its amount below, or middle-click to clear.")
     static final Component HINT = Component.translatable("gtocore.ae.pattern_editor.hint");
     @RegisterLanguage(cn = "请放入空白样板或处理样板", en = "Insert a blank or processing pattern, or ensure the ME network can provide one blank pattern")
     static final Component INSERT_PATTERN = Component.translatable("gtocore.ae.pattern_editor.insert_pattern");

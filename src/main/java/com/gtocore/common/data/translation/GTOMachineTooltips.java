@@ -386,10 +386,9 @@ public final class GTOMachineTooltips {
 
     public static final TipSpec MePullCraftPatternHatchTooltips = GTOTips.of("molecular_assembly_factory_pull_pattern_hatch", t -> {
         t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("拉取样板仓用于存储合成样板", "Pull Pattern Hatch is used to store crafting patterns"));
-        t.feature(t.tr("不参与 AE 发配，只在产物不足阈值时从网络拉取原料并合成", "Does not take part in AE pattern distribution; pulls ingredients from the network to craft only when the product is below the threshold"));
+        t.feature(t.tr("可以放入合成样板", "Can put crafting patterns"));
+        t.feature(t.tr("当AE中的目标存量低于设定阈值时，从网络拉取样板原料并自动合成补充库存", "When the target stock in AE falls below the set threshold, pull pattern ingredients from the network and automatically synthesize to replenish inventory"));
         t.middleClick(t.tr("对着样板按鼠标中键可单独设置拉取开关与产物阈值", "Middle-click a pattern to set its pull mode and product threshold"));
-        t.attention(t.tr("补货数量按差额补齐到阈值，上限为网络原料能支撑的次数", "Restocks by the deficit up to the threshold, capped by what the network's ingredients can support"));
         t.feature(t.tr("每 2 秒检查一次", "Checked once every 2 seconds"));
         t.statText(ComponentSlang.Capacity("18"));
     });

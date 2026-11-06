@@ -92,9 +92,9 @@ public final class TesseractUI {
     private static final String VALUE_SUPPORTED = "gtocore.tesseract.value.supported";
     @RegisterLanguage(cn = "不支持", en = "Not supported")
     private static final String VALUE_UNSUPPORTED = "gtocore.tesseract.value.unsupported";
-    @RegisterLanguage(cn = "目标记录了维度，所在区块加载时即可访问", en = "Targets store their dimension and are reachable while their chunk is loaded")
+    @RegisterLanguage(cn = "所在区块加载时支持跨维度访问", en = "Targets store their dimension and are reachable while their chunk is loaded")
     private static final String CROSS_SUPPORTED_DETAIL = "gtocore.tesseract.cross.supported";
-    @RegisterLanguage(cn = "坐标信息卡只记录坐标，目标按本机所在维度查找", en = "Coordinate cards store only coordinates; targets are looked up in this dimension")
+    @RegisterLanguage(cn = "未包含维度信息", en = "Does not store dimension information")
     private static final String CROSS_UNSUPPORTED_DETAIL = "gtocore.tesseract.cross.unsupported";
     @RegisterLanguage(cn = "访问面", en = "Access side")
     private static final Component LINE_ACCESS = Component.translatable("gtocore.tesseract.line.access");

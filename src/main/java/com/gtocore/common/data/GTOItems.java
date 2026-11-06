@@ -1455,6 +1455,12 @@ public final class GTOItems {
             .model((ctx, prov) -> prov.handheld(ctx))
             .register();
 
+    public static final ItemEntry<ComponentItem> DIMENSION_SCEPTER = item("dimension_scepter", "维度权杖", p -> ComponentItem.create(p.stacksTo(1)))
+            .lang("Dimension Scepter")
+            .onRegister(attach(DimensionScepterBehavior.create()))
+            .model((ctx, prov) -> prov.handheld(ctx))
+            .register();
+
     public static final ItemEntry<ComponentItem> ME_WIRELESS_MACHINE_CONFIGURATOR = item("me_wireless_machine_configurator", "ME无线机器配置器",
             p -> ComponentItem.create(p.stacksTo(1)))
             .onRegister(attach(MEWirelessMachineConfigurator.INSTANCE))
