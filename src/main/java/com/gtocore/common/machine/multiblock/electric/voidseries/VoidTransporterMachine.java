@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.multiblock.electric.voidseries;
 
+import com.gtocore.data.IdleReason;
+
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.machine.trait.EnergyContainerTrait;
 import com.gtolib.utils.GTOUtils;
@@ -11,12 +13,14 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.uiwidgets.icon.IdleReasonInfo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -32,8 +36,13 @@ import java.util.function.Function;
 
 public final class VoidTransporterMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder {
 
-    public static boolean checkTransporter(BlockPos pos, Level level, int id) {
-        return !(MetaMachine.getMachine(level, pos.offset(0, -1, 0)) instanceof VoidTransporterMachine machine) || !machine.isFormed() || machine.id != id || !machine.check();
+    public static boolean checkTransporter(BlockPos pos, Level level, int id, Player player) {
+        if (!(MetaMachine.getMachine(level, pos.offset(0, -1, 0)) instanceof VoidTransporterMachine machine) || !machine.isFormed() || machine.id != id) {
+            return true;
+        }
+        if (machine.check()) return false;
+        machine.notifyInsufficientPower(player);
+        return true;
     }
 
     public static Function<MetaMachineBlockEntity, VoidTransporterMachine> create(int id, int eu, @Nullable BiConsumer<VoidTransporterMachine, Player> consumer) {
@@ -114,6 +123,18 @@ public final class VoidTransporterMachine extends ElectricMultiblockMachine impl
         return energyContainer.getEnergyStored() >= 409600 && energyContainer.removeEnergy(409600) == 409600;
     }
 
+    private boolean powerSufficient() {
+        return getOverclockVoltage() > eu;
+    }
+
+    private void notifyInsufficientPower(Player player) {
+        if (powerSufficient() || !(player instanceof ServerPlayer serverPlayer)) return;
+        var reason = IdleReason.INSUFFICIENT_POWER.reason(eu, getOverclockVoltage());
+        // 标题不带参数，数值与建议都在说明行里；IdleReasonInfo 用标题携带的参数渲染说明
+        var detail = IdleReasonInfo.description(reason);
+        serverPlayer.displayClientMessage(detail != null ? detail : reason, true);
+    }
+
     @Override
     public void onWorking() {
         super.onWorking();
@@ -131,16 +152,25 @@ public final class VoidTransporterMachine extends ElectricMultiblockMachine impl
         if (!isFormed()) {
             setWaitingTime(0);
         }
-        if (consumer != null && isFormed() && (eu == 0 || check())) consumer.accept(this, player);
+        if (consumer != null && isFormed()) {
+            if (eu == 0 || check()) {
+                consumer.accept(this, player);
+            } else {
+                notifyInsufficientPower(player);
+            }
+        }
         return false;
     }
 
     @Override
     public GTRecipeDefinition createCustomRecipe(RecipeHandlerUnit unit) {
-        if (eu < getOverclockVoltage() && energyContainer.getEnergyStored() < 409600) {
-            return getRecipeBuilder().EUt(getOverclockVoltage()).duration((int) Math.max(1, (409600 - energyContainer.getEnergyStored()) / getOverclockVoltage())).build();
+        var voltage = getOverclockVoltage();
+        if (voltage <= eu) {
+            if (eu > 0) IdleReason.INSUFFICIENT_POWER.setReason(this, eu, voltage);
+            return null;
         }
-        return null;
+        if (energyContainer.getEnergyStored() >= 409600) return null;
+        return getRecipeBuilder().EUt(voltage).duration((int) Math.max(1, (409600 - energyContainer.getEnergyStored()) / voltage)).build();
     }
 
     @Override
