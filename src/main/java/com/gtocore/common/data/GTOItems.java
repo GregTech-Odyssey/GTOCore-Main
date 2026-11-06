@@ -32,6 +32,7 @@ import com.gtocore.integration.apotheosis.ApotheosisGemFilter;
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.me2in1.Wireless;
 import com.gtolib.quest.QuestBookItem;
+import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.StringUtils;
 import com.gtolib.utils.register.ItemRegisterUtils;
 
@@ -1510,9 +1511,24 @@ public final class GTOItems {
     private static final FoodProperties MAGNETIZED_GOLDEN_APPLE_FOOD = new FoodProperties.Builder()
             .nutrition(4)
             .saturationMod(1.2F)
-            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100, 0), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.ABSORPTION, 2400, 0), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100, 1), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.ABSORPTION, 2400, 2), 1.0F)
             .effect(() -> new MobEffectInstance(MobEffects.SATURATION, 1200, 0), 1.0F)
+            .alwaysEat()
+            .build();
+
+    private static final FoodProperties MAGNETIZED_GUANYIN_SOIL_FOOD = new FoodProperties.Builder()
+            .nutrition(8)
+            .saturationMod(1.5F)
+            .effect(() -> new MobEffectInstance(MobEffects.SATURATION, 1200, 0), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.POISON, 200, 0), 0.3f)
+            .alwaysEat()
+            .build();
+
+    private static final FoodProperties MAGNETIZED_MANA_COOKIE_FOOD = new FoodProperties.Builder()
+            .nutrition(1)
+            .saturationMod(2F)
+            .effect(() -> new MobEffectInstance(MobEffects.SATURATION, 2400, 0), 1.0F)
             .alwaysEat()
             .build();
 
@@ -1530,13 +1546,27 @@ public final class GTOItems {
             .onRegister(attach(new FoodStats(MAGNETIZED_GOLDEN_APPLE_FOOD)))
             .register();
 
+    public static final ItemEntry<ComponentItem> MAGNETIZED_GUANYIN_SOIL = item("magnetized_guanyin_soil", "磁化观音土", ComponentItem::create)
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
+                    .texture("layer0", GTCEu.id("item/material_sets/dull/dust"))
+                    .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
+            .onRegister(attach(new FoodStats(MAGNETIZED_GUANYIN_SOIL_FOOD)))
+            .register();
+
+    public static final ItemEntry<ComponentItem> MAGNETIZED_MANA_COOKIE = item("magnetized_mana_cookie", "磁化魔力曲奇", ComponentItem::create)
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
+                    .texture("layer0", RLUtils.bot("item/mana_cookie"))
+                    .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
+            .onRegister(attach(new FoodStats(MAGNETIZED_MANA_COOKIE_FOOD)))
+            .register();
+
     private static final FoodProperties MAGNETIZED_ENCHANTED_GOLDEN_APPLE_FOOD = new FoodProperties.Builder()
             .nutrition(4)
             .saturationMod(1.2F)
-            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 400, 2), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 6000, 1), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 400, 3), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 6000, 2), 1.0F)
             .effect(() -> new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 6000, 1), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.ABSORPTION, 2400, 4), 1.0F)
+            .effect(() -> new MobEffectInstance(MobEffects.ABSORPTION, 2400, 6), 1.0F)
             .alwaysEat()
             .build();
 

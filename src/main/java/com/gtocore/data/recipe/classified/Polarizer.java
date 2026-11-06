@@ -9,6 +9,8 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
 
+import vazkii.botania.common.item.BotaniaItems;
+
 import static com.gtocore.common.data.GTORecipeTypes.POLARIZER_RECIPES;
 
 final class Polarizer {
@@ -59,6 +61,20 @@ final class Polarizer {
         POLARIZER_RECIPES.recipeBuilder("magnetized_golden_carrot")
                 .inputItems(Items.GOLDEN_CARROT)
                 .outputItems(GTOItems.MAGNETIZED_GOLDEN_CARROT)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_guanyin_soil")
+                .inputItems(TagPrefix.dust, GTMaterials.Clay, 16)
+                .outputItems(GTOItems.MAGNETIZED_GUANYIN_SOIL, 16)
+                .EUt(GTValues.VA[GTValues.ULV])
+                .duration(100)
+                .save();
+
+        POLARIZER_RECIPES.recipeBuilder("magnetized_mana_cookie")
+                .inputItems(BotaniaItems.manaCookie)
+                .outputItems(GTOItems.MAGNETIZED_MANA_COOKIE)
                 .EUt(GTValues.VA[GTValues.ULV])
                 .duration(100)
                 .save();
