@@ -43,60 +43,43 @@ public final class DimensionScepterUI {
     private static final int NEARBY_ROWS = 6;
 
     @RegisterLanguage(cn = "收藏的旅行锚", en = "Saved Travel Anchors")
-    private static final String BOOKMARKS = "gtocore.dimension_scepter.bookmarks";
-    @RegisterLanguage(cn = "点击选中收藏的锚，再右键权杖传送到该锚；选中后不受瞄准角度和传送距离限制，跨维度同样可用", en = "Select a saved anchor, then right-click the scepter to teleport there. The selected anchor ignores aim angle and item range, including across dimensions")
-    private static final String BOOKMARKS_TIP = "gtocore.dimension_scepter.bookmarks.tip";
+    private static final Component BOOKMARKS_LABEL = Component.translatable("gtocore.dimension_scepter.bookmarks");
+    @RegisterLanguage(cn = "点击选择传送", en = "Click to select teleport")
+    private static final Component BOOKMARKS_TIP_C = Component.translatable("gtocore.dimension_scepter.bookmarks.tip");
     @RegisterLanguage(cn = "已选中：%s", en = "Selected: %s")
     private static final String BOOKMARKS_SELECTED = "gtocore.dimension_scepter.bookmarks.selected";
-    @RegisterLanguage(cn = "未选中，右键不会传送", en = "Nothing selected; right-click does nothing")
-    private static final String BOOKMARKS_NONE_SELECTED = "gtocore.dimension_scepter.bookmarks.none_selected";
+    @RegisterLanguage(cn = "未选中", en = "Nothing selected")
+    private static final Component BOOKMARKS_NONE_SELECTED_C = Component.translatable("gtocore.dimension_scepter.bookmarks.none_selected");
     @RegisterLanguage(cn = "尚未收藏旅行锚", en = "No saved travel anchors")
-    private static final String BOOKMARKS_EMPTY = "gtocore.dimension_scepter.bookmarks.empty";
+    private static final Component BOOKMARKS_EMPTY_C = Component.translatable("gtocore.dimension_scepter.bookmarks.empty");
     @RegisterLanguage(cn = "选中 / 取消选中", en = "Select / deselect")
-    private static final String BOOKMARK_SELECT = "gtocore.dimension_scepter.bookmark.select";
+    private static final Component BOOKMARK_SELECT_C = Component.translatable("gtocore.dimension_scepter.bookmark.select");
     @RegisterLanguage(cn = "传送到该收藏", en = "Teleport to this anchor")
-    private static final String BOOKMARK_TELEPORT = "gtocore.dimension_scepter.bookmark.teleport";
+    private static final Component BOOKMARK_TELEPORT_C = Component.translatable("gtocore.dimension_scepter.bookmark.teleport");
     @RegisterLanguage(cn = "没有选中的收藏锚", en = "No saved anchor selected")
-    private static final String BOOKMARK_NO_SELECTION = "gtocore.dimension_scepter.bookmark.no_selection";
+    private static final Component BOOKMARK_NO_SELECTION_C = Component.translatable("gtocore.dimension_scepter.bookmark.no_selection");
     @RegisterLanguage(cn = "移除收藏", en = "Remove bookmark")
-    private static final String BOOKMARK_REMOVE = "gtocore.dimension_scepter.bookmark.remove";
+    private static final Component BOOKMARK_REMOVE_C = Component.translatable("gtocore.dimension_scepter.bookmark.remove");
     @RegisterLanguage(cn = "未命名", en = "Unnamed")
-    private static final String BOOKMARK_UNNAMED = "gtocore.dimension_scepter.bookmark.unnamed";
+    private static final Component BOOKMARK_UNNAMED_C = Component.translatable("gtocore.dimension_scepter.bookmark.unnamed");
     @RegisterLanguage(cn = "该旅行锚已不可用", en = "This travel anchor is no longer available")
-    private static final String BOOKMARK_UNAVAILABLE = "gtocore.dimension_scepter.bookmark.unavailable";
+    private static final Component BOOKMARK_UNAVAILABLE_C = Component.translatable("gtocore.dimension_scepter.bookmark.unavailable");
     @RegisterLanguage(cn = "收藏已满（最多 %s 个）", en = "Bookmark list full (up to %s)")
-    private static final String BOOKMARK_FULL = "gtocore.dimension_scepter.bookmark.full";
+    private static final Component BOOKMARK_FULL_C = Component.translatable("gtocore.dimension_scepter.bookmark.full", DimensionScepterBookmarks.MAX_BOOKMARKS);
     @RegisterLanguage(cn = "收藏", en = "Save")
-    private static final String BOOKMARK_ADD = "gtocore.dimension_scepter.bookmark.add";
+    private static final Component BOOKMARK_ADD_C = Component.translatable("gtocore.dimension_scepter.bookmark.add");
     @RegisterLanguage(cn = "附近的旅行锚", en = "Nearby Travel Anchors")
-    private static final String NEARBY = "gtocore.dimension_scepter.nearby";
-    @RegisterLanguage(cn = "当前维度、权杖传送范围内已命名的旅行锚", en = "Named travel anchors in the current dimension and within the scepter's travel range")
-    private static final String NEARBY_TIP = "gtocore.dimension_scepter.nearby.tip";
-    @RegisterLanguage(cn = "从附近已命名的旅行锚中选择要收藏的锚", en = "Pick a named travel anchor nearby to save it")
-    private static final String NEARBY_HINT = "gtocore.dimension_scepter.nearby.hint";
+    private static final Component NEARBY_LABEL = Component.translatable("gtocore.dimension_scepter.nearby");
+    @RegisterLanguage(cn = "当前范围内已命名的旅行锚", en = "Named travel anchors within range")
+    private static final Component NEARBY_TIP_C = Component.translatable("gtocore.dimension_scepter.nearby.tip");
+    @RegisterLanguage(cn = "从附近已命名的旅行锚中选择收藏", en = "Pick a named travel anchor nearby to save it")
+    private static final Component NEARBY_HINT_C = Component.translatable("gtocore.dimension_scepter.nearby.hint");
     @RegisterLanguage(cn = "附近没有可收藏的旅行锚", en = "No travel anchors nearby to save")
-    private static final String NEARBY_EMPTY = "gtocore.dimension_scepter.nearby.empty";
+    private static final Component NEARBY_EMPTY_C = Component.translatable("gtocore.dimension_scepter.nearby.empty");
     @RegisterLanguage(cn = "%s · %s, %s, %s", en = "%s · %s, %s, %s")
     private static final String LOCATION = "gtocore.dimension_scepter.location";
     @RegisterLanguage(cn = "%s, %s, %s · %s 格", en = "%s, %s, %s · %s blocks")
     private static final String NEARBY_LOCATION = "gtocore.dimension_scepter.nearby.location";
-
-    private static final Component BOOKMARKS_LABEL = Component.translatable(BOOKMARKS);
-    private static final Component BOOKMARKS_TIP_C = Component.translatable(BOOKMARKS_TIP);
-    private static final Component BOOKMARKS_NONE_SELECTED_C = Component.translatable(BOOKMARKS_NONE_SELECTED);
-    private static final Component BOOKMARKS_EMPTY_C = Component.translatable(BOOKMARKS_EMPTY);
-    private static final Component BOOKMARK_SELECT_C = Component.translatable(BOOKMARK_SELECT);
-    private static final Component BOOKMARK_TELEPORT_C = Component.translatable(BOOKMARK_TELEPORT);
-    private static final Component BOOKMARK_NO_SELECTION_C = Component.translatable(BOOKMARK_NO_SELECTION);
-    private static final Component BOOKMARK_REMOVE_C = Component.translatable(BOOKMARK_REMOVE);
-    private static final Component BOOKMARK_UNNAMED_C = Component.translatable(BOOKMARK_UNNAMED);
-    private static final Component BOOKMARK_UNAVAILABLE_C = Component.translatable(BOOKMARK_UNAVAILABLE);
-    private static final Component NEARBY_LABEL = Component.translatable(NEARBY);
-    private static final Component NEARBY_TIP_C = Component.translatable(NEARBY_TIP);
-    private static final Component NEARBY_HINT_C = Component.translatable(NEARBY_HINT);
-    private static final Component NEARBY_EMPTY_C = Component.translatable(NEARBY_EMPTY);
-    private static final Component BOOKMARK_ADD_C = Component.translatable(BOOKMARK_ADD);
-    private static final Component BOOKMARK_FULL_C = Component.translatable(BOOKMARK_FULL, DimensionScepterBookmarks.MAX_BOOKMARKS);
 
     private DimensionScepterUI() {}
 
