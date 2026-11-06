@@ -18785,7 +18785,7 @@
   "message.gtocore.ftbq_editmode.1": "如需编辑，请从github上下载原始任务文件，并放入config/ftbquests/下进行编辑。",
   "message.gtocore.ftbq_editmode.2": "欢迎向我们提交任何pull request或issue！",
   "message.mythicbotany.alfheim_overworld_only": "§c你只能在主世界进入亚尔夫海姆！",
-  "metaitem.pipe.tooltip": "使用扳手shift右键以设置§e自动抽取§r和§e限制传输方向§r",
+  "metaitem.pipe.tooltip": "使用扳手潜行右键可§e阻止该面输入§r，并让管道从其余面§e自动抽取§r",
   "metaitem.tool.tooltip.rotor.coating": "镀层材料：%s",
   "metaitem.tool.tooltip.rotor.coating.ench.efficiency": "效率附魔加成：%s%%",
   "metaitem.tool.tooltip.rotor.coating.ench.power": "力量附魔加成：%s%%",
