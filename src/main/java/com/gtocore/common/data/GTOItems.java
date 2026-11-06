@@ -1395,7 +1395,7 @@ public final class GTOItems {
                     .alwaysEat()
                     .fast()
                     .build()))
-            .onRegister(attach(new AntidoteBehavior(5,
+            .onRegister(attach(new AntidoteBehavior(10,
                     GTMedicalConditions.CHEMICAL_BURNS,
                     GTMedicalConditions.POISON,
                     GTMedicalConditions.WEAK_POISON,

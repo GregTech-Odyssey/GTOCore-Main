@@ -98,7 +98,8 @@ public final class MedicalConditionHUD implements IMoveableHUD {
     }
 
     private void updateLabel(MedicalCondition condition, float ratio) {
-        int percent = Mth.floor(ratio * 100);
+        // 进度条按 100% 封顶，文字同口径，避免"满格却显示 137%"
+        int percent = Mth.floor(Mth.clamp(ratio, 0, 1) * 100);
         Language language = Language.getInstance();
         if (labelCondition == condition && labelPercent == percent && labelLanguage == language) return;
         labelCondition = condition;
