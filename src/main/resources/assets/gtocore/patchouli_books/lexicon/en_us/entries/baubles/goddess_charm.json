@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.goddessCharm",
+  "category": "gtocore:baubles",
+  "icon": "botania:goddess_charm",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.goddessCharm0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.goddessCharm1",
+      "recipe": "botania:goddess_charm"
+    }
+  ]
+}

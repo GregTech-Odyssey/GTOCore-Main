@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.fallenKanade",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:fallen_kanade",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.fallenKanade0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

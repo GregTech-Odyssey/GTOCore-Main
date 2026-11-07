@@ -40,7 +40,7 @@ import com.chaosthedude.explorerscompass.ExplorersCompass;
 import com.chaosthedude.naturescompass.NaturesCompass;
 import commoble.jumbofurnace.JumboFurnace;
 import earth.terrarium.adastra.common.registry.ModItems;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -523,7 +523,7 @@ public final class MainStoneageChapter {
 
     public static final Quest Q_1BA9FA93 = CHAPTER.quest("q_1ba9fa93", q -> q
             .at(-3, 8)
-            .iconStack(() -> QuestStacks.withNbt(new ItemStack(BotaniaItems.lexicon), "{\"botania:elven_unlock\":1b}"))
+            .iconStack(() -> QuestStacks.withNbt(new ItemStack(BotaniaItems.getItem("lexicon")), "{\"botania:elven_unlock\":1b}"))
             .desc(d -> d
                     .line("如果你暂时不想推进主线了，可以看看支线：{独善其身}", AQUA)
                     .line()

@@ -1,6 +1,5 @@
 package com.gtocore.common.data.material;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.OreProperty;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
@@ -14,10 +13,7 @@ import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import com.kyanite.deeperdarker.content.DDItems;
 import earth.terrarium.adastra.common.registry.ModBlocks;
 import earth.terrarium.adastra.common.registry.ModItems;
-import io.github.lounode.extrabotany.common.block.ExtraBotanyBlocks;
-import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
-import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.*;
 
 import static com.gregtechceu.gtceu.common.data.GTItems.CARBON_FIBERS;
 import static com.gregtechceu.gtceu.common.data.GTItems.CARBON_MESH;
@@ -25,9 +21,6 @@ import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.api.data.tag.GTOTagPrefix.*;
 import static com.gtocore.common.data.GTOItems.*;
 import static com.gtocore.common.data.GTOMaterials.*;
-import static mythicbotany.register.ModBlocks.alfsteelBlock;
-import static mythicbotany.register.ModItems.alfsteelIngot;
-import static mythicbotany.register.ModItems.alfsteelNugget;
 
 public final class MaterialIgnored {
 
@@ -111,45 +104,48 @@ public final class MaterialIgnored {
         TagPrefix.plate.setIgnored(Calorite, ModItems.CALORITE_PLATE);
         TagPrefix.block.setIgnored(Calorite, ModBlocks.CALORITE_BLOCK);
 
-        TagPrefix.dust.setIgnored(Mana, () -> () -> BotaniaItems.manaPowder);
-        TagPrefix.ingot.setIgnored(Manasteel, () -> () -> BotaniaItems.manaSteel);
-        TagPrefix.nugget.setIgnored(Manasteel, () -> () -> BotaniaItems.manasteelNugget);
-        TagPrefix.block.setIgnored(Manasteel, () -> BotaniaBlocks.manasteelBlock);
-        TagPrefix.ingot.setIgnored(Terrasteel, () -> () -> BotaniaItems.terrasteel);
-        TagPrefix.nugget.setIgnored(Terrasteel, () -> () -> BotaniaItems.terrasteelNugget);
-        TagPrefix.block.setIgnored(Terrasteel, () -> BotaniaBlocks.terrasteelBlock);
-        TagPrefix.ingot.setIgnored(Elementium, () -> () -> BotaniaItems.elementium);
-        TagPrefix.nugget.setIgnored(Elementium, () -> () -> BotaniaItems.elementiumNugget);
-        TagPrefix.block.setIgnored(Elementium, () -> BotaniaBlocks.elementiumBlock);
-        TagPrefix.ingot.setIgnored(Gaia, () -> () -> BotaniaItems.gaiaIngot);
-        TagPrefix.gem.setIgnored(ManaDiamond, () -> () -> BotaniaItems.manaDiamond);
-        TagPrefix.block.setIgnored(ManaDiamond, () -> BotaniaBlocks.manaDiamondBlock);
-        TagPrefix.gem.setIgnored(Dragonstone, () -> () -> BotaniaItems.dragonstone);
-        TagPrefix.block.setIgnored(Dragonstone, () -> BotaniaBlocks.dragonstoneBlock);
+        TagPrefix.dust.setIgnored(Mana, () -> () -> BotaniaItems.getItem("mana_powder"));
+        TagPrefix.ingot.setIgnored(Manasteel, () -> () -> BotaniaItems.getItem("manasteel_ingot"));
+        TagPrefix.nugget.setIgnored(Manasteel, () -> () -> BotaniaItems.getItem("manasteel_nugget"));
+        TagPrefix.block.setIgnored(Manasteel, () -> BotaniaBlocks.getBlock("manasteel_block"));
+        TagPrefix.ingot.setIgnored(Terrasteel, () -> () -> BotaniaItems.getItem("terrasteel_ingot"));
+        TagPrefix.nugget.setIgnored(Terrasteel, () -> () -> BotaniaItems.getItem("terrasteel_nugget"));
+        TagPrefix.block.setIgnored(Terrasteel, () -> BotaniaBlocks.getBlock("terrasteel_block"));
+        TagPrefix.ingot.setIgnored(Elementium, () -> () -> BotaniaItems.getItem("elementium_ingot"));
+        TagPrefix.nugget.setIgnored(Elementium, () -> () -> BotaniaItems.getItem("elementium_nugget"));
+        TagPrefix.block.setIgnored(Elementium, () -> BotaniaBlocks.getBlock("elementium_block"));
+        TagPrefix.ingot.setIgnored(Gaia, () -> () -> BotaniaItems.getItem("gaia_ingot"));
+        TagPrefix.gem.setIgnored(ManaDiamond, () -> () -> BotaniaItems.getItem("mana_diamond"));
+        TagPrefix.block.setIgnored(ManaDiamond, () -> BotaniaBlocks.getBlock("mana_diamond_block"));
+        TagPrefix.gem.setIgnored(Dragonstone, () -> () -> BotaniaItems.getItem("dragonstone"));
+        TagPrefix.block.setIgnored(Dragonstone, () -> BotaniaBlocks.getBlock("dragonstone_block"));
         TagPrefix.gem.setIgnored(SourceGem, () -> ItemsRegistry.SOURCE_GEM);
         TagPrefix.block.setIgnored(SourceGem, () -> BlockRegistry.SOURCE_GEM_BLOCK);
 
-        TagPrefix.nugget.setIgnored(Orichalcos, () -> ExtraBotanyItems.orichalcosNugget);
-        TagPrefix.ingot.setIgnored(Orichalcos, () -> ExtraBotanyItems.orichalcos);
-        TagPrefix.block.setIgnored(Orichalcos, () -> ExtraBotanyBlocks.orichalcosBlock);
-        TagPrefix.nugget.setIgnored(Photonium, () -> ExtraBotanyItems.photoniumNugget);
-        TagPrefix.ingot.setIgnored(Photonium, () -> ExtraBotanyItems.photonium);
-        TagPrefix.block.setIgnored(Photonium, () -> ExtraBotanyBlocks.photoniumBlock);
-        TagPrefix.nugget.setIgnored(Shadowium, () -> ExtraBotanyItems.shadowiumNugget);
-        TagPrefix.ingot.setIgnored(Shadowium, () -> ExtraBotanyItems.shadowium);
-        TagPrefix.block.setIgnored(Shadowium, () -> ExtraBotanyBlocks.shadowiumBlock);
-        TagPrefix.nugget.setIgnored(Aerialite, () -> ExtraBotanyItems.aerialiteNugget);
-        TagPrefix.ingot.setIgnored(Aerialite, () -> ExtraBotanyItems.aerialite);
-        TagPrefix.block.setIgnored(Aerialite, () -> ExtraBotanyBlocks.aerialiteBlock);
+        TagPrefix.nugget.setIgnored(Orichalcos, () -> ExtraBotanyItems.getItem("orichalcos_nugget"));
+        TagPrefix.ingot.setIgnored(Orichalcos, () -> ExtraBotanyItems.getItem("orichalcos_ingot"));
+        TagPrefix.block.setIgnored(Orichalcos, () -> ExtraBotanyBlocks.getBlock("orichalcos_block"));
+        TagPrefix.nugget.setIgnored(Photonium, () -> ExtraBotanyItems.getItem("photonium_nugget"));
+        TagPrefix.ingot.setIgnored(Photonium, () -> ExtraBotanyItems.getItem("photonium_ingot"));
+        TagPrefix.block.setIgnored(Photonium, () -> ExtraBotanyBlocks.getBlock("photonium_block"));
+        TagPrefix.nugget.setIgnored(Shadowium, () -> ExtraBotanyItems.getItem("shadowium_nugget"));
+        TagPrefix.ingot.setIgnored(Shadowium, () -> ExtraBotanyItems.getItem("shadowium_ingot"));
+        TagPrefix.block.setIgnored(Shadowium, () -> ExtraBotanyBlocks.getBlock("shadowium_block"));
+        TagPrefix.nugget.setIgnored(Aerialite, () -> ExtraBotanyItems.getItem("aerialite_nugget"));
+        TagPrefix.ingot.setIgnored(Aerialite, () -> ExtraBotanyItems.getItem("aerialite_ingot"));
+        TagPrefix.block.setIgnored(Aerialite, () -> ExtraBotanyBlocks.getBlock("aerialite_block"));
+        TagPrefix.ingot.setIgnored(Alfsteel, () -> () -> MythicBotanyItems.getItem("alfsteel_ingot"));
+        TagPrefix.nugget.setIgnored(Alfsteel, () -> () -> MythicBotanyItems.getItem("alfsteel_nugget"));
+        TagPrefix.block.setIgnored(Alfsteel, () -> MythicBotanyBlocks.getBlock("alfsteel_block"));
 
-        TagPrefix.block.setIgnored(Livingwood, () -> BotaniaBlocks.livingwoodPlanks);
-        TagPrefix.block.setIgnored(Dreamwood, () -> BotaniaBlocks.dreamwoodPlanks);
-        TagPrefix.block.setIgnored(Shimmerwood, () -> BotaniaBlocks.shimmerwoodPlanks);
-        TagPrefix.block.setIgnored(Livingrock, () -> BotaniaBlocks.livingrock);
-        TagPrefix.block.setIgnored(Shimmerrock, () -> BotaniaBlocks.shimmerrock);
-        TagPrefix.block.setIgnored(ManaGlass, () -> BotaniaBlocks.manaGlass);
-        TagPrefix.block.setIgnored(ElfGlass, () -> BotaniaBlocks.elfGlass);
-        TagPrefix.block.setIgnored(BifrostPerm, () -> BotaniaBlocks.bifrostPerm);
+        TagPrefix.block.setIgnored(Livingwood, () -> BotaniaBlocks.getBlock("livingwood_planks"));
+        TagPrefix.block.setIgnored(Dreamwood, () -> BotaniaBlocks.getBlock("dreamwood_planks"));
+        TagPrefix.block.setIgnored(Shimmerwood, () -> BotaniaBlocks.getBlock("shimmerwood_planks"));
+        TagPrefix.block.setIgnored(Livingrock, () -> BotaniaBlocks.getBlock("livingrock"));
+        TagPrefix.block.setIgnored(Shimmerrock, () -> BotaniaBlocks.getBlock("shimmerrock"));
+        TagPrefix.block.setIgnored(ManaGlass, () -> BotaniaBlocks.getBlock("mana_glass"));
+        TagPrefix.block.setIgnored(ElfGlass, () -> BotaniaBlocks.getBlock("elf_glass"));
+        TagPrefix.block.setIgnored(BifrostPerm, () -> BotaniaBlocks.getBlock("bifrost_perm"));
 
         COIN.setIgnored(Neutron, () -> NEUTRON_COIN);
 
@@ -176,11 +172,5 @@ public final class MaterialIgnored {
         NANO.setIgnored(Aluminium, () -> ChemicalHelper.get(dust, NanoAluminum).getItem());
 
         block.modifyMaterialAmount(Fluix, 4);
-
-        if (GTCEu.isProd()) {
-            TagPrefix.ingot.setIgnored(Alfsteel, () -> () -> alfsteelIngot);
-            TagPrefix.nugget.setIgnored(Alfsteel, () -> () -> alfsteelNugget);
-            TagPrefix.block.setIgnored(Alfsteel, () -> alfsteelBlock);
-        }
     }
 }

@@ -1,0 +1,20 @@
+{
+  "name": "botania.entry.bloodPendant",
+  "category": "gtocore:baubles",
+  "icon": "botania:blood_pendant",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.bloodPendant0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.bloodPendant1"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.bloodPendant2",
+      "recipe": "botania:blood_pendant"
+    }
+  ]
+}

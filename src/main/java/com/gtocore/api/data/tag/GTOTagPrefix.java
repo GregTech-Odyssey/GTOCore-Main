@@ -36,7 +36,7 @@ import com.kyanite.deeperdarker.content.DDBlocks;
 import earth.terrarium.adastra.common.registry.ModBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
 
 import java.util.regex.Pattern;
 
@@ -97,7 +97,7 @@ public final class GTOTagPrefix extends TagPrefix {
     public static final TagPrefix CERES_STONE = ore("ceres_stone").registerOre(() -> GTOBlocks.CERES_STONE.get().defaultBlockState(), null, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), GTOCore.id("block/ceres_stone"));
     public static final TagPrefix SCULK_STONE = ore("sculk_stone").registerOre(() -> DDBlocks.SCULK_STONE.get().defaultBlockState(), null, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).requiresCorrectToolForDrops().strength(3.5F, 4.5F), DeeperDarker.rl("block/sculk_stone"));
     public static final TagPrefix GLOOMSLATE = ore("gloomslate").registerOre(() -> DDBlocks.GLOOMSLATE.get().defaultBlockState(), null, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).requiresCorrectToolForDrops().strength(4.0F, 5.0F), DeeperDarker.rl("block/gloomslate"));
-    public static final TagPrefix LIVING_STONE = ore("living_rock").registerOre(BotaniaBlocks.livingrock::defaultBlockState, null, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), RLUtils.bot("block/livingrock"));
+    public static final TagPrefix LIVING_STONE = ore("living_rock").registerOre(BotaniaBlocks.getBlock("livingrock")::defaultBlockState, null, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), RLUtils.bot("block/livingrock"));
     private static final MaterialIconType NANITES_ICON = new MaterialIconType("nanites");
     public static final TagPrefix CATALYST = new GTOTagPrefix("catalyst").tooltip((mat, list) -> {
         list.add(Tips.penalty(Component.translatable("gtocore.tooltip.item.catalyst.1")));

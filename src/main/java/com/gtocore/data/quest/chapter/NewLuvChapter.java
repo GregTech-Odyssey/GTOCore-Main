@@ -43,7 +43,7 @@ import net.minecraft.world.item.Items;
 import appeng.core.definitions.AEItems;
 
 import earth.terrarium.adastra.common.registry.ModItems;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -1366,8 +1366,8 @@ public final class NewLuvChapter {
     public static final Quest ELF_GLASS = CHAPTER.quest("elf_glass", q -> q
             .at(20, 26)
             .title("精灵玻璃")
-            .task(Task.item(BotaniaBlocks.elfGlass, 8))
-            .scaledReward(BotaniaBlocks.manaGlass, 8)
+            .task(Task.item(BotaniaBlocks.getBlock("elf_glass"), 8))
+            .scaledReward(BotaniaBlocks.getBlock("mana_glass"), 8)
             .dependsOn(EXQUISITE_GEMS_COPY_2));
 
     public static final Quest ELF_GLASS_LENS = CHAPTER.quest("elf_glass_lens", q -> q

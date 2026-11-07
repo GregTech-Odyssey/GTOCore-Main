@@ -39,7 +39,7 @@ import com.hollingsworth.arsnouveau.common.compat.ae2.ArsAE2;
 import com.ultramega.ae2insertexportcard.registry.ModItems;
 import de.mari_023.ae2wtlib.AE2wtlib;
 import io.github.lapis256.ae2_toggleable_view_cell.AE2ToggleableViewCell;
-import vazkii.botania.forge.integration.ae2.BotaniaAE2;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -283,7 +283,7 @@ public final class AeChapter {
 
     public static final Quest MANA_CELL_HOUSING = CHAPTER.quest("mana_cell_housing", q -> q
             .at(1.5, 8.5)
-            .task(Task.item(BotaniaAE2.manaCellHousing))
+            .task(Task.item(BotaniaItems.MANA_CELL_HOUSING.get()))
             .dependsOn(DRIVE)
             .hideDependencyLines());
 
@@ -1285,27 +1285,27 @@ public final class AeChapter {
 
     public static final Quest MANA_STORAGE_CELL_1K = CHAPTER.quest("mana_storage_cell_1k", q -> q
             .at(2.5, 8.5)
-            .task(Task.item(BotaniaAE2.MANA_CELLS.get(0)))
+            .task(Task.item(BotaniaItems.MANA_STORAGE_CELL_1K.get()))
             .dependsOn(CELL_COMPONENT_1K));
 
     public static final Quest MANA_STORAGE_CELL_4K = CHAPTER.quest("mana_storage_cell_4k", q -> q
             .at(3.5, 8.5)
-            .task(Task.item(BotaniaAE2.MANA_CELLS.get(1)))
+            .task(Task.item(BotaniaItems.MANA_STORAGE_CELL_4K.get()))
             .dependsOn(CELL_COMPONENT_4K));
 
     public static final Quest MANA_STORAGE_CELL_16K = CHAPTER.quest("mana_storage_cell_16k", q -> q
             .at(4.5, 8.5)
-            .task(Task.item(BotaniaAE2.MANA_CELLS.get(2)))
+            .task(Task.item(BotaniaItems.MANA_STORAGE_CELL_16K.get()))
             .dependsOn(CELL_COMPONENT_16K));
 
     public static final Quest MANA_STORAGE_CELL_64K = CHAPTER.quest("mana_storage_cell_64k", q -> q
             .at(5.5, 8.5)
-            .task(Task.item(BotaniaAE2.MANA_CELLS.get(3)))
+            .task(Task.item(BotaniaItems.MANA_STORAGE_CELL_64K.get()))
             .dependsOn(CELL_COMPONENT_64K));
 
     public static final Quest MANA_STORAGE_CELL_256K = CHAPTER.quest("mana_storage_cell_256k", q -> q
             .at(6.5, 8.5)
-            .task(Task.item(BotaniaAE2.MANA_CELLS.get(4)))
+            .task(Task.item(BotaniaItems.MANA_STORAGE_CELL_256K.get()))
             .dependsOn(CELL_COMPONENT_256K));
 
     public static final Quest T1_ME_STORAGE_CORE = CHAPTER.quest("t1_me_storage_core", q -> q

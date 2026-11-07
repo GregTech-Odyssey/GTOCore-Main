@@ -1,0 +1,11 @@
+{
+  "name": "botania.entry.complexBrews",
+  "category": "gtocore:devices",
+  "icon": "botania:brew_vial",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.complexBrews0"
+    }
+  ]
+}

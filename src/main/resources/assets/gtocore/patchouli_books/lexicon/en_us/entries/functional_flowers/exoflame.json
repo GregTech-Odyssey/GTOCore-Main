@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.exoflame",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:exoflame",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.exoflame0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

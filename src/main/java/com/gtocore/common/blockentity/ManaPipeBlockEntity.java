@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
-import vazkii.botania.api.internal.ManaBurst;
 import vazkii.botania.api.mana.ManaCollector;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
@@ -144,14 +143,6 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
             this.currentPipeNet = new WeakReference<>(currentPipeNet);
         }
         return currentPipeNet;
-    }
-
-    @Override
-    public void onClientDisplayTick() {}
-
-    @Override
-    public float getManaYieldMultiplier(ManaBurst burst) {
-        return 1;
     }
 
     @Override
@@ -497,14 +488,6 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         @Override
         public boolean canReceiveManaFromBursts() {
             return ManaPipeBlockEntity.this.canReceiveManaFromBursts(side);
-        }
-
-        @Override
-        public void onClientDisplayTick() {}
-
-        @Override
-        public float getManaYieldMultiplier(ManaBurst burst) {
-            return 1;
         }
 
         @Override

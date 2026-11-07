@@ -1,0 +1,21 @@
+{
+  "name": "botania.entry.spawnerClaw",
+  "category": "gtocore:ender",
+  "icon": "botania:spawner_claw",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.spawnerClaw0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.spawnerClaw1"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.spawnerClaw2",
+      "recipe": "botania:spawner_claw"
+    }
+  ]
+}

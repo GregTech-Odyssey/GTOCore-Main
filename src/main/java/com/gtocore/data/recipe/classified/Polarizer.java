@@ -9,7 +9,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
 
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtocore.common.data.GTORecipeTypes.POLARIZER_RECIPES;
 
@@ -73,7 +73,7 @@ final class Polarizer {
                 .save();
 
         POLARIZER_RECIPES.recipeBuilder("magnetized_mana_cookie")
-                .inputItems(BotaniaItems.manaCookie)
+                .inputItems(BotaniaItems.getItem("mana_cookie"))
                 .outputItems(GTOItems.MAGNETIZED_MANA_COOKIE)
                 .EUt(GTValues.VA[GTValues.ULV])
                 .duration(100)

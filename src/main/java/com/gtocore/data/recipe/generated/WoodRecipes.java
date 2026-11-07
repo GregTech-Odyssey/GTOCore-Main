@@ -27,7 +27,7 @@ import com.kyanite.deeperdarker.content.DDBlocks;
 import earth.terrarium.adastra.AdAstra;
 import earth.terrarium.adastra.common.registry.ModBlocks;
 import vazkii.botania.api.BotaniaAPI;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -316,26 +316,26 @@ public final class WoodRecipes {
                 .pressurePlate(DDBlocks.BLOOM_PRESSURE_PLATE.get().asItem(), "bloom_pressure_plate")
                 .build());
         entries.add(new WoodTypeEntry.Builder(BotaniaAPI.MODID, "livingwood")
-                .planks(BotaniaBlocks.livingwoodPlanks.asItem(), "livingwood_planks")
-                .log(BotaniaBlocks.livingwoodLog.asItem())
-                .strippedLog(BotaniaBlocks.livingwoodLogStripped.asItem())
-                .wood(BotaniaBlocks.livingwood.asItem())
-                .strippedWood(BotaniaBlocks.livingwoodStripped.asItem())
-                .slab(BotaniaBlocks.livingwoodPlankSlab.asItem(), "livingwood_planks_slab")
-                .fence(BotaniaBlocks.livingwoodFence.asItem(), "livingwood_fence")
-                .fenceGate(BotaniaBlocks.livingwoodFenceGate.asItem(), "livingwood_fence_gate")
-                .stairs(BotaniaBlocks.livingwoodPlankStairs.asItem(), "livingwood_planks_stairs")
+                .planks(BotaniaBlocks.getBlock("livingwood_planks").asItem(), "livingwood_planks")
+                .log(BotaniaBlocks.getBlock("livingwood_log").asItem())
+                .strippedLog(BotaniaBlocks.getBlock("stripped_livingwood_log").asItem())
+                .wood(BotaniaBlocks.getBlock("livingwood").asItem())
+                .strippedWood(BotaniaBlocks.getBlock("stripped_livingwood").asItem())
+                .slab(BotaniaBlocks.getBlock("livingwood_planks_slab").asItem(), "livingwood_planks_slab")
+                .fence(BotaniaBlocks.getBlock("livingwood_fence").asItem(), "livingwood_fence")
+                .fenceGate(BotaniaBlocks.getBlock("livingwood_fence_gate").asItem(), "livingwood_fence_gate")
+                .stairs(BotaniaBlocks.getBlock("livingwood_planks_stairs").asItem(), "livingwood_planks_stairs")
                 .build());
         entries.add(new WoodTypeEntry.Builder(BotaniaAPI.MODID, "dreamwood")
-                .planks(BotaniaBlocks.dreamwoodPlanks.asItem(), "dreamwood_planks")
-                .log(BotaniaBlocks.dreamwoodLog.asItem())
-                .strippedLog(BotaniaBlocks.dreamwoodLogStripped.asItem())
-                .wood(BotaniaBlocks.dreamwood.asItem())
-                .strippedWood(BotaniaBlocks.dreamwoodStripped.asItem())
-                .slab(BotaniaBlocks.dreamwoodPlankSlab.asItem(), "dreamwood_planks_slab")
-                .fence(BotaniaBlocks.dreamwoodFence.asItem(), "dreamwood_fence")
-                .fenceGate(BotaniaBlocks.dreamwoodFenceGate.asItem(), "dreamwood_fence_gate")
-                .stairs(BotaniaBlocks.dreamwoodPlankStairs.asItem(), "dreamwood_planks_stairs")
+                .planks(BotaniaBlocks.getBlock("dreamwood_planks").asItem(), "dreamwood_planks")
+                .log(BotaniaBlocks.getBlock("dreamwood_log").asItem())
+                .strippedLog(BotaniaBlocks.getBlock("stripped_dreamwood_log").asItem())
+                .wood(BotaniaBlocks.getBlock("dreamwood").asItem())
+                .strippedWood(BotaniaBlocks.getBlock("stripped_dreamwood").asItem())
+                .slab(BotaniaBlocks.getBlock("dreamwood_planks_slab").asItem(), "dreamwood_planks_slab")
+                .fence(BotaniaBlocks.getBlock("dreamwood_fence").asItem(), "dreamwood_fence")
+                .fenceGate(BotaniaBlocks.getBlock("dreamwood_fence_gate").asItem(), "dreamwood_fence_gate")
+                .stairs(BotaniaBlocks.getBlock("dreamwood_planks_stairs").asItem(), "dreamwood_planks_stairs")
                 .build());
         if (Mods.BIOMESOPLENTY.isLoaded()) {
             entries.add(new WoodTypeEntry.Builder("biomesoplenty", "fir")
