@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.arcanerose",
+  "category": "gtocore:generating_flowers",
+  "icon": "botania:rosa_arcana",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.arcanerose0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

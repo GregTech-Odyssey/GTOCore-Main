@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "botania:mana_glass"
+    },
+    "I": {
+      "tag": "botania:manasteel_ingots"
+    },
+    "N": {
+      "item": "minecraft:gold_nugget"
+    }
+  },
+  "pattern": ["GN", "IN", " N"],
+  "result": {
+    "item": "botania:monocle"
+  },
+  "show_notification": true
+}

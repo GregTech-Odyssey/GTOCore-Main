@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:metamorphic_cobble_slab",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_plains_cobblestone"
+    }
+  },
+  "pattern": ["QQQ"],
+  "result": {
+    "count": 6,
+    "item": "botania:metamorphic_plains_cobblestone_slab"
+  },
+  "show_notification": true
+}

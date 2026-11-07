@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "botania:lens_normal"
+    },
+    {
+      "item": "botania:rune_envy"
+    }
+  ],
+  "result": {
+    "item": "botania:lens_explosive"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "E": {
+      "tag": "botania:elementium_ingots"
+    },
+    "L": {
+      "item": "botania:life_essence"
+    },
+    "S": {
+      "item": "botania:travel_belt"
+    }
+  },
+  "pattern": ["E  ", " S ", "L E"],
+  "result": {
+    "item": "botania:super_travel_belt"
+  },
+  "show_notification": true
+}

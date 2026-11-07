@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:quartz_pillar",
+  "key": {
+    "Q": {
+      "item": "botania:sunny_quartz"
+    }
+  },
+  "pattern": ["Q", "Q"],
+  "result": {
+    "count": 2,
+    "item": "botania:sunny_quartz_pillar"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/flower_pot_cross",
+  "textures": {
+    "plant": "botania:block/white_mushroom"
+  },
+  "render_type": "minecraft:cutout"
+}

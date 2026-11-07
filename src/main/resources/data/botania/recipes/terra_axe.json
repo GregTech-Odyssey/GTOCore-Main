@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "minecraft:glowstone"
+    },
+    "S": {
+      "item": "botania:livingwood_twig"
+    },
+    "T": {
+      "tag": "botania:terrasteel_ingots"
+    }
+  },
+  "pattern": ["TTG", "TST", " S "],
+  "result": {
+    "item": "botania:terra_axe"
+  },
+  "show_notification": true
+}

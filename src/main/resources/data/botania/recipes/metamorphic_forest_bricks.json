@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:metamorphic_brick",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_forest_stone"
+    }
+  },
+  "pattern": ["QQ", "QQ"],
+  "result": {
+    "count": 4,
+    "item": "botania:metamorphic_forest_bricks"
+  },
+  "show_notification": true
+}

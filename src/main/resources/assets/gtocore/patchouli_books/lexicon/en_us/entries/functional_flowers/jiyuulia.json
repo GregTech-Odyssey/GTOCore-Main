@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.jiyuulia",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:jiyuulia",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.jiyuulia0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

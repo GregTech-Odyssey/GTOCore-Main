@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": {
+      "item": "mythicbotany:alfsteel_nugget"
+    }
+  },
+  "pattern": ["aaa", "aaa", "aaa"],
+  "result": {
+    "item": "mythicbotany:alfsteel_ingot"
+  },
+  "show_notification": true
+}

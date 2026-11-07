@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:glimmering_livingwood",
+  "key": {
+    "#": {
+      "item": "botania:glimmering_livingwood_log"
+    }
+  },
+  "pattern": ["##", "##"],
+  "result": {
+    "count": 3,
+    "item": "botania:glimmering_livingwood"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,13 @@
+{
+  "loader": "forge:obj",
+  "model": "botania:models/special/teru_teru_bozu_block.obj",
+  "flip_v": false,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "original": "botania:block/special/teru_teru_bozu",
+    "particle": "minecraft:block/white_wool"
+  }
+}

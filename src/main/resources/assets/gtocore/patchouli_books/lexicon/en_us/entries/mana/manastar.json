@@ -1,0 +1,13 @@
+{
+  "name": "botania.entry.manastar",
+  "category": "gtocore:mana",
+  "icon": "botania:manastar",
+  "priority": true,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.manastar0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "minecraft:clay"
+    },
+    "M": {
+      "tag": "botania:manasteel_ingots"
+    }
+  },
+  "pattern": ["CM ", "M M", " M "],
+  "result": {
+    "item": "botania:swap_ring"
+  },
+  "show_notification": true
+}

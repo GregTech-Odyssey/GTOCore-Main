@@ -1,0 +1,29 @@
+{
+  "name": "botania.entry.brewery",
+  "category": "gtocore:devices",
+  "icon": "botania:brewery",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.brewery0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.brewery1"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.brewery2",
+      "recipe": "botania:brewery"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.brewery3",
+      "recipe": "botania:vial"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.brewery4"
+    }
+  ]
+}

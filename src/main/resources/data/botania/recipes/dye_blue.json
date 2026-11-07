@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:dye",
+  "ingredients": [
+    {
+      "tag": "botania:petals/blue"
+    }
+  ],
+  "result": {
+    "item": "minecraft:blue_dye"
+  }
+}

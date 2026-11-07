@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.terraAxe",
+  "category": "gtocore:tools",
+  "icon": "botania:terra_axe",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.terraAxe0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.terraAxe1",
+      "recipe": "botania:terra_axe"
+    }
+  ]
+}

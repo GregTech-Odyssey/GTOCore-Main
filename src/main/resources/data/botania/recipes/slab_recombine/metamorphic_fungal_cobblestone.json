@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_fungal_cobblestone_slab"
+    }
+  },
+  "pattern": ["QQ"],
+  "result": {
+    "item": "botania:metamorphic_fungal_cobblestone"
+  },
+  "show_notification": true
+}

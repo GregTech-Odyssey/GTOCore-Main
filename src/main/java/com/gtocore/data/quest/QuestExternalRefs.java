@@ -42,8 +42,8 @@ import com.hollingsworth.arsnouveau.common.ritual.RitualWildenSummoning;
 import de.maxhenkel.pipez.blocks.ModBlocks;
 import dev.gigaherz.toolbelt.ToolBelt;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
-import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
 import umpaz.farmersrespite.common.registry.FRItems;
+import vazkii.botania.common.ExtraBotanyItems;
 import vazkii.patchouli.common.item.PatchouliItems;
 import vectorwing.farmersdelight.common.registry.ModItems;
 
@@ -82,7 +82,7 @@ public final class QuestExternalRefs {
     }
 
     public static ItemStack healingWine() {
-        return QuestStacks.withNbt(new ItemStack(ExtraBotanyItems.infiniteWine), "{brewKey:\"botania:healing\"}");
+        return QuestStacks.withNbt(new ItemStack(ExtraBotanyItems.getItem("infinite_wine")), "{brewKey:\"botania:healing\"}");
     }
 
     public static ItemStack mageslayerGem() {
@@ -115,6 +115,11 @@ public final class QuestExternalRefs {
 
     private static OptionalItem optional(Mods mod, Supplier<? extends ItemLike> item) {
         return optional(mod::isLoaded, item);
+    }
+
+    /** 复刻内容与本体同在一个 jar，按注册名取用，始终可用。 */
+    private static OptionalItem ported(String namespace, String path) {
+        return optional(() -> true, () -> byId(namespace, path));
     }
 
     public static OptionalItem optional(BooleanSupplier available, Supplier<? extends ItemLike> item) {
@@ -333,24 +338,24 @@ public final class QuestExternalRefs {
 
     public static final class MythicBotanyItems {
 
-        public static final OptionalItem ALFSTEEL_INGOT = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModItems.alfsteelIngot);
-        public static final OptionalItem ALFSTEEL_PYLON = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.alfsteelPylon);
-        public static final OptionalItem AQUAPANTHUS = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.aquapanthus);
-        public static final OptionalItem ASGARD_RUNE = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModItems.asgardRune);
-        public static final OptionalItem CENTRAL_RUNE_HOLDER = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.centralRuneHolder);
-        public static final OptionalItem EXOBLAZE = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.exoblaze);
-        public static final OptionalItem FEYSYTHIA = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.feysythia);
-        public static final OptionalItem FIMBULTYR_TABLET = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModItems.fimbultyrTablet);
-        public static final OptionalItem GJALLAR_HORN_FULL = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModItems.gjallarHornFull);
-        public static final OptionalItem HELLEBORE = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.hellebore);
-        public static final OptionalItem KVASIR_MEAD = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModItems.kvasirMead);
-        public static final OptionalItem MANA_INFUSER = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.manaInfuser);
-        public static final OptionalItem MJOELLNIR = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.mjoellnir);
-        public static final OptionalItem PETRUNIA = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.petrunia);
-        public static final OptionalItem RAINDELETIA = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.raindeletia);
-        public static final OptionalItem RUNE_HOLDER = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.runeHolder);
-        public static final OptionalItem WITHER_ACONITE = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.witherAconite);
-        public static final OptionalItem YGGDRASIL_BRANCH = optional(Mods.MYTHICBOTANY, () -> mythicbotany.register.ModBlocks.yggdrasilBranch);
+        public static final OptionalItem ALFSTEEL_INGOT = ported("mythicbotany", "alfsteel_ingot");
+        public static final OptionalItem ALFSTEEL_PYLON = ported("mythicbotany", "alfsteel_pylon");
+        public static final OptionalItem AQUAPANTHUS = ported("mythicbotany", "aquapanthus");
+        public static final OptionalItem ASGARD_RUNE = ported("mythicbotany", "asgard_rune");
+        public static final OptionalItem CENTRAL_RUNE_HOLDER = ported("mythicbotany", "central_rune_holder");
+        public static final OptionalItem EXOBLAZE = ported("mythicbotany", "exoblaze");
+        public static final OptionalItem FEYSYTHIA = ported("mythicbotany", "feysythia");
+        public static final OptionalItem FIMBULTYR_TABLET = ported("mythicbotany", "fimbultyr_tablet");
+        public static final OptionalItem GJALLAR_HORN_FULL = ported("mythicbotany", "gjallar_horn_full");
+        public static final OptionalItem HELLEBORE = ported("mythicbotany", "hellebore");
+        public static final OptionalItem KVASIR_MEAD = ported("mythicbotany", "kvasir_mead");
+        public static final OptionalItem MANA_INFUSER = ported("mythicbotany", "mana_infuser");
+        public static final OptionalItem MJOELLNIR = ported("mythicbotany", "mjoellnir");
+        public static final OptionalItem PETRUNIA = ported("mythicbotany", "petrunia");
+        public static final OptionalItem RAINDELETIA = ported("mythicbotany", "raindeletia");
+        public static final OptionalItem RUNE_HOLDER = ported("mythicbotany", "rune_holder");
+        public static final OptionalItem WITHER_ACONITE = ported("mythicbotany", "wither_aconite");
+        public static final OptionalItem YGGDRASIL_BRANCH = ported("mythicbotany", "yggdrasil_branch");
 
         private MythicBotanyItems() {}
     }

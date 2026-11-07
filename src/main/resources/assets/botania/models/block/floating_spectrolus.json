@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "flower": {
+    "parent": "botania:block/spectrolus"
+  },
+  "loader": "gtocore:floating_flower"
+}

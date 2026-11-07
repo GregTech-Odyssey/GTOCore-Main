@@ -53,6 +53,9 @@ import com.gto.registrate.util.nullness.NonNullBiConsumer;
 
 import com.hollingsworth.arsnouveau.common.block.LargeSourceJar;
 import com.hollingsworth.arsnouveau.common.block.SourceJar;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.ExtraBotanyBlocks;
+import vazkii.botania.common.MythicBotanyBlocks;
 import vazkii.botania.common.block.mana.LargeManaPoolBlock;
 import vazkii.botania.common.block.mana.ManaPoolBlock;
 
@@ -60,6 +63,8 @@ import java.util.Locale;
 
 import static com.gtocore.common.block.BlockMap.*;
 import static com.gtocore.common.block.GlowingBlock.createStarStone;
+import static com.gtocore.common.block.LaurerilManaPools.registerLarge;
+import static com.gtocore.common.block.LaurerilManaPools.registerPool;
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static com.gtolib.utils.register.BlockRegisterUtils.*;
 
@@ -91,6 +96,9 @@ public final class GTOBlocks {
         registerPipeBlocks();
         GTOBlockEntities.init();
         MonitorRegistries.init();
+        BotaniaBlocks.init();
+        MythicBotanyBlocks.init();
+        ExtraBotanyBlocks.init();
     }
 
     public static final BlockEntry<GelidCryotheumBlock> GELID_CRYOTHEUM = block("gelid_cryotheum", "极寒之凛冰", GelidCryotheumBlock::new)

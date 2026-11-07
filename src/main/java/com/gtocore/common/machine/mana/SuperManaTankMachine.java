@@ -38,7 +38,6 @@ import vazkii.botania.api.mana.ManaEndpoint;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
 import vazkii.botania.api.mana.spark.SparkAttachable;
-import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.Optional;
 
@@ -144,13 +143,13 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
             // 邻居缓存：方块状态与方块实体都直接取缓存，不再按坐标查找
             var be = holder.getNeighborBlockEntity(facing);
             if (be == null) continue;
-            var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, getPos().relative(facing),
-                    holder.getNeighborBlockState(facing), be, facing.getOpposite());
-            if (receiver != null) {
-                outputMana(receiver);
-            } else if (be instanceof ISourceTile sourceTile) {
-                outputSource(sourceTile);
-            }
+            // var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, getPos().relative(facing),
+            // holder.getNeighborBlockState(facing), be, facing.getOpposite());
+            // if (receiver != null) {
+            // outputMana(receiver);
+            // } else if (be instanceof ISourceTile sourceTile) {
+            // outputSource(sourceTile);
+            // }
         }
     }
 

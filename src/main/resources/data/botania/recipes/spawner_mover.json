@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "botania:ender_air_bottle"
+    },
+    "D": {
+      "tag": "botania:dragonstone_gems"
+    },
+    "E": {
+      "item": "botania:life_essence"
+    },
+    "I": {
+      "tag": "botania:elementium_ingots"
+    }
+  },
+  "pattern": ["EIE", "ADA", "EIE"],
+  "result": {
+    "item": "botania:spawner_mover"
+  },
+  "show_notification": true
+}

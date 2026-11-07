@@ -10,7 +10,6 @@ import com.gtocore.data.tag.Tags;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
-import com.gtolib.api.quest.reward.QuestStacks;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -31,11 +30,9 @@ import net.minecraft.world.item.Items;
 import com.gto.registrate.util.entry.ItemEntry;
 
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
-import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
-import mythicbotany.register.ModItems;
-import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.helper.ItemNBTHelper;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.BotaniaItems;
+import vazkii.botania.common.ExtraBotanyItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
@@ -114,7 +111,7 @@ public final class MagicRecipesB {
                     .save();
 
             CELESTIAL_CONDENSER_RECIPES.recipeBuilder("star_stone_0")
-                    .inputItems(BotaniaBlocks.shimmerrock.asItem())
+                    .inputItems(BotaniaBlocks.getBlock("shimmerrock").asItem())
                     .outputItems(GTOBlocks.STAR_STONE[0].asItem())
                     .addData(ANY, 2000)
                     .duration(10)
@@ -130,7 +127,8 @@ public final class MagicRecipesB {
             }
 
             CELESTIAL_CONDENSER_RECIPES.recipeBuilder("nether_star")
-                    .inputItems(ModItems.fadedNetherStar)
+                    // TODO
+                    // .inputItems(ModItems.fadedNetherStar)
                     .outputItems(Items.NETHER_STAR)
                     .addData(VOIDFLUX, 4000)
                     .duration(10)
@@ -143,34 +141,35 @@ public final class MagicRecipesB {
                     .addData(SOLARIS, 50000)
                     .save();
 
-            ItemStack manaTablet = BotaniaItems.manaTablet.getDefaultInstance();
-            ItemNBTHelper.setInt(manaTablet, "mana", 500000);
-            CELESTIAL_CONDENSER_RECIPES.builder("add_mana_to_mana_tablet")
-                    .inputItems(BotaniaItems.manaTablet)
-                    .outputItems(manaTablet)
-                    .duration(100)
-                    .addData(ANY, 5000)
-                    .save();
+            // ItemStack manaTablet = vazkii.botania.common.BotaniaItems.getItem("mana_tablet").getDefaultInstance();
+            // ItemNBTHelper.setInt(manaTablet, "mana", 500000);
+            // CELESTIAL_CONDENSER_RECIPES.builder("add_mana_to_mana_tablet")
+            // .inputItems(vazkii.botania.common.BotaniaItems.getItem("mana_tablet"))
+            // .outputItems(manaTablet)
+            // .duration(100)
+            // .addData(ANY, 5000)
+            // .save();
         }
 
         // 符文铭刻
         {
             Item[] runeItem1 = {
-                    BotaniaItems.runeEarth, BotaniaItems.runeAir, BotaniaItems.runeFire, BotaniaItems.runeWater,
-                    BotaniaItems.runeSpring, BotaniaItems.runeSummer, BotaniaItems.runeAutumn, BotaniaItems.runeWinter,
-                    BotaniaItems.runeMana, BotaniaItems.runeLust, BotaniaItems.runeGluttony, BotaniaItems.runeGreed,
-                    BotaniaItems.runeSloth, BotaniaItems.runeWrath, BotaniaItems.runeEnvy, BotaniaItems.runePride,
+                    BotaniaItems.getItem("rune_earth"), BotaniaItems.getItem("rune_air"), BotaniaItems.getItem("rune_fire"), BotaniaItems.getItem("rune_water"),
+                    BotaniaItems.getItem("rune_spring"), BotaniaItems.getItem("rune_summer"), BotaniaItems.getItem("rune_autumn"), BotaniaItems.getItem("rune_winter"),
+                    BotaniaItems.getItem("rune_mana"), BotaniaItems.getItem("rune_lust"), BotaniaItems.getItem("rune_gluttony"), BotaniaItems.getItem("rune_greed"),
+                    BotaniaItems.getItem("rune_sloth"), BotaniaItems.getItem("rune_wrath"), BotaniaItems.getItem("rune_envy"), BotaniaItems.getItem("rune_pride"),
             };
             Item[] runeItem2 = {
-                    ModItems.asgardRune, ModItems.vanaheimRune, ModItems.alfheimRune,
-                    ModItems.midgardRune, ModItems.joetunheimRune, ModItems.muspelheimRune,
-                    ModItems.niflheimRune, ModItems.nidavellirRune, ModItems.helheimRune,
+                    // TODO
+                    // ModItems.asgardRune, ModItems.vanaheimRune, ModItems.alfheimRune,
+                    // ModItems.midgardRune, ModItems.joetunheimRune, ModItems.muspelheimRune,
+                    // ModItems.niflheimRune, ModItems.nidavellirRune, ModItems.helheimRune,
             };
 
             for (Item rune : runeItem1) {
                 RUNE_ENGRAVING_RECIPES.recipeBuilder("engraving_" + rune.toString())
                         .notConsumable(rune)
-                        .inputItems(BotaniaBlocks.livingrock.asItem())
+                        .inputItems(BotaniaBlocks.getBlock("livingrock").asItem())
                         .inputFluids(Animium, 3000)
                         .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                         .outputItems(rune, 9)
@@ -181,7 +180,7 @@ public final class MagicRecipesB {
             for (Item rune : runeItem2) {
                 RUNE_ENGRAVING_RECIPES.recipeBuilder("engraving_" + rune.toString())
                         .notConsumable(rune)
-                        .inputItems(BotaniaBlocks.livingrock.asItem())
+                        .inputItems(BotaniaBlocks.getBlock("livingrock").asItem())
                         .inputFluids(Animium, 9000)
                         .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                         .outputItems(rune, 9)
@@ -221,25 +220,27 @@ public final class MagicRecipesB {
         }
 
         // 凋零的下界之星
-        ARC_GENERATOR_RECIPES.recipeBuilder("make_faded_nether_star")
-                .inputItems(dust, NetherEmber, 64)
-                .inputItems(dust, StarStone)
-                .inputFluids(NetherAir, 8000)
-                .inputFluids(Salamander.getFluid(LIQUID, 200))
-                .inputFluids(Mana, 32000)
-                .outputItems(QuestStacks.damaged(ModItems.fadedNetherStar, 1100000), 4)
-                .duration(20)
-                .EUt(VA[IV])
-                .save();
+        // TODO
+        // ARC_GENERATOR_RECIPES.recipeBuilder("make_faded_nether_star")
+        // .inputItems(dust, NetherEmber, 64)
+        // .inputItems(dust, StarStone)
+        // .inputFluids(NetherAir, 8000)
+        // .inputFluids(Salamander.getFluid(LIQUID, 200))
+        // .inputFluids(Mana, 32000)
+        // .outputItems(QuestStacks.damaged(ModItems.fadedNetherStar, 1100000), 4)
+        // .duration(20)
+        // .EUt(VA[IV])
+        // .save();
 
-        ARC_GENERATOR_RECIPES.recipeBuilder("make_nether_star")
-                .inputItems(ModItems.fadedNetherStar, 4)
-                .inputItems(dustTiny, NetherStar)
-                .outputItems(Items.NETHER_STAR, 4)
-                .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
-                .duration(20)
-                .EUt(VA[UV])
-                .save();
+        // TODO
+        // ARC_GENERATOR_RECIPES.recipeBuilder("make_nether_star")
+        // .inputItems(ModItems.fadedNetherStar, 4)
+        // .inputItems(dustTiny, NetherStar)
+        // .outputItems(Items.NETHER_STAR, 4)
+        // .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
+        // .duration(20)
+        // .EUt(VA[UV])
+        // .save();
 
         // 液态魔力&魔力结晶
         {
@@ -297,10 +298,11 @@ public final class MagicRecipesB {
         }
 
         INFUSER_CORE_RECIPES.builder("resonance_flower")
-                .notConsumable(ModItems.fimbultyrTablet)
-                .notConsumable(ExtraBotanyItems.manaRingMaster)
-                .notConsumable(BotaniaItems.dice)
-                .notConsumable(ExtraBotanyItems.pandorasBox)
+                // TODO
+                // .notConsumable(ModItems.fimbultyrTablet)
+                .notConsumable(ExtraBotanyItems.getItem("mana_ring_master"))
+                .notConsumable(BotaniaItems.getItem("dice"))
+                .notConsumable(ExtraBotanyItems.getItem("pandoras_box"))
                 .inputItems(GTOBlocks.THE_ORIGIN_CASING.asItem(), 16)
                 .inputItems(GTOBlocks.THE_END_CASING.asItem(), 16)
                 .inputItems(GTOBlocks.THE_CHAOS_CASING.asItem(), 16)
@@ -335,11 +337,11 @@ public final class MagicRecipesB {
                     .save();
 
             ELEMENTAL_RESONANCE.recipeBuilder("recycle_life_essence_from_gaia_dust")
-                    .notConsumable(BotaniaItems.lifeEssence)
+                    .notConsumable(BotaniaItems.getItem("life_essence"))
                     .inputItems(dust, Gaia, 16)
                     .inputItems(dust, StarStone)
                     .inputFluids(FinalPurifier, 250)
-                    .outputItems(BotaniaItems.lifeEssence, 8)
+                    .outputItems(BotaniaItems.getItem("life_essence"), 8)
                     .dimension(GTODimensions.ALFHEIM)
                     .addData(GTORecipeDataKeys.RESONANCE, toResonanceTag(TheWaterFromTheWellOfWisdom.getFluid(100), 10))
                     .MANAt(128)

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "botania:metamorphic_stone_wall",
+  "key": {
+    "B": {
+      "item": "botania:metamorphic_forest_stone"
+    }
+  },
+  "pattern": ["BBB", "BBB"],
+  "result": {
+    "count": 6,
+    "item": "botania:metamorphic_forest_stone_wall"
+  },
+  "show_notification": true
+}

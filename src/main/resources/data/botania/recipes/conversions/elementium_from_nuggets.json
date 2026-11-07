@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "botania:elementium_nuggets"
+    }
+  },
+  "pattern": ["III", "III", "III"],
+  "result": {
+    "item": "botania:elementium_ingot"
+  },
+  "show_notification": true
+}

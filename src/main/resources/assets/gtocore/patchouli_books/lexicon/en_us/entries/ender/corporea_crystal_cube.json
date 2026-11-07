@@ -1,0 +1,29 @@
+{
+  "name": "botania.entry.corporeaCrystalCube",
+  "category": "gtocore:ender",
+  "icon": "botania:corporea_crystal_cube",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.corporeaCrystalCube0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.corporeaCrystalCube1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.corporeaCrystalCube3"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.corporeaCrystalCube4"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.corporeaCrystalCube2",
+      "recipe": "botania:corporea_crystal_cube"
+    }
+  ]
+}

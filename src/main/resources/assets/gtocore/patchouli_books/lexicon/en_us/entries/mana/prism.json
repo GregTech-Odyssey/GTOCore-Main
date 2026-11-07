@@ -1,0 +1,25 @@
+{
+  "name": "botania.entry.prism",
+  "category": "gtocore:mana",
+  "icon": "botania:prism",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.prism0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.prism1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.prism2"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.prism3",
+      "recipe": "botania:prism"
+    }
+  ]
+}

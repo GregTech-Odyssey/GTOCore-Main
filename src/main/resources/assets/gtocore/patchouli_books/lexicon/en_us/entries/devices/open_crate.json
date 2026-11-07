@@ -1,0 +1,21 @@
+{
+  "name": "botania.entry.openCrate",
+  "category": "gtocore:devices",
+  "icon": "botania:open_crate",
+  "priority": true,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.openCrate0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.openCrate1"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.openCrate2",
+      "recipe": "botania:open_crate"
+    }
+  ]
+}

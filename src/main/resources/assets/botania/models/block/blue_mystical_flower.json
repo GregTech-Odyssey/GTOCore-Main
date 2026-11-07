@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "botania:block/blue_mystical_flower"
+  },
+  "render_type": "minecraft:cutout"
+}

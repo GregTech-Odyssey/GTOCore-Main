@@ -7,6 +7,7 @@ import com.gregtechceu.gtceu.api.tooltip.Tips;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -30,17 +31,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class RewardBagItem extends Item {
 
     @Getter
     private final ResourceLocation defaultLootTable;
 
+    private final Supplier<SoundEvent> openSound;
+
     public RewardBagItem(Properties properties, ResourceLocation defaultLootTable) {
+        this(properties, defaultLootTable, 16, () -> SoundEvents.CHEST_OPEN);
+    }
+
+    public RewardBagItem(Properties properties, ResourceLocation defaultLootTable, int stackSize, Supplier<SoundEvent> openSound) {
         super(properties
-                .stacksTo(16)
+                .stacksTo(stackSize)
                 .rarity(Rarity.UNCOMMON));
         this.defaultLootTable = defaultLootTable;
+        this.openSound = openSound;
     }
 
     @Override
@@ -71,7 +80,7 @@ public class RewardBagItem extends Item {
                 });
             }
             // 播放打开音效
-            level.playSound(null, player.blockPosition(), SoundEvents.CHEST_OPEN, SoundSource.PLAYERS, 0.8F, 1.0F);
+            level.playSound(null, player.blockPosition(), openSound.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
             return InteractionResultHolder.success(bagStack);
         }
         return InteractionResultHolder.consume(bagStack);

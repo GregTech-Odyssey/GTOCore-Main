@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:livingrock_bricks_slab"
+    }
+  },
+  "pattern": ["QQ"],
+  "result": {
+    "item": "botania:livingrock_bricks"
+  },
+  "show_notification": true
+}

@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaItem;
-import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
 import vazkii.botania.common.handler.BotaniaSounds;
 
 import java.util.List;
@@ -76,7 +75,7 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
 
     @SuppressWarnings("resource")
     private static void preCancelScan(Player player, ItemStack stack) {
-        player.playSound(BotaniaSounds.gaiaTeleport, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+        player.playSound(BotaniaSounds.gaiaTeleport.get(), 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
         player.sendSystemMessage(Component.translatable("behavior.prospector.not_enough_energy"));
         player.closeContainer();
     }
@@ -176,10 +175,10 @@ public final class ManaProspectorBehavior extends ProspectorScannerBehavior impl
     public void appendTooltips(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         super.appendTooltips(stack, level, tooltipComponents, isAdvanced);
         int mana = getMana(stack);
-        String formattedManaPool = String.format("%.2f", mana / (double) ManaPoolBlockEntity.MAX_MANA);
-        String formattedMaxMana = String.format("%.2f", maxMana / (double) ManaPoolBlockEntity.MAX_MANA);
+        // String formattedManaPool = String.format("%.2f", mana / (double) ManaPoolBlockEntity.MAX_MANA);
+        // String formattedMaxMana = String.format("%.2f", maxMana / (double) ManaPoolBlockEntity.MAX_MANA);
         tooltipComponents.add(Tips.mana(mana, maxMana));
-        tooltipComponents.add(Tips.detail(Component.translatable("gtocore.tooltip.item.prospector.mana.2", formattedManaPool, formattedMaxMana)));
+        tooltipComponents.add(Tips.detail(Component.translatable("gtocore.tooltip.item.prospector.mana.2", "formattedManaPool", "formattedMaxMana")));
     }
 
     @Override

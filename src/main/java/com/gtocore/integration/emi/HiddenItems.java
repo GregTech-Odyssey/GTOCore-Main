@@ -31,7 +31,8 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("ad_astra:compressor"));
         deprecate(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
         deprecate(GTOBlocks.LAURERIL_JAR.asItem());
-        deprecate(RegistriesUtils.getItem("extrabotany:mana_reader"));
+        // TODO
+        // deprecate(RegistriesUtils.getItem("extrabotany:mana_reader"));
 
         if (Mods.EFFORTLESS.isLoaded()) {
             deprecate(RegistriesUtils.getItem("effortlessbuilding:randomizer_bag"));

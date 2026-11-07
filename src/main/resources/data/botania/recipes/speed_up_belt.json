@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "botania:travel_belt"
+    },
+    "M": {
+      "item": "minecraft:map"
+    },
+    "P": {
+      "item": "botania:grass_seeds"
+    },
+    "S": {
+      "item": "minecraft:sugar"
+    }
+  },
+  "pattern": [" M ", "PBP", " S "],
+  "result": {
+    "item": "botania:speed_up_belt"
+  },
+  "show_notification": true
+}

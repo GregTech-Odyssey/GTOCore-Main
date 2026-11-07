@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
+    "S": {
+      "item": "botania:life_essence"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "pattern": ["WWW", "GWG", "GSG"],
+  "result": {
+    "item": "botania:holy_cloak"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_taiga_bricks_slab"
+    }
+  },
+  "pattern": ["Q", "Q"],
+  "result": {
+    "item": "botania:chiseled_metamorphic_taiga_bricks"
+  },
+  "show_notification": true
+}

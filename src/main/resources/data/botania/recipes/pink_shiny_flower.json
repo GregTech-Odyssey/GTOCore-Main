@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:shiny_flower",
+  "ingredients": [
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    },
+    {
+      "item": "botania:pink_mystical_flower"
+    }
+  ],
+  "result": {
+    "item": "botania:pink_shiny_flower"
+  }
+}

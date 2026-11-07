@@ -1,0 +1,13 @@
+{
+  "name": "botania.entry.flowerShrinking",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:bellethorn_chibi",
+  "priority": true,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.flowerShrinking0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

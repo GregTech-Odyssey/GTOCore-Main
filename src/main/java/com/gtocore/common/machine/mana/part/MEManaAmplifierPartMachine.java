@@ -111,9 +111,11 @@ public final class MEManaAmplifierPartMachine extends ManaAmplifierPartMachine i
             var meStorage = getActionableNode().getGrid().getStorageService().getInventory();
             long canInsert = manaContainer.getMaxMana() - manaContainer.getCurrentMana();
             if (canInsert > 0 && useMana) {
-                long canExtract = meStorage.extract(ManaKey.KEY, canInsert, Actionable.SIMULATE, IActionSource.ofMachine(this));
+                long canExtract = meStorage.extract(ManaKey.KEY, canInsert, Actionable.SIMULATE,
+                        IActionSource.ofMachine(this));
                 if (canExtract > 0) {
-                    long extracted = meStorage.extract(ManaKey.KEY, canExtract, Actionable.MODULATE, IActionSource.ofMachine(this));
+                    long extracted = meStorage.extract(ManaKey.KEY, canExtract, Actionable.MODULATE,
+                            IActionSource.ofMachine(this));
                     manaContainer.addMana(extracted, 1, false);
                 }
             }

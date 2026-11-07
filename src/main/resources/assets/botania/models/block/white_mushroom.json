@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "botania:block/white_mushroom"
+  },
+  "render_type": "minecraft:cutout"
+}

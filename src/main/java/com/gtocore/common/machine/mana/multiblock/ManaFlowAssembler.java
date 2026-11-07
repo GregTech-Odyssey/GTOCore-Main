@@ -44,11 +44,10 @@ import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.recipesearch.IntLongMap;
 
 import com.suried.gtoutils.schedule.Task;
-import mythicbotany.pylon.BlockAlfsteelPylon;
-import mythicbotany.register.ModBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.MythicBotanyBlocks;
 import vazkii.botania.common.block.PylonBlock;
 import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
 import vazkii.botania.common.block.mana.ManaPoolBlock;
@@ -109,7 +108,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         super.afterWorking();
         var level = getLevel();
         if (level != null) {
-            level.playSound(null, getPos().getX(), getPos().above().getY(), getPos().getZ(), BotaniaSounds.terrasteelCraft, SoundSource.BLOCKS, 1F, 1F);
+            level.playSound(null, getPos().getX(), getPos().above().getY(), getPos().getZ(), BotaniaSounds.terrasteelCraft.get(), SoundSource.BLOCKS, 1F, 1F);
         }
     }
 
@@ -470,13 +469,15 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                         case MANA -> data.getAndAdd(8);
                         case NATURA -> data.getAndAdd(8 << 2);
                         case GAIA -> data.getAndAdd(8 << 6);
+                        case ALFSTEEL -> data.getAndAdd(8 << 4);
                     }
                 }
-                if (state.getBlockState().getBlock() instanceof BlockAlfsteelPylon) {
-                    data.getAndAdd(8 << 4);
-                }
                 return data;
-            }, BotaniaBlocks.manaPylon, BotaniaBlocks.naturaPylon, BotaniaBlocks.gaiaPylon, ModBlocks.alfsteelPylon));
+            },
+                    BotaniaBlocks.getBlock("mana_pylon"),
+                    BotaniaBlocks.getBlock("natura_pylon"),
+                    BotaniaBlocks.getBlock("gaia_pylon"),
+                    MythicBotanyBlocks.getBlock("alfsteel_pylon")));
 
     public static TraceabilityPredicate manaPool(Block... blocks) {
         return GTOPredicates.dataBlock(POOL, ArrayList::new, (data, state) -> {

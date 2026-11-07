@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:metamorphic_brick_stairs",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_swamp_bricks"
+    }
+  },
+  "pattern": ["Q  ", "QQ ", "QQQ"],
+  "result": {
+    "count": 4,
+    "item": "botania:metamorphic_swamp_bricks_stairs"
+  },
+  "show_notification": true
+}

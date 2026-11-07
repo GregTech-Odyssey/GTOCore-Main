@@ -1,0 +1,53 @@
+/*
+ * This class is distributed as part of the Botania Mod.
+ * Get the Source Code in github:
+ * https://github.com/Vazkii/Botania
+ *
+ * Botania is Open Source and distributed under the
+ * Botania License: http://botaniamod.net/license.php
+ */
+package vazkii.botania.api.item;
+
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * An Item that has this capability can provide blocks to other items that use them.
+ * For example, the Black Hole Talisman uses this in order to allow for
+ * the Rod of the Shifting Crust to pull blocks from it.
+ *
+ * Mutations to objects of this type propagate directly to the underlying stack it was retrieved from.
+ */
+public interface BlockProvider {
+
+    /**
+     * Provides the requested item. The doit paremeter specifies whether this is
+     * just a test (false) or if the item should actually be removed (true).
+     * If you need to use calls to ManaItemHandler.requestMana[Exact], use
+     * the requestor as the ItemStack passed in.
+     */
+    boolean provideBlock(Player player, ItemStack requestor, Block block, boolean doit);
+
+    /**
+     * Gets the amount of blocks of the type passed stored in this item. You must
+     * check for the block passed in to not give the counter for a wrong block. Returning
+     * -1 states that the item can provide infinite of the item passed in (for example,
+     * the Rod of the Lands would return -1 if the block is dirt).
+     */
+    int getBlockCount(Player player, ItemStack requestor, Block block);
+
+    /**
+     * The value returned here may be null, to represent that the block that this provides is not easily
+     * determinable or that this can provide multiple blocks and none of them are a 'main' block that this
+     * item intuitively provides.
+     * 
+     * @return the block that this provides.
+     */
+    @Nullable // TODO: in 1.21 this may be able to be made not default as a breaking API change
+    default Block getProvidedBlock(Player player, ItemStack requestor) {
+        return null;
+    }
+}

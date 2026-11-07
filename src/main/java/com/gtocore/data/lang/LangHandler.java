@@ -6,7 +6,6 @@ import com.gtocore.api.machine.part.GTOPartAbility;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.client.Tooltips;
-import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.misc.OrganType;
@@ -51,6 +50,7 @@ import com.gto.ae.core.localization.ExtendedLangs;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import vazkii.botania.common.BotaniaLang;
 
 import java.util.Map;
 
@@ -96,7 +96,6 @@ public final class LangHandler {
         BlockRegisterUtils.LANG.forEach((k, v) -> addCN("block.gtocore." + k, v));
         GTORecipeCategories.LANG.forEach((k, v) -> addCNEN("gtceu.recipe.category." + k, v));
         GTOFluidStorageKey.initLang();
-        LaurerilManaPools.initLang();
         Ions.NAME_TO_transkey.forEach(LangHandler::addCNEN);
         for (var type : OrganType.VALUES) addCNEN(type.translationKey, type.cn, type.en);
         for (var tier : OrganTier.all()) addCNEN(tier.getTranslationKey(), tier.getCn(), tier.getEn());
@@ -134,6 +133,7 @@ public final class LangHandler {
             if (reason.getEn() != null) addCNEN(reason.getKey(), reason.getCn(), reason.getEn());
             if (reason.getDescEn() != null) addCNEN(reason.getDescKey(), reason.getDescCn(), reason.getDescEn());
         }
+        BotaniaLang.init();
 
         addCN("entity.gtocore.task_entity", "任务执行实体");
         addCN("itemGroup.gtocore.block", "GTO | 方块");
@@ -622,7 +622,20 @@ public final class LangHandler {
         addCNEN("gtocore.emi.space_elevator.wheel_drone", "滚轮切换无人机等级（%s/%s）", "Scroll to switch drone tier (%s/%s)");
         addCNEN("gtocore.emi.space_elevator.wheel_fuel", "滚轮切换燃料（%s/%s）", "Scroll to switch fuel (%s/%s)");
 
+        addCNEN("gtocore.lexicon.laureril_pool.name", "秘金魔力池", "Laureril Mana Pools");
+        addCNEN("gtocore.lexicon.laureril_pool.page0",
+                "$(item)秘金魔力池$(0)是裹上秘金的$(l:mana/pool)$(item)魔力池$(0)$(/l)，能装下普通魔力池八倍的$(thing)魔力$(0)。$(p)秘金似乎很合魔力的脾气：丢进去的材料浸染起来也快了八倍，一整组东西眨几下眼就泡好了。除此之外，它用起来和普通魔力池没有两样。",
+                "The $(item)Laureril Mana Pool$(0) is a $(l:mana/pool)$(item)Mana Pool$(0)$(/l) clad in laureril, holding eight times as much $(thing)Mana$(0).$(p)Laureril seems to agree with $(thing)Mana$(0): items tossed in are infused eight times as fast, so a whole stack is done in a few blinks. Otherwise it works just like a normal pool.");
+        addCNEN("gtocore.lexicon.laureril_pool.page1",
+                "$(item)秘金大型魔力池$(0)是$(l:mana/large_pool)$(item)大型魔力池$(0)$(/l)的秘金版本，同样能装下八倍的$(thing)魔力$(0)，浸染速度也在大型魔力池的基础上再快八倍——一整组材料往往刚落进水里就浸染完了。$(p)合并、火花与催化剂的规则都和大型魔力池一样。",
+                "The $(item)Laureril Large Mana Pool$(0) does the same for the $(l:mana/large_pool)$(item)Large Mana Pool$(0)$(/l): eight times the $(thing)Mana$(0), and infusion another eight times faster on top of the large pool's own speed, so a whole stack is often done the moment it lands.$(p)Merging, sparks and catalysts all follow the large pool's rules.");
+        addCNEN("gtocore.lexicon.laureril_pool.page2", "制作$(item)秘金魔力池$(0)", "Crafting a $(item)Laureril Mana Pool$(0)");
+        addCNEN("gtocore.lexicon.laureril_pool.page3", "制作$(item)秘金大型魔力池$(0)", "Crafting a $(item)Laureril Large Mana Pool$(0)");
+
         addCNEN("emi.category.gtocore.alfheim_entry_requirements", "亚尔夫海姆准入条件", "Alfheim Access Requirements");
+        addCNEN("emi.category.mythicbotany.rune_ritual", "符文仪式", "Rune Ritual");
+        addCNEN("emi.mythicbotany.rune_ritual.ticks", "耗时 %s tick", "%s ticks");
+        addCNEN("emi.mythicbotany.rune_ritual.mana", "耗魔 %s，每 tick %s", "%s mana, %s per tick");
         addCNEN("gtocore.entry_alfheim.0.c", "§a你已完全满足进入亚尔夫海姆的条件", "§aYou have fully met the requirements to enter Alfheim");
         addCNEN("gtocore.entry_alfheim.1", "你需要饮下诗之蜜酒", "You must drink Kvasir’s Mead");
         addCNEN("gtocore.entry_alfheim.1.c", "§a你已饮下诗之蜜酒", "§aYou have drunk Kvasir’s Mead");
@@ -631,6 +644,8 @@ public final class LangHandler {
         addCNEN("gtocore.entry_alfheim.3",
                 "夫迷雾蔽境，亚尔夫海姆启门之期将至。新章既降，唯饮诗泉之醴、聚十二古器者，可涉此秘域。凡欲绕法偷渡之徒，皆不为乾坤所容——寰宇律令自临，未符契而擅闯者，神魂俱殒。",
                 "The mists enshroud the realm, and the hour of Alfheim’s gate-opening draws nigh. A new chapter unfolds—only those who quaff the mead of the Kvasir’s Mead and gather the Twelve Ancient Relics may tread this secret domain. All who seek to trespass by craft or ruse shall not be borne by heaven and earth. For the Law of the Cosmos descends: whosoever dares to breach these halls without the sacred covenant shall perish, body and soul alike.");
+        addCNEN("gtocore.entry_alfheim.unmet", "§c你尚未满足进入亚尔夫海姆的条件：需饮下诗之蜜酒并携带十二遗物",
+                "§cYou do not yet meet the requirements to enter Alfheim: drink the Mead of Kvasir and bear the Twelve Relics");
         addCNEN("message.mythicbotany.alfheim_overworld_only", "§c你只能在主世界进入亚尔夫海姆！", "§cYou can only enter Alfheim in the Overworld!");
 
         addCNEN("spatial_storage.ae2.name", "封闭空间", "Spatial Storage");

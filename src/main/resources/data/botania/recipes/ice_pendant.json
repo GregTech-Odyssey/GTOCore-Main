@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "M": {
+      "tag": "botania:manasteel_ingots"
+    },
+    "R": {
+      "item": "botania:rune_water"
+    },
+    "S": {
+      "item": "botania:mana_string"
+    },
+    "W": {
+      "item": "botania:rune_winter"
+    }
+  },
+  "pattern": ["WS ", "S S", "MSR"],
+  "result": {
+    "item": "botania:ice_pendant"
+  },
+  "show_notification": true
+}

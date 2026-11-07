@@ -1,0 +1,20 @@
+{
+  "name": "botania.entry.headCreating",
+  "category": "gtocore:misc",
+  "icon": "minecraft:player_head",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.headCreating0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.headCreating3"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.headCreating2"
+    }
+  ]
+}

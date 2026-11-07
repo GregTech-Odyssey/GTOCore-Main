@@ -68,13 +68,6 @@ ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
-modId = "botania"
-mandatory = true
-versionRange = "[457.2610.9,)"
-ordering = "AFTER"
-side = "BOTH"
-
-[[dependencies.${mod_id}]]
 modId = "ad_astra"
 mandatory = true
 versionRange = "[1,)"

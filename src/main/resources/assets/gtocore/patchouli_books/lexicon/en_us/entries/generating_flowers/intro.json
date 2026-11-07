@@ -1,0 +1,42 @@
+{
+  "name": "botania.entry.gIntro",
+  "category": "gtocore:generating_flowers",
+  "icon": "botania:cosmetic_questgiver_mark",
+  "priority": true,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.gIntro0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gIntro1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gIntro2"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gIntro3"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gIntro4"
+    },
+    {
+      "type": "multiblock",
+      "name": "block.botania.potted_endoflame",
+      "multiblock": {
+        "pattern": [["0"], ["T"]],
+        "mapping": {
+          "0": "botania:potted_endoflame",
+          "T": "botania:polished_livingrock_slab[type=top]"
+        },
+        "symmetrical": true
+      },
+      "text": "botania.page.gIntroPotted",
+      "enable_visualize": false
+    }
+  ]
+}

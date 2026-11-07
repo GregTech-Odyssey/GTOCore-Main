@@ -1,0 +1,23 @@
+{
+  "name": "botania.entry.endoflame",
+  "category": "gtocore:generating_flowers",
+  "icon": "botania:endoflame",
+  "turnin": "botania:main/generating_flower",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.endoflame0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.endoflame1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.endoflame3"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:floating_endoflame": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:quartz_slab",
+  "key": {
+    "Q": {
+      "item": "botania:elf_quartz"
+    }
+  },
+  "pattern": ["QQQ"],
+  "result": {
+    "count": 6,
+    "item": "botania:elf_quartz_slab"
+  },
+  "show_notification": true
+}

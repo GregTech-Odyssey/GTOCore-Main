@@ -26,9 +26,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
-import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.block.BotaniaFlowerBlocks;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTItems.*;
@@ -158,20 +157,20 @@ public final class CraftingRecipeLoader {
 
         VanillaRecipeHelper.addShapedRecipe("mana_ulv_prospector", PROSPECTOR_MANA_ULV.asItem(),
                 "ASB", "EDE", "SCS",
-                'A', BotaniaFlowerBlocks.solegnolia, 'B', BotaniaFlowerBlocks.hopperhock,
-                'C', BotaniaItems.manaTablet, 'D', BotaniaBlocks.manaGlass,
+                'A', BotaniaBlocks.getBlock("solegnolia"), 'B', BotaniaBlocks.getBlock("hopperhock"),
+                'C', BotaniaItems.getItem("mana_tablet"), 'D', BotaniaBlocks.getBlock("mana_glass"),
                 'E', new MaterialEntry(gem, GTOMaterials.ManaDiamond), 'S', new MaterialEntry(plate, GTOMaterials.Manasteel));
 
         VanillaRecipeHelper.addShapedRecipe("mana_lv_prospector", PROSPECTOR_MANA_LV.asItem(),
                 "ASB", "EDE", "SCS",
                 'A', EMITTER_LV, 'B', SENSOR_LV,
-                'C', BotaniaItems.manaTablet, 'D', BotaniaItems.lensEfficiency,
+                'C', BotaniaItems.getItem("mana_tablet"), 'D', BotaniaItems.getItem("lens_efficiency"),
                 'E', CustomTags.LV_CIRCUITS, 'S', new MaterialEntry(plate, GTOMaterials.Terrasteel));
 
         VanillaRecipeHelper.addShapedRecipe("mana_hv_prospector", PROSPECTOR_MANA_HV.asItem(),
                 "ASB", "EDE", "SCS",
                 'A', EMITTER_HV, 'B', SENSOR_HV,
-                'C', BotaniaItems.manaTablet, 'D', BotaniaBlocks.bifrostPerm,
+                'C', BotaniaItems.getItem("mana_tablet"), 'D', BotaniaBlocks.getBlock("bifrost_perm"),
                 'E', CustomTags.HV_CIRCUITS, 'S', new MaterialEntry(plate, GTOMaterials.Alfsteel));
 
         VanillaRecipeHelper.addShapedRecipe("machine_coordinate_card", COORDINATE_CARD.asItem(),

@@ -1,0 +1,14 @@
+{
+  "name": "botania.entry.orechid",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:orechid",
+  "priority": true,
+  "flag": "|debug,mod:gardenofglass",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.orechid0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

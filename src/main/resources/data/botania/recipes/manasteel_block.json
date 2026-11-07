@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "tag": "botania:manasteel_ingots"
+    }
+  },
+  "pattern": ["III", "III", "III"],
+  "result": {
+    "item": "botania:manasteel_block"
+  },
+  "show_notification": true
+}

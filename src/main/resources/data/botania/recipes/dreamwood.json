@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wood",
+  "key": {
+    "#": {
+      "item": "botania:dreamwood_log"
+    }
+  },
+  "pattern": ["##", "##"],
+  "result": {
+    "count": 3,
+    "item": "botania:dreamwood"
+  },
+  "show_notification": true
+}

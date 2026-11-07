@@ -1,0 +1,42 @@
+{
+  "name": "botania.entry.flowers",
+  "category": "gtocore:basics",
+  "icon": "botania:pink_mystical_flower",
+  "priority": true,
+  "turnin": "botania:main/flower_pickup_lexicon",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.flowers0"
+    },
+    {
+      "type": "image",
+      "text": "botania.page.flowers1",
+      "images": ["botania:textures/gui/entries/flowers.png"]
+    },
+    {
+      "type": "text",
+      "text": "botania.page.flowers2"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.flowers17"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.flowers6"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.flowers8",
+      "recipe": "botania:fertilizer_dye"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.flowers18"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "tag:botania:mystical_flowers": 1
+  }
+}

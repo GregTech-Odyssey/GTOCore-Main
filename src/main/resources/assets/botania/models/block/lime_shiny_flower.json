@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "botania:block/lime_shiny_flower"
+  },
+  "render_type": "minecraft:cutout"
+}

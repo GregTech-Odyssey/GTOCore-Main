@@ -1,0 +1,31 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "bottom": "botania:block/large_mana_pool_bottom",
+    "top": "botania:block/large_mana_pool_top",
+    "side": "botania:block/large_mana_pool_side",
+    "particle": "botania:block/large_mana_pool_top"
+  },
+  "elements": [
+    {
+      "from": [4, 4, 0],
+      "to": [12, 16, 4],
+      "faces": {
+        "up": {
+          "texture": "#top",
+          "tintindex": 0,
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#side",
+          "tintindex": 0,
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "tintindex": 0
+        }
+      }
+    }
+  ]
+}

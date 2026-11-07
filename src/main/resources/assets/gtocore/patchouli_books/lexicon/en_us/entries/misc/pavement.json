@@ -1,0 +1,11 @@
+{
+  "name": "botania.entry.pavement",
+  "category": "gtocore:misc",
+  "icon": "botania:white_pavement",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.pavement0"
+    }
+  ]
+}

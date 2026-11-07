@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "botania:craft_pattern",
+  "key": {
+    "P": {
+      "item": "botania:placeholder"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": ["RRR", "RPR", "RRR"],
+  "result": {
+    "item": "botania:pattern_donut"
+  },
+  "show_notification": true
+}

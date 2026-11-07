@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "tag": "botania:elementium_ingots"
+    },
+    "T": {
+      "item": "botania:dreamwood_twig"
+    }
+  },
+  "pattern": ["S", "S", "T"],
+  "result": {
+    "item": "botania:elementium_sword"
+  },
+  "show_notification": true
+}

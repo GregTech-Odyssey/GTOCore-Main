@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wood",
+  "key": {
+    "#": {
+      "item": "botania:stripped_livingwood_log"
+    }
+  },
+  "pattern": ["##", "##"],
+  "result": {
+    "count": 3,
+    "item": "botania:stripped_livingwood"
+  },
+  "show_notification": true
+}

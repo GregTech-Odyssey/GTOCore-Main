@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "botania:mana_diamond_block"
+    },
+    "P": {
+      "item": "botania:mana_pool"
+    },
+    "T": {
+      "item": "botania:terrasteel_ingot"
+    }
+  },
+  "pattern": ["PTP", "TDT", "PTP"],
+  "result": {
+    "item": "botania:large_mana_pool"
+  },
+  "show_notification": true
+}

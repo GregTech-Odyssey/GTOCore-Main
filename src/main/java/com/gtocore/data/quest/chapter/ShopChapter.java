@@ -36,8 +36,8 @@ import appeng.core.definitions.AEParts;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import earth.terrarium.adastra.common.registry.ModItems;
-import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -101,7 +101,7 @@ public final class ShopChapter {
 
     public static final Quest WELCOME_TO_THE_GREGTECH_MEMBER_EXCLUSIVE = CHAPTER.quest("welcome_to_the_gregtech_member_exclusive", q -> q
             .at(-0.5, 0)
-            .icon(BotaniaItems.manaCookie)
+            .icon(BotaniaItems.getItem("mana_cookie"))
             .title("欢迎来到格雷科技™会员专卖店")
             .subtitle("希望你喜欢")
             .desc(d -> d
@@ -109,7 +109,7 @@ public final class ShopChapter {
                     .line()
                     .line("{这个饼（我画的）就送给你啦}", GRAY.italic()))
             .task(Task.checkmark().title("欢迎光临！"))
-            .reward(Reward.item(BotaniaItems.manaCookie))
+            .reward(Reward.item(BotaniaItems.getItem("mana_cookie")))
             .repeatable(false));
 
     public static final Quest Q_16K_PORTABLE_FLUID_CELL = CHAPTER.quest("q_16k_portable_fluid_cell", q -> q
@@ -129,7 +129,7 @@ public final class ShopChapter {
 
     public static final Quest FLOWER_BUNDLE = CHAPTER.quest("flower_bundle", q -> q
             .at(-5.5, 5.5)
-            .icon(BotaniaBlocks.greenFlower)
+            .icon(BotaniaBlocks.getBlock("green_mystical_flower"))
             .title("花朵组合包")
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
             .reward(Reward.choice(QuestRewardTables.FLOWERS).excludeFromClaimAll()));
@@ -139,7 +139,7 @@ public final class ShopChapter {
             .title("今日手气如何？")
             .subtitle("切勿沉迷")
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32))
-            .reward(Reward.random(QuestRewardTables.ULV_2).title("一念之间").icon(BotaniaItems.dice)));
+            .reward(Reward.random(QuestRewardTables.ULV_2).title("一念之间").icon(BotaniaItems.getItem("dice"))));
 
     public static final Quest BRONZE_BLOCK = CHAPTER.quest("bronze_block", q -> q
             .at(4.5, 3.5)
@@ -305,7 +305,7 @@ public final class ShopChapter {
 
     public static final Quest BISCUIT_OF_TOTALITY = CHAPTER.quest("biscuit_of_totality", q -> q
             .at(-1.5, 3.5)
-            .icon(BotaniaItems.manaCookie)
+            .icon(BotaniaItems.getItem("mana_cookie"))
             .title("魔力曲奇")
             .subtitle("{仅可兑换一次}", YELLOW)
             .desc(d -> d
@@ -313,7 +313,7 @@ public final class ShopChapter {
                     .line()
                     .line("它有神奇的魔力，能瞬间补满你的饱食度"))
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32))
-            .reward(Reward.item(BotaniaItems.manaCookie, 64).personal())
+            .reward(Reward.item(BotaniaItems.getItem("mana_cookie"), 64).personal())
             .repeatable(false));
 
     public static final Quest COPPER_COIN_SUBSIDY = CHAPTER.quest("copper_coin_subsidy", q -> q

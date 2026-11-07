@@ -1,0 +1,26 @@
+{
+  "name": "botania.entry.marimorphosis",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:marimorphosis",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.marimorphosis0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.marimorphosis05"
+    },
+    {
+      "type": "image",
+      "text": "botania.page.marimorphosis1",
+      "images": [
+        "botania:textures/gui/entries/metamorphic_stones_0.png",
+        "botania:textures/gui/entries/metamorphic_stones_1.png"
+      ]
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:floating_marimorphosis": 1
+  }
+}

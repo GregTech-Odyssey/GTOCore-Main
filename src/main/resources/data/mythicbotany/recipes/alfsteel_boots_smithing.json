@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "mythicbotany:alfsteel_ingot"
+  },
+  "base": {
+    "item": "botania:terrasteel_boots"
+  },
+  "result": {
+    "item": "mythicbotany:alfsteel_boots"
+  },
+  "template": {
+    "item": "mythicbotany:alfsteel_template"
+  }
+}

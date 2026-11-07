@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:shimmerrock_slab"
+    }
+  },
+  "pattern": ["QQ"],
+  "result": {
+    "item": "botania:shimmerrock"
+  },
+  "show_notification": true
+}

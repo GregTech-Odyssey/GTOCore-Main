@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_plains_stone_slab"
+    }
+  },
+  "pattern": ["QQ"],
+  "result": {
+    "item": "botania:metamorphic_plains_stone"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "botania:cosmetic_bauble",
+  "key": {
+    "P": {
+      "item": "botania:cyan_petal"
+    },
+    "S": {
+      "item": "botania:mana_string"
+    }
+  },
+  "pattern": ["PPP", "PSP", "PPP"],
+  "result": {
+    "item": "botania:cosmetic_polka_dotted_bows"
+  },
+  "show_notification": true
+}

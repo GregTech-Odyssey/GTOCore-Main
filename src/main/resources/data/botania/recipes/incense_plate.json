@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "botania:livingwood_slab"
+    },
+    "W": {
+      "tag": "botania:livingwood_logs"
+    }
+  },
+  "pattern": ["SSW"],
+  "result": {
+    "item": "botania:incense_plate"
+  },
+  "show_notification": true
+}

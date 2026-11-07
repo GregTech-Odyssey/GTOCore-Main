@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "botania:rune_air"
+    },
+    "D": {
+      "tag": "botania:dragonstone_gems"
+    },
+    "E": {
+      "item": "botania:rune_earth"
+    },
+    "F": {
+      "tag": "botania:mundane_floating_flowers"
+    },
+    "P": {
+      "item": "minecraft:prismarine_crystals"
+    },
+    "S": {
+      "item": "botania:life_essence"
+    }
+  },
+  "pattern": ["SFS", "PDP", "ASE"],
+  "result": {
+    "item": "botania:laputa_shard"
+  },
+  "show_notification": true
+}

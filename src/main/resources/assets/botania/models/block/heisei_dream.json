@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "botania:block/heisei_dream"
+  },
+  "render_type": "minecraft:cutout"
+}

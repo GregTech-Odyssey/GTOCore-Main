@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:floating_flower",
+  "ingredients": [
+    {
+      "tag": "botania:floating_flowers"
+    },
+    {
+      "item": "botania:rosa_arcana"
+    }
+  ],
+  "result": {
+    "item": "botania:floating_rosa_arcana"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "botania.entry.aeMana",
+  "category": "gtocore:mana",
+  "icon": "botania:fabulous_pool",
+  "flag": "mod:ae2",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.aeMana0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.aeMana1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.aeMana2"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.aeMana3"
+    }
+  ]
+}

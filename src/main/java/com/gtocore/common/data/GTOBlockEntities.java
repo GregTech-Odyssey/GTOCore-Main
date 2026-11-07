@@ -15,8 +15,6 @@ import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperDisplayBl
 import com.gto.registrate.util.entry.BlockEntityEntry;
 
 import com.hollingsworth.arsnouveau.client.renderer.tile.LargeSourceJarRenderer;
-import vazkii.botania.client.render.block_entity.LargeManaPoolBlockEntityRenderer;
-import vazkii.botania.client.render.block_entity.ManaPoolBlockEntityRenderer;
 
 import static com.gtolib.api.registries.GTORegistration.GTO;
 
@@ -64,12 +62,9 @@ public class GTOBlockEntities {
 
     public static final BlockEntityEntry<LaurerilManaPools.Pool> LAURERIL_MANA_POOL = GTO.<LaurerilManaPools.Pool>blockEntity("laureril_mana_pool", LaurerilManaPools.Pool::new)
             .validBlocks(GTOBlocks.LAURERIL_MANA_POOL)
-            .renderer(() -> ManaPoolBlockEntityRenderer::new)
             .register();
-
     public static final BlockEntityEntry<LaurerilManaPools.Large> LARGE_LAURERIL_MANA_POOL = GTO.<LaurerilManaPools.Large>blockEntity("large_laureril_mana_pool", LaurerilManaPools.Large::new)
             .validBlocks(GTOBlocks.LARGE_LAURERIL_MANA_POOL)
-            .renderer(() -> LargeManaPoolBlockEntityRenderer::new)
             .register();
 
     public static final BlockEntityEntry<WirelessEnergyUnitBlockEntity> WIRELESS_ENERGY_UNIT = GTO

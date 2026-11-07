@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "extrabotany:block/stonesia"
+  },
+  "render_type": "minecraft:cutout"
+}

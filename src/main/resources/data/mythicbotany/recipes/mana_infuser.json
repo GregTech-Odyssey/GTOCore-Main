@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": {
+      "item": "mythicbotany:asgard_rune"
+    },
+    "d": {
+      "item": "botania:glimmering_dreamwood"
+    },
+    "e": {
+      "tag": "botania:elementium_ingots"
+    },
+    "w": {
+      "item": "botania:rune_spring"
+    },
+    "x": {
+      "item": "botania:rune_summer"
+    },
+    "y": {
+      "item": "botania:rune_autumn"
+    },
+    "z": {
+      "item": "botania:rune_winter"
+    }
+  },
+  "pattern": ["eee", "wdz", "xay"],
+  "result": {
+    "item": "mythicbotany:mana_infuser"
+  },
+  "show_notification": true
+}

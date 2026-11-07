@@ -1,0 +1,20 @@
+{
+  "name": "botania.entry.forestEye",
+  "category": "gtocore:devices",
+  "icon": "botania:forest_eye",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.forestEye0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.forestEye1"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.forestEye2",
+      "recipe": "botania:forest_eye"
+    }
+  ]
+}

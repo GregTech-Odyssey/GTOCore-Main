@@ -1,0 +1,27 @@
+{
+  "name": "botania.entry.lokiRing",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:loki_ring",
+  "entry_color": "aa00aa",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.lokiRing0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.lokiRing1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.lokiRing2"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.lokiRing3"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:loki_ring": 0
+  }
+}

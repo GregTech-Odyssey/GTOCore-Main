@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": {
+      "tag": "botania:dreamwood_logs"
+    },
+    "E": {
+      "tag": "botania:elementium_ingots"
+    },
+    "G": {
+      "item": "botania:life_essence"
+    }
+  },
+  "pattern": [" EG", "EEE", "GED"],
+  "result": {
+    "item": "botania:astrolabe"
+  },
+  "show_notification": true
+}

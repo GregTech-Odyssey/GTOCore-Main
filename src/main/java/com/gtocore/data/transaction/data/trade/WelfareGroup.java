@@ -30,7 +30,7 @@ import appeng.core.definitions.AEItems;
 import dev.shadowsoffire.apotheosis.ench.Ench;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import earth.terrarium.adastra.common.registry.ModItems;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import java.util.List;
 import java.util.Set;
@@ -72,20 +72,20 @@ public final class WelfareGroup {
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
                 new TradeEntry.Builder()
-                        .texture(new StackTexture(BotaniaItems.manaCookie))
+                        .texture(new StackTexture(BotaniaItems.getItem("mana_cookie")))
                         .addDescription(Component.translatable(addTradeLang(
                                 "欢迎来到格雷科技™员工会员专卖店",
                                 "Welcome to the Grey Tech™ Employee Membership Store")))
                         .addDescription(Component.translatable(addTradeLang("以后会添加更多购买项以及钱币获取途径",
                                 "More purchase options and ways to obtain currency will be added in the future")))
-                        .outputItem(new ItemStack(BotaniaItems.manaCookie))
+                        .outputItem(new ItemStack(BotaniaItems.getItem("mana_cookie")))
                         .outputItem(ChemicalHelper.get(ingot, Bronze, 64))
                         .condition(singleTransactionCondition("Welcome to the Grey Tech™ Employee Membership Store"))
                         .onExecute((a, b, c) -> performTag(a, b, c, "Welcome to the Grey Tech™ Employee Membership Store"))
                         .build());
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,
-                simpleSingleTimesItemTrading(true, UNLOCK_BASE, new ItemStack(BotaniaItems.manaCookie, 64),
+                simpleSingleTimesItemTrading(true, UNLOCK_BASE, new ItemStack(BotaniaItems.getItem("mana_cookie"), 64),
                         TECH_OPERATOR_COIN, 16, "WelfareGroup.ManaCookiePurchase"));
 
         TradingManager.INSTANCE.addTradeEntryByIndices(GroupIndex, ShopIndex1,

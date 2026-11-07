@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:pavement_stairs",
+  "key": {
+    "Q": {
+      "item": "botania:red_pavement"
+    }
+  },
+  "pattern": ["Q  ", "QQ ", "QQQ"],
+  "result": {
+    "count": 4,
+    "item": "botania:red_pavement_stairs"
+  },
+  "show_notification": true
+}

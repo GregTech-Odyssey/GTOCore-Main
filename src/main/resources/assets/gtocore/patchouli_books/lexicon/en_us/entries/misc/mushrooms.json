@@ -1,0 +1,11 @@
+{
+  "name": "botania.entry.mushrooms",
+  "category": "gtocore:misc",
+  "icon": "botania:white_mushroom",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.mushrooms0"
+    }
+  ]
+}

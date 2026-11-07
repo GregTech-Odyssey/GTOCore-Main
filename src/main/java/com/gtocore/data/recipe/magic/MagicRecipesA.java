@@ -36,11 +36,10 @@ import appeng.core.definitions.AEItems;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
-import io.github.lounode.extrabotany.common.block.ExtraBotanyBlocks;
-import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
-import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.block.BotaniaFlowerBlocks;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.BotaniaItems;
+import vazkii.botania.common.ExtraBotanyBlocks;
+import vazkii.botania.common.ExtraBotanyItems;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
@@ -228,7 +227,7 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.recipeBuilder("alchemy_herbs_ingot")
-                    .inputItems(BotaniaItems.terrasteel)
+                    .inputItems(BotaniaItems.getItem("terrasteel_ingot"))
                     .inputItems(dust, GnomeCrystal)
                     .inputItems(dust, SylphCrystal)
                     .inputItems(dust, UndineCrystal)
@@ -271,11 +270,11 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.recipeBuilder("alchemy_unstable_gaia_soul")
-                    .chancedInput(new ItemStack(BotaniaBlocks.gaiaPylon.asItem()), Chance.of(500))
+                    .chancedInput(new ItemStack(BotaniaBlocks.getBlock("gaia_pylon").asItem()), Chance.of(500))
                     .inputItems(GAIA_CORE)
                     .inputItems(ItemsRegistry.MANIPULATION_ESSENCE)
-                    .inputItems(BotaniaItems.manaPowder, 4)
-                    .inputItems(BotaniaItems.pixieDust, 4)
+                    .inputItems(BotaniaItems.getItem("mana_powder"), 4)
+                    .inputItems(BotaniaItems.getItem("pixie_dust"), 4)
                     .inputFluids(GaiaSolvent, 8000)
                     .outputItems(UNSTABLE_GAIA_SOUL)
                     .duration(240)
@@ -283,7 +282,7 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.builder("wilden_horn")
-                    .notConsumable(BotaniaBlocks.spawnerClaw.asItem())
+                    .notConsumable(BotaniaBlocks.getBlock("spawner_claw").asItem())
                     .notConsumable(ItemsRegistry.WILDEN_HORN)
                     .chancedInput(new ItemStack(GTOItems.WILDEN_SLATE), Chance.of(5))
                     .inputItems(dust, Meat, 16)
@@ -295,7 +294,7 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.builder("wilden_spike")
-                    .notConsumable(BotaniaBlocks.spawnerClaw.asItem())
+                    .notConsumable(BotaniaBlocks.getBlock("spawner_claw").asItem())
                     .notConsumable(ItemsRegistry.WILDEN_SPIKE)
                     .chancedInput(new ItemStack(GTOItems.WILDEN_SLATE), Chance.of(5))
                     .inputItems(dust, Meat, 16)
@@ -307,7 +306,7 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.builder("wilden_wing")
-                    .notConsumable(BotaniaBlocks.spawnerClaw.asItem())
+                    .notConsumable(BotaniaBlocks.getBlock("spawner_claw").asItem())
                     .notConsumable(ItemsRegistry.WILDEN_WING)
                     .chancedInput(new ItemStack(GTOItems.WILDEN_SLATE), Chance.of(5))
                     .inputItems(dust, Meat, 16)
@@ -319,7 +318,7 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.recipeBuilder("wilden_tribute")
-                    .notConsumable(BotaniaItems.spawnerMover)
+                    .notConsumable(BotaniaItems.getItem("spawner_mover"))
                     .inputItems(GTOItems.WILDEN_SLATE)
                     .inputItems(ItemsRegistry.MANIPULATION_ESSENCE)
                     .inputItems("apotheosis:epic_material")
@@ -331,7 +330,7 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.recipeBuilder("spirit_fragment")
-                    .inputItems(ExtraBotanyItems.spiritFragment)
+                    .inputItems(ExtraBotanyItems.getItem("spirit_fragment"))
                     .inputFluids(new FluidStack(GTOFluids.XP_JUICE.get().getSource(), 100))
                     .inputFluids(TheWaterFromTheWellOfWisdom, 50)
                     .outputFluids(Animium.getFluid(100))
@@ -444,14 +443,14 @@ public final class MagicRecipesA {
                     .save();
 
             ALCHEMY_CAULDRON_RECIPES.recipeBuilder("hero_medal")
-                    .notConsumable(ExtraBotanyItems.voidArchives)
+                    .notConsumable(ExtraBotanyItems.getItem("void_archives"))
                     .inputItems(GTOItems.HEROS_SOUL, 4)
                     .inputItems(GTOItems.GOLD_MEDAL)
                     .inputItems(Adventure.Items.MYTHIC_MATERIAL.get(), 4)
                     .inputFluids(HerosBrawlers, 1000)
                     .inputFluids(HerosBreach, 1000)
                     .inputFluids(HerosSplendor, 1000)
-                    .outputItems(ExtraBotanyItems.heroMedal)
+                    .outputItems(ExtraBotanyItems.getItem("hero_medal"))
                     .duration(200)
                     .MANAt(32)
                     .temperature(1600)
@@ -579,7 +578,7 @@ public final class MagicRecipesA {
 
             VanillaRecipeHelper.addShapedRecipe(GTOCore.id("ribbon"), RIBBON.asItem(),
                     "ABA", "BAB", "ABA",
-                    'A', new ItemStack(BotaniaItems.manaString), 'B', new ItemStack(BotaniaItems.spellCloth));
+                    'A', new ItemStack(BotaniaItems.getItem("mana_string")), 'B', new ItemStack(BotaniaItems.getItem("spell_cloth")));
 
             FORMING_PRESS_RECIPES.builder("gold_medal")
                     .notConsumable(GTItems.SHAPE_MOLD_BALL.asItem())
@@ -748,71 +747,71 @@ public final class MagicRecipesA {
         // 魔法站点单方块：魔力流组装台（manaflow_assemble）用原魔法机器 + 魔力钢锭 + 魔力玻璃 + EV 力场发射器组装
         {
             ASSEMBLER_RECIPES.builder("pure_daisy_station")
-                    .inputItems(BotaniaFlowerBlocks.pureDaisy.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BotaniaBlocks.getBlock("pure_daisy").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .outputItems(ManaMachine.PURE_DAISY_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("mana_pool_station")
-                    .inputItems(BotaniaBlocks.manaPool.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BotaniaBlocks.getBlock("mana_pool").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .outputItems(ManaMachine.MANA_POOL_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("petal_apothecary_station")
-                    .inputItems(BotaniaBlocks.defaultAltar.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BotaniaBlocks.getBlock("apothecary_default").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .outputItems(ManaMachine.PETAL_APOTHECARY_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("runic_altar_station")
-                    .inputItems(BotaniaBlocks.runeAltar.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BotaniaBlocks.getBlock("runic_altar").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .outputItems(ManaMachine.RUNIC_ALTAR_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("terra_plate_station")
-                    .inputItems(BotaniaBlocks.terraPlate.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(BotaniaBlocks.getBlock("terra_plate").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .outputItems(ManaMachine.TERRA_PLATE_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("pedestal_station")
-                    .inputItems(ExtraBotanyBlocks.livingrockPedestal.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(ExtraBotanyBlocks.getBlock("pedestal_livingrock").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .outputItems(ManaMachine.PEDESTAL_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
                     .save();
 
             ASSEMBLER_RECIPES.builder("elven_portal_station")
-                    .inputItems(BotaniaBlocks.alfPortal.asItem())
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
-                    .inputItems(BotaniaBlocks.naturaPylon, 2)
+                    .inputItems(BotaniaBlocks.getBlock("alfheim_portal").asItem())
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
+                    .inputItems(BotaniaBlocks.getBlock("natura_pylon"), 2)
                     .outputItems(ManaMachine.ELVEN_PORTAL_STATION.asItem())
                     .duration(3000)
                     .EUt(VA[IV])
@@ -820,9 +819,9 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("imbuement_chamber_station")
                     .inputItems(BlockRegistry.IMBUEMENT_BLOCK)
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .inputItems(BlockRegistry.ARCANE_PEDESTAL, 8)
                     .outputItems(ManaMachine.IMBUEMENT_CHAMBER_STATION.asItem())
                     .duration(3000)
@@ -831,9 +830,9 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("enchanting_apparatus_station")
                     .inputItems(BlockRegistry.ENCHANTING_APP_BLOCK)
-                    .inputItems(rod, GTOMaterials.Manasteel, 8)
-                    .inputItems(BotaniaBlocks.manaGlass.asItem(), 8)
-                    .inputItems(GTItems.FIELD_GENERATOR_EV)
+                    .inputItems(frameGt, GTMaterials.Bronze, 1)
+                    .inputItems(BotaniaItems.getItem("light_blue_petal").asItem(), 12)
+                    .inputItems(Items.LIGHT_BLUE_STAINED_GLASS_PANE, 6)
                     .inputItems(BlockRegistry.ARCANE_PEDESTAL, 8)
                     .inputItems(BlockRegistry.ARCANE_CORE_BLOCK)
                     .outputItems(ManaMachine.ENCHANTING_APPARATUS_STATION.asItem())
@@ -879,8 +878,8 @@ public final class MagicRecipesA {
                     .inputItems(CustomTags.MV_CIRCUITS)
                     .inputItems(TagPrefix.gemExquisite, GTOMaterials.Dragonstone, 4)
                     .inputItems(TagPrefix.gear, GTOMaterials.Alfsteel, 4)
-                    .inputItems(BotaniaItems.pixieDust, 4)
-                    .inputItems(BotaniaBlocks.alfPortal, 4)
+                    .inputItems(BotaniaItems.getItem("pixie_dust"), 4)
+                    .inputItems(BotaniaBlocks.getBlock("alfheim_portal"), 4)
                     .inputItems("mythicbotany:alfheim_rune")
                     .inputItems("mythicbotany:asgard_rune")
                     .outputItems(ManaMultiBlock.ELF_EXCHANGE.asItem())
@@ -895,7 +894,7 @@ public final class MagicRecipesA {
                     .inputItems(CustomTags.MV_CIRCUITS)
                     .inputItems(block, GTOMaterials.Runerock, 4)
                     .inputItems(TagPrefix.gear, GTOMaterials.Elementium, 4)
-                    .inputItems(BotaniaBlocks.pistonRelay, 4)
+                    .inputItems(Items.HONEY_BOTTLE, 4)
                     .inputItems("botania:runic_altar")
                     .inputItems("botania:apothecary_livingrock")
                     .inputItems("botania:brewery")
@@ -1001,7 +1000,7 @@ public final class MagicRecipesA {
                     .inputItems(TagPrefix.screw, GTOMaterials.Manasteel, 32)
                     .inputItems("botania:rune_mana", 32)
                     .inputItems("botania:mana_tablet", 2)
-                    .inputItems(BotaniaBlocks.manaBomb.asItem())
+                    .inputItems(BotaniaBlocks.getBlock("mana_bomb").asItem())
                     .outputItems(ManaMultiBlock.ADVANCED_MANA_DISTRIBUTOR.asItem())
                     .duration(800)
                     .MANAt(128)
@@ -1028,7 +1027,7 @@ public final class MagicRecipesA {
         {
             ASSEMBLER_RECIPES.builder("lv_mana_input_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.LV].asItem())
-                    .inputItems(BotaniaBlocks.pump, 2)
+                    .inputItems(BotaniaBlocks.getBlock("pump"), 2)
                     .inputItems("botania:mana_pylon")
                     .inputItems(TagPrefix.screw, GTOMaterials.Manasteel, 4)
                     .circuitMeta(1)
@@ -1039,7 +1038,7 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("mv_mana_input_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.MV].asItem())
-                    .inputItems(BotaniaBlocks.pump, 2)
+                    .inputItems(BotaniaBlocks.getBlock("pump"), 2)
                     .inputItems(TagPrefix.lens, GTOMaterials.ManaGlass)
                     .inputItems(TagPrefix.screw, GTOMaterials.Terrasteel, 4)
                     .circuitMeta(1)
@@ -1050,7 +1049,7 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("hv_mana_input_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.HV].asItem())
-                    .inputItems(BotaniaBlocks.pump, 2)
+                    .inputItems(BotaniaBlocks.getBlock("pump"), 2)
                     .inputItems("botania:natura_pylon")
                     .inputItems(TagPrefix.lens, GTOMaterials.ElfGlass)
                     .inputItems(TagPrefix.screw, GTOMaterials.Elementium, 4)
@@ -1089,7 +1088,7 @@ public final class MagicRecipesA {
             ASSEMBLER_RECIPES.builder("luv_mana_input_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.LuV].asItem())
                     .inputItems("botania:prism", 2)
-                    .inputItems(ExtraBotanyItems.theUniverse)
+                    .inputItems(ExtraBotanyItems.getItem("the_universe"))
                     .inputItems(TagPrefix.lens, GTOMaterials.BifrostPerm)
                     .inputItems(TagPrefix.screw, GTOMaterials.Orichalcos, 4)
                     .circuitMeta(1)
@@ -1167,7 +1166,7 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("lv_mana_output_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.LV].asItem())
-                    .inputItems(BotaniaBlocks.pump, 2)
+                    .inputItems(BotaniaBlocks.getBlock("pump"), 2)
                     .inputItems("botania:mana_pylon")
                     .inputItems(TagPrefix.screw, GTOMaterials.Manasteel, 4)
                     .circuitMeta(2)
@@ -1178,7 +1177,7 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("mv_mana_output_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.MV].asItem())
-                    .inputItems(BotaniaBlocks.pump, 2)
+                    .inputItems(BotaniaBlocks.getBlock("pump"), 2)
                     .inputItems(TagPrefix.lens, GTOMaterials.ManaGlass)
                     .inputItems(TagPrefix.screw, GTOMaterials.Terrasteel, 4)
                     .circuitMeta(2)
@@ -1189,7 +1188,7 @@ public final class MagicRecipesA {
 
             ASSEMBLER_RECIPES.builder("hv_mana_output_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.HV].asItem())
-                    .inputItems(BotaniaBlocks.pump, 2)
+                    .inputItems(BotaniaBlocks.getBlock("pump"), 2)
                     .inputItems("botania:natura_pylon")
                     .inputItems(TagPrefix.lens, GTOMaterials.ElfGlass)
                     .inputItems(TagPrefix.screw, GTOMaterials.Elementium, 4)
@@ -1228,7 +1227,7 @@ public final class MagicRecipesA {
             ASSEMBLER_RECIPES.builder("luv_mana_output_hatch")
                     .inputItems(ManaMachine.MANA_HULL[GTValues.LuV].asItem())
                     .inputItems("botania:prism", 2)
-                    .inputItems(ExtraBotanyItems.theUniverse)
+                    .inputItems(ExtraBotanyItems.getItem("the_universe"))
                     .inputItems(TagPrefix.lens, GTOMaterials.BifrostPerm)
                     .inputItems(TagPrefix.screw, GTOMaterials.Orichalcos, 4)
                     .circuitMeta(2)
@@ -1486,9 +1485,9 @@ public final class MagicRecipesA {
         // 杂项配方
         {
             VanillaRecipeHelper.addShapedRecipe("mortar_grind_living_rock_block",
-                    ChemicalHelper.get(dust, Livingrock, 9), "X", "m", 'X', BotaniaBlocks.livingrock);
+                    ChemicalHelper.get(dust, Livingrock, 9), "X", "m", 'X', BotaniaBlocks.getBlock("livingrock"));
             VanillaRecipeHelper.addShapedRecipe("mortar_grind_living_wood_planks",
-                    ChemicalHelper.get(dust, Livingwood), "X", "m", 'X', BotaniaBlocks.livingwoodPlanks);
+                    ChemicalHelper.get(dust, Livingwood), "X", "m", 'X', BotaniaBlocks.getBlock("livingwood_planks"));
             VanillaRecipeHelper.addShapedRecipe("mortar_grind_living_clay_block",
                     ChemicalHelper.get(dust, Livingclay, 9), "X", "m", 'X', ChemicalHelper.get(block, Livingclay));
             VanillaRecipeHelper.addShapedRecipe("mortar_grind_living_steel",
@@ -1501,7 +1500,7 @@ public final class MagicRecipesA {
                     new MaterialEntry(dust, Steel), new MaterialEntry(dust, Steel), new MaterialEntry(dust, Steel),
                     new MaterialEntry(dust, Livingclay), new MaterialEntry(dust, Livingwood), new MaterialEntry(dust, Livingrock));
             VanillaRecipeHelper.addShapelessRecipe(id("white_wax"), ChemicalHelper.get(dust, WhiteWax, 4),
-                    Items.HONEYCOMB, Items.HONEYCOMB, BotaniaBlocks.whiteBuriedPetals.asItem(), BotaniaBlocks.whiteBuriedPetals.asItem(),
+                    Items.HONEYCOMB, Items.HONEYCOMB, BotaniaBlocks.getBlock("white_buried_petals").asItem(), BotaniaBlocks.getBlock("white_buried_petals").asItem(),
                     new MaterialEntry(dust, Livingrock), new MaterialEntry(dust, Livingrock), new MaterialEntry(dust, Livingrock),
                     new MaterialEntry(dust, Livingrock), new MaterialEntry(dust, Livingrock));
 

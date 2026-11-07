@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "minecraft:copper_ingot"
+    },
+    "N": {
+      "item": "minecraft:note_block"
+    }
+  },
+  "pattern": [" G ", "GNG", "GG "],
+  "result": {
+    "item": "botania:cacophonium"
+  },
+  "show_notification": true
+}

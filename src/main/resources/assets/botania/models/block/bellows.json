@@ -1,0 +1,13 @@
+{
+  "loader": "forge:obj",
+  "model": "botania:models/special/bellows_block.obj",
+  "flip_v": false,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "original": "botania:block/special/bellows",
+    "particle": "botania:block/livingwood_log"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.dreadthorne",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:dreadthorn",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.dreadthorne0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

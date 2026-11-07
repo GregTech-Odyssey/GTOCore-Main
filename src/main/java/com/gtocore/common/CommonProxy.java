@@ -100,6 +100,7 @@ import de.mari_023.ae2wtlib.terminal.IUniversalWirelessTerminalItem;
 import de.mari_023.ae2wtlib.wut.WTDefinition;
 import earth.terrarium.adastra.api.events.AdAstraEvents;
 import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
+import vazkii.botania.common.BotaniaRegistration;
 
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static de.mari_023.ae2wtlib.wut.WUTHandler.terminalNames;
@@ -111,6 +112,7 @@ public class CommonProxy {
         init();
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         GTO.registerEventListeners(eventBus);
+        BotaniaRegistration.register(eventBus);
         GTOFluids.FLUID_TYPE.register(eventBus);
         GTOFluids.FLUID.register(eventBus);
         GTOEffects.init(eventBus);

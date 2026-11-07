@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "minecraft:fire_charge"
+    },
+    "G": {
+      "item": "minecraft:glowstone"
+    },
+    "L": {
+      "item": "botania:lens_normal"
+    }
+  },
+  "pattern": ["FGF", "GLG", "FGF"],
+  "result": {
+    "item": "botania:lens_light"
+  },
+  "show_notification": true
+}

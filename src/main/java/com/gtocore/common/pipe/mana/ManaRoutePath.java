@@ -13,7 +13,6 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.mana.ManaReceiver;
-import vazkii.botania.xplat.XplatAbstractions;
 
 public final class ManaRoutePath implements IRoutePath<ManaReceiver> {
 
@@ -47,7 +46,7 @@ public final class ManaRoutePath implements IRoutePath<ManaReceiver> {
     @Nullable
     public static ManaReceiver receiverOf(@Nullable BlockEntity blockEntity, Direction side) {
         if (blockEntity == null || blockEntity.getLevel() == null) return null;
-        return XplatAbstractions.INSTANCE.findManaReceiver(blockEntity.getLevel(), blockEntity.getBlockPos(), blockEntity.getBlockState(), blockEntity, side);
+        return null;
     }
 
     public @NotNull Direction getTargetFacing() {

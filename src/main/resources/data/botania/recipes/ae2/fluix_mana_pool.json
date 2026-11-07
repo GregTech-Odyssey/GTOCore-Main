@@ -1,0 +1,21 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "ae2"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "botania:fabulous_pool"
+    },
+    {
+      "item": "ae2:interface"
+    }
+  ],
+  "result": {
+    "item": "botania:fluix_mana_pool"
+  }
+}

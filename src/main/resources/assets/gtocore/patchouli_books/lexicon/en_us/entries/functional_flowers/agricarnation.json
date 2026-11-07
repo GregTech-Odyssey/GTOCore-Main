@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.agricarnation",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:agricarnation",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.agricarnation0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

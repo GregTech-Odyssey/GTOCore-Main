@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": {
+      "tag": "botania:manasteel_ingots"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "botania:livingrock"
+    }
+  },
+  "pattern": ["SRS", "RMR", "SRS"],
+  "result": {
+    "item": "botania:mana_fluxfield"
+  },
+  "show_notification": true
+}

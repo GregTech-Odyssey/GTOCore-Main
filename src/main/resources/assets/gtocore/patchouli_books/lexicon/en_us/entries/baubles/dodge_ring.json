@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.dodgeRing",
+  "category": "gtocore:baubles",
+  "icon": "botania:dodge_ring",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.dodgeRing0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.dodgeRing1",
+      "recipe": "botania:dodge_ring"
+    }
+  ]
+}

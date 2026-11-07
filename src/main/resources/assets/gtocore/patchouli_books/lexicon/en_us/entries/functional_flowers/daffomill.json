@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.daffomill",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:daffomill",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.daffomill0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

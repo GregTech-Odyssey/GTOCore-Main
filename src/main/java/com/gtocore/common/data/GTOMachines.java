@@ -109,6 +109,7 @@ public final class GTOMachines {
         SpaceMultiblock.init();
 
         OptionalMachine.init(); // 限制模式不注册会出现多方块预览错误
+        com.gtocore.common.data.machines.MythicBotanyMachines.init();
 
         if (GTCEu.isDev() || GTCEu.isDataGen()) {
             final MachineDefinition TEST_REPORT_OUTPUT = machine("test_report_output", "测试报告输出器", TestReportOutput::new)

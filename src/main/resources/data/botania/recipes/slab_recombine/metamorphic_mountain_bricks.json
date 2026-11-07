@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_mountain_bricks_slab"
+    }
+  },
+  "pattern": ["QQ"],
+  "result": {
+    "item": "botania:metamorphic_mountain_bricks"
+  },
+  "show_notification": true
+}

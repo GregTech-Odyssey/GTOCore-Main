@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "item": "botania:mana_string"
+    },
+    "T": {
+      "item": "botania:livingwood_twig"
+    }
+  },
+  "pattern": [" TS", "T S", " TS"],
+  "result": {
+    "item": "botania:livingwood_bow"
+  },
+  "show_notification": true
+}

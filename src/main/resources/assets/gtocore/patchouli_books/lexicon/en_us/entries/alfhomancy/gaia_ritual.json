@@ -1,0 +1,34 @@
+{
+  "name": "botania.entry.gaiaRitual",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:life_essence",
+  "entry_color": "aa00",
+  "turnin": "botania:main/gaia_guardian_kill",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.gaiaRitual0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.gaiaRitual1",
+      "recipe": "botania:gaia_pylon"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gaiaRitual3"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gaiaRitual4"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gaiaRitual5"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:life_essence": 1,
+    "botania:gaia_pylon": 1
+  }
+}

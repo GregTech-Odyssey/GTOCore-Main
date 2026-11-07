@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "tag": "botania:manasteel_ingots"
+    },
+    "T": {
+      "item": "botania:livingwood_twig"
+    }
+  },
+  "pattern": ["SS", " T", " T"],
+  "result": {
+    "item": "botania:manasteel_hoe"
+  },
+  "show_notification": true
+}

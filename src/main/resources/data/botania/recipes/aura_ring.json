@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": {
+      "tag": "botania:manasteel_ingots"
+    },
+    "R": {
+      "item": "botania:rune_mana"
+    }
+  },
+  "pattern": ["RI ", "I I", " I "],
+  "result": {
+    "item": "botania:aura_ring"
+  },
+  "show_notification": true
+}

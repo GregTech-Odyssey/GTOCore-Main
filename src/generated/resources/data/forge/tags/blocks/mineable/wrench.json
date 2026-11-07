@@ -402,6 +402,8 @@
     "gtocore:laureril_source_jar",
     "gtocore:standard_laureril_source_jar",
     "gtocore:large_laureril_source_jar",
+    "gtocore:laureril_mana_pool",
+    "gtocore:large_laureril_mana_pool",
     "gtocore:normal_heat_pipe",
     "gtocore:original_bronze_mana_pipe",
     "gtocore:manasteel_mana_pipe",

@@ -103,19 +103,14 @@ import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
 import dev.shadowsoffire.apotheosis.ench.compat.EnchJEIPlugin;
 import dev.shadowsoffire.apotheosis.potion.compat.PotionJEIPlugin;
 import dev.shadowsoffire.apotheosis.village.compat.VillageJEIPlugin;
-import io.github.lounode.extrabotany.api.ExtraBotanyAPI;
-import io.github.lounode.extrabotany.client.integration.emi.EmiExtrabotanyPlugin;
 import io.github.prismwork.emitrades.EMITradesPlugin;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import jeresources.jei.JEIConfig;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.library.plugins.jei.JeiInternalPlugin;
-import mythicbotany.jei.MythicJei;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.compat.JEICompat;
 import umpaz.farmersrespite.integration.jei.JEIFRPlugin;
-import vazkii.botania.api.BotaniaAPI;
-import vazkii.botania.client.integration.emi.BotaniaEmiPlugin;
 import vectorwing.farmersdelight.FarmersDelight;
 
 import java.util.function.Consumer;
@@ -173,7 +168,6 @@ public final class GTEMIPlugin implements EmiPlugin {
         list.accept(new PotionJEIPlugin());
         list.accept(new VillageJEIPlugin());
         list.accept(new JEIConfig());
-        list.accept(new MythicJei());
         list.accept(new JEIFRPlugin());
         list.accept(new JEIArsNouveauPlugin());
         list.accept(new JEICompat());
@@ -194,8 +188,9 @@ public final class GTEMIPlugin implements EmiPlugin {
         if (Mods.SOPHISTICATEDSTORAGE.isLoaded()) {
             list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin(), "sophisticatedstorage"));
         }
-        list.accept(new EmiPluginContainer(new BotaniaEmiPlugin(), BotaniaAPI.MODID));
-        list.accept(new EmiPluginContainer(new EmiExtrabotanyPlugin(), ExtraBotanyAPI.MODID));
+        // list.accept(new EmiPluginContainer(new BotaniaEmiPlugin(), BotaniaAPI.MODID));
+        // TODO
+        // list.accept(new EmiPluginContainer(new EmiExtrabotanyPlugin(), ExtraBotanyAPI.MODID));
         list.accept(new EmiPluginContainer(new EMIPlugin(), LDLib.MOD_ID));
         list.accept(new EmiPluginContainer(new GTEMIPlugin(), GTCEu.MOD_ID));
         list.accept(new EmiPluginContainer(new MeteoritesEmiPlugin(), ArsMeteorites.MOD_ID));
@@ -274,6 +269,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addRecipeHandler(WETMenu.TYPE, new EmiEncodePatternHandler<>(WETMenu.class));
         registry.addRecipeHandler(PatternEncodingTermMenu.TYPE, new EmiEncodePatternHandler<>(PatternEncodingTermMenu.class));
         registry.addCategory(GTProgrammedCircuitCategory.CATEGORY);
+        com.gtocore.integration.emi.rune.RuneRitualEmiCategory.register(registry);
 
         OreProcessingEmiCategory.registerDisplays(registry);
         GTOreVeinEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);

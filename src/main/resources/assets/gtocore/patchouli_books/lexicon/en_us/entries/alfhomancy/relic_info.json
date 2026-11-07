@@ -1,0 +1,19 @@
+{
+  "name": "botania.entry.relicInfo",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:dice",
+  "entry_color": "aa00aa",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.relicInfo0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.relicInfo1"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:dice": 1
+  }
+}

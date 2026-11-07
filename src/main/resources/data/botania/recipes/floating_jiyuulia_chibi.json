@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:floating_flower",
+  "ingredients": [
+    {
+      "tag": "botania:floating_flowers"
+    },
+    {
+      "item": "botania:jiyuulia_chibi"
+    }
+  ],
+  "result": {
+    "item": "botania:floating_jiyuulia_chibi"
+  }
+}

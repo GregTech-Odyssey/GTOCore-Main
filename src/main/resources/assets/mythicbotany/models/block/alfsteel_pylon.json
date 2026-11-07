@@ -1,0 +1,13 @@
+{
+  "loader": "forge:obj",
+  "model": "mythicbotany:models/special/alfsteel_pylon_block.obj",
+  "flip_v": false,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "render_type": "minecraft:translucent",
+  "ambientocclusion": false,
+  "textures": {
+    "original": "mythicbotany:block/special/pylon_alfsteel",
+    "particle": "mythicbotany:block/alfsteel_block"
+  }
+}

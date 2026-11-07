@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "tag": "botania:mana_diamond_gems"
+    }
+  },
+  "pattern": ["III", "III", "III"],
+  "result": {
+    "item": "botania:mana_diamond_block"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,13 @@
+{
+  "name": "botania.entry.orechidIgnem",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:orechid_ignem",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.orechidIgnem0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

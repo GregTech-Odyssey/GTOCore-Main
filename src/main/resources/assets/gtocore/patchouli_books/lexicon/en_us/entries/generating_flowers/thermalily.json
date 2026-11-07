@@ -1,0 +1,26 @@
+{
+  "name": "botania.entry.thermalily",
+  "category": "gtocore:generating_flowers",
+  "icon": "botania:thermalily",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.thermalily0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.thermalily1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.thermalily2"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.thermalily3"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:floating_thermalily": 1
+  }
+}

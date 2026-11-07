@@ -27,12 +27,13 @@ public final class MaterialsColorMap {
 
     private static final IntSupplier shimmer = () -> {
         float time = ClientTickHandler.ticksInGame + ClientTickHandler.partialTicks;
-        return Mth.hsvToRgb(time % 200 / 200, 0.4F, 0.9F);
+        return Mth.hsvToRgb((int) time % 200 / 200, 0.4F, 0.9F);
     };
 
     static {
         ImmutableMap.Builder<Material, IntSupplier> MaterialBuilder = ImmutableMap.builder();
-        MaterialBuilder.put(GTOMaterials.Gaia, () -> Mth.hsvToRgb((ClientTickHandler.ticksInGame << 1) % 360 / 360F, 0.25F, 1F));
+        MaterialBuilder.put(GTOMaterials.Gaia, () -> Mth.hsvToRgb(
+                (ClientTickHandler.ticksInGame << 1) % 360 / 360F, 0.25F, 1F));
         MaterialBuilder.put(GTOMaterials.Shimmerwood, shimmer);
         MaterialBuilder.put(GTOMaterials.Shimmerrock, shimmer);
         MaterialBuilder.put(GTOMaterials.BifrostPerm, shimmer);

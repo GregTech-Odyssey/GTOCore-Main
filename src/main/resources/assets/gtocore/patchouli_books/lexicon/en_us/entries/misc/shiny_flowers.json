@@ -1,0 +1,15 @@
+{
+  "name": "botania.entry.shinyFlowers",
+  "category": "gtocore:misc",
+  "icon": "botania:white_shiny_flower",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.shinyFlowers0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.shinyFlowers3"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "botania.entry.mIntro",
+  "category": "gtocore:mana",
+  "icon": "botania:cosmetic_questgiver_mark",
+  "priority": true,
+  "sortnum": -10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.mIntro0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.mIntro1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.mIntro2"
+    }
+  ]
+}

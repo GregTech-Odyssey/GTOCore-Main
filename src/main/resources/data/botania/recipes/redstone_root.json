@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:redstone"
+    },
+    [
+      {
+        "item": "minecraft:fern"
+      },
+      {
+        "item": "minecraft:grass"
+      }
+    ]
+  ],
+  "result": {
+    "item": "botania:redstone_root"
+  }
+}

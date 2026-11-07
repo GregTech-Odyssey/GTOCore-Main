@@ -1,0 +1,15 @@
+{
+  "name": "botania.entry.kingKey",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:king_key",
+  "entry_color": "aa00aa",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.kingKey0"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:king_key": 0
+  }
+}

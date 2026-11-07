@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "tag": "botania:terrasteel_ingots"
+    },
+    {
+      "item": "botania:magnet_ring"
+    }
+  ],
+  "result": {
+    "item": "botania:magnet_ring_greater"
+  }
+}

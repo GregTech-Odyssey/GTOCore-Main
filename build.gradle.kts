@@ -337,11 +337,11 @@ dependencies {
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
-    modImplementation("vazkii.botania:Botania-forge-1.20.1:$botania_version")
     modImplementation("vazkii.patchouli:Patchouli:$minecraft_version-84.1-FORGE")
-    modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
-    modImplementation("curse.maven:event-wrapper-1256971:7182179")
-    modImplementation("curse.maven:mythicbotany-400058:6702112")
+    // modImplementation("vazkii.botania:Botania-forge-1.20.1:$botania_version")
+    // modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
+    // modImplementation("curse.maven:event-wrapper-1256971:7182179")
+    // modImplementation("curse.maven:mythicbotany-400058:6702112")
 
     // Apotheosis
     modImplementation("dev.shadowsoffire:ApothicAttributes:$minecraft_version-1.3.7")
@@ -706,7 +706,7 @@ gtoPublish {
             "gregtech-modern-gto-edition" to "required",
             "applied-energistics-2-gto-edition" to "required",
             "ars-nouveau-gto-edition" to "required",
-            "botania-gto-edition" to "required",
+            // "botania-gto-edition" to "required",
             "gtoutils" to "required",
             "gtorender" to "required",
             "gto-seal-runtime" to "required",

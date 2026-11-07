@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "botania:block/daybloom"
+  },
+  "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "item": "botania:lens_normal"
+    },
+    "P": {
+      "item": "minecraft:prismarine_crystals"
+    },
+    "R": {
+      "item": "botania:rune_air"
+    }
+  },
+  "pattern": ["PRP", "PLP", "PPP"],
+  "result": {
+    "item": "botania:lens_influence"
+  },
+  "show_notification": true
+}

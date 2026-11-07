@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.7,
+  "ingredient": {
+    "item": "mythicbotany:raw_elementium"
+  },
+  "result": "botania:elementium_ingot"
+}

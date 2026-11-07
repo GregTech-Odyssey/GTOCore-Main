@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "extrabotany:block/manalink"
+  },
+  "render_type": "minecraft:cutout"
+}

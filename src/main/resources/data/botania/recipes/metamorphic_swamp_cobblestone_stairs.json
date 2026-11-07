@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:metamorphic_cobble_stairs",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_swamp_cobblestone"
+    }
+  },
+  "pattern": ["Q  ", "QQ ", "QQQ"],
+  "result": {
+    "count": 4,
+    "item": "botania:metamorphic_swamp_cobblestone_stairs"
+  },
+  "show_notification": true
+}

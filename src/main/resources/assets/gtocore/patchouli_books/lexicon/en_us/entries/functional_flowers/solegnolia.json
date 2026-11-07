@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.solegnolia",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:solegnolia",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.solegnolia0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

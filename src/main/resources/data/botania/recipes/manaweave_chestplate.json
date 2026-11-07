@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "item": "botania:manaweave_cloth"
+    }
+  },
+  "pattern": ["S S", "SSS", "SSS"],
+  "result": {
+    "item": "botania:manaweave_chestplate"
+  },
+  "show_notification": true
+}

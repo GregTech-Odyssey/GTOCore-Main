@@ -1,0 +1,25 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "ae2"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["QSQ", "S S", "III"],
+  "key": {
+    "Q": {
+      "item": "ae2:quartz_glass"
+    },
+    "S": {
+      "item": "botania:life_essence"
+    },
+    "I": {
+      "item": "botania:manasteel_ingot"
+    }
+  },
+  "result": {
+    "item": "botania:mana_cell_housing"
+  }
+}

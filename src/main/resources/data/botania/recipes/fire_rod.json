@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "F": {
+      "item": "minecraft:blaze_powder"
+    },
+    "R": {
+      "item": "botania:rune_fire"
+    },
+    "T": {
+      "item": "botania:livingwood_twig"
+    }
+  },
+  "pattern": ["  F", " T ", "R  "],
+  "result": {
+    "item": "botania:fire_rod"
+  },
+  "show_notification": true
+}

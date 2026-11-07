@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": {
+      "tag": "botania:mana_diamond_gems"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "Q": {
+      "item": "minecraft:quartz_block"
+    },
+    "R": {
+      "item": "minecraft:golden_carrot"
+    },
+    "S": {
+      "item": "botania:rune_earth"
+    }
+  },
+  "pattern": ["RSR", "QEQ", "RDR"],
+  "result": {
+    "item": "botania:third_eye"
+  },
+  "show_notification": true
+}

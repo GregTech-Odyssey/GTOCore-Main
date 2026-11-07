@@ -1,0 +1,7 @@
+{
+  "parent": "botania:block/shapes/cross",
+  "textures": {
+    "cross": "extrabotany:block/trade_orchid"
+  },
+  "render_type": "minecraft:cutout"
+}

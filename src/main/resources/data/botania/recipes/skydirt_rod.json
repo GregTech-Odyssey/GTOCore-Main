@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "botania:dirt_rod"
+    },
+    {
+      "item": "botania:pixie_dust"
+    },
+    {
+      "item": "botania:rune_air"
+    }
+  ],
+  "result": {
+    "item": "botania:skydirt_rod"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:livingwood_planks"
+    }
+  },
+  "pattern": ["QQQ"],
+  "result": {
+    "count": 6,
+    "item": "botania:livingwood_planks_slab"
+  },
+  "show_notification": true
+}

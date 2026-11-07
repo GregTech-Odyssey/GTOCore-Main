@@ -1,0 +1,6 @@
+{
+  "parent": "ae2:block/drive/drive_cell",
+  "textures": {
+    "cell": "botania:block/drive/creative_mana_cell"
+  }
+}

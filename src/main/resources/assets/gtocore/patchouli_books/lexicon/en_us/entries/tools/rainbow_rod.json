@@ -1,0 +1,52 @@
+{
+  "name": "botania.entry.rainbowRod",
+  "category": "gtocore:tools",
+  "icon": "botania:rainbow_rod",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.rainbowRod0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.rainbowRod1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.rainbowRod6"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.rainbowRod2",
+      "recipe": "botania:rainbow_rod"
+    },
+    {
+      "type": "crafting",
+      "recipe": "botania:bifrost_perm",
+      "recipe2": "botania:bifrost_pane"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.rainbowRod4",
+      "recipe": "botania:shimmerrock"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.rainbowRod5",
+      "recipe": "botania:shimmerwood_planks"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.rainbowRod7",
+      "recipe": "botania:fabulous_pool",
+      "recipe2": "botania:fabulous_pool_upgrade"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:shimmerrock_slab": 5,
+    "botania:shimmerrock_stairs": 5,
+    "botania:shimmerwood_planks_slab": 6,
+    "botania:shimmerwood_planks_stairs": 6
+  }
+}

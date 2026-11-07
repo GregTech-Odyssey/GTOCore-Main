@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#botania:misc_floating_flowers",
+    "#botania:generating_floating_flowers",
+    "#botania:functional_floating_flowers"
+  ]
+}

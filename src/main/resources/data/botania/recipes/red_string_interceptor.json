@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "M": {
+      "item": "minecraft:stone_button"
+    },
+    "R": {
+      "item": "botania:livingrock"
+    },
+    "S": {
+      "item": "botania:red_string"
+    }
+  },
+  "pattern": ["RRR", "RMS", "RRR"],
+  "result": {
+    "item": "botania:red_string_interceptor"
+  },
+  "show_notification": true
+}

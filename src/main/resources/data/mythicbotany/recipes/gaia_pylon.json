@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "d": {
+      "item": "botania:pixie_dust"
+    },
+    "e": {
+      "tag": "botania:elementium_ingots"
+    },
+    "p": {
+      "item": "mythicbotany:alfsteel_pylon"
+    }
+  },
+  "pattern": [" d ", "epe", " d "],
+  "result": {
+    "item": "botania:gaia_pylon"
+  },
+  "show_notification": true
+}

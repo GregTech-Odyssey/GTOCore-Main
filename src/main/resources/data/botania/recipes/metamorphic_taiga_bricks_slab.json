@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "botania:metamorphic_brick_slab",
+  "key": {
+    "Q": {
+      "item": "botania:metamorphic_taiga_bricks"
+    }
+  },
+  "pattern": ["QQQ"],
+  "result": {
+    "count": 6,
+    "item": "botania:metamorphic_taiga_bricks_slab"
+  },
+  "show_notification": true
+}

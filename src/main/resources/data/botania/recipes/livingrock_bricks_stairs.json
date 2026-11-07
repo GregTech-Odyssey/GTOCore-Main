@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:livingrock_bricks"
+    }
+  },
+  "pattern": ["Q  ", "QQ ", "QQQ"],
+  "result": {
+    "count": 4,
+    "item": "botania:livingrock_bricks_stairs"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,12 @@
+{
+  "type": "mythicbotany:alfheim",
+  "generator": {
+    "type": "libx:noise",
+    "biome_source": {
+      "type": "libx:layered",
+      "layers": "#mythicbotany:alfheim"
+    },
+    "settings": "mythicbotany:alfheim",
+    "surface_override": "mythicbotany:alfheim_surface"
+  }
+}

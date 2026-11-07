@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "S": {
+      "item": "botania:livingrock"
+    }
+  },
+  "pattern": ["SSS", "O O", "SSS"],
+  "result": {
+    "item": "botania:mana_void"
+  },
+  "show_notification": true
+}

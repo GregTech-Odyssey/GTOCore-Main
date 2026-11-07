@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": {
+      "tag": "botania:mana_diamond_gems"
+    },
+    "T": {
+      "item": "botania:livingwood_twig"
+    }
+  },
+  "pattern": [" TD", " TT", "T  "],
+  "result": {
+    "item": "botania:divining_rod"
+  },
+  "show_notification": true
+}

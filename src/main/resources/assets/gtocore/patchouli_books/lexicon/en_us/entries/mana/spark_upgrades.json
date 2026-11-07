@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.sparkUpgrades",
+  "category": "gtocore:mana",
+  "icon": "botania:spark_upgrade_dispersive",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.sparkUpgrades0"
+    }
+  ]
+}

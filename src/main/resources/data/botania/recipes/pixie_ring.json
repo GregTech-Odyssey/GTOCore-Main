@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "D": {
+      "item": "botania:pixie_dust"
+    },
+    "E": {
+      "tag": "botania:elementium_ingots"
+    }
+  },
+  "pattern": ["DE ", "E E", " E "],
+  "result": {
+    "item": "botania:pixie_ring"
+  },
+  "show_notification": true
+}

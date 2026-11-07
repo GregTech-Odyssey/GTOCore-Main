@@ -19,8 +19,8 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import commoble.jumbofurnace.JumboFurnace;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
 import dev.shadowsoffire.apotheosis.ench.Ench;
-import vazkii.botania.common.block.BotaniaBlocks;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.BotaniaItems;
 
 public final class QuestRewardTables {
 
@@ -87,26 +87,26 @@ public final class QuestRewardTables {
 
     public static final RewardTable FLOWERS = RewardTable.of("flowers", t -> t
             .title("花朵组合包")
-            .entry(Reward.item(BotaniaBlocks.whiteFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.lightGrayFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.grayFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.blackFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.brownFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.redFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.orangeFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.yellowFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.limeFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.greenFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.cyanFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.lightBlueFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.blueFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.purpleFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.magentaFlower, 16))
-            .entry(Reward.item(BotaniaBlocks.pinkFlower, 16)));
+            .entry(Reward.item(BotaniaBlocks.getBlock("white_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("light_gray_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("gray_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("black_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("brown_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("red_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("orange_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("yellow_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("lime_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("green_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("cyan_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("light_blue_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("blue_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("purple_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("magenta_mystical_flower"), 16))
+            .entry(Reward.item(BotaniaBlocks.getBlock("pink_mystical_flower"), 16)));
 
     public static final RewardTable ULV_2 = RewardTable.of("ulv_2", t -> t
             .title("ULV摇奖")
-            .icon(BotaniaItems.dice)
+            .icon(BotaniaItems.getItem("dice"))
             .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16), 60)
             .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32), 34)
             .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64), 5)

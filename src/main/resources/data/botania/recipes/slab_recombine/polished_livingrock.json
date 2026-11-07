@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "Q": {
+      "item": "botania:polished_livingrock_slab"
+    }
+  },
+  "pattern": ["QQ"],
+  "result": {
+    "item": "botania:polished_livingrock"
+  },
+  "show_notification": true
+}

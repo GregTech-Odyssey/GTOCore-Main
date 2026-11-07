@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/block",
+  "flower": {
+    "parent": "mythicbotany:block/exoblaze",
+    "render_type": "minecraft:cutout_mipped"
+  },
+  "loader": "gtocore:floating_flower",
+  "render_type": "minecraft:cutout_mipped"
+}

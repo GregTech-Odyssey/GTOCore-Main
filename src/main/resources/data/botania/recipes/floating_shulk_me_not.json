@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:floating_flower",
+  "ingredients": [
+    {
+      "tag": "botania:floating_flowers"
+    },
+    {
+      "item": "botania:shulk_me_not"
+    }
+  ],
+  "result": {
+    "item": "botania:floating_shulk_me_not"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.narslimmus",
+  "category": "gtocore:generating_flowers",
+  "icon": "botania:narslimmus",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.narslimmus0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

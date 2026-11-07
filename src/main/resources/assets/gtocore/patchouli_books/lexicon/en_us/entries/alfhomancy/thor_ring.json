@@ -1,0 +1,15 @@
+{
+  "name": "botania.entry.thorRing",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:thor_ring",
+  "entry_color": "aa00aa",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.thorRing0"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:thor_ring": 0
+  }
+}

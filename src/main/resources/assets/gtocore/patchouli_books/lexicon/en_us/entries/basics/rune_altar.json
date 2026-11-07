@@ -1,0 +1,33 @@
+{
+  "name": "botania.entry.runeAltar",
+  "category": "gtocore:basics",
+  "icon": "botania:runic_altar",
+  "priority": true,
+  "turnin": "botania:main/runic_altar_pickup",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.runeAltar21"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.runeAltar0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.runeAltar1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.runeAltar3"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.runeAltar20"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.runeAltar22"
+    }
+  ]
+}

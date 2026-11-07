@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "botania:dye",
+  "ingredients": [
+    {
+      "tag": "botania:petals/white"
+    }
+  ],
+  "result": {
+    "item": "minecraft:white_dye"
+  }
+}
