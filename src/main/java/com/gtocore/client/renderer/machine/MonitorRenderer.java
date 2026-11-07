@@ -1,7 +1,5 @@
 package com.gtocore.client.renderer.machine;
 
-import com.gtocore.common.machine.monitor.DisplayComponent;
-import com.gtocore.common.machine.monitor.IDisplayComponent;
 import com.gtocore.common.machine.monitor.IMonitor;
 import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.config.GTOConfig;
@@ -16,10 +14,7 @@ import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.client.renderer.machine.MachineRenderer;
 import com.gregtechceu.gtceu.client.util.StaticFaceBakery;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -28,16 +23,14 @@ import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.LevelEvent;
 
 import com.lowdragmc.lowdraglib.client.model.ModelFactory;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -54,7 +47,6 @@ public class MonitorRenderer extends MachineRenderer {
 
     public static final ResourceLocation MONITOR_OVERLAY = GTOCore.id("block/overlay/machine/overlay_monitor");
     public static final ResourceLocation MONITOR_OVERLAY_FULL_CTM = GTOCore.id("block/overlay/machine/overlay_monitor_full_ctm");
-    private static final Map<BlockEntity, Manager.GridNetwork> renderedThisTick = new ConcurrentHashMap<>();
     public static final Map<Manager.GridFacedPoint, Manager.GridNetwork> gridToNetworkCLIENT = new ConcurrentHashMap<>();
     private static final float MARGIN = 0.15f;
 
@@ -122,76 +114,30 @@ public class MonitorRenderer extends MachineRenderer {
     @OnlyIn(Dist.CLIENT)
     public void render(BlockEntity blockEntity, float partialTicks, PoseStack stack, MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         if (blockEntity instanceof MetaMachineBlockEntity holder && holder.getMetaMachine() instanceof IMonitor monitor && monitor.getLevel() != null) {
-            Manager.GridNetwork network = Manager.GridNetwork.fromClientBlock(
-                    monitor.getFrontFacing(),
-                    monitor.getPos(),
-                    monitor.getLevel());
-            if (network != null && (renderedThisTick.containsKey(blockEntity) || renderedThisTick.values().stream().noneMatch(n -> n.equals(network)))) {
-                renderedThisTick.put(blockEntity, network);
-                {
-                    stack.pushPose();
-
-                    var pos = monitor.getPos();
-                    if (GTOConfig.INSTANCE.devMode.dev) {
-                        var box = Shapes.create(network.aabb());
-                        LevelRenderer.renderVoxelShape(stack, buffer.getBuffer(RenderType.lines()), box, -pos.getX(), -pos.getY(), -pos.getZ(), 0f, 1f, 0f, 1f, false);
-                    }
-
-                    var front = monitor.getFrontFacing();
-                    var yaw = front.toYRot() + 180.0f;
-                    var pitch = toPitchAngle(front);
-
-                    stack.translate(
-                            network.getOriginPos().getX() - pos.getX() + (front == Direction.WEST ? -0.01f : 1.01f) + (front == Direction.SOUTH ? -0.02f : 0),
-                            network.getOriginPos().getY() - pos.getY() + (front == Direction.DOWN ? -0.01f : 1.01f),
-                            network.getOriginPos().getZ() - pos.getZ() + (front == Direction.NORTH ? -0.01f : 1.01f) + (front == Direction.WEST ? -0.02f : 0));
-
-                    stack.mulPose(Axis.YN.rotationDegrees(yaw));
-                    stack.mulPose(Axis.XP.rotationDegrees(pitch));
-                    var font = Minecraft.getInstance().font;
-                    List<IDisplayComponent> info = network.getForDisplay();
-                    if (info.isEmpty()) {
-                        info.add(DisplayComponent.text(GTOCore.id("null"), Component.translatable("gtocore.machine.monitor.no_information").getVisualOrderText()));
-                    }
-                    {
-                        stack.pushPose();
-                        stack.translate(
-                                switch (front) {
-                                    case WEST, SOUTH -> 1 - MARGIN;
-                                    case EAST, NORTH -> network.width3D() - 1 - MARGIN;
-                                    default -> 0;
-                                },
-                                network.height3D() - 1 - MARGIN,
-                                0);
-                        var factor = getGlobalScaleFactor(info, network.width3D() - MARGIN * 2f, network.height3D() - MARGIN * 2f);
-                        stack.scale(-factor, -factor, -factor);
-                        int cumulatedHeight = 0;
-                        int lastLineX = 0;
-                        for (IDisplayComponent iDisplayComponent : info) {
-                            if (GTOConfig.INSTANCE.devMode.dev) {
-                                LevelRenderer.renderLineBox(stack, buffer.getBuffer(RenderType.lines()),
-                                        0, cumulatedHeight, 0, iDisplayComponent.getVisualWidth(), cumulatedHeight + iDisplayComponent.getVisualHeight(), 0,
-                                        0f, 1f, 0f, 1f);
-                            }
-                            switch (iDisplayComponent.getDisplayType()) {
-                                case STYLED_TEXT -> {
-                                    FormattedCharSequence text = iDisplayComponent.getDisplayValue();
-                                    font.drawInBatch(text, 0, cumulatedHeight, 0xFFFFFFFF, false, stack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0x000000, LightTexture.FULL_BRIGHT);
-                                }
-                                case CUSTOM_RENDERER -> {
-                                    stack.pushPose();
-                                    iDisplayComponent.renderDisplay(network, blockEntity, partialTicks, stack, buffer, combinedLight, combinedOverlay, lastLineX, cumulatedHeight);
-                                    stack.popPose();
-                                }
-                            }
-                            cumulatedHeight += iDisplayComponent.getVisualHeight() + 2;
-                            lastLineX = iDisplayComponent.getVisualWidth();
-                        }
-                        stack.popPose();
-                    }
-                    stack.popPose();
-                }
+            Manager.GridNetwork network = Manager.networkAt(monitor);
+            if (network == null || !monitor.getPos().equals(network.getOriginPos())) return;
+            stack.pushPose();
+            var pos = monitor.getPos();
+            if (GTOConfig.INSTANCE.devMode.dev) {
+                var box = Shapes.create(network.aabb());
+                LevelRenderer.renderVoxelShape(stack, buffer.getBuffer(RenderType.lines()), box, -pos.getX(), -pos.getY(), -pos.getZ(), 0f, 1f, 0f, 1f, false);
             }
+            var front = monitor.getFrontFacing();
+            stack.translate(
+                    (front == Direction.WEST ? -0.01f : 1.01f) + (front == Direction.SOUTH ? -0.02f : 0),
+                    front == Direction.DOWN ? -0.01f : 1.01f,
+                    (front == Direction.NORTH ? -0.01f : 1.01f) + (front == Direction.WEST ? -0.02f : 0));
+            stack.mulPose(Axis.YN.rotationDegrees(front.toYRot() + 180.0f));
+            stack.mulPose(Axis.XP.rotationDegrees(toPitchAngle(front)));
+            stack.translate(switch (front) {
+                case WEST, SOUTH -> 1 - MARGIN;
+                case EAST, NORTH -> network.width3D() - 1 - MARGIN;
+                default -> 0;
+            }, network.height3D() - 1 - MARGIN, 0);
+            stack.scale(-1, -1, 1);
+            MonitorSurface.render(network, monitor.getLevel(), stack, network.width3D() - MARGIN * 2,
+                    network.height3D() - MARGIN * 2);
+            stack.popPose();
         }
     }
 
@@ -202,17 +148,6 @@ public class MonitorRenderer extends MachineRenderer {
             case UP -> 270.0f;
             default -> 0.0f;
         };
-    }
-
-    private static float getGlobalScaleFactor(List<IDisplayComponent> info, float displayWidth, float displayHeight) {
-        if (info == null || info.isEmpty()) {
-            return 1.0f;
-        }
-        var maxWidth = info.stream().mapToInt(IDisplayComponent::getVisualWidth).max().orElse(0);
-        var maxHeight = info.stream().mapToInt(IDisplayComponent::getVisualHeight).sum() + info.size() * 2;
-        var scaleX = displayWidth / Math.max(maxWidth, 0.01f);
-        var scaleY = displayHeight / Math.max(maxHeight, 0.01f);
-        return Math.min(scaleX, scaleY);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -232,8 +167,8 @@ public class MonitorRenderer extends MachineRenderer {
             MinecraftForge.EVENT_BUS.addListener(RenderedCacheClearer::clearRenderCache);
         }
 
-        public static void clearRenderCache(ScreenEvent.Render.Pre event) {
-            renderedThisTick.clear();
+        public static void clearRenderCache(LevelEvent.Unload event) {
+            if (event.getLevel().isClientSide()) MonitorSurface.clear();
         }
     }
 

@@ -202,11 +202,6 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     public abstract double getBytes();
 
     @Override
-    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
-        return true;
-    }
-
-    @Override
     public void mountInventories(IStorageMounts storageMounts) {
         if (uuid == null) return;
         storageMounts.mount(this, (int) current);

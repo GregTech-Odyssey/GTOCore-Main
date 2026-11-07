@@ -8,6 +8,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.misc.OverseerCoke;
+import com.gtocore.common.machine.monitor.MonitorBlock;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.medical.MedicalConditionSync;
@@ -52,6 +53,7 @@ import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+import com.gregtechceu.gtceu.common.item.CoverPlaceBehavior;
 import com.gregtechceu.gtceu.utils.TaskHandler;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 
@@ -201,6 +203,10 @@ public final class ForgeCommonEvent {
         InteractionHand hand = event.getHand();
         ItemStack itemStack = player.getItemInHand(hand);
         Item item = itemStack.getItem();
+
+        if (level.getBlockState(pos).getBlock() instanceof MonitorBlock && CoverPlaceBehavior.getCoverDefinition(itemStack) != null) {
+            event.setUseItem(Event.Result.DENY);
+        }
 
         if (!level.isClientSide && player.isShiftKeyDown() && level instanceof ServerLevel serverLevel) {
             Direction clickedFace = event.getFace();

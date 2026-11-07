@@ -273,11 +273,6 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         }
 
         @Override
-        public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
-            return true;
-        }
-
-        @Override
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (amount <= 0) return 0;
             // a paused pipe accepts nothing, no matter whether a machine or the net itself inserts

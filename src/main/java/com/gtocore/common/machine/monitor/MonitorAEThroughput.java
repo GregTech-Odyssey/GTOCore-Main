@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -45,6 +46,7 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
 
     private static final BigDecimal DISPLAY_SCALE = BigDecimal.valueOf(100);
     private static final DecimalFormat THROUGHPUT_FORMAT = new DecimalFormat("0.##");
+    private final StringBuilder chartUnitBuilder = new StringBuilder(16);
 
     @SyncToClient
     private CompoundTag displayingEntry = new CompoundTag();
@@ -65,6 +67,15 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
     @SyncToClient
     private final long[] nowStat = new long[] { 0, 0 };
     private final CurrentGettable[] aeItemFluidGettables = new CurrentGettable[] { aeItem, aeFluid };
+
+    @SyncToClient
+    private long[] amountHistoryItem = new long[0];
+    @SyncToClient
+    private long[] amountHistoryFluid = new long[0];
+    @SyncToClient
+    private long[] throughputHistoryItem = new long[0];
+    @SyncToClient
+    private long[] throughputHistoryFluid = new long[0];
 
     public MonitorAEThroughput(MetaMachineBlockEntity holder) {
         super(holder);
@@ -124,6 +135,13 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
 
             nowStat[i] = elapsedTicks > 0 ? scaleStat(BigDecimal.valueOf(change)
                     .divide(BigDecimal.valueOf(elapsedTicks), 2, RoundingMode.HALF_UP)) : 0;
+            if (i == 0) {
+                amountHistoryItem = append(amountHistoryItem, amount);
+                throughputHistoryItem = append(throughputHistoryItem, nowStat[i]);
+            } else {
+                amountHistoryFluid = append(amountHistoryFluid, amount);
+                throughputHistoryFluid = append(throughputHistoryFluid, nowStat[i]);
+            }
             // displayingName[i] = current.getDisplayName();
             displayingEntry.put(String.valueOf(i), current.toTagGeneric());
         }
@@ -144,14 +162,26 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
             DisplayRegistry.AE_STAT_DAY_1,
             DisplayRegistry.AE_STAT_REMAINING_TIME_1);
 
+    private static long[] append(long[] values, long value) {
+        int size = Math.min(values.length + 1, 48);
+        long[] next = new long[size];
+        System.arraycopy(values, Math.max(0, values.length - size + 1), next, 0, size - 1);
+        next[size - 1] = value;
+        return next;
+    }
+
+    private static List<BigInteger> points(long[] values) {
+        var result = new java.util.ArrayList<BigInteger>(values.length);
+        for (long value : values) result.add(BigInteger.valueOf(value));
+        return result;
+    }
+
     @Override
     public List<ResourceLocation> getAvailableRLs() {
-        var rls = super.getAvailableRLs();
-        rls.add(DisplayRegistry.AE_STAT_TITLE.id());
-        rls.addAll(ID_MAP.stream()
-                .map(DisplayRegistry::id)
-                .toList());
-        return rls;
+        return new java.util.ArrayList<>(List.of(DisplayRegistry.AE_STATUS_0.id(), DisplayRegistry.AE_AMOUNT_0.id(),
+                DisplayRegistry.AE_AMOUNT_CHART_0.id(), DisplayRegistry.AE_THROUGHPUT_CHART_0.id(),
+                DisplayRegistry.AE_STATUS_1.id(), DisplayRegistry.AE_AMOUNT_1.id(),
+                DisplayRegistry.AE_AMOUNT_CHART_1.id(), DisplayRegistry.AE_THROUGHPUT_CHART_1.id()));
     }
 
     @Override
@@ -211,6 +241,22 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
                                                     .withStyle(ChatFormatting.GRAY))
                                             .getVisualOrderText());
                         }
+                        ResourceLocation amountChart = (i == 0 ? DisplayRegistry.AE_AMOUNT_CHART_0 : DisplayRegistry.AE_AMOUNT_CHART_1).id();
+                        ResourceLocation throughputChart = (i == 0 ? DisplayRegistry.AE_THROUGHPUT_CHART_0 : DisplayRegistry.AE_THROUGHPUT_CHART_1).id();
+                        String unit = Objects.requireNonNullElse(itemKey.getUnitSymbol(), "");
+                        chartUnitBuilder.setLength(0);
+                        String throughputUnit = chartUnitBuilder.append(unit).append("/t").toString();
+                        infoList.addIfAbsent(amountChart, DisplayComponent.lineChart(amountChart, points(i == 0 ? amountHistoryItem : amountHistoryFluid), 2, itemKey.getAmountPerUnit(), unit, i == 1));
+                        infoList.addIfAbsent(throughputChart, DisplayComponent.lineChart(throughputChart, points(i == 0 ? throughputHistoryItem : throughputHistoryFluid), 2,
+                                itemKey.getAmountPerUnit() * DISPLAY_SCALE.doubleValue(), throughputUnit, i == 1));
+                        for (int index = 0; index < infoList.size(); index++) {
+                            IDisplayComponent component = infoList.get(index);
+                            ResourceLocation id = component.getId();
+                            int start = i == 0 ? 0 : 6;
+                            boolean belongsToKey = id.equals(amountChart) || id.equals(throughputChart);
+                            for (int j = start; j < start + 6 && !belongsToKey; j++) belongsToKey = ID_MAP.get(j).id().equals(id);
+                            if (belongsToKey) infoList.set(index, DisplayComponent.withKey(component, itemKey));
+                        }
                     }
                 }
             }
@@ -241,7 +287,7 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
     }
 
     @Override
-    public Widget createUIWidget() {
+    public Widget createConfigurationPage() {
         var itemWidget = new AEItemConfigWidget(0, 0, aeItem);
         var fluidWidget = new AEFluidConfigWidget(0, 0, aeFluid);
 
@@ -256,7 +302,6 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
                         filterRow);
 
         return Form.page().addChildren(
-                UIElement.centeredRow(108).addChild(new UIElement().layout(l -> l.size(168, 108)).addChild(createDisplayComponentGroup())),
                 filterSection,
                 createPriorityRow());
     }
@@ -269,6 +314,13 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
         lastHourStat[slot] = 0;
         lastDayStat[slot] = 0;
         nowStat[slot] = 0;
+        if (slot == 0) {
+            amountHistoryItem = new long[0];
+            throughputHistoryItem = new long[0];
+        } else {
+            amountHistoryFluid = new long[0];
+            throughputHistoryFluid = new long[0];
+        }
     }
 
     private class AEItem extends ExportOnlyAEItemList implements CurrentGettable {

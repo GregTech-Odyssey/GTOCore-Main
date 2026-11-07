@@ -318,11 +318,6 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     }
 
     @Override
-    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
-        return aeKeyType == AEKeyTypes.ITEMS;
-    }
-
-    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount > 0 && what instanceof AEItemKey itemKey && isVirtualProvider(itemKey)) {
             ItemStack stack = itemKey.getReadOnlyStack();

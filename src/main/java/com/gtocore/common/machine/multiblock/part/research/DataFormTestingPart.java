@@ -16,7 +16,6 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyType;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
@@ -59,11 +58,6 @@ public class DataFormTestingPart extends AmountConfigurationPartMachine implemen
     @Override
     public IManagedGridNode getMainNode() {
         return nodeHolder.getMainNode();
-    }
-
-    @Override
-    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
-        return true;
     }
 
     @Override

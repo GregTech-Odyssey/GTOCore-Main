@@ -1,13 +1,16 @@
 package com.gtocore.common.machine.monitor;
 
 import com.gtocore.common.wireless.energy.GridReadouts;
+import com.gtocore.common.wireless.energy.map.GridFormat;
 
 import com.gtolib.api.wireless.energy.EnergyStats;
 import com.gtolib.api.wireless.energy.GridClock;
+import com.gtolib.api.wireless.energy.GridSampler;
 import com.gtolib.api.wireless.energy.WirelessGrid;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.TickableSubscription;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,16 +18,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.FormattedCharSequence;
 
 import com.gto.datasynclib.annotations.Access;
+import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.hepdd.gtmthings.utils.FormatUtil;
+import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -57,6 +62,23 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
 
     @SyncToClient
     private float energyFullness = 0.0f;
+    @SyncToClient
+    private String storageLabel = "";
+
+    @SyncToClient
+    private int localTier;
+    @SyncToClient
+    private int networkTier;
+    @SyncToClient
+    private Component[] topologyLabels = new Component[0];
+    @SyncToClient
+    private int[] topologyEdges = new int[0];
+    private int topologyRevision = -1;
+    @SaveToDisk(defaultValue = "0")
+    @SyncToClient
+    private int chartWindow;
+    @Nullable
+    private GridSampler sampler;
 
     @SyncToClient
     @Access
@@ -87,6 +109,15 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
     }
 
     @Override
+    public void onUnload() {
+        if (sampler != null) {
+            sampler.release();
+            sampler = null;
+        }
+        super.onUnload();
+    }
+
+    @Override
     protected TickableSubscription subscribe(Runnable runnable) {
         // 吞吐读取会清理到期预约，必须与配方结算在服务端线程串行执行。
         return this.subscribeServerTick(tickableSubscription, runnable, 10);
@@ -114,13 +145,38 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
     public Component[] getComponentArray() {
         if (!(getLevel() instanceof ServerLevel)) return new Component[0];
         var account = WirelessGrid.accountIfPresent(getUUID());
-        if (account.isNone()) return new Component[0];
+        if (account.isNone()) {
+            if (sampler != null) {
+                sampler.release();
+                sampler = null;
+            }
+            return new Component[0];
+        }
+        if (sampler == null || sampler.account() != account) {
+            if (sampler != null) sampler.release();
+            sampler = GridSampler.acquire(account);
+            topologyRevision = -1;
+        }
+        sampler.sample();
+        var topology = sampler.topology();
+        if (topology.revision() != topologyRevision) {
+            topologyRevision = topology.revision();
+            topologyLabels = new Component[topology.nodes().size()];
+            for (int i = 0; i < topologyLabels.length; i++) topologyLabels[i] = GridFormat.bodyName(topology.nodes().get(i).dimension());
+            topologyEdges = new int[topology.lines().size() * 2];
+            for (int i = 0; i < topology.lines().size(); i++) {
+                topologyEdges[i * 2] = topology.lines().get(i).a();
+                topologyEdges[i * 2 + 1] = topology.lines().get(i).b();
+            }
+        }
         int second = GridClock.second();
         var stats = account.stats();
         var list = new ArrayList<Component>(DISPLAY_REGISTRY.size());
         var node = account.node(getLevel().dimension());
         int here = account.unitTier(getLevel().dimension());
         int all = account.unitTier(null);
+        localTier = here;
+        networkTier = all;
         list.add(GridReadouts.storage(account));
         list.add(GridReadouts.throughput(node, true, here));
         GridReadouts.flow(list, GridReadouts.Flow.NET, stats, second, all);
@@ -133,6 +189,8 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
         for (int i = 0, n = Math.min(lines.length, list.size()); i < n; i++) lines[i] = list.get(i);
         double capacity = account.totalCapacityDouble();
         energyFullness = capacity <= 0 ? 0f : (float) Math.min(1, account.totalStorageDouble() / capacity);
+        storageLabel = FormatUtil.formatBigIntegerNumberOrSic(account.totalStorage()) + " / " +
+                FormatUtil.formatBigIntegerNumberOrSic(account.totalCapacity()) + " EU";
         EnergyInputHistoryDay = history(stats, EnergyStats.Window.DAY, true, second);
         EnergyOutputHistoryDay = history(stats, EnergyStats.Window.DAY, false, second);
         EnergyInputHistoryHour = history(stats, EnergyStats.Window.HOUR, true, second);
@@ -153,59 +211,41 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
     public DisplayComponentList provideInformation() {
         var informationList = ITeamInformationProvider.super.provideInformation();
         if (bufferCache.length == DISPLAY_REGISTRY.size()) {
-            for (int i = 0; i < bufferCache.length; i++) {
-                if (DISPLAY_REGISTRY.containsKey(i) && bufferCache[i] != null) {
-                    informationList.addIfAbsent(
-                            DISPLAY_REGISTRY.get(i).id(),
-                            bufferCache[i].getVisualOrderText());
-                }
-            }
             informationList.addIfAbsent(
                     DisplayRegistry.EU_STATUS_BAR.id(),
-                    DisplayComponent.progressBar(DisplayRegistry.EU_STATUS_BAR.id(), energyFullness, Component.translatable("gtocore.machine.monitor.eu.fullness", String.format("%.2f", energyFullness * 100)).getString()));
-
-            informationList.addIfAbsent(
-                    DisplayRegistry.EnergyInputHistoryDay.id(), // 假设你在 DisplayRegistry 中定义了这个ID
-                    DisplayComponent.lineChart(DisplayRegistry.EnergyInputHistoryDay.id(), this.EnergyInputHistoryDay.stream().map(BigInteger::new).toList()));
-
-            informationList.addIfAbsent(
-                    DisplayRegistry.EnergyOutputHistoryDay.id(), // 假设你在 DisplayRegistry 中定义了这个ID
-                    DisplayComponent.lineChart(DisplayRegistry.EnergyOutputHistoryDay.id(), this.EnergyOutputHistoryDay.stream().map(BigInteger::new).toList()));
-
-            informationList.addIfAbsent(
-                    DisplayRegistry.EnergyInputHistoryHour.id(), // 假设你在 DisplayRegistry 中定义了这个ID
-                    DisplayComponent.lineChart(DisplayRegistry.EnergyInputHistoryHour.id(), this.EnergyInputHistoryHour.stream().map(BigInteger::new).toList()));
-
-            informationList.addIfAbsent(
-                    DisplayRegistry.EnergyOutputHistoryHour.id(), // 假设你在 DisplayRegistry 中定义了这个ID
-                    DisplayComponent.lineChart(DisplayRegistry.EnergyOutputHistoryHour.id(), this.EnergyOutputHistoryHour.stream().map(BigInteger::new).toList()));
-
-            informationList.addIfAbsent(
-                    DisplayRegistry.EnergyInputHistoryMinute.id(), // 假设你在 DisplayRegistry 中定义了这个ID
-                    DisplayComponent.lineChart(DisplayRegistry.EnergyInputHistoryMinute.id(), this.EnergyInputHistoryMinute.stream().map(BigInteger::new).toList()));
-
-            informationList.addIfAbsent(
-                    DisplayRegistry.EnergyOutputHistoryMinute.id(), // 假设你在 DisplayRegistry 中定义了这个ID
-                    DisplayComponent.lineChart(DisplayRegistry.EnergyOutputHistoryMinute.id(), this.EnergyOutputHistoryMinute.stream().map(BigInteger::new).toList()));
+                    DisplayComponent.progressBar(DisplayRegistry.EU_STATUS_BAR.id(), energyFullness, storageLabel));
+            informationList.addIfAbsent(DisplayRegistry.EU_TIER.id(),
+                    Component.translatable("gtocore.machine.monitor.eu.tier", localTier, networkTier).getVisualOrderText());
+            informationList.addIfAbsent(DisplayRegistry.EU_TOPOLOGY.id(),
+                    DisplayComponent.topology(DisplayRegistry.EU_TOPOLOGY.id(), topologyLabels, topologyEdges));
+            var chartInput = chartWindow == 2 ? EnergyInputHistoryDay : chartWindow == 1 ? EnergyInputHistoryHour : EnergyInputHistoryMinute;
+            var chartOutput = chartWindow == 2 ? EnergyOutputHistoryDay : chartWindow == 1 ? EnergyOutputHistoryHour : EnergyOutputHistoryMinute;
+            int chartSize = Math.min(chartInput.size(), chartOutput.size());
+            var netHistory = new ArrayList<BigInteger>(chartSize);
+            for (int i = 0; i < chartSize; i++) netHistory.add(new BigInteger(chartInput.get(i)).subtract(new BigInteger(chartOutput.get(i))));
+            int sampleInterval = chartWindow == 2 ? 3600 : chartWindow == 1 ? 60 : 1;
+            informationList.addIfAbsent(DisplayRegistry.EU_THROUGHPUT.id(),
+                    DisplayComponent.lineChart(DisplayRegistry.EU_THROUGHPUT.id(), netHistory, sampleInterval, sampleInterval * 20.0, "EU/t", false));
         }
         return informationList;
     }
 
     @Override
     public List<ResourceLocation> getAvailableRLs() {
-        var rls = ITeamInformationProvider.super.getAvailableRLs();
-        rls.addAll(DISPLAY_REGISTRY.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(Map.Entry::getValue)
-                .map(DisplayRegistry::id)
-                .toList());
-        rls.add(DisplayRegistry.EU_STATUS_BAR.id());
-        rls.add(DisplayRegistry.EnergyInputHistoryDay.id());
-        rls.add(DisplayRegistry.EnergyOutputHistoryDay.id());
-        rls.add(DisplayRegistry.EnergyInputHistoryHour.id());
-        rls.add(DisplayRegistry.EnergyOutputHistoryHour.id());
-        rls.add(DisplayRegistry.EnergyInputHistoryMinute.id());
-        rls.add(DisplayRegistry.EnergyOutputHistoryMinute.id());
-        return rls;
+        return new ArrayList<>(List.of(DisplayRegistry.EU_STATUS_BAR.id(), DisplayRegistry.EU_TIER.id(),
+                DisplayRegistry.EU_TOPOLOGY.id(), DisplayRegistry.EU_THROUGHPUT.id()));
+    }
+
+    @Override
+    public Widget createConfigurationPage() {
+        return Form.page().addChildren(
+                Form.choiceRow(Component.translatable("gtocore.machine.monitor.eu.chart_window"), 3,
+                        index -> Component.translatable("gtocore.machine.monitor.eu.chart_window." + index),
+                        () -> chartWindow, value -> {
+                            chartWindow = value;
+                            onChanged();
+                            requestSync();
+                        }),
+                createPriorityRow());
     }
 }

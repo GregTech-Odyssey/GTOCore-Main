@@ -1,5 +1,6 @@
 package com.gtocore.mixin.ae2.crafting;
 
+import com.gtocore.api.ae2.crafting.ICraftingCpuSource;
 import com.gtocore.api.ae2.crafting.OptimizedCraftingCpuLogic;
 
 import com.gtolib.api.ae2.crafting.ICraftingCPUCluster;
@@ -20,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CraftingCPUCluster.class)
-public abstract class CraftingCPUClusterMixin implements ICraftingCPUCluster {
+public abstract class CraftingCPUClusterMixin implements ICraftingCPUCluster, ICraftingCpuSource {
 
     @Mutable
     @Shadow(remap = false)
@@ -80,5 +81,10 @@ public abstract class CraftingCPUClusterMixin implements ICraftingCPUCluster {
     @Override
     public void setMachine(CraftingInterfacePartMachine machine) {
         this.gtolib$machine = machine;
+    }
+
+    @Override
+    public @Nullable CraftingInterfacePartMachine gtocore$getSourceMachine() {
+        return gtolib$machine;
     }
 }

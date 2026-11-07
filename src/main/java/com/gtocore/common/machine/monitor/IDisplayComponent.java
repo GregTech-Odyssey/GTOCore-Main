@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.monitor;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -52,6 +54,12 @@ public interface IDisplayComponent {
      * 自定义的渲染逻辑。
      */
     default void renderDisplay(Manager.GridNetwork network, BlockEntity blockEntity, float partialTicks, PoseStack stack, MultiBufferSource buffer, int combinedLight, int combinedOverlay, int lastLineX, int startY) {}
+
+    default void renderGui(GuiGraphics graphics, int x, int y, int width, int height) {
+        if (height >= Minecraft.getInstance().font.lineHeight) {
+            graphics.drawString(Minecraft.getInstance().font, getDisplayValue(), x, y, 0xFFFFFFFF, false);
+        }
+    }
 
     DisplayType getDisplayType();
 

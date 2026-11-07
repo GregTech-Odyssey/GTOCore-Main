@@ -226,11 +226,6 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     }
 
     @Override
-    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
-        return aeKeyType == AEKeyTypes.ITEMS;
-    }
-
-    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount > 0 && what instanceof AEItemKey itemKey && itemKey.getItem() == VIRTUAL_ITEM_PROVIDER) {
             var stack = itemKey.getReadOnlyStack();

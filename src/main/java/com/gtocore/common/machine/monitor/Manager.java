@@ -72,6 +72,15 @@ public final class Manager {
         Factory.init();
     }
 
+    @Nullable
+    public static GridNetwork networkAt(IMonitor monitor) {
+        Level level = monitor.getLevel();
+        if (level == null) return null;
+        GridFacing axis = GridFacing.of(monitor.getFrontFacing(), level, GridFacing.getThirdValue(monitor.getFrontFacing(), monitor.getPos()));
+        GridFacedPoint point = axis.getPoint(monitor.getPos());
+        return (level.isClientSide ? gridToNetworkCLIENT : gridToNetwork).get(point);
+    }
+
     private static void requireQueue(Runnable runnable) {
         if (!Loading.contains(runnable)) {
             Loading.add(runnable);
@@ -365,6 +374,43 @@ public final class Manager {
             return new GridFacedPoint(facing, fromX, fromY).toBlockPos();
         }
 
+        public List<AbstractInfoProviderMonitor> providers(Level level) {
+            ArrayList<AbstractInfoProviderMonitor> providers = new ArrayList<>();
+            for (int x = fromX; x <= toX; x++) {
+                for (int y = fromY; y <= toY; y++) {
+                    var blockEntity = ILevel.getCachedBlockEntity(level, new GridFacedPoint(facing, x, y).toBlockPos());
+                    if (blockEntity instanceof MetaMachineBlockEntity holder && holder.getMetaMachine() instanceof AbstractInfoProviderMonitor provider) {
+                        providers.add(provider);
+                    }
+                }
+            }
+            return providers;
+        }
+
+        public List<BasicMonitor> monitors(Level level) {
+            ArrayList<BasicMonitor> monitors = new ArrayList<>(width() * height());
+            for (int x = fromX; x <= toX; x++) {
+                for (int y = fromY; y <= toY; y++) {
+                    var blockEntity = ILevel.getCachedBlockEntity(level, new GridFacedPoint(facing, x, y).toBlockPos());
+                    if (blockEntity instanceof MetaMachineBlockEntity holder && holder.getMetaMachine() instanceof BasicMonitor monitor) {
+                        monitors.add(monitor);
+                    }
+                }
+            }
+            return monitors;
+        }
+
+        public CompoundTag screenLayout(Level level) {
+            for (BasicMonitor monitor : monitors(level)) {
+                if (monitor.getScreenLayout().contains("items")) return monitor.getScreenLayout();
+            }
+            return new CompoundTag();
+        }
+
+        public void applyScreenLayout(Level level, CompoundTag layout) {
+            for (BasicMonitor monitor : monitors(level)) monitor.setScreenLayout(layout);
+        }
+
         /// 将这些GridNetwork小矩形合成一个大矩形
         /// 逻辑：
         /// 1. 分别向上，下，左，右四个方向扩展网格。
@@ -583,7 +629,10 @@ public final class Manager {
         }
 
         private final List<IInformationProvider> informationProviders = new ArrayList<>();
-        private final List<IDisplayComponent> displayComponentCache = new ArrayList<>();
+
+        public record DisplayEntry(long source, IDisplayComponent component) {}
+
+        private final List<DisplayEntry> displayComponentCache = new ArrayList<>();
         private long lastRefreshTime = 0;
 
         /// 这个将会被客户端所用到！！！
@@ -592,26 +641,28 @@ public final class Manager {
             if (level.getGameTime() - lastRefreshTime >= 10) {
                 lastRefreshTime = level.getGameTime();
                 informationProviders.clear();
-                for (GridFacedPoint point : points()) {
-                    var blockEntity = ILevel.getCachedBlockEntity(level, point.toBlockPos());
-                    if (blockEntity instanceof MetaMachineBlockEntity be &&
-                            be.getMetaMachine() instanceof IInformationProvider provider) {
-                        informationProviders.add(provider);
+                informationProviders.addAll(providers(level));
+                displayComponentCache.clear();
+                informationProviders.sort(Comparator.comparingLong(IInformationProvider::getPriority).reversed());
+                for (IInformationProvider provider : informationProviders) {
+                    long source = provider.getPos().asLong();
+                    for (IDisplayComponent component : provider.provideInformation().sortInner()) {
+                        displayComponentCache.add(new DisplayEntry(source, component));
                     }
                 }
-                displayComponentCache.clear();
-                informationProviders.stream()
-                        .sorted(Comparator.comparingLong(IInformationProvider::getPriority).reversed())
-                        .map(IInformationProvider::provideInformation)
-                        .map(DisplayComponentList::sortInner)
-                        .forEachOrdered(displayComponentCache::addAll);
             }
         }
 
         /// 这个将会被客户端所用到！！！
         @NotNull
         public List<IDisplayComponent> getForDisplay() {
-            return new ArrayList<>(displayComponentCache);
+            ArrayList<IDisplayComponent> result = new ArrayList<>(displayComponentCache.size());
+            for (DisplayEntry entry : displayComponentCache) result.add(entry.component());
+            return result;
+        }
+
+        public List<DisplayEntry> getDisplayEntries() {
+            return displayComponentCache;
         }
     }
 

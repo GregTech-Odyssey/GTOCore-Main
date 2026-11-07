@@ -27,7 +27,6 @@ import appeng.api.config.Actionable;
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
-import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
@@ -43,7 +42,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.forge.integration.ae2.ManaKey;
-import vazkii.botania.forge.integration.ae2.ManaKeyType;
 
 import java.math.BigInteger;
 import java.util.UUID;
@@ -97,11 +95,6 @@ public final class MEManaInterface extends MetaMachine implements
     @Override
     public @Nullable UUID getUUID() {
         return getOwnerUUID();
-    }
-
-    @Override
-    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
-        return ManaKeyType.TYPE == aeKeyType;
     }
 
     @Override

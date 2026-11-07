@@ -53,7 +53,7 @@ object LineChartHelper {
         // 2. 数据处理与坐标映射 (优化为单次遍历)
         val doubleData: List<Double>
         var minValue = Double.MAX_VALUE
-        var maxValue = Double.MIN_VALUE
+        var maxValue = Double.NEGATIVE_INFINITY
         if (autoReboundY) {
             doubleData = data.map {
                 val d = it.toDouble()
@@ -75,15 +75,6 @@ object LineChartHelper {
             }
         }
 
-        if (data.size == 1) { // 特殊处理只有一个点的情况
-            if (drawDataPoints) {
-                val pointX = borderWidth + innerWidth / 2f
-                val pointY = borderWidth + innerHeight / 2f
-                DrawerHelper.drawSolidRect(graphics, (pointX - dataPointRadius).toInt(), (pointY - dataPointRadius).toInt(), (dataPointRadius * 2).toInt(), (dataPointRadius * 2).toInt(), dataPointColor)
-            }
-            return totalWidth to totalHeight
-        }
-
         val dataRange = if (maxValue == minValue) 0.0 else maxValue - minValue
 
         val mapX = { index: Int ->
@@ -95,6 +86,20 @@ object LineChartHelper {
             } else {
                 (borderWidth + innerHeight - ((value - minValue) / dataRange) * innerHeight).toFloat()
             }
+        }
+
+        if (data.size == 1) {
+            if (drawDataPoints) {
+                val pointX = borderWidth + innerWidth / 2f
+                val pointY = mapY(doubleData[0])
+                DrawerHelper.drawSolidRect(graphics, (pointX - dataPointRadius).toInt(), (pointY - dataPointRadius).toInt(), (dataPointRadius * 2).toInt(), (dataPointRadius * 2).toInt(), dataPointColor)
+            }
+            return totalWidth to totalHeight
+        }
+
+        if (minValue < 0 && maxValue > 0) {
+            val zeroY = mapY(0.0).toInt()
+            graphics.hLine(borderWidth, totalWidth - borderWidth, zeroY, borderColor)
         }
 
         val points = doubleData.indices.map { i -> Pair(mapX(i), mapY(doubleData[i])) }

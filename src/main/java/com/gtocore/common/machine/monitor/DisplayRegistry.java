@@ -36,6 +36,9 @@ public enum DisplayRegistry {
     ENERGY_STAT_REMAINING_TIME("energy_stat_remaining_time", "能量统计（剩余时间）", "Energy Statistics (Remaining Time)"),
     ENERGY_STAT_BOUND_INFO("energy_stat_bound_info", "本维度输入吞吐", "Input Throughput Here"),
     EU_STATUS_BAR("eu_status_bar", "电网存量条", "Energy Grid Status Bar"),
+    EU_TIER("eu_tier", "电网等级", "Grid Tier"),
+    EU_TOPOLOGY("eu_topology", "电网星图", "Grid Map"),
+    EU_THROUGHPUT("eu_throughput", "电网吞吐量", "Grid Throughput"),
     EnergyInputHistoryDay("energy_input_history", "输入历史（天）", "Input History (Days)"),
     EnergyOutputHistoryDay("energy_output_history", "输出历史（天）", "Output History (Days)"),
     EnergyInputHistoryHour("energy_input_history_short", "输入历史（小时）", "Input History (Hours)"),
@@ -46,6 +49,7 @@ public enum DisplayRegistry {
     COMPUTATION_WORK("computation_work", "算力使用情况", "Computation Work Usage"),
     COMPUTATION_WORK_USED("computation_work_used", "算力使用量", "Computation Work Used"),
     COMPUTATION_WORK_UNAVAILABLE("computation_work_unavailable", "算力容器不可用信息", "Computation Work Container Unavailable Information"),
+    COMPUTATION_WIRELESS("computation_wireless", "无线算力余量", "Wireless Computation Remaining"),
 
     AE_ERROR("ae_error", "ME监视器错误信息", "ME Monitor Error Information"),
 
@@ -62,9 +66,14 @@ public enum DisplayRegistry {
     AE_STAT_DAY_1("ae_stat_day1", "上一天流体统计", "Last Day Fluid Statistics"),
     AE_STAT_REMAINING_TIME_0("ae_stat_remaining_time", "剩余时间统计（物品）", "Remaining Time Statistics (Item)"),
     AE_STAT_REMAINING_TIME_1("ae_stat_remaining_time1", "剩余时间统计（流体）", "Remaining Time Statistics (Fluid)"),
+    AE_AMOUNT_CHART_0("ae_amount_chart_item", "物品存量图表", "Item Amount Chart"),
+    AE_AMOUNT_CHART_1("ae_amount_chart_fluid", "流体存量图表", "Fluid Amount Chart"),
+    AE_THROUGHPUT_CHART_0("ae_throughput_chart_item", "物品吞吐量图表", "Item Throughput Chart"),
+    AE_THROUGHPUT_CHART_1("ae_throughput_chart_fluid", "流体吞吐量图表", "Fluid Throughput Chart"),
 
     AE_CPU_MONITORED("ae_cpu_monitored", "监视的CPU信息", "Monitored CPU Information"),
     AE_CPU_USAGE("ae_cpu_usage", "CPU使用率", "CPU Usage"),
+    AE_CPU_OCCUPANCY("ae_cpu_occupancy", "合成处理单元占用", "Crafting CPU Occupancy"),
     AE_CPU_CAPACITY("ae_cpu_capacity", "CPU容量", "CPU Capacity"),
     AE_CPU_MODE("ae_cpu_mode", "CPU模式", "CPU Mode"),
     AE_CPU_CURRENT_CRAFTING("ae_cpu_current_crafting", "当前正在制作的物品", "Currently Crafting Item"),
@@ -73,6 +82,7 @@ public enum DisplayRegistry {
     CUSTOM_DISPLAY("custom_display", "自定义显示", "Custom Display"),
 
     MACHINE_NAME("machine_name", "机器名", "Machine Name"),
+    MACHINE_STATUS("machine_status", "机器情况", "Machine Status"),
     MACHINE_ENERGY("machine_energy", "能量", "Energy"),
     MACHINE_PROGRESS("machine_progress", "工作进度", "Progress"),
     MACHINE_RECIPE_LOGIC_EU("machine_recipe_logic_eu", "能耗·产能(EU)", "EU Consumption/Production"),

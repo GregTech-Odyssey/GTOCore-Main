@@ -1,7 +1,5 @@
 package com.gtocore.common.machine.monitor;
 
-import com.gtocore.api.gui.DisplayComponentGroup;
-
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -18,11 +16,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
-import com.lowdragmc.lowdraglib.utils.Position;
-import com.lowdragmc.lowdraglib.utils.Size;
-import it.unimi.dsi.fastutil.objects.ObjectBooleanPair;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractInfoProviderMonitor extends BasicMonitor implements IInformationProvider {
@@ -30,14 +24,6 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
     @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private long priority = 0;
-
-    @SaveToDisk
-    @SyncToClient
-    private ResourceLocation[] displayOrderCache = new ResourceLocation[0];
-
-    @SaveToDisk
-    @SyncToClient
-    private boolean[] displayEnabledCache = new boolean[0];
 
     protected TickableSubscription tickableSubscription;
 
@@ -87,46 +73,7 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
 
     @Override
     public List<ResourceLocation> getSortedRLs() {
-        if (displayOrderCache == null || displayOrderCache.length == 0) {
-            return getAvailableRLs(); // Default: all available are enabled
-        }
-
-        var list = new ArrayList<ResourceLocation>();
-        for (int i = 0; i < displayOrderCache.length; i++) {
-            // Check if the component is still available and if it is enabled
-            if (i < displayEnabledCache.length && displayEnabledCache[i] && getAvailableRLs().contains(displayOrderCache[i])) {
-                list.add(displayOrderCache[i]);
-            }
-        }
-        return list;
-    }
-
-    private List<ObjectBooleanPair<ResourceLocation>> getComponentStatesForGui() {
-        if (displayOrderCache == null || displayOrderCache.length == 0) {
-            // If no cache exists, default to all available components being enabled.
-            return getAvailableRLs().stream()
-                    .map(rl -> ObjectBooleanPair.of(rl, true))
-                    .toList();
-        }
-
-        var list = new ArrayList<ObjectBooleanPair<ResourceLocation>>();
-        for (int i = 0; i < displayOrderCache.length; i++) {
-            // Only add components that are still available to the machine
-            if (getAvailableRLs().contains(displayOrderCache[i])) {
-                boolean isEnabled = i < displayEnabledCache.length && displayEnabledCache[i];
-                list.add(ObjectBooleanPair.of(displayOrderCache[i], isEnabled));
-            }
-        }
-        return list;
-    }
-
-    protected DisplayComponentGroup createDisplayComponentGroup() {
-        return new DisplayComponentGroup(
-                this.getAvailableRLs(),
-                this.getComponentStatesForGui(),
-                this::setComponentStateCache,
-                Position.ORIGIN,
-                new Size(168, 108));
+        return getAvailableRLs();
     }
 
     protected UIElement createPriorityRow() {
@@ -136,22 +83,10 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
 
     @Override
     public Widget createUIWidget() {
-        return Form.page().addChildren(
-                UIElement.centeredRow(108).addChild(new UIElement().layout(l -> l.size(168, 108)).addChild(createDisplayComponentGroup())),
-                createPriorityRow());
+        return super.createUIWidget();
     }
 
-    private void setComponentStateCache(List<ObjectBooleanPair<ResourceLocation>> componentStates) {
-        if (getLevel() != null && !getLevel().isClientSide()) {
-            int size = componentStates.size();
-            this.displayOrderCache = new ResourceLocation[size];
-            this.displayEnabledCache = new boolean[size];
-
-            for (int i = 0; i < size; i++) {
-                ObjectBooleanPair<ResourceLocation> pair = componentStates.get(i);
-                this.displayOrderCache[i] = pair.left();
-                this.displayEnabledCache[i] = pair.rightBoolean();
-            }
-        }
+    public Widget createConfigurationPage() {
+        return Form.page().addChild(createPriorityRow());
     }
 }
