@@ -1,0 +1,17 @@
+{
+  "name": "botania.entry.spawnerMover",
+  "category": "gtocore:ender",
+  "icon": "botania:spawner_mover",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.spawnerMover0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.spawnerMover1",
+      "recipe": "botania:spawner_mover"
+    }
+  ]
+}

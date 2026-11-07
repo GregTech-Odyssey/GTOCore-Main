@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.manaAlchemy",
+  "category": "gtocore:devices",
+  "icon": "botania:alchemy_catalyst",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.manaAlchemy0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.manaAlchemy1",
+      "recipe": "botania:alchemy_catalyst"
+    }
+  ]
+}

@@ -27,7 +27,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
     protected BlockPos highlightEndPos_2 = BlockPos.ZERO;
 
     protected AbstractPhotovoltaicMachine(MetaMachineBlockEntity holder, int basicRate) {
-        super(holder, 64, i -> i.getItem() == BotaniaBlocks.motifDaybloom.asItem());
+        super(holder, 64, i -> i.getItem() == BotaniaBlocks.getBlock("daybloom_motif").asItem());
         this.basicRate = basicRate;
         this.manaTrait = new ManaTrait(this);
     }
@@ -179,11 +179,11 @@ public abstract class AbstractPhotovoltaicMachine extends StorageMultiblockMachi
 
     @Override
     public Component getStorageSlotLabel() {
-        return Component.translatable(BotaniaBlocks.motifDaybloom.asItem().getDescriptionId());
+        return Component.translatable(BotaniaBlocks.getBlock("daybloom_motif").asItem().getDescriptionId());
     }
 
     @Override
     public ItemStack[] getStorageSlotGhosts() {
-        return new ItemStack[] { new ItemStack(BotaniaBlocks.motifDaybloom) };
+        return new ItemStack[] { new ItemStack(BotaniaBlocks.getBlock("daybloom_motif")) };
     }
 }

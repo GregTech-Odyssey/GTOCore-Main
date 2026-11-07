@@ -53,8 +53,6 @@ import com.gto.registrate.util.nullness.NonNullBiConsumer;
 
 import com.hollingsworth.arsnouveau.common.block.LargeSourceJar;
 import com.hollingsworth.arsnouveau.common.block.SourceJar;
-import vazkii.botania.common.block.mana.LargeManaPoolBlock;
-import vazkii.botania.common.block.mana.ManaPoolBlock;
 
 import java.util.Locale;
 
@@ -849,9 +847,6 @@ public final class GTOBlocks {
     public static final BlockEntry<SourceJar> LAURERIL_JAR = LaurerilSourceJars.registerLegacy();
     public static final BlockEntry<SourceJar> STANDARD_LAURERIL_JAR = LaurerilSourceJars.registerStandard();
     public static final BlockEntry<LargeSourceJar> LARGE_LAURERIL_JAR = LaurerilSourceJars.registerLarge();
-
-    public static final BlockEntry<ManaPoolBlock> LAURERIL_MANA_POOL = LaurerilManaPools.registerPool();
-    public static final BlockEntry<LargeManaPoolBlock> LARGE_LAURERIL_MANA_POOL = LaurerilManaPools.registerLarge();
 
     public static BlockEntry<MinesweeperDisplayBlock> MINESWEEPER_DISPLAY = block("minesweeper_display", "扫雷显示方块", MinesweeperDisplayBlock::new)
             .properties(p -> p.mapColor(MapColor.STONE).strength(0.8f).sound(SoundType.STONE))

@@ -44,14 +44,12 @@ import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.recipesearch.IntLongMap;
 
 import com.suried.gtoutils.schedule.Task;
-import mythicbotany.pylon.BlockAlfsteelPylon;
-import mythicbotany.register.ModBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
+import vazkii.botania.common.MythicBotanyBlocks;
 import vazkii.botania.common.block.PylonBlock;
-import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
-import vazkii.botania.common.block.mana.ManaPoolBlock;
+import vazkii.botania.common.block.mana.ManaPools;
 import vazkii.botania.common.handler.BotaniaSounds;
 
 import java.lang.ref.WeakReference;
@@ -67,7 +65,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
     private final static int SIZE = 9;
     private final ItemEntityRecipeHandler itemIn = new ItemEntityRecipeHandler();
     private int maxRate = 0;
-    private final List<WeakReference<ManaPoolBlockEntity>> manaPools = new ArrayList<>();
+    private final List<WeakReference<ManaPools.Pool>> manaPools = new ArrayList<>();
     private final InWorldManaContainer inWorldManaContainer = new InWorldManaContainer();
     private ManaContainerList manaContainerList = ManaContainerList.EMPTY;
     private Task tickSubscription;
@@ -96,7 +94,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                     continue;
                 }
                 var blockEntity = level.getBlockEntity(pos);
-                if (blockEntity instanceof ManaPoolBlockEntity manaPool) {
+                if (blockEntity instanceof ManaPools.Pool manaPool) {
                     manaPools.add(new WeakReference<>(manaPool));
                 }
             }
@@ -109,7 +107,7 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         super.afterWorking();
         var level = getLevel();
         if (level != null) {
-            level.playSound(null, getPos().getX(), getPos().above().getY(), getPos().getZ(), BotaniaSounds.terrasteelCraft, SoundSource.BLOCKS, 1F, 1F);
+            level.playSound(null, getPos().getX(), getPos().above().getY(), getPos().getZ(), BotaniaSounds.terrasteelCraft.get(), SoundSource.BLOCKS, 1F, 1F);
         }
     }
 
@@ -435,8 +433,8 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
             }
         }
 
-        private boolean isCreativePool(ManaPoolBlockEntity pool) {
-            return pool.getBlockState().getBlock() instanceof ManaPoolBlock poolBlock && poolBlock.variant == ManaPoolBlock.Variant.CREATIVE;
+        private boolean isCreativePool(ManaPools.Pool pool) {
+            return pool.getBlockState().getBlock() instanceof ManaPools.PoolBlock poolBlock && poolBlock.variant == ManaPools.PoolBlock.Variant.CREATIVE;
         }
 
         private boolean hasCreativePool() {
@@ -470,13 +468,15 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
                         case MANA -> data.getAndAdd(8);
                         case NATURA -> data.getAndAdd(8 << 2);
                         case GAIA -> data.getAndAdd(8 << 6);
+                        case ALFSTEEL -> data.getAndAdd(8 << 4);
                     }
                 }
-                if (state.getBlockState().getBlock() instanceof BlockAlfsteelPylon) {
-                    data.getAndAdd(8 << 4);
-                }
                 return data;
-            }, BotaniaBlocks.manaPylon, BotaniaBlocks.naturaPylon, BotaniaBlocks.gaiaPylon, ModBlocks.alfsteelPylon));
+            },
+                    BotaniaBlocks.getBlock("mana_pylon"),
+                    BotaniaBlocks.getBlock("natura_pylon"),
+                    BotaniaBlocks.getBlock("gaia_pylon"),
+                    MythicBotanyBlocks.getBlock("alfsteel_pylon")));
 
     public static TraceabilityPredicate manaPool(Block... blocks) {
         return GTOPredicates.dataBlock(POOL, ArrayList::new, (data, state) -> {

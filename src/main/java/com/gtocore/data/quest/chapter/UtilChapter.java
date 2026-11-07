@@ -26,7 +26,7 @@ import appeng.core.definitions.AEBlocks;
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import dev.shadowsoffire.apotheosis.ench.Ench;
 import earth.terrarium.adastra.common.registry.ModItems;
-import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
+import vazkii.botania.common.ExtraBotanyItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -88,7 +88,7 @@ public final class UtilChapter {
 
     public static final Quest ORDER_BOW = CHAPTER.quest("order_bow", q -> q
             .at(6.5, 2)
-            .icon(ExtraBotanyItems.failnaught)
+            .icon(ExtraBotanyItems.getItem("failnaught"))
             .title("秩序之弓")
             .task(Task.stat(Stats.DEATHS, 15))
             .reward(

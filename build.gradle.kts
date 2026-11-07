@@ -331,13 +331,13 @@ dependencies {
     // EMI
     modImplementation("dev.emi:emi-forge-1.20.1:$emi_version")
 
-    // Botania
+    // Botania：独立模组，由 botania-pipeline 按子模块源码编译并接入构建产物
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
-    modImplementation("vazkii.botania:Botania-forge-1.20.1:$botania_version")
     modImplementation("vazkii.patchouli:Patchouli:$minecraft_version-84.1-FORGE")
-    modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
-    modImplementation("curse.maven:event-wrapper-1256971:7182179")
-    modImplementation("curse.maven:mythicbotany-400058:6702112")
+    // modImplementation("vazkii.botania:Botania-forge-1.20.1:$botania_version")
+    // modImplementation("curse.maven:extrabotany-reburn-1271869:7182385")
+    // modImplementation("curse.maven:event-wrapper-1256971:7182179")
+    // modImplementation("curse.maven:mythicbotany-400058:6702112")
 
     // Apotheosis
     modImplementation("dev.shadowsoffire:ApothicAttributes:$minecraft_version-1.3.7")
@@ -463,6 +463,8 @@ dependencies {
 
 // GTOLib：打包 → 加密 → 嵌入 gtocore；run*/jar 都依赖这条流水线
 apply(from = "gradle/scripts/gtolib-pipeline.gradle.kts")
+// Botania：子模块源码 → 指纹判断 → 独立模组 jar（仿 GTOLib 的产物接入方式）
+apply(from = "gradle/scripts/botania-pipeline.gradle.kts")
 apply(from = "gradle/scripts/release-smoke.gradle.kts")
 if (extra["isGtolibDebugMode"] == true) {
     legacyForge.runs.configureEach { systemProperty("gtolib.debug", "true") }
@@ -699,7 +701,7 @@ gtoPublish {
             "gregtech-modern-gto-edition" to "required",
             "applied-energistics-2-gto-edition" to "required",
             "ars-nouveau-gto-edition" to "required",
-            "botania-gto-edition" to "required",
+            // "botania-gto-edition" to "required",
             "gtoutils" to "required",
             "gtorender" to "required",
             "gto-seal-runtime" to "required",
@@ -717,6 +719,7 @@ idea {
         isDownloadJavadoc = true
         // 仅供 IDEA 索引/跳转
         sourceDirs.add(file("GTOLib/src/main/java"))
+        sourceDirs.add(file("Botania/src/main/java"))
     }
 }
 
@@ -746,7 +749,7 @@ eclipse {
 spotless {
     encoding("UTF-8")
     java {
-        target("src/main/java/**/*.java", "GTOLib/src/main/java/**/*.java")
+        target("src/main/java/**/*.java", "GTOLib/src/main/java/**/*.java", "Botania/src/main/java/**/*.java")
         toggleOffOn()
         importOrderFile(file("gradle/spotless/spotless.importorder"))
         removeUnusedImports("cleanthat-javaparser-unnecessaryimport")
@@ -763,6 +766,7 @@ spotless {
         target(
             "src/*/resources/**/*.json", "src/*/resources/**/*.mcmeta",
             "GTOLib/src/main/resources/**/*.json", "GTOLib/src/main/resources/**/*.mcmeta",
+            "Botania/src/main/resources/**/*.json", "Botania/src/main/resources/**/*.mcmeta",
         )
         targetExclude("src/generated/resources/**")
         biome()
