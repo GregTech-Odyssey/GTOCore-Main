@@ -1518,7 +1518,7 @@ public final class MagicRecipesA {
                     "   ", " A ", "   ",
                     'A', PHILOSOPHERS_STONE);
 
-            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wreath"), GTOItems.WREATH.asStack(),
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wreath"), GTOItems.WREATH.asStack(8),
                     "AAA", "ABA", "AAA",
                     'A', ItemTags.FLOWERS, 'B', GTOItems.COLORFUL_MYSTICAL_FLOWER.asStack());
 
