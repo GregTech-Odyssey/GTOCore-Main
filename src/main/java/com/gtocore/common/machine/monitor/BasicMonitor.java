@@ -1,5 +1,7 @@
 package com.gtocore.common.machine.monitor;
 
+import com.gtolib.api.gui.MonitorConfigurationPreview;
+
 import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
@@ -11,6 +13,8 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.window.MachineWindow;
+import com.gregtechceu.gtceu.uipro.window.WindowAnchor;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -21,6 +25,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.hepdd.gtmthings.api.capability.IBindable;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -104,6 +109,17 @@ public class BasicMonitor extends MetaMachine implements IBindable, IMachineLife
         }
     }
 
+    static void openConfigurationPage(ModularUI ui, long source) {
+        var window = MachineWindow.find(ui);
+        if (window == null) return;
+        for (var tab : window.getSideTabsWidget().getSubTabs()) {
+            if (tab instanceof ConfigurationPage(IInformationProvider provider) && provider.getPos().asLong() == source) {
+                window.selectTab(tab);
+                return;
+            }
+        }
+    }
+
     @Override
     public List<IFancyUIProvider> getSubTabs() {
         var network = Manager.networkAt(this);
@@ -123,6 +139,11 @@ public class BasicMonitor extends MetaMachine implements IBindable, IMachineLife
     }
 
     @Override
+    public WindowAnchor windowAnchor() {
+        return WindowAnchor.CENTER;
+    }
+
+    @Override
     public boolean hasPlayerInventory() {
         return false;
     }
@@ -131,7 +152,7 @@ public class BasicMonitor extends MetaMachine implements IBindable, IMachineLife
 
         @Override
         public Widget createMainPage(FancyMachineUIWidget widget) {
-            return provider instanceof AbstractInfoProviderMonitor monitor ? monitor.createConfigurationPage() : Form.page();
+            return provider instanceof AbstractInfoProviderMonitor monitor ? MonitorConfigurationPreview.createPage(monitor) : Form.page();
         }
 
         @Override

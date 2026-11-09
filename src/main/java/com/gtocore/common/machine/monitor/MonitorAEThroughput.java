@@ -303,6 +303,7 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
 
         return Form.page().addChildren(
                 filterSection,
+                createBackgroundRow(),
                 createPriorityRow());
     }
 

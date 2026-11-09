@@ -7,6 +7,7 @@ import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.network.chat.Component;
@@ -24,6 +25,10 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
     @SaveToDisk(defaultValue = "0")
     @SyncToClient
     private long priority = 0;
+
+    @SaveToDisk(defaultValue = "true")
+    @SyncToClient
+    private boolean drawBackground = true;
 
     protected TickableSubscription tickableSubscription;
 
@@ -81,12 +86,27 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
                 NumberField.ofLong(UISizes.CONTENT_WIDTH, this::getPriority, this::setPriority, (long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE));
     }
 
+    public boolean isDrawBackground() {
+        return drawBackground;
+    }
+
+    private void setDrawBackground(boolean drawBackground) {
+        this.drawBackground = drawBackground;
+        onChanged();
+        requestSync();
+    }
+
+    protected UIElement createBackgroundRow() {
+        return Form.controlRow(Component.translatable("gtocore.machine.monitor.draw_background"),
+                Switch.of(this::isDrawBackground, this::setDrawBackground));
+    }
+
     @Override
     public Widget createUIWidget() {
         return super.createUIWidget();
     }
 
     public Widget createConfigurationPage() {
-        return Form.page().addChild(createPriorityRow());
+        return Form.page().addChildren(createBackgroundRow(), createPriorityRow());
     }
 }

@@ -1,9 +1,13 @@
 package com.gtocore.common.machine.monitor;
 
+import com.gtolib.api.gui.CanvasDragBounds;
+import com.gtolib.api.gui.MonitorPanel;
+
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.UIInput;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasItem;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasLayer;
+import com.gregtechceu.gtceu.uipro.canvas.CanvasLod;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasPainter;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasRect;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
@@ -15,6 +19,7 @@ import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.VirtualList;
 import com.gregtechceu.gtceu.uipro.render.UILayers;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
+import com.gregtechceu.gtceu.uipro.view.PlanarView;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,6 +38,8 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 /** The screen editor and the card coordinates used by its live preview and the block renderer. */
@@ -75,9 +82,13 @@ public final class MonitorEditor {
             long source = provider.getPos().asLong();
             var components = provider.getAvailableRLs().toArray(ResourceLocation[]::new);
             sidebar.addScrollViewChild(new VirtualList(1, PALETTE_HEIGHT, UISizes.SECTION_GAP,
-                    () -> components.length, index -> new PaletteCard(sidebarWidth - 12, canvas, source, components[index])));
+                    () -> components.length, index -> new PaletteCard(sidebarWidth - 12, canvas, source, components[index], index + 1 < components.length)));
         }
-        sidebar.addScrollViewChild(Form.label(Component.translatable("gtocore.machine.monitor.editor.help")));
+        sidebar.addScrollViewChild(Form.label(Component.translatable("gtocore.machine.monitor.editor.help.1"),
+                Component.translatable("gtocore.machine.monitor.editor.help.2"),
+                Component.translatable("gtocore.machine.monitor.editor.help.3"),
+                Component.translatable("gtocore.machine.monitor.editor.help.4"),
+                Component.translatable("gtocore.machine.monitor.editor.help.5")));
         return new UIElement() {
 
             @Override
@@ -89,8 +100,8 @@ public final class MonitorEditor {
                     card.drawDragPreview(graphics, mouseX, mouseY);
                 }
             }
-        }.layout(l -> l.row().height(280).gapAll(UISizes.GAP))
-                .addChildren(canvas, sidebar);
+        }.layout(l -> l.row().gapAll(UISizes.SECTION_GAP))
+                .addChildren(MonitorPanel.frame(monitor, canvas), MonitorPanel.frame(monitor, sidebar));
     }
 
     public static List<MonitorLayout.Entry> effectiveLayout(Manager.GridNetwork network, net.minecraft.world.level.Level level) {
@@ -117,8 +128,8 @@ public final class MonitorEditor {
         for (Manager.GridNetwork.DisplayEntry display : network.getDisplayEntries()) {
             if (result.size() >= MonitorLayout.MAX_ENTRIES) break;
             IDisplayComponent component = display.component();
-            int width = Math.min(screenWidth - CARD_GAP * 2, Math.max(CARD_WIDTH, component.getVisualWidth() + 16));
-            int height = Math.min(screenHeight - CARD_GAP * 2, Math.max(CARD_HEIGHT, component.getVisualHeight() + 24));
+            int width = Math.clamp(component.getVisualWidth() + 16, CARD_WIDTH, screenWidth - CARD_GAP * 2);
+            int height = Math.clamp(component.getVisualHeight() + 24, CARD_HEIGHT, screenHeight - CARD_GAP * 2);
             if (x + width > screenWidth - CARD_GAP && x > CARD_GAP) {
                 x = CARD_GAP;
                 y += rowHeight + CARD_GAP;
@@ -133,21 +144,25 @@ public final class MonitorEditor {
     }
 
     @Nullable
-    public static IDisplayComponent component(Manager.GridNetwork network, MonitorLayout.Entry entry) {
+    public static Manager.GridNetwork.DisplayEntry display(Manager.GridNetwork network, MonitorLayout.Entry entry) {
         for (Manager.GridNetwork.DisplayEntry display : network.getDisplayEntries()) {
-            if (display.source() == entry.source() && display.component().getId().equals(entry.component())) return display.component();
+            if (display.source() == entry.source() && display.component().getId().equals(entry.component())) return display;
         }
         return null;
     }
 
-    public static void drawCard(GuiGraphics graphics, MonitorLayout.Entry entry, @Nullable IDisplayComponent component) {
-        drawCard(graphics, entry.x(), entry.y(), entry.width(), entry.height(), component, false);
+    public static void drawCard(GuiGraphics graphics, MonitorLayout.Entry entry, @Nullable Manager.GridNetwork.DisplayEntry display) {
+        if (display == null || display.drawBackground()) {
+            drawCardBackground(graphics, entry.x(), entry.y(), entry.width(), entry.height(), false, true);
+        }
+        graphics.flush();
+        if (display != null) drawCardContent(graphics, entry, display.component());
     }
 
-    private static void drawCard(GuiGraphics graphics, int x, int y, int width, int height, @Nullable IDisplayComponent component, boolean hovered) {
-        drawCardBackground(graphics, x, y, width, height, hovered);
+    private static void drawCard(GuiGraphics graphics, int x, int y, int width, int height, @Nullable Manager.GridNetwork.DisplayEntry display, boolean hovered) {
+        drawCardBackground(graphics, x, y, width, height, hovered, display == null || display.drawBackground());
         graphics.flush();
-        if (component != null) drawCardContent(graphics, x, y, width, height, component);
+        if (display != null) drawCardContent(graphics, x, y, width, height, display.component());
     }
 
     private static int[] cornerInsets(int radius) {
@@ -169,11 +184,31 @@ public final class MonitorEditor {
         }
     }
 
-    private static void drawCardBackground(GuiGraphics graphics, int x, int y, int width, int height, boolean hovered) {
-        fillRoundedRect(graphics, x, y, width, height, CARD_OUTER_CORNER, hovered ? 0xFF7198CA : 0xFF394554);
-        fillRoundedRect(graphics, x + CARD_BORDER_THICKNESS, y + CARD_BORDER_THICKNESS,
-                width - CARD_BORDER_THICKNESS * 2, height - CARD_BORDER_THICKNESS * 2,
-                CARD_INNER_CORNER, hovered ? 0xFF293543 : 0xFF1D232B);
+    private static void drawCardBackground(GuiGraphics graphics, int x, int y, int width, int height, boolean hovered, boolean background) {
+        int borderColor = hovered ? 0xFF7198CA : 0xFF394554;
+        if (background) {
+            fillRoundedRect(graphics, x, y, width, height, CARD_OUTER_CORNER, borderColor);
+            fillRoundedRect(graphics, x + CARD_BORDER_THICKNESS, y + CARD_BORDER_THICKNESS,
+                    width - CARD_BORDER_THICKNESS * 2, height - CARD_BORDER_THICKNESS * 2,
+                    CARD_INNER_CORNER, hovered ? 0xFF293543 : 0xFF1D232B);
+            return;
+        }
+        // The editor outline must leave the interior untouched, including overlapping cards.
+        graphics.fill(x, y + CARD_CORNER_RADIUS, x + CARD_BORDER_THICKNESS, y + height - CARD_CORNER_RADIUS, borderColor);
+        graphics.fill(x + width - CARD_BORDER_THICKNESS, y + CARD_CORNER_RADIUS, x + width, y + height - CARD_CORNER_RADIUS, borderColor);
+        for (int row = 0; row < CARD_CORNER_RADIUS; row++) {
+            int outer = CARD_OUTER_CORNER[row];
+            if (row < CARD_BORDER_THICKNESS) {
+                graphics.fill(x + outer, y + row, x + width - outer, y + row + 1, borderColor);
+                graphics.fill(x + outer, y + height - row - 1, x + width - outer, y + height - row, borderColor);
+            } else {
+                int inner = CARD_BORDER_THICKNESS + CARD_INNER_CORNER[row - CARD_BORDER_THICKNESS];
+                graphics.fill(x + outer, y + row, x + inner, y + row + 1, borderColor);
+                graphics.fill(x + width - inner, y + row, x + width - outer, y + row + 1, borderColor);
+                graphics.fill(x + outer, y + height - row - 1, x + inner, y + height - row, borderColor);
+                graphics.fill(x + width - inner, y + height - row - 1, x + width - outer, y + height - row, borderColor);
+            }
+        }
     }
 
     private static void drawCardContent(GuiGraphics graphics, MonitorLayout.Entry entry, IDisplayComponent component) {
@@ -198,14 +233,16 @@ public final class MonitorEditor {
 
         private final EditorCanvas canvas;
         private final MonitorLayout.Entry identity;
+        private final boolean divided;
         @Nullable
         private MonitorLayout.Entry dragged;
         private boolean moved;
         private double pressX, pressY;
         private float grabX, grabY;
 
-        private PaletteCard(int width, EditorCanvas canvas, long source, ResourceLocation component) {
+        private PaletteCard(int width, EditorCanvas canvas, long source, ResourceLocation component, boolean divided) {
             this.canvas = canvas;
+            this.divided = divided;
             identity = new MonitorLayout.Entry(source, component, 0, 0, CARD_WIDTH, CARD_HEIGHT);
             layout(l -> l.column().size(width, PALETTE_HEIGHT));
             addChild(Form.label(Component.translatable(DisplayRegistry.langKey(component)))
@@ -214,29 +251,35 @@ public final class MonitorEditor {
 
         private float previewScale(int width, int height) {
             return Math.min((float) getSizeWidth() / width,
-                    (float) (getSizeHeight() - UISizes.TEXT_HEIGHT - UISizes.GAP) / height);
+                    (float) (getSizeHeight() - UISizes.TEXT_HEIGHT - UISizes.GAP -
+                            (divided ? UISizes.SECTION_GAP + UISizes.GAP : 0)) / height);
         }
 
         @Override
         @OnlyIn(Dist.CLIENT)
         protected void drawWidgetsBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
             super.drawWidgetsBackground(graphics, mouseX, mouseY, partialTicks);
-            var component = component(canvas.network, identity);
+            var display = display(canvas.network, identity);
+            var component = display == null ? null : display.component();
             int width = canvas.cardWidth(component), height = canvas.cardHeight(component);
             float scale = previewScale(width, height);
             float x = getPositionX() + (getSizeWidth() - width * scale) / 2;
             float y = getPositionY() + UISizes.TEXT_HEIGHT + UISizes.GAP;
-            drawPreview(graphics, x, y, scale, width, height, component, isMouseOverElement(mouseX, mouseY));
+            drawPreview(graphics, x, y, scale, width, height, display, isMouseOverElement(mouseX, mouseY));
+            if (divided) {
+                MonitorPanel.drawDivider(graphics, getPositionX(), Math.round(y + height * scale) + UISizes.GAP,
+                        getPositionY() + getSizeHeight() + UISizes.SECTION_GAP - UISizes.GAP, getSizeWidth());
+            }
         }
 
         @OnlyIn(Dist.CLIENT)
         private void drawPreview(GuiGraphics graphics, float x, float y, float scale, int width, int height,
-                                 @Nullable IDisplayComponent component, boolean hovered) {
+                                 @Nullable Manager.GridNetwork.DisplayEntry display, boolean hovered) {
             graphics.pose().pushPose();
             graphics.pose().translate(x, y, 0);
             graphics.pose().scale(scale, scale, 1);
-            drawCard(graphics, 0, 0, width, height, component, hovered);
-            if (component == null) {
+            drawCard(graphics, 0, 0, width, height, display, hovered);
+            if (display == null) {
                 var font = Minecraft.getInstance().font;
                 graphics.drawString(font, NO_INFORMATION, (width - font.width(NO_INFORMATION)) / 2,
                         (height - UISizes.TEXT_HEIGHT) / 2, 0xFFFFFFFF, false);
@@ -257,7 +300,7 @@ public final class MonitorEditor {
             }
             graphics.pose().pushPose();
             graphics.pose().translate(0, 0, UILayers.TOP);
-            drawPreview(graphics, x, y, scale, dragged.width(), dragged.height(), component(canvas.network, dragged), true);
+            drawPreview(graphics, x, y, scale, dragged.width(), dragged.height(), display(canvas.network, dragged), true);
             graphics.pose().popPose();
         }
 
@@ -268,7 +311,8 @@ public final class MonitorEditor {
             moved = false;
             pressX = mouseX;
             pressY = mouseY;
-            var component = component(canvas.network, identity);
+            var display = display(canvas.network, identity);
+            var component = display == null ? null : display.component();
             int width = canvas.cardWidth(component), height = canvas.cardHeight(component);
             dragged = new MonitorLayout.Entry(identity.source(), identity.component(), 0, 0, width, height);
             float scale = previewScale(width, height);
@@ -311,12 +355,17 @@ public final class MonitorEditor {
         private final Manager.GridNetwork network;
         private final RPC<List<MonitorLayout.Entry>> save;
         private final ArrayList<MonitorLayout.Entry> entries = new ArrayList<>();
+        private final BitSet selected = new BitSet(MonitorLayout.MAX_ENTRIES);
+        private final MonitorLayout.Entry[] dragStarts = new MonitorLayout.Entry[MonitorLayout.MAX_ENTRIES];
+        private final CanvasDragBounds dragBounds = new CanvasDragBounds();
         private long armedSource = Long.MIN_VALUE;
         @Nullable
         private ResourceLocation armedComponent;
         private int dragging = -1;
         private boolean resizing;
+        private boolean resizeLeft, resizeTop;
         private float dragStartX, dragStartY;
+        private int appliedDx, appliedDy;
         private MonitorLayout.Entry dragStart;
         private boolean loaded;
 
@@ -348,10 +397,18 @@ public final class MonitorEditor {
                 current.applyScreenLayout(monitor.getLevel(), MonitorLayout.save(checked));
             }).limit(2);
             setScene(this::buildScene);
-            setOnClientBackgroundClick((x, y, button) -> {
-                if (button == 0 && armedComponent != null) addCard(Math.round(x), Math.round(y));
+            setOnClientItemClick((item, button, x, y) -> {
+                if (button == 2 && item instanceof Card card) {
+                    BasicMonitor.openConfigurationPage(gui, entries.get(card.index).source());
+                }
             });
-            setInitialView(view -> view.fitView());
+            setOnClientBackgroundClick((x, y, button) -> {
+                if (button == 0) {
+                    if (!Screen.hasShiftDown()) selected.clear();
+                    if (armedComponent != null) addCard(Math.round(x), Math.round(y));
+                }
+            });
+            setInitialView(PlanarView::fitView);
         }
 
         private void arm(long source, ResourceLocation component) {
@@ -411,7 +468,28 @@ public final class MonitorEditor {
                     }
                 }
             });
-            ItemLayer<Card> cards = new ItemLayer<>();
+            ItemLayer<Card> cards = new ItemLayer<>() {
+
+                @Override
+                public void collectSelected(List<CanvasRect> out) {
+                    // The BLOCK path below also needs selection frames, without filling transparent cards.
+                    for (int i = selected.nextSetBit(0); i >= 0; i = selected.nextSetBit(i + 1)) {
+                        out.add(items().get(i).bounds());
+                    }
+                }
+
+                @Override
+                public void draw(CanvasPainter painter, @Nullable CanvasItem hovered) {
+                    if (painter.lod() != CanvasLod.BLOCK) {
+                        super.draw(painter, hovered);
+                        return;
+                    }
+                    // Keep transparent cards outlined when the canvas hides detailed content.
+                    for (Card card : items()) {
+                        if (painter.isVisible(card.bounds())) card.drawShape(painter, card == hovered);
+                    }
+                }
+            };
             for (int i = 0; i < entries.size(); i++) cards.add(new Card(i));
             canvas.addLayer(cards);
         }
@@ -455,6 +533,8 @@ public final class MonitorEditor {
             int maxX = network.width3D() * MonitorLayout.PIXELS_PER_BLOCK - width;
             int maxY = network.height3D() * MonitorLayout.PIXELS_PER_BLOCK - height;
             entries.add(new MonitorLayout.Entry(source, component, Mth.clamp(x, 0, maxX), Mth.clamp(y, 0, maxY), width, height));
+            selected.clear();
+            selected.set(entries.size() - 1);
             armedComponent = null;
             submit();
             refresh();
@@ -464,12 +544,36 @@ public final class MonitorEditor {
         @OnlyIn(Dist.CLIENT)
         protected boolean onViewPress(double mouseX, double mouseY, int button) {
             if (button == 0 && itemAt(mouseX, mouseY) instanceof Card card) {
+                armedComponent = null;
+                if (Screen.hasShiftDown()) {
+                    selected.flip(card.index);
+                    if (!selected.get(card.index)) return super.onViewPress(mouseX, mouseY, button);
+                } else if (!selected.get(card.index)) {
+                    selected.clear();
+                    selected.set(card.index);
+                }
                 dragging = card.index;
                 dragStart = entries.get(dragging);
                 dragStartX = toWorldX(mouseX);
                 dragStartY = toWorldY(mouseY);
-                resizing = dragStart.x() + dragStart.width() - dragStartX < 12 && dragStart.y() + dragStart.height() - dragStartY < 12;
-                return super.onViewPress(mouseX, mouseY, button);
+                appliedDx = appliedDy = 0;
+                resizeLeft = dragStartX - dragStart.x() < 12;
+                resizeTop = dragStartY - dragStart.y() < 12;
+                resizing = (resizeLeft || dragStart.x() + dragStart.width() - dragStartX < 12) &&
+                        (resizeTop || dragStart.y() + dragStart.height() - dragStartY < 12);
+                dragBounds.reset();
+                int screenWidth = network.width3D() * MonitorLayout.PIXELS_PER_BLOCK;
+                int screenHeight = network.height3D() * MonitorLayout.PIXELS_PER_BLOCK;
+                for (int i = selected.nextSetBit(0); i >= 0; i = selected.nextSetBit(i + 1)) {
+                    MonitorLayout.Entry entry = entries.get(i);
+                    dragStarts[i] = entry;
+                    if (resizing) {
+                        dragBounds.includeResize(entry.x(), entry.y(), entry.width(), entry.height(), screenWidth, screenHeight,
+                                40, 24, resizeLeft, resizeTop);
+                    } else {
+                        dragBounds.includeMove(entry.x(), entry.y(), entry.width(), entry.height(), screenWidth, screenHeight);
+                    }
+                }
             }
             return super.onViewPress(mouseX, mouseY, button);
         }
@@ -481,40 +585,49 @@ public final class MonitorEditor {
                 super.onViewDrag(mouseX, mouseY, button, dragX, dragY);
                 return;
             }
-            int dx = Math.round(toWorldX(mouseX) - dragStartX), dy = Math.round(toWorldY(mouseY) - dragStartY);
+            int dx = dragBounds.clampX(Math.round(toWorldX(mouseX) - dragStartX));
+            int dy = dragBounds.clampY(Math.round(toWorldY(mouseY) - dragStartY));
             int screenWidth = network.width3D() * MonitorLayout.PIXELS_PER_BLOCK;
             int screenHeight = network.height3D() * MonitorLayout.PIXELS_PER_BLOCK;
-            MonitorLayout.Entry updated;
-            if (resizing) {
-                updated = new MonitorLayout.Entry(dragStart.source(), dragStart.component(), dragStart.x(), dragStart.y(),
-                        Mth.clamp(dragStart.width() + dx, 40, screenWidth - dragStart.x()),
-                        Mth.clamp(dragStart.height() + dy, 24, screenHeight - dragStart.y()));
-            } else {
-                updated = new MonitorLayout.Entry(dragStart.source(), dragStart.component(),
-                        Mth.clamp(dragStart.x() + dx, 0, screenWidth - dragStart.width()),
-                        Mth.clamp(dragStart.y() + dy, 0, screenHeight - dragStart.height()), dragStart.width(), dragStart.height());
+            if (!Screen.hasControlDown()) {
+                MonitorLayout.Entry updated = snap(transform(dragStart, dx, dy, screenWidth, screenHeight), screenWidth, screenHeight);
+                dx = dragBounds.clampX(resizing && !resizeLeft ? updated.width() - dragStart.width() : updated.x() - dragStart.x());
+                dy = dragBounds.clampY(resizing && !resizeTop ? updated.height() - dragStart.height() : updated.y() - dragStart.y());
             }
-            if (!Screen.hasControlDown()) updated = snap(updated, dragging, screenWidth, screenHeight);
-            entries.set(dragging, updated);
+            if (dx == appliedDx && dy == appliedDy) return;
+            appliedDx = dx;
+            appliedDy = dy;
+            for (int i = selected.nextSetBit(0); i >= 0; i = selected.nextSetBit(i + 1)) {
+                MonitorLayout.Entry start = dragStarts[i];
+                entries.set(i, transform(start, dx, dy, screenWidth, screenHeight));
+            }
             refresh();
         }
 
-        private MonitorLayout.Entry snap(MonitorLayout.Entry entry, int index, int screenWidth, int screenHeight) {
+        private MonitorLayout.Entry transform(MonitorLayout.Entry start, int dx, int dy, int screenWidth, int screenHeight) {
+            if (resizing) return start.resizeFromCorner(resizeLeft, resizeTop, dx, dy, screenWidth, screenHeight);
+            return new MonitorLayout.Entry(start.source(), start.component(), start.x() + dx, start.y() + dy, start.width(), start.height());
+        }
+
+        private MonitorLayout.Entry snap(MonitorLayout.Entry entry, int screenWidth, int screenHeight) {
             if (resizing) {
-                int right = snapResizeEdge(entry.x() + entry.width(), entry.x(), true, index, screenWidth);
-                int bottom = snapResizeEdge(entry.y() + entry.height(), entry.y(), false, index, screenHeight);
-                return new MonitorLayout.Entry(entry.source(), entry.component(), entry.x(), entry.y(), right - entry.x(), bottom - entry.y());
+                int fixedX = resizeLeft ? entry.x() + entry.width() : entry.x();
+                int fixedY = resizeTop ? entry.y() + entry.height() : entry.y();
+                int movingX = snapResizeEdge(resizeLeft ? entry.x() : entry.x() + entry.width(), fixedX, resizeLeft, true, screenWidth);
+                int movingY = snapResizeEdge(resizeTop ? entry.y() : entry.y() + entry.height(), fixedY, resizeTop, false, screenHeight);
+                return new MonitorLayout.Entry(entry.source(), entry.component(), Math.min(fixedX, movingX), Math.min(fixedY, movingY),
+                        Math.abs(movingX - fixedX), Math.abs(movingY - fixedY));
             }
-            int x = snapCoordinate(entry.x(), entry.width(), true, index, screenWidth);
-            int y = snapCoordinate(entry.y(), entry.height(), false, index, screenHeight);
+            int x = snapCoordinate(entry.x(), entry.width(), true, screenWidth);
+            int y = snapCoordinate(entry.y(), entry.height(), false, screenHeight);
             return new MonitorLayout.Entry(entry.source(), entry.component(), x, y, entry.width(), entry.height());
         }
 
-        private int snapCoordinate(int coordinate, int size, boolean horizontal, int movingIndex, int limit) {
+        private int snapCoordinate(int coordinate, int size, boolean horizontal, int limit) {
             int best = coordinate;
             int bestDistance = SNAP_DISTANCE + 1;
             for (int i = 0; i < entries.size(); i++) {
-                if (i == movingIndex) continue;
+                if (selected.get(i)) continue;
                 MonitorLayout.Entry other = entries.get(i);
                 int start = horizontal ? other.x() : other.y();
                 int otherSize = horizontal ? other.width() : other.height();
@@ -534,22 +647,22 @@ public final class MonitorEditor {
             return best;
         }
 
-        private int snapResizeEdge(int edge, int fixedStart, boolean horizontal, int movingIndex, int limit) {
+        private int snapResizeEdge(int edge, int fixedEdge, boolean movingStart, boolean horizontal, int limit) {
             int best = edge;
             int bestDistance = SNAP_DISTANCE + 1;
             int minimum = horizontal ? 40 : 24;
             for (int i = 0; i < entries.size(); i++) {
-                if (i == movingIndex) continue;
+                if (selected.get(i)) continue;
                 MonitorLayout.Entry other = entries.get(i);
                 int start = horizontal ? other.x() : other.y();
                 int size = horizontal ? other.width() : other.height();
                 for (int movingAnchor = 0; movingAnchor < 2; movingAnchor++) {
                     for (int targetAnchor = 0; targetAnchor < 3; targetAnchor++) {
                         int target = targetAnchor == 0 ? start : targetAnchor == 1 ? start + size : start + size / 2;
-                        int candidate = movingAnchor == 0 ? target : fixedStart + 2 * (target - fixedStart);
+                        int candidate = movingAnchor == 0 ? target : fixedEdge + 2 * (target - fixedEdge);
                         int distance = Math.abs(candidate - edge);
-                        int candidateSize = candidate - fixedStart;
-                        if (distance <= SNAP_DISTANCE && distance < bestDistance && candidateSize >= minimum && candidateSize <= limit - fixedStart) {
+                        int candidateSize = movingStart ? fixedEdge - candidate : candidate - fixedEdge;
+                        if (distance <= SNAP_DISTANCE && distance < bestDistance && candidateSize >= minimum && candidate >= 0 && candidate <= limit) {
                             best = candidate;
                             bestDistance = distance;
                         }
@@ -563,12 +676,19 @@ public final class MonitorEditor {
         @OnlyIn(Dist.CLIENT)
         protected void onViewRelease(double mouseX, double mouseY, int button, boolean click) {
             if (dragging >= 0) {
+                boolean changed = !entries.get(dragging).equals(dragStart);
                 dragging = -1;
-                submit();
+                Arrays.fill(dragStarts, null);
+                dragStart = null;
+                if (changed) submit();
                 return;
             }
             if (button == 1 && itemAt(mouseX, mouseY) instanceof Card card) {
                 entries.remove(card.index);
+                for (int i = selected.nextSetBit(card.index); i >= 0; i = selected.nextSetBit(i + 1)) {
+                    selected.clear(i);
+                    if (i > card.index) selected.set(i - 1);
+                }
                 submit();
                 refresh();
                 return;
@@ -585,6 +705,11 @@ public final class MonitorEditor {
             }
 
             @Override
+            public boolean isSelected() {
+                return selected.get(index);
+            }
+
+            @Override
             public CanvasRect bounds() {
                 var entry = entries.get(index);
                 return CanvasRect.of(entry.x(), entry.y(), entry.width(), entry.height());
@@ -594,16 +719,17 @@ public final class MonitorEditor {
             @OnlyIn(Dist.CLIENT)
             public void drawShape(CanvasPainter painter, boolean hovered) {
                 var bounds = bounds();
+                var display = display(network, entries.get(index));
                 drawCardBackground(painter.graphics(), Math.round(bounds.x()), Math.round(bounds.y()),
-                        Math.round(bounds.width()), Math.round(bounds.height()), hovered);
+                        Math.round(bounds.width()), Math.round(bounds.height()), hovered, display == null || display.drawBackground());
             }
 
             @Override
             @OnlyIn(Dist.CLIENT)
             public void drawContent(CanvasPainter painter, boolean hovered) {
                 var entry = entries.get(index);
-                IDisplayComponent component = component(network, entry);
-                if (component != null) drawCardContent(painter.graphics(), entry, component);
+                var display = display(network, entry);
+                if (display != null) drawCardContent(painter.graphics(), entry, display.component());
             }
 
             @Override

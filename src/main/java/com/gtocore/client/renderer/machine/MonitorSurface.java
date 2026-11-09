@@ -181,7 +181,7 @@ final class MonitorSurface {
             var entries = MonitorEditor.effectiveLayout(network, level);
             for (MonitorLayout.Entry entry : entries) {
                 if (entry.x() < 0 || entry.y() < 0 || entry.x() >= logicalWidth || entry.y() >= logicalHeight) continue;
-                MonitorEditor.drawCard(graphics, entry, MonitorEditor.component(network, entry));
+                MonitorEditor.drawCard(graphics, entry, MonitorEditor.display(network, entry));
             }
             if (entries.isEmpty()) {
                 var font = Minecraft.getInstance().font;

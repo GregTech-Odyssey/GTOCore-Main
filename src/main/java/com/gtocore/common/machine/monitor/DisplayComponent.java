@@ -583,7 +583,8 @@ public abstract class DisplayComponent implements IDisplayComponent {
         public void renderGui(GuiGraphics graphics, int x, int y, int width, int height) {
             AEKeyRendering.drawInGui(Minecraft.getInstance(), graphics, x, y, key);
             graphics.flush();
-            content.renderGui(graphics, x + 20, y, Math.max(1, width - 20), height);
+            int contentOffsetY = Math.max(0, (16 - content.getVisualHeight()) / 2);
+            content.renderGui(graphics, x + 20, y + contentOffsetY, Math.max(1, width - 20), Math.max(1, height - contentOffsetY));
         }
     }
 }

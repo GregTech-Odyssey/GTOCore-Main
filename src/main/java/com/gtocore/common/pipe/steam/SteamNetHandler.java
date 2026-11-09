@@ -8,6 +8,8 @@ import net.minecraft.network.chat.Component;
 import appeng.api.config.Actionable;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 
@@ -23,6 +25,11 @@ public final class SteamNetHandler implements MEStorage {
     public SteamNetHandler(SteamPipeBlockEntity pipe, @NotNull Direction facing) {
         this.pipe = pipe;
         this.facing = facing;
+    }
+
+    @Override
+    public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
+        return AEKeyTypes.FLUIDS == aeKeyType;
     }
 
     @Override

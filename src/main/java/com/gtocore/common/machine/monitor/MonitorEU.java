@@ -3,6 +3,8 @@ package com.gtocore.common.machine.monitor;
 import com.gtocore.common.wireless.energy.GridReadouts;
 import com.gtocore.common.wireless.energy.map.GridFormat;
 
+import com.gtolib.api.gui.MonitorMetricDisplay;
+import com.gtolib.api.gui.MonitorResourceHistory;
 import com.gtolib.api.wireless.energy.EnergyStats;
 import com.gtolib.api.wireless.energy.GridClock;
 import com.gtolib.api.wireless.energy.GridSampler;
@@ -29,12 +31,17 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInformationProvider {
 
+    private final MonitorMetricDisplay localTierDisplay = new MonitorMetricDisplay(DisplayRegistry.EU_LOCAL_TIER, 0);
+    private final MonitorMetricDisplay networkTierDisplay = new MonitorMetricDisplay(DisplayRegistry.EU_TIER, 0);
+    private final MonitorResourceHistory storageSamples = new MonitorResourceHistory();
+    private int sampledStorageWindow = -1;
     private List<FormattedCharSequence> textListCache;
     private static final ImmutableBiMap<Integer, DisplayRegistry> DISPLAY_REGISTRY = ImmutableBiMap.<Integer, DisplayRegistry>builder()
             .put(0, DisplayRegistry.TOTAL_ENERGY)
@@ -64,6 +71,8 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
     private float energyFullness = 0.0f;
     @SyncToClient
     private String storageLabel = "";
+    @SyncToClient
+    private BigInteger[] storageHistory = MonitorResourceHistory.EMPTY_VALUES;
 
     @SyncToClient
     private int localTier;
@@ -146,6 +155,9 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
         if (!(getLevel() instanceof ServerLevel)) return new Component[0];
         var account = WirelessGrid.accountIfPresent(getUUID());
         if (account.isNone()) {
+            storageSamples.reset();
+            storageHistory = MonitorResourceHistory.EMPTY_VALUES;
+            sampledStorageWindow = -1;
             if (sampler != null) {
                 sampler.release();
                 sampler = null;
@@ -153,6 +165,7 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
             return new Component[0];
         }
         if (sampler == null || sampler.account() != account) {
+            storageSamples.reset();
             if (sampler != null) sampler.release();
             sampler = GridSampler.acquire(account);
             topologyRevision = -1;
@@ -189,7 +202,13 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
         for (int i = 0, n = Math.min(lines.length, list.size()); i < n; i++) lines[i] = list.get(i);
         double capacity = account.totalCapacityDouble();
         energyFullness = capacity <= 0 ? 0f : (float) Math.min(1, account.totalStorageDouble() / capacity);
-        storageLabel = FormatUtil.formatBigIntegerNumberOrSic(account.totalStorage()) + " / " +
+        var stored = account.totalStorage();
+        boolean sampled = storageSamples.sample(getLevel().getGameTime(), stored);
+        if (sampled || sampledStorageWindow != chartWindow) {
+            storageHistory = storageSamples.storage(chartWindow);
+            sampledStorageWindow = chartWindow;
+        }
+        storageLabel = FormatUtil.formatBigIntegerNumberOrSic(stored) + " / " +
                 FormatUtil.formatBigIntegerNumberOrSic(account.totalCapacity()) + " EU";
         EnergyInputHistoryDay = history(stats, EnergyStats.Window.DAY, true, second);
         EnergyOutputHistoryDay = history(stats, EnergyStats.Window.DAY, false, second);
@@ -214,8 +233,10 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
             informationList.addIfAbsent(
                     DisplayRegistry.EU_STATUS_BAR.id(),
                     DisplayComponent.progressBar(DisplayRegistry.EU_STATUS_BAR.id(), energyFullness, storageLabel));
+            informationList.addIfAbsent(DisplayRegistry.EU_LOCAL_TIER.id(),
+                    localTierDisplay.setValue(localTier));
             informationList.addIfAbsent(DisplayRegistry.EU_TIER.id(),
-                    Component.translatable("gtocore.machine.monitor.eu.tier", localTier, networkTier).getVisualOrderText());
+                    networkTierDisplay.setValue(networkTier));
             informationList.addIfAbsent(DisplayRegistry.EU_TOPOLOGY.id(),
                     DisplayComponent.topology(DisplayRegistry.EU_TOPOLOGY.id(), topologyLabels, topologyEdges));
             var chartInput = chartWindow == 2 ? EnergyInputHistoryDay : chartWindow == 1 ? EnergyInputHistoryHour : EnergyInputHistoryMinute;
@@ -226,26 +247,29 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
             int sampleInterval = chartWindow == 2 ? 3600 : chartWindow == 1 ? 60 : 1;
             informationList.addIfAbsent(DisplayRegistry.EU_THROUGHPUT.id(),
                     DisplayComponent.lineChart(DisplayRegistry.EU_THROUGHPUT.id(), netHistory, sampleInterval, sampleInterval * 20.0, "EU/t", false));
+            informationList.addIfAbsent(DisplayRegistry.EU_STORAGE_CHART.id(),
+                    DisplayComponent.lineChart(DisplayRegistry.EU_STORAGE_CHART.id(), Arrays.asList(storageHistory), sampleInterval, 1, "EU", false));
         }
         return informationList;
     }
 
     @Override
     public List<ResourceLocation> getAvailableRLs() {
-        return new ArrayList<>(List.of(DisplayRegistry.EU_STATUS_BAR.id(), DisplayRegistry.EU_TIER.id(),
-                DisplayRegistry.EU_TOPOLOGY.id(), DisplayRegistry.EU_THROUGHPUT.id()));
+        return new ArrayList<>(List.of(DisplayRegistry.EU_STATUS_BAR.id(), DisplayRegistry.EU_LOCAL_TIER.id(), DisplayRegistry.EU_TIER.id(),
+                DisplayRegistry.EU_TOPOLOGY.id(), DisplayRegistry.EU_THROUGHPUT.id(), DisplayRegistry.EU_STORAGE_CHART.id()));
     }
 
     @Override
     public Widget createConfigurationPage() {
         return Form.page().addChildren(
-                Form.choiceRow(Component.translatable("gtocore.machine.monitor.eu.chart_window"), 3,
-                        index -> Component.translatable("gtocore.machine.monitor.eu.chart_window." + index),
+                Form.choiceRow(Component.translatable("gtocore.machine.monitor.chart_window"), 3,
+                        index -> Component.translatable("gtocore.machine.monitor.chart_window." + index),
                         () -> chartWindow, value -> {
                             chartWindow = value;
                             onChanged();
                             requestSync();
                         }),
+                createBackgroundRow(),
                 createPriorityRow());
     }
 }

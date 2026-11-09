@@ -20,6 +20,16 @@ public final class MonitorLayout {
 
     public record Entry(long source, ResourceLocation component, int x, int y, int width, int height) {
 
+        Entry resizeFromCorner(boolean left, boolean top, int dx, int dy, int screenWidth, int screenHeight) {
+            int right = x + width;
+            int bottom = y + height;
+            int resizedX = left ? Math.clamp(x + dx, 0, right - 40) : x;
+            int resizedY = top ? Math.clamp(y + dy, 0, bottom - 24) : y;
+            int resizedRight = left ? right : Math.clamp(right + dx, x + 40, screenWidth);
+            int resizedBottom = top ? bottom : Math.clamp(bottom + dy, y + 24, screenHeight);
+            return new Entry(source, component, resizedX, resizedY, resizedRight - resizedX, resizedBottom - resizedY);
+        }
+
         public CompoundTag save() {
             CompoundTag tag = new CompoundTag();
             tag.putLong("source", source);

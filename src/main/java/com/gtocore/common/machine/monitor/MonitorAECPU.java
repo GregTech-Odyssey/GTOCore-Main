@@ -90,6 +90,7 @@ public class MonitorAECPU extends AbstractAEInfoMonitor {
                             onChanged();
                             requestSync();
                         }),
+                createBackgroundRow(),
                 createPriorityRow());
     }
 }

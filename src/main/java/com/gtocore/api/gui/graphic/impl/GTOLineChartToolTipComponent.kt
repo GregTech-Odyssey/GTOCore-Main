@@ -6,6 +6,8 @@ import com.gtocore.api.gui.helper.LineChartHelper
 
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.locale.Language
+import net.minecraft.network.chat.Component
 
 import com.gregtechceu.gtceu.utils.FormattingUtil
 
@@ -35,14 +37,17 @@ class GTOLineChartToolTipComponent(
     private var cachedInterval: Int = 0
     private var cachedDivisor: Double = 0.0
     private var cachedMilli: Boolean = false
+    private var cachedLanguage: Language? = null
     private val labelBuilder = StringBuilder(24)
 
     internal fun updateAxes() {
-        if (cachedData === data && cachedInterval == sampleIntervalSeconds && cachedDivisor == valueDivisor && cachedMilli == milliValues) return
+        val language = Language.getInstance()
+        if (cachedData === data && cachedInterval == sampleIntervalSeconds && cachedDivisor == valueDivisor && cachedMilli == milliValues && cachedLanguage === language) return
         cachedData = data
         cachedInterval = sampleIntervalSeconds
         cachedDivisor = valueDivisor
         cachedMilli = milliValues
+        cachedLanguage = language
         minimum = 0.0
         maximum = valueDivisor
         if (data.isNotEmpty()) {
@@ -85,8 +90,12 @@ class GTOLineChartToolTipComponent(
         for (index in timeLabels.indices) {
             labelBuilder.setLength(0)
             val secondsAgo = duration.toDouble() * (2 - index) / 2 / timeDivisor
-            if (secondsAgo > 0) labelBuilder.append('-')
-            timeLabels[index] = labelBuilder.append(FormattingUtil.DECIMAL_FORMAT_1F.format(secondsAgo)).append(timeUnit).toString()
+            timeLabels[index] = if (secondsAgo == 0.0) {
+                language.getOrDefault("gtocore.machine.monitor.chart.now")
+            } else {
+                val elapsed = labelBuilder.append(FormattingUtil.DECIMAL_FORMAT_1F.format(secondsAgo)).append(timeUnit).toString()
+                Component.translatable("gtocore.machine.monitor.chart.ago", elapsed).string
+            }
         }
     }
 }

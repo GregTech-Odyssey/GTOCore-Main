@@ -1,12 +1,13 @@
 package com.gtocore.common.machine.monitor;
 
+import com.gtolib.api.gui.MultilineTextField;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
-import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.client.Minecraft;
@@ -26,6 +27,7 @@ public class MonitorCustomInfo extends AbstractInfoProviderMonitor implements IF
 
     private static final char FORMATTING_CODE = '\u00A7';
     private static final int MAX_LENGTH = 100;
+    private static final int TEXT_INPUT_HEIGHT = 4 * UISizes.CONTROL_HEIGHT;
 
     @SyncToClient
     @SaveToDisk(defaultValue = "")
@@ -76,8 +78,8 @@ public class MonitorCustomInfo extends AbstractInfoProviderMonitor implements IF
 
     @Override
     public Widget createConfigurationPage() {
-        var textField = TextField.of(UISizes.CONTENT_WIDTH - UISizes.CONTROL_HEIGHT - UISizes.GAP, this::getContent, this::setContent);
-        textField.getInput().setMaxStringLength(MAX_LENGTH);
+        var textField = new MultilineTextField(UISizes.CONTENT_WIDTH - UISizes.CONTROL_HEIGHT - UISizes.GAP,
+                TEXT_INPUT_HEIGHT, MAX_LENGTH, this::getContent, this::setContent);
         textField.setHoverTooltips(Component.translatable("gtocore.machine.monitor.custom_info.tooltip"));
 
         var formattingCodeInputButton = Button.glyph(String.valueOf(FORMATTING_CODE))
@@ -87,8 +89,8 @@ public class MonitorCustomInfo extends AbstractInfoProviderMonitor implements IF
                 Component.translatable("gtocore.machine.monitor.custom_info.code_input_tooltip.2"),
                 Component.translatable("gtocore.machine.monitor.custom_info.code_input_tooltip.3"));
 
-        var textRow = UIElement.row(UISizes.CONTROL_HEIGHT)
-                .layout(l -> l.gapAll(UISizes.GAP).alignCenter())
+        var textRow = UIElement.row(TEXT_INPUT_HEIGHT)
+                .layout(l -> l.gapAll(UISizes.GAP).alignStart())
                 .addChildren(textField, formattingCodeInputButton);
 
         return Form.page().addChildren(
@@ -101,6 +103,7 @@ public class MonitorCustomInfo extends AbstractInfoProviderMonitor implements IF
                 Form.choiceRow(Component.translatable("gtocore.machine.monitor.custom_info.vertical_alignment"), 3,
                         index -> Component.translatable("gtocore.machine.monitor.custom_info.vertical_alignment." + index),
                         this::getVerticalAlignment, this::setVerticalAlignment),
+                createBackgroundRow(),
                 createPriorityRow());
     }
 

@@ -628,9 +628,9 @@ public final class Manager {
             return network;
         }
 
-        private final List<IInformationProvider> informationProviders = new ArrayList<>();
+        private final ArrayList<AbstractInfoProviderMonitor> informationProviders = new ArrayList<>();
 
-        public record DisplayEntry(long source, IDisplayComponent component) {}
+        public record DisplayEntry(long source, IDisplayComponent component, boolean drawBackground) {}
 
         private final List<DisplayEntry> displayComponentCache = new ArrayList<>();
         private long lastRefreshTime = 0;
@@ -644,10 +644,10 @@ public final class Manager {
                 informationProviders.addAll(providers(level));
                 displayComponentCache.clear();
                 informationProviders.sort(Comparator.comparingLong(IInformationProvider::getPriority).reversed());
-                for (IInformationProvider provider : informationProviders) {
+                for (AbstractInfoProviderMonitor provider : informationProviders) {
                     long source = provider.getPos().asLong();
                     for (IDisplayComponent component : provider.provideInformation().sortInner()) {
-                        displayComponentCache.add(new DisplayEntry(source, component));
+                        displayComponentCache.add(new DisplayEntry(source, component, provider.isDrawBackground()));
                     }
                 }
             }
