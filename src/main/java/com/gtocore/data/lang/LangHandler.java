@@ -533,7 +533,7 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.craft.encode_send.loading", "正在加载样板产物…", "Loading pattern outputs…");
         addCNEN("gtocore.ae.appeng.craft.encode_send.close", "关闭", "Close");
         addCNEN("gtocore.ae.appeng.craft.encode_send.search", "搜索名称或样板产物", "Name or pattern output");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.search.desc", "按供应器名称或机器名称搜索；打开右上角的开关后，也会搜索已有样板的产物", "Search by provider or machine name; turn on the toggle at the top right to also search outputs of existing patterns");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.search.desc", "搜索供应器或机器名称", "Search provider or machine names");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match", "产物匹配：", "Output match: ");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_provider", "供应器名称匹配", "Provider name match");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_provider.short", "供应器", "Provider");
@@ -541,10 +541,10 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_machine", "机器名称匹配", "Machine name match");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_machine.short", "机器", "Machine");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_machine.desc", "对接机器的名称与搜索词匹配", "The connected machine's name matches the search");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.on", "匹配样板产物：开", "Match pattern outputs: On");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.off", "匹配样板产物：关", "Match pattern outputs: Off");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.on", "匹配产物：开", "Match outputs: On");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.off", "匹配产物：关", "Match outputs: Off");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.short", "产物", "Outputs");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.desc", "开启后，搜索也会匹配目的地已有样板的产物", "When on, the search also matches outputs of patterns already in each destination");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.desc", "同时搜索已有样板的产物", "Also search existing pattern outputs");
         addCNEN("gtocore.ae.appeng.craft.encode_send.search.clear", "清除搜索", "Clear search");
         addCNEN("gtocore.ae.appeng.craft.encode_send.search.names", "搜索供应器或机器名称", "Provider or machine name");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match.desc", "以下是该目的地已有样板中与搜索词匹配的产物：", "Outputs of patterns already in this destination that match the search:");

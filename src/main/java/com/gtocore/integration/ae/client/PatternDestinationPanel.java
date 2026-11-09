@@ -101,10 +101,10 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static final int TOOLTIP_MATCH_LINES = 8;
     // 匹配样板产物时，停止输入这么久之后才重新搜索（产物可能上千个）
     private static final long SEARCH_DEBOUNCE_MS = 150;
-    // 盖过物品槽（物品约 z 150，数量文字 z 200），但低于 tooltip（z 400）
-    private static final float Z = 250;
-    // 面板内图标由 renderItem 自带 +150，先回退，避免盖住 tooltip
-    private static final float ICON_Z = Z - 150 + 8;
+    // 物品槽自带 +100，模型与数量分别在 z 250、300；面板仍低于 tooltip 的 z 400
+    private static final float Z = 350;
+    private static final float ICON_Z = Z + 8;
+    private static final float ICON_DEPTH_SCALE = 1.0F / 16;
 
     // 本次游戏内记忆的位置与大小；位置相对终端界面左上角
     private static boolean positioned = false;
@@ -916,6 +916,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
             var pose = guiGraphics.pose();
             pose.pushPose();
             pose.translate(0, 0, ICON_Z - Z);
+            // 只压缩位置矩阵的深度，保留模型光照；renderItem 的 +150 与装饰的 +200 也留在 tooltip 下方
+            pose.last().pose().scale(1, 1, ICON_DEPTH_SCALE);
             AEKeyRendering.drawInGui(Minecraft.getInstance(), guiGraphics, ix, iy, key);
             pose.popPose();
         }
