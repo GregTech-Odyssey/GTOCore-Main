@@ -554,6 +554,20 @@
     },
     "com/gtocore/mixin/mc/ServerGamePacketListenerImplMixin": {
       "handlePlayerAbilities": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_6828_(Lnet/minecraft/network/protocol/game/ServerboundPlayerAbilitiesPacket;)V"
+    },
+    "com/gtolib/mixin/mc/world/TimerNeighborUpdaterMixin$Simple": {
+      "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/world/level/Level;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+      "net.minecraft.world.level.redstone.CollectingNeighborUpdater$SimpleNeighborUpdate": "net/minecraft/world/level/redstone/CollectingNeighborUpdater$SimpleNeighborUpdate",
+      "runNext": "Lnet/minecraft/world/level/redstone/CollectingNeighborUpdater$SimpleNeighborUpdate;m_213563_(Lnet/minecraft/world/level/Level;)Z"
+    },
+    "com/gtolib/mixin/mc/world/ServerLevelMixin": {
+      "Lnet/minecraft/server/level/ServerLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/server/level/ServerLevel;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+      "updateNeighborsAtExceptFromFacing": "Lnet/minecraft/server/level/ServerLevel;m_46590_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;Lnet/minecraft/core/Direction;)V"
+    },
+    "com/gtolib/mixin/mc/world/TimerNeighborUpdaterMixin$Multi": {
+      "net.minecraft.world.level.redstone.CollectingNeighborUpdater$MultiNeighborUpdate": "net/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate",
+      "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/world/level/Level;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+      "runNext": "Lnet/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate;m_213563_(Lnet/minecraft/world/level/Level;)Z"
     }
   },
   "data": {
@@ -1112,6 +1126,20 @@
       },
       "com/gtocore/mixin/mc/ServerGamePacketListenerImplMixin": {
         "handlePlayerAbilities": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_6828_(Lnet/minecraft/network/protocol/game/ServerboundPlayerAbilitiesPacket;)V"
+      },
+      "com/gtolib/mixin/mc/world/TimerNeighborUpdaterMixin$Simple": {
+        "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/world/level/Level;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+        "net.minecraft.world.level.redstone.CollectingNeighborUpdater$SimpleNeighborUpdate": "net/minecraft/world/level/redstone/CollectingNeighborUpdater$SimpleNeighborUpdate",
+        "runNext": "Lnet/minecraft/world/level/redstone/CollectingNeighborUpdater$SimpleNeighborUpdate;m_213563_(Lnet/minecraft/world/level/Level;)Z"
+      },
+      "com/gtolib/mixin/mc/world/ServerLevelMixin": {
+        "Lnet/minecraft/server/level/ServerLevel;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/server/level/ServerLevel;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+        "updateNeighborsAtExceptFromFacing": "Lnet/minecraft/server/level/ServerLevel;m_46590_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;Lnet/minecraft/core/Direction;)V"
+      },
+      "com/gtolib/mixin/mc/world/TimerNeighborUpdaterMixin$Multi": {
+        "net.minecraft.world.level.redstone.CollectingNeighborUpdater$MultiNeighborUpdate": "net/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate",
+        "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/world/level/Level;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+        "runNext": "Lnet/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate;m_213563_(Lnet/minecraft/world/level/Level;)Z"
       }
     }
   }
