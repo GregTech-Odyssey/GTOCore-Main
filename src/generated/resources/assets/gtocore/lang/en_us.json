@@ -7772,6 +7772,7 @@
   "gtocore.multiblock.integrated_ore_processor.extension.desc": "When built, raises threads from 1 to 8 and enables the repeated recipes toggle",
   "gtocore.multiblock.integrated_ore_processor.repeated_recipes": "Parallel Repeated Recipes",
   "gtocore.multiblock.integrated_ore_processor.repeated_recipes.unavailable": "Requires the Extended Processing Line",
+  "gtocore.multiblock.internal_mana": "Internal Mana",
   "gtocore.multiblock.invalid.message": "Multiblock %s at (%s) is not formed! Run /gtocorec multiblock on for details.",
   "gtocore.multiblock.kuangbiao_one.high_energy_1": "High-Energy Module I",
   "gtocore.multiblock.kuangbiao_one.high_energy_1.desc": "Raises the reactor tier by one and doubles its heat capacity; the High-Energy Module II is built onto this module",

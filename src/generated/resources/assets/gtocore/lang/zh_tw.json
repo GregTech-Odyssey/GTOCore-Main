@@ -7906,6 +7906,7 @@
   "gtocore.multiblock.integrated_ore_processor.extension.desc": "搭建後線程數由 1 提升至 8，並可切換重複配方",
   "gtocore.multiblock.integrated_ore_processor.repeated_recipes": "並行重複配方",
   "gtocore.multiblock.integrated_ore_processor.repeated_recipes.unavailable": "需要搭建擴展處理線",
+  "gtocore.multiblock.internal_mana": "內部魔力",
   "gtocore.multiblock.invalid.message": "多方塊%s位於(%s)未成型！運行 /gtocorec multiblock on 查看詳情。",
   "gtocore.multiblock.kuangbiao_one.high_energy_1": "一級高能模塊",
   "gtocore.multiblock.kuangbiao_one.high_energy_1.desc": "搭建後反應堆等級提升一級、熱容量翻倍；二級高能模塊搭建在此模塊上",
