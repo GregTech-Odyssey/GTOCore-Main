@@ -159,6 +159,46 @@ class PatternBlockingIdentityTest {
     }
 
     @Test
+    void switchingToWaterOnlyDropsPreviousItemIngredients() throws ReflectiveOperationException {
+        Memory iron = new Memory(IRON, 1);
+        Memory water = new Memory(WATER, 1);
+        Channels storage = new Channels(iron, water);
+        Host host = host(storage, iron);
+        PatternPushRecord state = new PatternPushRecord();
+        Pattern next = new Pattern(IRON, WATER);
+        record(state, host, Direction.NORTH, new Pattern(IRON, WATER));
+        assertTrue(blocks(state, host, Direction.SOUTH, next));
+
+        record(state, host, Direction.NORTH, new Pattern(WATER));
+
+        assertFalse(blocks(state, host, Direction.SOUTH, next));
+        assertTrue(blocks(state, host, Direction.NORTH, next));
+        water.amount = 0;
+        assertFalse(blocks(state, host, Direction.NORTH, next));
+        assertEquals(1, iron.amount);
+    }
+
+    @Test
+    void switchingBackToIronRestoresItsBlockingRecord() throws ReflectiveOperationException {
+        Memory iron = new Memory(IRON, 1);
+        Memory water = new Memory(WATER, 1);
+        Channels storage = new Channels(iron, water);
+        Host host = host(storage, storage);
+        PatternPushRecord state = new PatternPushRecord();
+        Pattern next = new Pattern(IRON, WATER);
+        record(state, host, Direction.NORTH, new Pattern(IRON, WATER));
+        record(state, host, Direction.NORTH, new Pattern(WATER));
+        water.amount = 0;
+        assertFalse(blocks(state, host, Direction.SOUTH, next));
+
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+
+        assertTrue(blocks(state, host, Direction.SOUTH, next));
+        iron.amount = 0;
+        assertFalse(blocks(state, host, Direction.SOUTH, next));
+    }
+
+    @Test
     void stableWrapperChangingResourceIdentityDropsOldRecord() throws ReflectiveOperationException {
         Wrapper storage = new Wrapper(new Memory(IRON, 1));
         Host host = host(storage, storage);
