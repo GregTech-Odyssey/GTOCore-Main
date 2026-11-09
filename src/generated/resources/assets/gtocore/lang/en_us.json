@@ -5059,7 +5059,7 @@
   "gtocore.lang.recycling_machine.3.1860311572": "However, how much the environmental department has tampered with it remains unknown",
   "gtocore.lang.redstone_timer.0.-661684662": "Timed Output",
   "gtocore.lang.redstone_timer.1.946556729": "After each interval, emits a signal of set duration from the torch end; interval, duration and strength are adjustable",
-  "gtocore.lang.redstone_timer.2.883061693": "Strongly powers the block in front of the output, like a repeater",
+  "gtocore.lang.redstone_timer.2.1411851929": "Only powers the block beside the torch end; does not transmit through solid blocks",
   "gtocore.lang.redstone_timer.3.-1678770883": "Control",
   "gtocore.lang.redstone_timer.4.-1200853998": "Can run or pause by a control signal entering opposite the torch; a soft mallet toggles it",
   "gtocore.lang.redstone_timer.5.1858863754": "Right-click to configure",

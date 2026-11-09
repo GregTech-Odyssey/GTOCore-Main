@@ -362,7 +362,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec RedstoneTimerTooltips = GTOTips.of("redstone_timer", t -> {
         t.heading(t.tr("定时输出", "Timed Output"));
         t.feature(t.tr("每经过一次间隔，从火把一端输出一段持续信号，间隔、持续时长与信号强度可调", "After each interval, emits a signal of set duration from the torch end; interval, duration and strength are adjustable"));
-        t.feature(t.tr("与中继器相同，强充能输出方向上的方块", "Strongly powers the block in front of the output, like a repeater"));
+        t.feature(t.tr("只向火把面相邻方块输出，不通过实心方块传电", "Only powers the block beside the torch end; does not transmit through solid blocks"));
         t.heading(t.tr("控制", "Control"));
         t.feature(t.tr("可按火把对侧输入的控制信号运行或暂停，软锤可切换启用", "Can run or pause by a control signal entering opposite the torch; a soft mallet toggles it"));
         t.rightClick(t.tr("右键打开界面进行设置", "Right-click to configure"));

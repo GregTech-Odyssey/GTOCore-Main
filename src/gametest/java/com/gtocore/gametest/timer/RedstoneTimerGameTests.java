@@ -76,7 +76,22 @@ public final class RedstoneTimerGameTests {
     }
 
     @GameTest(template = "empty")
-    public static void solidConductorRespectsNotificationCancellation(GameTestHelper helper) throws ReflectiveOperationException {
+    public static void onlyTorchFaceEmitsSignal(GameTestHelper helper) throws ReflectiveOperationException {
+        var timer = timer(helper, new BlockPos(2, 2, 2));
+        output(timer, true);
+        for (var direction : Direction.values()) {
+            helper.assertTrue(timer.getOutputSignal(direction) == (direction == Direction.WEST ? 15 : 0), "Only the torch face emits a weak signal");
+            helper.assertTrue(timer.getOutputDirectSignal(direction) == 0, "The timer does not strongly power solid conductors");
+        }
+        output(timer, false);
+        for (var direction : Direction.values()) {
+            helper.assertTrue(timer.getOutputSignal(direction) == 0, "Disabling the output clears every direction");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void solidConductorDoesNotSpreadSignal(GameTestHelper helper) throws ReflectiveOperationException {
         var source = new BlockPos(2, 2, 2);
         var front = source.east();
         var wire = front.south();
@@ -85,21 +100,41 @@ public final class RedstoneTimerGameTests {
         helper.setBlock(wire.below(), Blocks.STONE);
         helper.setBlock(wire, Blocks.REDSTONE_WIRE);
         var eventPos = helper.absolutePos(front);
-        Consumer<BlockEvent.NeighborNotifyEvent> cancel = event -> {
-            if (event.getLevel() == helper.getLevel() && event.getPos().equals(eventPos)) event.setCanceled(true);
+        var notifications = new int[1];
+        Consumer<BlockEvent.NeighborNotifyEvent> count = event -> {
+            if (event.getLevel() == helper.getLevel() && event.getPos().equals(eventPos)) notifications[0]++;
         };
-        MinecraftForge.EVENT_BUS.addListener(cancel);
+        MinecraftForge.EVENT_BUS.addListener(count);
         try {
             output(timer, true);
-            helper.assertTrue(helper.getBlockState(wire).getValue(RedStoneWireBlock.POWER) == 0, "Forge cancellation still prevents surrounding notifications");
+            helper.assertTrue(helper.getBlockState(wire).getValue(RedStoneWireBlock.POWER) == 0, "A solid block does not relay the timer output to its neighbors");
+            output(timer, false);
+            helper.assertTrue(notifications[0] == 0, "Output edges do not fan out notifications around the output block");
         } finally {
-            MinecraftForge.EVENT_BUS.unregister(cancel);
+            MinecraftForge.EVENT_BUS.unregister(count);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void strengthChangesOnlyTorchFace(GameTestHelper helper) throws ReflectiveOperationException {
+        var source = new BlockPos(2, 2, 2);
+        var timer = timer(helper, source);
+        for (var direction : Direction.Plane.HORIZONTAL) {
+            var wire = source.relative(direction);
+            helper.setBlock(wire.below(), Blocks.STONE);
+            helper.setBlock(wire, Blocks.REDSTONE_WIRE);
+        }
+        output(timer, true);
+        var method = RedstoneTimerMachine.class.getDeclaredMethod("setStrength", int.class);
+        method.setAccessible(true);
+        method.invoke(timer, 7);
+        for (var direction : Direction.Plane.HORIZONTAL) {
+            var wire = source.relative(direction);
+            helper.assertTrue(helper.getBlockState(wire).getValue(RedStoneWireBlock.POWER) == (direction == Direction.EAST ? 7 : 0), "Strength changes reach only the torch face");
         }
         output(timer, false);
-        output(timer, true);
-        helper.assertTrue(helper.getBlockState(wire).getValue(RedStoneWireBlock.POWER) == 15, "A solid conductor still powers its other neighbors");
-        output(timer, false);
-        helper.assertTrue(helper.getBlockState(wire).getValue(RedStoneWireBlock.POWER) == 0, "The conductor's falling edge is retained");
+        helper.assertTrue(helper.getBlockState(source.east()).getValue(RedStoneWireBlock.POWER) == 0, "The adjusted output still clears on the falling edge");
         helper.succeed();
     }
 
