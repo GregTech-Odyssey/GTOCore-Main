@@ -19,9 +19,12 @@ import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
+import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -72,6 +75,12 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     private static final int SLOT_COUNT = 288;
     private static final int FLUID_CAPACITY = 64000;
     private static final Component CONFIGURED = Component.translatable("gtocore.machine.virtual_ingredient_provider.configured");
+
+    private static final int PRIORITY_MIN = Integer.MIN_VALUE + 1;
+    private static final int PRIORITY_MAX = Integer.MAX_VALUE - 1;
+    private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
+    private static final Component PRIORITY_EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
+    private static final Component PRIORITY_INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
     private static final Item VIRTUAL_ITEM_PROVIDER = CustomItems.VIRTUAL_ITEM_PROVIDER.asItem();
     private static final Item VIRTUAL_FLUID_PROVIDER = CustomItems.VIRTUAL_FLUID_PROVIDER.asItem();
     private static final AEItemKey EMPTY_ITEM_PROVIDER = createEmptyProvider(VIRTUAL_ITEM_PROVIDER);
@@ -90,6 +99,8 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     private final NotifiableInventory<AEFluidKey> fluidInventory;
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
+    @SaveToDisk(defaultValue = "2147483646")
+    private int priority = PRIORITY_MAX;
     @SyncToClient
     private boolean isOnline;
     private int configuredSlotCount;
@@ -178,7 +189,21 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
         scroller.addScrollViewChild(grid);
         var status = new StatusPanel();
         status.addLine(CONFIGURED, new ConfiguredText());
-        return HatchViews.page(scroller, status);
+        var page = HatchViews.page(scroller, status);
+        page.addChild(Form.numberRow(PRIORITY, NumberField.ofInt(LayoutStyle.AUTO, this::getPriority, this::setPriority, PRIORITY_MIN, PRIORITY_MAX),
+                PRIORITY_EXTRACTION_HINT, PRIORITY_INSERTION_HINT));
+        return page;
+    }
+
+    private int getPriority() {
+        return priority;
+    }
+
+    private void setPriority(int value) {
+        if (value == priority) return;
+        priority = value;
+        if (!isRemote()) IStorageProvider.requestUpdate(getMainNode());
+        onChanged();
     }
 
     @Override
@@ -294,7 +319,7 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
-        storageMounts.mount(this, Integer.MAX_VALUE - 1);
+        storageMounts.mount(this, priority);
     }
 
     @Override
@@ -320,6 +345,11 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     @Override
     public boolean supportsKeyType(AEKeyType<?> aeKeyType) {
         return aeKeyType == AEKeyTypes.ITEMS;
+    }
+
+    @Override
+    public int operationTime() {
+        return 1;
     }
 
     @Override

@@ -58,15 +58,15 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static final Blitter STATUS_SAME_PATTERN = Icon.COPY_MODE_ON.getBlitter();
     private static final Blitter TEXT_FIELD = Blitter.texture("guis/text_field.png", 128, 128);
 
-    private static final int HEADER_H = 51;
-    private static final int FOOTER_H = 20;
+    private static final int HEADER_H = 42;
+    private static final int FOOTER_H = 14;
     private static final int WINDOW_MARGIN = 4;
     private static final int LIST_X = MePanelFrame.CONTENT_X;
     private static final int RIGHT_MARGIN = MePanelFrame.RIGHT_MARGIN_WIDTH;
-    private static final int ROW_H = 30;
+    private static final int ROW_H = 22;
     private static final int ROW_TEXTURE_H = 18;
     private static final int SEARCH_X = 12;
-    private static final int SEARCH_Y = 28;
+    private static final int SEARCH_Y = 22;
     private static final int SEARCH_H = 16;
     private static final int SEARCH_PAD_X = 4;
     private static final int CLEAR_SEARCH_SIZE = 12;
@@ -77,7 +77,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static final int MAX_ROWS = 16;
     private static final int MIN_WIDTH = 170;
     private static final int MAX_WIDTH = 420;
-    private static final int DEFAULT_WIDTH = 190;
+    private static final int DEFAULT_WIDTH = 170;
     // 行底色贴图：左框 2px、中段 1px 横向拉伸、右框 2px；整行外观由资源包决定，文字色走 screens 调色板
     private static final Blitter ROW_BG = Blitter.texture("guis/pattern_destination_row.png", 5, ROW_TEXTURE_H);
     private static final Blitter ROW_BG_LEFT = ROW_BG.copy().src(0, 0, 2, ROW_TEXTURE_H);
@@ -110,7 +110,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static boolean positioned = false;
     private static int savedX;
     private static int savedY;
-    private static int savedRows = 6;
+    private static int savedRows = 5;
     private static int savedWidth = DEFAULT_WIDTH;
     // 搜索是否也匹配目的地已有样板的产物；默认只匹配名称
     private static boolean matchOutputs = false;
@@ -394,8 +394,8 @@ public class PatternDestinationPanel implements ICompositeWidget {
         int footerY = bodyY + rows * ROW_H;
         PANEL_FILL.copy().dest(x + 3, footerY, width - 6, FOOTER_H - 3).blit(guiGraphics);
 
-        (dragging ? MePanelFrame.DRAG_MARK_ACTIVE : MePanelFrame.DRAG_MARK).copy().dest(x + 8, y + 4).blit(guiGraphics);
-        guiGraphics.drawString(font, title.get(font, getCloseX() - x - 35), x + 29, y + 9, titleColor, false);
+        (dragging ? MePanelFrame.DRAG_MARK_ACTIVE : MePanelFrame.DRAG_MARK).copy().dest(x + 8, y + 2).blit(guiGraphics);
+        guiGraphics.drawString(font, title.get(font, getCloseX() - x - 35), x + 29, y + 6, titleColor, false);
         int closeX = getCloseX();
         int closeY = getCloseY();
         if (inClose(mouse)) {
@@ -444,7 +444,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         }
         scrollbar.drawForegroundLayer(guiGraphics, bounds, mouse);
         var footer = matchOutputs && outputsRequested && !outputsLoaded ? loadingText : summary;
-        guiGraphics.drawString(font, footer.get(font, width - LIST_X - 22), x + LIST_X, footerY + 6, subTextColor, false);
+        guiGraphics.drawString(font, footer.get(font, width - LIST_X - 22), x + LIST_X, footerY + 3, subTextColor, false);
 
         MePanelFrame.RESIZE_GRIP.copy().dest(x + width - MePanelFrame.RESIZE_GRIP_SIZE - 2,
                 y + getHeight() - MePanelFrame.RESIZE_GRIP_SIZE - 2).blit(guiGraphics);
@@ -519,7 +519,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
     }
 
     private int getCloseY() {
-        return y + 8;
+        return y + 6;
     }
 
     private int getToggleX() {
@@ -896,7 +896,7 @@ public class PatternDestinationPanel implements ICompositeWidget {
         void draw(GuiGraphics guiGraphics, Font font, int rx, int ry, int rw) {
             boolean greyed = isGreyed();
             int statusX = rx + rw - STATUS_ICON_SIZE - 4;
-            statusIcon.copy().dest(statusX, ry + 4, STATUS_ICON_SIZE, STATUS_ICON_SIZE).blit(guiGraphics);
+            statusIcon.copy().dest(statusX, ry + (ROW_H - STATUS_ICON_SIZE) / 2, STATUS_ICON_SIZE, STATUS_ICON_SIZE).blit(guiGraphics);
 
             int iconX = rx + 3;
             int iconY = ry + (ROW_H - 16) / 2;
@@ -906,10 +906,10 @@ public class PatternDestinationPanel implements ICompositeWidget {
             }
             if (icon != null) drawIcon(guiGraphics, iconX, iconY, icon);
             int nameX = rx + iconsWidth() + 2;
-            guiGraphics.drawString(font, nameText.get(font, statusX - nameX - 5), nameX, ry + 5,
+            guiGraphics.drawString(font, nameText.get(font, statusX - nameX - 5), nameX, ry + 2,
                     full || greyed ? subTextColor : nameColor, false);
             int detailColor = !matched.isEmpty() ? matchColor : machineNameMatched ? machineMatchColor : providerNameMatched ? providerMatchColor : subTextColor;
-            guiGraphics.drawString(font, detailText.get(font, rx + rw - nameX - 5), nameX, ry + 18, detailColor, false);
+            guiGraphics.drawString(font, detailText.get(font, statusX - nameX - 5), nameX, ry + 12, detailColor, false);
         }
 
         private static void drawIcon(GuiGraphics guiGraphics, int ix, int iy, AEKey key) {

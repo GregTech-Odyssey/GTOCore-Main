@@ -24,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.blockentity.SaveToItem;
 
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.utils.TeamUtil;
@@ -47,14 +48,17 @@ public final class HarmonyMachine extends NoEnergyMultiblockMachine implements I
     static final long FLUID_PER_RUN = 1024000000L;
     private final EnergyPort port = new EnergyPort(PortKind.HARMONY, this, 0);
     @SaveToDisk(defaultValue = "1")
+    @SaveToItem
     private int tier = 1;
     @SaveToDisk(defaultValue = "0")
     private int count;
     @SaveToDisk(defaultValue = "0")
     private int oc;
     @SaveToDisk(defaultValue = "0")
+    @SaveToItem
     private long hydrogen;
     @SaveToDisk(defaultValue = "0")
+    @SaveToItem
     private long helium;
     private final ConditionalSubscriptionHandler tickSubs;
 

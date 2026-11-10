@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.mana;
 
 import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -16,8 +15,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -105,6 +106,11 @@ public final class MEManaInterface extends MetaMachine implements
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var container = getWirelessManaContainer();
         if (!isManaKey(what) || container == null || amount <= 0) {
@@ -165,11 +171,11 @@ public final class MEManaInterface extends MetaMachine implements
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
-        storageMounts.mount(this);
+        storageMounts.mount(this, priority);
     }
 
-    /// 优先级范围
-    private static final int PRIORITY_LIMIT = 100000000;
+    private static final int PRIORITY_MIN = Integer.MIN_VALUE + 1;
+    private static final int PRIORITY_MAX = Integer.MAX_VALUE - 1;
     private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
     private static final Component EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
     private static final Component INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
@@ -188,7 +194,7 @@ public final class MEManaInterface extends MetaMachine implements
     private UIElement buildPage() {
         var section = UIElement.section();
         section.addChild(Form.numberRow(PRIORITY,
-                MEPatternPartUI.intField(0, this::getPriority, value -> setPriority(Math.min(value, PRIORITY_LIMIT)), -PRIORITY_LIMIT),
+                NumberField.ofInt(LayoutStyle.AUTO, this::getPriority, this::setPriority, PRIORITY_MIN, PRIORITY_MAX),
                 EXTRACTION_HINT, INSERTION_HINT));
         return Form.page().addChild(section);
     }

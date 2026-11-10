@@ -2,6 +2,7 @@ package com.gtocore.data.quest.chapter;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.MultiBlockB;
 import com.gtocore.common.data.machines.MultiBlockG;
 
@@ -380,6 +381,14 @@ public final class NewMvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.HV]))
             .reward(Reward.item(GTMachines.HULL[GTValues.HV], 1))
             .dependsOn(HV_CASING, PVC, GOLD_CABLE));
+
+    public static final Quest INFINITE_RESOURCE_PROVIDER = CHAPTER.quest("infinite_resource_provider", q -> q
+            .at(-2, 2)
+            .title("无限资源供应器")
+            .icon(GTAEMachines.INFINITE_RESOURCE_PROVIDER)
+            .task(Task.item(GTAEMachines.INFINITE_RESOURCE_PROVIDER))
+            .scaledReward(TagPrefix.ingot, GTMaterials.Aluminium, 4)
+            .dependsOn(NewLvChapter.MV_HULL));
 
     public static final Quest GEM_LENSES = CHAPTER.quest("gem_lenses", q -> q
             .at(0, 8)
