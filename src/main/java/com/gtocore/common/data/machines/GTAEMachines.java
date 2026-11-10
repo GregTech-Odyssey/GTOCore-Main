@@ -5,6 +5,7 @@ import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.data.translation.GTOMachineTooltipsA;
 import com.gtocore.common.machine.multiblock.part.ae.*;
 import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
+import com.gtocore.common.machine.noenergy.InfiniteResourceProviderMachine;
 import com.gtocore.common.machine.noenergy.MEDiskBoxMachine;
 import com.gtocore.common.machine.noenergy.VirtualIngredientProviderMachine;
 import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
@@ -43,6 +44,15 @@ public final class GTAEMachines {
             .tier(MV)
             .allRotation()
             .tips(GTOMachineTooltipsA.virtualIngredientProviderTooltips)
+            .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
+
+    public static final MachineDefinition INFINITE_RESOURCE_PROVIDER = machine("infinite_resource_provider", "无限资源供应器", InfiniteResourceProviderMachine::new)
+            .langValue("Infinite Resource Provider")
+            .tips(GTOMachineTooltipsA.infiniteResourceProviderTooltips)
+            .tier(MV)
+            .allRotation()
+            .notAllowSharedTooltips()
             .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
             .register();
 

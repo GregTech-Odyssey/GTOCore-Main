@@ -33,6 +33,11 @@ public final class SteamNetHandler implements MEStorage {
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         return pipe.insert(what, amount, mode, facing);
     }

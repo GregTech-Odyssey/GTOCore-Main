@@ -66,10 +66,10 @@ public final class RecipeFilter {
     private static void initModFilter(Set<String> filters) {
         filters.add("itemfilters");
         if (Mods.FUNCTIONALSTORAGE.isLoaded()) filters.add("functionalstorage");
+        if (Mods.PIPEZ.isLoaded()) filters.add("pipez");
         if (GTORules.MOD_RECIPE_TIER.isEasy()) return;
         if (Mods.COMPUTERCRAFT.isLoaded()) filters.add("computercraft");
         if (Mods.SFM.isLoaded()) filters.add("sfm");
-        if (Mods.PIPEZ.isLoaded()) filters.add("pipez");
     }
 
     private static void initIdFilter(Set<ResourceLocation> filters) {

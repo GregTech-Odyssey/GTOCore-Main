@@ -12,10 +12,8 @@ import net.minecraft.world.level.Level;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
-import appeng.api.networking.crafting.CalculationStrategy;
-import appeng.api.networking.crafting.ICraftingLink;
-import appeng.api.networking.crafting.ICraftingPlan;
-import appeng.api.networking.crafting.ICraftingSimulationRequester;
+import appeng.api.networking.crafting.*;
+import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
 import appeng.blockentity.crafting.CraftingBlockEntity;
 import appeng.crafting.CraftingLink;
@@ -25,10 +23,12 @@ import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.service.CraftingService;
 import appeng.me.service.helpers.NetworkCraftingProviders;
 
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -46,7 +46,7 @@ public abstract class CraftingServiceMixin implements ITemporaryCraftableService
     @Mutable
     @Shadow(remap = false)
     @Final
-    private Set<CraftingCPUCluster> craftingCPUClusters;
+    public Set<CraftingCPUCluster> craftingCPUClusters;
 
     @Mutable
     @Shadow(remap = false)
@@ -141,6 +141,19 @@ public abstract class CraftingServiceMixin implements ITemporaryCraftableService
             return Set.of(this.gto$tempPatternDetails);
         }
         return i;
+    }
+
+    @Inject(method = "findSuitableCraftingCPU", at = @At("RETURN"), remap = false, cancellable = true)
+    private void findSuitableCraftingCPU(ICraftingPlan job, boolean prioritizePower, IActionSource src, MutableObject<UnsuitableCpus> unsuitableCpus, CallbackInfoReturnable<CraftingCPUCluster> cir) {
+        if (cir.getReturnValue() == null) {
+            for (var machine : this.grid.getMachines(CraftingInterfacePartMachine.class)) {
+                var cpu = machine.findSuitableCraftingCPU(job);
+                if (cpu != null) {
+                    cir.setReturnValue(cpu);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
