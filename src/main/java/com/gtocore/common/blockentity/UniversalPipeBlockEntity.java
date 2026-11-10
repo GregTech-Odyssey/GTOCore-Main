@@ -278,6 +278,11 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         }
 
         @Override
+        public int operationTime() {
+            return 1;
+        }
+
+        @Override
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (amount <= 0) return 0;
             // a paused pipe accepts nothing, no matter whether a machine or the net itself inserts

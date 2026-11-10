@@ -383,6 +383,11 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var type = what.getType();
         if (!isFormed || (this.type != null && type != this.type)) return 0;

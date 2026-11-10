@@ -301,6 +301,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
         }
 
         @Override
+        public int operationTime() {
+            return 1;
+        }
+
+        @Override
         public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
             if (amount == 0 || uuid == null) return 0;
             var data = getCellStorage();
@@ -556,6 +561,11 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
             if (uuid == null || isRemote()) return BigCellDataStorage.EMPTY;
             dataStorage = BigCellDataStorage.get(uuid);
             return dataStorage;
+        }
+
+        @Override
+        public int operationTime() {
+            return 2;
         }
 
         @Override

@@ -162,6 +162,7 @@ public class CommonProxy {
 
     private static void commonSetup(FMLCommonSetupEvent event) {
         Data.init();
+        GTOInfiniteResources.init();
         BlockMap.build();
         GTOPartAbility.init();
         Algae.init();
