@@ -15,7 +15,7 @@ import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.feature.IBufferedEnergyMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IElectricMachine;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Piece;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.PortKey;
@@ -41,22 +41,7 @@ import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.*;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.*;
 
 @DataGeneratorScanned
-public final class NeutronVortexMachine extends NeutronActivatorMachine implements IBufferedEnergyMachine {
-
-    @SaveToDisk(defaultValue = "0")
-    private long energyBuffer;
-
-    @Override
-    public long getEnergyBuffer() {
-        return energyBuffer;
-    }
-
-    @Override
-    public void setEnergyBuffer(long energy) {
-        if (energyBuffer == energy) return;
-        energyBuffer = energy;
-        onChanged();
-    }
+public final class NeutronVortexMachine extends NeutronActivatorMachine implements IElectricMachine {
 
     @RegisterLanguage(cn = "能源接收段", en = "Energy Acceptor Section")
     private static final String RECEIVER_NAME = "gtocore.multiblock.neutron_vortex.energy_receiver";

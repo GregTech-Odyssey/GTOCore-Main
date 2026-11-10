@@ -58,6 +58,10 @@ public final class MachineRecipe {
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_disk_box"), GTAEMachines.ME_DISK_BOX.asItem(), "PDP",
                 "CHC", "PPP", 'P', new MaterialEntry(plateDouble, GTMaterials.Aluminium), 'C', CustomTags.MV_CIRCUITS, 'D', AEBlocks.DRIVE.block().asItem(),
                 'H', GTMachines.HULL[MV].asItem());
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("me_void_box"), GTAEMachines.ME_VOID_BOX.asItem(), "PDP",
+                "CHC", "PEP", 'P', new MaterialEntry(plateDouble, GTMaterials.Aluminium), 'C', CustomTags.MV_CIRCUITS,
+                'D', GTOMachines.VOID_OUTPUT_BUS.asItem(), 'H', GTMachines.HULL[MV].asItem(),
+                'E', AEBlocks.QUARTZ_VIBRANT_GLASS.block().asItem());
         // 合成站：按 GTCE 原版配方——两个木箱 + 工作台 + 四块青铜板 + 青铜机壳 + 锻造锤（'h' 是 GT 工具符号）
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("crafting_station"), GTOMachines.CRAFTING_STATION.asItem(),
                 "CWC",

@@ -29,6 +29,7 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -118,15 +119,20 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     private final ConditionalSubscriptionHandler tickSubs;
 
     StorageAccessPartMachine(MetaMachineBlockEntity holder) {
-        super(holder, GTValues.HV, -1000000, 1000000);
+        super(holder, GTValues.HV, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
         this.nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
         tickSubs = new ConditionalSubscriptionHandler(this, meStorageMonitor, 0, () -> true);
         current = 0;
     }
 
-    private static final long PRIORITY_MIN = -1000000L;
-    private static final long PRIORITY_MAX = 1000000L;
+    private static final long PRIORITY_MIN = Integer.MIN_VALUE + 1L;
+    private static final long PRIORITY_MAX = Integer.MAX_VALUE - 1L;
+
+    @Override
+    public MEStorage getStorageCap(net.minecraft.core.Direction side) {
+        return this;
+    }
 
     @Override
     public Widget createMainPage(FancyMachineUIWidget widget) {
@@ -144,7 +150,7 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
 
     UIElement buildPage() {
         var section = UIElement.section();
-        section.addChild(Form.numberRow(PRIORITY, MEPatternPartUI.longField(0, this::getCurrent, this::setPriority, PRIORITY_MIN),
+        section.addChild(Form.numberRow(PRIORITY, NumberField.ofLong(LayoutStyle.AUTO, this::getCurrent, this::setPriority, PRIORITY_MIN, PRIORITY_MAX),
                 PRIORITY_EXTRACTION_HINT, PRIORITY_INSERTION_HINT));
         addTransferButton(section);
         return Form.page().addChild(section);

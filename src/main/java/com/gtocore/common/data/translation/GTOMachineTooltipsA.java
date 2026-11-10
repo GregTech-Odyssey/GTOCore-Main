@@ -472,6 +472,15 @@ public final class GTOMachineTooltipsA {
         t.feature(t.tr("默认解锁水、圆石与石头", "Water, cobblestone and stone are unlocked by default"));
         t.control(t.tr("放入一份样机解锁对应资源，拿走即收起", "Insert one sample to unlock that resource; remove it to stop"));
         t.control(t.tr("在机器界面里逐个开关要供应的资源", "Toggle each supplied resource in the machine GUI"));
+        t.control(t.tr("界面里可以设置存储优先级", "Storage priority can be set in the GUI"));
+    });
+
+    public static final TipSpec meVoidBoxTooltips = GTOTips.of("me_void_box", t -> {
+        t.heading(MainFunction);
+        t.feature(t.tr("销毁送进ME网络的物品与流体", "Destroys items and fluids inserted into the ME network"));
+        t.feature(t.tr("只销毁标记的物品与流体，没标记就销毁全部", "Only marked items and fluids are destroyed; with no marks everything is destroyed"));
+        t.control(t.tr("在机器界面里标记要销毁的物品与流体", "Mark the items and fluids to destroy in the machine GUI"));
+        t.control(t.tr("界面里可以设置存储优先级", "Storage priority can be set in the GUI"));
     });
 
     public static final TipSpec BeamGeneratorTooltips = GTOTips.of("beam_generator", t -> {

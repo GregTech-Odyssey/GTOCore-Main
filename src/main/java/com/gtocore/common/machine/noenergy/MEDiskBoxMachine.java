@@ -64,12 +64,6 @@ import java.util.UUID;
 public final class MEDiskBoxMachine extends MetaMachine
                                     implements IGridConnectedMachine, MEStorage, MEStorageProvider, IStorageProvider, IStorageMultiblock, IFancyUIMachine, IDropSaveMachine {
 
-    /** 自己就是存储本体，直接交给索引。 */
-    @Override
-    public MEStorage getStorageCap(net.minecraft.core.Direction side) {
-        return this;
-    }
-
     @RegisterLanguage(cn = "存储组件", en = "Storage Component")
     private static final Component SLOT_LABEL = Component.translatable("gtocore.machine.me_disk_box.slot");
 
@@ -89,6 +83,13 @@ public final class MEDiskBoxMachine extends MetaMachine
     private static final Component MACHINES = Component.translatable("config.gtceu.option.machines");
     private static final Component PLAYER = Component.translatable("gtceu.ownership.name.player");
 
+    private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
+    private static final Component PRIORITY_EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
+    private static final Component PRIORITY_INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
+
+    private static final int PRIORITY_MIN = Integer.MIN_VALUE + 1;
+    private static final int PRIORITY_MAX = Integer.MAX_VALUE - 1;
+
     @RegisterLanguage(cn = "存储组件：%s 个，容量 %s", en = "Storage components: %s, capacity %s")
     public static final String COMPONENTS = "gtocore.machine.me_disk_box.components";
     @RegisterLanguage(cn = "放存储组件（1k…256M）来提供容量", en = "Put storage components (1k...256M) in to provide capacity")
@@ -105,6 +106,8 @@ public final class MEDiskBoxMachine extends MetaMachine
     private UUID uuid;
     @SaveToDisk(defaultValue = "false")
     private boolean player;
+    @SaveToDisk(defaultValue = "0")
+    private int priority = 0;
     @SyncToClient
     private boolean isOnline;
     private final ConditionalSubscriptionHandler tickSubs;
@@ -122,6 +125,11 @@ public final class MEDiskBoxMachine extends MetaMachine
         nodeHolder = new GridNodeHolder(this);
         getMainNode().addService(IStorageProvider.class, this);
         tickSubs = new ConditionalSubscriptionHandler(this, meStorageMonitor, 0, () -> true);
+    }
+
+    @Override
+    public MEStorage getStorageCap(net.minecraft.core.Direction side) {
+        return this;
     }
 
     /// 组件槽就是 {@link IStorageMultiblock} 的机器存储槽
@@ -242,7 +250,19 @@ public final class MEDiskBoxMachine extends MetaMachine
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
-        storageMounts.mount(this, 0);
+        storageMounts.mount(this, priority);
+    }
+
+    /// 换优先级要重新挂一次存储
+    private int getPriority() {
+        return priority;
+    }
+
+    private void setPriority(int value) {
+        if (value == priority) return;
+        priority = value;
+        if (!isRemote()) IStorageProvider.requestUpdate(getMainNode());
+        onChanged();
     }
 
     @Override
@@ -340,6 +360,8 @@ public final class MEDiskBoxMachine extends MetaMachine
             addStorageSlot(controls);
             controls.addChoice(MODE, 2, i -> i == 0 ? MACHINES : PLAYER,
                     () -> player ? 1 : 0, i -> setPlayer(i == 1));
+            controls.addInt(PRIORITY, this::getPriority, this::setPriority, PRIORITY_MIN, PRIORITY_MAX,
+                    PRIORITY_EXTRACTION_HINT, PRIORITY_INSERTION_HINT);
             controls.addServerButton(TRANSFER, TRANSFER_RUN, this::transferFromNetwork, TRANSFER_TOOLTIP);
         });
     }
