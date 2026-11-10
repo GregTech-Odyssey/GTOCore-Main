@@ -5,6 +5,10 @@ import com.gtolib.api.ae2.BlockingType;
 import com.gtolib.api.ae2.IPatternProviderLogic;
 import com.gtolib.api.ae2.PatternPushRecord;
 
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidView;
+import com.gregtechceu.gtceu.api.transfer.forge.ForgeItemView;
+import com.gregtechceu.gtceu.api.transfer.key.KeyTarget;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageKeyView;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyHandlerList;
 import com.gregtechceu.gtceu.api.transfer.key.KeyHandlerView;
@@ -19,6 +23,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.items.IItemHandler;
+
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.security.IActionSource;
@@ -26,22 +33,27 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeySet;
 import appeng.api.stacks.AEKeyType;
+import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.KeyTypedStorage;
 import appeng.api.storage.MEStorage;
 import appeng.api.storage.MEStorageHost;
+import appeng.api.storage.StorageAccess;
 import appeng.helpers.patternprovider.MEStorageTarget;
 import appeng.me.storage.DelegatingMEInventory;
+import appeng.me.storage.MEInventoryHandler;
 
 import com.gto.datasynclib.util.holder.ObjHolder;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -316,6 +328,172 @@ class PatternBlockingIdentityTest {
         assertTrue(target.containsPatternInput(keys));
     }
 
+    @Test
+    void separateMeStorageViewsShareBackingStorage() throws ReflectiveOperationException {
+        Memory shared = new Memory(IRON, 1);
+        var exposed = new DelegatingMEInventory(shared);
+        Host remote = host(exposed, exposed);
+        var first = KeyTarget.resolve(remote, Direction.NORTH, ITEMS, StorageAccess.EXTRACT);
+        var second = KeyTarget.resolve(remote, Direction.SOUTH, ITEMS, StorageAccess.EXTRACT);
+        assertNotSame(first, second);
+        assertInstanceOf(MEStorageKeyView.class, first);
+        assertSame(((MEStorageKeyView<?>) first).getStorage(), ((MEStorageKeyView<?>) second).getStorage());
+        Host host = host(first, second);
+        PatternPushRecord state = new PatternPushRecord();
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+        assertTrue(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+    }
+
+    @Test
+    void meStorageViewKeepsMarkRestriction() throws ReflectiveOperationException {
+        Memory shared = new Memory(IRON, 1);
+        Key mark = new Key(ITEMS);
+        var first = new MEStorageKeyView<>(shared, ITEMS);
+        var second = new MEStorageKeyView<>(shared, ITEMS).marked(mark);
+        Host host = host(first, second);
+        PatternPushRecord state = new PatternPushRecord();
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+        assertFalse(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+    }
+
+    @Test
+    void forgeItemViewsShareBackingHandlerIdentity() throws ReflectiveOperationException {
+        var handler = (IItemHandler) Proxy.newProxyInstance(PatternBlockingIdentityTest.class.getClassLoader(), new Class<?>[] { IItemHandler.class }, (proxy, method, args) -> { throw new AssertionError("Identity probing must not access inventory contents"); });
+        var first = ForgeItemView.of(handler);
+        var second = ForgeItemView.of(handler);
+        assertNotSame(first, second);
+        assertSame(identityToken(first, AEKeyTypes.ITEMS), identityToken(second, AEKeyTypes.ITEMS));
+    }
+
+    @Test
+    void forgeFluidViewsShareBackingHandlerIdentity() throws ReflectiveOperationException {
+        var handler = (IFluidHandler) Proxy.newProxyInstance(PatternBlockingIdentityTest.class.getClassLoader(), new Class<?>[] { IFluidHandler.class }, (proxy, method, args) -> { throw new AssertionError("Identity probing must not access inventory contents"); });
+        var first = ForgeFluidView.of(handler);
+        var second = ForgeFluidView.of(handler);
+        assertNotSame(first, second);
+        assertSame(identityToken(first, AEKeyTypes.FLUIDS), identityToken(second, AEKeyTypes.FLUIDS));
+    }
+
+    private static Object identityToken(MEStorage storage, AEKeyType type) throws ReflectiveOperationException {
+        Class<?> identity = Class.forName("com.gtolib.api.ae2.PatternTargetIdentity");
+        var constructor = identity.getDeclaredConstructor(BlockEntity.class, Direction.class);
+        constructor.setAccessible(true);
+        var copy = identity.getDeclaredMethod("copyTokens", AEKeyType.class, ObjectArrayList.class);
+        copy.setAccessible(true);
+        var tokens = new ObjectArrayList<Object>();
+        copy.invoke(constructor.newInstance(host(storage, storage), Direction.NORTH), type, tokens);
+        assertEquals(1, tokens.size());
+        return tokens.get(0);
+    }
+
+    @Test
+    void restrictedPushKeepsOtherFacesVisibleIngredients() throws ReflectiveOperationException {
+        Key copper = new Key(ITEMS);
+        Memory iron = new Memory(IRON, 1);
+        Memory copperStorage = new Memory(copper, 0);
+        KeyHandlerList<Key> shared = new KeyHandlerList<>(ITEMS, iron, copperStorage);
+        var narrow = new MEInventoryHandler(shared);
+        narrow.setAllowExtraction(false);
+        Host host = host(shared, narrow);
+        PatternPushRecord state = new PatternPushRecord();
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+        Pattern copperPattern = new Pattern(copper);
+        BlockingPatternTarget target = target(state, host, new MEStorageTarget(narrow, IActionSource.empty()), new Logic(copperPattern), Direction.SOUTH);
+
+        assertEquals(1, target.insert(copper, 1, Actionable.MODULATE));
+        target.record(copperPattern);
+        assertEquals(1, copperStorage.amount);
+        copperStorage.amount = 0;
+
+        assertTrue(blocks(state, host, Direction.NORTH, new Pattern(IRON)));
+        assertEquals(1, iron.amount);
+    }
+
+    @Test
+    void replacingSourceFaceKeepsOtherFacesSharedRecord() throws ReflectiveOperationException {
+        Memory shared = new Memory(IRON, 1);
+        Host host = host(shared, shared);
+        PatternPushRecord state = new PatternPushRecord();
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+        assertTrue(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+
+        host.sides[Direction.NORTH.ordinal()] = new Memory(IRON, 0);
+
+        assertTrue(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+        shared.amount = 0;
+        assertFalse(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+    }
+
+    @Test
+    void pushingAfterSourceReplacementKeepsUnvisitedSharedFaceHistory() throws ReflectiveOperationException {
+        Memory shared = new Memory(IRON, 1);
+        Memory replacement = new Memory(IRON, 0);
+        Host host = host(shared, shared);
+        PatternPushRecord state = new PatternPushRecord();
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+        host.sides[Direction.NORTH.ordinal()] = replacement;
+        Pattern next = new Pattern(IRON);
+        BlockingPatternTarget target = target(state, host, replacement, new Logic(next));
+
+        assertEquals(1, target.insert(IRON, 1, Actionable.MODULATE));
+        target.record(next);
+        replacement.amount = 0;
+
+        assertTrue(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+        shared.amount = 0;
+        assertFalse(blocks(state, host, Direction.SOUTH, new Pattern(IRON)));
+    }
+
+    @Test
+    void partiallyRetargetedFaceKeepsHistoryOnlyOnDetachedLeaf() throws ReflectiveOperationException {
+        Memory x = new Memory(IRON, 1);
+        Memory y = new Memory(IRON, 0);
+        Memory z = new Memory(IRON, 0);
+        Host host = host(new KeyHandlerList<>(ITEMS, x, y), x);
+        PatternPushRecord state = new PatternPushRecord();
+        Pattern previous = new Pattern(IRON);
+        record(state, host, Direction.NORTH, previous);
+        var replacement = new KeyHandlerList<>(ITEMS, y, z);
+        host.sides[Direction.NORTH.ordinal()] = replacement;
+        Pattern next = new Pattern(IRON);
+        BlockingPatternTarget target = target(state, host, replacement, new Logic(next));
+
+        assertEquals(1, target.insert(IRON, 1, Actionable.MODULATE));
+        target.record(next);
+
+        assertTrue(blocks(state, host, Direction.SOUTH, next));
+        assertFalse(blocks(state, host, Direction.SOUTH, previous));
+        assertTrue(blocks(state, host, Direction.NORTH, previous));
+        y.amount = 0;
+        assertFalse(blocks(state, host, Direction.NORTH, previous));
+        assertTrue(blocks(state, host, Direction.SOUTH, next));
+    }
+
+    @Test
+    void unvisitedWideFaceKeepsDetachedHistoryDuringRestrictedPush() throws ReflectiveOperationException {
+        Key copper = new Key(ITEMS);
+        Memory iron = new Memory(IRON, 1);
+        Memory copperStorage = new Memory(copper, 0);
+        var shared = new KeyHandlerList<>(ITEMS, iron, copperStorage);
+        var narrow = new MEInventoryHandler(shared);
+        narrow.setAllowExtraction(false);
+        Host host = host(shared, narrow);
+        host.sides[Direction.EAST.ordinal()] = shared;
+        PatternPushRecord state = new PatternPushRecord();
+        record(state, host, Direction.NORTH, new Pattern(IRON));
+        Pattern next = new Pattern(copper);
+        assertFalse(blocks(state, host, Direction.SOUTH, next));
+        host.sides[Direction.NORTH.ordinal()] = new Memory(IRON, 0);
+        BlockingPatternTarget target = target(state, host, new MEStorageTarget(narrow, IActionSource.empty()), new Logic(next), Direction.SOUTH);
+
+        assertEquals(1, target.insert(copper, 1, Actionable.MODULATE));
+        target.record(next);
+        copperStorage.amount = 0;
+
+        assertTrue(blocks(state, host, Direction.EAST, new Pattern(IRON)));
+        assertEquals(1, iron.amount);
+    }
+
     private static Host host(MEStorage north, MEStorage south) throws InstantiationException {
         // The resolver only needs MEStorageHost; skip Minecraft's world and block constructor state.
         Host host = (Host) unsafe.allocateInstance(Host.class);
@@ -330,7 +508,11 @@ class PatternBlockingIdentityTest {
     }
 
     private static BlockingPatternTarget target(PatternPushRecord state, Host host, MEStorageTarget adapter, Logic logic) throws IllegalAccessException {
-        BlockingPatternTarget target = BlockingPatternTarget.of(null, adapter, host, logic, Direction.NORTH);
+        return target(state, host, adapter, logic, Direction.NORTH);
+    }
+
+    private static BlockingPatternTarget target(PatternPushRecord state, Host host, MEStorageTarget adapter, Logic logic, Direction side) throws IllegalAccessException {
+        BlockingPatternTarget target = BlockingPatternTarget.of(null, adapter, host, logic, side);
         targetRecord.set(target, state);
         return target;
     }
@@ -364,7 +546,7 @@ class PatternBlockingIdentityTest {
 
         @Override
         public MEStorage getMEStorage(Direction side) {
-            return sides[side.ordinal()];
+            return side == null ? null : sides[side.ordinal()];
         }
     }
 
