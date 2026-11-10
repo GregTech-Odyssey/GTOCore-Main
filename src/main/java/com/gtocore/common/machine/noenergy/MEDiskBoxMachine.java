@@ -258,6 +258,11 @@ public final class MEDiskBoxMachine extends MetaMachine
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount == 0) return 0;
         ensureIndex();

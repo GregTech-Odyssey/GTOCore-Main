@@ -67,6 +67,11 @@ public class DataFormTestingPart extends AmountConfigurationPartMachine implemen
     }
 
     @Override
+    public int operationTime() {
+        return 2;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (getController() instanceof DataFormTestingPlantMachine controller) {
             return controller.insert(what, amount, mode);

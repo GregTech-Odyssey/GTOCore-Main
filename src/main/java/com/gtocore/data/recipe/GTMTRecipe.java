@@ -8,6 +8,8 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.config.GTORules;
 
+import com.gtolib.GTOCore;
+
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -33,6 +35,17 @@ import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
 public final class GTMTRecipe {
 
     public static void init() {
+        VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("infinite_resource_provider"), GTAEMachines.INFINITE_RESOURCE_PROVIDER.asItem(),
+                "ABA",
+                "CDC",
+                "FEF",
+                'A', Items.WATER_BUCKET,
+                'B', Items.LAVA_BUCKET,
+                'C', CustomTags.MV_CIRCUITS,
+                'D', GTMachines.HULL[GTValues.MV].asItem(),
+                'E', GTItems.ELECTRIC_PUMP_MV,
+                'F', GTItems.ROBOT_ARM_MV);
+
         ASSEMBLER_RECIPES.recipeBuilder("virtual_ingredient_provider")
                 .inputItems(GTOMachines.PROGRAMMABLEC_HATCH[2].asItem())
                 .inputItems(CustomItems.PROGRAMMABLE_COVER.get(), GTORules.RECIPE_TIER.isEasy() ? 4 : 16)

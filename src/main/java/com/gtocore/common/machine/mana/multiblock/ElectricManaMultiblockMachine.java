@@ -7,10 +7,13 @@ import com.gtolib.api.misc.ManaContainerList;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
+import com.gto.datasynclib.annotations.SaveToDisk;
+
 import org.jetbrains.annotations.NotNull;
 
 public class ElectricManaMultiblockMachine extends ElectricMultiblockMachine implements IManaMultiblock {
 
+    @SaveToDisk(key = "manaTrait")
     private final ManaTrait manaTrait;
 
     public ElectricManaMultiblockMachine(MetaMachineBlockEntity holder) {

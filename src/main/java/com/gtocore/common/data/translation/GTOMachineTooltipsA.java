@@ -466,6 +466,14 @@ public final class GTOMachineTooltipsA {
         t.control(t.tr("放入物品、流体或已配置的虚拟提供器，即可向ME网络供应对应的虚拟成分", "Place items, fluids, or configured virtual providers into the machine to supply virtual ingredients"));
     });
 
+    public static final TipSpec infiniteResourceProviderTooltips = GTOTips.of("infinite_resource_provider", t -> {
+        t.heading(MainFunction);
+        t.feature(t.tr("为ME网络无限供应已解锁的资源", "Supplies unlocked resources to the ME network without limit"));
+        t.feature(t.tr("默认解锁水、圆石与石头", "Water, cobblestone and stone are unlocked by default"));
+        t.control(t.tr("放入一份样机解锁对应资源，拿走即收起", "Insert one sample to unlock that resource; remove it to stop"));
+        t.control(t.tr("在机器界面里逐个开关要供应的资源", "Toggle each supplied resource in the machine GUI"));
+    });
+
     public static final TipSpec BeamGeneratorTooltips = GTOTips.of("beam_generator", t -> {
         t.heading(MainFunction);
         t.keepOrder();

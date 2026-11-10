@@ -163,7 +163,7 @@ legacyForge {
             type = "gameTestServer"
             sourceSet = sourceSets["gametest"]
             gameDirectory.set(file("run/gametest"))
-            systemProperty("forge.enabledGameTestNamespaces", mod_id)
+            systemProperty("forge.enabledGameTestNamespaces", providers.gradleProperty("gameTestNamespaces").getOrElse("$mod_id,gtocore_energy,gtocore_mana"))
         }
         configureEach {
             systemProperty("forge.logging.markers", "REGISTRIES")

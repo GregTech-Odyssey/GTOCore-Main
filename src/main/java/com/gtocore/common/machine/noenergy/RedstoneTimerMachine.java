@@ -177,7 +177,6 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
             var block = getBlockState().getBlock();
             var oldFront = getPos().relative(oldFacing.getOpposite());
             level.neighborChanged(oldFront, block, getPos());
-            level.updateNeighborsAtExceptFromFacing(oldFront, block, oldFacing);
         }
         refresh();
         notifyRedstone();
@@ -313,7 +312,6 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
         var block = getBlockState().getBlock();
         var front = getPos().relative(outputFace());
         level.neighborChanged(front, block, getPos());
-        level.updateNeighborsAtExceptFromFacing(front, block, outputFace().getOpposite());
     }
 
     private void updateVisual(int now) {
@@ -343,11 +341,6 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     public int getOutputSignal(@Nullable Direction side) {
         if (side != null && output && side.getOpposite() == outputFace()) return strength;
         return 0;
-    }
-
-    @Override
-    public int getOutputDirectSignal(Direction direction) {
-        return getOutputSignal(direction);
     }
 
     @Override

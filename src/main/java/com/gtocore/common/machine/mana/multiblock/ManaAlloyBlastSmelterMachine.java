@@ -64,6 +64,7 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
 
     private int mana;
 
+    @SaveToDisk(key = "manaTrait")
     private final ManaTrait manaTrait;
 
     public ManaAlloyBlastSmelterMachine(MetaMachineBlockEntity holder) {
