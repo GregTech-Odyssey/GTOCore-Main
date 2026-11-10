@@ -105,6 +105,11 @@ public final class MEManaInterface extends MetaMachine implements
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         var container = getWirelessManaContainer();
         if (!isManaKey(what) || container == null || amount <= 0) {

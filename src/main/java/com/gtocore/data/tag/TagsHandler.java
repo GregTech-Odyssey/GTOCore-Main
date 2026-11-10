@@ -2,6 +2,7 @@ package com.gtocore.data.tag;
 
 import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.common.data.*;
+import com.gtocore.data.recipe.ae2.GTOInfCells;
 
 import com.gtolib.drone.DroneSlot;
 import com.gtolib.utils.TagUtils;
@@ -67,6 +68,11 @@ public final class TagsHandler {
                 GTOItems.HV_DRONE.asItem(), GTOItems.EV_DRONE.asItem(), GTOItems.IV_DRONE.asItem(), GTOItems.HYPERDIMENSIONAL_DRONE.asItem());
         create(ResourceLocation.parse("forge:ingots/redstone_alloy"),
                 ChemicalHelper.getItem(TagPrefix.ingot, GTMaterials.RedAlloy));
+        var concretes = new Item[GTOInfCells.CONCRETE_BLOCKS.length];
+        for (int i = 0; i < concretes.length; i++) {
+            concretes[i] = GTOInfCells.CONCRETE_BLOCKS[i].asItem();
+        }
+        create(TagUtils.createForgeItemTag("concrete"), concretes);
         Item[] isaProcessableItems = GTRegistries.MATERIALS.values().stream()
                 .filter(material -> material.hasFlag(GTOMaterialFlags.GENERATE_MILLED))
                 .flatMap(material -> TagPrefix.ORES.keySet().stream().map(tagPrefix -> ChemicalHelper.getItem(tagPrefix, material)).filter(item -> item != Items.AIR))

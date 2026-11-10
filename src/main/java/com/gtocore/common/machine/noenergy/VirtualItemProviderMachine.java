@@ -231,6 +231,11 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount > 0 && what instanceof AEItemKey itemKey && itemKey.getItem() == VIRTUAL_ITEM_PROVIDER) {
             var stack = itemKey.getReadOnlyStack();
