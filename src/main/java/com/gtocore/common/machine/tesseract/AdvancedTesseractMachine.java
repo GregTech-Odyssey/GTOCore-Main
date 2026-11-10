@@ -267,7 +267,6 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             count--;
             boolean done = true;
             for (var target : targets) {
-                if (target.containsPatternInput(patternInputs)) continue;
                 var result = operate.pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, false);
                 if (result.success()) success.value = true;
                 if (result.needBreak()) return result;
