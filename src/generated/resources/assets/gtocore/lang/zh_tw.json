@@ -5216,7 +5216,7 @@
   "gtocore.lang.recycling_machine.3.1860311572": "然而，環保部門對它動了多少手腳就不得而知了",
   "gtocore.lang.redstone_timer.0.-661684662": "定時輸出",
   "gtocore.lang.redstone_timer.1.946556729": "每經過一次間隔，從火把一端輸出一段持續信號，間隔、持續時長與信號強度可調",
-  "gtocore.lang.redstone_timer.2.883061693": "與中繼器相同，強充能輸出方向上的方塊",
+  "gtocore.lang.redstone_timer.2.1411851929": "只向火把面相鄰方塊輸出，不通過實心方塊傳電",
   "gtocore.lang.redstone_timer.3.-1678770883": "控制",
   "gtocore.lang.redstone_timer.4.-1200853998": "可按火把對側輸入的控制信號運行或暫停，軟錘可切換啟用",
   "gtocore.lang.redstone_timer.5.1858863754": "右鍵打開介面進行設定",
