@@ -1,6 +1,7 @@
 package com.gtocore.common.data;
 
 import com.gtocore.api.data.Algae;
+import com.gtocore.api.data.GTOFoodProperties;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.OffsetGradientColor;
 import com.gtocore.client.renderer.item.HaloItemRenderer;
@@ -1502,93 +1503,46 @@ public final class GTOItems {
             .tips(Tips.feature(GTOTips.global("§7在写了~~§r", "§7On working~~§r")))
             .register();
 
-    private static final FoodProperties MAGNETIZED_GOLDEN_CARROT_FOOD = new FoodProperties.Builder()
-            .nutrition(6)
-            .saturationMod(1.2F)
-            .effect(() -> new MobEffectInstance(MobEffects.DIG_SPEED, 1200, 1), 1.0F)
-            .build();
-
-    private static final FoodProperties MAGNETIZED_GOLDEN_APPLE_FOOD = new FoodProperties.Builder()
-            .nutrition(4)
-            .saturationMod(1.2F)
-            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100, 1), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.ABSORPTION, 2400, 2), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.SATURATION, 1200, 0), 1.0F)
-            .alwaysEat()
-            .build();
-
-    private static final FoodProperties MAGNETIZED_GUANYIN_SOIL_FOOD = new FoodProperties.Builder()
-            .nutrition(8)
-            .saturationMod(1.5F)
-            .effect(() -> new MobEffectInstance(MobEffects.SATURATION, 1200, 0), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.POISON, 200, 0), 0.3f)
-            .alwaysEat()
-            .build();
-
-    private static final FoodProperties MAGNETIZED_MANA_COOKIE_FOOD = new FoodProperties.Builder()
-            .nutrition(1)
-            .saturationMod(2F)
-            .effect(() -> new MobEffectInstance(MobEffects.SATURATION, 2400, 0), 1.0F)
-            .alwaysEat()
-            .build();
-
     public static final ItemEntry<ComponentItem> MAGNETIZED_GOLDEN_CARROT = item("magnetized_golden_carrot", "磁化金胡萝卜", ComponentItem::create)
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
                     .texture("layer0", GTOCore.id("item/magnetized_golden_carrot"))
                     .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
-            .onRegister(attach(new FoodStats(MAGNETIZED_GOLDEN_CARROT_FOOD)))
+            .onRegister(attach(new FoodStats(GTOFoodProperties.MAGNETIZED_GOLDEN_CARROT_FOOD)))
             .register();
 
     public static final ItemEntry<ComponentItem> MAGNETIZED_GOLDEN_APPLE = item("magnetized_golden_apple", "磁化金苹果", ComponentItem::create)
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
                     .texture("layer0", GTOCore.id("item/magnetized_golden_apple"))
                     .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
-            .onRegister(attach(new FoodStats(MAGNETIZED_GOLDEN_APPLE_FOOD)))
+            .onRegister(attach(new FoodStats(GTOFoodProperties.MAGNETIZED_GOLDEN_APPLE_FOOD)))
             .register();
 
     public static final ItemEntry<ComponentItem> MAGNETIZED_GUANYIN_SOIL = item("magnetized_guanyin_soil", "磁化观音土", ComponentItem::create)
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
                     .texture("layer0", GTCEu.id("item/material_sets/dull/dust"))
                     .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
-            .onRegister(attach(new FoodStats(MAGNETIZED_GUANYIN_SOIL_FOOD)))
+            .onRegister(attach(new FoodStats(GTOFoodProperties.MAGNETIZED_GUANYIN_SOIL_FOOD)))
             .register();
 
     public static final ItemEntry<ComponentItem> MAGNETIZED_MANA_COOKIE = item("magnetized_mana_cookie", "磁化魔力曲奇", ComponentItem::create)
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
                     .texture("layer0", RLUtils.bot("item/mana_cookie"))
                     .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
-            .onRegister(attach(new FoodStats(MAGNETIZED_MANA_COOKIE_FOOD)))
+            .onRegister(attach(new FoodStats(GTOFoodProperties.MAGNETIZED_MANA_COOKIE_FOOD)))
             .register();
-
-    private static final FoodProperties MAGNETIZED_ENCHANTED_GOLDEN_APPLE_FOOD = new FoodProperties.Builder()
-            .nutrition(4)
-            .saturationMod(1.2F)
-            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 400, 3), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 6000, 2), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 6000, 1), 1.0F)
-            .effect(() -> new MobEffectInstance(MobEffects.ABSORPTION, 2400, 6), 1.0F)
-            .alwaysEat()
-            .build();
 
     public static final ItemEntry<ComponentItem> MAGNETIZED_ENCHANTED_GOLDEN_APPLE = item("magnetized_enchanted_golden_apple", "磁化附魔金苹果", ComponentItem::create)
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
                     .texture("layer0", GTOCore.id("item/magnetized_enchanted_golden_apple"))
                     .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
-            .onRegister(attach(new FoodStats(MAGNETIZED_ENCHANTED_GOLDEN_APPLE_FOOD)))
+            .onRegister(attach(new FoodStats(GTOFoodProperties.MAGNETIZED_ENCHANTED_GOLDEN_APPLE_FOOD)))
             .register();
-
-    private static final FoodProperties MAGNETIZED_GOLDEN_MELON_SLICE_FOOD = new FoodProperties.Builder()
-            .nutrition(6)
-            .saturationMod(0.6F)
-            .effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100, 0), 1.0F)
-            .alwaysEat()
-            .build();
 
     public static final ItemEntry<ComponentItem> MAGNETIZED_GOLDEN_MELON_SLICE = item("magnetized_golden_melon_slice", "磁化金西瓜片", ComponentItem::create)
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "item/generated")
                     .texture("layer0", GTOCore.id("item/magnetized_golden_melon_slice"))
                     .texture("layer1", GTCEu.id("item/material_sets/magnetic/magnetic_overlay")))
-            .onRegister(attach(new FoodStats(MAGNETIZED_GOLDEN_MELON_SLICE_FOOD)))
+            .onRegister(attach(new FoodStats(GTOFoodProperties.MAGNETIZED_GOLDEN_MELON_SLICE_FOOD)))
             .register();
 
     public static final ItemEntry<RandomPositiveFoodItem> RANDOM_POSITIVE_FOOD_1 = item("delicious_food_1", "好吃的鱼 I", p -> new RandomPositiveFoodItem(p, 4, 0.6F))
