@@ -9,7 +9,6 @@ import com.gtolib.api.machine.impl.WirelessChargerMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -20,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 import appeng.api.stacks.AEItemKey;
 
 import com.hepdd.gtmthings.api.machine.IProgrammableMachine;
+import com.suried.gtoutils.schedule.Task;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +48,7 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     @Unique
     private WirelessChargerMachine gtolib$netMachineCache;
     @Unique
-    private TickableSubscription gtolib$tickSubs;
+    private Task gtolib$tickSubs;
     @Unique
     private boolean gtolib$isProgrammable;
 
@@ -87,7 +87,7 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     @Inject(method = "onUnload", at = @At("TAIL"), remap = false)
     private void onUnload(CallbackInfo ci) {
         if (gtolib$tickSubs != null) {
-            gtolib$tickSubs.unsubscribe();
+            gtolib$tickSubs.cancel();
             gtolib$tickSubs = null;
         }
         removeNetMachineCache();

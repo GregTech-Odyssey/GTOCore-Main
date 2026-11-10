@@ -58,7 +58,7 @@ public class WorkspaceExtension extends Extension {
     @Override
     public void onStructureFormed() {
         var assembly = getAssembly();
-        length = assembly == null ? 0 : assembly.get(LENGTH);
+        length = assembly.get(LENGTH);
         super.onStructureFormed();
     }
 

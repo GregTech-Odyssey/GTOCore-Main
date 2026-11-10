@@ -8,7 +8,6 @@ import com.gtocore.common.machine.multiblock.part.ae.widget.AEItemConfigWidget;
 import com.gtolib.api.wireless.energy.EnergyStats;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.PowerSubstationMachine;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -30,6 +29,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.google.common.collect.ImmutableList;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,7 +84,7 @@ public class MonitorAEThroughput extends AbstractAEInfoMonitor {
     }
 
     @Override
-    protected TickableSubscription subscribe(Runnable runnable) {
+    protected Task subscribe(Runnable runnable) {
         return this.subscribeServerTick(tickableSubscription, runnable, 40);
     }
 

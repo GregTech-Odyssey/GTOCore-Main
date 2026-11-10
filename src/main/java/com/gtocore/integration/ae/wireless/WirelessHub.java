@@ -4,8 +4,6 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.integration.ae.SolarStormHandler;
 import com.gtocore.mixin.ae2.GridNodeAccessor;
 
-import com.gregtechceu.gtceu.core.ILevel;
-
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -16,9 +14,9 @@ import appeng.api.networking.IGridNode;
 import appeng.api.networking.IGridNodeListener;
 import appeng.api.networking.IManagedGridNode;
 
-import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
+import com.suried.gtoutils.level.LevelStore;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import java.util.EnumSet;
  */
 public final class WirelessHub {
 
-    private static final DataComponentKey<O2OOpenCacheHashMap<String, WirelessHub>> KEY = DataComponentKey.createNoCodec("wireless_me_hubs");
+    private static final LevelStore<O2OOpenCacheHashMap<String, WirelessHub>> HUBS = LevelStore.create(O2OOpenCacheHashMap::new);
 
     private final ServerLevel level;
     private final String networkId;
@@ -53,12 +51,7 @@ public final class WirelessHub {
     }
 
     private static WirelessHub getOrCreate(ServerLevel level, String networkId) {
-        var hubs = ILevel.getCapability(level, KEY);
-        if (hubs == null) {
-            hubs = new O2OOpenCacheHashMap<>();
-            ILevel.setCapability(level, KEY, hubs);
-        }
-        return hubs.computeIfAbsent(networkId, id -> new WirelessHub(level, networkId));
+        return HUBS.get(level).computeIfAbsent(networkId, id -> new WirelessHub(level, networkId));
     }
 
     public static WirelessHub getOrCreate(MinecraftServer server, String networkId) {
@@ -67,7 +60,7 @@ public final class WirelessHub {
 
     @Nullable
     private static WirelessHub get(ServerLevel level, String networkId) {
-        var hubs = ILevel.getCapability(level, KEY);
+        var hubs = HUBS.getIfPresent(level);
         return hubs == null ? null : hubs.get(networkId);
     }
 
@@ -79,7 +72,7 @@ public final class WirelessHub {
     /** 删除网络的各维度 hub，AE 自动拆边。capability 的生命周期由 Level 管理。 */
     public static void destroy(MinecraftServer server, String networkId) {
         for (var level : server.getAllLevels()) {
-            var hubs = ILevel.getCapability(level, KEY);
+            var hubs = HUBS.getIfPresent(level);
             if (hubs == null) continue;
             var hub = hubs.remove(networkId);
             if (hub != null) hub.node.destroy();
@@ -89,7 +82,7 @@ public final class WirelessHub {
     /** 队伍变化后只断开无权使用网络的成员，不修改其网络 id。 */
     static void detachUnauthorized(MinecraftServer server, WirelessNetworks networks) {
         for (var level : server.getAllLevels()) {
-            var hubs = ILevel.getCapability(level, KEY);
+            var hubs = HUBS.getIfPresent(level);
             if (hubs == null) continue;
             var iterator = hubs.object2ObjectEntrySet().fastIterator();
             while (iterator.hasNext()) {

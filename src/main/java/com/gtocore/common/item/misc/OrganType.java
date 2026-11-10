@@ -1,9 +1,9 @@
 package com.gtocore.common.item.misc;
 
 /**
- * 器官部位。槽位数固定：翅膀 4 格，其余各 1 格。
+ * 器官部位。
  * <p>
- * 声明顺序即器官修改器里的排列顺序与玩家器官库存的槽位顺序（身体器官在前，翅膀在后）。
+ * 声明顺序即玩家器官库存的槽位顺序；新部位只能追加在末尾，否则旧存档的槽位号会错位。
  */
 public enum OrganType {
 
@@ -16,7 +16,8 @@ public enum OrganType {
     RIGHT_ARM("right_arm", "gtocore.organ_type.right_arm", "右臂", "Right Arm", 1),
     LEFT_LEG("left_leg", "gtocore.organ_type.left_leg", "左腿", "Left Leg", 1),
     RIGHT_LEG("right_leg", "gtocore.organ_type.right_leg", "右腿", "Right Leg", 1),
-    WING("wing", "gtocore.organ_type.wing", "翅膀", "Wing", 4);
+    WING("wing", "gtocore.organ_type.wing", "翅膀", "Wing", 4),
+    IMPLANT("implant", "gtocore.organ_type.implant", "义体", "Implant", 18);
 
     public static final OrganType[] VALUES = values();
     /// 身体器官：除翅膀外的九种，每种一格；套装等级按它们计算
@@ -55,6 +56,6 @@ public enum OrganType {
     }
 
     public boolean isBody() {
-        return this != WING;
+        return this != WING && this != IMPLANT;
     }
 }

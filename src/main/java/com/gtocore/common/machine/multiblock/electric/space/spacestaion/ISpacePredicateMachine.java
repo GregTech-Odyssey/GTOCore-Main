@@ -11,7 +11,9 @@ import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureIssue;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
@@ -32,7 +34,6 @@ import earth.terrarium.adastra.api.systems.TemperatureApi;
 import earth.terrarium.adastra.common.constants.PlanetConstants;
 import earth.terrarium.adastra.common.registry.ModSoundEvents;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -46,12 +47,9 @@ import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.INPUT_ENE
 import static com.gregtechceu.gtceu.api.pattern.Predicates.abilities;
 import static com.gregtechceu.gtceu.api.pattern.Predicates.blocks;
 
-public interface ISpacePredicateMachine extends ISpaceWorkspaceMachine, ICleanroomProvider {
+public interface ISpacePredicateMachine extends IMultiController, ISpaceWorkspaceMachine, ICleanroomProvider {
 
     boolean firstLoad();
-
-    @NotNull
-    MultiblockState getMultiblockState();
 
     @Nullable
     Collection<IWorkInSpaceMachine> getSpaceMachines();
@@ -66,7 +64,7 @@ public interface ISpacePredicateMachine extends ISpaceWorkspaceMachine, ICleanro
             });
             setSpaceMachines(null);
         }
-        setSpaceMachines(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.SPACE_MACHINE, Collections.emptySet()));
+        setSpaceMachines(getAssembly().getOrDefault(GTOPredicates.DataKeys.SPACE_MACHINE, Collections.emptySet()));
         getSpaceMachines().forEach(receiver -> {
             receiver.setCleanroom(this);
             receiver.setWorkspaceProvider(this);
@@ -90,7 +88,7 @@ public interface ISpacePredicateMachine extends ISpaceWorkspaceMachine, ICleanro
         /// Oxygen and Temperature
         /// @see earth.terrarium.adastra.common.blockentities.machines.OxygenDistributorBlockEntity#tickOxygen
         if (getLevel() instanceof ServerLevel level) {
-            Set<BlockPos> positions = new OpenCacheHashSet<>(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()));
+            Set<BlockPos> positions = new OpenCacheHashSet<>(getAssembly().getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()));
 
             this.resetLastDistributedBlocks(positions);
             OxygenApi.API.setOxygen(level, positions, true);
@@ -115,7 +113,7 @@ public interface ISpacePredicateMachine extends ISpaceWorkspaceMachine, ICleanro
         if (blockWorldState.getTileEntity() instanceof MetaMachineBlockEntity machineBlockEntity) {
             var machine = machineBlockEntity.getMetaMachine();
             if (isMachineBanned(machine)) {
-                blockWorldState.setError(MultiblockState.BANNED_ERROR);
+                blockWorldState.setIssue(StructureIssue.forbidden());
                 return false;
             }
             if (machine instanceof IWorkInSpaceMachine spaceMachine) {

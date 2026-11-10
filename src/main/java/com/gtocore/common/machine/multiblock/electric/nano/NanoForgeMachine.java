@@ -128,9 +128,7 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
     public void onStructureFormed() {
         super.onStructureFormed();
         var assembly = getAssembly();
-        if (assembly == null) {
-            structureTier = 1;
-        } else if (assembly.has(ADVANCED_RIGHT_MODULE) && assembly.has(LEFT_MODULE)) {
+        if (assembly.has(ADVANCED_RIGHT_MODULE) && assembly.has(LEFT_MODULE)) {
             structureTier = 3;
         } else {
             structureTier = assembly.has(RIGHT_MODULE) ? 2 : 1;

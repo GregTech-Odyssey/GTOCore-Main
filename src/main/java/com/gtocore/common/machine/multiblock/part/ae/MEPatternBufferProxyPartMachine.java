@@ -13,7 +13,6 @@ import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMac
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.client.util.TooltipHelper;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -33,6 +32,8 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.suried.gtoutils.schedule.CoalescedTask;
+import com.suried.gtoutils.schedule.Schedulers;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
@@ -63,7 +64,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     @Nullable
     private BlockPos watchedPos;
     @Nullable
-    private TaskHandler.ReusableTask resolveTask;
+    private CoalescedTask resolveTask;
 
     public MEPatternBufferProxyPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.LuV, IO.IN);
@@ -167,7 +168,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         proxySlotRecipeHandler.release();
         proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
         if (getLevel() instanceof ServerLevel level) {
-            TaskHandler.enqueueTask(level, this::recheckAfterBufferLost);
+            Schedulers.of(level).schedule(this::recheckAfterBufferLost);
         } else {
             bufferResolved = false;
         }
@@ -183,8 +184,8 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     private void resolveLater() {
         if (!(getLevel() instanceof ServerLevel level)) return;
         var task = resolveTask;
-        if (task == null) resolveTask = task = new TaskHandler.ReusableTask(this::resolveBuffer);
-        TaskHandler.enqueueTask(level, task);
+        if (task == null) resolveTask = task = new CoalescedTask(this::resolveBuffer);
+        Schedulers.of(level).submit(task);
     }
 
     private void resolveBuffer() {

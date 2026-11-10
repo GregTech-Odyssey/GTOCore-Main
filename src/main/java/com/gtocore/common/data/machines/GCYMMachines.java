@@ -470,7 +470,7 @@ public final class GCYMMachines {
             .recipeTypes(ALLOY_SMELTER_RECIPES)
             .recipeModifier((m, u, r) -> {
                 if (m instanceof AlloyBlastSmelterMachine machine) {
-                    if (machine.hasStructurePart(AlloyBlastSmelterMachine.EXTENSION)) {
+                    if (machine.getAssembly().has(AlloyBlastSmelterMachine.EXTENSION)) {
                         r.duration = Math.max(1, r.duration / 2);
                     }
                     if (r.definition.recipeType == ALLOY_SMELTER_RECIPES) {

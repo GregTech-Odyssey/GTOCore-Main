@@ -5,8 +5,6 @@ import com.gtolib.utils.MultiBlockFileReader;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
 
-import com.gregtechceu.gtceu.utils.TaskHandler;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -23,6 +21,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.suried.gtoutils.schedule.Schedulers;
 import it.unimi.dsi.fastutil.chars.Char2ReferenceLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.chars.Char2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
@@ -72,7 +71,7 @@ class PlatformCreators {
                                       boolean xMirror, boolean zMirror, int rotation) {
         if (isExporting) return;
         isExporting = true;
-        TaskHandler.enqueueAsyncTask(level, () -> {
+        Schedulers.async(level).schedule(() -> {
             try {
                 exportStructure(level, startPos, endPos, xMirror, zMirror, rotation);
             } catch (Exception e) {
@@ -80,7 +79,7 @@ class PlatformCreators {
             } finally {
                 isExporting = false;
             }
-        }, 0);
+        });
     }
 
     /**

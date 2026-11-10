@@ -963,11 +963,6 @@ final class Vanilla {
                 "ABA",
                 "ACA",
                 'A', new MaterialEntry(TagPrefix.plate, GTOMaterials.Herbs), 'B', ManaMachine.ALCHEMY_CAULDRON.asItem(), 'C', GCYMMachines.LARGE_BREWER.asItem());
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("structure_detect"), GTOItems.STRUCTURE_DETECT.asItem(),
-                " A ",
-                "ABA",
-                " A ",
-                'A', new ItemStack(Items.REDSTONE_TORCH.asItem()), 'B', RegistriesUtils.getItemStack("gtmthings:advanced_terminal"));
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("tesseract_generator"), GTOMachines.TESSERACT_GENERATOR.asItem(),
                 "ABA",
                 "CDC",

@@ -7,11 +7,9 @@ import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.machine.part.ItemPartMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -42,6 +40,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import lombok.Getter;
@@ -74,8 +73,8 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
     private float wind;
     @SyncToClient
     private int actualPower;
-    private TickableSubscription energySubs;
-    private TickableSubscription tickSubscription;
+    private Task energySubs;
+    private Task tickSubscription;
 
     public WindMillTurbineMachine(MetaMachineBlockEntity holder, int tier, Object... args) {
         super(holder, tier, args);
@@ -111,7 +110,7 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
     public void onUnload() {
         super.onUnload();
         unsubscribe();
-        tickSubscription = ITickSubscription.unsubscribe(tickSubscription);
+        tickSubscription = Task.cancel(tickSubscription);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -121,7 +120,7 @@ public final class WindMillTurbineMachine extends TieredEnergyMachine implements
 
     private void unsubscribe() {
         if (energySubs != null) {
-            energySubs.unsubscribe();
+            energySubs.cancel();
             energySubs = null;
         }
     }

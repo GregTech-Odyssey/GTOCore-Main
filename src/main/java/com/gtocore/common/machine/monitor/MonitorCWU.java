@@ -8,7 +8,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.capability.IOpticalComputationHatch;
 import com.gregtechceu.gtceu.api.capability.IOpticalComputationProvider;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableComputationContainer;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.HPCAMachine;
 
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
@@ -47,7 +47,7 @@ public class MonitorCWU extends AbstractInfoProviderMonitor implements IOpticalC
     }
 
     @Override
-    protected TickableSubscription subscribe(Runnable runnable) {
+    protected Task subscribe(Runnable runnable) {
         return subscribeServerTick(tickableSubscription, runnable, 10);
     }
 

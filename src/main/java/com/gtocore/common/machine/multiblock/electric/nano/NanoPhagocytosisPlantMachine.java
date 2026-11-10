@@ -22,7 +22,7 @@ public final class NanoPhagocytosisPlantMachine extends CrossRecipeMultiblockMac
 
     @Override
     public void onStructureFormed() {
-        grindingModule = hasStructurePart(StructureModuleKeys.NANO_PHAGOCYTOSIS_GRINDING);
+        grindingModule = getAssembly().has(StructureModuleKeys.NANO_PHAGOCYTOSIS_GRINDING);
         super.onStructureFormed();
     }
 

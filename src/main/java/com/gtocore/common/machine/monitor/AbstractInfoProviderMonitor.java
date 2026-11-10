@@ -3,7 +3,6 @@ package com.gtocore.common.machine.monitor;
 import com.gtolib.GTOCore;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
@@ -17,6 +16,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
     @SyncToClient
     private boolean drawBackground = true;
 
-    protected TickableSubscription tickableSubscription;
+    protected Task tickableSubscription;
 
     public AbstractInfoProviderMonitor(MetaMachineBlockEntity holder) {
         super(holder);
@@ -50,7 +50,7 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
         });
     }
 
-    protected TickableSubscription subscribe(Runnable runnable) {
+    protected Task subscribe(Runnable runnable) {
         return this.subscribeAsyncTick(tickableSubscription, runnable, 10);
     }
 
@@ -58,7 +58,7 @@ public abstract class AbstractInfoProviderMonitor extends BasicMonitor implement
     public void onUnload() {
         super.onUnload();
         if (tickableSubscription != null) {
-            tickableSubscription.unsubscribe();
+            tickableSubscription.cancel();
             tickableSubscription = null;
         }
     }

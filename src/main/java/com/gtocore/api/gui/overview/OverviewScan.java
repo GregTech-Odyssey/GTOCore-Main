@@ -1,17 +1,15 @@
 package com.gtocore.api.gui.overview;
 
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
-import com.gregtechceu.gtceu.core.ILevel;
 
-import com.gto.datasynclib.datastream.DataComponentKey;
-
+import com.suried.gtoutils.level.LevelStore;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 final class OverviewScan {
 
-    private static final DataComponentKey<Long2ObjectOpenHashMap<OverviewScan>> KEY = DataComponentKey.createNoCodec("gtocore_overview_scans");
+    private static final LevelStore<Long2ObjectOpenHashMap<OverviewScan>> SCANS = LevelStore.create(Long2ObjectOpenHashMap::new);
     private static final int BUDGET = 8192;
     private static final int REFRESH_MIN = 40;
     private static final int REFRESH_MAX = 640;
@@ -40,11 +38,7 @@ final class OverviewScan {
     static OverviewScan acquire(MultiblockControllerMachine host, OverviewAdapter adapter) {
         var level = host.getLevel();
         if (level == null) return new OverviewScan(host, adapter);
-        var scans = ILevel.getCapability(level, KEY);
-        if (scans == null) {
-            scans = new Long2ObjectOpenHashMap<>();
-            ILevel.setCapability(level, KEY, scans);
-        }
+        var scans = SCANS.get(level);
         long key = host.getPos().asLong();
         var scan = scans.get(key);
         if (scan == null || scan.host != host || scan.adapter != adapter) {
@@ -59,7 +53,7 @@ final class OverviewScan {
         if (--viewers > 0) return;
         var level = host.getLevel();
         if (level == null) return;
-        var scans = ILevel.getCapability(level, KEY);
+        var scans = SCANS.getIfPresent(level);
         long key = host.getPos().asLong();
         if (scans != null && scans.get(key) == this) scans.remove(key);
     }

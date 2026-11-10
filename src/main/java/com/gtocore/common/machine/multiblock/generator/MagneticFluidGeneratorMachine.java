@@ -61,7 +61,7 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
         super.onStructureFormed();
         int hermeticCasingTier = getCasingTier(GTORecipeDataKeys.HERMETIC_CASING_TIER);
         efficiency = hermeticCasingTier > GTValues.LuV ? hermeticCasingTier / 4.0 : 1.0;
-        if (hasStructurePart(EXTENSION)) efficiency *= 2;
+        if (getAssembly().has(EXTENSION)) efficiency *= 2;
         int tier = getCasingTier(GTORecipeDataKeys.GLASS_TIER);
         if (tier < outputTier) outputTier = 0;
     }
@@ -81,7 +81,7 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
             IdleReason.BLOCK_TIER_NOT_SATISFIES.setReason(this, -1, getCasingTier(GTORecipeDataKeys.GLASS_TIER));
             return null;
         }
-        boolean extension = hasStructurePart(EXTENSION);
+        boolean extension = getAssembly().has(EXTENSION);
         long parallel = (extension ? 256 : 64) * (laser ? (long) Math.pow(extension ? 4 : 2, outputTier - 1) : 1);
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);
         if (recipe == null) return null;

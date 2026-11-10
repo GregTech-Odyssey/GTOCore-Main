@@ -133,7 +133,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
 
     /// 输入总线变化时，重新累计各等级箱缸数量。
     private void refreshDrawers() {
-        hermeticLevel = getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
+        hermeticLevel = getAssembly().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
         drawers.clear();
         for (var bus : drawerBuses.buses()) {
             var inv = bus.storage;
@@ -256,7 +256,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     @Override
     public void onStructureFormed() {
         // 箱缸总线要先挂上，容量里要用
-        drawerBuses.bind(getMultiblockState().getMatchContext(), this, this::onDrawerBusChanged);
+        drawerBuses.bind(getAssembly(), this, this::onDrawerBusChanged);
         super.onStructureFormed();
     }
 

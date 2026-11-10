@@ -303,7 +303,6 @@ public final class RecipeFilter {
         filters.add(RLUtils.ars("ritual_brazier"));
         filters.add(RLUtils.ars("redstone_relay"));
         filters.add(RLUtils.ars("alchemical_sourcelink"));
-        filters.add(RLUtils.ars("ritual_flight"));
 
         filters.add(DeeperDarker.rl("reinforced_echo_shard"));
         filters.add(DeeperDarker.rl("resonarium_shovel_smithing"));

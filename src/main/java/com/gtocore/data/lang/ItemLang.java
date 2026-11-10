@@ -183,8 +183,6 @@ final class ItemLang {
         addCNEN("gtocore.tooltip.item.muffler_pipe.desc", "将消声仓仓口连接到消声仓排气口时，消声仓排气口将代理该消声仓排放废气", "When the muffler hatch is connected to the muffler exhaust port, the muffler exhaust port will proxy the discharge of waste gas from that muffler");
         addCNEN("gtocore.tooltip.item.gravity_normalizer.challenge", "§6不上天挑战：重力规整器现在可以为机器的主机提供重力调节功能", "§6No Flying Challenge: The Gravity Normalizer can now provide gravity adjustment for the machine's host");
 
-        addCNEN("item.gtocore.structure_detect.tooltip.0", "潜行右键主方块以检测多方块结构", "Sneak right-click the main block to detect multiblock structure.");
-        addCNEN("item.gtocore.structure_detect.tooltip.1", "检测大型结构时可能会有延迟", "There may be lag when detecting large structures.");
         addCNEN("item.gtocore.disc.data", "光盘数据：%s", "Disc data: %s");
 
         addCNEN("item.gtocore.order.target", "订单目标", "Order target");

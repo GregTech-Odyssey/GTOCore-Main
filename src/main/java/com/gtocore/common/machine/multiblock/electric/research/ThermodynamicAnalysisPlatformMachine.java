@@ -43,10 +43,10 @@ public class ThermodynamicAnalysisPlatformMachine extends ElectricMultiblockMach
 
     @Override
     public void onPartScan(@NotNull IMultiPart part) {
-        if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.LOW_TEMP_INTERFACE, Collections.emptySet()).contains(part.self().getPos())) {
+        if (getAssembly().getOrDefault(GTOPredicates.DataKeys.LOW_TEMP_INTERFACE, Collections.emptySet()).contains(part.self().getPos())) {
             lowTempInterface = (HeatHatchPartMachine) part;
         }
-        if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.HIGH_TEMP_INTERFACE, Collections.emptySet()).contains(part.self().getPos())) {
+        if (getAssembly().getOrDefault(GTOPredicates.DataKeys.HIGH_TEMP_INTERFACE, Collections.emptySet()).contains(part.self().getPos())) {
             highTempInterface = (HeatHatchPartMachine) part;
         }
         if (part instanceof SimpleResearchTagPartMachine) {

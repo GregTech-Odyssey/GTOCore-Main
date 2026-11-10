@@ -10,10 +10,8 @@ import com.gtolib.api.machine.multiblock.NoEnergyCustomParallelMultiblockMachine
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -39,6 +37,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.suried.gtoutils.schedule.Task;
 
 import java.util.Collections;
 import java.util.List;
@@ -72,7 +72,7 @@ public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomPa
     private int temperature = 298;
 
     private final ConditionalSubscriptionHandler tickSubs;
-    private TickableSubscription particleSubscription;
+    private Task particleSubscription;
     private Set<BlockPos> heatPositions = Collections.emptySet();
     private AABB heatBounds = new AABB(BlockPos.ZERO);
 
@@ -90,16 +90,16 @@ public final class AdvancedPrimitiveBlastFurnaceMachine extends NoEnergyCustomPa
     @Override
     public void onStructureInvalidClient() {
         super.onStructureInvalidClient();
-        particleSubscription = ITickSubscription.unsubscribe(particleSubscription);
+        particleSubscription = Task.cancel(particleSubscription);
     }
 
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        height = structureParam(LAYERS);
+        height = getAssembly().get(LAYERS);
         pos = MachineUtils.getOffsetPos(7, getFrontFacing(), getPos());
         tickSubs.initialize(getLevel());
-        heatPositions = getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.BLAST_FURNACE_HEAT, Collections.emptySet());
+        heatPositions = getAssembly().getOrDefault(GTOPredicates.DataKeys.BLAST_FURNACE_HEAT, Collections.emptySet());
         updateHeatBounds();
     }
 

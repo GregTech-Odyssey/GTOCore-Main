@@ -763,7 +763,7 @@ public final class TipsChapter {
             .title("飞行模式")
             .subtitle("如何获取飞行?")
             .desc(d -> d
-                    .line("其中飞行护符，飞行之板，翅膀，喷气背包可以作为前期飞行手段")
+                    .line("其中飞行护符，翅膀，喷气背包可以作为前期飞行手段")
                     .line()
                     .line("沉浸式飞行是飞行载具，同样能让你在前期获得飞行能力")
                     .line()
@@ -776,7 +776,6 @@ public final class TipsChapter {
                     Task.item(GTOOrganItems.FAIRY_WING).optional(),
                     Task.item(GTOOrganItems.MANA_STEEL_WING).optional(),
                     Task.item(GTOOrganItems.MECHANICAL_WING).optional(),
-                    Task.item(QuestExternalRefs.RITUAL_FLIGHT).optional(),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.EYE, OrganTier.PROTOTYPE)).optional(),
                     Task.item(GTItems.LIQUID_FUEL_JETPACK).optional(),
                     Task.item(QuestExternalRefs.ImmersiveAircraftItems.BIPLANE).optional())

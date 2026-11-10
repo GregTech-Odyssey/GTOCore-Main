@@ -17,7 +17,6 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -44,6 +43,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.google.common.collect.ImmutableMap;
+import com.suried.gtoutils.schedule.Task;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import lombok.Getter;
 import lombok.Setter;
@@ -108,7 +108,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
     private ConnectingRodHatch connectingRodHatch;
     BioOscillationElectricStimulator stimulator;
     private final TierCasingTrait tierCasingTrait;
-    private TickableSubscription tickableSubscription;
+    private Task tickableSubscription;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor generatorIntakeMonitor = holder.monitorTick(GTOTickTimeMonitors.GENERATOR_INTAKE, this::tick);
@@ -155,7 +155,7 @@ public class BioOscillationGenerator extends ElectricMultiblockMachine implement
         sensorPartMachine = null;
         stimulator = null;
         if (tickableSubscription != null) {
-            tickableSubscription.unsubscribe();
+            tickableSubscription.cancel();
             tickableSubscription = null;
         }
     }

@@ -3,11 +3,11 @@ package com.gtocore.common.machine.steam;
 import com.gtolib.api.machine.feature.IVacuumMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 
 public final class SteamVacuumPumpMachine extends SimpleSteamMachine implements IVacuumMachine {
@@ -15,7 +15,7 @@ public final class SteamVacuumPumpMachine extends SimpleSteamMachine implements 
     @SaveToDisk(defaultValue = "0")
     private int vacuumTier;
     @Getter
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
 
     public SteamVacuumPumpMachine(MetaMachineBlockEntity holder, boolean isHighPressure, Object... args) {
         super(holder, isHighPressure, args);
@@ -33,7 +33,7 @@ public final class SteamVacuumPumpMachine extends SimpleSteamMachine implements 
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

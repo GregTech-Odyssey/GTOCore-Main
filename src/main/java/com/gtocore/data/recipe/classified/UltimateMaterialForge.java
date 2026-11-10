@@ -21,7 +21,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTOMaterials.Gluons, 1000)
                 .outputItems(GTOItems.VOID_MATTER)
                 .chancedOutput(GTOItems.CORPOREAL_MATTER.asItem(), 2000, 0)
-                .EUt(2013265920)
+                .EUt(503316480)
                 .duration(400)
                 .save();
 
@@ -32,7 +32,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTOMaterials.AwakenedDraconium.getFluid(FluidStorageKeys.PLASMA, 1000))
                 .outputItems(GTOItems.TEMPORAL_MATTER)
                 .chancedOutput(GTOItems.OMNI_MATTER.asItem(), 500, 0)
-                .EUt(2013265920)
+                .EUt(503316480)
                 .duration(600)
                 .save();
 
@@ -63,7 +63,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTOMaterials.DimensionallyTranscendentCrudeCatalyst, 1000)
                 .outputItems(GTOItems.DARK_MATTER)
                 .chancedOutput(GTOItems.KINETIC_MATTER.asItem(), 1000, 0)
-                .EUt(2013265920)
+                .EUt(503316480)
                 .duration(1200)
                 .save();
 
@@ -118,7 +118,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTOMaterials.DenseNeutron.getFluid(FluidStorageKeys.PLASMA, 1000))
                 .outputItems(GTOItems.OMNI_MATTER)
                 .chancedOutput(TagPrefix.dustTiny, GTOMaterials.CosmicNeutronium, 1000, 0)
-                .EUt(2013265920)
+                .EUt(503316480)
                 .duration(800)
                 .save();
     }

@@ -222,12 +222,12 @@ public class TurbineMachine extends ElectricMultiblockMachine {
     }
 
     private double extensionMultiplier() {
-        if (!hasStructurePart(EXTENSION)) return 1;
+        if (!getAssembly().has(EXTENSION)) return 1;
         return mega ? 3 : 2;
     }
 
     private double extensionEfficiency() {
-        if (!hasStructurePart(EXTENSION)) return 1;
+        if (!getAssembly().has(EXTENSION)) return 1;
         return mega ? 1.3 : 1.2;
     }
 

@@ -2,8 +2,6 @@ package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtolib.api.network.NetworkPack;
 
-import com.gregtechceu.gtceu.core.ILevel;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -13,8 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-import com.gto.datasynclib.datastream.DataComponentKey;
-
+import com.suried.gtoutils.level.LevelStore;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -31,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 public final class MEPatternBufferConnectionHandler {
 
     private static final Connection[] EMPTY_CONNECTIONS = new Connection[0];
-    private static final DataComponentKey<ServerConnections> SERVER_CONNECTIONS_KEY = DataComponentKey.createNoCodec("me_pattern_buffer_connections");
+    private static final LevelStore<ServerConnections> SERVER_CONNECTIONS = LevelStore.create(ServerConnections::new);
     private static final Reference2ObjectOpenHashMap<ResourceKey<Level>, Connection[]> CLIENT_CONNECTIONS = new Reference2ObjectOpenHashMap<>();
 
     private static final NetworkPack SYNC = NetworkPack.registerS2C(
@@ -99,16 +96,11 @@ public final class MEPatternBufferConnectionHandler {
     }
 
     private static ServerConnections getServerConnections(ServerLevel level) {
-        var connections = ILevel.getCapability(level, SERVER_CONNECTIONS_KEY);
-        if (connections == null) {
-            connections = new ServerConnections();
-            ILevel.setCapability(level, SERVER_CONNECTIONS_KEY, connections);
-        }
-        return connections;
+        return SERVER_CONNECTIONS.get(level);
     }
 
     private static @Nullable ServerConnections getServerConnectionsIfPresent(ServerLevel level) {
-        return ILevel.getCapability(level, SERVER_CONNECTIONS_KEY);
+        return SERVER_CONNECTIONS.getIfPresent(level);
     }
 
     private static void syncDimension(ServerLevel level) {

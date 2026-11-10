@@ -13,7 +13,6 @@ import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 
@@ -24,6 +23,7 @@ import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +42,7 @@ public class NeutronIrradiationChamber extends NoEnergyMultiblockMachine {
     private NeutronIrradiationPartMachine[] parts;
     private SensorPartMachine sensorMachineNeutronFlux;
     @Nullable
-    private TickableSubscription tickSubscription;
+    private Task tickSubscription;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor radiationMonitor = holder.monitorTick(GTOTickTimeMonitors.RADIATION, this::tick);
@@ -78,7 +78,7 @@ public class NeutronIrradiationChamber extends NoEnergyMultiblockMachine {
         sensorMachineNeutronFlux = null;
         parts = null;
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
     }

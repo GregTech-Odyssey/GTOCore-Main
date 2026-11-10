@@ -11,7 +11,6 @@ import com.gtolib.api.wireless.energy.GridSampler;
 import com.gtolib.api.wireless.energy.WirelessGrid;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.network.chat.Component;
@@ -26,6 +25,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.google.common.collect.ImmutableBiMap;
 import com.hepdd.gtmthings.utils.FormatUtil;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
@@ -127,7 +127,7 @@ public class MonitorEU extends AbstractInfoProviderMonitor implements ITeamInfor
     }
 
     @Override
-    protected TickableSubscription subscribe(Runnable runnable) {
+    protected Task subscribe(Runnable runnable) {
         // 吞吐读取会清理到期预约，必须与配方结算在服务端线程串行执行。
         return this.subscribeServerTick(tickableSubscription, runnable, 10);
     }

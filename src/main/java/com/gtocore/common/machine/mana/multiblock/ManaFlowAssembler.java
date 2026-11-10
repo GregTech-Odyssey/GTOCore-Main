@@ -13,7 +13,6 @@ import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -44,6 +43,7 @@ import appeng.api.stacks.KeyVisitor;
 import com.gto.datasynclib.datastream.DataComponentKey;
 import com.gto.recipesearch.IntLongMap;
 
+import com.suried.gtoutils.schedule.Task;
 import mythicbotany.pylon.BlockAlfsteelPylon;
 import mythicbotany.register.ModBlocks;
 import org.jetbrains.annotations.NotNull;
@@ -70,8 +70,8 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
     private final List<WeakReference<ManaPoolBlockEntity>> manaPools = new ArrayList<>();
     private final InWorldManaContainer inWorldManaContainer = new InWorldManaContainer();
     private ManaContainerList manaContainerList = ManaContainerList.EMPTY;
-    private TickableSubscription tickSubscription;
-    private TickableSubscription clientTickSubscription;
+    private Task tickSubscription;
+    private Task clientTickSubscription;
     private final EnumMap<Direction, Integer> colors = new EnumMap<>(Direction.class);
 
     public ManaFlowAssembler(MetaMachineBlockEntity holder) {
@@ -84,10 +84,10 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         addHandlerList(RecipeHandlerUnit.of(IO.IN, itemIn));
         addHandlerList(RecipeHandlerUnit.of(IO.OUT, itemIn));
 
-        var f = getMultiblockState().getMatchContext().get(MAX_RATE);
+        var f = getAssembly().get(MAX_RATE);
         maxRate = f == null ? 0 : f.get();
         manaPools.clear();
-        var f1 = getMultiblockState().getMatchContext().get(POOL);
+        var f1 = getAssembly().get(POOL);
         var poolPositions = f1 == null ? Collections.<BlockPos>emptyList() : f1;
         var level = getLevel();
         if (level != null) {
@@ -160,11 +160,11 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         manaContainerList = ManaContainerList.EMPTY;
         colors.clear();
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
         if (clientTickSubscription != null) {
-            clientTickSubscription.unsubscribe();
+            clientTickSubscription.cancel();
             clientTickSubscription = null;
         }
     }

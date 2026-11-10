@@ -27,7 +27,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.config.ConfigHolder;
-import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 
+import com.suried.gtoutils.level.LoadedChunks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -87,7 +87,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
                         .or(abilities(IMPORT_FLUIDS)))
                 .where('b', blocks(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get()))
                 .where('~', controller(definition));
-        var rowEnd = new TraceabilityPredicate(state -> !isSolar(ILevel.asyncGetBlockState(state.world, state.getPos().relative(state.controller.self().getFrontFacing().getOpposite()))), null, null);
+        var rowEnd = new TraceabilityPredicate(state -> !isSolar(LoadedChunks.blockState(state.world, state.getPos().relative(state.controller.self().getFrontFacing().getOpposite()))), null, null);
         var backEnd = new TraceabilityPredicate(state -> !isSolar(state.getBlockState()), null, null);
         return Structure.root(Piece.sized(LargeSteamSolarBoilerMachine::body))
                 .symbols(symbols)

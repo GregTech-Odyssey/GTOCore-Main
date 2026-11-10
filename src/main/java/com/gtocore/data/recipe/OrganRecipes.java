@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOOrganItems;
 import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.item.misc.OrganFood;
 import com.gtocore.common.item.misc.OrganType;
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.GTOCore;
@@ -57,6 +58,135 @@ public final class OrganRecipes {
                 'C', new MaterialEntry(TagPrefix.plateDouble, GTMaterials.Titanium),
                 'D', GTItems.FIELD_GENERATOR_EV.asStack(),
                 'E', new MaterialEntry(TagPrefix.ingot, GTMaterials.Titanium));
+
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("mind_implant")
+                .inputItems(MonitorRegistries.DISPLAY_PANEL.asStack())
+                .inputItems(GTItems.SENSOR_MV)
+                .inputItems(CustomTags.MV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Aluminium, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 72)
+                .outputItems(GTOOrganItems.MIND_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.MV])
+                .duration(200)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("drone_implant")
+                .inputItems(GTItems.EMITTER_HV)
+                .inputItems(GTItems.SENSOR_HV)
+                .inputItems(CustomTags.HV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 4)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.DRONE_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.HV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("fault_vision_implant")
+                .inputItems(GTItems.BATTERY_HV_LITHIUM)
+                .inputItems(GTItems.SENSOR_HV, 2)
+                .inputItems(CustomTags.HV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.FAULT_VISION_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.HV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("stock_sense_implant")
+                .inputItems(GTItems.BATTERY_HV_LITHIUM)
+                .inputItems(GTItems.SENSOR_HV)
+                .inputItems(GTItems.EMITTER_HV)
+                .inputItems(CustomTags.HV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.STOCK_SENSE_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.HV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("current_vision_implant")
+                .inputItems(GTItems.BATTERY_MV_LITHIUM)
+                .inputItems(GTItems.SENSOR_MV)
+                .inputItems(GTItems.VOLTAGE_COIL_MV, 2)
+                .inputItems(CustomTags.MV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Aluminium, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.CURRENT_VISION_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.MV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("remote_touch_implant")
+                .inputItems(GTItems.BATTERY_EV_VANADIUM)
+                .inputItems(GTItems.EMITTER_EV)
+                .inputItems(GTItems.SENSOR_EV)
+                .inputItems(GTItems.ROBOT_ARM_EV)
+                .inputItems(CustomTags.EV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Titanium, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.REMOTE_TOUCH_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.EV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("team_marker_implant")
+                .inputItems(GTItems.BATTERY_MV_LITHIUM)
+                .inputItems(GTItems.EMITTER_MV, 2)
+                .inputItems(CustomTags.MV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Aluminium, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.TEAM_MARKER_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.MV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("restock_implant")
+                .inputItems(GTItems.BATTERY_EV_VANADIUM)
+                .inputItems(GTItems.CONVEYOR_MODULE_EV, 2)
+                .inputItems(GTItems.SENSOR_EV)
+                .inputItems(CustomTags.EV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Titanium, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.RESTOCK_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.EV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("tool_implant")
+                .inputItems(GTItems.BATTERY_HV_LITHIUM)
+                .inputItems(GTItems.ROBOT_ARM_HV, 2)
+                .inputItems(GTItems.ELECTRIC_MOTOR_HV, 2)
+                .inputItems(CustomTags.HV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.StainlessSteel, 4)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.TOOL_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.HV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("beam_implant")
+                .inputItems(GTItems.BATTERY_EV_VANADIUM)
+                .inputItems(GTItems.EMITTER_EV, 4)
+                .inputItems(CustomTags.EV_CIRCUITS, 4)
+                .inputItems(TagPrefix.plate, GTMaterials.Titanium, 4)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.BEAM_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.EV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("cannon_implant")
+                .inputItems(GTItems.BATTERY_IV_VANADIUM)
+                .inputItems(GTItems.EMITTER_IV, 4)
+                .inputItems(GTItems.FIELD_GENERATOR_IV)
+                .inputItems(CustomTags.IV_CIRCUITS, 4)
+                .inputItems(TagPrefix.plate, GTMaterials.TungstenSteel, 4)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.CANNON_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.IV])
+                .duration(300)
+                .save();
+        GTORecipeTypes.ASSEMBLER_RECIPES.builder("tether_implant")
+                .inputItems(GTItems.BATTERY_EV_VANADIUM)
+                .inputItems(GTItems.FIELD_GENERATOR_EV, 2)
+                .inputItems(GTItems.EMITTER_EV)
+                .inputItems(CustomTags.EV_CIRCUITS, 2)
+                .inputItems(TagPrefix.plate, GTMaterials.Titanium, 2)
+                .inputFluids(GTMaterials.SolderingAlloy, 144)
+                .outputItems(GTOOrganItems.TETHER_IMPLANT.asStack())
+                .EUt(GTValues.VA[GTValues.EV])
+                .duration(300)
+                .save();
 
         OrganFood.initRecipes();
 

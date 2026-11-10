@@ -17,8 +17,6 @@ import com.gtolib.api.quest.reward.ItemReward;
 import com.gtolib.api.quest.task.ItemTask;
 import com.gtolib.api.quest.task.Task;
 
-import com.gregtechceu.gtceu.GTCEu;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -29,8 +27,6 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -42,7 +38,6 @@ import java.util.function.Consumer;
  */
 public final class QuestHot {
 
-    public static final String CONFIG_PROPERTY = "gtocore.questHotReload";
     public static final List<Flag> FLAGS = List.of(
             new Flag("optional", QuestScreenLang.EDIT_FLAG_OPTIONAL),
             new Flag("repeatable", QuestScreenLang.EDIT_FLAG_REPEATABLE),
@@ -75,9 +70,6 @@ public final class QuestHot {
 
     public record Amount(String label, long value, boolean task, int liveIndex, boolean scaled) {}
 
-    @Nullable
-    private static Path sourceRoot;
-    private static boolean resolved;
     private static boolean editable;
     private static String problem = "";
 
@@ -102,25 +94,6 @@ public final class QuestHot {
     private static Consumer<RuntimeException> startupFailure;
 
     private QuestHot() {}
-
-    public static boolean enabled() {
-        return sourceRoot() != null;
-    }
-
-    @Nullable
-    public static synchronized Path sourceRoot() {
-        if (resolved) return sourceRoot;
-        resolved = true;
-        var config = System.getProperty(CONFIG_PROPERTY);
-        if (config == null || !GTCEu.isDev()) return null;
-        try {
-            var lines = Files.readAllLines(Path.of(config), StandardCharsets.UTF_8);
-            if (!lines.isEmpty()) sourceRoot = Path.of(lines.get(0));
-        } catch (IOException e) {
-            GTOCore.LOGGER.warn("[任务热修改] 读取配置 {} 失败，热加载与热修改未启用", config, e);
-        }
-        return sourceRoot;
-    }
 
     public static void setReloader(Reloader reloader) {
         QuestHot.reloader = reloader;
@@ -147,7 +120,7 @@ public final class QuestHot {
     }
 
     public static void validateAtStartup() {
-        if (!enabled()) return;
+        if (!QuestHotConfig.enabled()) return;
         long start = System.nanoTime();
         List<String> errors;
         try {
@@ -169,7 +142,7 @@ public final class QuestHot {
     }
 
     public static List<String> validateAfterReload() {
-        return enabled() ? validateNow() : List.of();
+        return QuestHotConfig.enabled() ? validateNow() : List.of();
     }
 
     private static List<String> validateNow() {
@@ -187,7 +160,7 @@ public final class QuestHot {
     }
 
     public static boolean editable() {
-        return enabled() && editable;
+        return QuestHotConfig.enabled() && editable;
     }
 
     public static String problem() {
@@ -195,7 +168,7 @@ public final class QuestHot {
     }
 
     static QuestSource source() {
-        return QuestSource.load(sourceRoot());
+        return QuestSource.load(QuestHotConfig.sourceRoot());
     }
 
     @Nullable
@@ -226,7 +199,7 @@ public final class QuestHot {
 
     @Nullable
     private static Result guard() {
-        if (!enabled()) return Result.fail("热修改未启用");
+        if (!QuestHotConfig.enabled()) return Result.fail("热修改未启用");
         if (!editable) return Result.fail("章节源码当前不能被热修改系统解析，先修好：\n" + problem);
         return null;
     }

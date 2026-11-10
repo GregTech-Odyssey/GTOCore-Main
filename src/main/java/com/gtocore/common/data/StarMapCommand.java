@@ -1,24 +1,19 @@
 package com.gtocore.common.data;
 
+import com.gtolib.api.scope.GTOScopes;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import earth.terrarium.adastra.common.entities.vehicles.Rocket;
 import earth.terrarium.adastra.common.menus.base.PlanetsMenuProvider;
 import earth.terrarium.botarium.common.menu.MenuHooks;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-
-import java.util.UUID;
 
 /**
  * 调试指令：召唤指定等级的火箭让玩家乘坐，等客户端收到乘坐状态后打开选星界面。
@@ -35,7 +30,6 @@ public final class StarMapCommand {
             new ResourceLocation("ad_astra", "tier_7_rocket"),
     };
     private static final int OPEN_DELAY = 10;
-    private static final Object2IntOpenHashMap<UUID> PENDING = new Object2IntOpenHashMap<>();
 
     private StarMapCommand() {}
 
@@ -57,29 +51,11 @@ public final class StarMapCommand {
                         return 0;
                     }
                     player.startRiding(rocket, true);
-                    PENDING.put(player.getUUID(), OPEN_DELAY);
+                    var scope = GTOScopes.PLAYER.get(player);
+                    if (scope != null) scope.schedule(OPEN_DELAY, () -> {
+                        if (player.getVehicle() instanceof Rocket) MenuHooks.openMenu(player, new PlanetsMenuProvider());
+                    });
                     return 1;
                 }));
-    }
-
-    public static void init() {
-        MinecraftForge.EVENT_BUS.addListener(StarMapCommand::onServerTick);
-    }
-
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || PENDING.isEmpty()) return;
-        MinecraftServer server = event.getServer();
-        var iterator = PENDING.object2IntEntrySet().fastIterator();
-        while (iterator.hasNext()) {
-            Object2IntMap.Entry<UUID> entry = iterator.next();
-            int left = entry.getIntValue() - 1;
-            if (left > 0) {
-                entry.setValue(left);
-                continue;
-            }
-            var player = server.getPlayerList().getPlayer(entry.getKey());
-            iterator.remove();
-            if (player != null && player.getVehicle() instanceof Rocket) MenuHooks.openMenu(player, new PlanetsMenuProvider());
-        }
     }
 }

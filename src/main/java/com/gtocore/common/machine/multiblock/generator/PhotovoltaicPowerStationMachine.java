@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import com.gto.registrate.util.entry.BlockEntry;
 
+import com.suried.gtoutils.schedule.Schedulers;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -116,7 +116,7 @@ public final class PhotovoltaicPowerStationMachine extends AbstractPhotovoltaicM
     public void onLoad() {
         super.onLoad();
         if (isInSpace() && getLevel() instanceof ServerLevel serverLevel) {
-            TaskHandler.enqueueTask(serverLevel, this::migrateToSailController, 1);
+            Schedulers.of(serverLevel).schedule(1, this::migrateToSailController);
         }
     }
 

@@ -4,6 +4,7 @@ import com.gtocore.integration.ae.wireless.WirelessMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
+import com.gregtechceu.gtceu.common.blockentity.CableBlockEntity;
 
 import com.suried.gtoutils.spatial.BlockEntityIndex;
 import vazkii.botania.common.block.flower.generating.EntropinnyumBlockEntity;
@@ -17,6 +18,10 @@ public final class GTOBlockEntityIndexes {
             be -> be.getLevel().isClientSide() && be.getMetaMachine() instanceof WirelessMachine);
     public static final BlockEntityIndex<MetaMachineBlockEntity> TIERED_WORKABLE_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
             be -> !be.getLevel().isClientSide() && be.getMetaMachine() instanceof WorkableTieredMachine);
+    public static final BlockEntityIndex<MetaMachineBlockEntity> MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
+            be -> !be.getLevel().isClientSide());
+    public static final BlockEntityIndex<CableBlockEntity> CABLES = BlockEntityIndex.create(CableBlockEntity.class,
+            cable -> !cable.getLevel().isClientSide());
     public static final BlockEntityIndex<EntropinnyumBlockEntity> ENTROPINNYUMS = BlockEntityIndex.create(EntropinnyumBlockEntity.class,
             flower -> !flower.getLevel().isClientSide());
 

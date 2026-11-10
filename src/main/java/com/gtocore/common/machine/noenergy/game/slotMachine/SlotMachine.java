@@ -16,7 +16,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
 import com.gregtechceu.gtceu.api.transfer.key.Keys;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
@@ -57,6 +56,7 @@ import com.lowdragmc.lowdraglib.gui.texture.DynamicTexture;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import dev.vfyjxf.taffy.style.AlignContent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -158,7 +158,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     private final Runnable machineTick = this::tickMachine;
 
     @Nullable
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
     private int winSoundTicksRemaining;
     /** 开这一局的人：附赠效果给他；不存盘，读档后回退到机器主人。 */
     @Nullable
@@ -264,7 +264,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     private void cancelTickSubscription() {
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

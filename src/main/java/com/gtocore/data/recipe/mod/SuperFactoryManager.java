@@ -88,7 +88,7 @@ public class SuperFactoryManager {
                 .inputItems(GTItems.TOOL_DATA_STICK, 8)
                 .inputItems(GTOTagPrefix.plate, GTMaterials.TitaniumCarbide, 4)
                 .inputItems(GTOTagPrefix.gemExquisite, GTOMaterials.MagnetoResonatic)
-                .inputItems("gtmthings:advanced_terminal")
+                .inputItems(GTItems.TERMINAL.asItem())
                 .outputItems("sfm:disk")
                 .duration(200)
                 .save();

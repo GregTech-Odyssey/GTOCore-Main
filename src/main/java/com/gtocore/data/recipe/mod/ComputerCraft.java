@@ -2,6 +2,7 @@ package com.gtocore.data.recipe.mod;
 
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.GTOMachines;
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
@@ -32,25 +33,25 @@ public class ComputerCraft {
                 "ABA",
                 "ACA",
                 "ADA",
-                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.StainlessSteel), 'B', GTOMachines.BASIC_MONITOR.asStack(), 'C', CustomTags.EV_CIRCUITS, 'D', RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"));
+                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.StainlessSteel), 'B', MonitorRegistries.DISPLAY_PANEL.asStack(), 'C', CustomTags.EV_CIRCUITS, 'D', RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"));
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("computer_advanced"), RegistriesUtils.getItemStack("computercraft:computer_advanced"),
                 "ABA",
                 "ACA",
                 "ADA",
-                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.Electrum), 'B', GTOMachines.BASIC_MONITOR.asStack(), 'C', CustomTags.IV_CIRCUITS, 'D', RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"));
+                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.Electrum), 'B', MonitorRegistries.DISPLAY_PANEL.asStack(), 'C', CustomTags.IV_CIRCUITS, 'D', RegistriesUtils.getItemStack("expatternprovider:ex_pattern_provider"));
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("pocket_computer_normal"), RegistriesUtils.getItemStack("computercraft:pocket_computer_normal"),
                 "AB ",
                 "   ",
                 "   ",
-                'A', RegistriesUtils.getItemStack("computercraft:computer_normal"), 'B', RegistriesUtils.getItemStack("gtmthings:advanced_terminal"));
+                'A', RegistriesUtils.getItemStack("computercraft:computer_normal"), 'B', RegistriesUtils.getItemStack("gtceu:terminal"));
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("pocket_computer_advanced"), RegistriesUtils.getItemStack("computercraft:pocket_computer_advanced"),
                 "AB ",
                 "   ",
                 "   ",
-                'A', RegistriesUtils.getItemStack("computercraft:computer_advanced"), 'B', RegistriesUtils.getItemStack("gtmthings:advanced_terminal"));
+                'A', RegistriesUtils.getItemStack("computercraft:computer_advanced"), 'B', RegistriesUtils.getItemStack("gtceu:terminal"));
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("speaker"), RegistriesUtils.getItemStack("computercraft:speaker"),
                 "AAA",
@@ -74,13 +75,13 @@ public class ComputerCraft {
                 "AAA",
                 "ABA",
                 "ACA",
-                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.StainlessSteel), 'B', GTOMachines.BASIC_MONITOR.asStack(), 'C', CustomTags.HV_CIRCUITS);
+                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.StainlessSteel), 'B', MonitorRegistries.DISPLAY_PANEL.asStack(), 'C', CustomTags.HV_CIRCUITS);
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("monitor_advanced"), RegistriesUtils.getItemStack("computercraft:monitor_advanced"),
                 "AAA",
                 "ABA",
                 "ACA",
-                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.Electrum), 'B', GTOMachines.BASIC_MONITOR.asStack(), 'C', CustomTags.EV_CIRCUITS);
+                'A', new MaterialEntry(GTOTagPrefix.plate, GTMaterials.Electrum), 'B', MonitorRegistries.DISPLAY_PANEL.asStack(), 'C', CustomTags.EV_CIRCUITS);
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("wireless_modem_normal"), RegistriesUtils.getItemStack("computercraft:wireless_modem_normal"),
                 "ABA",

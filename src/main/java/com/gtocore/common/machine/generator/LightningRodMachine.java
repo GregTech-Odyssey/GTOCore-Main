@@ -6,7 +6,6 @@ import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
 
@@ -17,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
+import com.suried.gtoutils.schedule.Task;
 
 import java.util.Objects;
 
@@ -26,7 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class LightningRodMachine extends TieredEnergyMachine {
 
-    private TickableSubscription energySubs;
+    private Task energySubs;
 
     public LightningRodMachine(MetaMachineBlockEntity holder, int tier, Object... args) {
         super(holder, tier, args);
@@ -44,7 +44,7 @@ public final class LightningRodMachine extends TieredEnergyMachine {
     public void onUnload() {
         super.onUnload();
         if (energySubs != null) {
-            energySubs.unsubscribe();
+            energySubs.cancel();
             energySubs = null;
         }
     }

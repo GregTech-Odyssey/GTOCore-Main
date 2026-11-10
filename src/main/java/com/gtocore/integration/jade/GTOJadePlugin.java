@@ -1,8 +1,8 @@
 package com.gtocore.integration.jade;
 
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.integration.jade.provider.*;
 import com.gtocore.integration.jade.provider.MachineModeProvider;
-import com.gtocore.integration.jade.provider.MultiblockStructureProvider;
 import com.gtocore.integration.jade.provider.ParallelProvider;
 import com.gtocore.integration.jade.provider.RecipeLogicProvider;
 import com.gtocore.integration.jade.provider.RecipeOutputProvider;
@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.blockentity.GTBlockEntity;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 import com.gregtechceu.gtceu.integration.jade.provider.*;
+import com.gregtechceu.gtceu.integration.jade.provider.MultiblockStructureProvider;
 
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -106,6 +107,8 @@ public final class GTOJadePlugin implements IWailaPlugin {
 
         registration.registerBlockComponent(AEItemAmountProvider.INSTANCE, Block.class);
         registration.registerEntityComponent(AEItemAmountProvider.INSTANCE, ItemEntity.class);
+
+        registration.usePickedResult(MonitorRegistries.BUS.get());
     }
 
     static {

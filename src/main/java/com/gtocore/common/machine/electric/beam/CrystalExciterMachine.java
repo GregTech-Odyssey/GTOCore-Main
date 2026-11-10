@@ -5,9 +5,10 @@ import com.gtolib.api.beam.IBeamEnergySource;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
+
+import com.suried.gtoutils.schedule.Schedulers;
 
 public class CrystalExciterMachine extends SimpleTieredMachine implements IBeamEnergySource {
 
@@ -20,12 +21,12 @@ public class CrystalExciterMachine extends SimpleTieredMachine implements IBeamE
         super.onLoad();
         var level = getLevel();
         if (!isRemote() && level != null) {
-            TaskHandler.enqueueTask(level, () -> {
+            Schedulers.of(level).schedule(1, () -> {
                 for (Direction direction : Direction.values()) {
                     var pos = getPos().relative(direction);
                     BeamManager.requestRebuildAt(level, pos);
                 }
-            }, 1);
+            });
         }
     }
 

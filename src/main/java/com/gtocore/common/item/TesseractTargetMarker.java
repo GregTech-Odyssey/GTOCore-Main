@@ -9,7 +9,6 @@ import com.gtolib.api.network.NetworkPack;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.item.ComponentItem;
 import com.gregtechceu.gtceu.api.item.component.IItemUIFactory;
-import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,6 +36,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import com.lowdragmc.lowdraglib.gui.factory.HeldItemUIFactory;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.suried.gtoutils.level.LoadedChunks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -112,7 +112,7 @@ public class TesseractTargetMarker implements IItemUIFactory {
                 return;
             }
             if (player.isShiftKeyDown()) {
-                if (ILevel.getCachedBlockEntity(level, pos) instanceof MetaMachineBlockEntity mbe &&
+                if (LoadedChunks.blockEntity(level, pos) instanceof MetaMachineBlockEntity mbe &&
                         mbe.getMetaMachine() instanceof ITesseractMarkerInteractable interactable &&
                         interactable.onMarkerInteract(player, getOrderedTargets(itemStack))) {
                     event.setCancellationResult(InteractionResult.SUCCESS);
@@ -331,7 +331,7 @@ public class TesseractTargetMarker implements IItemUIFactory {
     public static final NetworkPack COPY_CONFIG_C2S = NetworkPack.registerC2S("copy_tesseract_marker_config", (pl, buf) -> {
         var pos = buf.readBlockPos();
         if (isTesseractTargetMarker(pl.getMainHandItem()) &&
-                ILevel.getCachedBlockEntity(pl.level(), pos) instanceof MetaMachineBlockEntity mbe &&
+                LoadedChunks.blockEntity(pl.level(), pos) instanceof MetaMachineBlockEntity mbe &&
                 mbe.getMetaMachine() instanceof ITesseractMarkerInteractable interactable) {
             copyConfigFrom(interactable, pl.getMainHandItem());
             pl.displayClientMessage(Component.translatable(IMPORT_SUCCESS_TEXT), true);

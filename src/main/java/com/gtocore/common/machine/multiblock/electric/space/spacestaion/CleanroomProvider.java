@@ -42,7 +42,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     public void onStructureFormed() {
         droneHatchPartMachine.clear();
         super.onStructureFormed();
-        this.cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 0);
+        this.cleanroomTier = getAssembly().getOrDefault(Predicates.DataKey.FILTER_TYPE, 0);
         IIWirelessInteractor.addToNet(this, IDroneControlCenterMachine.class);
     }
 

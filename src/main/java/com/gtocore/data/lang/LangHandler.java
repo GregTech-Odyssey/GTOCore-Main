@@ -542,18 +542,11 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.wft.wireless", "无线设施管理终端", "Wireless Facility Management Terminal");
         addCNEN("gtocore.ae.appeng.wrt.wireless", "无线请求器终端", "Wireless Requester Terminal");
 
-        addCNEN("gtocore.adv_terminal.setting_already_existed", "存在已有设置", "Setting Already Existed");
-
         addCNEN("gtocore.travel.missing_block", "[未设置方块]", "[No block set]");
 
         addCNEN("ftbultimine.shape.area", "不定形 (不连续)", "Shapeless (Area)");
 
         addCNEN("gtocore.source", "结构来源：%s", "Structure From: %s");
-
-        addCNEN("multiblocked.pattern.error.chunk", "有区块未加载", "There are chunk not loaded");
-        addCNEN("multiblocked.pattern.error.init", "机器未初始化", "Machine not initialized");
-        addCNEN("multiblocked.pattern.error.share", "该方块不能共享", "This block cannot be shared");
-        addCNEN("multiblocked.pattern.error.banned", "该方块被禁止", "This block is banned");
 
         addCNEN("gtocore.multiblock.invalid.message", "多方块%s位于(%s)未成型！运行 /" + GTOCore.MOD_ID + "c multiblock on 查看详情。", "Multiblock %s at (%s) is not formed! Run /" + GTOCore.MOD_ID + "c multiblock on for details.");
 
@@ -648,12 +641,15 @@ public final class LangHandler {
 
         addCNEN("gtocore.message.otherside_pass_required", "你感受到来自幽冥的隔绝感...", "You feel a sense of isolation from the Other Side...");
         addCNEN("gtocore.message.otherside_pass_required.1", "似乎需要伪装成幽冥中最强大的生物之一，才能通过这里。", "It seems you need to disguise yourself as one of the most powerful beings in the Other Side to pass through here.");
-        addCNEN("key.gtocore.movable_hud_toggle", "HUD 调节", "HUD Editing key");
+        addCNEN("key.gtocore.hud_interact", "GTO HUD操作模式", "GTO HUD Interaction Mode");
+        addCNEN("key.gtocore.hud_layout", "GTO HUD设置", "GTO HUD Settings");
     }
 
     public static void enInitialize(LanguageProvider provider) {
         init();
         MachineLang.init();
+        MonitorLang.init();
+        ImplantLang.init();
         BlockLang.init();
         ItemLang.init();
         LANGS.forEach((k, v) -> {

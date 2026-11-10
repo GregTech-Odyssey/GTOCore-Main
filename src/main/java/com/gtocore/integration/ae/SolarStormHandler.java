@@ -2,8 +2,6 @@ package com.gtocore.integration.ae;
 
 import com.gtocore.common.machine.multiblock.electric.SolarStormAggregationReactor;
 
-import com.gregtechceu.gtceu.core.ILevel;
-
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -14,8 +12,7 @@ import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.me.GridConnection;
 
-import com.gto.datasynclib.datastream.DataComponentKey;
-
+import com.suried.gtoutils.level.LevelStore;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 public final class SolarStormHandler {
 
     public static final ResourceKey<Level> SOLAR_SURFACE = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse("gtocore:solar_surface"));
-    private static final DataComponentKey<SolarStormHandler> KEY = DataComponentKey.createNoCodec("solar_storm_connections");
+    private static final LevelStore<SolarStormHandler> STATES = LevelStore.createWithLevel(SolarStormHandler::new);
 
     /** Keep the original connection object: QNB and addons retain its handle. */
     public interface Suspendable {
@@ -55,12 +52,7 @@ public final class SolarStormHandler {
     }
 
     private static SolarStormHandler get(Level level) {
-        var state = ILevel.getCapability(level, KEY);
-        if (state == null) {
-            state = new SolarStormHandler(level);
-            ILevel.setCapability(level, KEY, state);
-        }
-        return state;
+        return STATES.get(level);
     }
 
     @Nullable
@@ -116,14 +108,14 @@ public final class SolarStormHandler {
     }
 
     public static void forget(SolarStormAggregationReactor reactor) {
-        var state = ILevel.getCapability(reactor.getLevel(), KEY);
+        var state = STATES.getIfPresent(reactor.getLevel());
         if (state != null) state.reactors.remove(reactor);
     }
 
     /** A retry during a storm reuses the pending handle instead of creating a duplicate edge. */
     @Nullable
     public static GridConnection findPending(IGridNode a, IGridNode b) {
-        var state = ILevel.getCapability(a.getLevel(), KEY);
+        var state = STATES.getIfPresent(a.getLevel());
         if (state == null) return null;
         var connections = state.connectionsByNode.get(a);
         if (connections == null) return null;
@@ -139,12 +131,12 @@ public final class SolarStormHandler {
         if (!crossesSolarBoundary(a, b)) return;
         forget(a, connection);
         forget(b, connection);
-        var state = ILevel.getCapability(isSolarSurface(a.getLevel()) ? a.getLevel() : b.getLevel(), KEY);
+        var state = STATES.getIfPresent(isSolarSurface(a.getLevel()) ? a.getLevel() : b.getLevel());
         if (state != null) state.connections.remove(connection);
     }
 
     private static void forget(IGridNode node, GridConnection connection) {
-        var state = ILevel.getCapability(node.getLevel(), KEY);
+        var state = STATES.getIfPresent(node.getLevel());
         if (state == null) return;
         var connections = state.connectionsByNode.get(node);
         if (connections != null && connections.remove(connection) && connections.isEmpty()) state.connectionsByNode.remove(node);
@@ -152,7 +144,7 @@ public final class SolarStormHandler {
 
     /** GridNode.destroy skips connection.destroy, and suspended edges are absent from its list. */
     public static void forgetNode(IGridNode node) {
-        var state = ILevel.getCapability(node.getLevel(), KEY);
+        var state = STATES.getIfPresent(node.getLevel());
         if (state == null) return;
         var connections = state.connectionsByNode.get(node);
         if (connections == null) return;
@@ -165,7 +157,7 @@ public final class SolarStormHandler {
 
     /** Called only when the solar Level's rain flag actually changes. */
     public static void update(ServerLevel solar) {
-        var state = ILevel.getCapability(solar, KEY);
+        var state = STATES.getIfPresent(solar);
         if (state == null) return;
         boolean active = solar.getLevelData().isRaining();
         if (state.storm == active) return;

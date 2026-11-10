@@ -6,26 +6,29 @@ import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.common.data.machines.MultiBlockH;
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
 import com.gtocore.integration.ae.TieredInterfaces;
 
+import com.gtolib.GTOCore;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.*;
-import com.gregtechceu.gtceu.common.data.machines.GTResearchMachines;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
+import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 
 import com.glodblock.github.extendedae.common.EPPItemAndBlock;
-import com.hepdd.gtmthings.data.WirelessMachines;
-import vazkii.botania.common.item.BotaniaItems;
 
 import java.util.Locale;
 
@@ -33,6 +36,7 @@ import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
+import static com.gtocore.common.data.GTORecipeTypes.CHEMICAL_BATH_RECIPES;
 
 final class AssemblerA {
 
@@ -155,68 +159,85 @@ final class AssemblerA {
                 .duration(200)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("basic_monitor")
-                .inputItems(GTBlocks.CASING_STEEL_SOLID)
+        ASSEMBLER_RECIPES.builder("monitor_display_panel")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel, 2)
                 .inputItems(GTItems.COVER_SCREEN)
-                .inputItems(GTItems.SENSOR_LV, 2)
-                .outputItems(GTOMachines.BASIC_MONITOR)
-                .EUt(15)
+                .outputItems(MonitorRegistries.DISPLAY_PANEL.asStack(4))
+                .EUt(VA[LV])
                 .duration(100)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("monitor_elec")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(WirelessMachines.WIRELESS_ENERGY_MONITOR)
-                .outputItems(GTOMachines.MONITOR_MACHINE_ELECTRICITY)
-                .EUt(15)
+        ASSEMBLER_RECIPES.builder("monitor_me_panel")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel)
+                .inputItems(GTItems.SENSOR_LV)
+                .inputItems(AEItems.LOGIC_PROCESSOR.asItem())
+                .outputItems(MonitorRegistries.ME_PANEL.asStack())
+                .EUt(VA[LV])
                 .duration(100)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("monitor_mana")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(BotaniaItems.manaMirror)
-                .outputItems(GTOMachines.MONITOR_MACHINE_MANA)
-                .EUt(15)
+        ASSEMBLER_RECIPES.builder("monitor_machine_panel")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel)
+                .inputItems(GTItems.SENSOR_LV)
+                .inputItems(CustomTags.LV_CIRCUITS)
+                .circuitMeta(1)
+                .outputItems(MonitorRegistries.MACHINE_PANEL.asStack())
+                .EUt(VA[LV])
                 .duration(100)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("monitor_cwu")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(GTResearchMachines.HPCA_BRIDGE_COMPONENT)
-                .outputItems(GTOMachines.MONITOR_MACHINE_CWU)
-                .EUt(15)
+        ASSEMBLER_RECIPES.builder("monitor_redstone_panel")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel)
+                .inputItems(GTItems.SENSOR_LV)
+                .inputItems(TagPrefix.dust, GTMaterials.Redstone, 4)
+                .outputItems(MonitorRegistries.REDSTONE_PANEL.asStack())
+                .EUt(VA[LV])
                 .duration(100)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("monitor_custom")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(Items.NAME_TAG)
-                .outputItems(GTOMachines.MONITOR_MACHINE_CUSTOM)
-                .EUt(15)
+        ASSEMBLER_RECIPES.builder("monitor_share_panel")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel)
+                .inputItems(GTItems.EMITTER_LV)
+                .inputItems(CustomTags.LV_CIRCUITS)
+                .outputItems(MonitorRegistries.SHARE_PANEL.asStack())
+                .EUt(VA[LV])
                 .duration(100)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("monitor_ae_throughput")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(GTOAEParts.EXCHANGE_STORAGE_MONITOR.get().asItem())
-                .outputItems(GTOMachines.MONITOR_AE_THROUGHPUT)
-                .EUt(15)
-                .duration(100)
-                .save();
-        ASSEMBLER_RECIPES.builder("monitor_ae_cpu")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(AEBlocks.CRAFTING_MONITOR.asItem())
-                .outputItems(GTOMachines.MONITOR_AE_CPU)
-                .EUt(15)
+        ASSEMBLER_RECIPES.builder("monitor_download_panel")
+                .inputItems(TagPrefix.plate, GTMaterials.Steel)
+                .inputItems(GTItems.SENSOR_LV)
+                .inputItems(CustomTags.LV_CIRCUITS)
+                .circuitMeta(2)
+                .outputItems(MonitorRegistries.DOWNLOAD_PANEL.asStack())
+                .EUt(VA[LV])
                 .duration(100)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("monitor_machine")
-                .inputItems(GTOMachines.BASIC_MONITOR)
-                .inputItems(GTItems.PORTABLE_SCANNER)
-                .outputItems(GTOMachines.MONITOR_MACHINE)
-                .EUt(15)
-                .duration(100)
+        ASSEMBLER_RECIPES.builder("monitor_cable")
+                .inputItems(TagPrefix.wireFine, GTMaterials.Copper, 4)
+                .inputItems(TagPrefix.plate, GTMaterials.Rubber)
+                .outputItems(MonitorRegistries.CABLE_ITEM.asStack(8))
+                .EUt(VA[LV])
+                .duration(60)
+                .save();
+
+        var dyes = DyeColor.values();
+        var dyedCables = new Item[dyes.length];
+        for (var dye : dyes) {
+            var dyed = MonitorRegistries.dyedCable(dye);
+            dyedCables[dye.getId()] = dyed.get();
+            VanillaRecipeHelper.addShapedRecipe(GTOCore.id("monitor_cable_" + dye.getSerializedName()), dyed.asStack(8),
+                    "CCC", "CDC", "CCC", 'C', MonitorRegistries.CABLE_ITEM.get(), 'D', dye.getTag());
+        }
+
+        CHEMICAL_BATH_RECIPES.recipeBuilder("monitor_cable_decolor")
+                .inputItems(Ingredient.of(dyedCables))
+                .inputFluids(Chlorine, 50)
+                .outputItems(MonitorRegistries.CABLE_ITEM.asStack())
+                .category(GTRecipeCategories.CHEM_DYES)
+                .EUt(2)
+                .duration(400)
                 .save();
 
         ASSEMBLER_RECIPES.builder("wood_frame_fix")

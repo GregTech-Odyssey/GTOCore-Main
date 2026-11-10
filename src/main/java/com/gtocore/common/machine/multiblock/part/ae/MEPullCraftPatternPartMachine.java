@@ -7,7 +7,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -30,6 +29,7 @@ import appeng.blockentity.crafting.IMolecularAssemblerSupportedPattern;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -73,7 +73,7 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
     private final long[] pullThresholds = new long[getMaxPatternCount()];
 
     @Nullable
-    private TickableSubscription pullSubs;
+    private Task pullSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor mePullMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_PULL, this::pullTick);
@@ -155,7 +155,7 @@ public class MEPullCraftPatternPartMachine extends MECraftPatternPartMachine {
 
     private void cancelPullSubs() {
         if (pullSubs != null) {
-            pullSubs.unsubscribe();
+            pullSubs.cancel();
             pullSubs = null;
         }
     }

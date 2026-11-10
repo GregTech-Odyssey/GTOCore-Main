@@ -3,6 +3,7 @@ package com.gtocore.data;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.data.*;
 import com.gtocore.common.quest.hot.QuestHot;
+import com.gtocore.common.quest.hot.QuestHotConfig;
 import com.gtocore.config.GTORules;
 import com.gtocore.data.quest.QuestBookContents;
 import com.gtocore.data.recipe.*;
@@ -86,7 +87,7 @@ public final class Data {
         GTRegistries.BEDROCK_ORE_DEFINITIONS.unfreeze();
         BaseNodes.init();
         QuestBookContents.init();
-        QuestHot.validateAtStartup();
+        if (QuestHotConfig.enabled()) QuestHot.validateAtStartup();
         GTOOres.init();
         MeteoriteRecipe.init();
 

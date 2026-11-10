@@ -12,7 +12,6 @@ import com.gtolib.utils.MathUtil;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IControllable;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -31,6 +30,7 @@ import com.gto.datasynclib.blockentity.SaveToItem;
 import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.mana.ManaCollector;
@@ -76,7 +76,7 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     @SaveToDisk(defaultValue = "true")
     private boolean autoOutput = true;
     @Nullable
-    private TickableSubscription outputSubs;
+    private Task outputSubs;
 
     public SuperManaTankMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -130,7 +130,7 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     public void onUnload() {
         super.onUnload();
         if (outputSubs != null) {
-            outputSubs.unsubscribe();
+            outputSubs.cancel();
             outputSubs = null;
         }
     }

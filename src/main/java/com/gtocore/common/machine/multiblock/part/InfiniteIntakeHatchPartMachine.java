@@ -1,9 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -12,7 +10,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.common.data.GTTickTimeMonitors;
 import com.gregtechceu.gtceu.common.recipe.condition.DimensionCondition;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,6 +32,8 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +44,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
 
     public static final Map<ResourceKey<Level>, Fluid> AIR_MAP = new Reference2ReferenceOpenHashMap<>();
 
-    private TickableSubscription intakeSubs;
+    private Task intakeSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::intake);
@@ -55,7 +54,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
     @SyncToClient(scheduleUpdate = true)
     private boolean isWorking;
 
-    private TickableSubscription particleSubscription;
+    private Task particleSubscription;
 
     public InfiniteIntakeHatchPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.ULV, IO.IN);
@@ -86,7 +85,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
     public void onLoad() {
         super.onLoad();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            TaskHandler.enqueueTask(serverLevel, this::updateTankSubscription);
+            Schedulers.of(serverLevel).schedule(this::updateTankSubscription);
         } else {
             particleSubscription = subscribeClientTick(particleSubscription, this::particleTick, 5);
         }
@@ -96,7 +95,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
     public void onUnload() {
         super.onUnload();
         unsubscribe();
-        particleSubscription = ITickSubscription.unsubscribe(particleSubscription);
+        particleSubscription = Task.cancel(particleSubscription);
     }
 
     @Override
@@ -163,7 +162,7 @@ public final class InfiniteIntakeHatchPartMachine extends WorkableTieredIOPartMa
 
     private void unsubscribe() {
         if (intakeSubs != null) {
-            intakeSubs.unsubscribe();
+            intakeSubs.cancel();
             intakeSubs = null;
         }
         isWorking = false;

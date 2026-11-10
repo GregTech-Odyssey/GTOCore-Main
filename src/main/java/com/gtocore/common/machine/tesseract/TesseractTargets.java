@@ -1,11 +1,12 @@
 package com.gtocore.common.machine.tesseract;
 
 import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
+import com.suried.gtoutils.schedule.CoalescedTask;
+import com.suried.gtoutils.schedule.Schedulers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -19,7 +20,7 @@ public final class TesseractTargets implements RemoteKeyTarget.Listener {
     private int size;
     private boolean subscribed;
     @Nullable
-    private TaskHandler.ReusableTask refresh;
+    private CoalescedTask refresh;
 
     public TesseractTargets(TesseractCapCache.Holder holder) {
         this.holder = holder;
@@ -76,8 +77,8 @@ public final class TesseractTargets implements RemoteKeyTarget.Listener {
         var level = machine.getLevel();
         if (level == null) return;
         var task = refresh;
-        if (task == null) refresh = task = new TaskHandler.ReusableTask(this::refresh);
-        TaskHandler.enqueueTask(level, task);
+        if (task == null) refresh = task = new CoalescedTask(this::refresh);
+        Schedulers.of(level).submit(task);
     }
 
     private void refresh() {

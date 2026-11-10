@@ -125,7 +125,7 @@ final class QuantumForceTransformer {
                 .inputFluids(GTMaterials.Duranium, 144)
                 .inputFluids(GTOMaterials.ExcitedDtec, 100)
                 .chancedOutput(GTOItems.QUANTUM_ANOMALY.asItem(), 1000, 0)
-                .EUt(2013265920)
+                .EUt(503316480)
                 .duration(400)
                 .save();
 

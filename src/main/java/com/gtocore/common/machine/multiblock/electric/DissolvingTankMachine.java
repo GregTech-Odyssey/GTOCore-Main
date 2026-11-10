@@ -59,7 +59,7 @@ public final class DissolvingTankMachine extends ElectricMultiblockMachine imple
     @Nullable
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        if (hasStructurePart(StructureModuleKeys.DISSOLVING_TANK_EXTENSION)) {
+        if (getAssembly().has(StructureModuleKeys.DISSOLVING_TANK_EXTENSION)) {
             return GTORecipeModifiers.UPGRADE_PARALLELIZABLE_OVERCLOCK.applyModifier(this, unit, recipe);
         }
         var fluidList = recipe.fluidInputs;

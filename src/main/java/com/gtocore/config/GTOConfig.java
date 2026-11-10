@@ -4,9 +4,7 @@ import com.gtocore.common.CommonProxy;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.KeepName;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.api.gui.hud.HudSettings;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -335,6 +333,11 @@ public final class GTOConfig {
         public int maxMonitorSize = 16;
 
         @Configurable
+        @Configurable.Comment({ "允许监控图片组件使用网络图片（由服务端下载，只访问公网地址）", "Allow monitor image components to use web images (downloaded by the server, public addresses only)" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Monitor Web Images", cn = "监控器网络图片")
+        public boolean monitorWebImages = true;
+
+        @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Mob Settings", cn = "生物设置")
         public GamePlay.MobConfig mobConfig = new GamePlay.MobConfig();
 
@@ -393,10 +396,6 @@ public final class GTOConfig {
         public RenderingConfig renderingConfig = new RenderingConfig();
 
         @Configurable
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "HUD Settings", cn = "HUD 设置")
-        public HUDConfig hud = new HUDConfig();
-
-        @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Minimap Settings", cn = "小地图设置")
         public MinimapConfig minimap = new MinimapConfig();
 
@@ -438,117 +437,6 @@ public final class GTOConfig {
             @Configurable.Gui.Slider
             @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Ore Vein Name Text Size", cn = "矿脉名称文字大小")
             public int oreVeinNameScale = 200;
-        }
-
-        @DataGeneratorScanned
-        public static class HUDConfig {
-
-            @KeepName
-            @Configurable
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Panel Layouts", cn = "面板布局")
-            public HudSettings panels = new HudSettings();
-
-            @Configurable
-            @Configurable.Comment({ "启用无线能量 HUD 显示", "Enable Wireless Energy HUD display" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Enabled", cn = "无线能量 HUD 启用")
-            public boolean wirelessEnergyHUDEnabled = false;
-
-            @Configurable
-            @Configurable.Comment({ "1：按电塔最高输出电压显示安时；2：按容量 EU ÷ 72000 向下选择安时显示档位；3：显示 EU 数量；数字使用可读简写", "1: tower output voltage; 2: amp-hour tier from capacity EU / 72000, rounded down; 3: EU amount; numbers use readable abbreviations" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Display Format", cn = "无线能量 HUD 显示格式")
-            @Configurable.Range(min = 1, max = 3)
-            @Configurable.Gui.Slider
-            public int wirelessEnergyHUDDisplayFormat = 1;
-
-            @Configurable
-            @Configurable.Comment({ "无线能量 HUD 的默认 X 相对位置", "0意味着屏幕左侧，100意味着屏幕右侧", "The default X relative position of the Wireless Energy HUD", "0.0 means the left side of the screen, 1.0 means the right side of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Default X", cn = "无线能量 HUD 默认 X 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int wirelessEnergyHUDDefaultX = 5;
-
-            @Configurable
-            @Configurable.Comment({ "无线能量 HUD 的默认 Y 相对位置", "0意味着屏幕顶部，100意味着屏幕底部", "The default Y relative position of the Wireless Energy HUD", "0.0 means the top of the screen, 1.0 means the bottom of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Default Y", cn = "无线能量 HUD 默认 Y 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int wirelessEnergyHUDDefaultY = 75;
-
-            @Configurable
-            @Configurable.Comment({ "启用研究点数 HUD 显示", "Enable Research Points HUD display" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Research Points HUD Enabled", cn = "研究点数 HUD 启用")
-            public boolean researchPointsHUDEnabled = false;
-
-            @Configurable
-            @Configurable.Comment({ "研究点数 HUD 的默认 X 相对位置", "0意味着屏幕左侧，100意味着屏幕右侧", "The default X relative position of the Research Points HUD", "0 means the left side of the screen, 100 means the right side of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Research Points HUD Default X", cn = "研究点数 HUD 默认 X 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int researchPointsHUDDefaultX = 92;
-
-            @Configurable
-            @Configurable.Comment({ "研究点数 HUD 的默认 Y 相对位置", "0意味着屏幕顶部，100意味着屏幕底部", "The default Y relative position of the Research Points HUD", "0 means the top of the screen, 100 means the bottom of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Research Points HUD Default Y", cn = "研究点数 HUD 默认 Y 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int researchPointsHUDDefaultY = 12;
-
-            @Configurable
-            @Configurable.Comment({ "有疾病积累时显示疾病 HUD", "Show the Disease HUD when a medical condition has accumulated" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Enabled", cn = "疾病 HUD 启用")
-            public boolean medicalConditionHUDEnabled = true;
-
-            @Configurable
-            @Configurable.Comment({ "疾病 HUD 的默认 X 相对位置，0 为左侧，100 为右侧", "Disease HUD relative X position: 0 is left, 100 is right" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Default X", cn = "疾病 HUD 默认 X 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int medicalConditionHUDDefaultX = 0;
-
-            @Configurable
-            @Configurable.Comment({ "疾病 HUD 的默认 Y 相对位置，0 为顶部，100 为底部", "Disease HUD relative Y position: 0 is top, 100 is bottom" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Disease HUD Default Y", cn = "疾病 HUD 默认 Y 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int medicalConditionHUDDefaultY = 50;
-
-            @Configurable
-            @Configurable.Comment({ "启用客户端属性 HUD 显示", "Enable Client Attributes HUD display" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Client Attributes HUD Enabled", cn = "客户端属性 HUD 启用")
-            public boolean clientAttributesHUDEnabled = false;
-
-            @Configurable
-            @Configurable.Comment({ "客户端属性 HUD 的默认 X 相对位置", "0意味着屏幕左侧，100意味着屏幕右侧", "The default X relative position of the Client Attributes HUD", "0 means the left side of the screen, 100 means the right side of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Client Attributes HUD Default X", cn = "客户端属性 HUD 默认 X 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int clientAttributesHUDDefaultX = 8;
-
-            @Configurable
-            @Configurable.Comment({ "客户端属性HUD的默认Y相对位置", "0意味着屏幕顶部，100意味着屏幕底部", "The default Y relative position of the Client Attributes HUD", "0 means the top of the screen, 100 means the bottom of the screen" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Client Attributes HUD Default Y", cn = "客户端属性 HUD 默认 Y 位置")
-            @Configurable.Range(min = 0, max = 100)
-            @Configurable.Gui.Slider
-            public int clientAttributesHUDDefaultY = 12;
-
-            @Configurable
-            @Configurable.Comment({ "启用后，仅在调出HUD配置界面时显示客户端属性HUD，游戏中将隐藏", "When enabled, the Client Attributes HUD will only be displayed when the HUD configuration interface is called up, and will be hidden in the game" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Hide Client Attributes HUD In Game", cn = "游戏中隐藏客户端属性 HUD")
-            public boolean clientAttributesHUDHideInGame = false;
-
-            @Configurable
-            @Configurable.Comment({ "无线能量 HUD 显示的历史秒数", "例如：设为30则显示过去30秒的能量变化情况", "The number of historical seconds displayed by the Wireless Energy HUD", "For example: setting it to 30 will show the energy changes over the past 30 seconds" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD History Seconds", cn = "无线能量 HUD 历史秒数")
-            @Configurable.Range(min = 5, max = 300)
-            @Configurable.Gui.Slider
-            public int wirelessEnergyHUDHistorySeconds = 30;
-
-            @Configurable
-            @Configurable.Comment({ "无线能量 HUD 折线颜色", "Wireless Energy HUD line color" })
-            @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Wireless Energy HUD Line Color", cn = "无线能量 HUD 折线颜色")
-            @Configurable.StringPattern("#[0-9a-fA-F]{1,6}")
-            @Configurable.Gui.ColorValue
-            public String wirelessEnergyHUDLineColor = "#ECEC71";
         }
     }
 

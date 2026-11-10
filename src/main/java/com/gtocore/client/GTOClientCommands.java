@@ -3,6 +3,7 @@ package com.gtocore.client;
 import com.gtocore.client.screen.MessageListScreen;
 import com.gtocore.client.website.BugReportClient;
 import com.gtocore.client.website.WebsiteConsent;
+import com.gtocore.common.quest.hot.QuestHotConfig;
 import com.gtocore.utils.NotificationUtils;
 
 import com.gtolib.GTOCore;
@@ -72,7 +73,7 @@ public final class GTOClientCommands {
                     Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(RulesScreen.view(null, RuleManager.current())));
                     return 1;
                 }))
-                .then(Commands.literal("questreload").requires(source -> QuestHotReload.isEnabled()).executes((ctx) -> {
+                .then(Commands.literal("questreload").requires(source -> QuestHotConfig.enabled() && QuestHotReload.isEnabled()).executes((ctx) -> {
                     QuestHotReload.reloadAll();
                     return 1;
                 })));

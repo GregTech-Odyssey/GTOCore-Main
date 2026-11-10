@@ -40,13 +40,6 @@ public final class QuestTextures {
     public static final QuestTexture GUI_OVERLAY_OUT_SLOT_OVERLAY = QuestTexture.file(RLUtils.fromNamespaceAndPath("gtceu", "textures/gui/overlay/out_slot_overlay.png"));
     public static final QuestTexture GUI_RGBCOLORWHEEL = QuestTexture.file(RLUtils.fromNamespaceAndPath("ftblibrary", "textures/gui/rgbcolorwheel.png"));
     public static final QuestTexture LOGO_APPIED_ENERGISTICS = QuestTexture.file(GTOCore.id("textures/quest/logo_appied_energistics.png"));
-    public static final QuestTexture MONITOR_AE_CPU = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_ae_cpu"));
-    public static final QuestTexture MONITOR_AE_THROUGHPUT = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_ae_throughput"));
-    public static final QuestTexture MONITOR_CUSTOM = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_custom"));
-    public static final QuestTexture MONITOR_CWU = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_cwu"));
-    public static final QuestTexture MONITOR_ELECTRICITY = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_electricity"));
-    public static final QuestTexture MONITOR_MACHINE = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_machine"));
-    public static final QuestTexture MONITOR_MANA = QuestTexture.sprite(GTOCore.id("item/monitor/monitor_mana"));
     public static final QuestTexture MULTIBLOCK_ANCIENT_REACTOR_CORE_OVERLAY_TOP = QuestTexture.sprite(GTOCore.id("block/multiblock/ancient_reactor_core/overlay_top"));
     public static final QuestTexture MULTIBLOCK_DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_OVERLAY_TOP = QuestTexture.sprite(GTOCore.id("block/multiblock/dimensionally_transcendent_plasma_forge/overlay_top"));
     public static final QuestTexture NETHER_PORTAL = QuestTexture.sprite(RLUtils.fromNamespaceAndPath("minecraft", "block/nether_portal"));

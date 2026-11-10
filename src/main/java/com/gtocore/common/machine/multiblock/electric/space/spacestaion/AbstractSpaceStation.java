@@ -10,7 +10,6 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -22,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.api.systems.OxygenApi;
 import earth.terrarium.adastra.api.systems.TemperatureApi;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -44,7 +44,7 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @SaveToDisk(defaultValue = "0")
     protected int ready;
     @Nullable
-    private TickableSubscription tickSubscription = null;
+    private Task tickSubscription = null;
     boolean shouldShowReadyText = true;
 
     private boolean firstLoad;
@@ -56,11 +56,9 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Override
     public void onStructureFormed() {
         var assembly = getAssembly();
-        if (assembly != null) {
-            var ports = new ArrayList<BlockPos>(assembly.ports(GTOMachineProtocols.STATION_DOCKING));
-            ports.addAll(assembly.ports(GTOMachineProtocols.STATION_JUNCTION));
-            stationPorts = ports.toArray(BlockPos[]::new);
-        }
+        var ports = new ArrayList<BlockPos>(assembly.ports(GTOMachineProtocols.STATION_DOCKING));
+        ports.addAll(assembly.ports(GTOMachineProtocols.STATION_JUNCTION));
+        stationPorts = ports.toArray(BlockPos[]::new);
         super.onStructureFormed();
     }
 
@@ -115,7 +113,7 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     public void onUnload() {
         super.onUnload();
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
     }

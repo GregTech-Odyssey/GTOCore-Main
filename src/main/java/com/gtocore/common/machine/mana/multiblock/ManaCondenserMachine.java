@@ -56,7 +56,7 @@ public final class ManaCondenserMachine extends ManaMultiblockMachine {
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, @NotNull GTRecipeDefinition recipe) {
-        if (structureParam(FORM) != requiredForm) {
+        if (getAssembly().get(FORM) != requiredForm) {
             setIdleReason(IdleReason.MANA_CONDENSER_FORM);
             return false;
         }

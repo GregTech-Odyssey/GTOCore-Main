@@ -26,10 +26,11 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent
 import net.minecraftforge.event.entity.living.LivingEvent
 import net.minecraftforge.event.level.LevelEvent
 
-import com.gregtechceu.gtceu.api.machine.TickableSubscription
-import com.gregtechceu.gtceu.utils.TaskHandler
 import com.gto.datasynclib.util.holder.ObjHolder
 import com.gtolib.api.annotation.DataGeneratorScanned
+import com.suried.gtoutils.schedule.Cadence
+import com.suried.gtoutils.schedule.Schedulers
+import com.suried.gtoutils.schedule.Task
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
 import kotlinx.coroutines.*
@@ -131,17 +132,17 @@ object AnimalsRevengeEvent {
             if (!isFoodFromEntity(type, eaten.getItem(), serverLevel)) continue
 
             val tick = intArrayOf(0)
-            val holder = ObjHolder<TickableSubscription>()
-            holder.value = TaskHandler.enqueueTick(serverLevel, {
+            val holder = ObjHolder<Task>()
+            holder.value = Schedulers.of(serverLevel).repeat(Cadence.EVERY_TICK, {
                 tick[0]++
                 if (tick[0] >= preTicks) {
                     if (mob.isAlive) {
                         val hurt = mob.hurt(serverLevel.damageSources().generic(), damage)
                         if (hurt) makeAnimalAggressive(mob, player)
                     }
-                    holder.value?.unsubscribe()
+                    holder.value?.cancel()
                 }
-            }, 0, 1)
+            })
         }
     }
 
@@ -178,8 +179,8 @@ object AnimalsRevengeEvent {
         val types = BuiltInRegistries.ENTITY_TYPE.toList().iterator()
 
         return suspendCancellableCoroutine { cont ->
-            val subHolder = ObjHolder<TickableSubscription>()
-            subHolder.value = TaskHandler.enqueueTick(level, {
+            val subHolder = ObjHolder<Task>()
+            subHolder.value = Schedulers.of(level).repeat(Cadence.EVERY_TICK, {
                 var processed = 0
                 try {
                     while (processed < 12 && types.hasNext()) {
@@ -197,18 +198,18 @@ object AnimalsRevengeEvent {
                     }
 
                     if (!types.hasNext()) {
-                        subHolder.value?.unsubscribe()
+                        subHolder.value?.cancel()
                         lootCacheBuilt = true
                         if (cont.isActive) cont.resume(Unit) {}
                     }
                 } catch (_: Throwable) {
-                    subHolder.value?.unsubscribe()
+                    subHolder.value?.cancel()
                     lootCacheBuilt = true
                     if (cont.isActive) cont.resume(Unit) {}
                 }
-            }, 0, 1)
+            })
 
-            cont.invokeOnCancellation { subHolder.value?.unsubscribe() }
+            cont.invokeOnCancellation { subHolder.value?.cancel() }
         }
     }
 

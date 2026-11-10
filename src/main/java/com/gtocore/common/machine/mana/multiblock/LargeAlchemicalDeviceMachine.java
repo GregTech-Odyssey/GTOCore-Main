@@ -44,7 +44,7 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
     }
 
     private double timeReduction() {
-        return hasStructurePart(EXTENSION) ? 0.01 : 0.4;
+        return getAssembly().has(EXTENSION) ? 0.01 : 0.4;
     }
 
     @Override
@@ -90,7 +90,7 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
      * 计算匹配率
      */
     private int calculateMatchRate(int[] recipeParams) {
-        if (hasStructurePart(EXTENSION)) return 10000;
+        if (getAssembly().has(EXTENSION)) return 10000;
         int distance = calculateDistance(probabilityParams, recipeParams);
 
         if (distance <= 0) return 10000;
@@ -151,7 +151,7 @@ public final class LargeAlchemicalDeviceMachine extends ManaMultiblockMachine {
     public void customText(@NotNull List<Component> textList) {
         super.customText(textList);
         if (!MultiblockPage.isScreenText()) textList.add(Component.translatable("gtocore.machine.duration_multiplier.tooltip", timeReduction()));
-        if (hasStructurePart(EXTENSION)) textList.add(Component.translatable("gtocore.machine.alchemical_device.2"));
+        if (getAssembly().has(EXTENSION)) textList.add(Component.translatable("gtocore.machine.alchemical_device.2"));
         else textList.add(Component.translatable("gtocore.machine.alchemical_device.1"));
     }
 

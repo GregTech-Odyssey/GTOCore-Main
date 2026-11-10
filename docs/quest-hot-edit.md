@@ -2,6 +2,8 @@
 
 开发环境（`runClient` / `runServer` / `runData`）下，Gradle 把源码根目录和编译 classpath 写进 `build/quest-hotreload/classpath.txt`，并通过系统属性 `gtocore.questHotReload` 交给游戏。正式包没有这个属性，以下功能全部不启用。
 
+**正式环境不得加载热修改的类**：`QuestHot`、`QuestSource`、`QuestEdits`、`QuestItemSyntax`、`QuestHotReload` 引用了 javac 语法树（`com.sun.source`，属于 `jdk.compiler` 模块），玩家用 JRE 时没有这个模块，类一加载就抛 `NoClassDefFoundError`，方法里的启用判断拦不住（字节码校验先于执行）。是否启用只读 `QuestHotConfig`（不引用 `jdk.compiler`），所有从热修改包外进来的入口（含 GTOLib 任务书界面里的 `QuestEditor.available()`）都先判断 `QuestHotConfig.enabled()`，再调用上面这些类。
+
 ## 统一入口
 
 - `com.gtocore.common.quest.hot.QuestHot`：热修改的唯一入口。所有对章节源码的改动（移动、标题/副标题/描述、数量、开关、依赖、新建、复制、删除、撤销重做）都先变成一条操作，按语法树定位、只改对应的几个字符。

@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.cover.filter.FluidFilter;
 import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyTransfer;
 import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
@@ -42,6 +41,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.hepdd.gtmthings.common.item.Behaviour.WirelessTransferCoverPlaceBehavior;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,7 +67,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     private static final Component DIMENSION = Component.translatable("gtocore.cover.advanced_wireless_transfer.dimension");
 
     protected final int transferType;
-    private TickableSubscription subscription;
+    private Task subscription;
     @SaveToDisk
     private String dimensionId;
     @SaveToDisk
@@ -152,7 +152,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     public void onRemoved() {
         super.onRemoved();
         if (subscription != null) {
-            subscription.unsubscribe();
+            subscription.cancel();
         }
     }
 

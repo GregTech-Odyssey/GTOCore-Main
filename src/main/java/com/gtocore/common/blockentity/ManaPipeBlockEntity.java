@@ -129,7 +129,7 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
         }
         autoTransfer = false;
         if (!hasHandler) {
-            transferSubs.unsubscribe();
+            transferSubs.cancel();
             transferSubs = null;
         }
     }

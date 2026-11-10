@@ -934,7 +934,7 @@ final class ChemicaRreactor {
 
         CHEMICAL_RECIPES.recipeBuilder("silver_tetrafluoroborate")
                 .inputItems(TagPrefix.dust, GTMaterials.Silver, 6)
-                .inputFluids(GTOMaterials.BoronFluoride, 2000)
+                .inputFluids(GTOMaterials.BoronFluoride, 8000)
                 .inputFluids(GTMaterials.Oxygen, 3000)
                 .outputItems(TagPrefix.dust, GTOMaterials.BoronTrioxide, 5)
                 .outputFluids(GTOMaterials.SilverTetrafluoroborate, 6000)

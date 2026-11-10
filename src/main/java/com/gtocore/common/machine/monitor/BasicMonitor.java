@@ -2,14 +2,12 @@ package com.gtocore.common.machine.monitor;
 
 import com.gtolib.api.gui.MonitorConfigurationPreview;
 
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -29,6 +27,7 @@ import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +38,7 @@ import java.util.UUID;
 
 public class BasicMonitor extends MetaMachine implements IBindable, IMachineLife, IMonitor, IFancyUIMachine {
 
-    private TickableSubscription tickSubscription;
+    private Task tickSubscription;
 
     @Getter
     @SaveToDisk
@@ -66,7 +65,7 @@ public class BasicMonitor extends MetaMachine implements IBindable, IMachineLife
         if (getLevel() != null && !getLevel().isClientSide) {
             Manager.removeBlock(this);
         }
-        tickSubscription = ITickSubscription.unsubscribe(tickSubscription);
+        tickSubscription = Task.cancel(tickSubscription);
     }
 
     @OnlyIn(Dist.CLIENT)

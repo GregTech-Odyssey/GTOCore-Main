@@ -2,9 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.gcym;
 
 import com.gtocore.common.data.GTOTickTimeMonitors;
 
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -17,6 +15,8 @@ import net.minecraft.world.phys.AABB;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
 
+import com.suried.gtoutils.schedule.Task;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
     private AABB grindBound = new AABB(BlockPos.ZERO);
     private final List<IKeyHandler<AEItemKey>> handlers = new ArrayList<>();
 
-    private TickableSubscription hurtSub;
+    private Task hurtSub;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::spinWheels);
@@ -48,7 +48,7 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        ITickSubscription.unsubscribe(hurtSub);
+        Task.cancel(hurtSub);
         hurtSub = null;
         handlers.clear();
     }
@@ -56,7 +56,7 @@ public class LargeMacerationTowerMachine extends GCYMMultiblockMachine {
     @Override
     public void onUnload() {
         super.onUnload();
-        ITickSubscription.unsubscribe(hurtSub);
+        Task.cancel(hurtSub);
         hurtSub = null;
         handlers.clear();
     }

@@ -24,7 +24,7 @@ public class ComponentAssemblerMachine extends TierCasingMultiblockMachine {
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        int cap = hasStructurePart(StructureModuleKeys.COMPONENT_ASSEMBLER_ASSEMBLY) ? GTValues.UV : GTValues.IV;
+        int cap = getAssembly().has(StructureModuleKeys.COMPONENT_ASSEMBLER_ASSEMBLY) ? GTValues.UV : GTValues.IV;
         casingTier = Math.min(cap, getCasingTier(GTORecipeDataKeys.COMPONENT_ASSEMBLY_CASING_TIER));
     }
 

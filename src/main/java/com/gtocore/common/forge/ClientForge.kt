@@ -15,7 +15,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.eventbus.api.EventPriority
 
 import com.google.gson.GsonBuilder
-import com.gregtechceu.gtceu.utils.TaskHandler
+import com.suried.gtoutils.schedule.Schedulers
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -297,7 +297,7 @@ object ClientForge {
                     .filter { it.shouldShow(langCode) && !config.isConfirmed(it.contentHash) && (showHistoricalMessages || it.isRecent()) }
                     .size
                 // 延迟显示 GUI，确保客户端完全加载
-                TaskHandler.enqueueTask(event.player.clientLevel, { showMessageScreen(msg, 1, total) }, 40)
+                Schedulers.of(event.player.clientLevel).schedule(40) { showMessageScreen(msg, 1, total) }
             }
         Message.serverLangSync.send({ buf: FriendlyByteBuf ->
             buf.writeUtf(langCode)

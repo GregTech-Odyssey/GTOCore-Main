@@ -7,7 +7,6 @@ import com.gtolib.api.network.NetworkPack;
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,6 +30,7 @@ import net.minecraftforge.event.server.ServerStoppedEvent;
 
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
+import com.suried.gtoutils.level.LoadedChunks;
 import lombok.Getter;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -378,7 +378,7 @@ public final class Manager {
             ArrayList<AbstractInfoProviderMonitor> providers = new ArrayList<>();
             for (int x = fromX; x <= toX; x++) {
                 for (int y = fromY; y <= toY; y++) {
-                    var blockEntity = ILevel.getCachedBlockEntity(level, new GridFacedPoint(facing, x, y).toBlockPos());
+                    var blockEntity = LoadedChunks.blockEntity(level, new GridFacedPoint(facing, x, y).toBlockPos());
                     if (blockEntity instanceof MetaMachineBlockEntity holder && holder.getMetaMachine() instanceof AbstractInfoProviderMonitor provider) {
                         providers.add(provider);
                     }
@@ -391,7 +391,7 @@ public final class Manager {
             ArrayList<BasicMonitor> monitors = new ArrayList<>(width() * height());
             for (int x = fromX; x <= toX; x++) {
                 for (int y = fromY; y <= toY; y++) {
-                    var blockEntity = ILevel.getCachedBlockEntity(level, new GridFacedPoint(facing, x, y).toBlockPos());
+                    var blockEntity = LoadedChunks.blockEntity(level, new GridFacedPoint(facing, x, y).toBlockPos());
                     if (blockEntity instanceof MetaMachineBlockEntity holder && holder.getMetaMachine() instanceof BasicMonitor monitor) {
                         monitors.add(monitor);
                     }

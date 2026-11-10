@@ -90,6 +90,10 @@ public final class GridReadouts {
         lines.add(average(NOW, ChatFormatting.DARK_PURPLE, flow == Flow.NET, tier, flow.value(stats, null, second)));
     }
 
+    public static Component netNow(@Nullable EnergyStats stats, int second, int tier) {
+        return WirelessText.signedPower(Flow.NET.value(stats, null, second), tier);
+    }
+
     public static Component fillOrDrain(EnergyAccount account, @Nullable EnergyStats stats, int second) {
         double net = Flow.NET.value(stats, null, second);
         if (net > 0) {

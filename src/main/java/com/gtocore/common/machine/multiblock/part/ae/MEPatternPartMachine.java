@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
@@ -36,7 +35,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -81,6 +79,8 @@ import com.google.common.collect.HashBiMap;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -173,7 +173,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     private List<IPatternDetails> patterns = Collections.emptyList();
     private boolean needPatternSync;
     @Nullable
-    private TickableSubscription updateSubs;
+    private Task updateSubs;
 
     protected MEPatternPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
         super(holder, IO.IN);
@@ -435,7 +435,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         if (getMainNode().isOnline()) {
             updateSubs = subscribeServerTick(updateSubs, this::update);
         } else if (updateSubs != null) {
-            updateSubs.unsubscribe();
+            updateSubs.cancel();
             updateSubs = null;
         }
     }
@@ -447,7 +447,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
                 needPatternSync = false;
             }
         } else if (updateSubs != null) {
-            updateSubs.unsubscribe();
+            updateSubs.cancel();
             updateSubs = null;
         }
     }
@@ -508,7 +508,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
             return;
         }
         if (!detailsInit && getLevel() instanceof ServerLevel level) {
-            TaskHandler.enqueueTask(level, () -> {
+            Schedulers.of(level).schedule(10, () -> {
                 var slots = getInternalInventory();
                 for (int i = 0; i < patternInventory.getSlots(); i++) {
                     var patternDetails = decodePattern(patternInventory.getStackInSlot(i), i);
@@ -517,7 +517,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
                 updatePatterns();
                 onDetailsPostInit();
                 detailsInit = true;
-            }, 10);
+            });
         }
     }
 

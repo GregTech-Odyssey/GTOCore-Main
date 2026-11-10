@@ -37,12 +37,12 @@ public final class IntegratedOreProcessor extends CrossRecipeMultiblockMachine {
     public void addControls(ControlPanel controls) {
         super.addControls(controls);
         controls.addToggle(REPEATED_RECIPES, () -> repeatedRecipes, value -> repeatedRecipes = value)
-                .disabled(() -> !hasStructurePart(EXTENSION), REPEATED_RECIPES_UNAVAILABLE);
+                .disabled(() -> !getAssembly().has(EXTENSION), REPEATED_RECIPES_UNAVAILABLE);
     }
 
     @Override
     public int getThread() {
-        return hasStructurePart(EXTENSION) ? 8 : 1;
+        return getAssembly().has(EXTENSION) ? 8 : 1;
     }
 
     @Override

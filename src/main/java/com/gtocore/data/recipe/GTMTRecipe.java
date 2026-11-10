@@ -22,7 +22,6 @@ import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
 
 import net.minecraft.world.item.Items;
-import net.minecraftforge.common.Tags;
 
 import appeng.core.definitions.AEBlocks;
 
@@ -666,18 +665,10 @@ public final class GTMTRecipe {
                 .EUt(GTValues.VA[GTValues.HV])
                 .save();
 
-        VanillaRecipeHelper.addShapedRecipe(true, "advanced_terminal", CustomItems.ADVANCED_TERMINAL.asItem(),
-                "SGS", "PBP", "PWP",
-                'S', new MaterialEntry(TagPrefix.screw, GTMaterials.Steel),
-                'G', Tags.Items.GLASS_PANES,
-                'B', CustomTags.LV_CIRCUITS,
-                'P', new MaterialEntry(TagPrefix.plate, GTMaterials.Steel),
-                'W', GTItems.TERMINAL);
-
         VanillaRecipeHelper.addShapedRecipe("wireless_energy_terminal", CustomItems.WIRELESS_ENERGY_TERMINAL.asItem(),
                 "ABA",
                 "CDC",
                 "ACA",
-                'A', new MaterialEntry(TagPrefix.foil, GTMaterials.Tin), 'B', GTItems.COVER_SCREEN.asItem(), 'C', new MaterialEntry(TagPrefix.gem, GTMaterials.EnderPearl), 'D', CustomItems.ADVANCED_TERMINAL.asItem());
+                'A', new MaterialEntry(TagPrefix.foil, GTMaterials.Tin), 'B', GTItems.COVER_SCREEN.asItem(), 'C', new MaterialEntry(TagPrefix.gem, GTMaterials.EnderPearl), 'D', GTItems.TERMINAL.asItem());
     }
 }

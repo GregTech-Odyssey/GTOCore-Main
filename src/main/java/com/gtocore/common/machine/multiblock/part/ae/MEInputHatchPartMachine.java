@@ -9,7 +9,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.annotation.SaveToDataStick;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
@@ -36,6 +35,7 @@ import com.gto.ae.helpers.facility_management.WorkingStatus;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +46,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine {
 
     @Nullable
-    private TickableSubscription autoIOSubs;
+    private Task autoIOSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meInputMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_INPUT, this::autoIO);
@@ -171,7 +171,7 @@ public class MEInputHatchPartMachine extends StatusTrackedMEPartMachine {
             autoIOSubs = subscribeServerTick(autoIOSubs, meInputMonitor, 40);
         } else if (autoIOSubs != null) {
             setStatus(WorkingStatus.IDLE);
-            autoIOSubs.unsubscribe();
+            autoIOSubs.cancel();
             autoIOSubs = null;
         }
     }

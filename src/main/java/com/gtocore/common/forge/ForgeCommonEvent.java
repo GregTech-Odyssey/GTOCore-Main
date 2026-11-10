@@ -11,7 +11,6 @@ import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.common.machine.monitor.MonitorBlock;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
-import com.gtocore.common.medical.MedicalConditionSync;
 import com.gtocore.common.saved.*;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
@@ -54,7 +53,6 @@ import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.item.CoverPlaceBehavior;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 
 import net.minecraft.ChatFormatting;
@@ -113,6 +111,7 @@ import com.glodblock.github.extendedae.common.parts.PartExPatternProvider;
 import com.glodblock.github.extendedae.common.tileentities.TileExPatternProvider;
 import com.google.common.collect.ImmutableMap;
 import com.hepdd.gtmthings.data.CustomItems;
+import com.suried.gtoutils.schedule.Schedulers;
 import earth.terrarium.adastra.common.entities.mob.GlacianRam;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.ApiStatus;
@@ -151,7 +150,6 @@ public final class ForgeCommonEvent {
         AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();
-        MedicalConditionSync.init();
         MEPatternBufferConnectionHandler.init();
         QuestServer.init();
     }
@@ -211,10 +209,10 @@ public final class ForgeCommonEvent {
         if (!level.isClientSide && player.isShiftKeyDown() && level instanceof ServerLevel serverLevel) {
             Direction clickedFace = event.getFace();
             if (isPatternProviderItem(item) && MetaMachine.getMachine(level, pos) instanceof SimpleTieredMachine) {
-                TaskHandler.enqueueTask(serverLevel, () -> configureMachineForPatternProvider(serverLevel, pos, clickedFace));
+                Schedulers.of(serverLevel).schedule(() -> configureMachineForPatternProvider(serverLevel, pos, clickedFace));
             } else if (item instanceof MetaMachineItem && isPatternProviderAt(level, pos, clickedFace)) {
                 BlockPos machinePos = pos.relative(clickedFace);
-                TaskHandler.enqueueTask(serverLevel, () -> configureMachineForPatternProvider(serverLevel, machinePos, clickedFace.getOpposite()));
+                Schedulers.of(serverLevel).schedule(() -> configureMachineForPatternProvider(serverLevel, machinePos, clickedFace.getOpposite()));
             }
         }
 
@@ -491,11 +489,29 @@ public final class ForgeCommonEvent {
         }
     }
 
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static void remapAdvancedTerminal(MissingMappingsEvent event) {
+        event.getMappings(Registries.ITEM, "gtmthings").forEach(mapping -> {
+            if (mapping.getKey().getPath().equals("advanced_terminal")) mapping.remap(GTItems.TERMINAL.get());
+        });
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static void remapStructureDetect(MissingMappingsEvent event) {
+        event.getMappings(Registries.ITEM, GTOCore.MOD_ID).forEach(mapping -> {
+            if (mapping.getKey().getPath().equals("structure_detect")) mapping.remap(GTItems.TERMINAL.get());
+        });
+    }
+
     public static void remapIds(MissingMappingsEvent event) {
         SuperStorageMigration.remap(event);
         ElectrochemistryMigration.remap(event);
         SpeedCards.remap(event);
         TieredInterfaces.remap(event);
+        remapAdvancedTerminal(event);
+        remapStructureDetect(event);
         event.getMappings(Registries.BLOCK_ENTITY_TYPE, GTOCore.MOD_ID).forEach(mapping -> {
             if (mapping.getKey().equals(GTOCore.id("directed_tesseract_generator"))) mapping.remap(GTOMachines.ADVANCED_TESSERACT_GENERATOR.getBlockEntityType());
         });

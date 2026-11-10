@@ -118,7 +118,7 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
         customParallelTrait = new CustomParallelTrait(this, machine -> {
             ProcessingPlantMachine processingPlantMachine = (ProcessingPlantMachine) machine;
             if (processingPlantMachine.getTier() <= 0) return 0;
-            return (long) processingPlantMachine.getTier() * getParallelPerTier(processingPlantMachine.hasStructurePart(StructureModuleKeys.PROCESSING_PLANT_EXTENSION));
+            return (long) processingPlantMachine.getTier() * getParallelPerTier(processingPlantMachine.getAssembly().has(StructureModuleKeys.PROCESSING_PLANT_EXTENSION));
         });
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
     }

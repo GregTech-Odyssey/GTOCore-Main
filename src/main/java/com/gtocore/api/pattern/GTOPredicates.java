@@ -7,6 +7,8 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gtocore.common.data.machines.ManaMachine;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.IWorkInSpaceMachine;
 import com.gtolib.api.recipe.TierDataKey;
 import com.gtolib.utils.GTOUtils;
@@ -22,10 +24,10 @@ import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IRotorHolderMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
+import com.gregtechceu.gtceu.api.machine.multiblockpro.StructureIssue;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
-import com.gregtechceu.gtceu.api.pattern.error.PatternStringError;
 import com.gregtechceu.gtceu.api.pattern.predicates.PredicateBlocks;
 import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
@@ -62,7 +64,12 @@ import static com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.INPUT_LAS
 import static com.gregtechceu.gtceu.api.pattern.Predicates.abilities;
 import static com.gtocore.common.block.BlockMap.*;
 
+@DataGeneratorScanned
 public final class GTOPredicates {
+
+    @RegisterLanguage(cn = "等级方块", en = "Tier blocks")
+    private static final String TIER_BLOCKS_KEY = "gtocore.structure.issue.subject.tier_blocks";
+    private static final Component TIER_BLOCKS = Component.translatable(TIER_BLOCKS_KEY);
 
     public static TraceabilityPredicate glass() {
         return tierBlock(GLASSMAP, GTORecipeDataKeys.GLASS_TIER);
@@ -167,7 +174,7 @@ public final class GTOPredicates {
                     int tier = entry.getIntKey();
                     int type = state.getMatchContext().getOrPut(tierType, tier);
                     if (type != tier) {
-                        state.setError(new PatternStringError("gtocore.machine.pattern.error.tier"));
+                        state.setIssue(StructureIssue.mixed(TIER_BLOCKS));
                         return false;
                     }
                     return true;
@@ -224,7 +231,6 @@ public final class GTOPredicates {
             if (machine instanceof IRotorHolderMachine && machine.getDefinition().getTier() >= tier) {
                 return checkRotorClearance(state, machine.getFrontFacing());
             }
-            state.setError(new PatternStringError("gtocore.idle_reason.block_tier_not_satisfies"));
             return false;
         },
                 () -> BlockInfo.fromBlockState(GTMachines.ROTOR_HOLDER[tier].defaultBlockState()),
@@ -246,12 +252,12 @@ public final class GTOPredicates {
                 var offset = state.getPos().offset(permuteXZ ? x : 0, y, permuteXZ ? 0 : x);
                 if (state.getWorld().getBlockState(offset).hasBlockEntity() &&
                         MetaMachine.getMachine(state.getWorld(), offset) instanceof RotorHolderPartMachine) {
-                    state.setError(new PatternStringError("gtceu.machine.rotor_holder.tooltip.2"));
+                    state.setIssue(StructureIssue.condition(Component.translatable("gtceu.machine.rotor_holder.tooltip.2")));
                     return false;
                 }
                 if (x == -2 || x == 2 || y == -2 || y == 2) continue;
                 if (!state.getWorld().getBlockState(offset.relative(machineFacing)).isAir()) {
-                    state.setError(new PatternStringError("gtceu.multiblock.pattern.clear_amount_3"));
+                    state.setIssue(StructureIssue.condition(Component.translatable("gtceu.multiblock.pattern.clear_amount_3")));
                     return false;
                 }
             }
@@ -368,7 +374,7 @@ public final class GTOPredicates {
             if (blockState.is(GTOBlocks.URUIUM_COIL_BLOCK.get())) {
                 Object currentCoil = blockWorldState.getMatchContext().getOrPut(DataKeys.DTPF_COIL, GTOBlocks.URUIUM_COIL_BLOCK.get());
                 if (currentCoil != GTOBlocks.URUIUM_COIL_BLOCK.get()) {
-                    blockWorldState.setError(new PatternStringError("gtceu.multiblock.pattern.error.coils"));
+                    blockWorldState.setIssue(StructureIssue.mixed(Predicates.COILS));
                     return false;
                 }
                 return true;
@@ -378,7 +384,7 @@ public final class GTOPredicates {
                     var stats = entry.getKey();
                     Object currentCoil = blockWorldState.getMatchContext().getOrPut(DataKeys.DTPF_COIL, stats);
                     if (currentCoil != stats) {
-                        blockWorldState.setError(new PatternStringError("gtceu.multiblock.pattern.error.coils"));
+                        blockWorldState.setIssue(StructureIssue.mixed(Predicates.COILS));
                         return false;
                     }
                     blockWorldState.getMatchContext().set(Predicates.DataKey.COIL_TYPE, stats);

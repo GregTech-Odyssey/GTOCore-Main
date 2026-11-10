@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
 import com.gregtechceu.gtceu.common.machine.multiblock.steam.SteamParallelMultiblockMachine;
-import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -56,6 +55,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.google.common.collect.ImmutableBiMap;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
+import com.suried.gtoutils.level.LoadedChunks;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.BlockAccessor;
@@ -156,7 +156,7 @@ public class MonitorMachine extends AbstractInfoProviderMonitor implements IMach
         }
         Level level = getLevel();
         CompoundTag tags = new CompoundTag();
-        tile = ILevel.asyncGetBlockEntity(level, pos);
+        tile = LoadedChunks.blockEntity(level, pos);
         if (tile != null) {
             if (accessor == null) {
                 accessor = new BlockAccessor() {

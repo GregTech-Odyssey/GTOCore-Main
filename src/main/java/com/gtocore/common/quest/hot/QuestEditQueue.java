@@ -80,7 +80,7 @@ public final class QuestEditQueue {
 
     @Nullable
     private static Path journalPath() {
-        var root = QuestHot.sourceRoot();
+        var root = QuestHotConfig.sourceRoot();
         if (root == null) return null;
         var worktree = root.toAbsolutePath().getParent().getParent().getParent();
         return worktree.resolve("run").resolve("quest-edit-journal.json");
@@ -282,7 +282,7 @@ public final class QuestEditQueue {
     }
 
     private static void flush() {
-        if (flushing || QuestHot.sourceRoot() == null) return;
+        if (flushing || QuestHotConfig.sourceRoot() == null) return;
         ObjectArrayList<Op> batch;
         ObjectArrayList<Path> external;
         synchronized (LOCK) {
@@ -297,7 +297,7 @@ public final class QuestEditQueue {
         var job = QuestHotProgress.begin(!external.isEmpty());
         job.stage(QuestHotProgress.WRITE, batch.size() + " 项操作", 0.05f, 0.25f, 200L + 40L * batch.size());
         batch.sort((a, b) -> order(a) != order(b) ? Integer.compare(order(a), order(b)) : Long.compare(a.seq(), b.seq()));
-        var src = QuestSource.load(QuestHot.sourceRoot()).copy();
+        var src = QuestSource.load(QuestHotConfig.sourceRoot()).copy();
         var before = new O2OOpenCacheHashMap<Path, String>();
         var errors = new ObjectArrayList<String>();
         for (var op : batch) {

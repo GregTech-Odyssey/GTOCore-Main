@@ -94,7 +94,7 @@ public class MEStorageMachine extends NoRecipeLogicMultiblockMachine implements 
 
     /** 数据索引容量（字节）：默认取结构里 ME 存储核心给的字节数，子类可以换个容量来源。 */
     protected double getStorageCapacity() {
-        var core = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.ME_STORAGE_CORE);
+        var core = getAssembly().get(GTOPredicates.DataKeys.ME_STORAGE_CORE);
         return core == null ? 0 : core;
     }
 

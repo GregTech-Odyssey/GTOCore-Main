@@ -34,7 +34,7 @@ public final class MEDiskStorageMachine extends MEStorageMachine {
     @Override
     public void onStructureFormed() {
         // 先挂总线监听（容量取自这些总线），再让父类绑定访问仓
-        componentBuses.bind(getMultiblockState().getMatchContext(), this, this::onComponentBusChanged);
+        componentBuses.bind(getAssembly(), this, this::onComponentBusChanged);
         super.onStructureFormed();
     }
 
@@ -64,7 +64,7 @@ public final class MEDiskStorageMachine extends MEStorageMachine {
                 bytes = bytes > Long.MAX_VALUE - term ? Long.MAX_VALUE : bytes + term;
             }
         }
-        hermeticLevel = getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
+        hermeticLevel = getAssembly().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1;
         return bytes > Long.MAX_VALUE / hermeticLevel ? Long.MAX_VALUE : (double) bytes * hermeticLevel;
     }
 

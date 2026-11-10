@@ -12,9 +12,7 @@ import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.misc.Drone;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
@@ -43,6 +41,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
 
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -66,7 +65,7 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
     private KeyInventory<AEItemKey> inventory;
     @Shadow(remap = false)
     @Nullable
-    protected TickableSubscription particleSubs;
+    protected Task particleSubs;
 
     @OnlyIn(Dist.CLIENT)
     @Shadow(remap = false)
@@ -193,7 +192,7 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
 
     @Unique
     private void gto$unsubParticle() {
-        particleSubs = ITickSubscription.unsubscribe(particleSubs);
+        particleSubs = Task.cancel(particleSubs);
     }
 
     @Override

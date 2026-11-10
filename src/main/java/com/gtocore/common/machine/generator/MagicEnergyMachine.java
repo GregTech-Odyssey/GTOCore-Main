@@ -9,7 +9,6 @@ import com.gtolib.api.machine.mana.trait.NotifiableManaContainer;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IControllable;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -21,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
+import com.suried.gtoutils.schedule.Task;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -28,7 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public final class MagicEnergyMachine extends TieredEnergyMachine implements IManaMachine, IControllable {
 
-    private TickableSubscription energySubs;
+    private Task energySubs;
 
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
@@ -67,7 +67,7 @@ public final class MagicEnergyMachine extends TieredEnergyMachine implements IMa
     public void onUnload() {
         super.onUnload();
         if (energySubs != null) {
-            energySubs.unsubscribe();
+            energySubs.cancel();
             energySubs = null;
         }
     }

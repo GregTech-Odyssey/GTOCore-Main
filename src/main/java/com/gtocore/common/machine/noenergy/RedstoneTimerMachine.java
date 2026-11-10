@@ -6,7 +6,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IControllable;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.elements.Button;
@@ -22,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -31,6 +31,8 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 @DataGeneratorScanned
@@ -128,7 +130,7 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     private int visual;
 
     @Nullable
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
     private boolean initialized;
     private boolean running;
     private boolean output;
@@ -158,7 +160,7 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
         super.onLoad();
         if (!isRemote()) {
             initialized = false;
-            tickSubs = subscribeServerTick(tickSubs, this::tickUpdate);
+            if (getLevel() instanceof ServerLevel serverLevel) tickSubs = Schedulers.of(serverLevel).schedule(0, holder, this::tickUpdate);
         }
     }
 
@@ -237,11 +239,10 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
     }
 
     private void schedule(int delay) {
-        var subs = tickSubs;
-        Level level = getLevel();
-        if (subs == null || level == null || level.getServer() == null) return;
-        subs.cycle = delay;
-        subs.lastTick = level.getServer().getTickCount() + delay;
+        if (!(getLevel() instanceof ServerLevel serverLevel)) return;
+        var scheduler = Schedulers.of(serverLevel);
+        Task.cancel(tickSubs);
+        tickSubs = scheduler.scheduleAt(scheduler.currentTick() + delay, holder, this::tickUpdate);
     }
 
     private void refresh() {
@@ -275,7 +276,6 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
         running = true;
         cycleStart = getOffsetTimer() - pausedElapsed % period();
         pausedElapsed = 0;
-        tickSubs = subscribeServerTick(tickSubs, this::tickUpdate);
         tickUpdate();
     }
 
@@ -289,7 +289,7 @@ public class RedstoneTimerMachine extends MetaMachine implements IFancyUIMachine
 
     private void cancelTicks() {
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

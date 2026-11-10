@@ -5,7 +5,6 @@ import com.gtocore.common.item.DataCrystalItem;
 import com.gtocore.common.machine.multiblock.electric.research.IntelligentScanningManagementPlatformMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
@@ -32,6 +31,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.recipesearch.IntLongMap;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +48,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
     @Setter
     private boolean isOnline;
     private IStackWatcher storageWatcher;
-    private TickableSubscription tickSubscription;
+    private Task tickSubscription;
     private boolean initializeKeys;
     private boolean keysChanged;
     /** 合并同一批 watcher 回调，避免在配方提交期间替换 key 数组。 */
@@ -86,7 +86,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
 
     /** 仅在接入网络时读取一次库存，后续由 watcher 增量维护。 */
     private void updateStorageCache() {
-        tickSubscription.unsubscribe();
+        tickSubscription.cancel();
         tickSubscription = null;
         if (initializeKeys) {
             initializeKeys = false;
@@ -189,7 +189,7 @@ public class IntelligentScanningProxyPartMachine extends WorkableMultiblockPartM
         }
         super.onUnload();
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
         clearKeys();

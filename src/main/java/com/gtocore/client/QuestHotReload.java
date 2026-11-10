@@ -2,6 +2,7 @@ package com.gtocore.client;
 
 import com.gtocore.common.quest.hot.QuestEditQueue;
 import com.gtocore.common.quest.hot.QuestHot;
+import com.gtocore.common.quest.hot.QuestHotConfig;
 import com.gtocore.common.quest.hot.QuestHotProgress;
 
 import com.gtolib.GTOCore;
@@ -98,10 +99,10 @@ public final class QuestHotReload {
     private QuestHotReload() {}
 
     public static void init() {
-        var root = QuestHot.sourceRoot();
+        var root = QuestHotConfig.sourceRoot();
         if (root == null) return;
         QuestHot.setStartupFailureHandler(error -> Minecraft.getInstance().delayCrash(CrashReport.forThrowable(error, "GTOCore quest source validation")));
-        var config = System.getProperty(QuestHot.CONFIG_PROPERTY);
+        var config = System.getProperty(QuestHotConfig.PROPERTY);
         try {
             var lines = Files.readAllLines(Path.of(config), StandardCharsets.UTF_8);
             var entries = new ObjectArrayList<Path>(lines.size());

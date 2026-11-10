@@ -42,11 +42,11 @@ public class PigmentMixer extends ElectricMultiblockMachine implements IMultiFlu
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        cachedYellowOffsets.addAll(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.YELLOW, Collections.emptySet()));
-        cachedCyanOffsets.addAll(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.CYAN, Collections.emptySet()));
-        cachedMagentaOffsets.addAll(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.MAGENTA, Collections.emptySet()));
-        cachedBlackOffsets.addAll(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.BLACK, Collections.emptySet()));
-        cachedWhiteOffsets.addAll(getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.WHITE, Collections.emptySet()));
+        cachedYellowOffsets.addAll(getAssembly().getOrDefault(GTOPredicates.DataKeys.YELLOW, Collections.emptySet()));
+        cachedCyanOffsets.addAll(getAssembly().getOrDefault(GTOPredicates.DataKeys.CYAN, Collections.emptySet()));
+        cachedMagentaOffsets.addAll(getAssembly().getOrDefault(GTOPredicates.DataKeys.MAGENTA, Collections.emptySet()));
+        cachedBlackOffsets.addAll(getAssembly().getOrDefault(GTOPredicates.DataKeys.BLACK, Collections.emptySet()));
+        cachedWhiteOffsets.addAll(getAssembly().getOrDefault(GTOPredicates.DataKeys.WHITE, Collections.emptySet()));
         markFieldsForSync("cachedYellowOffsets", "cachedYellowOffsets", "cachedCyanOffsets", "cachedMagentaOffsets", "cachedWhiteOffsets");
     }
 

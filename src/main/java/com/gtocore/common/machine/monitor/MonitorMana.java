@@ -5,7 +5,6 @@ import com.gtolib.api.gui.MonitorResourceHistory;
 import com.gtolib.api.wireless.WirelessManaContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 
 import net.minecraft.network.chat.Component;
@@ -16,6 +15,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -48,7 +48,7 @@ public class MonitorMana extends AbstractInfoProviderMonitor implements ITeamInf
     }
 
     @Override
-    protected TickableSubscription subscribe(Runnable runnable) {
+    protected Task subscribe(Runnable runnable) {
         return subscribeServerTick(tickableSubscription, runnable, 10);
     }
 

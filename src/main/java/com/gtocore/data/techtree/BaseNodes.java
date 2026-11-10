@@ -669,7 +669,7 @@ public final class BaseNodes {
                             .addMaterialNeeded(MATERIAL, 5400)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:leptonic_charge"), 0.8F)
                             .build())
-            .tier(5)
+            .tier(4)
             .build();
 
     public static final TechNode ManifoldOscillatory = MainTree.builder("manifold_oscillatory", "多维流形振荡技术", "Manifold Oscillatory Technology")
@@ -733,7 +733,7 @@ public final class BaseNodes {
                             .addMaterialNeeded(MATERIAL, 8000)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:ultimate_stellar_containment_casing"), 0.8F)
                             .build())
-            .tier(5)
+            .tier(4)
             .build();
 
     public static final TechNode HyperDimensionalForge = MainTree.builder("hyper_dimensional_forge", "超维锻造技术", "Hyper-Dimensional Forge Technology")

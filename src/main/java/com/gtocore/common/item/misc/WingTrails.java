@@ -2,6 +2,7 @@ package com.gtocore.common.item.misc;
 
 import com.gtolib.api.network.NetworkPack;
 import com.gtolib.api.player.OrganInventory;
+import com.gtolib.api.scope.GTOScopes;
 
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -14,7 +15,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -22,6 +22,7 @@ import com.suried.gtorenders.effect.BodyEffects;
 import com.suried.gtorenders.effect.MoteLook;
 import com.suried.gtorenders.effect.MoteParticles;
 import com.suried.gtorenders.effect.PixelSheet;
+import com.suried.gtoutils.schedule.ScopeKey;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -32,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 
 import java.util.List;
-import java.util.WeakHashMap;
 
 /**
  * 翅膀特效：服务端在穿戴的翅膀、能否使用、是否飞行变化时同步给同维度玩家；客户端用 GTORenders 身体挂件把像素光片翅膀挂在后肩，
@@ -49,8 +49,8 @@ public final class WingTrails {
     private static final float V_MIN = -1.1F, V_MAX = 1.2F;
 
     private static final NetworkPack SYNC = NetworkPack.registerS2C("gtocoreWingTrails", (player, buf) -> Client.receive(buf));
-    private static final WeakHashMap<ServerPlayer, Integer> SHOWN = new WeakHashMap<>();
-    private static final int FLYING = 1, USABLE = 2, WEAR_SHIFT = 2, ITEM_SHIFT = 4;
+    private static final ScopeKey<int[]> SHOWN = ScopeKey.of("wing_trail_shown");
+    private static final int FLYING = 1, USABLE = 2, WEAR_SHIFT = 2, ITEM_SHIFT = 4, UNKNOWN = Integer.MIN_VALUE;
 
     private WingTrails() {}
 
@@ -202,10 +202,14 @@ public final class WingTrails {
         }
     }
 
-    public static void init() {
-        MinecraftForge.EVENT_BUS.addListener(WingTrails::onLogin);
-        MinecraftForge.EVENT_BUS.addListener(WingTrails::onChangedDimension);
-        MinecraftForge.EVENT_BUS.addListener(WingTrails::onRespawn);
+    public static void install() {
+        GTOScopes.PLAYER.install("wing_trails", (scope, player) -> scope.provide(SHOWN, new int[] { UNKNOWN }));
+        GTOScopes.PRESENCE.install("wing_trails", (scope, player) -> enterLevel(player));
+    }
+
+    @Nullable
+    private static int[] shown(ServerPlayer player) {
+        return GTOScopes.PLAYER.lookup(player, SHOWN);
     }
 
     public static void update(ServerPlayer player, OrganInventory organs, @Nullable WingOrganItem active) {
@@ -228,14 +232,20 @@ public final class WingTrails {
                 (player.getAbilities().flying ? FLYING : 0));
     }
 
+    private static int state(ServerPlayer player) {
+        var shown = shown(player);
+        return shown == null ? UNKNOWN : shown[0];
+    }
+
     public static void onAbilities(ServerPlayer player) {
-        var state = SHOWN.get(player);
-        if (state != null && state != 0) sync(player, state & ~FLYING | (player.getAbilities().flying ? FLYING : 0));
+        var shown = shown(player);
+        if (shown != null && shown[0] != UNKNOWN && shown[0] != 0) sync(player, shown[0] & ~FLYING | (player.getAbilities().flying ? FLYING : 0));
     }
 
     private static void sync(ServerPlayer player, int state) {
-        var old = SHOWN.put(player, state);
-        if (old != null && old == state) return;
+        var shown = shown(player);
+        if (shown == null || shown[0] == state) return;
+        shown[0] = state;
         SYNC.send(out -> {
             out.writeVarInt(1);
             out.writeVarInt(player.getId());
@@ -243,25 +253,14 @@ public final class WingTrails {
         }, player.serverLevel().players());
     }
 
-    private static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) enterLevel(player);
-    }
-
-    private static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) enterLevel(player);
-    }
-
-    private static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) enterLevel(player);
-    }
-
     private static void enterLevel(ServerPlayer player) {
-        SHOWN.remove(player);
+        var own = shown(player);
+        if (own != null) own[0] = UNKNOWN;
         List<ServerPlayer> players = player.serverLevel().players();
         int count = 0;
         for (int i = 0, size = players.size(); i < size; i++) {
-            var state = SHOWN.get(players.get(i));
-            if (state != null && state != 0) count++;
+            int state = state(players.get(i));
+            if (state != UNKNOWN && state != 0) count++;
         }
         if (count == 0) return;
         int total = count;
@@ -269,8 +268,8 @@ public final class WingTrails {
             out.writeVarInt(total);
             for (int i = 0, size = players.size(); i < size; i++) {
                 var other = players.get(i);
-                var state = SHOWN.get(other);
-                if (state == null || state == 0) continue;
+                int state = state(other);
+                if (state == UNKNOWN || state == 0) continue;
                 out.writeVarInt(other.getId());
                 out.writeVarInt(state);
             }

@@ -6,7 +6,6 @@ import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uiwidgets.number.NumberSettingPage;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -31,7 +31,7 @@ public class CreativeHeatProviderMachine extends MetaMachine implements IFancyUI
     private long confHeat;
     private final CreativeHeatContainer heatContainer = new CreativeHeatContainer();
     @Nullable
-    private TickableSubscription transferSubscription;
+    private Task transferSubscription;
 
     public CreativeHeatProviderMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -49,7 +49,7 @@ public class CreativeHeatProviderMachine extends MetaMachine implements IFancyUI
     public void onUnload() {
         super.onUnload();
         if (transferSubscription != null) {
-            transferSubscription.unsubscribe();
+            transferSubscription.cancel();
             transferSubscription = null;
         }
     }

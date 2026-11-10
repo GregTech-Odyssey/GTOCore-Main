@@ -214,7 +214,7 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         }
         autoTransfer = false;
         if (!hasSource) {
-            transferSubs.unsubscribe();
+            transferSubs.cancel();
             transferSubs = null;
         }
     }

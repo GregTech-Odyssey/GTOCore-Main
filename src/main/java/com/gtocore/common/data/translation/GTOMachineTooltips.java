@@ -536,6 +536,8 @@ public final class GTOMachineTooltips {
     private static TipSpec monitor(Consumer<GTOTips> body) {
         return GTOTips.of("monitor", t -> {
             t.line(TipRole.SUMMARY, Tx.rainbowSlow(t.tr("监控器系列", "Monitor series")));
+            t.attention(Component.translatable("gtocore.item.deprecated"));
+            t.attention(t.tr("已不再提供配方，请改用监控总线（显示器、各控件与监控线缆）", "No longer craftable; use the monitor bus (displays, controls and monitor cable) instead"));
             body.accept(t);
         });
     }
@@ -1220,7 +1222,7 @@ public final class GTOMachineTooltips {
     public static final TipSpec PrimitiveDistillationTowerTooltips = GTOTips.of("primitive_distillation_tower", t -> {
         t.heading(t.tr("运行机制", "Operation Mechanics"));
         t.bonus(t.tr("更高的底部温度和更长的连续运行时间能显著加快配方速度", "Higher bottom temperatures and longer continuous operation significantly speed up recipes"));
-        t.requirement(t.tr("最高13层，每个产物都需要一个对应高度的输出仓", "Each fluid product requires a Fluid Hatch at a corresponding Y-level"));
+        t.requirement(t.tr("最高11层，每个产物都需要一个对应高度的输出仓", "Up to 11 layers; each fluid product requires a Fluid Hatch at a corresponding Y-level"));
         t.feature(t.tr("每层都可以不安装输出仓，但是对应层会没有产物", "Each layer can operate without installing an output hatch, but the corresponding layer will then produce no output"));
         t.requirement(t.tr("只能处理MV及以下的配方", "Can only process recipes of MV tier or lower"));
 

@@ -4,12 +4,6 @@ import com.gtocore.api.research.techtree.ui.TechTreeStyle;
 import com.gtocore.client.forge.DebugScreenInspector;
 import com.gtocore.client.forge.ForgeClientEvent;
 import com.gtocore.client.guide.ItemGuides;
-import com.gtocore.client.hud.AdAstraHUD;
-import com.gtocore.client.hud.IMoveableHUD;
-import com.gtocore.client.hud.MedicalConditionHUD;
-import com.gtocore.client.hud.ResearchPointsHUD;
-import com.gtocore.client.hud.WirelessEnergyHUD;
-import com.gtocore.client.hud.attribute.PlayerAttrHUD;
 import com.gtocore.client.model.ShaderItemModelLoader;
 import com.gtocore.client.overlay.GTORender;
 import com.gtocore.client.overlay.TesseractClientHandler;
@@ -33,6 +27,7 @@ import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
 import com.gtocore.common.item.misc.WingTrails;
 import com.gtocore.common.machine.monitor.MonitorBlockItem;
+import com.gtocore.common.quest.hot.QuestHotConfig;
 import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.client.TravelParticleHandler;
 import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
@@ -60,11 +55,15 @@ import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
 import com.gtolib.api.client.FluidNameOverlay;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
-import com.gtolib.api.gui.hud.ScalableHud;
 import com.gtolib.api.machine.storage.SuperStorageClient;
 import com.gtolib.drone.client.DroneClient;
 import com.gtolib.drone.client.DroneHud;
-import com.gtolib.quest.client.QuestPinnedHud;
+import com.gtolib.implant.client.ImplantClient;
+import com.gtolib.monitor.client.InfoReadouts;
+import com.gtolib.monitor.client.MonitorBusModel;
+import com.gtolib.monitor.client.MonitorClient;
+import com.gtolib.monitor.client.MonitorHudClient;
+import com.gtolib.monitor.client.ScreenRenderer;
 import com.gtolib.quest.client.book.QuestBookStyle;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -107,8 +106,6 @@ import com.lowdragmc.shimmer.event.ShimmerReloadEvent.ReloadType;
 import com.lowdragmc.shimmer.forge.event.ForgeShimmerReloadEvent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import static com.gtocore.client.hud.IMoveableHUD.registerHUD;
-
 @OnlyIn(Dist.CLIENT)
 public final class ClientProxy extends CommonProxy {
 
@@ -144,9 +141,12 @@ public final class ClientProxy extends CommonProxy {
         GTOKeyBind.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
+        MonitorClient.install();
+        ImplantClient.install();
+        ScreenRenderer.init();
+        MonitorRenderer.RenderedCacheClearer.init();
         GTORender.init();
         DebugScreenInspector.init();
-        MonitorRenderer.RenderedCacheClearer.init();
         CelestialSkyRenderer.init();
         DysonForceFieldRenderer.init();
         HappyWaterGodStatueRenderer.Late.init();
@@ -155,9 +155,8 @@ public final class ClientProxy extends CommonProxy {
         TravelEvents.Client.init();
         WingTrails.Client.init();
         TravelParticleHandler.init();
-        IMoveableHUD.EventHandler.init();
         DroneClient.init();
-        QuestHotReload.init();
+        if (QuestHotConfig.enabled()) QuestHotReload.init();
         ClientForge.init();
         ClientForge.INSTANCE.getMESSAGE_DEFINITIONS().forEach(ClientForge.MessageDefinition::getContentHash);
         GTDynamicResourcePack.EVENT.addListener(ClientProxy.class, () -> {
@@ -274,18 +273,16 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-        registerHUD(event, "wireless_energy_hud", new ScalableHud("wireless_energy_hud", WirelessEnergyHUD.INSTANCE));
-        registerHUD(event, "research_points_hud", new ScalableHud("research_points_hud", ResearchPointsHUD.INSTANCE));
-        registerHUD(event, "medical_condition_hud", new ScalableHud("medical_condition_hud", MedicalConditionHUD.INSTANCE));
-        registerHUD(event, "adastra_hud", new ScalableHud("adastra_hud", AdAstraHUD.gto$INSTANCE));
-        registerHUD(event, "client_property_hud", new ScalableHud("client_property_hud", PlayerAttrHUD.INSTANCE));
-        registerHUD(event, "quest_pinned_hud", new ScalableHud("quest_pinned_hud", QuestPinnedHud.INSTANCE));
-        registerHUD(event, "drone_mode", DroneHud.MODE);
-        registerHUD(event, "drone_speed", DroneHud.SPEED);
-        registerHUD(event, "drone_preview", DroneHud.PREVIEW);
-        registerHUD(event, "drone_power", DroneHud.POWER);
-        registerHUD(event, "drone_search", DroneHud.SEARCH);
+        MonitorHudClient.registerPanel("drone.mode", DroneHud.MODE);
+        MonitorHudClient.registerPanel("drone.speed", DroneHud.SPEED);
+        MonitorHudClient.registerPanel("drone.preview", DroneHud.PREVIEW);
+        MonitorHudClient.registerPanel("drone.power", DroneHud.POWER);
+        MonitorHudClient.registerPanel("drone.search", DroneHud.SEARCH);
+        MonitorHudClient.registerPanel("info.fps", InfoReadouts.FPS);
+        MonitorHudClient.registerPanel("info.clock", InfoReadouts.CLOCK);
+        MonitorHudClient.registerPanel("info.rendered", InfoReadouts.RENDERED);
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
+        event.registerAboveAll("monitor_hud", (gui, graphics, partialTick, width, height) -> MonitorHudClient.render(graphics, width, height, partialTick));
     }
 
     private static void registerMenuScreen(FMLClientSetupEvent event) {
@@ -341,6 +338,7 @@ public final class ClientProxy extends CommonProxy {
 
     private static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register("y_layered", YLayeredModelLoader.INSTANCE);
+        event.register("monitor_bus", MonitorBusModel.LOADER);
         event.register("custom_shader", ShaderItemModelLoader.INSTANCE);
     }
 

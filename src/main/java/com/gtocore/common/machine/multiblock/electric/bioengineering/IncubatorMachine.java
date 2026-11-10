@@ -39,7 +39,7 @@ public final class IncubatorMachine extends TierCasingMultiblockMachine {
     public void onStructureFormed() {
         super.onStructureFormed();
         tier = Math.min(getCasingTier(GTORecipeDataKeys.GLASS_TIER), tier);
-        cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 1);
+        cleanroomTier = getAssembly().getOrDefault(Predicates.DataKey.FILTER_TYPE, 1);
     }
 
     @Override

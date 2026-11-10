@@ -8,13 +8,14 @@ import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 
 import net.minecraft.world.phys.Vec3;
 
+import com.suried.gtoutils.schedule.Task;
+
 public final class KerrNewmanHomogenizer extends CrossRecipeMultiblockMachine {
 
-    private TickableSubscription clientTicker;
+    private Task clientTicker;
     private boolean fxActive = false;
 
     public KerrNewmanHomogenizer(MetaMachineBlockEntity holder) {
@@ -31,7 +32,7 @@ public final class KerrNewmanHomogenizer extends CrossRecipeMultiblockMachine {
     public void onUnload() {
         super.onUnload();
         if (clientTicker != null) {
-            clientTicker.unsubscribe();
+            clientTicker.cancel();
             clientTicker = null;
         }
         fxActive = false;
@@ -45,7 +46,7 @@ public final class KerrNewmanHomogenizer extends CrossRecipeMultiblockMachine {
 
     private void tickClient() {
         if (!GTOConfig.INSTANCE.client.renderingConfig.enableLargeRangeShaderEffects) {
-            clientTicker.unsubscribe();
+            clientTicker.cancel();
             return;
         }
         if (isActive()) {
