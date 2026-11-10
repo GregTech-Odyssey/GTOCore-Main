@@ -50,11 +50,10 @@ import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.api.machine.impl.part.*;
 import com.gtolib.api.machine.part.ItemPartMachine;
+import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
@@ -931,7 +930,10 @@ public final class GTOMachines {
             .allowCoverOnFront(true)
             .register();
 
-    public static final MachineDefinition LENS_HOUSING = machine("lens_housing", "透镜仓", h -> new ItemPartMachine(h, 1, i -> ChemicalHelper.getPrefix(i.getItem()) == TagPrefix.lens))
+    public static final MachineDefinition LENS_HOUSING = machine("lens_housing", "透镜仓", h -> {
+        var lenses = TagUtils.createForgeItemTag("lenses");
+        return new ItemPartMachine(h, 1, i -> i.is(lenses));
+    })
             .tier(EV)
             .allRotation()
             .notAllowSharedTooltips()
