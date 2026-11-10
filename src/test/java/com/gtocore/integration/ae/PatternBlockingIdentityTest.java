@@ -632,6 +632,11 @@ class PatternBlockingIdentityTest {
         }
 
         @Override
+        public int operationTime() {
+            return 0;
+        }
+
+        @Override
         public MEStorage forKeyType(AEKeyType type) {
             return type == ITEMS ? item : type == FLUIDS ? fluid : null;
         }
@@ -663,6 +668,11 @@ class PatternBlockingIdentityTest {
         @Override
         public boolean supportsKeyType(AEKeyType type) {
             return type == ITEMS;
+        }
+
+        @Override
+        public int operationTime() {
+            return 0;
         }
 
         @Override
