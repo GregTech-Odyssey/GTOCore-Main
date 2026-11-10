@@ -323,6 +323,11 @@ public final class VirtualIngredientProviderMachine extends MetaMachine implemen
     }
 
     @Override
+    public int operationTime() {
+        return 1;
+    }
+
+    @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
         if (amount > 0 && what instanceof AEItemKey itemKey && isVirtualProvider(itemKey)) {
             ItemStack stack = itemKey.getReadOnlyStack();
