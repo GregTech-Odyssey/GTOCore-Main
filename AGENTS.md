@@ -96,6 +96,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 修改 `GTOLib/` 代码时，完成当前任务前必须使用 JDK 21 运行一次 `buildGtolibProtected` 并确认通过。一个任务在收尾时重建一次即可，不要每改一处都重建；若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。
 - GTOLib 产物只生成在 `build/gtolib/`（按源码指纹缓存），始终不得提交、上传或打包分发；dev 轨保留类名/包名（`GTOLib/protect/proguard-rules.pro`），只有发行轨改名（`proguard-release-rules.pro`，字典每次构建重新打乱）。`libs/` 不再存放 GTOLib 产物，残留的旧 `libs/gtolib-*` 由 gitignore 兜底，不要绕过。开发运行需要 named 类，生产链使用 SRG，勿用 reobf 产物覆盖明文调试 jar。
 - GTOLib 新增按名反射、注解扫描、存盘键或配置里写类名时，必须用 `com.gtolib.api.annotation.KeepName` 标注（类级保类名+包名，成员级保成员名+所属类名）；第三方或 GTOSeal Runtime 写死、改不了源码的名字再补 `GTOLib/protect/proguard-release-rules.pro` 的 `-keepnames`。开发环境测不出漏补。
+- CI 的 Actions 缓存只放公开下载的内容（依赖、Gradle 发行包、Minecraft 构建中间产物），由 `build.yml` 的缓存步骤按目录列出；不得缓存 Gradle 用户目录的其余部分，构建命令保留 `--no-build-cache`。
 
 ## 云端签名
 

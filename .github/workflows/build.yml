@@ -477,11 +477,24 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # 默认只允许默认分支写缓存，而 main 已不构建，不放开每次都从空缓存开始
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: false
+          cache-disabled: true
+
+      # 只缓存公开下载的内容；Gradle 用户目录的其余部分不进缓存
+      - name: Cache public downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/neoformruntime
+            ~/.gradle/wrapper/dists
+            !~/.gradle/caches/modules-2/modules-2.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-public-${{ runner.os }}-${{ hashFiles('gradle.properties', '*.gradle.kts', 'gradle/**') }}
+          restore-keys: |
+            gradle-public-${{ runner.os }}-
 
       - name: Restore signing keystore
         env:
@@ -519,11 +532,11 @@ jobs:
           fi
           chmod +x ./gradlew
           # 格式化依赖 Eclipse 的 p2 站点，站点停服时只告警、不拦签名构建；apply 成功时 check 必然通过，故 build 里跳过 check
-          if ! ./gradlew spotlessApply --no-daemon --stacktrace; then
+          if ! ./gradlew spotlessApply --no-daemon --no-build-cache --stacktrace; then
             echo "::warning::spotlessApply failed (formatter download unavailable?); building without formatting"
           fi
           # 发行：gtocore（无 Seal SPI）+ 独立 gto-seal-runtime，均签名（密码只经 env 注入 signJar）
-          ./gradlew build -x spotlessCheck --no-daemon --stacktrace \
+          ./gradlew build -x spotlessCheck --no-daemon --no-build-cache --stacktrace \
             -Dorg.gradle.java.installations.auto-download=true
 
       - name: Verify gtocore packaging
@@ -663,7 +676,7 @@ jobs:
           done
           GTO=$(ls build/libs/gtocore*.jar | grep -v sources | grep -v javadoc | head -n1)
           BEFORE=$(sha256sum "$GTO" | cut -d' ' -f1)
-          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=${PUBLISH_CF}             -x jar -x reobfJar -x sourcesJar -x signJar -x spotlessCheck --no-daemon --stacktrace
+          ./gradlew gtoValidate gtoPublishMaven -PgtoPublishCurseforge=${PUBLISH_CF}             -x jar -x reobfJar -x sourcesJar -x signJar -x spotlessCheck --no-daemon --no-build-cache --stacktrace
           AFTER=$(sha256sum "$GTO" | cut -d' ' -f1)
           [ "$BEFORE" = "$AFTER" ] || { echo "::error::$GTO 在发布过程中被改写"; exit 1; }
           NAME=$(basename "$GTO")
@@ -680,7 +693,7 @@ jobs:
           ORG_GRADLE_PROJECT_gtoCurseforgeToken: ${{ secrets.CURSEFORGE_TOKEN }}
         run: |
           set -euo pipefail
-          ./gradlew gtoPublishCurseforge -PgtoPublishCurseforge=true -x spotlessCheck --no-daemon --stacktrace
+          ./gradlew gtoPublishCurseforge -PgtoPublishCurseforge=true -x spotlessCheck --no-daemon --no-build-cache --stacktrace
           cat build/gtoPublish/curseforge.json
 
       # 整合包按这个文件里的项目 ID、文件 ID 和 SHA-1 引用本次上传的 CurseForge 文件（审核通过前接口查不到）
