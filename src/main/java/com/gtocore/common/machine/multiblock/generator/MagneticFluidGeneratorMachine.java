@@ -7,6 +7,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.impl.part.VoidEnergyHatch;
 import com.gtolib.api.machine.impl.part.WirelessEnergyHatchPartMachine;
 import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
+import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -17,7 +18,6 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.ParamKey;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.EnergyHatchPartMachine;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.LaserHatchPartMachine;
 
@@ -32,6 +32,11 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     @RegisterLanguage(cn = "搭建后基础并行由 64 提高到 256，激光输出时每级并行倍率由 2 提高到 4，燃料效率翻倍", en = "When built, base parallel rises from 64 to 256, the per-tier parallel multiplier with laser output rises from 2 to 4, and fuel efficiency is doubled")
     public static final String EXTENSION_DESC = "gtocore.multiblock.magnetic_fluid_generator.extension.desc";
     public static final ParamKey EXTENSION = ParamKey.of(EXTENSION_NAME, EXTENSION_DESC);
+
+    /** 燃料衰减超频：第 1 级的燃料消耗倍率，输出仍每级 ×4。 */
+    public static final int BASE_FUEL_COST = 5;
+    /** 每过这么多级，燃料消耗倍率 +1。 */
+    public static final int FUEL_COST_STEP = 2;
 
     private int outputTier = 0;
     private boolean laser;
@@ -86,6 +91,6 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);
         if (recipe == null) return null;
         recipe.durationMultiplier(efficiency);
-        return RecipeModifier.generatorOverclocking(this, unit, recipe);
+        return GTORecipeModifiers.fuelDecayGeneratorOverclocking(this, unit, recipe, BASE_FUEL_COST, FUEL_COST_STEP);
     }
 }

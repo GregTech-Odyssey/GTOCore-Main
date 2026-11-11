@@ -96,16 +96,19 @@ final class MEPatternVirtualInputHelper {
                 ItemStack virtualItem = VirtualItemProviderBehavior.getVirtualItem(what.getReadOnlyStack());
                 if (virtualItem.isEmpty()) continue;
                 if (!virtuals.add(virtualItem.getItem())) continue;
-                boolean missingProvider = availability != null && !isProviderAvailable(what, gridGetter, actionSourceGetter);
+                boolean missingProvider = !isProviderAvailable(what, gridGetter, actionSourceGetter);
+                if (missingProvider) input.add(stack);
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
                 if (virtualItem.getItem() == Circuits.item()) {
-                    var circuit = AEItemKey.of(virtualItem);
-                    if (virtualInputState == null) {
-                        circuitInventory.storage.set(0, circuit, 1);
-                    } else {
-                        virtualInputState.setVirtualCircuit(circuit);
+                    if (!missingProvider) {
+                        var circuit = AEItemKey.of(virtualItem);
+                        if (virtualInputState == null) {
+                            circuitInventory.storage.set(0, circuit, 1);
+                        } else {
+                            virtualInputState.setVirtualCircuit(circuit);
+                        }
                     }
                     if (availability != null) availability.setCircuitMissing(missingProvider);
                     continue;
@@ -114,17 +117,20 @@ final class MEPatternVirtualInputHelper {
                 int itemSlots = itemStorage.size();
                 while (targetItemSlot < itemSlots) {
                     var previous = itemStorage.keyAt(targetItemSlot);
-                    if (previous == null || refund(previous, itemStorage.amountAt(targetItemSlot), gridGetter, actionSourceGetter)) break;
+                    if (previous == null || refund(previous, itemStorage.amountAt(targetItemSlot), gridGetter, actionSourceGetter))
+                        break;
                     targetItemSlot++;
                 }
                 if (targetItemSlot >= itemSlots) continue;
-                var virtualKey = AEItemKey.of(virtualItem);
-                if (virtualKey == null) continue;
-                long virtualAmount = Math.clamp(stack.amount(), 1L, VIRTUAL_ITEM_MAX_AMOUNT);
-                if (virtualInputState == null) {
-                    itemStorage.set(targetItemSlot, virtualKey, virtualAmount);
-                } else {
-                    virtualInputState.setVirtualItem(targetItemSlot, virtualKey, virtualAmount);
+                if (!missingProvider) {
+                    var virtualKey = AEItemKey.of(virtualItem);
+                    if (virtualKey == null) continue;
+                    long virtualAmount = Math.clamp(stack.amount(), 1L, VIRTUAL_ITEM_MAX_AMOUNT);
+                    if (virtualInputState == null) {
+                        itemStorage.set(targetItemSlot, virtualKey, virtualAmount);
+                    } else {
+                        virtualInputState.setVirtualItem(targetItemSlot, virtualKey, virtualAmount);
+                    }
                 }
                 if (availability != null) availability.setItemMissing(targetItemSlot, missingProvider);
                 targetItemSlot++;
@@ -132,7 +138,8 @@ final class MEPatternVirtualInputHelper {
                 FluidStack virtualFluid = VirtualFluidProviderBehavior.getVirtualFluid(what.getReadOnlyStack());
                 if (virtualFluid.isEmpty()) continue;
                 if (!virtuals.add(virtualFluid.getFluid())) continue;
-                boolean missingProvider = availability != null && !isProviderAvailable(what, gridGetter, actionSourceGetter);
+                boolean missingProvider = !isProviderAvailable(what, gridGetter, actionSourceGetter);
+                if (missingProvider) input.add(stack);
                 if (!locked) {
                     locked = lockOnce.getAsBoolean();
                 }
@@ -146,10 +153,12 @@ final class MEPatternVirtualInputHelper {
                     targetFluidSlot++;
                 }
                 if (targetFluidSlot >= fluidSlots) continue;
-                if (virtualInputState == null) {
-                    fluidStorage.set(targetFluidSlot, fluidKey, fluidAmount);
-                } else {
-                    virtualInputState.setVirtualFluid(targetFluidSlot, fluidKey, fluidAmount);
+                if (!missingProvider) {
+                    if (virtualInputState == null) {
+                        fluidStorage.set(targetFluidSlot, fluidKey, fluidAmount);
+                    } else {
+                        virtualInputState.setVirtualFluid(targetFluidSlot, fluidKey, fluidAmount);
+                    }
                 }
                 if (availability != null) availability.setFluidMissing(targetFluidSlot, missingProvider);
                 targetFluidSlot++;

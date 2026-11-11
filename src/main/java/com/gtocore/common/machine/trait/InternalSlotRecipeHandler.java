@@ -83,7 +83,7 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         public boolean findRecipe(GTRecipeType recipeType, BiPredicate<RecipeHandlerUnit, GTRecipeDefinition> canHandle) {
-            if (slot.isEmpty()) return false;
+            if (slot.isEmpty() || !slot.isRecipeProcessingEnabled()) return false;
             var cachedRecipe = getCachedRecipe();
             if (cachedRecipe != null) {
                 if (canHandle.test(this, cachedRecipe)) {
@@ -104,7 +104,7 @@ public final class InternalSlotRecipeHandler {
 
         @Override
         public boolean planInputs(GTRecipe recipe, PlanScratch p, long scale, boolean rolled) {
-            if (!recipe.itemInputs.isEmpty() && slot.isEmpty()) return false;
+            if (slot.isEmpty()) return false;
             return super.planInputs(recipe, p, scale, rolled);
         }
 

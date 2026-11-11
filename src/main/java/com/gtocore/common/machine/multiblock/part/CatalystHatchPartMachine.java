@@ -4,6 +4,7 @@ import com.gtolib.api.recipe.extension.CatalystRecipeExtension;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.widget.SlotWidget;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
@@ -36,6 +37,12 @@ public final class CatalystHatchPartMachine extends WorkableTieredIOPartMachine 
     @Override
     public void onPaintingColorChanged(int color) {
         getHandlerUnit().setColor(color, true);
+    }
+
+    @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        super.attachConfigurators(configuratorPanel);
+        attachRecipeHandlingConfigurator(configuratorPanel);
     }
 
     @Override

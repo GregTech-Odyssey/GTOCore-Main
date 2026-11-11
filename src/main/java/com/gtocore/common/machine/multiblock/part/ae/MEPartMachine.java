@@ -6,6 +6,7 @@ import com.gtolib.api.machine.feature.IMEPartMachine;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -241,6 +242,13 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
     @Override
     public ModularUI createUI(Player entityPlayer) {
         return MachineWindow.createUI(this, this, entityPlayer);
+    }
+
+    @Override
+    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
+        IDistinctPart.super.attachConfigurators(configuratorPanel);
+        // ME 输入总线/仓的内容处理器也是配方仓，一并给出「配方处理」开关（没有内容处理器的 ME 部件不会出现）
+        attachRecipeHandlingConfigurator(configuratorPanel);
     }
 
     @Override

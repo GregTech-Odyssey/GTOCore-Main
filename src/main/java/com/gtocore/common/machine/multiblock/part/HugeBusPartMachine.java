@@ -189,6 +189,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new ButtonConfigurator(WidgetIcons.REFUND, this::refundAll).setTooltips(List.of(Component.translatable("gtmthings.machine.huge_item_bus.tooltip.1"))));
+        attachRecipeHandlingConfigurator(configuratorPanel);
     }
 
     @Override

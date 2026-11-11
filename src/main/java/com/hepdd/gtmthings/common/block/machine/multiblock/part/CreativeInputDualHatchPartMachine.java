@@ -80,6 +80,7 @@ public class CreativeInputDualHatchPartMachine extends WorkableTieredIOPartMachi
     public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
         IDistinctPart.super.attachConfigurators(configuratorPanel);
         configuratorPanel.attachConfigurators(new CircuitFancyConfigurator(circuitInventory.storage));
+        attachRecipeHandlingConfigurator(configuratorPanel);
     }
 
     @Override

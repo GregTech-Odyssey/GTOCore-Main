@@ -42,6 +42,7 @@ import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -495,10 +496,14 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         return true;
     }
 
-    /** 单槽配置：物品输入、流体输入、电路、记录的配方，各占一个面板区块。 */
+    /** 单槽配置：配方处理开关、物品输入、流体输入、电路、记录的配方，各占一个面板区块。 */
     @Override
     protected void buildSlotConfig(UIElement column, int index) {
         var slot = getInternalInventory()[index];
+
+        var handling = MEPatternPartUI.section(column, RECIPE_HANDLING);
+        handling.addChild(MEPatternPartUI.labeledRow(handling.getContentWidth(), RECIPE_HANDLING_ENABLED,
+                Switch.of(slot::isRecipeProcessingEnabled, enabled -> setPatternSlotActive(index, enabled)), RECIPE_HANDLING_TOOLTIP));
 
         var items = MEPatternPartUI.section(column, ITEM_SPECIAL);
         MEPatternPartUI.slotRows(items, slot.lockableInventory.getSlots(),
@@ -726,6 +731,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         @Getter
         @SaveToDisk(defaultValue = "false", listener = "setLock")
         private boolean lock;
+        /** 该样板是否参与配方处理；关掉后只保留配置与缓存，不再参与机器配方匹配。 */
+        @SaveToDisk(defaultValue = "true")
+        private boolean recipeProcessingEnabled = true;
         @Setter
         private boolean shouldLockRecipe = true;
         private final LazyFieldDataManager fieldDataManager = new LazyFieldDataManager(this);
@@ -831,6 +839,16 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         public void onPatternChange() {
             setRecipe(null);
             refund();
+        }
+
+        @Override
+        public boolean isRecipeProcessingEnabled() {
+            return recipeProcessingEnabled;
+        }
+
+        @Override
+        public void setRecipeProcessingEnabled(boolean enabled) {
+            recipeProcessingEnabled = enabled;
         }
 
         @Override

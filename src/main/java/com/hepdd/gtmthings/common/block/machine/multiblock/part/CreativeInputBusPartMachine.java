@@ -111,6 +111,7 @@ public class CreativeInputBusPartMachine extends WorkableTieredIOPartMachine imp
         if (this.io == IO.IN) {
             configuratorPanel.attachConfigurators(new CircuitFancyConfigurator(circuitInventory.storage));
         }
+        attachRecipeHandlingConfigurator(configuratorPanel);
     }
 
     @Override

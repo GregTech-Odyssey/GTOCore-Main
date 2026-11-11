@@ -3,6 +3,7 @@ package com.gtocore.common.data.translation;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
+import com.gtocore.common.machine.multiblock.generator.MagneticFluidGeneratorMachine;
 import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.tooltip.TipSlot;
@@ -16,6 +17,7 @@ import appeng.api.config.PowerUnits;
 import static com.gtocore.common.data.translation.ComponentSlang.AfterModuleInstallation;
 import static com.gtocore.common.data.translation.ComponentSlang.EfficiencyBonus;
 import static com.gtocore.common.data.translation.ComponentSlang.MainFunction;
+import static com.gtocore.common.data.translation.ComponentSlang.Overclock;
 import static com.gtocore.common.data.translation.ComponentSlang.RunningRequirements;
 
 public final class GTOMachineTooltipsA {
@@ -443,6 +445,11 @@ public final class GTOMachineTooltipsA {
         t.bonus(t.tr("提升效率 x 2", "Efficiency is increased by x 2"));
         t.bonus(t.tr("基础并行 x 4", "Basic parallel x 4"));
         t.bonus(t.tr("激光源仓的并行加成提升为 x 4", "The Laser Source Hatch parallel bonus is increased to x 4"));
+
+        t.heading(Overclock);
+        t.feature(t.tr("超频输出每级 ×4，燃料消耗倍率从 %s 起每 %s 级 +1", "Output x4 per overclock level; fuel cost starts at %s and rises by 1 every %s levels",
+                MagneticFluidGeneratorMachine.BASE_FUEL_COST, MagneticFluidGeneratorMachine.FUEL_COST_STEP));
+        t.feature(t.tr("超频级数越高，单位燃料换到的能量越少", "Higher overclock levels yield less energy per unit of fuel"));
     });
 
     public static final TipSpec dysonSphereReceivingStationTooltips = GTOTips.of("dyson_sphere_receiving_station", t -> {
