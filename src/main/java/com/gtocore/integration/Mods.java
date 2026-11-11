@@ -30,6 +30,7 @@ public enum Mods {
     MOUSETWEAKS("mousetweaks"),
     AE2_TOGGLEABLE_VIEW_CELL("ae2_toggleable_view_cell"),
     INVENTORY_ESSENTIALS("inventoryessentials"),
+    MORE_RED("morered"),
     FTB_XMOD_COMPAT("ftbxmodcompat"),
     RENDER_BLENDER("renderblender"),
     BALM("balm"),
