@@ -3,6 +3,7 @@ package com.gtocore.common.wireless.energy.map;
 import com.gtocore.common.machine.multiblock.storage.WirelessDimensionRepeaterMachine;
 
 import com.gtolib.api.wireless.energy.GridClock;
+import com.gtolib.api.wireless.energy.GridEquipmentNetwork;
 import com.gtolib.api.wireless.energy.GridSampler;
 import com.gtolib.api.wireless.energy.GridView;
 import com.gtolib.api.wireless.energy.NodeDetail;
@@ -139,6 +140,11 @@ public final class GridMapContext {
     void handleBack(Player sender) {
         if (sender != player || machine == null || machine.isRemoved() || !(sender instanceof ServerPlayer serverPlayer)) return;
         MachineSubWindowFactory.openMachine(serverPlayer, machine);
+    }
+
+    void handleEquipment(Player sender, ResourceKey<Level> dimension) {
+        if (sender != player || mode != GridMapMode.VIEW || !(sender instanceof ServerPlayer serverPlayer)) return;
+        if (serverPlayer.server.getLevel(dimension) != null) GridEquipmentNetwork.open(serverPlayer, dimension);
     }
 
     @Nullable

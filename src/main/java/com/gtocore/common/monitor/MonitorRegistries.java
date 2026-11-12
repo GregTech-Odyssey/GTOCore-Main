@@ -105,6 +105,7 @@ public final class MonitorRegistries {
         MonitorDataSources.init();
         MonitorPersonalSources.init();
         MonitorInfoSources.init();
+        HudPanels.register(new HudPanels.Spec("xaero.minimap", "gui.xaero_minimap", "gui.xaero_minimap", 6, 8, 3, 3, 2, -10, 10, GTOOrganItems.MIND_IMPLANT));
         MonitorPanels.init();
         MonitorContent.install(new MonitorContent() {
 

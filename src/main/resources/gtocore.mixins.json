@@ -53,12 +53,17 @@
     "mc.client.LightTextureMixin",
     "mc.client.UtilOSMixin",
     "merequester.NumberFieldMixin",
+    "morered.VoxelCacheInvoker",
     "mousetweaks.GuiContainerHandlerMixin",
     "renderblender.WrappedItemModelMixin",
     "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",
     "sodium.SodiumWorldRendererMixin",
+    "xaero.GuiMapAccessor",
     "xaero.MapProcessorMixin",
-    "xaero.WorldDataHandlerMixin"
+    "xaero.WorldDataHandlerMixin",
+    "xaero.minimap.GuiUtilsMixin",
+    "xaero.minimap.MinimapProcessorMixin",
+    "xaero.minimap.MinimapRendererMixin"
   ],
   "mixins": [
     "adastra.GasTankItemMixin",
@@ -131,6 +136,7 @@
     "ae2.storage.BasicCellHandlerMixin",
     "ae2.storage.BasicCellInventoryMixin",
     "ae2.storage.CreativeCellInventoryMixin",
+    "ae2.wtlib.AE2wtlibEventsMixin",
     "ae2.wtlib.CraftingTerminalHandlerAccessor",
     "ae2.wtlib.CraftingTerminalHandlerMixin",
     "ae2.wtlib.ItemWTMixin",

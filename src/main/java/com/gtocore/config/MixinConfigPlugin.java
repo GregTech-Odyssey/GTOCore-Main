@@ -13,8 +13,14 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtocore.mixin.balm.")) {
             return Mods.BALM.isLoaded();
         }
+        if (mixinClassName.startsWith("com.gtocore.mixin.xaero.minimap.")) {
+            return Mods.XAERO_MINIMAP.isLoaded();
+        }
         if (mixinClassName.startsWith("com.gtocore.mixin.xaero.")) {
             return Mods.XAERO_WORLDMAP.isLoaded();
+        }
+        if (mixinClassName.startsWith("com.gtocore.mixin.morered.")) {
+            return Mods.MORE_RED.isLoaded();
         }
         if (mixinClassName.startsWith("com.gtocore.mixin.inventoryessentials.")) {
             if (mixinClassName.endsWith(".ServerInventoryTransfersMixin")) return Mods.INVENTORY_ESSENTIALS.isLoaded() && Mods.CHISEL.isLoaded();

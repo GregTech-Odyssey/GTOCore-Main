@@ -376,6 +376,13 @@ public final class GTOConfig {
     public static class Client {
 
         @Configurable
+        @Configurable.Comment({ "义体 HUD 的背景不透明度，0 为透明，100 为不透明", "Implant HUD background opacity: 0 is transparent, 100 is opaque" })
+        @Configurable.Range(min = 0, max = 100)
+        @Configurable.Gui.Slider
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Implant HUD Background Opacity", cn = "义体 HUD 背景不透明度")
+        public int implantHudBackgroundOpacity = 80;
+
+        @Configurable
         @Configurable.Comment({ "AE 终端在切换页面时使用选择器替代循环顺序切换", "AE Terminals use a selector instead of cycling through pages when switching pages" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "AE Terminal Page Switch Style Rework", cn = "AE 终端页面切换样式重做")
         public boolean aeTerminalPageSwitchStyleSelector = false;

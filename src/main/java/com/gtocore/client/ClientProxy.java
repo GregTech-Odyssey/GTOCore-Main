@@ -31,6 +31,7 @@ import com.gtocore.common.quest.hot.QuestHotConfig;
 import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.client.TravelParticleHandler;
 import com.gtocore.eio_travel.client.travel.TravelAnchorHud;
+import com.gtocore.integration.Mods;
 import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.PatternContentAccessTerminalPart;
 import com.gtocore.integration.ae.PatternContentAccessTerminalScreen;
@@ -41,6 +42,7 @@ import com.gtocore.integration.ae.client.PatternEncoderStatsScreen;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
+import com.gtocore.integration.xaero.XaeroMinimapHud;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.ae2.gui.GTOButtonAppearance;
@@ -281,6 +283,7 @@ public final class ClientProxy extends CommonProxy {
         MonitorHudClient.registerPanel("info.fps", InfoReadouts.FPS);
         MonitorHudClient.registerPanel("info.clock", InfoReadouts.CLOCK);
         MonitorHudClient.registerPanel("info.rendered", InfoReadouts.RENDERED);
+        if (Mods.XAERO_MINIMAP.isLoaded()) XaeroMinimapHud.install();
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
         event.registerAboveAll("monitor_hud", (gui, graphics, partialTick, width, height) -> MonitorHudClient.render(graphics, width, height, partialTick));
     }
