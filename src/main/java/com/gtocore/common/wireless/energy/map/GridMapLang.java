@@ -39,9 +39,9 @@ public final class GridMapLang {
     public static final Component GALAXY_TIP = Component.translatable("gtocore.wireless_grid_map.galaxy.tooltip");
     @RegisterLanguage(cn = "电网星图操作", en = "Grid map controls")
     public static final Component HELP = Component.translatable("gtocore.wireless_grid_map.help");
-    @RegisterLanguage(cn = "单击星球或异界维度：查看节点详情与线路", en = "Click a body: node details and lines")
+    @RegisterLanguage(cn = "单击星球、轨道或异界维度：打开设备供电地图", en = "Click a body, orbit or realm: open its equipment power map")
     public static final Component HELP_SELECT = Component.translatable("gtocore.wireless_grid_map.help.select");
-    @RegisterLanguage(cn = "再次单击、单击空白处或按 Esc：取消选中", en = "Click again, click empty space or press Esc: deselect")
+    @RegisterLanguage(cn = "右键星球：查看节点详情；单击空白处或按 Esc：取消选中", en = "Right-click a body: node details; click empty space or press Esc: deselect")
     public static final Component HELP_DESELECT = Component.translatable("gtocore.wireless_grid_map.help.deselect");
     @RegisterLanguage(cn = "选中后悬停另一颗星球：两地之间的最大输送", en = "Hover another body while selected: maximum transfer between them")
     public static final Component HELP_COMPARE = Component.translatable("gtocore.wireless_grid_map.help.compare");
@@ -200,11 +200,33 @@ public final class GridMapLang {
     public static final Component LINE_USAGE = Component.translatable("gtocore.wireless_grid_map.line.usage");
     @RegisterLanguage(cn = "点击：将视图移到该线路", en = "Click: move the view to this line")
     public static final Component LINE_CLICK = Component.translatable("gtocore.wireless_grid_map.line.click");
-    @RegisterLanguage(cn = "流量最大的设备", en = "Top devices")
-    public static final Component TOP_PORTS = Component.translatable("gtocore.wireless_grid_map.top_ports");
+    @RegisterLanguage(cn = "设备供电地图", en = "Equipment power map")
+    public static final Component DEVICE_MAP = Component.translatable("gtocore.wireless_grid_map.device_map");
+    @RegisterLanguage(cn = "在 Xaero 地图上查看各设备的供电情况，可切换维度", en = "View equipment power on the Xaero map; dimensions can be switched")
+    public static final Component DEVICE_MAP_HINT = Component.translatable("gtocore.wireless_grid_map.device_map.hint");
+    @RegisterLanguage(cn = "Xaero 世界地图尚未就绪", en = "Xaero's World Map is not ready")
+    public static final Component DEVICE_MAP_UNAVAILABLE = Component.translatable("gtocore.wireless_grid_map.device_map.unavailable");
+    @RegisterLanguage(cn = "发电", en = "Generation")
+    public static final Component GENERATION = Component.translatable("gtocore.wireless_grid_map.device.generation");
+    @RegisterLanguage(cn = "耗电", en = "Consumption")
+    public static final Component CONSUMPTION = Component.translatable("gtocore.wireless_grid_map.device.consumption");
+    @RegisterLanguage(cn = "绿色：发电 · 橙色：耗电 · 电量越大颜色越深", en = "Green: generation · Orange: consumption · Darker: more power")
+    public static final Component DEVICE_LEGEND = Component.translatable("gtocore.wireless_grid_map.device.legend");
+    @RegisterLanguage(cn = "坐标：%s, %s, %s", en = "Position: %s, %s, %s")
+    public static final String DEVICE_POSITION = "gtocore.wireless_grid_map.device.position";
+    @RegisterLanguage(cn = "高亮", en = "Highlight")
+    public static final Component HIGHLIGHT = Component.translatable("gtocore.wireless_grid_map.device.highlight");
+    @RegisterLanguage(cn = "传送", en = "Teleport")
+    public static final Component TELEPORT = Component.translatable("gtocore.wireless_grid_map.device.teleport");
+    @RegisterLanguage(cn = "需要 OP 权限", en = "Requires OP permission")
+    public static final Component OP_REQUIRED = Component.translatable("gtocore.wireless_grid_map.device.op_required");
+    @RegisterLanguage(cn = "返回电网星图", en = "Back to Grid Map")
+    public static final Component BACK_TO_GRID = Component.translatable("gtocore.wireless_grid_map.device.back");
+    @RegisterLanguage(cn = "显示全部设备", en = "Fit all equipment")
+    public static final Component FIT_DEVICES = Component.translatable("gtocore.wireless_grid_map.device.fit");
     @RegisterLanguage(cn = "无设备", en = "No devices")
     public static final Component NO_PORTS = Component.translatable("gtocore.wireless_grid_map.no_ports");
-    @RegisterLanguage(cn = "关闭星图并在世界中高亮 10 秒", en = "Close the map and highlight it in the world for 10 s")
+    @RegisterLanguage(cn = "关闭地图并在世界中高亮 10 秒", en = "Close the map and highlight it in the world for 10 s")
     public static final Component PORT_HIGHLIGHT = Component.translatable("gtocore.wireless_grid_map.port.highlight");
     @RegisterLanguage(cn = "不在当前维度", en = "Not in the current dimension")
     public static final Component NOT_HERE = Component.translatable("gtocore.wireless_grid_map.not_here");
@@ -247,7 +269,7 @@ public final class GridMapLang {
     @RegisterLanguage(cn = "无储能 · %s", en = "No storage · %s")
     public static final String TAG_RELAY_SHORT = "gtocore.wireless_grid_map.tag.relay_short";
 
-    @RegisterLanguage(cn = "点击查看详情", en = "Click for details")
+    @RegisterLanguage(cn = "单击查看设备地图，右键查看节点详情", en = "Click for equipment map; right-click for node details")
     public static final Component TIP_DETAILS = Component.translatable("gtocore.wireless_grid_map.tip.details");
     @RegisterLanguage(cn = "净流量 %s", en = "Net %s")
     public static final String TIP_DELTA = "gtocore.wireless_grid_map.tip.delta";

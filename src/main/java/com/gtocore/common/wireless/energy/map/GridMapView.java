@@ -5,6 +5,9 @@ import com.gtolib.api.wireless.energy.GridView;
 import com.gregtechceu.gtceu.uipro.canvas.CanvasView;
 import com.gregtechceu.gtceu.uipro.window.CardHost;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -45,6 +48,8 @@ public interface GridMapView {
     void sendPick(int dimRef);
 
     void sendBack();
+
+    void openEquipment(ResourceKey<Level> dimension);
 
     void setNavigator(@Nullable GridMapNavigator navigator);
 

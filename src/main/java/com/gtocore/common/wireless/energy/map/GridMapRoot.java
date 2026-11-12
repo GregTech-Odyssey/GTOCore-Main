@@ -22,7 +22,9 @@ import com.gregtechceu.gtceu.uipro.window.ScreenHost;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -52,6 +54,7 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
     private final SyncValue<GridView.LiveView> live;
     private final RPC<Integer> pick;
     private final RPC<Unit> back;
+    private final RPC<ResourceKey<Level>> equipment;
     private final CanvasView canvas;
     private final CardHost card;
     private final Dock dock;
@@ -69,6 +72,7 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
         live = addSyncValue(SyncValue.of(ctx::live, GridView.LIVE, GridView.LiveView.EMPTY));
         pick = addRPC(ByteBufCodecs.VAR_INT, ctx::handlePick).validate(ref -> GridView.dimension(ref) != null).limit(1);
         back = addRPC(ctx::handleBack).limit(1);
+        equipment = addRPC(GridView.DIMENSION, ctx::handleEquipment).limit(1);
         card = new CardHost("gridmap.card", this::createCard);
         canvas = new CanvasView("gridmap", SERVER_WIDTH, SERVER_HEIGHT);
         canvas.layout(l -> l.positionType(TaffyPosition.ABSOLUTE).left(0).top(0));
@@ -257,6 +261,11 @@ public final class GridMapRoot extends ScreenHost implements GridMapView {
     @Override
     public void sendBack() {
         back.send(Unit.INSTANCE);
+    }
+
+    @Override
+    public void openEquipment(ResourceKey<net.minecraft.world.level.Level> dimension) {
+        equipment.send(dimension);
     }
 
     @Override
