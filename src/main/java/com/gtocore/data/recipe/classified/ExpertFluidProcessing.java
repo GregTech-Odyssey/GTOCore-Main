@@ -548,7 +548,6 @@ public class ExpertFluidProcessing {
     private static void oneStepProcess() {
         // Carry the probability of each processing path; omit asphalt oil slag and uncommon residues.
         PETROCHEMICAL_PLANT_RECIPES.builder("light_oil_with_sand")
-                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
                 .inputFluids(LightOilWithSand, 80000)
                 .chancedOutput(Items.SAND, 80, 3090, 100)
                 .chancedOutput(TagPrefix.dust, Barite, 60, 400, 50)
@@ -590,7 +589,6 @@ public class ExpertFluidProcessing {
                 .save();
 
         PETROCHEMICAL_PLANT_RECIPES.builder("heavy_oil_with_sand")
-                .inputItems(TagPrefix.dust, GTOMaterials.SilicaGel)
                 .inputFluids(HeavyOilWithSand, 80000)
                 .chancedOutput(Items.SAND, 80, 3090, 100)
                 .chancedOutput(TagPrefix.dust, Barite, 60, 400, 50)

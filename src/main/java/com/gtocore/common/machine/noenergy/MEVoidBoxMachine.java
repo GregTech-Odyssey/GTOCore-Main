@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.noenergy;
 
+import com.gtolib.api.ae2.storage.VoidBoxCondensation;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
@@ -21,6 +22,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.api.config.Actionable;
@@ -36,7 +38,9 @@ import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.IStorageMounts;
 import appeng.api.storage.IStorageProvider;
 import appeng.api.storage.MEStorage;
+import appeng.core.definitions.AEItems;
 
+import com.gto.datasynclib.annotations.AdditionalHolder;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
@@ -57,6 +61,20 @@ public final class MEVoidBoxMachine extends MetaMachine implements IGridConnecte
     private static final String PAGE_SCROLLER = "me_void_box.page";
     private static final int PRIORITY_MIN = Integer.MIN_VALUE + 1;
     private static final int PRIORITY_MAX = Integer.MAX_VALUE - 1;
+    private static final Lazy<AEItemKey> MATTER_BALL = Lazy.of(() -> AEItemKey.of(AEItems.MATTER_BALL.asItem()));
+    private static final Lazy<AEItemKey> SINGULARITY = Lazy.of(() -> AEItemKey.of(AEItems.SINGULARITY.asItem()));
+
+    @RegisterLanguage(cn = "产出模式", en = "Output Mode")
+    private static final Component OUTPUT_MODE = Component.translatable("gtocore.machine.me_void_box.output_mode");
+    @RegisterLanguage(cn = "仅销毁", en = "Void Only")
+    private static final Component VOID_ONLY = Component.translatable("gtocore.machine.me_void_box.void_only");
+    @RegisterLanguage(cn = "本机存储：%s 个物质球，%s 个奇点", en = "Stored here: %s matter balls, %s singularities")
+    private static final String STORED = "gtocore.machine.me_void_box.stored";
+
+    private final KeyCounter outputs = new KeyCounter();
+    private boolean outputsDirty = true;
+    @AdditionalHolder
+    private final VoidBoxCondensation condensation = new VoidBoxCondensation(this::onOutputChanged, AEKeyTypes.FLUIDS.getAmountPerOperation());
 
     @RegisterLanguage(cn = "销毁标记", en = "Void Filter")
     private static final Component MARKS = Component.translatable("gtocore.machine.me_void_box.marks");
@@ -101,6 +119,7 @@ public final class MEVoidBoxMachine extends MetaMachine implements IGridConnecte
     public void onLoad() {
         super.onLoad();
         if (isRemote()) return;
+        outputsDirty = true;
         rebuildMarks();
     }
 
@@ -167,20 +186,42 @@ public final class MEVoidBoxMachine extends MetaMachine implements IGridConnecte
 
     @Override
     public long insert(AEKey what, long amount, Actionable mode, IActionSource source) {
-        return amount > 0 && (marked.isEmpty() || marked.containKey(what)) ? amount : 0;
+        if (amount <= 0 || !supportsKeyType(what.getType()) || !marked.isEmpty() && !marked.containKey(what)) return 0;
+        if (mode == Actionable.MODULATE) condensation.add(amount, what.getAmountPerOperation());
+        return amount;
     }
 
     @Override
     public long extract(AEKey what, long amount, Actionable mode, IActionSource source) {
-        return 0;
+        if (amount <= 0 || what != MATTER_BALL.get() && what != SINGULARITY.get()) return 0;
+        return condensation.extract(what == SINGULARITY.get(), amount, mode == Actionable.SIMULATE);
     }
 
     @Override
-    public void getAvailableStacks(KeyCounter out) {}
+    public void getAvailableStacks(KeyCounter out) {
+        out.addAll(getAvailableStacks());
+    }
 
     @Override
     public KeyCounter getAvailableStacks() {
-        return KeyCounter.EMPTY;
+        if (outputsDirty) {
+            outputsDirty = false;
+            outputs.clear();
+            collectOutputs(outputs);
+        }
+        return outputs;
+    }
+
+    private void collectOutputs(KeyCounter out) {
+        long balls = condensation.getAmount(false);
+        long singularities = condensation.getAmount(true);
+        if (balls > 0) out.add(MATTER_BALL.get(), balls);
+        if (singularities > 0) out.add(SINGULARITY.get(), singularities);
+    }
+
+    private void onOutputChanged() {
+        outputsDirty = true;
+        onChanged();
     }
 
     private int getPriority() {
@@ -197,6 +238,12 @@ public final class MEVoidBoxMachine extends MetaMachine implements IGridConnecte
     @Override
     public Widget createUIWidget() {
         var page = Form.page();
+        page.addChild(Form.choiceRow(OUTPUT_MODE, 3, i -> switch (i) {
+            case 1 -> AEItems.MATTER_BALL.asItem().getDescription();
+            case 2 -> AEItems.SINGULARITY.asItem().getDescription();
+            default -> VOID_ONLY;
+        }, condensation::getMode, condensation::setMode));
+        page.addChild(Form.label(() -> Component.translatable(STORED, condensation.getAmount(false), condensation.getAmount(true))));
         page.addChild(Form.numberRow(PRIORITY, NumberField.ofInt(LayoutStyle.AUTO, this::getPriority, this::setPriority, PRIORITY_MIN, PRIORITY_MAX),
                 PRIORITY_EXTRACTION_HINT, PRIORITY_INSERTION_HINT));
         var section = Form.section(MARKS);

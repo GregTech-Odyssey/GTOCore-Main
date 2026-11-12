@@ -488,6 +488,7 @@ public final class GTOMachineTooltipsA {
         t.feature(t.tr("只销毁标记的物品与流体，没标记就销毁全部", "Only marked items and fluids are destroyed; with no marks everything is destroyed"));
         t.control(t.tr("在机器界面里标记要销毁的物品与流体", "Mark the items and fluids to destroy in the machine GUI"));
         t.control(t.tr("界面里可以设置存储优先级", "Storage priority can be set in the GUI"));
+        t.feature(t.tr("可产出物质球或奇点", "Can produce matter balls or singularities"));
     });
 
     public static final TipSpec BeamGeneratorTooltips = GTOTips.of("beam_generator", t -> {
