@@ -134,6 +134,7 @@
     "ae2.storage.BasicCellHandlerMixin",
     "ae2.storage.BasicCellInventoryMixin",
     "ae2.storage.CreativeCellInventoryMixin",
+    "ae2.wtlib.AE2wtlibEventsMixin",
     "ae2.wtlib.CraftingTerminalHandlerAccessor",
     "ae2.wtlib.CraftingTerminalHandlerMixin",
     "ae2.wtlib.ItemWTMixin",
