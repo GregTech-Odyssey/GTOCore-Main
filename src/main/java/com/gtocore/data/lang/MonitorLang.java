@@ -371,6 +371,9 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.channel.eu.machines", "运行台数", "Active Machines");
         addCNEN("gtocore.monitor.channel.eu.machines.desc", "电网中正在耗电的用电器与正在发电的发电机台数", "Number of consumers drawing power and generators producing power on the grid");
         addCNEN("gtocore.monitor.channel.player.oxygen", "氧气", "Oxygen");
+        addCNEN("gtocore.monitor.channel.player.armor", "装备状态", "Equipment Status");
+        addCNEN("gtocore.monitor.channel.player.armor.desc", "动力胸甲与喷气背包的电量、燃料与飞行模式", "Charge, fuel and flight modes of powered chestplates and jetpacks");
+        addCNEN("gtocore.monitor.value.source_lost.no_powered_suit", "未装备动力胸甲或喷气背包", "No powered chestplate or jetpack equipped");
         addCNEN("gtocore.monitor.channel.player.oxygen.desc", "所穿宇航服的剩余氧气比例", "Remaining oxygen in the worn space suit");
         addCNEN("gtocore.monitor.channel.player.disease", "疾病", "Disease");
         addCNEN("gtocore.monitor.channel.player.disease.desc", "积累程度最高的疾病及其进度", "The disease with the highest accumulation and its progress");
