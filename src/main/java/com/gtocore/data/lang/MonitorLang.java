@@ -430,7 +430,12 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.share.remove", "移出名单", "Remove from the list");
         addCNEN("gtocore.monitor.hud.need_implant", "须装备心智义体", "A Mind Implant is required");
         addCNEN("gtocore.monitor.hud.editor.title", "HUD 布局", "HUD Layout");
+        addCNEN("gtocore.monitor.hud.background", "游戏画面背景", "Game View Background");
+        addCNEN("gtocore.monitor.hud.background.desc", "切换画布的游戏画面背景", "Toggle the game view behind the layout");
         addCNEN("gtocore.monitor.hud.interact", "操作 HUD 组件", "Operate HUD Components");
+        addCNEN("gtocore.monitor.hud.visibility", "显示方式", "Visibility");
+        addCNEN("gtocore.monitor.hud.visibility.always", "始终显示", "Always visible");
+        addCNEN("gtocore.monitor.hud.visibility.interacting", "按住[%s]显示", "Hold [%s] to show");
         addCNEN("gtocore.monitor.hud.hint.layout", "按 %s 编辑 HUD 布局", "Press %s to edit the HUD layout");
         addCNEN("gtocore.monitor.value.source_lost", "来源已失效：%s", "Source lost: %s");
         addCNEN("gtocore.monitor.value.source_lost.control", "控件已拆除或已断开连接", "the control was removed or disconnected");

@@ -34,6 +34,7 @@ public enum Mods {
     RENDER_BLENDER("renderblender"),
     BALM("balm"),
     XAERO_WORLDMAP("xaeroworldmap"),
+    XAERO_MINIMAP("xaerominimap"),
     TOOLBELT("toolbelt"),
     CORPSE("corpse");
 

@@ -58,7 +58,10 @@
     "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",
     "sodium.SodiumWorldRendererMixin",
     "xaero.MapProcessorMixin",
-    "xaero.WorldDataHandlerMixin"
+    "xaero.WorldDataHandlerMixin",
+    "xaero.minimap.GuiUtilsMixin",
+    "xaero.minimap.MinimapProcessorMixin",
+    "xaero.minimap.MinimapRendererMixin"
   ],
   "mixins": [
     "adastra.GasTankItemMixin",

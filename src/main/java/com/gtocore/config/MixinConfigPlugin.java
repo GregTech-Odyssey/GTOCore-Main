@@ -13,6 +13,9 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtocore.mixin.balm.")) {
             return Mods.BALM.isLoaded();
         }
+        if (mixinClassName.startsWith("com.gtocore.mixin.xaero.minimap.")) {
+            return Mods.XAERO_MINIMAP.isLoaded();
+        }
         if (mixinClassName.startsWith("com.gtocore.mixin.xaero.")) {
             return Mods.XAERO_WORLDMAP.isLoaded();
         }
