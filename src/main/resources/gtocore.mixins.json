@@ -53,6 +53,7 @@
     "mc.client.LightTextureMixin",
     "mc.client.UtilOSMixin",
     "merequester.NumberFieldMixin",
+    "morered.VoxelCacheInvoker",
     "mousetweaks.GuiContainerHandlerMixin",
     "renderblender.WrappedItemModelMixin",
     "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",

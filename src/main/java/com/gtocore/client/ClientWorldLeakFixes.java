@@ -5,6 +5,7 @@ import com.gtocore.integration.emi.NotDevCompat;
 import com.gtocore.mixin.balm.ForgeBalmModelsAccessor;
 import com.gtocore.mixin.balm.ModelManagerAccessor;
 import com.gtocore.mixin.inventoryessentials.InventoryEssentialsClientAccessor;
+import com.gtocore.mixin.morered.VoxelCacheInvoker;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -72,6 +73,7 @@ public final class ClientWorldLeakFixes {
     private static void releaseWorldReferences() {
         EmiHistory.clear();
         clearDragSlot();
+        if (Mods.MORE_RED.isLoaded()) VoxelCacheInvoker.gtocore$clearClientCache();
         if (Mods.CONSTRUCTION_WAND.isLoaded()) ConstructionWandReferences.clear();
         for (var model : MODELS) {
             model.gtocore$releaseClientReferences();
