@@ -57,6 +57,7 @@
     "renderblender.WrappedItemModelMixin",
     "sophisticatedcore.CraftingUpgradeTweakUIPartMixin",
     "sodium.SodiumWorldRendererMixin",
+    "xaero.GuiMapAccessor",
     "xaero.MapProcessorMixin",
     "xaero.WorldDataHandlerMixin",
     "xaero.minimap.GuiUtilsMixin",
