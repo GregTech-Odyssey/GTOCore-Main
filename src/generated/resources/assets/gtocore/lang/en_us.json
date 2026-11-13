@@ -1001,7 +1001,7 @@
   "block.gtocore.minesweeper_core": "Minesweeper Core",
   "block.gtocore.minesweeper_display": "Minesweeper Display",
   "block.gtocore.minesweeper_frame": "Minesweeper Frame",
-  "block.gtocore.mirror_hatch": "Mirror Hatch",
+  "block.gtocore.mirror_hatch": "IO Mirror Hatch",
   "block.gtocore.modular_configuration_maintenance_hatch": "Environment Control Auto Maintenance Hatch",
   "block.gtocore.module_connector": "Module Connector",
   "block.gtocore.molecular_assembly_factory": "Molecular Assembly Factory",

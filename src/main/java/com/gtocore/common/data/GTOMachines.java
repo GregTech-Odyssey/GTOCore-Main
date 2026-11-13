@@ -1150,10 +1150,11 @@ public final class GTOMachines {
             .tier(MAX)
             .register();
 
-    public static final MachineDefinition MIRROR_HATCH = machine("mirror_hatch", "镜像仓", MirrorHatchPartMachine::new)
-            .langValue("Mirror Hatch")
+    public static final MachineDefinition MIRROR_HATCH = machine("mirror_hatch", "IO镜像仓", MirrorHatchPartMachine::new)
+            .langValue("IO Mirror Hatch")
             .tier(HV)
             .allRotation()
+            .abilities(PartAbility.UTILITY, PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.EXPORT_FLUIDS, PartAbility.EXPORT_ITEMS)
             .tips(GTOMachineTooltips.MirrorHatchTooltips)
             .renderer(() -> new OverlayTieredMachineRenderer(HV, GTCEu.id("block/machine/part/dual_hatch.import")))
             .allowCoverOnFront(true)

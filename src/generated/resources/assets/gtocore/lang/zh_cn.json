@@ -1001,7 +1001,7 @@
   "block.gtocore.minesweeper_core": "扫雷核心方块",
   "block.gtocore.minesweeper_display": "扫雷显示方块",
   "block.gtocore.minesweeper_frame": "扫雷边框方块",
-  "block.gtocore.mirror_hatch": "镜像仓",
+  "block.gtocore.mirror_hatch": "IO镜像仓",
   "block.gtocore.modular_configuration_maintenance_hatch": "环境控制自动维护仓",
   "block.gtocore.module_connector": "太空电梯模块连接器",
   "block.gtocore.molecular_assembly_factory": "分子装配工厂",

@@ -1140,7 +1140,7 @@
   "block.gtocore.minesweeper_core": "掃雷核心方塊",
   "block.gtocore.minesweeper_display": "掃雷顯示方塊",
   "block.gtocore.minesweeper_frame": "掃雷邊框方塊",
-  "block.gtocore.mirror_hatch": "鏡像倉",
+  "block.gtocore.mirror_hatch": "IO鏡像倉",
   "block.gtocore.modular_configuration_maintenance_hatch": "環境控制自動維護倉",
   "block.gtocore.module_connector": "太空電梯模塊連接器",
   "block.gtocore.molecular_assembly_factory": "分子裝配工廠",
