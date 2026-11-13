@@ -392,6 +392,14 @@ public final class GTOConfig {
         public boolean craftingJobFinishedNotification = true;
 
         @Configurable
+        @Configurable.Comment({ "Ctrl+左键编码样板时，若配方既无不消耗输入也无催化剂，按此项补充空白虚拟提供器",
+                "BOTH：物品与流体各一个；ITEM：仅虚拟物品提供器；FLUID：仅虚拟流体提供器；NONE：不补充",
+                "Blank virtual providers added when Ctrl+click encoding a recipe that has no non-consumed inputs and no catalysts",
+                "BOTH: one item and one fluid provider; ITEM: item provider only; FLUID: fluid provider only; NONE: none" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Blank Virtual Providers on Ctrl Encoding", cn = "Ctrl 编码时补充的空白虚拟提供器")
+        public BlankVirtualProviders blankVirtualProviders = BlankVirtualProviders.BOTH;
+
+        @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Rendering Settings", cn = "渲染设置")
         public RenderingConfig renderingConfig = new RenderingConfig();
 

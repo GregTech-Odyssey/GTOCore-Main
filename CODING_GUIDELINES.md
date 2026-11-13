@@ -164,3 +164,22 @@
    - **接线**：`init()` 必须被调用，不得只写不接。通用端在 `CommonProxy` 的构造/`init()` 里调，客户端专属在 `ClientProxy` 的对应位置调；时机与原先 `@Mod.EventBusSubscriber` 的注册时机一致。别忘了删掉旧的 `MinecraftForge.EVENT_BUS.register(Xxx.class)`——去掉注解后它找不到处理器，会静默什么都不注册。
    - **mixin 除外**：`com.gtocore.mixin.**` 的处理器方法要合并进目标类、且 mixin 包在保护里整类保名，保持原有 `@SubscribeEvent` 写法，迁移时不要动。
    - **构建期有守卫**：`obfuscateGtocoreRelease` 会扫描 `com.gtocore` 与随包发布的 `com.hepdd`（各含嵌套类），发现 `mixin` 包以外仍有 `@SubscribeEvent` 直接失败并列出 `类.方法`。
+
+### 作用域范式（生命周期、网络同步、强状态）
+
+40. **有生命周期的副作用（周期任务、监听、借用的共享资源、给玩家补发的同步）挂在 GTOUtils 的作用域上，登记时写好怎么撤销；不自己成对写开始和结束，不建以玩家或维度为键的静态表，不自己监听登录、登出、换维度。**
+   - **入口**：服务器、维度、玩家、玩家所在维度、显示屏五种作用域只在 `com.gtolib.api.scope.GTOScopes` 里有。功能主类写 `install()`：`GTOScopes.PLAYER.install("模块名", (scope, player) -> { ... })`，并在 `GTOScopes.init()` 的清单里加一行。“进维度时给玩家补发 X”一律挂 `PRESENCE`，登录、重生、换维度三种入口它都覆盖。
+   - **机器**：机器的生命周期副作用写在机器作用域里：字段或构造里 `new MachineScope<>(this, (scope, self) -> { ... })`（`com.gtolib.api.scope.MachineScope`），不写 `onLoad`/`onUnload`。体在机器整体加载完之后的下一轮车道里执行，卸载或拆除时自动结束，客户端不执行。
+     - 读机器状态用 `self.get(机器 -> 状态)`，读即追踪。主人、队伍、成型、所属控制器已内置：`self.owner()`、`self.team()`、`self.formed()`、`self.controller()`；换主人、成型与失效、部件挂上或脱离控制器、控制器卸载都已自动接线。别的状态（开关、档位）在改动处加一行 `MachineScope.changed(this)`，任意线程可调，被父类构造器调用的钩子里也能调。
+     - 体里的条件只读 `self.get`、内置输入和信号，不直接拿机器字段当条件（没有追踪，变了不会重算）。
+     - 按条件登记用 `scope.effectWhile(条件, 施加, 撤销)`；值变了要先撤旧再施新用 `scope.effect(派生, 施加, 撤销)`，派生值为 null 表示没有效果；只在某个条件下跑的周期任务用 `scope.when(条件, s -> s.repeat(...))`。
+     - 要用另一台机器或方块实体时按坐标取：GTM 的 `BlockEntityWatch.machineAt(level, pos)`、`BlockEntityWatch.at(level, pos)`（`com.gregtechceu.gtceu.api.blockentity`）。对方出现、移除（含区块卸载）、方块状态或存储暴露变化会让派生重算，拿到的总是当前加载着的实例，没加载时为 null，不会加载区块；不要把别的机器对象存起来长期用。要在事件现场当场反应的（丢缓存、解绑）用同一个类的 `BlockEntityWatch.listen(scope, level, pos, 方块实体 -> …)`，监听拿到触发事件的方块实体，作用域结束自动撤销；坐标会变的包一层 `scope.select(() -> self.get(机器 -> 坐标), (s, pos) -> BlockEntityWatch.listen(s, …))`，并在坐标改动处调 `MachineScope.changed(this)`。这个类没有手动登记与注销的接口。
+     - 登记要在区块卸载后保留的（能源塔、中继器）：体里用 `watch` 只做登记，撤出写在 `onMachineRemoved` 和显式的延迟任务里；登记表以坐标为键，登记要幂等。
+     - 不开作用域的两种情况：只有一对无条件的开与关、没有要追踪的输入、数量可能上千的（无线能源仓、接收覆盖板），直接在特性或覆盖板的加载与卸载钩子里写这一对；只有少数实例才需要的（加入了无线网络的 ME 部件），按需开一个无父作用域并自己负责结束，参考 `WirelessLink`。
+     - 覆盖板、管道等不是机器的方块实体用 `LoadedScope`：加载钩子里 `open`，卸载钩子里 `close`。
+     - 不建全局的机器生命周期驱动，不给机器建 `ScopeKind`。
+   - **原语**：`when`（该不该存在）、`select`（该是什么，换值时先拆后建）、`each`（一组按键对账）、`watch`（值变了做一件事）、`listen`（信号一响立刻做一件小事）、`trigger`（同一 tick 多次触发只做一次）、`pool` 与 `lease`（按键共享的资源）。单个值的状态用 `Cell`；没有事件来源的读取在派生里写 `Poll.every(n)`；队伍关系变化用 `TeamSignal`。
+   - **派生函数只读**：不在里面改状态、发包、触发信号、开作用域。这类误用会计入 `Scope.anomalyCount()`，并在首次发生时带调用栈告警。
+   - **线程**：作用域只在服务端线程上用。别的线程上登记会直接抛异常；别的线程上触发信号或结束作用域会被转投到车道并告警，不要依赖这个兜底。
+   - **不套作用域的两类**：能从头算出来的派生量（属性、读数）走重算流水线；全局图算法（连通、归属、寻路）批量计算加版本号失效。
+   - **排查**：`/gtocore scopes` 显示存活数、各种作用域的实例数、失败与误用次数和最近的失败摘要；`/gtocore scopes dump` 把整棵作用域树写进日志。模块挂载、派生、撤销里抛的异常只记录、不崩服，功能缺失时先看这里。

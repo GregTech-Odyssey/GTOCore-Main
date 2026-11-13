@@ -128,7 +128,8 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
     private double getDurationMultiplier() {
         double mul = 1;
         if (controller != null) {
-            mul = controller.netMachineCache == null ? 1.0d : controller.netMachineCache.getDurationMultiplier();
+            var connector = controller.getNetCache().get();
+            mul = connector == null ? 1.0d : connector.getDurationMultiplier();
         }
         return durationMultiplier(mul, getSpaceElevatorTier(), isSuper());
     }

@@ -101,7 +101,6 @@ private int vacuumTier;
 ```
 
 ```java
-// src/main/java/com/gtocore/common/machine/monitor/MonitorEU.java:60
 @SyncToClient
 @Access
 private ArrayList<String> EnergyInputHistoryDay = new ArrayList<>();
@@ -295,7 +294,6 @@ public @interface Access {
 
 ```java
 // GTOCore：非 final ArrayList 就地修改 → 需要访问模式
-// src/main/java/com/gtocore/common/machine/monitor/MonitorEU.java:60
 @SyncToClient
 @Access
 private ArrayList<String> EnergyInputHistoryDay = new ArrayList<>();

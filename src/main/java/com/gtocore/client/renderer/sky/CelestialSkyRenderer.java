@@ -6,14 +6,12 @@ import com.gtocore.common.data.CelestialOrbits;
 import com.gtocore.common.data.StarMapDysonSync;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.client.IrisState;
 import com.gtolib.api.data.CelestialBody;
 import com.gtolib.api.data.Dimension;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.uipro.animation.UIClock;
 
-import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
@@ -68,7 +66,6 @@ public final class CelestialSkyRenderer {
     private static final double[] OBSERVER = new double[3];
     private static final double[] TARGET = new double[3];
     private static final Object2ObjectOpenHashMap<ResourceLocation, ResourceLocation> RESAMPLED = new Object2ObjectOpenHashMap<>();
-    private static final boolean OCULUS = GTCEu.isModLoaded("oculus");
     private static final DysonSkyShell DYSON = new DysonSkyShell();
     private static VertexBuffer solarSun;
 
@@ -123,10 +120,10 @@ public final class CelestialSkyRenderer {
         if (count == 0) return;
         int launched = StarMapDysonSync.launched(level);
         if (launched > 0) DYSON.prepare(launched, UIClock.millis());
-        var phase = OCULUS ? IrisPhase.enter() : null;
+        var phase = IrisState.enterCustomSky();
         draw(poseStack, count, level.getTimeOfDay(partialTick) * 360, (float) Math.toDegrees(observer.getObliquity()),
                 1 - level.getRainLevel(partialTick), launched);
-        if (OCULUS) IrisPhase.exit(phase);
+        IrisState.exitPhase(phase);
     }
 
     /** The Sun stays directly below the station at the same angular size as Earth viewed from orbit. */
@@ -145,9 +142,9 @@ public final class CelestialSkyRenderer {
             solarSun.upload(builder.end());
             VertexBuffer.unbind();
         }
-        var phase = OCULUS ? IrisPhase.enter() : null;
+        var phase = IrisState.enterCustomSky();
         ScreenSpaceMeshRenderer.render(poseStack, solarSun, GTORenderTypes.SOLAR_ORBIT_SUN, GameRenderer.getPositionTexShader(), 1, 1, 1, 1);
-        if (OCULUS) IrisPhase.exit(phase);
+        IrisState.exitPhase(phase);
     }
 
     /** 主世界保留原版太阳贴图与轨迹，只在同一绘制位置叠加戴森球。 */
@@ -173,23 +170,6 @@ public final class CelestialSkyRenderer {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1, 1, 1, alpha);
         return true;
-    }
-
-    private static final class IrisPhase {
-
-        @Nullable
-        static Object enter() {
-            var pipeline = Iris.getPipelineManager().getPipelineNullable();
-            if (pipeline == null) return null;
-            var previous = pipeline.getPhase();
-            pipeline.setPhase(WorldRenderingPhase.CUSTOM_SKY);
-            return previous;
-        }
-
-        static void exit(@Nullable Object previous) {
-            var pipeline = Iris.getPipelineManager().getPipelineNullable();
-            if (pipeline != null && previous instanceof WorldRenderingPhase phase) pipeline.setPhase(phase);
-        }
     }
 
     private static int collect(CelestialBody observer, boolean orbit, double ticks, float daylight) {

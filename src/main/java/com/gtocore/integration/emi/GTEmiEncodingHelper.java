@@ -1,14 +1,17 @@
 package com.gtocore.integration.emi;
 
 import com.gtocore.common.item.ItemMap;
+import com.gtocore.config.GTOConfig;
 import com.gtocore.data.tag.Tags;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
 import com.gtolib.api.emi.stack.EmiTagPrefixUtils;
 import com.gtolib.api.emi.stack.EmiTagprefixStack;
+import com.gtolib.api.recipe.extension.CatalystRecipeExtension;
 
 import com.gregtechceu.gtceu.api.item.MetaMachineItem;
+import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.integration.emi.recipe.GTEmiRecipe;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
@@ -116,6 +119,10 @@ public class GTEmiEncodingHelper {
     }
 
     public static @NotNull List<List<GenericStack>> ofInputs(@NotNull EmiRecipe emiRecipe) {
+        return ofInputs(emiRecipe, GTUtil.isShiftDown(), GTUtil.isCtrlDown());
+    }
+
+    public static @NotNull List<List<GenericStack>> ofInputs(@NotNull EmiRecipe emiRecipe, boolean shift, boolean ctrl) {
         var inputs = emiRecipe instanceof GTEmiRecipe gt ? gt.getEncodingInputs() : emiRecipe.getInputs();
         if (emiRecipe instanceof MultiblockInfoEmiRecipe) {
             var result = new ObjectArrayList<List<GenericStack>>(inputs.size());
@@ -127,20 +134,35 @@ public class GTEmiEncodingHelper {
         }
         var catalysts = emiRecipe instanceof GTEmiRecipe gt ? gt.getEncodingCatalysts() : emiRecipe.getCatalysts();
         var result = new ObjectArrayList<List<GenericStack>>(inputs.size() + catalysts.size() + 2);
-        boolean ctrl = GTUtil.isCtrlDown();
-        if (GTUtil.isShiftDown() || ctrl) {
+        if (shift || ctrl) {
             for (var catalyst : catalysts) result.add(intoGenericStack(catalyst, ctrl));
+            if (ctrl && emiRecipe instanceof GTEmiRecipe gt && gt.getEncodingRecipe() != null) addCatalystProviders(gt.getEncodingRecipe(), result);
             if (result.isEmpty() && ctrl) {
-                var itemProvider = CustomItems.VIRTUAL_ITEM_PROVIDER.asStack();
-                VirtualProviderData.setLocked(itemProvider, true);
-                result.add(List.of(new GenericStack(AEItemKey.of(itemProvider), 1)));
-                var fluidProvider = CustomItems.VIRTUAL_FLUID_PROVIDER.asStack();
-                VirtualProviderData.setLocked(fluidProvider, true);
-                result.add(List.of(new GenericStack(AEItemKey.of(fluidProvider), 1)));
+                var blank = GTOConfig.INSTANCE.client.blankVirtualProviders;
+                if (blank.item) {
+                    var itemProvider = CustomItems.VIRTUAL_ITEM_PROVIDER.asStack();
+                    VirtualProviderData.setLocked(itemProvider, true);
+                    result.add(List.of(new GenericStack(AEItemKey.of(itemProvider), 1)));
+                }
+                if (blank.fluid) {
+                    var fluidProvider = CustomItems.VIRTUAL_FLUID_PROVIDER.asStack();
+                    VirtualProviderData.setLocked(fluidProvider, true);
+                    result.add(List.of(new GenericStack(AEItemKey.of(fluidProvider), 1)));
+                }
             }
         }
         for (var input : inputs) result.add(intoGenericStack(input));
         return result;
+    }
+
+    private static void addCatalystProviders(GTRecipeDefinition recipe, List<List<GenericStack>> result) {
+        var catalysts = CatalystRecipeExtension.inputs(recipe);
+        for (int i = 0; i < catalysts.size(); i++) {
+            if (!(catalysts.ingredient(i).displayKey() instanceof AEItemKey key)) continue;
+            var provider = VirtualItemProviderBehavior.setVirtualItem(CustomItems.VIRTUAL_ITEM_PROVIDER.asStack(), key.toStack());
+            VirtualProviderData.setLocked(provider, true);
+            result.add(Collections.singletonList(new GenericStack(AEItemKey.of(provider), catalysts.amount(i))));
+        }
     }
 
     private static EmiIngredient bucketAsFluid(EmiIngredient ingredient) {

@@ -8,6 +8,7 @@ import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.GTOKeyBind;
 import com.gtocore.client.MaterialTypeTooltips;
+import com.gtocore.client.QuestBookEntries;
 import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
 import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
@@ -188,6 +189,7 @@ public final class ForgeClientEvent {
         FXManager.tickFXs();
         Minecraft mc = Minecraft.getInstance();
         updateHudScreen(mc);
+        QuestBookEntries.tick(mc);
         if (mc.player instanceof IEnhancedPlayer) {
             boolean isShiftDown = Screen.hasShiftDown();
             if (isShiftDown != lastShiftState) {

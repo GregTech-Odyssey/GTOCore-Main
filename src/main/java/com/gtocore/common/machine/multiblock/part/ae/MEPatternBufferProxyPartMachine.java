@@ -2,6 +2,8 @@ package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.common.machine.trait.ProxySlotRecipeHandler;
 
+import com.gtolib.api.scope.MachineScope;
+
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -9,6 +11,8 @@ import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -32,8 +36,10 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.suried.gtoutils.level.LoadedChunks;
 import com.suried.gtoutils.schedule.CoalescedTask;
 import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Scope;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.ITooltip;
@@ -48,7 +54,7 @@ import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartM
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartMachine implements IMachineLife, IDataStickInteractable, IWailaDisplayProvider, BlockEntityWatch.Listener {
+public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartMachine implements IMachineLife, IDataStickInteractable, IWailaDisplayProvider {
 
     private static final String JADE_BOUND = "bound";
     private static final String JADE_POS = "pos";
@@ -62,12 +68,26 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     private MEPatternBufferPartMachine buffer = null;
     private boolean bufferResolved = false;
     @Nullable
-    private BlockPos watchedPos;
-    @Nullable
     private CoalescedTask resolveTask;
 
     public MEPatternBufferProxyPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.LuV, IO.IN);
+        new MachineScope<>(this, this::mount);
+    }
+
+    private void mount(Scope opened, MachineScope<MEPatternBufferProxyPartMachine> self) {
+        opened.select(() -> self.get(MEPatternBufferProxyPartMachine::getBufferPos), (bound, pos) -> {
+            var level = getLevel();
+            if (level == null || pos == null) return;
+            BlockEntityWatch.listen(bound, level, pos, this::onBufferChanged);
+            var buf = buffer;
+            if (buf != null && buf.holder.isRemoved()) {
+                onBufferUnloaded(buf);
+                buf = null;
+            }
+            var present = BlockEntityWatch.at(level, pos);
+            if (present != null && (buf == null || present != buf.holder)) resolveLater();
+        });
     }
 
     @Override
@@ -86,7 +106,6 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     public void onUnload() {
         MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
         super.onUnload();
-        watch(null);
         bufferResolved = false;
         var buf = buffer;
         if (buf == null) return;
@@ -103,22 +122,24 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     public void setBuffer(@Nullable BlockPos pos) {
         bufferResolved = true;
-        bind(findBuffer(pos));
+        bind(findBuffer(pos, false));
     }
 
     @Nullable
-    private MEPatternBufferPartMachine findBuffer(@Nullable BlockPos pos) {
+    private MEPatternBufferPartMachine findBuffer(@Nullable BlockPos pos, boolean load) {
         var level = getLevel();
         if (level == null || pos == null) return null;
-        return MetaMachine.getMachine(level, pos) instanceof MEPatternBufferPartMachine machine ? machine : null;
+        var found = load ? MetaMachine.getMachine(level, pos) : MetaMachine.getMachine(LoadedChunks.blockEntity(level, pos));
+        return found instanceof MEPatternBufferPartMachine machine ? machine : null;
     }
 
     private void bind(@Nullable MEPatternBufferPartMachine target) {
         var previous = buffer;
+        if (target != null && previous == target) return;
         if (previous != null && previous != target) previous.removeProxy(this);
         buffer = target;
         if (target != null) bufferPos = target.getPos();
-        watch(bufferPos);
+        MachineScope.changed(this);
         var old = proxySlotRecipeHandler;
         old.release();
         if (target == null) {
@@ -133,25 +154,24 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         } else {
             MEPatternBufferConnectionHandler.register(getLevel(), target.getPos(), getPos());
         }
-        if (!isRemote()) {
-            for (var controller : getControllers()) {
-                controller.requestCheck();
-            }
+        refreshControllers();
+    }
+
+    private void refreshControllers() {
+        if (isRemote()) return;
+        IMultiController[] snapshot;
+        var controllers = getControllers();
+        synchronized (controllers) {
+            snapshot = controllers.toArray(new IMultiController[0]);
+        }
+        for (var controller : snapshot) {
+            if (controller.self().isRemoved()) continue;
+            if (controller instanceof IWorkableMultiController workable) workable.refreshPartHandlers(this);
+            else controller.requestCheck();
         }
     }
 
-    private void watch(@Nullable BlockPos pos) {
-        var old = watchedPos;
-        if (old == null ? pos == null : old.equals(pos)) return;
-        var level = getLevel();
-        if (level == null) return;
-        if (old != null) BlockEntityWatch.unwatch(level, old, this);
-        watchedPos = pos;
-        if (pos != null) BlockEntityWatch.watch(level, pos, this);
-    }
-
-    @Override
-    public void onBlockEntityChanged(BlockEntity blockEntity) {
+    private void onBufferChanged(BlockEntity blockEntity) {
         if (isRemoved()) return;
         var buf = buffer;
         if (buf != null && blockEntity == buf.holder) {
@@ -176,9 +196,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     private void recheckAfterBufferLost() {
         if (buffer != null || isRemoved()) return;
-        for (var controller : getControllers()) {
-            if (!controller.self().isRemoved()) controller.requestCheck();
-        }
+        refreshControllers();
     }
 
     private void resolveLater() {
@@ -237,10 +255,11 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         if (tag == null || !tag.contains(MEPatternBufferPartMachine.DATA_STICK_POS, Tag.TAG_INT_ARRAY)) return InteractionResult.PASS;
         var posArray = tag.getIntArray(MEPatternBufferPartMachine.DATA_STICK_POS);
         if (posArray.length < 3) return InteractionResult.PASS;
-        var target = findBuffer(new BlockPos(posArray[0], posArray[1], posArray[2]));
+        var target = findBuffer(new BlockPos(posArray[0], posArray[1], posArray[2]), true);
         if (target == null) return InteractionResult.PASS;
         bufferResolved = true;
-        bind(target);
+        if (target == buffer) refreshControllers();
+        else bind(target);
         return InteractionResult.SUCCESS;
     }
 

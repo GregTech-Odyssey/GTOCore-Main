@@ -7,6 +7,7 @@ import com.gtocore.common.recipe.custom.FormingPressLogic;
 import com.gtocore.data.recipe.classified.ManaSimulator;
 import com.gtocore.data.recipe.generated.GenerateDisassembly;
 
+import com.gtolib.api.item.FurnaceFuels;
 import com.gtolib.api.recipe.extension.MANARecipeExtension;
 import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 
@@ -164,8 +165,10 @@ public final class RecipeTypeModify {
             }
             var items = builder.getItemInputs();
             if (!items.isEmpty()) {
-                var item = plainItem(items.ingredient(0));
+                var ingredient = items.ingredient(0);
+                var item = plainItem(ingredient);
                 if (item != null) SteamSolidBoilerMachine.FUEL_CACHE.add(item);
+                else if (ingredient.kind() == KeyIngredient.TAG && ingredient.isItem() && ingredient.tagKey() != null) FurnaceFuels.addSolidBoilerTag(ingredient.itemTagKey());
             }
         });
 

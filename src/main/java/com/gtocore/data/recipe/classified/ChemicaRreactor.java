@@ -9,6 +9,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -2119,7 +2120,7 @@ final class ChemicaRreactor {
                 .inputFluids(GTMaterials.HydrogenPeroxide, 6000)
                 .outputItems(TagPrefix.dust, GTMaterials.PotassiumSulfate, 21)
                 .outputItems(TagPrefix.dust, GTOMaterials.ZirconiumOxide, 3)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.HafniumOxide, 3, 8000, 0)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.HafniumOxide, 3, Chance.of(8000))
                 .outputFluids(GTMaterials.Ammonia, 6000)
                 .outputFluids(GTMaterials.Iron3Chloride, 4000)
                 .EUt(1920)

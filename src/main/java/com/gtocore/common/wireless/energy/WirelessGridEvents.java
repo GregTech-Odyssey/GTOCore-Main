@@ -5,12 +5,8 @@ import com.gtocore.integration.Mods;
 import com.gtolib.api.wireless.energy.TeamMerge;
 import com.gtolib.api.wireless.energy.WirelessGrid;
 
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 
 import dev.ftb.mods.ftbteams.api.event.PlayerChangedTeamEvent;
@@ -24,24 +20,12 @@ public final class WirelessGridEvents {
 
     public static void init() {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, WirelessGridEvents::onServerTick);
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, WirelessGridEvents::onLevelLoad);
-        MinecraftForge.EVENT_BUS.addListener(WirelessGridEvents::onServerStopped);
         if (Mods.FTBTEAMS.isLoaded()) Teams.register();
     }
 
     private static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) WirelessGrid.onServerTickStart(event.getServer());
         else WirelessGrid.onServerTickEnd(event.getServer());
-    }
-
-    private static void onLevelLoad(LevelEvent.Load event) {
-        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) {
-            WirelessGrid.load(level.getServer(), level.getDataStorage());
-        }
-    }
-
-    private static void onServerStopped(ServerStoppedEvent event) {
-        WirelessGrid.unload();
     }
 
     private static final class Teams {

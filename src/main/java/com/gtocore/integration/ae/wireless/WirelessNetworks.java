@@ -17,6 +17,7 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.suried.gtoutils.schedule.Signal;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public final class WirelessNetworks extends SavedData {
     private final boolean available;
     /** 修改计数（不存盘）：网络增删改、收藏变化、队伍变动时加一，界面据此判断列表是否需要重算。 */
     private int revision;
+    private final Signal membership = new Signal();
 
     private WirelessNetworks(boolean available) {
         this.available = available;
@@ -103,6 +105,10 @@ public final class WirelessNetworks extends SavedData {
 
     public int revision() {
         return revision;
+    }
+
+    void track() {
+        membership.track();
     }
 
     /** 队伍变动会改变"谁能用哪个网络"，列表需要重算。 */
@@ -147,6 +153,7 @@ public final class WirelessNetworks extends SavedData {
         var network = new WirelessNetwork(UUID.randomUUID().toString(), player.getUUID(), name, System.currentTimeMillis());
         networks.put(network.id(), network);
         changed();
+        membership.emit();
         WirelessSync.pushNetwork(player.server, network);
         return new Created(WirelessStatus.OK, network);
     }
@@ -176,15 +183,13 @@ public final class WirelessNetworks extends SavedData {
         var affected = WirelessSync.usersOf(player.server, network);
         var hub = WirelessHub.get(player.server, id);
         if (hub != null) {
-            for (var member : hub.members()) {
-                member.setWirelessNetworkId("");
-                member.markWirelessChanged();
-            }
+            for (var member : hub.members()) member.assignWirelessNetwork("");
         }
         WirelessHub.destroy(player.server, id);
         networks.remove(id);
         favorites.values().removeIf(id::equals);
         changed();
+        membership.emit();
         WirelessSync.pushTo(affected);
         return WirelessStatus.OK;
     }

@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableMap;
 import com.lowdragmc.lowdraglib.side.fluid.FluidHelper;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public final class GTOMachineTooltips {
 
@@ -477,16 +476,14 @@ public final class GTOMachineTooltips {
     });
 
     public static final TipSpec DrawerStorageTooltips = GTOTips.of("drawer_storage", t -> {
-        t.line(TipRole.SUMMARY, t.tr("整合超级箱与超级缸，独立设置物品和流体种类上限", "Integrates Super Chests and Tanks with separate item and fluid type limits"));
-        t.requirement(t.tr("在输入总线中放入超级箱以存储物品，放入超级缸以存储流体", "Place Super Chests in input buses to store items, and Super Tanks to store fluids"));
-        t.feature(t.tr("可混用不同等级及分格型号，无需升级物品", "Mix tiers and compartment layouts without upgrade items"));
-        t.formula(t.tr("物品/流体种类上限分别最多为对应箱/缸的格数之和（普通 1、1×2 为 2、2×2 为 4）", "Each item/fluid type limit is at most the total compartments of the corresponding containers (normal 1, 1×2 is 2, 2×2 is 4)"));
-        t.formula(t.tr("每种类容量 = 对应箱缸总容量 × 密封等级 ÷ 设置种类数", "Capacity per type = total container capacity × hermetic level ÷ configured types"));
-        t.feature(t.tr("设置种类越少，每种类容量越大；不能低于已存种类数，移除箱缸不会删除已有内容", "Fewer configured types give more capacity per type; the limit cannot go below the stored types, and removing containers preserves stored contents"));
-
-        t.feature(t.tr("可启用溢出销毁", "Overflow destruction can be enabled"));
-        t.feature(t.tr("安装保险库仓以连接外部IO", "Install Vault Hatches to connect external IO"));
-
+        t.line(TipRole.SUMMARY, t.tr("超级仓储的智慧结晶。通过为固定数量种类设计专用存储结构，让超级容器发挥多倍存储能力。", "The pinnacle of super storage. Dedicated structures for a fixed number of types multiply what super containers can hold."));
+        t.requirement(t.tr("在输入总线中输入超级容器来提升容量、种类上限和乘数", "Put super containers into the input buses to raise capacity, type limit and multiplier"));
+        t.requirement(t.tr("每个超级容器提供 4 种类上限", "Each super container provides 4 types"));
+        t.bonus(t.tr("容器可为同种容器提供专用乘数，为 2×√(该容器数量 / 设置类别数)，最低1", "Containers of the same kind share a dedicated multiplier of 2×√(their count / configured types), at least 1"));
+        t.requirement(t.tr("一种容器提供的总容量为该容器容量之和×密封方块等级×专用乘数", "Total capacity of one kind = sum of its capacities × hermetic casing tier × dedicated multiplier"));
+        t.requirement(t.tr("单类别容量为所有容器总容量之和 / 设置类别数", "Capacity per type = total capacity of all containers / configured types"));
+        t.requirement(t.tr("简言之，设置类别数越少，输入的容器越多，密封方块等级越高，储量越大", "In short: fewer configured types, more containers and higher hermetic casings mean more storage"));
+        t.requirement(t.tr("可启用溢出销毁。使用保险库仓以连接外部I/O", "Overflow voiding can be enabled. Use Vault Hatches for external I/O"));
     });
 
     public static final TipSpec MeDiskBoxTooltips = GTOTips.of("me_disk_box", t -> {
@@ -530,71 +527,6 @@ public final class GTOMachineTooltips {
         t.heading(ComponentSlang.MainFunction);
         t.feature(t.tr("能监测全部机器或AE网络最近一段时间的平均耗时，并支持高亮显示", "Can monitor all machines or AE grids' average tick time over a recent window and support highlighting"));
         t.rightClick(t.tr("右键点击机器以打开性能监测界面", "Right click on the machine to open performance monitoring interface"));
-    });
-
-    // 监控器系列
-    private static TipSpec monitor(Consumer<GTOTips> body) {
-        return GTOTips.of("monitor", t -> {
-            t.line(TipRole.SUMMARY, Tx.rainbowSlow(t.tr("监控器系列", "Monitor series")));
-            t.attention(Component.translatable("gtocore.item.deprecated"));
-            t.attention(t.tr("已不再提供配方，请改用监控总线（显示器、各控件与监控线缆）", "No longer craftable; use the monitor bus (displays, controls and monitor cable) instead"));
-            body.accept(t);
-        });
-    }
-
-    // 基础监控器
-    public static final TipSpec BasicMonitorTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("是监控器的基础组成部分", "Is the basic component of the monitor"));
-        t.supported(t.tr("可以与其他§6多个监控器§r系列相连", "Can be connected to other §6multiple monitors§r series"));
-        t.supported(t.tr("多个监控器可以组成一个大屏", "Multiple monitors can form a large screen"));
-        t.supported(t.tr("可以使用§d喷漆§r对监控器分组", "Can use§d paint spray§r to group monitors"));
-        t.feature(t.tr("与§6监控器组件§r相连来显示不同信息", "Use §6monitor components§r to display different information"));
-    });
-
-    // 监控器电网组件
-    public static final TipSpec MonitorPowerComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("显示§6无线电网§r的数据", "Display§6 wireless energy grid§r data"));
-    });
-
-    // 监控器魔力组件
-    public static final TipSpec MonitorManaComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("显示§6无线魔力网§r的数据", "Display§6 wireless mana grid§r data"));
-    });
-
-    // 监控器算力组件
-    public static final TipSpec MonitorComputingComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.requirement(t.tr("接入光缆网络以显示§6算力使用情况§r", "Connect to the optical cable network to display §6computing power usage§r"));
-    });
-
-    // 监控器ME吞吐量监控组件
-    public static final TipSpec MonitorMEThroughputComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("显示ME中§6指定物品§r的吞吐量数据", "Display the throughput data of §6specified items §rin ME"));
-    });
-
-    // 监控器机器通用组件
-    public static final TipSpec MonitorMachineComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("显示§6机器§r的通用数据", "Display the general data of §6machines§r"));
-        t.feature(t.tr("例如耗电，产电，输入，输出等", "For example, power consumption, power production, input, output, etc."));
-        t.requirement(t.tr("需要放入坐标信息卡", "Need to put coordinate card"));
-    });
-
-    // 监控器合成处理单元组件
-    public static final TipSpec MonitorCraftingComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("显示§6ME合成处理单元§r的合成数据", "Display the crafting data of §6crafting unit§r"));
-    });
-
-    // 监控器自定义文本组件
-    public static final TipSpec MonitorCustomTextComponentTooltips = monitor(t -> {
-        t.heading(ComponentSlang.MainFunction);
-        t.feature(t.tr("用于显示§6自定义文本§r在监控器上", "Display§6 custom text§r"));
-        t.feature(t.tr("同一块监控器大屏的多个文本组件将被顺序显示", "Multiple text components of the same block monitor screen will be displayed in sequence"));
     });
 
     // 超立方体
@@ -1610,12 +1542,25 @@ public final class GTOMachineTooltips {
         t.feature(ComponentSlang.PurifyLevel(8));
         t.heading(ComponentSlang.RunningRequirements);
         t.control(t.tr("将§b夸克释放催化剂§r放入输入总线中运行", "Put §bQuark Releasing Catalyst§r into the input bus to operate."));
-        t.attention(t.tr("每秒消耗输入槽中的所有催化剂", "Consumes all Catalysts in the input slot every second."));
+        t.attention(t.tr("每秒吞入输入总线中的催化剂，成功后本轮停止", "Takes in the Catalysts in the input bus every second and stops for this cycle after success."));
         t.requirement(t.tr("每消耗一个夸克催化剂还需额外消耗144mB§b夸克胶子等离子体§r", "For each quark catalyst consumed, an additional 144mB of §bquark gluon plasma§r is required."));
         t.feature(t.tr("在配方结束时，所有错误插入的催化剂将返回输出槽", "At the end of the recipe, all incorrectly inserted Catalysts will return to the output slot."));
+        t.feature(t.tr("输出槽放不下时保留到下一轮", "They are kept for the next cycle when the output slot is full."));
+        t.attention(t.tr("同一格放多个催化剂时整格吞入", "A slot holding several Catalysts is taken in as a whole."));
+        t.attention(t.tr("不支持 ME 输入总线", "ME Input Buses are not supported."));
+        t.warning(t.tr("本轮未成功则没有产出", "No output if the cycle does not succeed."));
         t.heading(ComponentSlang.OutputProbability);
         t.feature(t.tr("每个配方循环中，不同的两种夸克释放催化剂的组合将正确识别出孤立的夸克并完成配方", "Each recipe cycle, different combinations of two Quark Releasing Catalysts will correctly identify the Isolated Quarks and complete the recipe."));
         t.feature(t.tr("如果最近插入的两种催化剂是正确的组合，则立即输出稳定重子物质", "If the last two inserted Catalysts are the correct combination, Stable Baryonic Matter will be output immediately."));
+        t.feature(t.tr("组合不分先后", "The order of the two Catalysts does not matter."));
+        t.feature(t.tr("正确的两个催化剂以未对齐状态返回输出槽", "The two correct Catalysts return to the output slot unaligned."));
+        t.heading(t.tr("红石信号", "Redstone Signal"));
+        t.feature(t.tr("运行时控制器输出本轮组合对应的信号，成功或结束后归零", "While running, the controller outputs the signal of this cycle's combination. It returns to 0 after success or when the cycle ends."));
+        t.feature(t.tr("1-5：上 + 下 / 奇 / 粲 / 底 / 顶", "1-5: Up + Down / Strange / Charm / Bottom / Top"));
+        t.feature(t.tr("6-9：下 + 奇 / 粲 / 底 / 顶", "6-9: Down + Strange / Charm / Bottom / Top"));
+        t.feature(t.tr("10-12：奇 + 粲 / 底 / 顶", "10-12: Strange + Charm / Bottom / Top"));
+        t.feature(t.tr("13-14：粲 + 底 / 顶", "13-14: Charm + Bottom / Top"));
+        t.feature(t.tr("15：底 + 顶", "15: Bottom + Top"));
     });
 
     public static final TipSpec ThePrimordialReconstructorTooltips = GTOTips.of("the_primordial_reconstructor", t -> {

@@ -20,6 +20,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
@@ -55,6 +56,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -88,6 +90,7 @@ import com.gto.recipesearch.IntLongMap;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.suried.gtoutils.level.LoadedChunks;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiStack;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -214,6 +217,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @SaveToDisk
     private final Set<BlockPos> proxies = new OpenCacheHashSet<>();
     private final Set<MEPatternBufferProxyPartMachine> proxyMachines = new ReferenceOpenHashSet<>();
+    private int proxySweepAt;
     public final InternalSlotRecipeHandler internalRecipeHandler;
 
     protected ConfiguratorPanel configuratorPanel;
@@ -321,7 +325,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     private boolean isUsableByProxies(GTRecipeType type) {
-        if (proxyMachines.size() < proxies.size()) return true;
+        if (proxyMachines.size() < proxies.size() && !dropDeadProxies()) return true;
         for (var proxy : proxyMachines) {
             var controllers = proxy.getControllers();
             if (controllers.isEmpty()) return true;
@@ -330,6 +334,18 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
             }
         }
         return false;
+    }
+
+    private boolean dropDeadProxies() {
+        if (!(getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread()) return false;
+        var now = getOffsetTimer();
+        if (now < proxySweepAt) return false;
+        proxySweepAt = now + 200;
+        var self = getPos();
+        if (proxies.removeIf(pos -> LoadedChunks.isLoaded(level, pos) && !(MetaMachine.getMachine(LoadedChunks.blockEntity(level, pos)) instanceof MEPatternBufferProxyPartMachine proxy && self.equals(proxy.getBufferPos())))) {
+            onChanged();
+        }
+        return proxyMachines.size() >= proxies.size();
     }
 
     private void refundAll(ClickData clickData) {

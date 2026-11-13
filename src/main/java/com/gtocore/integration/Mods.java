@@ -21,6 +21,7 @@ public enum Mods {
     PIPEZ("pipez"),
     FTBQUESTS("ftbquests"),
     FTBTEAMS("ftbteams"),
+    FTBLIBRARY("ftblibrary"),
     CONSTRUCTION_WAND("constructionwand"),
     JECHARACTERS("jecharacters"),
     LANG("moremorelang"),

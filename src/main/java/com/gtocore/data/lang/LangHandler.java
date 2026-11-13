@@ -611,8 +611,8 @@ public final class LangHandler {
         addCNEN("gtocore.tooltip.space_resource.fuel", "     燃料：%s", "     Fuel: %s");
         addCNEN("gtocore.tooltip.space_resource.galaxy", "     星系：%s", "     Galaxy: %s");
         addCNEN("gtocore.tooltip.space_resource.dimension", "     维度：%s", "     Dimension: %s");
-        addCNEN("gtocore.tooltip.space_resource.chance", "     概率：%s%%", "     Chance: %s%%");
-        addCNEN("gtocore.tooltip.space_resource.chance_boost", "     概率：%s%%（每超一级电压 +%s%%）", "     Chance: %s%% (+%s%% per voltage tier)");
+        addCNEN("gtocore.tooltip.space_resource.chance", "     产出概率：%s%%", "     Output Chance: %s%%");
+        addCNEN("gtocore.tooltip.space_resource.chance_boost", "     产出概率：%s%%（每次超频提高%s个百分点）", "     Output Chance: %s%% (+%s%% per overclock)");
 
         addCNEN("gtocore.emi.space_elevator.min_drone_tier", "最低无人机等级: %s", "Minimum Drone Tier: %s");
         addCNEN("gtocore.emi.space_elevator.next_drone", "查看下一级无人机配方", "View next tier drone recipe");

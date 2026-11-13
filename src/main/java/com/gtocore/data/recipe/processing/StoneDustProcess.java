@@ -8,6 +8,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -247,59 +248,59 @@ public final class StoneDustProcess {
 
         CENTRIFUGE_RECIPES.recipeBuilder("diamagnetic_residues_input")
                 .inputItems(dust, DiamagneticResidues, 6)
-                .chancedOutput(dust, Calcium, 1, 2500, 0)
-                .chancedOutput(dust, Zinc, 1, 2500, 0)
-                .chancedOutput(dust, Copper, 1, 2500, 0)
-                .chancedOutput(dust, Gallium, 1, 2500, 0)
-                .chancedOutput(dust, Beryllium, 1, 2500, 0)
-                .chancedOutput(dust, Tin, 1, 2500, 0)
+                .chancedOutput(dust, Calcium, 1, Chance.of(2500))
+                .chancedOutput(dust, Zinc, 1, Chance.of(2500))
+                .chancedOutput(dust, Copper, 1, Chance.of(2500))
+                .chancedOutput(dust, Gallium, 1, Chance.of(2500))
+                .chancedOutput(dust, Beryllium, 1, Chance.of(2500))
+                .chancedOutput(dust, Tin, 1, Chance.of(2500))
                 .duration(100).EUt(3000)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("paramagnetic_residues_input")
                 .inputItems(dust, ParamagneticResidues, 6)
-                .chancedOutput(dust, Sodium, 1, 2500, 0)
-                .chancedOutput(dust, Potassium, 1, 2500, 0)
-                .chancedOutput(dust, Magnesium, 1, 2500, 0)
-                .chancedOutput(dust, Titanium, 1, 2500, 0)
-                .chancedOutput(dust, Vanadium, 1, 2500, 0)
-                .chancedOutput(dust, Manganese, 1, 2500, 0)
+                .chancedOutput(dust, Sodium, 1, Chance.of(2500))
+                .chancedOutput(dust, Potassium, 1, Chance.of(2500))
+                .chancedOutput(dust, Magnesium, 1, Chance.of(2500))
+                .chancedOutput(dust, Titanium, 1, Chance.of(2500))
+                .chancedOutput(dust, Vanadium, 1, Chance.of(2500))
+                .chancedOutput(dust, Manganese, 1, Chance.of(2500))
                 .duration(100).EUt(3000)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("ferromagnetic_residues_input")
                 .inputItems(dust, FerromagneticResidues, 6)
-                .chancedOutput(dust, Iron, 1, 2500, 0)
-                .chancedOutput(dust, Nickel, 1, 2500, 0)
-                .chancedOutput(dust, Cobalt, 1, 2500, 0)
+                .chancedOutput(dust, Iron, 1, Chance.of(2500))
+                .chancedOutput(dust, Nickel, 1, Chance.of(2500))
+                .chancedOutput(dust, Cobalt, 1, Chance.of(2500))
                 .duration(100).EUt(3000)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("heavy_diamagnetic_residues_input")
                 .inputItems(dust, HeavyDiamagneticResidues, 6)
-                .chancedOutput(dust, Lead, 1, 2500, 0)
-                .chancedOutput(dust, Cadmium, 1, 2500, 0)
-                .chancedOutput(dust, Indium, 1, 2500, 0)
-                .chancedOutput(dust, Gold, 1, 2500, 0)
-                .chancedOutput(dust, Bismuth, 1, 2500, 0)
+                .chancedOutput(dust, Lead, 1, Chance.of(2500))
+                .chancedOutput(dust, Cadmium, 1, Chance.of(2500))
+                .chancedOutput(dust, Indium, 1, Chance.of(2500))
+                .chancedOutput(dust, Gold, 1, Chance.of(2500))
+                .chancedOutput(dust, Bismuth, 1, Chance.of(2500))
                 .outputFluids(Mercury.getFluid(36))
                 .duration(120).EUt(3000)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("heavy_paramagnetic_residues_input")
                 .inputItems(dust, HeavyParamagneticResidues, 6)
-                .chancedOutput(dust, Thorium, 1, 2500, 0)
-                .chancedOutput(dust, Uranium235, 1, 2500, 0)
-                .chancedOutput(dust, Tungsten, 1, 2500, 0)
-                .chancedOutput(dust, Hafnium, 1, 2500, 0)
-                .chancedOutput(dust, Tantalum, 1, 2500, 0)
-                .chancedOutput(dust, Thallium, 1, 2500, 0)
+                .chancedOutput(dust, Thorium, 1, Chance.of(2500))
+                .chancedOutput(dust, Uranium235, 1, Chance.of(2500))
+                .chancedOutput(dust, Tungsten, 1, Chance.of(2500))
+                .chancedOutput(dust, Hafnium, 1, Chance.of(2500))
+                .chancedOutput(dust, Tantalum, 1, Chance.of(2500))
+                .chancedOutput(dust, Thallium, 1, Chance.of(2500))
                 .duration(120).EUt(3000)
                 .save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("heavy_ferromagnetic_residues_input")
                 .inputItems(dust, HeavyFerromagneticResidues, 6)
-                .chancedOutput(dust, Dysprosium, 1, 2500, 0)
+                .chancedOutput(dust, Dysprosium, 1, Chance.of(2500))
                 .duration(120).EUt(3000)
                 .save();
 
@@ -323,7 +324,7 @@ public final class StoneDustProcess {
         MACERATOR_RECIPES.builder("saturn_ring_grunt")
                 .inputItems(GTOBlocks.SATURN_RING_STONE.asItem())
                 .outputItems(GTOBlocks.SATURN_RING_GRUNT.asItem(), 4)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.Cruptix, 1, 22)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.Cruptix, Chance.of(1).risePerOverclock(22))
                 .EUt(30)
                 .duration(200)
                 .save();

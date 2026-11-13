@@ -541,6 +541,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
                 int addition = (int) Math.floor(this.workAccumulation);
                 this.workAccumulation -= addition;
                 for (var part : this.rotorHolderMachines) {
+                    if (part.getRotorStack().isEmpty()) continue;
                     part.setRotorSpeed(Math.min(part.getRotorSpeed() + addition, part.getMaxRotorHolderSpeed()));
                 }
             }

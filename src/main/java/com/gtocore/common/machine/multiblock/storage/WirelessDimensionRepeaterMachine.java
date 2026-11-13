@@ -11,6 +11,7 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoRecipeLogicMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
+import com.gtolib.api.scope.MachineScope;
 import com.gtolib.api.wireless.energy.GridBody;
 import com.gtolib.api.wireless.energy.IWirelessGridProvider;
 import com.gtolib.api.wireless.energy.Provider;
@@ -36,6 +37,8 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.hepdd.gtmthings.api.capability.IBindable;
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.suried.gtoutils.schedule.Cell;
+import com.suried.gtoutils.schedule.Scope;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
@@ -61,15 +64,39 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
     @RegisterLanguage(cn = "在星图中点击星球或异界维度，将其设为线路目标", en = "Click a planet or realm on the Grid Map to set it as the line target")
     private static final String PICK_TIP = "gtocore.machine.wireless_dimension_repeater.pick.tooltip";
 
+    private static final int RELEASE_DELAY = 20;
+
     private final TierCasingTrait tierCasingTrait;
     @SaveToDisk
     private String target = "";
     @Nullable
     private ObjectList<ResourceKey<Level>> targetOptions;
+    private final Cell<Spec> relay = Cell.of(null);
+    private final Cell<Boolean> retiring = Cell.of(Boolean.FALSE);
+    private final MachineScope<WirelessDimensionRepeaterMachine> scope = new MachineScope<>(this, this::mount);
 
     public WirelessDimensionRepeaterMachine(MetaMachineBlockEntity holder) {
         super(holder);
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
+    }
+
+    private void mount(Scope opened, MachineScope<WirelessDimensionRepeaterMachine> self) {
+        opened.watch(() -> {
+            var spec = relay.get();
+            return spec == null ? null : new Registration(self.owner(), spec);
+        }, this::apply);
+        opened.when(() -> retiring.get() && relay.get() == null, off -> off.schedule(RELEASE_DELAY, this::retire));
+    }
+
+    private void apply(@Nullable Registration registration) {
+        if (registration == null) return;
+        if (registration.owner() == null) ProviderRegistry.unregister(this);
+        else ProviderRegistry.registerRelay(this, registration.spec().tier(), registration.spec().target());
+    }
+
+    private void retire() {
+        retiring.set(Boolean.FALSE);
+        if (!isRemoved() && !isFormed()) ProviderRegistry.unregister(this);
     }
 
     @Nullable
@@ -120,7 +147,7 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
     }
 
     private void register() {
-        if (!isRemote() && isFormed()) ProviderRegistry.registerRelay(this, getCasingTier(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER), targetKey());
+        if (!isRemote() && isFormed()) relay.post(new Spec(getCasingTier(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER), targetKey()));
     }
 
     @Override
@@ -132,7 +159,9 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        ProviderRegistry.unregisterLater(this, 20);
+        if (isRemote()) return;
+        retiring.post(Boolean.TRUE);
+        relay.post(null);
     }
 
     @Override
@@ -185,4 +214,8 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
     public boolean preferTeamName() {
         return true;
     }
+
+    private record Spec(int tier, @Nullable ResourceKey<Level> target) {}
+
+    private record Registration(@Nullable UUID owner, Spec spec) {}
 }

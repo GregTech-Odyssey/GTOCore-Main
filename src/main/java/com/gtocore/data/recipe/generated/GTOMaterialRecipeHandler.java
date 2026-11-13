@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.api.data.chemical.material.properties.*;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
@@ -540,7 +541,7 @@ final class GTOMaterialRecipeHandler {
                 AUTOCLAVE_RECIPES.recipeBuilder("autoclave_" + id + "_water")
                         .inputItems(dustStack)
                         .inputFluids(GTMaterials.Water, 250)
-                        .chancedOutput(gemStack, 7000, 1000)
+                        .chancedOutput(gemStack, Chance.of(7000).risePerOverclock(1000))
                         .duration(1200).EUt(24)
                         .save();
 
@@ -558,28 +559,28 @@ final class GTOMaterialRecipeHandler {
                 IMPLOSION_RECIPES.recipeBuilder("implode_" + id + "_powderbarrel")
                         .inputItems(dustStack4)
                         .outputItems(gemStack3)
-                        .chancedOutput(dust, GTMaterials.DarkAsh, 2500, 0)
+                        .chancedOutput(dust, GTMaterials.DarkAsh, Chance.of(2500))
                         .explosivesType(new ItemStack(GTBlocks.POWDERBARREL, 8))
                         .save();
 
                 IMPLOSION_RECIPES.recipeBuilder("implode_" + id + "_tnt")
                         .inputItems(dustStack4)
                         .outputItems(gemStack3)
-                        .chancedOutput(dust, GTMaterials.DarkAsh, 2500, 0)
+                        .chancedOutput(dust, GTMaterials.DarkAsh, Chance.of(2500))
                         .explosivesAmount(4)
                         .save();
 
                 IMPLOSION_RECIPES.recipeBuilder("implode_" + id + "_dynamite")
                         .inputItems(dustStack4)
                         .outputItems(gemStack3)
-                        .chancedOutput(dust, GTMaterials.DarkAsh, 2500, 0)
+                        .chancedOutput(dust, GTMaterials.DarkAsh, Chance.of(2500))
                         .explosivesType(GTItems.DYNAMITE.asStack(2))
                         .save();
 
                 IMPLOSION_RECIPES.recipeBuilder("implode_" + id + "_itnt")
                         .inputItems(dustStack4)
                         .outputItems(gemStack3)
-                        .chancedOutput(dust, GTMaterials.DarkAsh, 2500, 0)
+                        .chancedOutput(dust, GTMaterials.DarkAsh, Chance.of(2500))
                         .explosivesType(new ItemStack(GTBlocks.INDUSTRIAL_TNT))
                         .save();
 

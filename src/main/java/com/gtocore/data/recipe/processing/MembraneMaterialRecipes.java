@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.recipe.condition.CleanroomCondition;
@@ -272,7 +273,7 @@ public final class MembraneMaterialRecipes {
         CHEMICAL_BATH_RECIPES.builder("amber_gold_nano_fusilli")
                 .inputItems(dust, SodiumCitrate)
                 .inputFluids(TetrachloroauricAcidSilverNitratePremixSolution, 1000)
-                .chancedInput(Dimethylformamide.getFluid(1000), 1000, 100)
+                .chancedInput(Dimethylformamide.getFluid(1000), Chance.of(1000).dropPerOverclock(100))
                 .outputItems(dust, AmberGoldNanoFusilli, 2)
                 .duration(600).EUt(VA[IV]).save();
 
@@ -301,7 +302,7 @@ public final class MembraneMaterialRecipes {
                 .duration(600).EUt(VA[IV]).save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.builder("tritium_nanonet_layer_dust")
-                .chancedInput(ChemicalHelper.getItem(TagPrefix.wireFine, GTOMaterials.CarbonNanotubes), 8976, 0)
+                .chancedInput(ChemicalHelper.getItem(TagPrefix.wireFine, GTOMaterials.CarbonNanotubes), Chance.of(8976))
                 .outputItems(TagPrefix.dust, GTOMaterials.TritiumNanonetLayer)
                 .inputFluids(GTMaterials.Tritanium, 144)
                 .EUt(30000L)

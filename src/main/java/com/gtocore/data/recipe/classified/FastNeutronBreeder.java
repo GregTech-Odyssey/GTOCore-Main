@@ -7,6 +7,7 @@ import com.gtocore.common.data.machines.MultiBlockH;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
@@ -227,19 +228,19 @@ class FastNeutronBreeder {
                 .save();
 
         CENTRIFUGE_RECIPES.builder("nickel64")
-                .chancedInput(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.Californium252Source), 1000, 100)
+                .chancedInput(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.Californium252Source), Chance.of(1000).dropPerOverclock(100))
                 .inputFluids(Nickel, 1440)
                 .outputItems(GTOTagPrefix.dust, GTOMaterials.Nickel64Source, 8)
-                .chancedOutput(ChemicalHelper.get(GTOTagPrefix.dust, GTOMaterials.Zinc70Source), 3000, 300)
+                .chancedOutput(ChemicalHelper.get(GTOTagPrefix.dust, GTOMaterials.Zinc70Source), Chance.of(3000).risePerOverclock(300))
                 .EUt(30720)
                 .duration(200)
                 .save();
 
         CENTRIFUGE_RECIPES.builder("iron58")
-                .chancedInput(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.Californium252Source), 1000, 100)
+                .chancedInput(ChemicalHelper.get(GTOTagPrefix.PARTICLE_SOURCE, GTOMaterials.Californium252Source), Chance.of(1000).dropPerOverclock(100))
                 .inputFluids(Iron, 1440)
                 .outputItems(GTOTagPrefix.dust, GTOMaterials.Iron58Source, 8)
-                .chancedOutput(ChemicalHelper.get(GTOTagPrefix.dust, GTOMaterials.Nickel64Source), 3000, 300)
+                .chancedOutput(ChemicalHelper.get(GTOTagPrefix.dust, GTOMaterials.Nickel64Source), Chance.of(3000).risePerOverclock(300))
                 .EUt(30720)
                 .duration(200)
                 .save();

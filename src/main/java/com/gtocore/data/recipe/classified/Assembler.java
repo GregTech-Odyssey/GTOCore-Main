@@ -3558,6 +3558,35 @@ final class Assembler {
                 .duration(400)
                 .save();
 
+        ASSEMBLER_RECIPES.recipeBuilder("absolute_baryonic_perfection_purification_unit")
+                .inputItems(TagPrefix.frameGt, GTOMaterials.Adamantium)
+                .inputItems(GTOBlocks.QUARK_EXCLUSION_CASING.asItem(), 4)
+                .inputItems(CustomTags.UIV_CIRCUITS)
+                .inputItems(GTItems.FIELD_GENERATOR_UEV, 4)
+                .inputItems(GTItems.FLUID_REGULATOR_UEV, 16)
+                .inputItems(GTItems.SENSOR_UIV, 4)
+                .inputItems(GTItems.ELECTRIC_PUMP_UEV, 32)
+                .inputItems(TagPrefix.pipeSmallFluid, GTOMaterials.HeavyQuarkDegenerateMatter, 32)
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.HeavyQuarkDegenerateMatter, 32)
+                .outputItems(MultiBlockB.ABSOLUTE_BARYONIC_PERFECTION_PURIFICATION_UNIT.asItem())
+                .inputFluids(GTOMaterials.Indalloy140, 576)
+                .EUt(2097152)
+                .duration(400)
+                .save();
+
+        ASSEMBLER_RECIPES.recipeBuilder("empty_quark_release_catalyst_housing")
+                .inputItems(TagPrefix.plateDouble, GTOMaterials.HeavyQuarkDegenerateMatter, 2)
+                .inputItems(GTOBlocks.NON_PHOTONIC_MATTER_EXCLUSION_GLASS.asItem())
+                .inputItems(GTItems.FIELD_GENERATOR_UEV)
+                .inputItems(TagPrefix.pipeTinyFluid, GTOMaterials.HeavyQuarkDegenerateMatter, 4)
+                .inputItems(CustomTags.UEV_CIRCUITS)
+                .inputItems(TagPrefix.wireFine, GTOMaterials.HeavyQuarkDegenerateMatter, 16)
+                .outputItems(GTOItems.EMPTY_QUARK_RELEASE_CATALYST_HOUSING)
+                .inputFluids(GTOMaterials.SuperMutatedLivingSolder, 288)
+                .EUt(31457280)
+                .duration(400)
+                .save();
+
         ASSEMBLER_RECIPES.recipeBuilder("lens_indicator_hatch")
                 .inputItems(GTMachines.HULL[GTValues.HV].asItem())
                 .inputItems(GTItems.COVER_ITEM_DETECTOR_ADVANCED)

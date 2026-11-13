@@ -14,13 +14,18 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.GTCapability;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
+import com.gregtechceu.gtceu.api.machine.feature.IBufferedEnergyMachine;
+import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.network.chat.Component;
 
@@ -45,6 +50,26 @@ public final class FlowFuelCellGenerator extends ElectrochemicalMachine {
     @Override
     public boolean isGenerator() {
         return getRecipeType() == GTORecipeTypes.FUEL_CELL_ENERGY_RELEASE_RECIPES;
+    }
+
+    @Override
+    public void onStructureFormed() {
+        super.onStructureFormed();
+        selectEnergyContainers();
+    }
+
+    @Override
+    public void setActiveRecipeType(int activeRecipeType) {
+        boolean generator = isGenerator();
+        super.setActiveRecipeType(activeRecipeType);
+        if (generator != isGenerator() && isFormed() && !isRemote()) selectEnergyContainers();
+    }
+
+    private void selectEnergyContainers() {
+        var containers = getCapabilitiesFlat(isGenerator() ? IO.OUT : IO.IN, GTCapability.ENERGY_CONTAINER);
+        energyContainer = containers.length == 0 ? EnergyContainerList.EMPTY : new EnergyContainerList(containers);
+        tier = GTUtil.getFloorTierByVoltage(getMaxVoltage());
+        energyBufferCapacity = IBufferedEnergyMachine.bufferCapacity(getOverclockVoltage());
     }
 
     @Override

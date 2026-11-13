@@ -3,6 +3,7 @@ package com.gtocore.data.recipe.processing;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -53,12 +54,12 @@ public final class PlatGroupMetals {
         CENTRIFUGE_RECIPES.recipeBuilder("pgs_separation").duration(150).EUt(VA[HV])
                 .inputItems(dust, PlatinumGroupSludge, 6)
                 .inputFluids(AquaRegia, 1200)
-                .chancedOutput(dust, PlatinumSlag, 6, 7500, 500)
-                .chancedOutput(dust, PalladiumRaw, 3, 8000, 500)
-                .chancedOutput(dust, PlatinumRaw, 2, 8000, 500)
-                .chancedOutput(dust, PlatinumSludgeResidue, 2, 8500, 500)
-                .chancedOutput(dustTiny, InertMetalMixture, 4, 9000, 500)
-                .chancedOutput(dustTiny, RarestMetalMixture, 1, 9000, 100)
+                .chancedOutput(dust, PlatinumSlag, 6, Chance.of(7500).risePerOverclock(500))
+                .chancedOutput(dust, PalladiumRaw, 3, Chance.of(8000).risePerOverclock(500))
+                .chancedOutput(dust, PlatinumRaw, 2, Chance.of(8000).risePerOverclock(500))
+                .chancedOutput(dust, PlatinumSludgeResidue, 2, Chance.of(8500).risePerOverclock(500))
+                .chancedOutput(dustTiny, InertMetalMixture, 4, Chance.of(9000).risePerOverclock(500))
+                .chancedOutput(dustTiny, RarestMetalMixture, 1, Chance.of(9000).risePerOverclock(100))
                 .save();
 
         REACTION_FURNACE_RECIPES.recipeBuilder("leach_residue")
@@ -195,12 +196,12 @@ public final class PlatGroupMetals {
 
         SIFTER_RECIPES.recipeBuilder("rhodium_filter_cake")
                 .inputItems(dust, RhodiumNitrate, 13)
-                .chancedOutput(dust, RhodiumFilterCake, 8000, 200)
-                .chancedOutput(dust, RhodiumFilterCake, 8000, 200)
-                .chancedOutput(dust, RhodiumFilterCake, 6000, 100)
-                .chancedOutput(dust, RhodiumFilterCake, 6000, 100)
-                .chancedOutput(dust, RhodiumFilterCake, 4000, 50)
-                .chancedOutput(dust, RhodiumFilterCake, 4000, 50)
+                .chancedOutput(dust, RhodiumFilterCake, Chance.of(8000).risePerOverclock(200))
+                .chancedOutput(dust, RhodiumFilterCake, Chance.of(8000).risePerOverclock(200))
+                .chancedOutput(dust, RhodiumFilterCake, Chance.of(6000).risePerOverclock(100))
+                .chancedOutput(dust, RhodiumFilterCake, Chance.of(6000).risePerOverclock(100))
+                .chancedOutput(dust, RhodiumFilterCake, Chance.of(4000).risePerOverclock(50))
+                .chancedOutput(dust, RhodiumFilterCake, Chance.of(4000).risePerOverclock(50))
                 .duration(150).EUt(VA[LV]).save();
 
         MIXER_RECIPES.recipeBuilder("rhodium_filter_cake_solution")

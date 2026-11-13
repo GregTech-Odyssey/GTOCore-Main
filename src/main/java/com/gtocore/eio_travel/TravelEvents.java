@@ -5,11 +5,13 @@ import com.gtocore.eio_travel.logic.TravelHandler;
 import com.gtocore.eio_travel.logic.TravelSavedData;
 import com.gtocore.eio_travel.network.TravelNetworks;
 
+import com.gtolib.api.scope.GTOScopes;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -17,23 +19,31 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-import org.jetbrains.annotations.Nullable;
+import com.suried.gtoutils.schedule.Scope;
+import com.suried.gtoutils.schedule.ScopeKey;
 
 public class TravelEvents {
 
-    @Nullable
-    public static Runnable syncTask = null;
+    private static final ScopeKey<Scope.Trigger> RESYNC = ScopeKey.of("eio_travel_resync");
 
     public static void init() {
         // 两端启动时就注册旅行网络通道，避免专用服务器客户端在登录同步到达时尚未加载 TravelNetworks。
         TravelNetworks.init();
         MinecraftForge.EVENT_BUS.addListener(TravelEvents::onLeftClickBlock);
-        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onPlayerLogin);
-        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onDimensionChange);
-        MinecraftForge.EVENT_BUS.addListener(TravelEvents::onServerTick);
+    }
+
+    public static void install() {
+        GTOScopes.PRESENCE.install("eio_travel", (scope, player) -> TravelNetworks.syncTravelData(TravelSavedData.getTravelData(player.serverLevel()).save(new CompoundTag()), player));
+        GTOScopes.LEVEL.install("eio_travel", (scope, level) -> scope.provide(RESYNC, scope.trigger(0, () -> {
+            if (!level.players().isEmpty()) TravelNetworks.syncTravelData(TravelSavedData.getTravelData(level).save(new CompoundTag()), level);
+        })));
+    }
+
+    public static void requireResync(ServerLevel level) {
+        Scope.Trigger resync = GTOScopes.LEVEL.lookup(level, RESYNC);
+        if (resync != null) resync.fire();
     }
 
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
@@ -46,26 +56,6 @@ public class TravelEvents {
     private static boolean isHeldUiStaff(Player player) {
         ItemStack stack = player.getMainHandItem();
         return stack.is(GTOItems.TRAVEL_STAFF.asItem()) || stack.is(GTOItems.DIMENSION_SCEPTER.asItem());
-    }
-
-    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        Player player = event.getEntity();
-        if (player instanceof ServerPlayer serverPlayer) {
-            TravelNetworks.syncTravelData(TravelSavedData.getTravelData(serverPlayer.level()).save(new CompoundTag()), serverPlayer);
-        }
-    }
-
-    public static void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-        Player player = event.getEntity();
-        if (player instanceof ServerPlayer serverPlayer) {
-            TravelNetworks.syncTravelData(TravelSavedData.getTravelData(serverPlayer.level()).save(new CompoundTag()), serverPlayer);
-        }
-    }
-
-    public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
-        if (event.phase == net.minecraftforge.event.TickEvent.Phase.END && syncTask != null) {
-            syncTask.run();
-        }
     }
 
     public static class Client {

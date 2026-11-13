@@ -8,7 +8,6 @@ import com.gtocore.config.GTORules;
 import com.gtocore.data.quest.QuestBookContents;
 import com.gtocore.data.recipe.*;
 import com.gtocore.data.recipe.ae2.AE2;
-import com.gtocore.data.recipe.ae2.Ae2wtlibRecipes;
 import com.gtocore.data.recipe.classified.$ClassifiedRecipe;
 import com.gtocore.data.recipe.generated.*;
 import com.gtocore.data.recipe.gtm.SuperStorageAdditionalRecipe;
@@ -155,7 +154,6 @@ public final class Data {
         DyeRecipes.init();
         WoodRecipes.init();
         AE2.init();
-        Ae2wtlibRecipes.init();
         ImmersiveAircraft.init();
         ComputerCraft.init();
         ModularRouters.init();

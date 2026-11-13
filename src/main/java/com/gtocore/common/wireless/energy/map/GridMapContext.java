@@ -2,6 +2,8 @@ package com.gtocore.common.wireless.energy.map;
 
 import com.gtocore.common.machine.multiblock.storage.WirelessDimensionRepeaterMachine;
 
+import com.gtolib.api.scope.GTOScopes;
+import com.gtolib.api.wireless.energy.EnergyAccount;
 import com.gtolib.api.wireless.energy.GridClock;
 import com.gtolib.api.wireless.energy.GridEquipmentNetwork;
 import com.gtolib.api.wireless.energy.GridSampler;
@@ -17,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import com.suried.gtoutils.schedule.OwnedScope;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -30,8 +33,9 @@ public final class GridMapContext {
     private final int focusDimRef;
     private final GridMapMode mode;
     private int window;
-    private boolean resolved;
-    private int resolvedAt;
+    @Nullable
+    private OwnedScope scope;
+    private boolean opened;
     @Nullable
     private GridSampler sampler;
     @Nullable
@@ -75,28 +79,43 @@ public final class GridMapContext {
     }
 
     public void tick() {
-        int now = GridClock.tick();
-        if (!resolved || now < resolvedAt || now - resolvedAt >= GridSampler.INTERVAL) {
-            resolved = true;
-            resolvedAt = now;
-            refreshSampler();
+        if (!opened) {
+            opened = true;
+            var host = player instanceof ServerPlayer serverPlayer ? GTOScopes.PLAYER.get(serverPlayer) : null;
+            if (host != null) {
+                var child = host.child("grid_map");
+                scope = child;
+                child.effect(this::account, this::borrow, this::giveBack);
+            }
         }
-        if (sampler != null) sampler.sample(now);
+        if (sampler != null) sampler.sample(GridClock.tick());
     }
 
-    private void refreshSampler() {
-        var account = WirelessGrid.accountIfPresent(player.getUUID());
-        if (sampler != null && sampler.account() == account) return;
-        close();
-        sampler = account.isNone() ? null : GridSampler.acquire(account);
+    @Nullable
+    private EnergyAccount account() {
+        var account = WirelessGrid.trackedAccount(player.getUUID());
+        return account.isNone() ? null : account;
+    }
+
+    private void borrow(EnergyAccount account) {
+        sampler = GridSampler.acquire(account);
+    }
+
+    private void giveBack(EnergyAccount account) {
+        detail = NodeDetail.EMPTY;
+        detailDimension = null;
+        var held = sampler;
+        sampler = null;
+        if (held != null) held.release();
     }
 
     public void close() {
+        opened = true;
+        var held = scope;
+        scope = null;
+        if (held != null) held.dispose();
         detail = NodeDetail.EMPTY;
         detailDimension = null;
-        if (sampler == null) return;
-        sampler.release();
-        sampler = null;
     }
 
     public GridView.TopologyView topology() {

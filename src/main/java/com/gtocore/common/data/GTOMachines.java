@@ -17,7 +17,6 @@ import com.gtocore.common.machine.electric.VacuumPumpMachine;
 import com.gtocore.common.machine.electric.beam.*;
 import com.gtocore.common.machine.generator.LightningRodMachine;
 import com.gtocore.common.machine.generator.WindMillTurbineMachine;
-import com.gtocore.common.machine.monitor.*;
 import com.gtocore.common.machine.multiblock.electric.miner.SingleDigitalMiner;
 import com.gtocore.common.machine.multiblock.part.*;
 import com.gtocore.common.machine.multiblock.part.maintenance.*;
@@ -1343,30 +1342,5 @@ public final class GTOMachines {
             .allRotation()
             .recipeTypes(GTORecipeTypes.NEUTRON_IRRADIATION_RECIPES)
             .overlayTieredHullRenderer("radiation_hatch")
-            .register();
-
-    public static final MachineDefinition BASIC_MONITOR = registerMonitor("basic_monitor", "基础监控器", BasicMonitor::new)
-            .tips(GTOMachineTooltips.BasicMonitorTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_MACHINE_ELECTRICITY = registerMonitor("monitor_electricity", "监控器电网组件", MonitorEU::new)
-            .tips(GTOMachineTooltips.MonitorPowerComponentTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_MACHINE_MANA = registerMonitor("monitor_mana", "监控器魔力网络组件", MonitorMana::new)
-            .tips(GTOMachineTooltips.MonitorManaComponentTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_MACHINE_CWU = registerMonitor("monitor_cwu", "监控器算力网络组件", MonitorCWU::new)
-            .tips(GTOMachineTooltips.MonitorComputingComponentTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_MACHINE_CUSTOM = registerMonitor("monitor_custom", "监控器自定义文本组件", MonitorCustomInfo::new)
-            .tips(GTOMachineTooltips.MonitorCustomTextComponentTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_AE_THROUGHPUT = registerMonitor("monitor_ae_throughput", "监控器ME网络吞吐量组件", MonitorAEThroughput::new)
-            .tips(GTOMachineTooltips.MonitorMEThroughputComponentTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_AE_CPU = registerMonitor("monitor_ae_cpu", "监控器ME合成处理单元组件", MonitorAECPU::new)
-            .tips(GTOMachineTooltips.MonitorCraftingComponentTooltips)
-            .register();
-    public static final MachineDefinition MONITOR_MACHINE = registerMonitor("monitor_machine", "监控器通用机器组件", MonitorMachine::new)
-            .tips(GTOMachineTooltips.MonitorMachineComponentTooltips)
             .register();
 }

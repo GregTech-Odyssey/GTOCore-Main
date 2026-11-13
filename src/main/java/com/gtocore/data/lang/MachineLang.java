@@ -1,7 +1,5 @@
 package com.gtocore.data.lang;
 
-import com.gtocore.common.machine.monitor.DisplayRegistry;
-
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
 
@@ -176,34 +174,9 @@ final class MachineLang {
         addCNEN("gtocore.machine.alchemical.chance_can_be_boosted", "该配方的概率会随运行次数提升", "The chance of this recipe increases with the amount of attempts");
         addCNEN("gtocore.machine.alchemical_device.1", "嬗变中", "Transmutation");
         addCNEN("gtocore.machine.alchemical_device.2", "完美嬗变中", "Perfect Transmutation");
-        addCNEN("gtocore.machine.monitor.no_information", "没有可显示的信息", "No information to display");
-        addCNEN("gtocore.machine.monitor.chart.ago", "%s前", "%s ago");
-        addCNEN("gtocore.machine.monitor.chart.now", "现在", "Now");
-        addCNEN("gtocore.machine.monitor.cwu.capacity", "当前网络可请求算力: %s CWU", "Current Network Requestable Hashrate: %s CWU");
-        addCNEN("gtocore.machine.monitor.cwu.used", "（平均使用算力: %s CWU）", "(Average Used Hashrate: %s CWU)");
-        addCNEN("gtocore.machine.monitor.cwu.wireless", "无线算力余量：%s / %s CWU", "Wireless computation remaining: %s / %s CWU");
-        addCNEN("gtocore.machine.monitor.ae.cpu.occupancy", "合成 CPU：%s / %s", "Crafting CPUs: %s / %s");
-        addCNEN("gtocore.machine.monitor.ae.cpu.super_occupancy", "ME 超算：%s / %s", "ME supercomputer: %s / %s");
-        addCNEN("gtocore.machine.monitor.ae.cpu.show_super", "ME 超算明细", "ME supercomputer details");
-        addCNEN("gtocore.machine.monitor.ae.cpu.show_super.0", "隐藏", "Hide");
-        addCNEN("gtocore.machine.monitor.ae.cpu.show_super.1", "显示", "Show");
-        addCNEN("gtocore.machine.monitor.editor.help.1", "拖动卡片拉入画布或移动。", "Drag cards to move them around the canvas.");
-        addCNEN("gtocore.machine.monitor.editor.help.2", "拖动卡片的任意角来缩放。", "Drag any corner of a card to resize it.");
-        addCNEN("gtocore.machine.monitor.editor.help.3", "中键卡片打开配置。", "Middle-click a card to open its configuration.");
-        addCNEN("gtocore.machine.monitor.editor.help.4", "右键卡片移除该卡片。", "Right-click a card to remove it.");
-        addCNEN("gtocore.machine.monitor.editor.help.5", "按住 Shift 点击多选，可一起移动或缩放。", "Shift-click to select multiple cards and move or resize them together.");
-        addCNEN("gtocore.machine.monitor.draw_background", "显示背景", "Show background");
-        addCNEN("gtocore.machine.monitor.eu.fullness", "能量塔能量存量: %s%%", "Energy Tower Energy Storage: %s%%");
-        addCNEN("gtocore.machine.monitor.chart_window", "图表时间范围", "Chart time range");
         addCNEN("gtocore.machine.monitor.chart_window.0", "近一分钟", "Last minute");
         addCNEN("gtocore.machine.monitor.chart_window.1", "近一小时", "Last hour");
         addCNEN("gtocore.machine.monitor.chart_window.2", "近一天", "Last day");
-        addCNEN("gtocore.machine.monitor.priority", "调整显示的优先级", "Adjust the display priority");
-        addCNEN("gtocore.machine.monitor.adjust_component.move_up", "上移", "Move Up");
-        addCNEN("gtocore.machine.monitor.adjust_component.move_down", "下移", "Move Down");
-        addCNEN("gtocore.machine.monitor.adjust_component.switch", "切换显示", "Toggle Display");
-        addCNEN("gtocore.machine.monitor.adjust_component.reset", "清除显示顺序配置", "Clear Display Order Configuration");
-        addCNEN("gtocore.machine.monitor.custom_info.tooltip", "自定义信息", "Custom Information");
         addCNEN("gtocore.machine.monitor.custom_info.font_size", "字号", "Font size");
         addCNEN("gtocore.machine.monitor.custom_info.horizontal_alignment", "水平对齐", "Horizontal alignment");
         addCNEN("gtocore.machine.monitor.custom_info.horizontal_alignment.0", "左对齐", "Left");
@@ -213,31 +186,8 @@ final class MachineLang {
         addCNEN("gtocore.machine.monitor.custom_info.vertical_alignment.0", "顶部", "Top");
         addCNEN("gtocore.machine.monitor.custom_info.vertical_alignment.1", "居中", "Middle");
         addCNEN("gtocore.machine.monitor.custom_info.vertical_alignment.2", "底部", "Bottom");
-        addCNEN("gtocore.machine.monitor.custom_info.code_input_tooltip.1", "复制§a格式化代码§r到剪贴板", "Copy §aformatting code§r to clipboard");
-        addCNEN("gtocore.machine.monitor.custom_info.code_input_tooltip.2", "§l格式化代码（Formatting code）§r，又称§l颜色代码（Color code）§r，能使在游戏中加入含颜色和格式信息。",
-                "§lFormatting code§r, also known as §lcolor code§r, allows adding color and formatting information in the game.");
-        addCNEN("gtocore.machine.monitor.custom_info.code_input_tooltip.3", "请前往§dMinecraft Wiki§r了解更多关于格式化代码的信息。",
-                "Please visit the §dMinecraft Wiki§r for more information about formatting codes.");
-        addCNEN("gtocore.machine.monitor.ae.status.no_grid", "警告: 无法连接到AE网络！", "Warning: Unable to connect to AE network!");
-        addCNEN("gtocore.machine.monitor.ae.status.no_config", "无配置信息", "No configuration information");
-        addCNEN("gtocore.machine.monitor.ae.status.0", "正在监视的物品: %s", "Monitored Items: %s");
-        addCNEN("gtocore.machine.monitor.ae.status.1", "正在监视的流体: %s", "Monitored Fluids: %s");
-        addCNEN("gtocore.machine.monitor.ae.amount", "总量统计: %s", "Total Amount: %s");
-        addCNEN("gtocore.machine.monitor.ae.stat.title", "平均吞吐量统计", "Average Throughput Statistics");
-        addCNEN("gtocore.machine.monitor.ae.stat.minute", "近一分钟: %s", "Last Minute: %s");
-        addCNEN("gtocore.machine.monitor.ae.stat.hour", "近一小时: %s", "Last Hour: %s");
-        addCNEN("gtocore.machine.monitor.ae.stat.day", "近一天: %s", "Last Day: %s");
-        addCNEN("gtocore.machine.monitor.ae.stat.remaining_time", "预计耗尽时间: %s", "Estimated Depletion Time: %s");
         addCNEN("gtocore.machine.monitor.ae.set_filter", "设置过滤器", "Set Filter");
-        addCNEN("gtocore.machine.basic_monitor.tooltip.1", "将多个监控器连接在一起，形成一个多功能监控器", "Connect multiple monitors together to form a multifunctional monitor");
-        addCNEN("gtocore.machine.basic_monitor.tooltip.2", "在连接的监控器中添加§b组件§r来显示不同的信息", "Add §bcomponents§r in connected monitors to display different information");
         addCNEN("gtocore.machine.boiler.tooltip.warning", "§c警告§r: 请勿在锅炉内积攒过多的蒸汽！", "§cWarning: §rDo not accumulate too much steam in the boiler!");
-        addCNEN("gtocore.machine.monitor.ae.cpu.usage", "正在工作的CPU: %s 个（总数:  %s 个）", "Working CPUs: %s (Total: %s)");
-        addCNEN("gtocore.machine.monitor.ae.cpu.monitored", "正在监视的CPU: #%s - %s", "Monitored CPU: #%s - %s");
-        addCNEN("gtocore.machine.monitor.ae.cpu.list", "CPU列表", "CPU List");
-        addCNEN("gtocore.machine.monitor.ae.cpu.set.1", "设置监视的CPU", "Set Monitored CPU");
-        addCNEN("gtocore.machine.monitor.ae.cpu.set.2", "§c警告§r: 网络中CPU变动时，需要重新选择！", "Warning: When the CPU changes in the network, you need to reselect!");
-        addCNEN("gtocore.machine.machine_monitor.slot", "请放入机器坐标信息卡", "Insert Machine Coordinate Card");
         addCNEN("gtocore.part.extendae.tag_filter.whitelist.tooltip", "可放入目标，选择白名单的标签过滤器", "Can place target, select whitelist tag filter");
         addCNEN("gtocore.part.extendae.tag_filter.blacklist.tooltip", "可放入目标，选择黑名单的标签过滤器", "Can place target, select blacklist tag filter");
         addCNEN("gtocore.machine.area_destruction_tools.detonate_instruction", "起爆", "Detonate instruction");
@@ -393,8 +343,6 @@ final class MachineLang {
         addCNEN("block.gtceu.ulv_super_chest", "超级箱青春版", "Super Chest Lite");
         addCNEN("block.gtceu.ulv_super_tank", "超级缸青春版", "Super Tank Lite");
         addSingleMachineTooltips();
-
-        DisplayRegistry.registerLanguage();
     }
 
     private static void addSingleMachineTooltips() {

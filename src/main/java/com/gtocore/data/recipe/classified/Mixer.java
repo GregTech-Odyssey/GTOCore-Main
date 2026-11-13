@@ -9,6 +9,7 @@ import com.gtocore.common.recipe.condition.GravityCondition;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -322,7 +323,7 @@ final class Mixer {
                 .save();
 
         MIXER_RECIPES.recipeBuilder("rooted_dirt")
-                .chancedInput(new ItemStack(Blocks.MOSS_CARPET.asItem()), 1000, 0)
+                .chancedInput(new ItemStack(Blocks.MOSS_CARPET.asItem()), Chance.of(1000))
                 .inputItems(Blocks.DIRT.asItem())
                 .outputItems(Blocks.ROOTED_DIRT.asItem())
                 .EUt(16)

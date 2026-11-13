@@ -29,7 +29,7 @@ import java.util.UUID;
 
 public final class WirelessChargerCover extends CoverBehavior implements IWirelessChargerInteraction {
 
-    private WirelessChargerMachine wirelessChargerMachine;
+    private final NetCache<WirelessChargerMachine> netCache = new NetCache<>();
 
     private MetaMachine machine;
 
@@ -143,13 +143,8 @@ public final class WirelessChargerCover extends CoverBehavior implements IWirele
     }
 
     @Override
-    public WirelessChargerMachine getNetMachineCache() {
-        return wirelessChargerMachine;
-    }
-
-    @Override
-    public void setNetMachineCache(WirelessChargerMachine cache) {
-        wirelessChargerMachine = cache;
+    public NetCache<WirelessChargerMachine> getNetCache() {
+        return netCache;
     }
 
     @Override

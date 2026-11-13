@@ -8,6 +8,7 @@ import com.gtocore.data.tag.Tags;
 
 import com.gtolib.api.player.OrganTier;
 
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
@@ -34,15 +35,15 @@ final class BiochemicalExtraction {
         BIOCHEMICAL_EXTRACTION_RECIPES.recipeBuilder("cerebrum")
                 .notConsumable(Tags.HUMAN_EGG)
                 .outputItems(GTOItems.CEREBRUM)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.HEART, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.EYE, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.SPINE, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LIVER, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LUNG, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.RIGHT_ARM, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LEFT_ARM, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.RIGHT_LEG, OrganTier.SPROUT), 500, 100)
-                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LEFT_LEG, OrganTier.SPROUT), 500, 100)
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.HEART, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.EYE, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.SPINE, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LIVER, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LUNG, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.RIGHT_ARM, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LEFT_ARM, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.RIGHT_LEG, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
+                .chancedOutput(GTOOrganItems.tierOrgan(OrganType.LEFT_LEG, OrganTier.SPROUT), Chance.of(500).risePerOverclock(100))
                 .duration(200)
                 .EUt(30)
                 .save();

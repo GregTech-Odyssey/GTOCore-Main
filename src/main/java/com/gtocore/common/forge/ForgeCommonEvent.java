@@ -8,7 +8,6 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.misc.OverseerCoke;
-import com.gtocore.common.machine.monitor.MonitorBlock;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
@@ -35,6 +34,7 @@ import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.OrganEffects;
 import com.gtolib.api.player.attribute.PlayerAttributes;
+import com.gtolib.api.scope.GTOScopes;
 import com.gtolib.quest.QuestServer;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -52,7 +52,6 @@ import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.common.item.CoverPlaceBehavior;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 
 import net.minecraft.ChatFormatting;
@@ -133,7 +132,6 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onRightClickItem);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerLoggedInEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerTickEvent);
-        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerChangedDimensionEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLevelLoad);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerStoppedEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onCommandRegister);
@@ -201,10 +199,6 @@ public final class ForgeCommonEvent {
         InteractionHand hand = event.getHand();
         ItemStack itemStack = player.getItemInHand(hand);
         Item item = itemStack.getItem();
-
-        if (level.getBlockState(pos).getBlock() instanceof MonitorBlock && CoverPlaceBehavior.getCoverDefinition(itemStack) != null) {
-            event.setUseItem(Event.Result.DENY);
-        }
 
         if (!level.isClientSide && player.isShiftKeyDown() && level instanceof ServerLevel serverLevel) {
             Direction clickedFace = event.getFace();
@@ -358,13 +352,10 @@ public final class ForgeCommonEvent {
                 player.displayClientMessage(Component.translatable("gtocore.lang." + COMMON_HOTKEY_HINT).withStyle(ChatFormatting.GREEN), false);
                 Configurator.setRootLevel(org.apache.logging.log4j.Level.INFO);
             }
-            showVoidTimeHint(player);
-            syncPlayerTime(player);
             WirelessSync.pushTo(player);
             TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
             CelestialSavedData.sync(player);
-            MEPatternBufferConnectionHandler.syncToPlayer(player);
         }
     }
 
@@ -375,13 +366,22 @@ public final class ForgeCommonEvent {
         }
     }
 
-    public static void onPlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
+    public static void install() {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.Clone.class, ForgeCommonEvent::keepVoidTimeHint);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.PlayerChangedDimensionEvent.class, ForgeCommonEvent::resyncTimeAfterTravel);
+        GTOScopes.PRESENCE.install("void_time", (scope, player) -> {
             showVoidTimeHint(player);
             syncPlayerTime(player);
-            MEPatternBufferConnectionHandler.syncToPlayer(player);
-            // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
-        }
+        });
+        GTOScopes.PRESENCE.install("pattern_buffer_connections", (scope, player) -> MEPatternBufferConnectionHandler.syncToPlayer(player));
+    }
+
+    private static void resyncTimeAfterTravel(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) syncPlayerTime(player);
+    }
+
+    private static void keepVoidTimeHint(PlayerEvent.Clone event) {
+        if (event.getOriginal().getPersistentData().getBoolean("gtocore_void_time_hint_shown")) event.getEntity().getPersistentData().putBoolean("gtocore_void_time_hint_shown", true);
     }
 
     public static void onLevelLoad(LevelEvent.Load event) {

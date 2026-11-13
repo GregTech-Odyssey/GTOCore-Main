@@ -21,7 +21,7 @@ final class ImplantLang {
         addCNEN("gtocore.implant.action.cannon", "蓄能炮", "Charge Cannon");
         addCNEN("gtocore.implant.action.tether", "束缚", "Tether");
         addCNEN("gtocore.implant.hud.no_target", "%s：无目标", "%s: no target");
-        addCNEN("gtocore.implant.hud.marker", "%s · %s 格", "%s · %s blocks");
+        addCNEN("gtocore.implant.hud.marker.distance", "%s 格", "%s blocks");
         addCNEN("gtocore.implant.wheel.gained", "你获得了%s动作，可按住 %s 键在轮盘中选择", "You gained the %s action; hold %s to pick it on the wheel");
         addCNEN("gtocore.implant.wheel.lost", "你失去了%s动作", "You lost the %s action");
         addCNEN("gtocore.implant.wheel.title", "义体动作", "Implant Actions");
@@ -31,8 +31,7 @@ final class ImplantLang {
         addCNEN("gtocore.implant.value.no_aim", "未指向物品", "No item targeted");
         addCNEN("gtocore.implant.value.no_grid", "未连接 AE 网络", "Not connected to an AE network");
         addCNEN("gtocore.implant.value.no_target", "未指向机器", "No machine targeted");
-        addCNEN("gtocore.implant.value.stock", "%s：%s", "%s: %s");
-        addCNEN("gtocore.implant.value.stock_craftable", "%s：%s（可合成）", "%s: %s (craftable)");
+        addCNEN("gtocore.implant.value.stock_craftable", "%s（可合成）", "%s (craftable)");
 
         addCNEN("gtocore.monitor.source.implant", "义体感知", "Implant Senses");
         addCNEN("gtocore.monitor.source.implant_remote", "远程触控", "Remote Touch");

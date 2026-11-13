@@ -491,6 +491,22 @@ val writeQuestHotReloadClasspath = tasks.register("writeQuestHotReloadClasspath"
 legacyForge.runs.configureEach { systemProperty("gtocore.questHotReload", questHotReloadClasspath.get().asFile.absolutePath) }
 tasks.matching { it.name in setOf("runClient", "runServer", "runData", "runGameTestServer") }.configureEach { dependsOn(writeQuestHotReloadClasspath) }
 
+tasks.register<JavaExec>("questTextImport") {
+    group = "quest"
+    description = "把官网下载的任务文本数据集导入源码：-Pdataset=<文件>，加 -PquestTextCheck=true 只检查不写入"
+    dependsOn(tasks.named("classes"))
+    val main = sourceSets.main.get()
+    classpath = main.output.classesDirs + main.compileClasspath
+    mainClass.set("com.gtocore.common.quest.hot.QuestTextImport")
+    val dataset = providers.gradleProperty("dataset")
+    val check = providers.gradleProperty("questTextCheck")
+    val root = projectDir
+    doFirst {
+        val path = dataset.orNull ?: throw GradleException("需要 -Pdataset=<官网下载的数据集 json>")
+        args = listOfNotNull(root.resolve(path).absolutePath, root.absolutePath, if (check.orNull == "true") "--check" else null)
+    }
+}
+
 // ---------- 资源与 jar ----------
 
 val generateModMetadata = tasks.register<ProcessResources>("generateModMetadata") {
