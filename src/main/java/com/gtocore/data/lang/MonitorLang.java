@@ -430,6 +430,7 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.share.remove", "移出名单", "Remove from the list");
         addCNEN("gtocore.monitor.hud.need_implant", "须装备心智义体", "A Mind Implant is required");
         addCNEN("gtocore.monitor.hud.editor.title", "HUD 布局", "HUD Layout");
+        addCNEN("gtocore.monitor.hud.background_opacity", "背景不透明度（%）", "Background Opacity (%)");
         addCNEN("gtocore.monitor.hud.background", "游戏画面背景", "Game View Background");
         addCNEN("gtocore.monitor.hud.background.desc", "切换画布的游戏画面背景", "Toggle the game view behind the layout");
         addCNEN("gtocore.monitor.hud.interact", "操作 HUD 组件", "Operate HUD Components");
