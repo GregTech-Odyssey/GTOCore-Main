@@ -5,6 +5,7 @@ import com.gtocore.common.quest.hot.QuestEdits.TextEntry;
 import com.gtocore.common.quest.hot.QuestSource.QuestDecl;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -40,6 +41,14 @@ public final class QuestTextImport {
     private static final String[] MARKERS = { "[item]", "[itemTag]", "[fluid]", "[fluidTag]" };
     private static final String QUEST_KEY_PREFIX = "gtocore.quest.";
     private static final String TARGET_PREFIX = "q:";
+    private static final String[] COLORS = { "BLACK", "DARK_BLUE", "DARK_GREEN", "DARK_AQUA", "DARK_RED", "DARK_PURPLE", "GOLD", "GRAY", "DARK_GRAY", "BLUE",
+            "GREEN", "AQUA", "RED", "LIGHT_PURPLE", "YELLOW", "WHITE" };
+    private static final String[] MOD_CONSTANTS = { "BOLD", "ITALIC", "UNDERLINE", "STRIKE" };
+    private static final String[] MOD_SUFFIXES = { ".bold()", ".italic()", ".underline()", ".strike()" };
+    private static final String STYLE_PREFIX = "QuestStyle.";
+    private static final String STYLE_CLASS = "com.gtolib.api.quest.QuestStyle";
+    private static final Pattern LINK_TOKEN = Pattern.compile("link\\(\"([a-z0-9_]+/[a-z0-9_]+)\"\\)");
+    private static final int URL_LIMIT = 300;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     record Dataset(int schema, @Nullable Map<String, Map<String, String>> translations, @Nullable List<Edit> edits) {}
@@ -173,8 +182,10 @@ public final class QuestTextImport {
         var problem = problem(wanted);
         if (problem != null) return fail(edit, problem);
         var current = normalize(QuestEdits.readText(decl, op.arg()));
-        var foreign = foreign(wanted, current);
+        var styled = new ObjectArrayList<TextEntry>(wanted.size());
+        var foreign = restyle(src, decl, wanted, current, styled);
         if (foreign != null) return fail(edit, foreign);
+        wanted = styled;
         if (current.equals(wanted)) {
             bring(op.target(), wanted, brought);
             return new Outcome(edit.id, edit.number, op.target(), op.arg(), "unchanged", "源码已是目标内容", null, null, null);
@@ -182,7 +193,7 @@ public final class QuestTextImport {
         if (!current.equals(base)) {
             return new Outcome(edit.id, edit.number, op.target(), op.arg(), "conflict", "源码当前内容与这条修改的基准不同，未写入", base, current, wanted);
         }
-        var error = QuestEdits.apply(src, Op.text(op.target(), op.arg(), wanted, Collections.emptyList()), before);
+        var error = QuestEdits.apply(src, Op.text(op.target(), op.arg(), wanted, imports(wanted)), before);
         if (error != null) return fail(edit, error);
         bring(op.target(), wanted, brought);
         return new Outcome(edit.id, edit.number, op.target(), op.arg(), "applied", null, null, null, null);
@@ -330,19 +341,142 @@ public final class QuestTextImport {
     }
 
     @Nullable
-    private static String foreign(List<TextEntry> wanted, List<TextEntry> current) {
+    private static String restyle(QuestSource src, QuestDecl decl, List<TextEntry> wanted, List<TextEntry> current, List<TextEntry> out) {
+        var raws = new OpenCacheHashSet<String>();
+        var styles = new OpenCacheHashSet<String>();
+        var bases = new OpenCacheHashSet<String>();
+        var refs = new O2OOpenCacheHashMap<String, OpenCacheHashSet<String>>();
+        for (var have : current) {
+            if (have.kind().equals("raw")) raws.add(have.raw());
+            if (!have.isLine()) continue;
+            var slots = signature(have.text());
+            if (slots == null || slots.size() != have.args().size()) continue;
+            for (int i = 0; i < slots.size(); i++) {
+                var arg = have.args().get(i);
+                if (slots.get(i).equals("{}")) {
+                    styles.add(arg);
+                    bases.add(Peeled.of(arg).head);
+                } else {
+                    refs.computeIfAbsent(slots.get(i), k -> new OpenCacheHashSet<>()).add(arg);
+                }
+            }
+        }
+        var expr = new StringBuilder();
         for (var entry : wanted) {
-            if (entry.kind().equals("raw")) {
-                boolean known = false;
-                for (var have : current) known |= have.kind().equals("raw") && have.raw().equals(entry.raw());
-                if (!known) return "raw 条目不在源码现有内容里，文本指令不能带入新代码：" + entry.raw();
-            } else if (entry.isLine() && !entry.args().isEmpty()) {
-                boolean known = false;
-                for (var have : current) known |= have.isLine() && have.args().equals(entry.args());
-                if (!known) return "这一行的样式参数不在源码现有内容里，文本指令不能带入新代码：" + entry.text();
+            if (entry.kind().equals("raw") && !raws.contains(entry.raw())) return "raw 条目不在源码现有内容里，文本指令不能带入新代码：" + entry.raw();
+            if (!entry.isLine() || entry.args().isEmpty()) {
+                out.add(entry);
+                continue;
+            }
+            var slots = signature(entry.text());
+            var args = new ObjectArrayList<String>(entry.args().size());
+            for (int i = 0; i < entry.args().size(); i++) {
+                var arg = entry.args().get(i);
+                var slot = slots.get(i);
+                if (!slot.equals("{}")) {
+                    var known = refs.get(slot);
+                    if (known == null || !known.contains(arg)) return slot + " 的参数不在源码现状这一部分的 " + slot + " 参数里，文本指令不能带入新代码：" + arg + "（" + entry.text() + "）";
+                    args.add(arg);
+                } else if (styles.contains(arg)) {
+                    args.add(arg);
+                } else {
+                    expr.setLength(0);
+                    var problem = style(src, decl, arg, bases, expr);
+                    if (problem != null) return problem + "（" + entry.text() + "）";
+                    args.add(expr.toString());
+                }
+            }
+            out.add(TextEntry.line(entry.text(), args));
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String style(QuestSource src, QuestDecl decl, String arg, OpenCacheHashSet<String> bases, StringBuilder out) {
+        var peeled = Peeled.of(arg);
+        var head = peeled.head;
+        int mods = peeled.mods;
+        boolean prefixed = head.startsWith(STYLE_PREFIX);
+        var name = prefixed ? head.substring(STYLE_PREFIX.length()) : head;
+        int mod = indexOf(MOD_CONSTANTS, name);
+        if (mod >= 0) {
+            mods |= 1 << mod;
+            mod = Integer.numberOfTrailingZeros(mods);
+            out.append(constant(decl, MOD_CONSTANTS[mod]));
+            mods &= ~(1 << mod);
+        } else if (indexOf(COLORS, name) >= 0) {
+            out.append(prefixed ? head : constant(decl, name));
+        } else if (head.length() >= 7 && head.startsWith("url(\"") && head.endsWith("\")")) {
+            var problem = urlProblem(head.substring(5, head.length() - 2));
+            if (problem != null) return problem + "：" + arg;
+            out.append(head);
+        } else if (LINK_TOKEN.matcher(head).matches()) {
+            var key = head.substring(6, head.length() - 2);
+            if (!(src.find(TARGET_PREFIX + key) instanceof QuestDecl target)) return "找不到链接目标任务 " + key + "：" + arg;
+            out.append("link(").append(src.refText(decl.file, target, decl.file.start(decl.var))).append(')');
+        } else if (bases.contains(head)) {
+            out.append(head);
+        } else {
+            return "样式参数不在白名单里（颜色与粗斜下删常量、url(\"http(s)://…\")、link(\"章节/任务\")、源码现状这一部分已有样式的底），文本指令不能带入新代码：" + arg;
+        }
+        for (int m = 0; m < MOD_SUFFIXES.length; m++) {
+            if ((mods & 1 << m) != 0) out.append(MOD_SUFFIXES[m]);
+        }
+        return null;
+    }
+
+    private record Peeled(String head, int mods) {
+
+        static Peeled of(String expr) {
+            var head = expr.strip();
+            int mods = 0;
+            boolean peeled = true;
+            while (peeled) {
+                peeled = false;
+                for (int m = 0; m < MOD_SUFFIXES.length; m++) {
+                    if (head.endsWith(MOD_SUFFIXES[m])) {
+                        head = head.substring(0, head.length() - MOD_SUFFIXES[m].length()).strip();
+                        mods |= 1 << m;
+                        peeled = true;
+                    }
+                }
+            }
+            return new Peeled(head, mods);
+        }
+    }
+
+    private static String constant(QuestDecl decl, String name) {
+        return decl.file.fields.containsKey(name) ? STYLE_PREFIX + name : name;
+    }
+
+    private static int indexOf(String[] names, String name) {
+        for (int i = 0; i < names.length; i++) {
+            if (names[i].equals(name)) return i;
+        }
+        return -1;
+    }
+
+    @Nullable
+    private static String urlProblem(String url) {
+        if (!url.startsWith("http://") && !url.startsWith("https://")) return "网址必须以 http:// 或 https:// 开头";
+        if (url.length() > URL_LIMIT) return "网址超过 " + URL_LIMIT + " 个字符";
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (c == '"' || c == '\\' || Character.isWhitespace(c) || Character.isSpaceChar(c) || Character.isISOControl(c) || Character.getType(c) == Character.FORMAT) {
+                return String.format("网址带不允许的字符 U+%04X（第 %d 个字符）", (int) c, i + 1);
             }
         }
         return null;
+    }
+
+    private static List<String> imports(List<TextEntry> entries) {
+        for (var entry : entries) {
+            if (!entry.isLine()) continue;
+            for (var arg : entry.args()) {
+                if (arg.startsWith(STYLE_PREFIX)) return Collections.singletonList(STYLE_CLASS);
+            }
+        }
+        return Collections.emptyList();
     }
 
     private static void translations(Dataset dataset, Path root, Map<String, String> brought, List<LocaleOutcome> out, Map<Path, String> pending) throws IOException {
