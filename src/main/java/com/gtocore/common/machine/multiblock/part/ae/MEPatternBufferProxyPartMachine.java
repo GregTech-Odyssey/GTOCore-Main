@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.part.ae;
 import com.gtocore.common.machine.trait.ProxySlotRecipeHandler;
 
 import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.wireless.PartProxyConnections;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
@@ -29,6 +30,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -104,7 +106,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     @Override
     public void onUnload() {
-        MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
+        PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(getLevel(), getPos());
         super.onUnload();
         bufferResolved = false;
         var buf = buffer;
@@ -150,9 +152,11 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
             target.addProxy(this);
         }
         if (target == null) {
-            MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
+            PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(getLevel(), getPos());
         } else {
-            MEPatternBufferConnectionHandler.register(getLevel(), target.getPos(), getPos());
+            Level level = getLevel();
+            BlockPos bufferPos1 = target.getPos();
+            PartProxyConnections.PATTERN_BUFFERS.register(level, bufferPos1, getPos());
         }
         refreshControllers();
     }
@@ -182,7 +186,8 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
     }
 
     private void onBufferUnloaded(MEPatternBufferPartMachine target) {
-        MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
+        Level level1 = getLevel();
+        PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(level1, getPos());
         buffer = null;
         target.unloadProxy(this);
         proxySlotRecipeHandler.release();
@@ -246,7 +251,8 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
             proxySlotRecipeHandler.release();
             proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
         }
-        MEPatternBufferConnectionHandler.unregisterProxy(getLevel(), getPos());
+        Level level = getLevel();
+        PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(level, getPos());
     }
 
     @Override

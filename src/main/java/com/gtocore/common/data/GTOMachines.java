@@ -1150,6 +1150,15 @@ public final class GTOMachines {
             .tier(MAX)
             .register();
 
+    public static final MachineDefinition MIRROR_HATCH = machine("mirror_hatch", "镜像仓", MirrorHatchPartMachine::new)
+            .langValue("Mirror Hatch")
+            .tier(HV)
+            .allRotation()
+            .tips(GTOMachineTooltips.MirrorHatchTooltips)
+            .renderer(() -> new OverlayTieredMachineRenderer(HV, GTCEu.id("block/machine/part/dual_hatch.import")))
+            .allowCoverOnFront(true)
+            .register();
+
     public static final MachineDefinition TESSERACT_GENERATOR = blockEntityMachine("tesseract_generator", "超立方体发生器", TesseractMachine::new, TesseractBlockEntity::new)
             .allRotation()
             .tips(GTOMachineTooltips.HyperCubeMachineTooltips)

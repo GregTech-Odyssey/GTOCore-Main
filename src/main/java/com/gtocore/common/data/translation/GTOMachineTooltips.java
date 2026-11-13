@@ -529,6 +529,12 @@ public final class GTOMachineTooltips {
         t.rightClick(t.tr("右键点击机器以打开性能监测界面", "Right click on the machine to open performance monitoring interface"));
     });
 
+    public static final TipSpec MirrorHatchTooltips = GTOTips.of("mirror_hatch", t -> {
+        t.line(TipRole.SUMMARY, t.tr("模仿一个同维度的多方块输入或输出仓", "Mirror a multiblock input or output hatch in the same dimension"));
+        t.control(t.tr("手持闪存潜行右击目标仓，再右击镜像仓连接", "Sneak-right-click the target hatch with a Data Stick, then right-click the Mirror Hatch to connect"));
+        t.supported(t.tr("支持仓、总线、总成及对应的 ME 仓", "Supports item, fluid, dual and corresponding ME hatches"));
+    });
+
     // 超立方体
     public static final TipSpec HyperCubeMachineTooltips = GTOTips.of("hyper_cube_machine", t -> {
         t.line(TipRole.SUMMARY, t.tr("代理一个流体或物品存储器", "Proxy a fluid or item or both storages"));

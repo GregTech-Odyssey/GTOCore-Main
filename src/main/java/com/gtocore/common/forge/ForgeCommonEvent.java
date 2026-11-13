@@ -9,7 +9,6 @@ import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.misc.OverseerCoke;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.common.saved.*;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
@@ -35,6 +34,7 @@ import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.OrganEffects;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.api.scope.GTOScopes;
+import com.gtolib.api.wireless.PartProxyConnections;
 import com.gtolib.quest.QuestServer;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -148,7 +148,7 @@ public final class ForgeCommonEvent {
         AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();
-        MEPatternBufferConnectionHandler.init();
+        PartProxyConnections.init();
         QuestServer.init();
     }
 
@@ -373,7 +373,10 @@ public final class ForgeCommonEvent {
             showVoidTimeHint(player);
             syncPlayerTime(player);
         });
-        GTOScopes.PRESENCE.install("pattern_buffer_connections", (scope, player) -> MEPatternBufferConnectionHandler.syncToPlayer(player));
+        GTOScopes.PRESENCE.install("pattern_buffer_connections", (scope, player) -> {
+            PartProxyConnections.PATTERN_BUFFERS.syncToPlayer(player);
+            PartProxyConnections.MIRROR_HATCHES.syncToPlayer(player);
+        });
     }
 
     private static void resyncTimeAfterTravel(PlayerEvent.PlayerChangedDimensionEvent event) {

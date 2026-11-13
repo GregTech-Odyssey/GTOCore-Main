@@ -13,6 +13,7 @@ import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
 import com.gtolib.api.network.NetworkPack;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.RecipeType;
+import com.gtolib.api.wireless.PartProxyConnections;
 import com.gtolib.utils.LegacyIO;
 import com.gtolib.utils.RLUtils;
 
@@ -368,7 +369,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     @Override
     public void onUnload() {
-        MEPatternBufferConnectionHandler.unregisterBuffer(getLevel(), getPos());
+        PartProxyConnections.PATTERN_BUFFERS.unregisterTarget(getLevel(), getPos());
         super.onUnload();
     }
 
