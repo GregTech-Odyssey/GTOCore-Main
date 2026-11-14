@@ -384,6 +384,11 @@ public class ExperienceObelisk extends MetaMachine implements IFancyUIMachine, I
         public IKeyHandler<AEFluidKey> unrestricted() {
             return experienceTank.unrestricted();
         }
+
+        @Override
+        public boolean isDirectKey() {
+            return true;
+        }
     }
 
     private void setCurrentConfigAmount(int integer) {

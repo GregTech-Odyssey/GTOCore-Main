@@ -22,6 +22,8 @@ import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProvider;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProviderIndex;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.integration.ae2.slot.IConfigurableSlot;
@@ -63,7 +65,7 @@ import java.util.UUID;
 import java.util.function.ObjLongConsumer;
 
 @DataGeneratorScanned
-public abstract class StorageAccessPartMachine extends AmountConfigurationPartMachine implements IMachineLife, MEStorage, IGridConnectedMachine, IStorageProvider {
+public abstract class StorageAccessPartMachine extends AmountConfigurationPartMachine implements IMachineLife, MEStorage, IGridConnectedMachine, IStorageProvider, MEStorageProvider {
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meStorageMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_STORAGE, this::tickUpdate);
@@ -181,10 +183,12 @@ public abstract class StorageAccessPartMachine extends AmountConfigurationPartMa
     public void onLoad() {
         super.onLoad();
         tickSubs.initialize(getLevel());
+        MEStorageProviderIndex.add(getLevel(), this);
     }
 
     @Override
     public void onUnload() {
+        MEStorageProviderIndex.remove(getLevel(), this);
         super.onUnload();
         tickSubs.unsubscribe();
     }

@@ -301,6 +301,11 @@ public final class ProgrammableHatchPartMachine extends DualHatchPartMachine imp
             }
             return 0;
         }
+
+        @Override
+        public boolean isDirectKey() {
+            return true;
+        }
     }
 
     public static class ProgrammableCircuitHandler extends CircuitHandler {
