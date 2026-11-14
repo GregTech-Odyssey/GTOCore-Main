@@ -98,11 +98,13 @@ public final class RecipeTypeModify {
                     var recipe = DIMENSIONAL_FOCUS_ENGRAVING_ARRAY_RECIPES.copyFrom(recipeBuilder)
                             .duration((int) (recipeBuilder.getDuration() * 0.2))
                             .EUt(recipeBuilder.EUt() << 2);
-                    double value = Math.log10(recipeBuilder.EUt()) / Math.log10(4);
-                    if (value > 10) {
-                        recipe.inputFluids(GTOMaterials.EuvPhotoresist.getFluid((int) (value / 2)));
-                    } else {
-                        recipe.inputFluids(GTOMaterials.Photoresist.getFluid((int) value));
+                    if (!recipeBuilder.getId().getPath().equals("make_mfpc_5")) {
+                        double value = Math.log10(recipeBuilder.EUt()) / Math.log10(4);
+                        if (value > 10) {
+                            recipe.inputFluids(GTOMaterials.EuvPhotoresist.getFluid((int) (value / 2)));
+                        } else {
+                            recipe.inputFluids(GTOMaterials.Photoresist.getFluid((int) value));
+                        }
                     }
                     recipe.save();
                 });
