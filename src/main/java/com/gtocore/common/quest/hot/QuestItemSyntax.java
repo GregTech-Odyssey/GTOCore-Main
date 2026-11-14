@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 
 final class QuestItemSyntax {
 
-    record Syntax(String args, List<String> imports) {}
+    record Syntax(String args, List<String> imports, boolean pair) {}
 
     private static final String[] HOLDERS = {
             "net.minecraft.world.item.Items",
@@ -88,6 +88,15 @@ final class QuestItemSyntax {
     }
 
     @Nullable
+    static Syntax itemLike(QuestSource source, Item item) {
+        var syntax = of(source, item);
+        if (syntax == null || !syntax.pair) return syntax;
+        var imports = new ObjectArrayList<String>(syntax.imports);
+        imports.add(ChemicalHelper.class.getName());
+        return new Syntax("ChemicalHelper.get(" + syntax.args + ").getItem()", imports, false);
+    }
+
+    @Nullable
     private static Syntax fromSource(QuestSource source, Item item) {
         for (var file : source.files) {
             for (var decl : file.quests) {
@@ -107,7 +116,7 @@ final class QuestItemSyntax {
                     var end = file.end(itemArgs.get(itemArgs.size() - 1));
                     var imports = new ObjectArrayList<String>();
                     for (var arg : itemArgs) collectImports(file, arg, imports);
-                    return new Syntax(file.content.substring(start, end), imports);
+                    return new Syntax(file.content.substring(start, end), imports, itemArgs.size() == 2);
                 }
             }
         }
@@ -178,11 +187,11 @@ final class QuestItemSyntax {
                 if (value instanceof Object[] array) {
                     for (int i = 0; i < array.length && i < TIER_NAMES.length; i++) {
                         var item = itemOf(array[i]);
-                        if (item != null) map.putIfAbsent(item, new Syntax(simple + "." + field.getName() + "[GTValues." + TIER_NAMES[i] + "]", List.of(holder, gtValues)));
+                        if (item != null) map.putIfAbsent(item, new Syntax(simple + "." + field.getName() + "[GTValues." + TIER_NAMES[i] + "]", List.of(holder, gtValues), false));
                     }
                 } else {
                     var item = itemOf(value);
-                    if (item != null) map.putIfAbsent(item, new Syntax(simple + "." + field.getName(), List.of(holder)));
+                    if (item != null) map.putIfAbsent(item, new Syntax(simple + "." + field.getName(), List.of(holder), false));
                 }
             }
         }
@@ -215,7 +224,7 @@ final class QuestItemSyntax {
         var prefix = staticField(PREFIX_HOLDERS, TagPrefix.class, entry.tagPrefix());
         var material = staticField(MATERIAL_HOLDERS, Material.class, entry.material());
         if (prefix == null || material == null) return null;
-        return new Syntax(prefix[1] + ", " + material[1], List.of(prefix[0], material[0]));
+        return new Syntax(prefix[1] + ", " + material[1], List.of(prefix[0], material[0]), true);
     }
 
     @Nullable

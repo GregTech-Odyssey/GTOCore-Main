@@ -13,6 +13,7 @@ import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -901,7 +902,7 @@ public final class BotaniaRecipes {
                         .save();
 
                 MANA_CONDENSER_RECIPES.builder("nether_star")
-                        .chancedInput(ModItems.helheimRune, 9500, 100)
+                        .chancedInput(ModItems.helheimRune, Chance.of(9500).dropPerOverclock(100))
                         .inputItems(BotaniaItems.elfQuartz, 4)
                         .inputItems(dust, GTMaterials.Iridium)
                         .outputItems(gem, GTMaterials.NetherStar, 2)

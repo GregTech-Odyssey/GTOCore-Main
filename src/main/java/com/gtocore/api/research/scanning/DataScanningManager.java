@@ -13,6 +13,7 @@ import com.gtocore.config.GTORules;
 import com.gtolib.GTOCore;
 import com.gtolib.api.machine.MultiblockDefinition;
 import com.gtolib.api.recipe.RecipeType;
+import com.gtolib.api.scope.GTOScopes;
 import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -24,6 +25,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import appeng.api.identity.IdentityKeyObjectMap;
 import appeng.api.stacks.AEFluidKey;
@@ -32,7 +34,9 @@ import appeng.api.stacks.AEKey;
 import appeng.hooks.IUnique;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
+import com.suried.gtoutils.schedule.ScopeKey;
 import it.unimi.dsi.fastutil.objects.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +54,6 @@ public class DataScanningManager {
     private static Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> regMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
     private static Reference2ObjectOpenHashMap<Material, ResearchPoints> materialRegMap = new Reference2ObjectOpenHashMap<>();
 
-    private static final Reference2ObjectMap<UUID, Set<AEKey>> teamUnscannedItems = new Reference2ObjectOpenHashMap<>();
     private static boolean frozen = false;
 
     public static synchronized void registerDataScanning(AEKey key, ResearchPoints points) {
@@ -98,16 +101,35 @@ public class DataScanningManager {
     }
 
     public static boolean isUnscannable(AEKey key, UUID team) {
-        var teamUnscanned = teamUnscannedItems.computeIfAbsent(team, ignored -> new ReferenceOpenHashSet<>());
-        if (teamUnscanned.contains(key)) {
+        var teamUnscanned = Unscannable.of(team);
+        if (teamUnscanned != null && teamUnscanned.contains(key)) {
             return true;
         }
         long occupy = DataScanningManager.scanData(key, team, true).countBytes();
         if (occupy <= 0 && (ResearchRequirements.getEurekaRequirements(key).isEmpty() || hasScanned(key, team))) {
-            teamUnscanned.add(key);
+            if (teamUnscanned != null) teamUnscanned.add(key);
             return true;
         }
         return false;
+    }
+
+    public static final class Unscannable {
+
+        private static final ScopeKey<Object2ObjectOpenHashMap<UUID, Set<AEKey>>> KEY = ScopeKey.of("research_unscannable");
+
+        private Unscannable() {}
+
+        public static void install() {
+            GTOScopes.SERVER.install("research_unscannable", (scope, server) -> scope.provide(KEY, new Object2ObjectOpenHashMap<>()));
+        }
+
+        @Nullable
+        private static Set<AEKey> of(UUID team) {
+            var server = ServerLifecycleHooks.getCurrentServer();
+            if (server == null || !server.isSameThread()) return null;
+            var teams = GTOScopes.SERVER.lookup(server, KEY);
+            return teams == null ? null : teams.computeIfAbsent(team, ignored -> new ReferenceOpenHashSet<>());
+        }
     }
 
     public static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {

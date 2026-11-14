@@ -36,7 +36,7 @@ public final class AdvancedInfiniteDrillLogic extends VeinDrillLogic implements 
     @Setter
     @Getter
     private int range;
-    private DrillingControlCenterMachine cache;
+    private final NetCache<DrillingControlCenterMachine> cache = new NetCache<>();
 
     public AdvancedInfiniteDrillLogic(IRecipeLogicMachine machine, int range) {
         super(machine);
@@ -145,18 +145,13 @@ public final class AdvancedInfiniteDrillLogic extends VeinDrillLogic implements 
     }
 
     @Override
-    public DrillingControlCenterMachine getNetMachineCache() {
+    public NetCache<DrillingControlCenterMachine> getNetCache() {
         return cache;
-    }
-
-    @Override
-    public void setNetMachineCache(DrillingControlCenterMachine cache) {
-        this.cache = cache;
     }
 
     @Override
     public void onMachineUnLoad() {
         super.onMachineUnLoad();
-        this.cache = null;
+        cache.clear();
     }
 }

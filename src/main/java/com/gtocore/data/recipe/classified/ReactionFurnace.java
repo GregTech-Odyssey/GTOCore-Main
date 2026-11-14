@@ -9,6 +9,7 @@ import com.gtolib.utils.RegistriesUtils;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GCYMBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -64,7 +65,7 @@ final class ReactionFurnace {
                 .inputItems(dust, SiliconDioxide, 3)
                 .inputItems(dust, Carbon, 2)
                 .outputItems(ingotHot, Silicon)
-                .chancedOutput(dust, Ash, 1111, 0)
+                .chancedOutput(dust, Ash, Chance.of(1111))
                 .outputFluids(CarbonMonoxide.getFluid(2000))
                 .save();
     }
@@ -76,23 +77,23 @@ final class ReactionFurnace {
                 .inputItems(dust, inputMaterial)
                 .inputFluids(Oxygen, 3000)
                 .outputItems(dust, outputMaterial)
-                .chancedOutput(dust, Ash, 1111, 0)
+                .chancedOutput(dust, Ash, Chance.of(1111))
                 .outputFluids(SulfurDioxide.getFluid(sulfurDioxideAmount))
                 .save();
     }
 
     private static void registerBlastFurnaceRecipes() {
         REACTION_FURNACE_RECIPES.recipeBuilder("aluminium_from_ruby_dust").duration(400).EUt(100).inputItems(dust, Ruby)
-                .outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, 1111, 0).blastFurnaceTemp(1200)
+                .outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, Chance.of(1111)).blastFurnaceTemp(1200)
                 .save();
         REACTION_FURNACE_RECIPES.recipeBuilder("aluminium_from_ruby_gem").duration(320).EUt(100).inputItems(gem, Ruby)
-                .outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, 1111, 0).blastFurnaceTemp(1200)
+                .outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, Chance.of(1111)).blastFurnaceTemp(1200)
                 .save();
         REACTION_FURNACE_RECIPES.recipeBuilder("aluminium_from_green_sapphire_dust").duration(400).EUt(100)
-                .inputItems(dust, GreenSapphire).outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, 1111, 0)
+                .inputItems(dust, GreenSapphire).outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, Chance.of(1111))
                 .blastFurnaceTemp(1200).save();
         REACTION_FURNACE_RECIPES.recipeBuilder("aluminium_from_green_sapphire_gem").duration(320).EUt(100)
-                .inputItems(gem, GreenSapphire).outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, 1111, 0)
+                .inputItems(gem, GreenSapphire).outputItems(nugget, Aluminium, 3).chancedOutput(dust, Ash, Chance.of(1111))
                 .blastFurnaceTemp(1200).save();
         REACTION_FURNACE_RECIPES.recipeBuilder("aluminium_from_sapphire_dust").duration(400).EUt(100).inputItems(dust, Sapphire)
                 .outputItems(nugget, Aluminium, 3).blastFurnaceTemp(1200).save();
@@ -259,7 +260,7 @@ final class ReactionFurnace {
                 .inputFluids(GTMaterials.Hydrogen, 1000)
                 .outputItems(TagPrefix.dust, GTOMaterials.IridiumDioxide, 3)
                 .outputItems(TagPrefix.dust, GTMaterials.Salt, 2)
-                .chancedOutput(TagPrefix.dust, GTMaterials.PlatinumSludgeResidue, 8000, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.PlatinumSludgeResidue, Chance.of(8000))
                 .outputFluids(GTMaterials.DilutedHydrochloricAcid, 1000)
                 .EUt(120)
                 .duration(200)

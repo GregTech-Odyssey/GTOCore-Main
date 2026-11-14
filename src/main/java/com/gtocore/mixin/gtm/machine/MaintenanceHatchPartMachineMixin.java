@@ -37,7 +37,7 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
     @Shadow(remap = false)
     protected int timeActive;
     @Unique
-    private IDroneControlCenterMachine gtolib$cache;
+    private NetCache<IDroneControlCenterMachine> gtolib$cache;
     @Unique
     private PulseMachineMaintenancePedestal gto$manaCenter;
 
@@ -48,16 +48,15 @@ public abstract class MaintenanceHatchPartMachineMixin extends WorkableTieredPar
     @Shadow(remap = false)
     public abstract void fixAllMaintenanceProblems();
 
-    @Unique
-    @SuppressWarnings("all")
-    public IDroneControlCenterMachine getNetMachineCache() {
-        return gtolib$cache;
+    @Override
+    public NetCache<IDroneControlCenterMachine> getNetCache() {
+        var cache = gtolib$cache;
+        if (cache == null) gtolib$cache = cache = new NetCache<>(this::gto$cacheChanged);
+        return cache;
     }
 
     @Unique
-    @SuppressWarnings("all")
-    public void setNetMachineCache(IDroneControlCenterMachine cache) {
-        gtolib$cache = cache;
+    private void gto$cacheChanged(IDroneControlCenterMachine cache) {
         var oldManaCenter = gto$manaCenter;
         if (oldManaCenter != null) {
             oldManaCenter.removeProblem(this);

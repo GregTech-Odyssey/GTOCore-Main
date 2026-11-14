@@ -6,11 +6,9 @@ import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.api.ITravelTarget;
 import com.gtocore.eio_travel.api.TravelTargetType;
 import com.gtocore.eio_travel.implementations.PatternTravelTarget;
-import com.gtocore.eio_travel.network.TravelNetworks;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -69,11 +67,6 @@ public interface TravelUtils {
     }
 
     static void requireResync(@NotNull Level level) {
-        TravelEvents.syncTask = () -> {
-            if (level instanceof ServerLevel serverLevel) {
-                TravelNetworks.syncTravelData(TravelSavedData.getTravelData(level).save(new CompoundTag()), serverLevel);
-            }
-            TravelEvents.syncTask = null;
-        };
+        if (level instanceof ServerLevel serverLevel) TravelEvents.requireResync(serverLevel);
     }
 }

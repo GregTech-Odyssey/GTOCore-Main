@@ -50,7 +50,6 @@ import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,8 +81,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     protected int moduleCount;
 
     @Getter
-    @Setter
-    SpaceElevatorConnectorModule netMachineCache;
+    private final NetCache<SpaceElevatorConnectorModule> netCache = new NetCache<>();
 
     final Set<SpaceElevatorDataModuleMachine> dataModules = new ReferenceOpenHashSet<>();
 
@@ -189,8 +187,9 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
         update();
         if (spoolCount < getMaxSpoolCount()) textList.add(Component.translatable("item.gtocore.nanotube_spool").append(": ").append(Component.translatable("gui.ae2.Missing", getMaxSpoolCount() - spoolCount)));
         textList.add(Component.translatable("gtocore.machine.module", moduleCount));
-        if (netMachineCache != null) {
-            textList.add(Component.translatable(SpaceElevatorConnectorModule.SPACE_ELEVATOR_CONNECTED_CURRENT_PLANET_TEXT, Math.sqrt(netMachineCache.getDurationMultiplier())));
+        var connector = netCache.get();
+        if (connector != null) {
+            textList.add(Component.translatable(SpaceElevatorConnectorModule.SPACE_ELEVATOR_CONNECTED_CURRENT_PLANET_TEXT, Math.sqrt(connector.getDurationMultiplier())));
         } else {
             textList.add(Component.translatable(SpaceElevatorConnectorModule.SPACE_ELEVATOR_NOT_CONNECTED_CURRENT_PLANET_TEXT));
         }
@@ -243,7 +242,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     }
 
     double exCWUt() {
-        return netMachineCache == null ? 1.0 : linkedComputationFactor();
+        return netCache.get() == null ? 1.0 : linkedComputationFactor();
     }
 
     @Override
@@ -276,9 +275,10 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
 
     @Override
     public void removeNetMachineCache() {
-        if (netMachineCache != null) {
-            netMachineCache.unregisterElevator(this);
-            netMachineCache = null;
+        var connector = netCache.get();
+        if (connector != null) {
+            connector.unregisterElevator(this);
+            netCache.clear();
         }
     }
 

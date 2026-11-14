@@ -11,6 +11,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -116,7 +117,7 @@ public class ElectroPlating {
                                 .ions(new IonAmount(Ions.RHODIUM, 1L))
                                 .build())
                 .inputItems(TagPrefix.plate, GTMaterials.Rhodium)
-                .chancedInput(GTOMaterials.TrisHydrochlorideSolution.getFluid(1000), 20, 0)
+                .chancedInput(GTOMaterials.TrisHydrochlorideSolution.getFluid(1000), Chance.of(20))
                 .EUt(7680L)
                 .duration(200)
                 .save();
@@ -221,7 +222,7 @@ public class ElectroPlating {
                 .inputFluids(GTMaterials.SulfuricAcid, 1000)
                 .inputFluids(GTOMaterials.FractalPetalSolvent, 250)
                 .outputFluids(GTOMaterials.CycleofBlossomsSolvent, 1000)
-                .chancedOutput(GTOMaterials.FractalPetalSolvent.getFluid(250), 9000, 0)
+                .chancedOutput(GTOMaterials.FractalPetalSolvent.getFluid(250), Chance.of(9000))
                 .EUt(120)
                 .duration(3264)
                 .save();
@@ -234,7 +235,7 @@ public class ElectroPlating {
                 .inputFluids(GTMaterials.SulfuricAcid, 1000)
                 .inputFluids(GTOMaterials.TheWaterFromTheWellOfWisdom, 250)
                 .outputFluids(GTOMaterials.Animium, 1000)
-                .chancedOutput(GTOMaterials.TheWaterFromTheWellOfWisdom.getFluid(250), 9000, 0)
+                .chancedOutput(GTOMaterials.TheWaterFromTheWellOfWisdom.getFluid(250), Chance.of(9000))
                 .EUt(120L)
                 .duration(3264)
                 .save();

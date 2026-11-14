@@ -3,10 +3,10 @@ package com.gtocore.common.machine.tesseract;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.CoordinateCardBehavior;
 
-import com.gtolib.api.ae2.BlockingPatternTarget;
-import com.gtolib.api.ae2.IPatternProviderLogic;
-import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
+import com.gtolib.api.ae2.PatternTarget;
+import com.gtolib.api.ae2.machine.PatternTargetSource;
 import com.gtolib.api.player.IEnhancedPlayer;
+import com.gtolib.api.scope.MachineScope;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
@@ -18,6 +18,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
+import com.gregtechceu.gtceu.api.transfer.key.MachineKeyStorage;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
@@ -34,18 +35,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.config.Actionable;
-import appeng.api.crafting.IPatternDetails;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKey;
-import appeng.api.stacks.KeyCounter;
-import appeng.helpers.patternprovider.PatternProviderTarget;
+import appeng.api.storage.MEStorage;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
-import com.gto.datasynclib.util.holder.BooleanHolder;
-import com.gto.datasynclib.util.holder.ObjHolder;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -57,10 +53,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
-public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, ICustomCraftingMachine, ITesseractMarkerInteractable, TesseractCapCache.Holder {
+public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, PatternTargetSource, ITesseractMarkerInteractable, TesseractCapCache.Holder {
 
     public static final Multiset<ImmutableList<GlobalPos>> HIGHLIGHTS = HashMultiset.create();
     public static final int MAX_TARGETS = 20;
@@ -87,9 +81,11 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     @Getter
     @Setter
     private boolean called;
+    private PatternTarget[][] patternTargets;
 
     public AdvancedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
+        new MachineScope<>(this, (scope, self) -> remotes.mount(scope));
         inventory = NotifiableInventory.items(this, MAX_TARGETS, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
         inventory.storage.setOnChanged(this::refreshTargets);
     }
@@ -148,13 +144,6 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             migrateTargets();
             refreshTargets();
         }
-        remotes.subscribe(!isRemote());
-    }
-
-    @Override
-    public void onUnload() {
-        super.onUnload();
-        remotes.subscribe(false);
     }
 
     @Override
@@ -194,7 +183,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
             rows.add(TesseractUI.row(ItemSlot.of(inventory.storage, i), targets, i, TesseractUI.face(targets, i)));
         }
         return TesseractUI.page(
-                TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_BOUND, locations.size(), MAX_TARGETS), false, false),
+                TesseractUI.status(() -> Component.translatable(TesseractUI.VALUE_BOUND, locations.size(), MAX_TARGETS), true, false),
                 TesseractUI.listSection(TesseractUI.SECTION_TARGETS, TesseractUI.column(rows), TesseractUI.TARGETS_TOOLTIP, TesseractUI.TARGETS_MARKER_TOOLTIP),
                 TesseractUI.roundRobinSection(() -> roundRobin, this::setRoundRobin));
     }
@@ -247,34 +236,37 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
     }
 
     @Override
-    public boolean customPush() {
-        return roundRobin;
+    @Nullable
+    public PatternTarget[] patternTargets(Direction face, IActionSource source) {
+        if (!roundRobin) return null;
+        var byFace = patternTargets;
+        if (byFace == null) patternTargets = byFace = new PatternTarget[6][];
+        var out = byFace[face.ordinal()];
+        if (out == null) byFace[face.ordinal()] = out = new PatternTarget[MAX_TARGETS];
+        int size = remotes.size();
+        for (int i = 0; i < MAX_TARGETS; i++) {
+            out[i] = i < size ? patternTarget(out[i], i, face, source) : null;
+        }
+        return out;
     }
 
-    @Override
-    public IPatternProviderLogic.PushResult pushPattern(IPatternProviderLogic logic, IActionSource actionSource, BooleanHolder success, Operate operate, Set<AEKey> patternInputs, IPatternDetails patternDetails, ObjHolder<KeyCounter[]> inputHolder, Supplier<IPatternProviderLogic.PushResult> pushPatternSuccess, BooleanSupplier canPush, Direction direction, Direction adjBeSide) {
-        var size = remotes.size();
-        List<PatternProviderTarget> targets = new ArrayList<>(size);
-        for (int i = 0; i < size; ++i) {
-            var be = remotes.get(i).blockEntity();
-            if (be == null) continue;
-            var target = BlockingPatternTarget.find(be, logic, adjBeSide, actionSource);
-            if (target == null) continue;
-            targets.add(target);
+    @Nullable
+    private PatternTarget patternTarget(@Nullable PatternTarget cached, int i, Direction face, IActionSource source) {
+        var be = remotes.get(i).blockEntity();
+        if (be == null) return null;
+        var items = itemCaps.single(i, face);
+        var fluids = fluidCaps.single(i, face);
+        MEStorage storage;
+        if (items == null) {
+            storage = fluids;
+        } else if (fluids == null) {
+            storage = items;
+        } else if (cached != null && cached.blockEntity() == be && cached.storage().storage() instanceof MachineKeyStorage pair && pair.items() == items && pair.fluids() == fluids) {
+            return cached;
+        } else {
+            storage = new MachineKeyStorage(items, fluids, Component.translatable(getDefinition().getDescriptionId()));
         }
-        int count = 1000;
-        while (count > 0) {
-            count--;
-            boolean done = true;
-            for (var target : targets) {
-                var result = operate.pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, false);
-                if (result.success()) success.value = true;
-                if (result.needBreak()) return result;
-                if (result == IPatternProviderLogic.PushResult.SUCCESS) done = false;
-            }
-            if (done) break;
-        }
-        return IPatternProviderLogic.PushResult.NOWHERE_TO_PUSH;
+        return storage == null ? null : PatternTarget.reuse(cached, storage, be, source);
     }
 
     @Override

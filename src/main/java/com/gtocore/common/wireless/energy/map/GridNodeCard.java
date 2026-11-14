@@ -1,8 +1,11 @@
 package com.gtocore.common.wireless.energy.map;
 
+import com.gtolib.api.wireless.energy.GridEquipmentNetwork;
+
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
+import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.InfoIcon;
 import com.gregtechceu.gtceu.uipro.elements.Label;
 import com.gregtechceu.gtceu.uipro.elements.ProgressBar;
@@ -13,10 +16,12 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 
+import net.minecraft.server.level.ServerPlayer;
+
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
 
 /**
- * 星球卡片内容（两端都建）：状态、储能、流量、线路与设备列表，数值均为服务端求值的同步值；不储能、无设备时整块收成一行。
+ * 星球卡片内容（两端都建）：状态、储能、流量、线路与设备地图入口，数值均为服务端求值的同步值。
  */
 public final class GridNodeCard {
 
@@ -84,12 +89,10 @@ public final class GridNodeCard {
     }
 
     private static UIElement ports(GridCardData data) {
-        var title = TextLine.of(LayoutStyle.AUTO, () -> data.hasPorts() ? GridMapLang.TOP_PORTS : GridMapLang.NO_PORTS).bindClientColor(UITheme::panelText);
-        var list = ServerList.of(ByteBufCodecs.VAR_INT, () -> data.detail().portKeys(), key -> new GridPortRow(data, key))
-                .version(() -> data.detail().revision());
-        var section = UIElement.section().addChildren(title, list);
-        section.addSyncValue(SyncValue.ofBool(data::hasPorts, false).onChanged(list::setDisplay));
-        list.setDisplay(false);
-        return section;
+        return UIElement.section().addChild(Button.text(LayoutStyle.AUTO, GridMapLang.DEVICE_MAP)
+                .setOnServerClick(() -> {
+                    var dimension = data.dimension();
+                    if (dimension != null && data.ctx.player() instanceof ServerPlayer player) GridEquipmentNetwork.open(player, dimension);
+                }).tooltips(GridMapLang.DEVICE_MAP_HINT));
     }
 }

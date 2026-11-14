@@ -163,7 +163,7 @@ legacyForge {
             type = "gameTestServer"
             sourceSet = sourceSets["gametest"]
             gameDirectory.set(file("run/gametest"))
-            systemProperty("forge.enabledGameTestNamespaces", providers.gradleProperty("gameTestNamespaces").getOrElse("$mod_id,gtocore_energy,gtocore_mana"))
+            systemProperty("forge.enabledGameTestNamespaces", providers.gradleProperty("gameTestNamespaces").getOrElse(mod_id))
         }
         configureEach {
             systemProperty("forge.logging.markers", "REGISTRIES")
@@ -314,7 +314,6 @@ dependencies {
     modImplementation("curse.maven:duplicationless-1380105:8646420")
 
     // Applied Energistics 2
-    modImplementation("org.appliedenergistics:guideme:20.1.13")
     modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
     modImplementation("com.glodblock.github.extendedae:extendedae-forge-1.20.1:$extendedae_version")
     modImplementation("curse.maven:merequester-688367:5689932")
@@ -490,6 +489,22 @@ val writeQuestHotReloadClasspath = tasks.register("writeQuestHotReloadClasspath"
 }
 legacyForge.runs.configureEach { systemProperty("gtocore.questHotReload", questHotReloadClasspath.get().asFile.absolutePath) }
 tasks.matching { it.name in setOf("runClient", "runServer", "runData", "runGameTestServer") }.configureEach { dependsOn(writeQuestHotReloadClasspath) }
+
+tasks.register<JavaExec>("questTextImport") {
+    group = "quest"
+    description = "把官网下载的任务文本数据集导入源码：-Pdataset=<文件>，加 -PquestTextCheck=true 只检查不写入"
+    dependsOn(tasks.named("classes"))
+    val main = sourceSets.main.get()
+    classpath = main.output.classesDirs + main.compileClasspath
+    mainClass.set("com.gtocore.common.quest.hot.QuestTextImport")
+    val dataset = providers.gradleProperty("dataset")
+    val check = providers.gradleProperty("questTextCheck")
+    val root = projectDir
+    doFirst {
+        val path = dataset.orNull ?: throw GradleException("需要 -Pdataset=<官网下载的数据集 json>")
+        args = listOfNotNull(root.resolve(path).absolutePath, root.absolutePath, if (check.orNull == "true") "--check" else null)
+    }
+}
 
 // ---------- 资源与 jar ----------
 

@@ -1,12 +1,13 @@
 package com.gtocore.common.machine.multiblock.part;
 
 import com.gtolib.api.machine.trait.WirelessComputationContainerTrait;
+import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.wireless.WirelessComputationContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IOpticalComputationProvider;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
-import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableMultiblockPartMachine;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
@@ -40,6 +41,25 @@ public final class WirelessNetworkComputationHatchMachine extends WorkableMultib
     public WirelessNetworkComputationHatchMachine(MetaMachineBlockEntity holder, boolean transmitter) {
         super(holder);
         trait = new WirelessComputationContainerTrait(this, transmitter);
+        if (transmitter) new MachineScope<>(this, (opened, self) -> opened.effect(() -> link(self), Link::add, Link::remove));
+    }
+
+    @Nullable
+    private Link link(MachineScope<WirelessNetworkComputationHatchMachine> self) {
+        if (self.team() == null || !(self.controller() instanceof IOpticalComputationProvider provider)) return null;
+        var container = trait.getWirelessComputationContainer();
+        return container == null ? null : new Link(container, provider);
+    }
+
+    private record Link(WirelessComputationContainer container, IOpticalComputationProvider provider) {
+
+        void add() {
+            container.addProvider(provider);
+        }
+
+        void remove() {
+            container.removeProvider(provider);
+        }
     }
 
     @Override
@@ -80,38 +100,6 @@ public final class WirelessNetworkComputationHatchMachine extends WorkableMultib
     @Nullable
     public UUID getUUID() {
         return trait.getUUID();
-    }
-
-    @Override
-    public void onUnload() {
-        if (trait.isTransmitter) {
-            var c = trait.getWirelessComputationContainer();
-            if (c == null) return;
-            for (var controller : getControllers()) {
-                if (controller instanceof IOpticalComputationProvider provider) c.removeProvider(provider);
-            }
-        }
-        super.onUnload();
-    }
-
-    @Override
-    public void removedFromController(IMultiController controller) {
-        if (trait.isTransmitter) {
-            var c = trait.getWirelessComputationContainer();
-            if (c == null) return;
-            if (controller instanceof IOpticalComputationProvider provider) c.removeProvider(provider);
-        }
-        super.removedFromController(controller);
-    }
-
-    @Override
-    public void addedToController(IMultiController controller) {
-        super.addedToController(controller);
-        if (trait.isTransmitter) {
-            var c = trait.getWirelessComputationContainer();
-            if (c == null) return;
-            if (controller instanceof IOpticalComputationProvider provider) c.addProvider(provider);
-        }
     }
 
     @Override

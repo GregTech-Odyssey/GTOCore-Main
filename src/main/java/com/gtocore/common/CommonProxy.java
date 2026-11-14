@@ -15,7 +15,6 @@ import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.forge.ForgeCommonEvent;
 import com.gtocore.common.item.TesseractTargetMarker;
 import com.gtocore.common.item.misc.OrganFood;
-import com.gtocore.common.machine.monitor.Manager;
 import com.gtocore.common.machine.noenergy.game.GameLeaderboardBrowser;
 import com.gtocore.common.machine.tesseract.TesseractDirectedTarget;
 import com.gtocore.common.website.BugReportServer;
@@ -145,7 +144,6 @@ public class CommonProxy {
         MonitorControlFactory.init();
         GTOScopes.init();
         MonitorHudEditorFactory.init();
-        Manager.init();
         RecipeEditorUIFactory.init();
         TesseractTargetMarker.init();
         DroneServer.init();

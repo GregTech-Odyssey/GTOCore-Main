@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import appeng.core.definitions.AEItems;
@@ -20,7 +21,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 2000)
                 .inputFluids(GTOMaterials.Gluons, 1000)
                 .outputItems(GTOItems.VOID_MATTER)
-                .chancedOutput(GTOItems.CORPOREAL_MATTER.asItem(), 2000, 0)
+                .chancedOutput(GTOItems.CORPOREAL_MATTER.asItem(), Chance.of(2000))
                 .EUt(503316480)
                 .duration(400)
                 .save();
@@ -31,7 +32,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTOMaterials.AwakenedDraconium.getFluid(FluidStorageKeys.PLASMA, 1000))
                 .outputItems(GTOItems.TEMPORAL_MATTER)
-                .chancedOutput(GTOItems.OMNI_MATTER.asItem(), 500, 0)
+                .chancedOutput(GTOItems.OMNI_MATTER.asItem(), Chance.of(500))
                 .EUt(503316480)
                 .duration(600)
                 .save();
@@ -42,7 +43,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTMaterials.Nihonium, 100)
                 .outputItems(GTOItems.CORPOREAL_MATTER)
-                .chancedOutput(TagPrefix.nugget, GTOMaterials.HeavyQuarkDegenerateMatter, 500, 0)
+                .chancedOutput(TagPrefix.nugget, GTOMaterials.HeavyQuarkDegenerateMatter, Chance.of(500))
                 .EUt(503316480)
                 .duration(800)
                 .save();
@@ -51,7 +52,7 @@ final class UltimateMaterialForge {
                 .inputItems(GTOItems.TRIPLET_NEUTRONIUM_SPHERE)
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .outputItems(GTOItems.PROTO_MATTER)
-                .chancedOutput(TagPrefix.ingot, GTOMaterials.Neutron, 6000, 0)
+                .chancedOutput(TagPrefix.ingot, GTOMaterials.Neutron, Chance.of(6000))
                 .EUt(503316480)
                 .duration(1600)
                 .save();
@@ -62,7 +63,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 3000)
                 .inputFluids(GTOMaterials.DimensionallyTranscendentCrudeCatalyst, 1000)
                 .outputItems(GTOItems.DARK_MATTER)
-                .chancedOutput(GTOItems.KINETIC_MATTER.asItem(), 1000, 0)
+                .chancedOutput(GTOItems.KINETIC_MATTER.asItem(), Chance.of(1000))
                 .EUt(503316480)
                 .duration(1200)
                 .save();
@@ -73,7 +74,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTMaterials.Naquadria, 1000)
                 .outputItems(GTOItems.KINETIC_MATTER)
-                .chancedOutput(GTOItems.AMORPHOUS_MATTER.asItem(), 200, 0)
+                .chancedOutput(GTOItems.AMORPHOUS_MATTER.asItem(), Chance.of(200))
                 .EUt(503316480)
                 .duration(600)
                 .save();
@@ -84,7 +85,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTOMaterials.Legendarium, 1000)
                 .outputItems(GTOItems.AMORPHOUS_MATTER)
-                .chancedOutput(GTOItems.ESSENTIA_MATTER.asItem(), 100, 0)
+                .chancedOutput(GTOItems.ESSENTIA_MATTER.asItem(), Chance.of(100))
                 .EUt(503316480)
                 .duration(800)
                 .save();
@@ -95,7 +96,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTOMaterials.Antihydrogen, 10)
                 .outputItems(GTOItems.PELLET_ANTIMATTER)
-                .chancedOutput(GTOItems.VOID_MATTER.asItem(), 100, 0)
+                .chancedOutput(GTOItems.VOID_MATTER.asItem(), Chance.of(100))
                 .EUt(125829120)
                 .duration(2000)
                 .save();
@@ -106,7 +107,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTOMaterials.QuantumChromoDynamicallyConfinedMatter, 1000)
                 .outputItems(GTOItems.ESSENTIA_MATTER)
-                .chancedOutput(GTOItems.DARK_MATTER.asItem(), 100, 0)
+                .chancedOutput(GTOItems.DARK_MATTER.asItem(), Chance.of(100))
                 .EUt(503316480)
                 .duration(1200)
                 .save();
@@ -117,7 +118,7 @@ final class UltimateMaterialForge {
                 .inputFluids(GTMaterials.UUMatter, 1000)
                 .inputFluids(GTOMaterials.DenseNeutron.getFluid(FluidStorageKeys.PLASMA, 1000))
                 .outputItems(GTOItems.OMNI_MATTER)
-                .chancedOutput(TagPrefix.dustTiny, GTOMaterials.CosmicNeutronium, 1000, 0)
+                .chancedOutput(TagPrefix.dustTiny, GTOMaterials.CosmicNeutronium, Chance.of(1000))
                 .EUt(503316480)
                 .duration(800)
                 .save();

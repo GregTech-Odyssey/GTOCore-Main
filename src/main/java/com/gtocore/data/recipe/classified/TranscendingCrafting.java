@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -299,7 +300,7 @@ final class TranscendingCrafting {
                 .duration(40)
                 .save();
         TRANSCENDING_CRAFTING_RECIPES.builder("wyvern_infusion_solvent")
-                .chancedInput(GTOTagPrefix.NANITES, GTOMaterials.Draconium, 1000, 0)
+                .chancedInput(GTOTagPrefix.NANITES, GTOMaterials.Draconium, Chance.of(1000))
                 .inputItems(TagPrefix.dust, GTOMaterials.DarkMatterBoundNodes, 256)
                 .inputFluids(GTOMaterials.SoulInfusionSolvent, 100000)
                 .outputFluids(GTOMaterials.WyvernInfusionSolvent, 150000)
@@ -308,7 +309,7 @@ final class TranscendingCrafting {
                 .duration(40)
                 .save();
         TRANSCENDING_CRAFTING_RECIPES.builder("draconic_infusion_solvent")
-                .chancedInput(GTOItems.WYVERN_CORE, 25, 0)
+                .chancedInput(GTOItems.WYVERN_CORE, Chance.of(25))
                 .inputItems(TagPrefix.dust, GTOMaterials.StellarMatterRemnantDust, 1024)
                 .inputFluids(GTOMaterials.WyvernInfusionSolvent, 670000)
                 .inputFluids(GTOMaterials.AwakenedDraconium, 5000)

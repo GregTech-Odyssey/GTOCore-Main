@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.machines.GTOMachineProtocols;
 
@@ -30,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +40,9 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Nullable
     private Collection<IWorkInSpaceMachine> spaceMachines;
     private final Set<BlockPos> lastDistributedBlocks = new ObjectOpenHashSet<>();
+    @Nullable
+    private Set<BlockPos> inheritedOxygen;
+    private int inheritedOxygenDeadline;
     @SyncToClient
     private BlockPos[] stationPorts = new BlockPos[0];
 
@@ -60,6 +65,10 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
         ports.addAll(assembly.ports(GTOMachineProtocols.STATION_JUNCTION));
         stationPorts = ports.toArray(BlockPos[]::new);
         super.onStructureFormed();
+        if (!isRemote()) {
+            inheritedOxygen = new ObjectOpenHashSet<>(assembly.getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()));
+            inheritedOxygenDeadline = getOffsetTimer() + 2400;
+        }
     }
 
     @Override
@@ -132,6 +141,7 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
 
     @Override
     public void resetLastDistributedBlocks(Set<BlockPos> positions) {
+        inheritedOxygen = null;
         lastDistributedBlocks.removeAll(positions);
         clearOxygenBlocks();
         lastDistributedBlocks.addAll(positions);
@@ -140,10 +150,19 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Override
     public void onMachineRemoved() {
         super.onMachineRemoved();
-        clearOxygenBlocks();
+        clearOxygenBlocks(true);
     }
 
     public void clearOxygenBlocks() {
+        clearOxygenBlocks(getOffsetTimer() >= inheritedOxygenDeadline);
+    }
+
+    private void clearOxygenBlocks(boolean inherited) {
+        var space = inheritedOxygen;
+        if (inherited && space != null) {
+            inheritedOxygen = null;
+            lastDistributedBlocks.addAll(space);
+        }
         OxygenApi.API.removeOxygen(getLevel(), lastDistributedBlocks);
         TemperatureApi.API.removeTemperature(getLevel(), lastDistributedBlocks);
         lastDistributedBlocks.clear();

@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -264,7 +265,7 @@ final class NanitesIntegratedProcessingCenter {
 
         NANITES_INTEGRATED_PROCESSING_CENTER_RECIPES.recipeBuilder("stem_cells")
                 .inputItems(GTOTagPrefix.NANITES, GTMaterials.Naquadah)
-                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), 8000, 100)
+                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), Chance.of(8000).dropPerOverclock(100))
                 .inputItems(TagPrefix.dustTiny, GTMaterials.Naquadah)
                 .inputItems(TagPrefix.dust, GTMaterials.Osmiridium)
                 .inputItems(TagPrefix.dust, GTMaterials.Salt)

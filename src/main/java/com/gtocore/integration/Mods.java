@@ -21,6 +21,7 @@ public enum Mods {
     PIPEZ("pipez"),
     FTBQUESTS("ftbquests"),
     FTBTEAMS("ftbteams"),
+    FTBLIBRARY("ftblibrary"),
     CONSTRUCTION_WAND("constructionwand"),
     JECHARACTERS("jecharacters"),
     LANG("moremorelang"),
@@ -30,10 +31,12 @@ public enum Mods {
     MOUSETWEAKS("mousetweaks"),
     AE2_TOGGLEABLE_VIEW_CELL("ae2_toggleable_view_cell"),
     INVENTORY_ESSENTIALS("inventoryessentials"),
+    MORE_RED("morered"),
     FTB_XMOD_COMPAT("ftbxmodcompat"),
     RENDER_BLENDER("renderblender"),
     BALM("balm"),
     XAERO_WORLDMAP("xaeroworldmap"),
+    XAERO_MINIMAP("xaerominimap"),
     TOOLBELT("toolbelt"),
     CORPSE("corpse");
 

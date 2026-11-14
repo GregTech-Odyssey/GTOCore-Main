@@ -8,6 +8,7 @@ import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.GTOKeyBind;
 import com.gtocore.client.MaterialTypeTooltips;
+import com.gtocore.client.QuestBookEntries;
 import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
 import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
@@ -19,7 +20,6 @@ import com.gtocore.client.screen.starmap.rocket.RocketMapScreen;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.ICoordinateHolder;
 import com.gtocore.common.item.StructureWriteBehavior;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
 import com.gtocore.integration.ae.wireless.WirelessClientCache;
 import com.gtocore.integration.emi.HiddenItems;
 
@@ -28,6 +28,7 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.wireless.PartProxyConnections;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
 import com.gtolib.monitor.MonitorHud;
 import com.gtolib.monitor.client.MonitorHudScreen;
@@ -188,6 +189,7 @@ public final class ForgeClientEvent {
         FXManager.tickFXs();
         Minecraft mc = Minecraft.getInstance();
         updateHudScreen(mc);
+        QuestBookEntries.tick(mc);
         if (mc.player instanceof IEnhancedPlayer) {
             boolean isShiftDown = Screen.hasShiftDown();
             if (isShiftDown != lastShiftState) {
@@ -307,7 +309,7 @@ public final class ForgeClientEvent {
         TechTreeSavedData.clearClientInstance();
         WirelessClientCache.clear();
         ReceiverTransmitterHandler.unloadClient();
-        MEPatternBufferConnectionHandler.unloadClient();
+        PartProxyConnections.unloadClient();
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
         RuleManager.leaveRemoteWorld();

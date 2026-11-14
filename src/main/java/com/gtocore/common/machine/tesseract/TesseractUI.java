@@ -74,6 +74,7 @@ public final class TesseractUI {
     public static final int UNLOADED = 5;
     public static final int SELF = 6;
     public static final int MISSING_DIMENSION = 7;
+    public static final int OTHER_DIMENSION = 8;
 
     public static final int LIST_WIDTH = UISizes.CONTENT_WIDTH - 2 * UISizes.PANEL_PADDING;
     public static final int MARKER_PAGE_WIDTH = UISizes.CONTENT_WIDTH + 2 * UISizes.SLOT_SIZE;
@@ -94,7 +95,7 @@ public final class TesseractUI {
     private static final String VALUE_UNSUPPORTED = "gtocore.tesseract.value.unsupported";
     @RegisterLanguage(cn = "所在区块加载时支持跨维度访问", en = "Targets store their dimension and are reachable while their chunk is loaded")
     private static final String CROSS_SUPPORTED_DETAIL = "gtocore.tesseract.cross.supported";
-    @RegisterLanguage(cn = "未包含维度信息", en = "Does not store dimension information")
+    @RegisterLanguage(cn = "只能绑定本维度的目标", en = "Only binds targets in this dimension")
     private static final String CROSS_UNSUPPORTED_DETAIL = "gtocore.tesseract.cross.unsupported";
     @RegisterLanguage(cn = "访问面", en = "Access side")
     private static final Component LINE_ACCESS = Component.translatable("gtocore.tesseract.line.access");
@@ -176,6 +177,8 @@ public final class TesseractUI {
     private static final String ROW_UNLOADED = "gtocore.tesseract.row.unloaded";
     @RegisterLanguage(cn = "维度不存在", en = "Unknown dimension")
     private static final String ROW_MISSING_DIMENSION = "gtocore.tesseract.row.missing_dimension";
+    @RegisterLanguage(cn = "不在本维度", en = "Not in this dimension")
+    private static final String ROW_OTHER_DIMENSION = "gtocore.tesseract.row.other_dimension";
     @RegisterLanguage(cn = "%s, %s, %s · %s", en = "%s, %s, %s · %s")
     private static final String ROW_LOCATION = "gtocore.tesseract.row.location";
     @RegisterLanguage(cn = "本维度", en = "This dimension")
@@ -197,6 +200,8 @@ public final class TesseractUI {
     private static final String LAMP_SELF = "gtocore.tesseract.lamp.self";
     @RegisterLanguage(cn = "目标维度不存在", en = "The target's dimension does not exist")
     private static final String LAMP_MISSING_DIMENSION = "gtocore.tesseract.lamp.missing_dimension";
+    @RegisterLanguage(cn = "目标在其他维度，未绑定", en = "The target is in another dimension and is not bound")
+    private static final String LAMP_OTHER_DIMENSION = "gtocore.tesseract.lamp.other_dimension";
 
     @RegisterLanguage(cn = "标记方式", en = "Marking")
     private static final String MARKER_SECTION_MODE = "gtocore.tesseract.marker.section.mode";
@@ -311,6 +316,7 @@ public final class TesseractUI {
         private boolean built;
         private long refreshed;
         private int builtSignature;
+        private boolean crossDimension = true;
 
         public Targets(Supplier<Level> viewer, @Nullable BlockPos self, Supplier<List<Target>> source, IntSupplier signature, Component emptyName) {
             this.viewer = viewer;
@@ -318,6 +324,11 @@ public final class TesseractUI {
             this.source = source;
             this.signature = signature;
             this.empty = new Info(ItemStack.EMPTY, emptyName, Component.empty(), 0, EMPTY);
+        }
+
+        public Targets sameDimensionOnly() {
+            crossDimension = false;
+            return this;
         }
 
         public Info get(int index) {
@@ -338,17 +349,18 @@ public final class TesseractUI {
             var result = new Info[list.size()];
             for (int i = 0; i < result.length; i++) {
                 var target = list.get(i);
-                result[i] = target == null ? empty : resolve(level, self, target);
+                result[i] = target == null ? empty : resolve(level, self, target, crossDimension);
             }
             infos = result;
         }
     }
 
-    public static Info resolve(Level viewer, @Nullable BlockPos self, Target target) {
+    public static Info resolve(Level viewer, @Nullable BlockPos self, Target target, boolean crossDimension) {
         var dimension = target.pos().dimension();
         var pos = target.pos().pos();
         var location = location(pos, dimension, viewer.dimension());
         int mask = FaceNet.maskOf(target.face());
+        if (!crossDimension && dimension != viewer.dimension()) return new Info(ItemStack.EMPTY, Component.translatable(ROW_OTHER_DIMENSION), location, mask, OTHER_DIMENSION);
         Level level = viewer.dimension() == dimension ? viewer : viewer.getServer() == null ? null : viewer.getServer().getLevel(dimension);
         if (level == null) return new Info(ItemStack.EMPTY, Component.translatable(ROW_MISSING_DIMENSION), location, mask, MISSING_DIMENSION);
         if (!level.isLoaded(pos)) return new Info(ItemStack.EMPTY, Component.translatable(ROW_UNLOADED), location, mask, UNLOADED);
@@ -484,7 +496,7 @@ public final class TesseractUI {
         }
     }
 
-    private static final String[] STATE_KEYS = { LAMP_EMPTY, LAMP_ITEM, LAMP_FLUID, LAMP_BOTH, LAMP_NO_STORAGE, LAMP_UNLOADED, LAMP_SELF, LAMP_MISSING_DIMENSION };
+    private static final String[] STATE_KEYS = { LAMP_EMPTY, LAMP_ITEM, LAMP_FLUID, LAMP_BOTH, LAMP_NO_STORAGE, LAMP_UNLOADED, LAMP_SELF, LAMP_MISSING_DIMENSION, LAMP_OTHER_DIMENSION };
 
     public static StatusPanel status(Supplier<Component> bound, boolean crossDimension, boolean perTargetFace) {
         var panel = new StatusPanel();

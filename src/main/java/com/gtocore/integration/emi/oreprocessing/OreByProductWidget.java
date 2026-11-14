@@ -261,7 +261,7 @@ final class OreByProductWrapper {
             GTOreByProduct.Chance entry = chances.get(slotIndex);
             float chance = 100 * (float) entry.chance() / ContentBuilder.maxChance;
             float boost = entry.boost() / 100.0F;
-            tooltips.add(FormattingUtil.formatPercentage2Places("gtceu.gui.content.chance_base", chance));
+            tooltips.add(FormattingUtil.formatPercentage2Places("gtceu.gui.content.output_chance_base", chance));
             tooltips.add(FormattingUtil.formatPercentage2Places("gtceu.gui.content.chance_tier_boost_plus", boost));
         }
     }

@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -27,7 +28,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.TWO_WAY_FOIL)
                 .inputItems(Blocks.TNT.asItem(), 4)
                 .outputItems(GTOItems.COMMAND_BLOCK_CORE)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -36,7 +37,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.NEUTRON_PILE.get(), 1024)
                 .inputItems(Blocks.TNT.asItem(), 4)
                 .outputItems(neutron_nugget)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -46,7 +47,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.Steel, 2)
                 .inputItems(GTItems.DYNAMITE, 2)
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_1)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -56,7 +57,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.TWO_WAY_FOIL)
                 .inputItems(GTItems.DYNAMITE, 2)
                 .outputItems(GTOItems.COMMAND_BLOCK_CORE)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -66,7 +67,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.TWO_WAY_FOIL)
                 .inputItems(GTBlocks.POWDERBARREL.asItem(), 8)
                 .outputItems(GTOItems.COMMAND_BLOCK_CORE)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -76,7 +77,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.Steel, 2)
                 .inputItems(GTBlocks.POWDERBARREL.asItem(), 8)
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_1)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -86,7 +87,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.TungstenSteel, 2)
                 .inputItems(GTItems.DYNAMITE, 2)
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_3)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -96,7 +97,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.Steel, 2)
                 .inputItems(GTBlocks.INDUSTRIAL_TNT.asItem())
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_1)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -106,7 +107,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.WARPED_ENDER_PEARL)
                 .inputItems(GTBlocks.POWDERBARREL.asItem(), 8)
                 .outputItems(GTOItems.ENTANGLED_SINGULARITY)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -116,7 +117,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.WARPED_ENDER_PEARL)
                 .inputItems(GTBlocks.INDUSTRIAL_TNT.asItem())
                 .outputItems(GTOItems.ENTANGLED_SINGULARITY)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -126,7 +127,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.TungstenSteel, 2)
                 .inputItems(Blocks.TNT.asItem(), 4)
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_3)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -136,7 +137,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.TungstenSteel, 2)
                 .inputItems(GTBlocks.POWDERBARREL.asItem(), 8)
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_3)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -146,7 +147,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.TungstenSteel, 2)
                 .inputItems(GTBlocks.INDUSTRIAL_TNT.asItem())
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_3)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -155,7 +156,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.NEUTRON_PILE.get(), 1024)
                 .inputItems(GTBlocks.POWDERBARREL.asItem(), 8)
                 .outputItems(neutron_nugget)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -164,7 +165,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.NEUTRON_PILE.get(), 1024)
                 .inputItems(GTBlocks.INDUSTRIAL_TNT.asItem())
                 .outputItems(neutron_nugget)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -174,7 +175,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.WARPED_ENDER_PEARL)
                 .inputItems(GTItems.DYNAMITE, 2)
                 .outputItems(GTOItems.ENTANGLED_SINGULARITY)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -183,7 +184,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.NEUTRON_PILE.get(), 1024)
                 .inputItems(GTItems.DYNAMITE, 2)
                 .outputItems(neutron_nugget)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -193,7 +194,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.WARPED_ENDER_PEARL)
                 .inputItems(Blocks.TNT.asItem(), 4)
                 .outputItems(GTOItems.ENTANGLED_SINGULARITY)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -203,7 +204,7 @@ final class ImplosionCompressor {
                 .inputItems(TagPrefix.plateDense, GTMaterials.Steel, 2)
                 .inputItems(Blocks.TNT.asItem(), 4)
                 .outputItems(GTOItems.HEAVY_DUTY_PLATE_1)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();
@@ -213,7 +214,7 @@ final class ImplosionCompressor {
                 .inputItems(GTOItems.TWO_WAY_FOIL)
                 .inputItems(GTBlocks.INDUSTRIAL_TNT.asItem())
                 .outputItems(GTOItems.COMMAND_BLOCK_CORE)
-                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, 2500, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.DarkAsh, Chance.of(2500))
                 .EUt(30)
                 .duration(20)
                 .save();

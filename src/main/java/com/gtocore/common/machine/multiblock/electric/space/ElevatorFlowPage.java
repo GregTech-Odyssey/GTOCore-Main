@@ -336,7 +336,7 @@ final class ElevatorFlowPage {
             refreshCore(formed, working, tier, cwu, logic.isWaiting() ? null : working ? null : logic.getIdleReason());
             refreshSpool(formed);
             refreshOrbit(formed);
-            var link = machine.getNetMachineCache();
+            var link = machine.getNetCache().get();
             double multiplier = link == null ? 1.0 : link.getDurationMultiplier();
             int moduleTier = working ? tier : 0;
             normal.refresh(machine, working, moduleTier, powerTier, multiplier);
@@ -376,7 +376,7 @@ final class ElevatorFlowPage {
         }
 
         private void refreshOrbit(boolean formed) {
-            var link = machine.getNetMachineCache();
+            var link = machine.getNetCache().get();
             if (link != null) {
                 orbitView = IssueView.of(RecipeIssue.OK, Component.translatable(LANG_LINKED));
                 orbitText = times(FormattingUtil.formatNumber2Places(Math.sqrt(link.getDurationMultiplier())));

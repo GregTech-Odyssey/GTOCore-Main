@@ -1,5 +1,7 @@
 package com.gtocore.client.model;
 
+import com.gtolib.api.client.IrisState;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
@@ -37,6 +39,7 @@ public final class ProjectedItemMaskProvider implements ShaderItemMaskProvider {
         GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);
         int viewportWidth = Math.max(1, viewport[2]);
         int viewportHeight = Math.max(1, viewport[3]);
+        boolean irisMainBound = IrisState.mainBound();
         ensureResources(viewportWidth, viewportHeight);
         if (maskTarget == null || captureBufferSource == null) {
             return null;
@@ -62,6 +65,7 @@ public final class ProjectedItemMaskProvider implements ShaderItemMaskProvider {
         } finally {
             GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousReadFramebuffer);
             GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDrawFramebuffer);
+            IrisState.restoreMainBound(irisMainBound);
             RenderSystem.viewport(viewport[0], viewport[1], viewportWidth, viewportHeight);
         }
     }

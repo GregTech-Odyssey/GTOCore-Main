@@ -9,6 +9,7 @@ import com.gtolib.api.data.GTODimensions;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -35,7 +36,7 @@ final class ChemicalBath {
                 .outputItems(TagPrefix.dust, GTMaterials.TriniumSulfide, 2)
                 .outputItems(TagPrefix.dust, GTOMaterials.SodiumFluoride, 8)
                 .outputItems(TagPrefix.dust, GTOMaterials.SodiumSulfate, 7)
-                .chancedOutput(TagPrefix.dust, GTMaterials.Caesium, 8000, 500)
+                .chancedOutput(TagPrefix.dust, GTMaterials.Caesium, Chance.of(8000).risePerOverclock(500))
                 .EUt(120)
                 .duration(200)
                 .save();

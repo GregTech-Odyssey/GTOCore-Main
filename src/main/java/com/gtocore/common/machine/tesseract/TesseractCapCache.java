@@ -86,8 +86,24 @@ public final class TesseractCapCache<K extends AEKey> {
         return handler;
     }
 
+    @Nullable
+    public IKeyHandler<K> single(int i, @Nullable Direction side) {
+        var holder = this.holder;
+        if (holder.isCalled()) return null;
+        var targets = holder.getRemoteTargets();
+        if (i >= targets.size()) return null;
+        return wrap(holder.self(), side, fetch(targets.get(i), holder.getTargetSide(i, side)));
+    }
+
     public void invalidate() {
         Arrays.fill(slots, null);
+    }
+
+    public boolean handedOut() {
+        for (var slot : slots) {
+            if (slot != null) return true;
+        }
+        return false;
     }
 
     public void invalidate(@Nullable Direction side) {

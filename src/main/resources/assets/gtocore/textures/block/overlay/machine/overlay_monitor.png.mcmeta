@@ -1,5 +1,0 @@
-{
-  "ldlib": {
-    "connection": "gtocore:block/overlay/machine/overlay_monitor_ctm"
-  }
-}

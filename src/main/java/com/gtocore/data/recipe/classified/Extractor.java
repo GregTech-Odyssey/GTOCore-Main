@@ -11,6 +11,7 @@ import com.gtolib.utils.RegistriesUtils;
 import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.network.chat.Component;
@@ -66,7 +67,7 @@ final class Extractor {
 
         EXTRACTOR_RECIPES.recipeBuilder("bones")
                 .inputItems(Blocks.DIRT.asItem())
-                .chancedOutput(TagPrefix.rod, GTMaterials.Bone, 25, 0)
+                .chancedOutput(TagPrefix.rod, GTMaterials.Bone, Chance.of(25))
                 .EUt(16)
                 .duration(100)
                 .save();

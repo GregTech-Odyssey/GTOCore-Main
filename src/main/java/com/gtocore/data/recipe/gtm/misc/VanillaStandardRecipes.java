@@ -6,6 +6,7 @@ import com.gtolib.utils.RegistriesUtils;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidContainerIngredient;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeCategories;
@@ -260,7 +261,7 @@ public final class VanillaStandardRecipes {
         MACERATOR_RECIPES.recipeBuilder("gravel_to_flint")
                 .inputItems(Blocks.GRAVEL)
                 .outputItems(dust, Stone)
-                .chancedOutput(new ItemStack(Items.FLINT), 1000, 1000)
+                .chancedOutput(new ItemStack(Items.FLINT), Chance.of(1000).risePerOverclock(1000))
                 .duration(400).EUt(2)
                 .save();
 
@@ -327,7 +328,7 @@ public final class VanillaStandardRecipes {
         MACERATOR_RECIPES.recipeBuilder("macerate_melon_block")
                 .inputItems(Blocks.MELON)
                 .outputItems(Items.MELON_SLICE, 8)
-                .chancedOutput(new ItemStack(Items.MELON_SEEDS), 8000, 500)
+                .chancedOutput(new ItemStack(Items.MELON_SEEDS), Chance.of(8000).risePerOverclock(500))
                 .duration(400).EUt(2)
                 .save();
 
@@ -346,9 +347,9 @@ public final class VanillaStandardRecipes {
         MACERATOR_RECIPES.recipeBuilder("macerate_wool")
                 .inputItems(ItemTags.WOOL)
                 .outputItems(Items.STRING)
-                .chancedOutput(new ItemStack(Items.STRING), 9000, 0)
-                .chancedOutput(new ItemStack(Items.STRING), 5000, 0)
-                .chancedOutput(new ItemStack(Items.STRING), 2000, 0)
+                .chancedOutput(new ItemStack(Items.STRING), Chance.of(9000))
+                .chancedOutput(new ItemStack(Items.STRING), Chance.of(5000))
+                .chancedOutput(new ItemStack(Items.STRING), Chance.of(2000))
                 .duration(200).EUt(2)
                 .save();
     }
@@ -360,7 +361,7 @@ public final class VanillaStandardRecipes {
         MACERATOR_RECIPES.recipeBuilder("macerate_logs")
                 .inputItems(ItemTags.LOGS)
                 .outputItems(dust, Wood, 6)
-                .chancedOutput(dust, Wood, 8000, 680)
+                .chancedOutput(dust, Wood, Chance.of(8000).risePerOverclock(680))
                 .duration(150).EUt(2)
                 .save();
 

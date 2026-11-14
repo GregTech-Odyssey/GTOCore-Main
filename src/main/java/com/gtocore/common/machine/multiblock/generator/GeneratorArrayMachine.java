@@ -12,6 +12,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.feature.multiblock.IArrayMachine;
 import com.gtolib.api.machine.feature.multiblock.IStorageMultiblock;
 import com.gtolib.api.machine.multiblock.StorageMultiblockMachine;
+import com.gtolib.api.scope.MachineScope;
 import com.gtolib.api.wireless.energy.EnergyPort;
 import com.gtolib.api.wireless.energy.EnergyPortTrait;
 import com.gtolib.api.wireless.energy.PortKind;
@@ -75,7 +76,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
 
     public GeneratorArrayMachine(MetaMachineBlockEntity holder) {
         super(holder, GTORules.GENERATOR_ARRAY_LIMIT.get(), GeneratorArrayMachine::filter);
-        this.portTrait = new EnergyPortTrait(this, PortKind.GENERATOR_ARRAY, 0);
+        this.portTrait = new EnergyPortTrait(this, PortKind.GENERATOR_ARRAY, 0, () -> this.isw);
         this.port = portTrait.port();
     }
 
@@ -185,7 +186,7 @@ public final class GeneratorArrayMachine extends StorageMultiblockMachine implem
         super.addControls(controls);
         controls.addToggle(WIRELESS_MODE, () -> isw, value -> {
             isw = value;
-            if (!value) port.release();
+            MachineScope.changed(this);
             eut = 0;
             requestCheck();
         });

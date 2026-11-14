@@ -374,12 +374,11 @@ private void recompute() {
 
 ---
 
-## 6. 非 final 容器的访问模式（`MonitorEU`）
+## 6. 非 final 容器的访问模式
 
 **场景**：`ArrayList` 字段被就地修改（`clear()` / `addAll()`），需要内容变化被检测到。
 
 ```java
-// src/main/java/com/gtocore/common/machine/monitor/MonitorEU.java:61
 @SyncToClient
 @Access
 private ArrayList<String> EnergyInputHistoryDay = new ArrayList<>();
@@ -1050,7 +1049,7 @@ public static final class InternalSlot extends AbstractRecipeInternalSlot implem
 | --- | --- | --- |
 | `@SaveToDisk` | **564** | 绝对主力，几乎每个机器都有 |
 | `@SyncToClient` | **185** | 渲染/UI 相关字段 |
-| `@Access` | 29（其中 DataSyncLib 的约 6 处，其余是 Lombok `@Accessors`/Mixin `@Accessor`） | `MonitorEU` 的 6 个历史列表 |
+| `@Access` | 23（DataSyncLib 的已无使用，全部是 Lombok `@Accessors`/Mixin `@Accessor`） | 无 |
 | `@SyncToServer` | 0 | GTCEu 体系下未使用 |
 | `@AdditionalHolder` | 0 | 改用显式 `IFieldDataHolder` |
 | `@Codec` / `@Conversion` / `@Strategy` / `@Generic` / `@AddToManager` | 0 | 主仓未使用 |

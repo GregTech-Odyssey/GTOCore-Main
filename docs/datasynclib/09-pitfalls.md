@@ -148,8 +148,7 @@ private ArrayList<String> history = new ArrayList<>();
 private final Set<BlockPos> offsets = new HashSet<>();
 ```
 
-GTOCore 两种都有：`MonitorEU` 用 `@Access`（非 final `ArrayList`），
-`PigmentMixer` 用 `final Set` + `autoDetect = false`。
+GTOCore 目前只用后一种：`PigmentMixer` 用 `final Set` + `autoDetect = false`。
 
 ### 嵌套对象特例
 

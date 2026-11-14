@@ -111,7 +111,9 @@
     },
     "com/gtolib/mixin/mc/nbt/CompoundTagMixin": {
       "<init>(Ljava/util/Map;)V": "Lnet/minecraft/nbt/CompoundTag;<init>(Ljava/util/Map;)V",
-      "<init>()V": "Lnet/minecraft/nbt/CompoundTag;<init>()V"
+      "<init>()V": "Lnet/minecraft/nbt/CompoundTag;<init>()V",
+      "readNamedTagData": "Lnet/minecraft/nbt/CompoundTag;m_128413_(Lnet/minecraft/nbt/TagType;Ljava/lang/String;Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;",
+      "Lnet/minecraft/nbt/TagType;load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;": "Lnet/minecraft/nbt/TagType;m_7300_(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;"
     },
     "com/gtolib/mixin/mc/nbt/ListTagMixin": {
       "<init>()V": "Lnet/minecraft/nbt/ListTag;<init>()V"
@@ -568,6 +570,9 @@
       "net.minecraft.world.level.redstone.CollectingNeighborUpdater$MultiNeighborUpdate": "net/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate",
       "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/world/level/Level;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
       "runNext": "Lnet/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate;m_213563_(Lnet/minecraft/world/level/Level;)Z"
+    },
+    "com/gtolib/mixin/mc/AbstractFurnaceBlockEntityMixin": {
+      "add(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V": "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;m_204302_(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V"
     }
   },
   "data": {
@@ -683,7 +688,9 @@
       },
       "com/gtolib/mixin/mc/nbt/CompoundTagMixin": {
         "<init>(Ljava/util/Map;)V": "Lnet/minecraft/nbt/CompoundTag;<init>(Ljava/util/Map;)V",
-        "<init>()V": "Lnet/minecraft/nbt/CompoundTag;<init>()V"
+        "<init>()V": "Lnet/minecraft/nbt/CompoundTag;<init>()V",
+        "readNamedTagData": "Lnet/minecraft/nbt/CompoundTag;m_128413_(Lnet/minecraft/nbt/TagType;Ljava/lang/String;Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;",
+        "Lnet/minecraft/nbt/TagType;load(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;": "Lnet/minecraft/nbt/TagType;m_7300_(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;"
       },
       "com/gtolib/mixin/mc/nbt/ListTagMixin": {
         "<init>()V": "Lnet/minecraft/nbt/ListTag;<init>()V"
@@ -1140,6 +1147,9 @@
         "net.minecraft.world.level.redstone.CollectingNeighborUpdater$MultiNeighborUpdate": "net/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate",
         "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "Lnet/minecraft/world/level/Level;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
         "runNext": "Lnet/minecraft/world/level/redstone/CollectingNeighborUpdater$MultiNeighborUpdate;m_213563_(Lnet/minecraft/world/level/Level;)Z"
+      },
+      "com/gtolib/mixin/mc/AbstractFurnaceBlockEntityMixin": {
+        "add(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V": "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;m_204302_(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V"
       }
     }
   }

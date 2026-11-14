@@ -13,6 +13,7 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.TierDataKey;
+import com.gtolib.api.scope.MachineScope;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
@@ -62,6 +63,7 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     private final ReferenceOpenHashSet<ILargeSpaceStationMachine> subMachinesFlat;
     private final TierCasingTrait tierCasingTrait;
+    private final MachineScope<Core> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, Core.class, this, self::formed));
 
     @Getter
     private boolean dirty = false;
@@ -89,13 +91,13 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     public void onStructureFormed() {
         super.onStructureFormed();
         onFormed();
-        IIWirelessInteractor.addToNet(this);
         markDirty(true);
     }
 
     @Override
     public void onUnload() {
-        IIWirelessInteractor.removeFromNet(this);
+        removeAllSubMachines();
+        serviceMachineMap.clear();
         super.onUnload();
     }
 
@@ -110,7 +112,6 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        IIWirelessInteractor.removeFromNet(this);
         onInvalid();
     }
 

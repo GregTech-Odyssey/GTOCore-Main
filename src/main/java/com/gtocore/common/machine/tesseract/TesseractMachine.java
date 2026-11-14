@@ -4,6 +4,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.CoordinateCardBehavior;
 
 import com.gtolib.api.player.IEnhancedPlayer;
+import com.gtolib.api.scope.MachineScope;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
@@ -22,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -61,6 +63,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     public TesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
+        new MachineScope<>(this, (scope, self) -> remotes.mount(scope));
         inventory = NotifiableInventory.items(this, 1, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
         inventory.storage.setOnChanged(() -> {
             onChanged();
@@ -80,21 +83,22 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     @Override
     public void onLoad() {
         super.onLoad();
+        if (getLevel() instanceof ServerLevel) pos = readCardPos();
         bindTargets();
-        remotes.subscribe(!isRemote());
-    }
-
-    @Override
-    public void onUnload() {
-        super.onUnload();
-        remotes.subscribe(false);
     }
 
     @Nullable
     private BlockPos readCardPos() {
         var card = inventory.storage.keyAt(0);
         if (card == null) return null;
-        var pos = CoordinateCardBehavior.getStoredCoordinates(card.getTag());
+        var level = getLevel();
+        BlockPos pos;
+        if (level == null) {
+            pos = CoordinateCardBehavior.getStoredCoordinates(card.getTag());
+        } else {
+            var stored = CoordinateCardBehavior.getStoredGlobalPos(card.getTag(), level.dimension());
+            pos = stored == null || stored.dimension() != level.dimension() ? null : stored.pos();
+        }
         return pos == null || pos.equals(getPos()) ? null : pos;
     }
 
@@ -114,7 +118,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
     @Override
     public Widget createUIWidget() {
         var targets = new TesseractUI.Targets(this::getLevel, getPos(), this::cardTargets, inventory.storage::version,
-                Component.translatable(TesseractUI.ROW_EMPTY));
+                Component.translatable(TesseractUI.ROW_EMPTY)).sameDimensionOnly();
         var row = TesseractUI.row(ItemSlot.of(inventory.storage, 0), targets, 0, TesseractUI.face(targets, 0));
         var bound = Component.translatable(TesseractUI.VALUE_BOUND, 1, 1);
         var unbound = Component.translatable(TesseractUI.VALUE_BOUND, 0, 1);

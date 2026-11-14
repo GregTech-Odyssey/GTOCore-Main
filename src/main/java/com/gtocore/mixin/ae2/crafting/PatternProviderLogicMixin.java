@@ -3,7 +3,7 @@ package com.gtocore.mixin.ae2.crafting;
 import com.gtocore.integration.ae.PatternContainerGroupHelper;
 
 import com.gtolib.api.ae2.*;
-import com.gtolib.api.ae2.machine.ICustomCraftingMachine;
+import com.gtolib.api.ae2.machine.PatternTargetSource;
 import com.gtolib.api.blockentity.IDirectionCacheBlockEntity;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -13,7 +13,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Nameable;
 
-import appeng.api.config.Actionable;
 import appeng.api.config.LockCraftingMode;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.implementations.blockentities.ICraftingMachine;
@@ -32,9 +31,6 @@ import appeng.helpers.patternprovider.PatternProviderTargetCache;
 import appeng.util.ConfigManager;
 import appeng.util.inv.AppEngInternalInventory;
 
-import com.gto.datasynclib.util.holder.BooleanHolder;
-import com.gto.datasynclib.util.holder.ObjHolder;
-
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -44,8 +40,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 @Mixin(value = PatternProviderLogic.class, remap = false)
 public abstract class PatternProviderLogicMixin implements IPatternProviderLogic {
@@ -74,14 +68,18 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
     @Shadow
     @Final
     private List<GenericStack> sendList;
-    @Unique
-    private int gtocore$pushedCount = 1024;
     @Shadow
     private Direction sendDirection;
     @Unique
-    private final BlockingPatternTarget[] gtolib$targets = new BlockingPatternTarget[6];
+    private PatternTarget[] gtolib$targets;
     @Unique
-    private IPatternDetails gtolib$currentPattern;
+    private PatternTarget[] gtolib$single;
+    @Unique
+    private int[] gtolib$counts;
+    @Unique
+    private int gtolib$cursor;
+    @Unique
+    private PatternTarget.Overflow gtolib$overflow;
     @Unique
     private GlobalPos gto$pos;
 
@@ -167,46 +165,37 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
     }
 
     @Override
-    public PushResult gtolib$pushPattern(IPatternDetails patternDetails, ObjHolder<KeyCounter[]> inputHolder, Supplier<PushResult> pushPatternSuccess) {
+    public PushResult gtolib$pushPattern(PushBatch batch) {
         if (!this.mainNode.isActive()) return PushResult.GRID_NODE_MISSING;
-        if (!this.patterns.contains(patternDetails)) return PushResult.PATTERN_DOES_NOT_EXIST;
+        var details = batch.details();
+        if (!this.patterns.contains(details)) return PushResult.PATTERN_DOES_NOT_EXIST;
         var be = host.getBlockEntity();
         var cache = IDirectionCacheBlockEntity.getBlockEntityDirectionCache(be);
         if (cache == null) return PushResult.REJECTED;
-        gtocore$pushedCount = configManager.getSetting(GTOSettings.BLOCKING_TYPE).pushLimit;
-        BooleanSupplier canPush = () -> getCraftingLockedReason() == LockCraftingMode.NONE && sendList.isEmpty();
-        if (!canPush.getAsBoolean()) return PushResult.PATTERN_PROVIDER_LOCKED;
-
-        gtolib$currentPattern = patternDetails;
-
+        if (!gtolib$canPush()) return PushResult.PATTERN_PROVIDER_LOCKED;
         var level = be.getLevel();
         var pos = be.getBlockPos();
-        BooleanHolder success = new BooleanHolder();
-        boolean molecular = !patternDetails.supportsPushInputsToExternalInventory();
+        var mode = configManager.getSetting(GTOSettings.BLOCKING_TYPE);
+        boolean molecular = !details.supportsPushInputsToExternalInventory();
+        boolean pushed = false;
         for (var direction : getActiveSides()) {
-            if (!canPush.getAsBoolean()) break;
+            if (batch.inputs() == null || !gtolib$canPush()) break;
             var adjBe = cache.getAdjacentBlockEntity(level, pos, direction);
             if (adjBe == null) continue;
             var adjBeSide = direction.getOpposite();
             if (molecular) {
                 var craftingMachine = ICraftingMachine.of(level, pos.relative(direction), adjBeSide, adjBe);
-                if (craftingMachine != null) {
-                    var result = gtolib$pushCraftingMachine(craftingMachine, patternDetails, inputHolder, pushPatternSuccess, adjBeSide, canPush);
-                    if (result.success()) success.value = true;
-                    if (result.needBreak()) return result;
-                }
-            } else if (adjBe instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.metaMachine instanceof ICustomCraftingMachine craftingMachine && craftingMachine.customPush()) {
-                var result = craftingMachine.pushPattern(this, actionSource, success, this::gtolib$pushTarget, patternInputs, patternDetails, inputHolder, pushPatternSuccess, canPush, direction, adjBeSide);
-                if (result.needBreak()) return result;
+                if (craftingMachine != null && gtolib$pushCraftingMachine(craftingMachine, batch, adjBeSide)) pushed = true;
+            } else if (adjBe instanceof MetaMachineBlockEntity machineBlockEntity && machineBlockEntity.metaMachine instanceof PatternTargetSource source) {
+                var targets = source.patternTargets(adjBeSide, actionSource);
+                if (targets == null) targets = gtolib$single(gtolib$findTarget(direction));
+                if (gtolib$pushTargets(targets, batch, mode, direction)) pushed = true;
             } else {
                 var target = gtolib$findTarget(direction);
-                if (target == null) continue;
-                var result = gtolib$pushTarget(patternDetails, inputHolder, pushPatternSuccess, canPush, direction, target, true);
-                if (result.success()) success.value = true;
-                if (result.needBreak()) return result;
+                if (target != null && gtolib$pushTargets(gtolib$single(target), batch, mode, direction)) pushed = true;
             }
         }
-        return success.value ? PushResult.SUCCESS : PushResult.NOWHERE_TO_PUSH;
+        return pushed ? PushResult.SUCCESS : PushResult.NOWHERE_TO_PUSH;
     }
 
     /**
@@ -215,71 +204,105 @@ public abstract class PatternProviderLogicMixin implements IPatternProviderLogic
      */
     @Overwrite
     public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
-        return false;
+        return gtolib$pushPattern(new PushBatch.Single(patternDetails, inputHolder)).success();
     }
 
     @Unique
-    private PushResult gtolib$pushCraftingMachine(ICraftingMachine craftingMachine, IPatternDetails patternDetails, ObjHolder<KeyCounter[]> inputHolder, Supplier<PushResult> pushPatternSuccess, Direction adjBeSide, BooleanSupplier canPush) {
-        boolean success = false;
-        while (canPush.getAsBoolean() && inputHolder.value != null && craftingMachine.acceptsPlans() && craftingMachine.pushPattern(patternDetails, inputHolder.value, adjBeSide)) {
-            onPushPatternSuccess(patternDetails);
-            success = true;
-            var result = pushPatternSuccess.get();
-            if (result.needBreak()) return result;
+    private boolean gtolib$canPush() {
+        return getCraftingLockedReason() == LockCraftingMode.NONE && sendList.isEmpty();
+    }
+
+    @Unique
+    private boolean gtolib$pushCraftingMachine(ICraftingMachine craftingMachine, PushBatch batch, Direction adjBeSide) {
+        var details = batch.details();
+        boolean pushed = false;
+        KeyCounter[] inputs;
+        while ((inputs = batch.inputs()) != null && gtolib$canPush() && craftingMachine.acceptsPlans() && craftingMachine.pushPattern(details, inputs, adjBeSide)) {
+            onPushPatternSuccess(details);
+            pushed = true;
+            if (!batch.next()) break;
         }
-        return success ? PushResult.SUCCESS : PushResult.REJECTED;
+        return pushed;
     }
 
     @Unique
-    private PushResult gtolib$pushTarget(IPatternDetails patternDetails, ObjHolder<KeyCounter[]> inputHolder, Supplier<PushResult> pushPatternSuccess, BooleanSupplier canPush, Direction direction, PatternProviderTarget adapter, boolean continuous) {
-        int count = this.gtocore$pushedCount;
-        boolean success = false;
-        while (count > 0 && canPush.getAsBoolean() && !adapter.containsPatternInput(patternInputs)) {
-            count--;
-            if (inputHolder.value != null && this.adapterAcceptsAll(adapter, inputHolder.value)) {
-                patternDetails.pushInputsToExternalInventory(inputHolder.value, (what, amount) -> {
-                    var inserted = adapter.insert(what, amount, Actionable.MODULATE);
-                    if (inserted < amount) {
-                        this.addToSendList(what, amount - inserted);
-                    }
-                });
-                if (adapter instanceof BlockingPatternTarget target) target.record(patternDetails);
-                onPushPatternSuccess(patternDetails);
-                success = true;
-                this.sendDirection = direction;
-                var result = pushPatternSuccess.get();
-                if (result.needBreak()) return result;
-                if (continuous) continue;
-                return PushResult.SUCCESS;
+    private boolean gtolib$pushTargets(PatternTarget[] targets, PushBatch batch, BlockingType mode, Direction direction) {
+        var details = batch.details();
+        int n = targets.length;
+        var counts = gtolib$counts;
+        if (counts == null || counts.length < n) gtolib$counts = counts = new int[Math.max(n, 6)];
+        int open = 0;
+        for (int i = 0; i < n; i++) {
+            var target = targets[i];
+            if (target == null || mode.rule.blocks(target, details, patternInputs)) {
+                counts[i] = -1;
+            } else {
+                counts[i] = 0;
+                open++;
             }
-            break;
         }
-        return success ? PushResult.SUCCESS : PushResult.REJECTED;
+        var overflow = gtolib$overflow;
+        if (overflow == null) gtolib$overflow = overflow = this::addToSendList;
+        boolean pushed = false;
+        int start = n > 1 ? Math.floorMod(gtolib$cursor, n) : 0;
+        while (open > 0) {
+            for (int k = 0; k < n; k++) {
+                int i = start + k;
+                if (i >= n) i -= n;
+                int count = counts[i];
+                if (count < 0) continue;
+                var inputs = batch.inputs();
+                if (inputs == null || !gtolib$canPush()) return pushed;
+                var target = targets[i];
+                if (!adapterAcceptsAll(target.storage(), inputs)) {
+                    counts[i] = -1;
+                    open--;
+                    continue;
+                }
+                target.push(details, inputs, overflow);
+                onPushPatternSuccess(details);
+                this.sendDirection = direction;
+                if (n > 1) gtolib$cursor = i + 1;
+                pushed = true;
+                if (++count >= mode.limit) {
+                    counts[i] = -1;
+                    open--;
+                } else {
+                    counts[i] = count;
+                }
+                if (!batch.next()) return true;
+            }
+        }
+        return pushed;
+    }
+
+    @Unique
+    private PatternTarget[] gtolib$single(@Nullable PatternTarget target) {
+        var single = gtolib$single;
+        if (single == null) gtolib$single = single = new PatternTarget[1];
+        single[0] = target;
+        return single;
     }
 
     @Unique
     @Nullable
-    private PatternProviderTarget gtolib$findTarget(Direction side) {
+    private PatternTarget gtolib$findTarget(Direction side) {
         var cache = getTargetCache(side);
-        var target = cache.find();
-        if (target == null) return null;
+        var storage = cache.find();
+        if (storage == null) return null;
         var blockEntity = cache.targetBlockEntity();
         if (blockEntity == null) return null;
+        var targets = gtolib$targets;
+        if (targets == null) gtolib$targets = targets = new PatternTarget[6];
         int index = side.get3DDataValue();
-        var cached = gtolib$targets[index];
-        var wrapped = BlockingPatternTarget.of(cached, target, blockEntity, this, side.getOpposite());
-        if (wrapped != cached) gtolib$targets[index] = wrapped;
-        return wrapped;
+        var cached = targets[index];
+        if (cached != null && cached.is(storage, blockEntity)) return cached;
+        return targets[index] = new PatternTarget(storage, blockEntity);
     }
 
     @Override
     public BlockingType gtolib$getBlocking() {
         return configManager.getSetting(GTOSettings.BLOCKING_TYPE);
-    }
-
-    @Override
-    public IPatternDetails gtolib$getCurrentPattern() {
-        return this.gtolib$currentPattern;
     }
 
     /**

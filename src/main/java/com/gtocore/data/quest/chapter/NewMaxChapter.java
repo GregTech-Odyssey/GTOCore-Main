@@ -25,6 +25,8 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import static com.gtolib.api.quest.QuestStyle.*;
+
 public final class NewMaxChapter {
 
     public static final QuestChapter CHAPTER = QuestChapter.of("new_max", c -> c
@@ -174,6 +176,7 @@ public final class NewMaxChapter {
             .at(10, 0)
             .milestone()
             .title("奈亚拉托提普之触")
+            .desc(d -> d.line("单独提一下这个机器，你需要{重夸克简并物质}才可以制作其方块中的夸克管道，它要到UIV阶段才能制作", GOLD))
             .task(Task.item(MultiBlockD.NYARLATHOTEPS_TENTACLE))
             .scaledReward(TagPrefix.cableGtSingle, GTOMaterials.CosmicNeutronium, 16)
             .dependsOn(SPACETIME_ASSEMBLY_LINE_CASING, TECH_SUPRACHRONAL_ASSEMBLY_LINE));

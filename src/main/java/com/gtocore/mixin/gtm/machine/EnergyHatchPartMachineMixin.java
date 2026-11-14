@@ -30,8 +30,8 @@ public class EnergyHatchPartMachineMixin extends WorkableTieredIOPartMachine imp
     @Shadow(remap = false)
     @Final
     public NotifiableEnergyContainer energyContainer;
-    @SuppressWarnings("all")
-    private WirelessChargerMachine netMachineCache;
+    @Unique
+    private NetCache<WirelessChargerMachine> gtolib$netCache;
     @Unique
     private Task gtolib$tickSubs;
 
@@ -61,14 +61,11 @@ public class EnergyHatchPartMachineMixin extends WorkableTieredIOPartMachine imp
         return getOwnerUUID();
     }
 
-    @SuppressWarnings("all")
-    public void setNetMachineCache(final WirelessChargerMachine netMachineCache) {
-        this.netMachineCache = netMachineCache;
-    }
-
-    @SuppressWarnings("all")
-    public WirelessChargerMachine getNetMachineCache() {
-        return this.netMachineCache;
+    @Override
+    public NetCache<WirelessChargerMachine> getNetCache() {
+        var cache = gtolib$netCache;
+        if (cache == null) gtolib$netCache = cache = new NetCache<>();
+        return cache;
     }
 
     @Override

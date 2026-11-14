@@ -8,7 +8,6 @@ import com.gtolib.api.wireless.energy.ProviderRegistry;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
@@ -26,22 +25,20 @@ public class WirelessEnergyUnitBlockItem extends BlockItem {
 
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
-        if (context.getPlayer() != null && context.getPlayer().isCrouching()) {
-            if (getBlock() instanceof WirelessEnergyTowerUnit unit &&
-                    context.getLevel() instanceof ServerLevel serverLevel &&
-                    context.getPlayer() instanceof ServerPlayer serverPlayer &&
-                    serverLevel.getBlockEntity(context.getClickedPos()) instanceof MetaMachineBlockEntity mbe &&
-                    mbe.getMetaMachine() instanceof WirelessEnergySubstationMachine machine) {
-                var substituted = machine.substituteBlocks(unit, stack.getCount(), serverPlayer);
-                if (substituted > 0) {
-                    var stored = WirelessEnergyUnitBlockEntity.stored(stack);
-                    if (stored != null) ProviderRegistry.chargeTower(machine, stored.multiply(BigInteger.valueOf(substituted)));
-                    stack.shrink(substituted);
-                    return InteractionResult.SUCCESS;
-                }
-            }
-            return InteractionResult.CONSUME;
+        if (context.getPlayer() == null || !context.getPlayer().isCrouching() ||
+                !(context.getLevel().getBlockEntity(context.getClickedPos()) instanceof MetaMachineBlockEntity mbe) ||
+                !(mbe.getMetaMachine() instanceof WirelessEnergySubstationMachine machine)) {
+            return super.onItemUseFirst(stack, context);
         }
-        return super.onItemUseFirst(stack, context);
+        if (getBlock() instanceof WirelessEnergyTowerUnit unit && context.getPlayer() instanceof ServerPlayer serverPlayer) {
+            var substituted = machine.substituteBlocks(unit, stack.getCount(), serverPlayer);
+            if (substituted > 0) {
+                var stored = WirelessEnergyUnitBlockEntity.stored(stack);
+                if (stored != null) ProviderRegistry.chargeTower(machine, stored.multiply(BigInteger.valueOf(substituted)));
+                stack.shrink(substituted);
+                return InteractionResult.SUCCESS;
+            }
+        }
+        return InteractionResult.CONSUME;
     }
 }

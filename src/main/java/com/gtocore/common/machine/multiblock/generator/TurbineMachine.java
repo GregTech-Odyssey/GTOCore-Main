@@ -62,7 +62,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
-import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import com.hepdd.gtmthings.utils.FormatUtil;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
@@ -73,7 +72,6 @@ import org.jetbrains.annotations.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -241,16 +239,11 @@ public class TurbineMachine extends ElectricMultiblockMachine {
 
     private int getRotorSpeed() {
         if (mega) {
-            Set<Material> material = new OpenCacheHashSet<>(2);
             int speed = 0;
             for (RotorHolderPartMachine part : rotorHolderMachines) {
-                ItemStack stack = part.getRotorStack();
-                TurbineRotorBehaviour rotorBehaviour = TurbineRotorBehaviour.getBehaviour(stack);
-                if (rotorBehaviour == null) return -1;
-                material.add(rotorBehaviour.getPartMaterial(stack));
                 speed += part.getRotorSpeed();
             }
-            return material.size() == 1 ? (speed / 12) : -1;
+            return speed / 12;
         }
         RotorHolderPartMachine rotor = getRotorHolder();
         if (rotor != null) {
@@ -279,11 +272,11 @@ public class TurbineMachine extends ElectricMultiblockMachine {
             (EUt <= 0 ? IdleReason.NOT_APPLICABLE : IdleReason.ROTOR_MISSING).setReason(this);
             return null;
         }
-        int rotorSpeed = getRotorSpeed();
-        if (rotorSpeed < 0) {
+        if (mega && !hasMatchingRotors()) {
             IdleReason.ROTOR_MISMATCH.setReason(this);
             return null;
         }
+        int rotorSpeed = getRotorSpeed();
         int maxSpeed = rotorHolder.getMaxRotorHolderSpeed();
         long turbineMaxVoltage = Math.min(getOverclockVoltage(), (long) (getVoltage() * Math.pow((double) Math.min(maxSpeed, rotorSpeed) / maxSpeed, 2)));
         recipe = ParallelLogic.accurateContentParallel(this, unit, recipe, turbineMaxVoltage / EUt);
@@ -449,7 +442,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
             @Override
             public Component get() {
                 var rotorHolder = getRotorHolder();
-                if (rotorHolder == null || rotorHolder.getRotorEfficiency() <= 0) {
+                if (rotorHolder == null) {
                     lastSpeed = Double.NaN;
                     lastMax = Double.NaN;
                     return text = NO_VALUE;
@@ -491,9 +484,10 @@ public class TurbineMachine extends ElectricMultiblockMachine {
         textList.add(Component.translatable(ESTIMATED_MAX_OUTPUT, ElectricText.power(v))
                 .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, ElectricText.flowOf(v)))));
         var rotorHolder = getRotorHolder();
-        if (rotorHolder != null && rotorHolder.getRotorEfficiency() > 0) {
+        if (rotorHolder != null) {
             double extension = extensionMultiplier();
             textList.add(Component.translatable("gtceu.multiblock.turbine.rotor_speed", FormattingUtil.formatNumbers(getRotorSpeed() * (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extension), FormattingUtil.formatNumbers(rotorHolder.getMaxRotorHolderSpeed() * (highSpeedMode ? GTORules.MEGA_TURBINE_OUTPUT.get() : 1) * extension)));
+            if (rotorHolder.getRotorEfficiency() <= 0) return;
             textList.add(Component.translatable("gtceu.multiblock.turbine.efficiency", rotorHolder.getTotalEfficiency() * extensionEfficiency()));
             if (isActive()) {
                 textList.add(3, Component.translatable("gtceu.multiblock.turbine.energy_per_tick_maxed", ElectricText.power(energyPerTick)).append(" (").append(ElectricText.tier(GTUtil.getTierByVoltage(energyPerTick))).append(")"));
@@ -547,6 +541,7 @@ public class TurbineMachine extends ElectricMultiblockMachine {
                 int addition = (int) Math.floor(this.workAccumulation);
                 this.workAccumulation -= addition;
                 for (var part : this.rotorHolderMachines) {
+                    if (part.getRotorStack().isEmpty()) continue;
                     part.setRotorSpeed(Math.min(part.getRotorSpeed() + addition, part.getMaxRotorHolderSpeed()));
                 }
             }

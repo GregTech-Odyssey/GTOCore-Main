@@ -16,6 +16,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.item.armor.PowerlessJetpack;
 
@@ -53,8 +54,8 @@ public final class FuelCell {
         ELECTRIC_IMPLOSION_COMPRESSOR_RECIPES.builder("metallic_hydrogen_gem_hmx")
                 .inputItems(TagPrefix.dust, GTOMaterials.HmxExplosive)
                 .inputItems(TagPrefix.dust, GTOMaterials.HydrogenSaturatedNickelTetracarbonyl)
-                .chancedOutput(ChemicalHelper.getItem(TagPrefix.dustTiny, GTOMaterials.MetallicHydrogen), 7500, 0)
-                .chancedOutput(ChemicalHelper.getItem(TagPrefix.dustTiny, GTOMaterials.MetallicHydrogen), 7500, 0)
+                .chancedOutput(ChemicalHelper.getItem(TagPrefix.dustTiny, GTOMaterials.MetallicHydrogen), Chance.of(7500))
+                .chancedOutput(ChemicalHelper.getItem(TagPrefix.dustTiny, GTOMaterials.MetallicHydrogen), Chance.of(7500))
                 .EUt(400000L)
                 .duration(20)
                 .maxHeat(10)

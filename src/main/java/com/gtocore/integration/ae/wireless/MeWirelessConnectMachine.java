@@ -43,6 +43,9 @@ public class MeWirelessConnectMachine extends MetaMachine implements WirelessMac
     @SyncToClient
     private String wirelessNetworkId = "";
 
+    @Nullable
+    private WirelessLink wirelessLink;
+
     public MeWirelessConnectMachine(MetaMachineBlockEntity holder) {
         super(holder);
         // 连接机不占频道（只作致密线缆承载）
@@ -83,6 +86,16 @@ public class MeWirelessConnectMachine extends MetaMachine implements WirelessMac
         wirelessNetworkId = id;
     }
 
+    @Override
+    public @Nullable WirelessLink getWirelessLink() {
+        return wirelessLink;
+    }
+
+    @Override
+    public void setWirelessLink(@Nullable WirelessLink link) {
+        wirelessLink = link;
+    }
+
     /**
      * 最早一代存档（LDLib {@code @Persisted}）把网络存在根 NBT 的 {@code wirelessMachinePersisted.gridName}。
      * 此方法先于字段读取执行；新存档没有这个键，已有 {@code _connectedNetworkId} 时字段读取会覆盖这里的值。
@@ -100,6 +113,18 @@ public class MeWirelessConnectMachine extends MetaMachine implements WirelessMac
     public void onLoad() {
         super.onLoad();
         onWirelessLoad();
+    }
+
+    @Override
+    public void onUnload() {
+        onWirelessUnload();
+        super.onUnload();
+    }
+
+    @Override
+    protected void onOwnerChanged() {
+        super.onOwnerChanged();
+        onWirelessOwnerChanged();
     }
 
     @Override

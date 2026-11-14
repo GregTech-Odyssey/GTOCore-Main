@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
@@ -36,7 +37,7 @@ final class DistillationRecipes {
 
         DISTILLATION_RECIPES.recipeBuilder("distill_charcoal_byproducts")
                 .inputFluids(CharcoalByproducts, 1000)
-                .chancedOutput(dust, Charcoal, 2500, 0)
+                .chancedOutput(dust, Charcoal, Chance.of(2500))
                 .outputFluids(WoodTar.getFluid(250))
                 .outputFluids(WoodVinegar.getFluid(400))
                 .outputFluids(WoodGas.getFluid(250))
@@ -120,14 +121,14 @@ final class DistillationRecipes {
 
         DISTILLATION_RECIPES.recipeBuilder("distill_biomass")
                 .inputFluids(Biomass, 1000)
-                .chancedOutput(dust, Wood, 5000, 0)
+                .chancedOutput(dust, Wood, Chance.of(5000))
                 .outputFluids(Ethanol.getFluid(600))
                 .outputFluids(Water.getFluid(300))
                 .duration(32).EUt(400).save();
 
         DISTILLATION_RECIPES.recipeBuilder("distill_coal_gas")
                 .inputFluids(CoalGas, 1000)
-                .chancedOutput(dust, Coke, 2500, 0)
+                .chancedOutput(dust, Coke, Chance.of(2500))
                 .outputFluids(CoalTar.getFluid(200))
                 .outputFluids(Ammonia.getFluid(300))
                 .outputFluids(Ethylbenzene.getFluid(250))
@@ -137,7 +138,7 @@ final class DistillationRecipes {
 
         DISTILLATION_RECIPES.recipeBuilder("distill_coal_tar")
                 .inputFluids(CoalTar, 1000)
-                .chancedOutput(dust, Coke, 2500, 0)
+                .chancedOutput(dust, Coke, Chance.of(2500))
                 .outputFluids(Naphthalene.getFluid(400))
                 .outputFluids(HydrogenSulfide.getFluid(300))
                 .outputFluids(Creosote.getFluid(200))
@@ -152,7 +153,7 @@ final class DistillationRecipes {
                 .outputFluids(CarbonDioxide.getFluid(2500))
                 .outputFluids(Helium.getFluid(1000))
                 .outputFluids(Argon.getFluid(500))
-                .chancedOutput(dust, Ice, 9000, 0)
+                .chancedOutput(dust, Ice, Chance.of(9000))
                 .disableDistilleryRecipes(true)
                 .duration(2000).EUt(VA[HV]).save();
 
@@ -164,7 +165,7 @@ final class DistillationRecipes {
                 .outputFluids(SulfurDioxide.getFluid(7500))
                 .outputFluids(Helium3.getFluid(2500))
                 .outputFluids(Neon.getFluid(500))
-                .chancedOutput(dust, Ash, 2250, 0)
+                .chancedOutput(dust, Ash, Chance.of(2250))
                 .disableDistilleryRecipes(true)
                 .duration(2000).EUt(VA[EV]).save();
 
@@ -177,12 +178,12 @@ final class DistillationRecipes {
                 .outputFluids(Krypton.getFluid(1000))
                 .outputFluids(Xenon.getFluid(1000))
                 .outputFluids(Radon.getFluid(1000))
-                .chancedOutput(dust, EnderPearl, 1000, 0)
+                .chancedOutput(dust, EnderPearl, Chance.of(1000))
                 .disableDistilleryRecipes(true)
                 .duration(2000).EUt(VA[IV]).save();
 
         DISTILLATION_RECIPES.builder("io_ash")
-                .chancedOutput(ChemicalHelper.get(TagPrefix.dustTiny, GTMaterials.Naquadah, 1), 1000, 0)
+                .chancedOutput(ChemicalHelper.get(TagPrefix.dustTiny, GTMaterials.Naquadah, 1), Chance.of(1000))
                 .inputFluids(GTOMaterials.JupiterAir, FluidStorageKeys.LIQUID, 121000)
                 .outputFluids(GTOMaterials.Gnome, 3000)
                 .outputFluids(GTOMaterials.Undine, 3000)
@@ -201,7 +202,7 @@ final class DistillationRecipes {
                 .save();
 
         DISTILLATION_RECIPES.builder("small_celestine_dust")
-                .chancedOutput(ChemicalHelper.get(TagPrefix.dustSmall, GTOMaterials.Celestine), 2500, 0)
+                .chancedOutput(ChemicalHelper.get(TagPrefix.dustSmall, GTOMaterials.Celestine), Chance.of(2500))
                 .inputFluids(GTOMaterials.GlacioAir, FluidStorageKeys.LIQUID, 121000)
                 .outputFluids(GTOMaterials.Aether, 2000)
                 .outputFluids(GTMaterials.Water, 1000)

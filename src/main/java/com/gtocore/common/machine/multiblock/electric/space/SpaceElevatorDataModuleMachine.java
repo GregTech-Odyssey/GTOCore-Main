@@ -60,7 +60,7 @@ public class SpaceElevatorDataModuleMachine extends SpaceElevatorModuleMachine {
             var data = moduleWorks / getWorksPerProducedData();
             moduleWorks %= getWorksPerProducedData();
             if (researchTagPartMachine != null) {
-                researchTagPartMachine.addData(data * (getController().netMachineCache == null ? 1 : 2));
+                researchTagPartMachine.addData(data * (getController().getNetCache().get() == null ? 1 : 2));
             }
         }
     }

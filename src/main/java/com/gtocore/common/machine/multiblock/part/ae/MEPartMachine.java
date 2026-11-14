@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
+import com.gtocore.integration.ae.wireless.WirelessLink;
 import com.gtocore.integration.ae.wireless.WirelessMachine;
 
 import com.gtolib.api.machine.feature.IMEPartMachine;
@@ -83,6 +84,9 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
     @SyncToClient
     private String connectedNetworkId = "";
 
+    @Nullable
+    private WirelessLink wirelessLink;
+
     protected MEPartMachine(MetaMachineBlockEntity holder, IO io) {
         super(holder, GTValues.LuV, io);
     }
@@ -154,6 +158,16 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
         this.connectedNetworkId = id;
     }
 
+    @Override
+    public @Nullable WirelessLink getWirelessLink() {
+        return wirelessLink;
+    }
+
+    @Override
+    public void setWirelessLink(@Nullable WirelessLink link) {
+        this.wirelessLink = link;
+    }
+
     // ==================== 旧存档迁移 ====================
 
     /**
@@ -181,6 +195,18 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
         var handlerUnit = getHandlerUnit();
         handlerUnit.isDistinct = distinctField;
         handlerUnit.color = getPaintingColor();
+    }
+
+    @Override
+    public void onUnload() {
+        onWirelessUnload();
+        super.onUnload();
+    }
+
+    @Override
+    protected void onOwnerChanged() {
+        super.onOwnerChanged();
+        onWirelessOwnerChanged();
     }
 
     @Override
