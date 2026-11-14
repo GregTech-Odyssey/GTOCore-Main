@@ -26,19 +26,28 @@ final class MinerModule {
 
     @SafeVarargs
     private static void buildMinerModuleInputOres(int circuit, int minDroneTire, IntObjectHolder<Material>... oreHolders) {
+        buildMinerModuleInputOres("space_ore_" + circuit, circuit, minDroneTire, oreHolders);
+    }
+
+    @SafeVarargs
+    private static void buildMinerModuleInputOres(String id, int circuit, int minDroneTire, IntObjectHolder<Material>... oreHolders) {
         ItemStack[] blocks = new ItemStack[oreHolders.length];
         for (int i = 0; i < oreHolders.length; i++) {
             IntObjectHolder<Material> holder = oreHolders[i];
             blocks[i] = ChemicalHelper.get(TagPrefix.ore, holder.value, holder.priority);
         }
-        buildMinerModule(circuit, minDroneTire, blocks);
+        buildMinerModule(id, circuit, minDroneTire, blocks);
     }
 
     private static void buildMinerModule(int circuit, int minDroneTire, ItemStack[] blocks) {
+        buildMinerModule("space_ore_" + circuit, circuit, minDroneTire, blocks);
+    }
+
+    private static void buildMinerModule(String id, int circuit, int minDroneTire, ItemStack[] blocks) {
         SpaceResourceIndex.addMining(circuit, RocketFuels.drones[minDroneTire - 1], RocketFuels.fuels[minDroneTire - 1], blocks);
         for (int i = minDroneTire - 1; i < 6; i++) {
             for (int j = 0; j < RocketFuels.fuels[minDroneTire - 1].length; j++) {
-                var build = MINER_MODULE_RECIPES.recipeBuilder("space_ore_" + circuit + "_" + i + "_" + j)
+                var build = MINER_MODULE_RECIPES.recipeBuilder(id + "_" + i + "_" + j)
                         .notConsumable(RocketFuels.drones[i], 16)
                         .circuitMeta(circuit)
                         .inputFluids(RocketFuels.fuels[minDroneTire - 1][j])
@@ -84,6 +93,12 @@ final class MinerModule {
         buildMinerModuleInputOres(30, 5, ore(80, Enderium), ore(120, Sodalite), ore(60, Celestine), ore(80, Lapis), ore(60, Bauxite), ore(40, Pitchblende));
         buildMinerModuleInputOres(31, 5, ore(40, Silver), ore(60, Platinum), ore(60, Tartarite), ore(80, Vibranium), ore(120, Aluminium), ore(120, Iron));
         buildMinerModuleInputOres(32, 6, ore(12, Lazurite), ore(80, Sapphire), ore(60, Starmetal), ore(80, GreenSapphire), ore(120, GarnetYellow), ore(80, Pollucite));
+
+        // 复用电路时用不同燃料区分，保留原有配方。
+        buildMinerModuleInputOres("space_ore_additional_minerals", 26, 1, ore(120, Borax), ore(80, Magnesite), ore(80, Trona), ore(40, Thorium));
+        buildMinerModuleInputOres("space_ore_magic_crystals", 1, 4, ore(80, PerditioCrystal), ore(40, UndineCrystal), ore(40, SylphCrystal), ore(60, ManaDiamond), ore(60, SourceGem), ore(120, Manasteel));
+        buildMinerModuleInputOres("space_ore_magic_metals", 2, 4, ore(60, Dragonstone), ore(60, Elementium), ore(40, GaiaCore), ore(40, NetherEmber), ore(40, Thaumium));
+        buildMinerModuleInputOres("space_ore_ancient_crystals", 3, 5, ore(60, RemnantSpiritStone), ore(60, SoulJadeCrystal), ore(40, StarBloodCrystal), ore(40, OriginCoreCrystal));
     }
 
     private static IntObjectHolder<Material> ore(int count, Material mat) {
