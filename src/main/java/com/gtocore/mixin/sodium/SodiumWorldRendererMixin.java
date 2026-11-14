@@ -15,7 +15,12 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(SodiumWorldRenderer.class)
 public class SodiumWorldRendererMixin {
 
-    @ModifyExpressionValue(method = "renderGlobalBlockEntities", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/viewport/Viewport;isBoxVisible(Lnet/minecraft/world/phys/AABB;)Z", remap = false), remap = false)
+    @ModifyExpressionValue(method = "renderGlobalBlockEntities",
+                           at = {
+                                   @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/viewport/Viewport;isBoxVisible(Lnet/minecraft/world/phys/AABB;)Z", remap = false),
+                                   @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/render/SodiumWorldRenderer;isBlockEntityInView(Lnet/minecraft/world/level/block/entity/BlockEntity;)Z", remap = false)
+                           },
+                           remap = false)
     private boolean renderGlobalBlockEntities(boolean original, @Local(name = "blockEntity") BlockEntity blockEntity) {
         if (original) return true;
         return GTOConfig.INSTANCE.client.renderingConfig.disableEmbeddiumBECulling && blockEntity instanceof MetaMachineBlockEntity;

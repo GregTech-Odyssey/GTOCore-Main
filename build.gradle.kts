@@ -418,7 +418,7 @@ dependencies {
     clientMod("curse.maven:mouse-tweaks-60089:5338457")
     clientMod("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")
     clientMod("curse.maven:render-blender-1346485:7035162")
-    clientMod("curse.maven:embeddium-908741:5681725")
+    clientMod("dev:emberbium:0.3.32-beta.9999+mc1.20.1")
     clientMod("curse.maven:moremorelang-1444917:8673054")
     clientMod("maven.modrinth:oculus:1.20.1-1.8.0")
     "modClientRuntimeOnly"("curse.maven:fzzy-config-1005914:7085017")
