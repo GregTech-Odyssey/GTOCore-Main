@@ -13,6 +13,7 @@ import net.minecraftforge.fluids.FluidStack;
 import earth.terrarium.adastra.common.registry.ModFluids;
 
 import static com.gregtechceu.gtceu.api.GTValues.VA;
+import static com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys.PLASMA;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTOMaterials.BarnardaAir;
 import static com.gtocore.common.data.GTOMaterials.UnknowWater;
@@ -36,10 +37,14 @@ final class DrillingModule {
     private static final int[] baseTime = { 600, 400 };
 
     private static void buildDrillingModule(int circuit, int minDroneTire, FluidStack fluidStack) {
+        buildDrillingModule("space_fluid_" + circuit, circuit, minDroneTire, fluidStack);
+    }
+
+    private static void buildDrillingModule(String id, int circuit, int minDroneTire, FluidStack fluidStack) {
         SpaceResourceIndex.addDrilling(circuit, drones[minDroneTire - 1], fuels[minDroneTire - 1], fluidStack);
         for (int i = minDroneTire - 1; i < 6; i++) {
             for (int j = 0; j < fuels[minDroneTire - 1].length; j++) {
-                DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_" + circuit + "_" + i + "_" + j)
+                DRILLING_MODULE_RECIPES.recipeBuilder(id + "_" + i + "_" + j)
                         .notConsumable(drones[i], 16)
                         .circuitMeta(circuit)
                         .inputFluids(fuels[minDroneTire - 1][j])
@@ -50,6 +55,19 @@ final class DrillingModule {
                         .save();
             }
         }
+    }
+
+    private static void buildStellarDrillingModule(int circuit, FluidStack fluidStack) {
+        SpaceResourceIndex.addDrilling(circuit, drones[5], stellarFuel, fluidStack);
+        DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_" + circuit)
+                .notConsumable(drones[5], 64)
+                .circuitMeta(circuit)
+                .inputFluids(stellarFuel[0])
+                .outputFluids(fluidStack)
+                .EUt(503316480)
+                .addData(GTORecipeDataKeys.TIER, 6)
+                .duration(750)
+                .save();
     }
 
     public static void init() {
@@ -82,26 +100,48 @@ final class DrillingModule {
         buildDrillingModule(27, 3, Bromine.getFluid(1000000));
         buildDrillingModule(28, 3, BarnardaAir.getFluid(1000000));
 
-        SpaceResourceIndex.addDrilling(29, drones[5], stellarFuel, GTOMaterials.WhiteDwarfMatter.getFluid(100000));
-        DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_29")
-                .notConsumable(GTOItems.SPACE_DRONE_MK6.asItem(), 64)
-                .circuitMeta(29)
-                .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 10000)
-                .outputFluids(GTOMaterials.WhiteDwarfMatter, 100000)
-                .EUt(503316480)
-                .addData(GTORecipeDataKeys.TIER, 6)
-                .duration(750)
-                .save();
+        // 复用电路时用不同燃料区分，保留原有配方。
+        buildDrillingModule("space_fluid_oil", 13, 1, Oil.getFluid(1000000));
+        buildDrillingModule("space_fluid_raw_oil", 14, 1, RawOil.getFluid(1000000));
+        buildDrillingModule("space_fluid_heavy_oil", 15, 1, OilHeavy.getFluid(1000000));
+        buildDrillingModule("space_fluid_light_oil", 16, 1, OilLight.getFluid(1000000));
+        buildDrillingModule("space_fluid_natural_gas", 17, 1, NaturalGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_benzene", 18, 1, Benzene.getFluid(1000000));
+        buildDrillingModule("space_fluid_charcoal_byproducts", 19, 1, CharcoalByproducts.getFluid(1000000));
+        buildDrillingModule("space_fluid_sulfuric_acid", 20, 1, SulfuricAcid.getFluid(1000000));
+        buildDrillingModule("space_fluid_nitric_acid", 21, 1, NitricAcid.getFluid(1000000));
+        buildDrillingModule("space_fluid_hydrochloric_acid", 22, 1, HydrochloricAcid.getFluid(1000000));
+        buildDrillingModule("space_fluid_salt_water", 23, 1, SaltWater.getFluid(1000000));
+        buildDrillingModule("space_fluid_lava", 24, 1, Lava.getFluid(1000000));
 
-        SpaceResourceIndex.addDrilling(30, drones[5], stellarFuel, GTOMaterials.BlackDwarfMatter.getFluid(100000));
-        DRILLING_MODULE_RECIPES.recipeBuilder("space_fluid_30")
-                .notConsumable(GTOItems.SPACE_DRONE_MK6.asItem(), 64)
-                .circuitMeta(30)
-                .inputFluids(GTOMaterials.StellarEnergyRocketFuel, 10000)
-                .outputFluids(GTOMaterials.BlackDwarfMatter, 100000)
-                .EUt(503316480)
-                .addData(GTORecipeDataKeys.TIER, 6)
-                .duration(750)
-                .save();
+        buildDrillingModule("space_fluid_heavy_oil_with_sand", 1, 2, GTOMaterials.HeavyOilWithSand.getFluid(1000000));
+        buildDrillingModule("space_fluid_light_oil_with_sand", 2, 2, GTOMaterials.LightOilWithSand.getFluid(1000000));
+        buildDrillingModule("space_fluid_shale_gas", 3, 2, GTOMaterials.ShaleGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_shale_oil", 4, 2, GTOMaterials.ShaleOil.getFluid(1000000));
+        buildDrillingModule("space_fluid_tight_oil_crude_oil", 5, 2, GTOMaterials.TightOilCrudeOil.getFluid(1000000));
+        buildDrillingModule("space_fluid_aromatic_hydrocarbon_mixture", 6, 2, GTOMaterials.AromaticHydrocarbonMixture.getFluid(1000000));
+        buildDrillingModule("space_fluid_residual_oil_mixture", 7, 2, GTOMaterials.ResidualOilMixture.getFluid(1000000));
+        buildDrillingModule("space_fluid_impure_sulfuric_acid", 8, 2, GTOMaterials.ImpureSulfuricAcid.getFluid(1000000));
+        buildDrillingModule("space_fluid_impure_nitric_acid", 9, 2, GTOMaterials.ImpureNitricAcid.getFluid(1000000));
+        buildDrillingModule("space_fluid_mixed_hydrochloric_acid", 10, 2, GTOMaterials.MixedHydrochloricAcid.getFluid(1000000));
+        buildDrillingModule("space_fluid_easy_to_escape_mixed_gas", 11, 2, GTOMaterials.EasyToEscapeMixedGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_easy_to_escape_mixed_isotope_gas", 12, 2, GTOMaterials.EasyToEscapeMixedIsotopeGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_high_radiation_gas", 20, 2, GTOMaterials.HighRadiationGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_light_gas", 21, 2, GTOMaterials.LightGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_heavy_flash_explosion_gas", 22, 2, GTOMaterials.HeavyFlashExplosionGas.getFluid(1000000));
+        buildDrillingModule("space_fluid_mixed_xenon", 23, 2, GTOMaterials.MixedXenon.getFluid(1000000));
+        buildDrillingModule("space_fluid_mixed_krypton", 24, 2, GTOMaterials.MixedKrypton.getFluid(1000000));
+        buildDrillingModule("space_fluid_mixed_neon", 25, 2, GTOMaterials.MixedNeon.getFluid(1000000));
+        buildDrillingModule("space_fluid_mixed_fluorine", 26, 2, GTOMaterials.MixedFluorine.getFluid(1000000));
+        buildDrillingModule("space_fluid_bleaching_gas", 27, 2, GTOMaterials.BleachingGas.getFluid(1000000));
+
+        buildDrillingModule("space_fluid_fractal_petal_solvent", 1, 3, GTOMaterials.FractalPetalSolvent.getFluid(1000000));
+        buildDrillingModule("space_fluid_the_water_from_the_well_of_wisdom", 2, 3, GTOMaterials.TheWaterFromTheWellOfWisdom.getFluid(1000000));
+        buildDrillingModule("space_fluid_animium", 3, 3, GTOMaterials.Animium.getFluid(1000000));
+
+        buildStellarDrillingModule(29, GTOMaterials.WhiteDwarfMatter.getFluid(100000));
+        buildStellarDrillingModule(30, GTOMaterials.BlackDwarfMatter.getFluid(100000));
+        buildStellarDrillingModule(31, GTOMaterials.PrimordialHeliumPlasma.getFluid(PLASMA, 100000));
+        buildStellarDrillingModule(32, GTOMaterials.PrimordialPaleozoicIronPlasma.getFluid(PLASMA, 100000));
     }
 }
