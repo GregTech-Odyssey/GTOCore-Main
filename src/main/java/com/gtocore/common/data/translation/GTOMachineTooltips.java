@@ -682,7 +682,7 @@ public final class GTOMachineTooltips {
 
         t.heading(t.tr("机器电压等级每高出一级：", "For each increase in machine voltage level:"));
         t.bonus(t.tr("可采掘最大范围翻倍(最高256)", "Maximum mining range is doubled (up to 256)"));
-        t.bonus(t.tr("每次采掘的方块数量翻倍(最高4096)", "The number of blocks mined each time is doubled (up to 4096)"));
+        t.bonus(t.tr("每次采掘的方块数量翻倍", "The number of blocks mined each time is doubled"));
         t.penalty(t.tr("耗电量乘以4", "Power consumption is quadrupled"));
         t.control(t.tr("通入红石信号以重新计算采掘区域并执行", "Input a redstone signal to recalculate the mining area and execute mining"));
     });

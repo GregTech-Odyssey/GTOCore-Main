@@ -29,6 +29,7 @@ GTM/AE2/EMI/Botania/Ars Nouveau 等模组均有本项目维护的 fork。修复�
 
 ## 编码规范
 
+- **修复前先查历史与根因**：修复问题时，必须先调查相关 Git 历史（如 `git log`、`git blame` 和相关提交 diff），查明问题为何发生及相关改动的背景；确认根因后，依据根因制定修复方案并实施。历史不足以确定原因时，继续结合当前代码、日志或复现验证，不得把推测当作已确认的根因。
 - **默认实现位置**：新增编写的代码逻辑默认在 `GTOLib/` 模块中实现；物品、方块、机器、配方等注册项在本体仓库实现；涉及 GTM/AE2/EMI/Botania 等已 fork 模组的内部行为时，仍按 [修改位置说明](docs/forked-dependencies.md) 判断是否直接修改对应 fork。
 - **特化功能局部实现**：新增功能时，不要在 `MetaMachine`、`MetaMachineItem`、`RecipeLogic` 等适用范围宽泛的共用父类或通用逻辑类中，通过 `if (this instanceof YourNewClass)` 等针对新类的特判实现特化功能。应将功能实现在对应的特化类或其他能限定适用范围的合适位置。
 - 首次编辑或审查 Java/Kotlin 代码前，必须打开 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 的相关章节；完成修改后按实际 diff 再检查一次。它是本仓性能与正确性约束，不是可选建议。
