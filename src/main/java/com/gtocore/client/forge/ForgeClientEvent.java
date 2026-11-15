@@ -8,9 +8,9 @@ import com.gtocore.client.ClientWorldLeakFixes;
 import com.gtocore.client.GTOClientCommands;
 import com.gtocore.client.GTOKeyBind;
 import com.gtocore.client.MaterialTypeTooltips;
+import com.gtocore.client.QuestBookEntries;
 import com.gtocore.client.SpaceResourceTooltips;
 import com.gtocore.client.Tooltips;
-import com.gtocore.client.hud.HUDScreen;
 import com.gtocore.client.overlay.ReceiverTransmitterClientHandler;
 import com.gtocore.client.overlay.WirelessAEClientHandler;
 import com.gtocore.client.renderer.RenderHelper;
@@ -19,10 +19,7 @@ import com.gtocore.client.screen.GTOTitleScreen;
 import com.gtocore.client.screen.starmap.rocket.RocketMapScreen;
 import com.gtocore.common.data.translation.GTOItemTooltips;
 import com.gtocore.common.item.ICoordinateHolder;
-import com.gtocore.common.item.StructureDetectBehavior;
 import com.gtocore.common.item.StructureWriteBehavior;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
-import com.gtocore.common.medical.MedicalConditionSync;
 import com.gtocore.integration.ae.wireless.WirelessClientCache;
 import com.gtocore.integration.emi.HiddenItems;
 
@@ -31,7 +28,10 @@ import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
 import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.wireless.PartProxyConnections;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
+import com.gtolib.monitor.MonitorHud;
+import com.gtolib.monitor.client.MonitorHudScreen;
 import com.gtolib.quest.client.ClientQuestData;
 import com.gtolib.quest.client.book.QuestBookScreen;
 import com.gtolib.quest.client.book.QuestBookSession;
@@ -40,8 +40,8 @@ import com.gtolib.utils.RegistriesUtils;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.item.ITagPrefixItem;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
-import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.uipro.styletemplate.UIStyleManager;
 
 import net.minecraft.ChatFormatting;
@@ -130,9 +130,6 @@ public final class ForgeClientEvent {
             if (highlightingTime > 0) {
                 highlightingTime--;
             }
-            if (ClientCache.highlightTime > 0) {
-                ClientCache.highlightTime--;
-            }
             CUstomHighlightNeeds.clone().object2IntEntrySet().fastForEach(
                     entry -> {
                         int time = entry.getIntValue();
@@ -192,6 +189,7 @@ public final class ForgeClientEvent {
         FXManager.tickFXs();
         Minecraft mc = Minecraft.getInstance();
         updateHudScreen(mc);
+        QuestBookEntries.tick(mc);
         if (mc.player instanceof IEnhancedPlayer) {
             boolean isShiftDown = Screen.hasShiftDown();
             if (isShiftDown != lastShiftState) {
@@ -231,14 +229,6 @@ public final class ForgeClientEvent {
                     if (poses != null) {
                         RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, poses[0], poses[1]);
                     }
-                } else if (StructureDetectBehavior.isItem(itemStack)) {
-                    poses = StructureDetectBehavior.getPos(itemStack);
-                    if (poses != null && poses.length >= 1) {
-                        for (var pos : poses) {
-                            if (pos == null) continue;
-                            RenderHelper.highlightBlock(camera, poseStack, 0, 0, 1, pos, pos);
-                        }
-                    }
                 } else {
                     GlobalPos targetPos = ICoordinateHolder.getGlobalPos(itemStack);
                     if (targetPos != null && targetPos.dimension() == level.dimension()) {
@@ -253,7 +243,7 @@ public final class ForgeClientEvent {
                         RenderHelper.highlightBlock(camera, poseStack, color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, entry.getKey().start, entry.getKey().end);
                     });
             if (ClientCache.machineNotFormedHighlight) {
-                ILevel.getHighlightCache(level).forEach(p -> {
+                MultiblockControllerMachine.getHighlightCache(level).forEach(p -> {
                     var pos = BlockPos.of(p);
                     RenderHelper.highlightBlock(camera, poseStack, 1, 0.1f, 0.1f, pos, pos);
                 });
@@ -315,12 +305,11 @@ public final class ForgeClientEvent {
     }
 
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
-        MedicalConditionSync.clearClientSnapshot();
         TeamResearchSavedData.clearClientInstance();
         TechTreeSavedData.clearClientInstance();
         WirelessClientCache.clear();
         ReceiverTransmitterHandler.unloadClient();
-        MEPatternBufferConnectionHandler.unloadClient();
+        PartProxyConnections.unloadClient();
         ReceiverTransmitterClientHandler.clear();
         FXManager.clearFXs();
         RuleManager.leaveRemoteWorld();
@@ -356,21 +345,24 @@ public final class ForgeClientEvent {
     public record HighlightNeed(BlockPos start, BlockPos end, int color) {}
 
     private static void updateHudScreen(Minecraft mc) {
-        boolean keyDown = isMovableHudTogglePhysicallyDown(mc);
         boolean inGame = mc.level != null && mc.player != null;
-        if (mc.screen instanceof HUDScreen) {
+        while (GTOKeyBind.hudLayout.consumeClick()) {
+            if (inGame && mc.screen == null) MonitorHud.OPEN.send();
+        }
+        boolean keyDown = isHudInteractPhysicallyDown(mc);
+        if (mc.screen instanceof MonitorHudScreen) {
             if (!keyDown || !inGame) {
                 mc.setScreen(null);
             }
             return;
         }
         if (keyDown && inGame && mc.screen == null) {
-            mc.setScreen(new HUDScreen());
+            mc.setScreen(new MonitorHudScreen(GTOKeyBind.hudLayout.getTranslatedKeyMessage()));
         }
     }
 
-    private static boolean isMovableHudTogglePhysicallyDown(Minecraft mc) {
-        var key = GTOKeyBind.movableHudToggle.getKey();
+    private static boolean isHudInteractPhysicallyDown(Minecraft mc) {
+        var key = GTOKeyBind.hudInteract.getKey();
         long window = mc.getWindow().getWindow();
         if (key == InputConstants.UNKNOWN) {
             return false;
@@ -378,7 +370,7 @@ public final class ForgeClientEvent {
         return switch (key.getType()) {
             case KEYSYM -> InputConstants.isKeyDown(window, key.getValue());
             case MOUSE -> GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
-            case SCANCODE -> GTOKeyBind.movableHudToggle.isDown();
+            case SCANCODE -> GTOKeyBind.hudInteract.isDown();
         };
     }
 }

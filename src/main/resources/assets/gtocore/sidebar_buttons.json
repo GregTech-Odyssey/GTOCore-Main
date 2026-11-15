@@ -1,0 +1,8 @@
+{
+  "quest_book": {
+    "group": "ftblibrary:info",
+    "icon": "gtocore:item/quest_book",
+    "x": 611,
+    "click": "gtocore:open_quest_book"
+  }
+}

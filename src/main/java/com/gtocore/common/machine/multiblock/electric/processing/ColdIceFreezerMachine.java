@@ -32,7 +32,7 @@ public final class ColdIceFreezerMachine extends CustomParallelMultiblockMachine
 
     @Override
     public void onStructureFormed() {
-        atomizationModule = hasStructurePart(StructureModuleKeys.COLD_ICE_FREEZER_ATOMIZATION);
+        atomizationModule = getAssembly().has(StructureModuleKeys.COLD_ICE_FREEZER_ATOMIZATION);
         super.onStructureFormed();
     }
 

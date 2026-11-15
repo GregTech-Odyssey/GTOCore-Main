@@ -9,6 +9,7 @@ import com.gtolib.GTOCore;
 import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -34,9 +35,9 @@ final class Macerator {
         MACERATOR_RECIPES.recipeBuilder("essence")
                 .inputItems(GTOBlocks.ESSENCE_BLOCK.asItem())
                 .outputItems(GTOItems.ESSENCE)
-                .chancedOutput(GTOItems.ESSENCE.asItem(), 5000, 400)
-                .chancedOutput(GTOItems.ESSENCE.asItem(), 5000, 200)
-                .chancedOutput(GTOItems.ESSENCE.asItem(), 5000, 100)
+                .chancedOutput(GTOItems.ESSENCE.asItem(), Chance.of(5000).risePerOverclock(400))
+                .chancedOutput(GTOItems.ESSENCE.asItem(), Chance.of(5000).risePerOverclock(200))
+                .chancedOutput(GTOItems.ESSENCE.asItem(), Chance.of(5000).risePerOverclock(100))
                 .EUt(30)
                 .duration(200)
                 .save();
@@ -123,7 +124,7 @@ final class Macerator {
 
         MACERATOR_RECIPES.recipeBuilder("yeast")
                 .inputItems(Items.SWEET_BERRIES.asItem())
-                .chancedOutput(TagPrefix.dust, GTOMaterials.Yeast, 500, 500)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.Yeast, Chance.of(500).risePerOverclock(500))
                 .EUt(30)
                 .duration(50)
                 .save();

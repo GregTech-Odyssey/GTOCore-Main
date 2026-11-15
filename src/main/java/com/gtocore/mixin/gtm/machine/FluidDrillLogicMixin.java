@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class FluidDrillLogicMixin extends BedrockVeinDrillLogic<BedrockFluidDefinition> implements IFluidDrillLogic {
 
     @Unique
-    private DrillingControlCenterMachine gtolib$cache;
+    private NetCache<DrillingControlCenterMachine> gtolib$cache;
 
     protected FluidDrillLogicMixin(IVeinDrillMachine machine, BedrockVeinKind<BedrockFluidDefinition> kind) {
         super(machine, kind);
@@ -31,15 +31,10 @@ public abstract class FluidDrillLogicMixin extends BedrockVeinDrillLogic<Bedrock
     }
 
     @Override
-    @SuppressWarnings("all")
-    public DrillingControlCenterMachine getNetMachineCache() {
-        return gtolib$cache;
-    }
-
-    @Override
-    @SuppressWarnings("all")
-    public void setNetMachineCache(DrillingControlCenterMachine cache) {
-        this.gtolib$cache = cache;
+    public NetCache<DrillingControlCenterMachine> getNetCache() {
+        var cache = gtolib$cache;
+        if (cache == null) gtolib$cache = cache = new NetCache<>();
+        return cache;
     }
 
     @Override

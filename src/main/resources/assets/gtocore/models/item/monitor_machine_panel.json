@@ -1,0 +1,7 @@
+{
+  "parent": "gtocore:item/monitor/control_base",
+  "textures": {
+    "front": "gtocore:block/monitor/data_machine",
+    "glow": "gtocore:block/monitor/data_machine_glow"
+  }
+}

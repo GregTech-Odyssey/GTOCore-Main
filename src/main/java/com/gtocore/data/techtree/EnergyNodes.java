@@ -84,7 +84,7 @@ public final class EnergyNodes {
                             .addMaterialNeeded(ENERGY, 4096)
                             .setEurekaItem(GTOItems.TRANSCENDENT_MAX_BATTERY, 0.8F)
                             .build())
-            .tier(5)
+            .tier(4)
             .build();
 
     public static final TechNode UltimateBattery5 = BaseNodes.EnergyTree.builder("ultimate_battery5", "终极电池V", "Ultimate Battery V")

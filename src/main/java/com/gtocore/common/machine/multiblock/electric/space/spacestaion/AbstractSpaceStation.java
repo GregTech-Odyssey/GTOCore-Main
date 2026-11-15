@@ -1,5 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.space.spacestaion;
 
+import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.GTOTickTimeMonitors;
 import com.gtocore.common.data.machines.GTOMachineProtocols;
 
@@ -10,7 +11,6 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.api.systems.OxygenApi;
 import earth.terrarium.adastra.api.systems.TemperatureApi;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -30,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,13 +40,16 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Nullable
     private Collection<IWorkInSpaceMachine> spaceMachines;
     private final Set<BlockPos> lastDistributedBlocks = new ObjectOpenHashSet<>();
+    @Nullable
+    private Set<BlockPos> inheritedOxygen;
+    private int inheritedOxygenDeadline;
     @SyncToClient
     private BlockPos[] stationPorts = new BlockPos[0];
 
     @SaveToDisk(defaultValue = "0")
     protected int ready;
     @Nullable
-    private TickableSubscription tickSubscription = null;
+    private Task tickSubscription = null;
     boolean shouldShowReadyText = true;
 
     private boolean firstLoad;
@@ -56,12 +61,14 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Override
     public void onStructureFormed() {
         var assembly = getAssembly();
-        if (assembly != null) {
-            var ports = new ArrayList<BlockPos>(assembly.ports(GTOMachineProtocols.STATION_DOCKING));
-            ports.addAll(assembly.ports(GTOMachineProtocols.STATION_JUNCTION));
-            stationPorts = ports.toArray(BlockPos[]::new);
-        }
+        var ports = new ArrayList<BlockPos>(assembly.ports(GTOMachineProtocols.STATION_DOCKING));
+        ports.addAll(assembly.ports(GTOMachineProtocols.STATION_JUNCTION));
+        stationPorts = ports.toArray(BlockPos[]::new);
         super.onStructureFormed();
+        if (!isRemote()) {
+            inheritedOxygen = new ObjectOpenHashSet<>(assembly.getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()));
+            inheritedOxygenDeadline = getOffsetTimer() + 2400;
+        }
     }
 
     @Override
@@ -115,7 +122,7 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     public void onUnload() {
         super.onUnload();
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
     }
@@ -134,6 +141,7 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
 
     @Override
     public void resetLastDistributedBlocks(Set<BlockPos> positions) {
+        inheritedOxygen = null;
         lastDistributedBlocks.removeAll(positions);
         clearOxygenBlocks();
         lastDistributedBlocks.addAll(positions);
@@ -142,10 +150,19 @@ public abstract class AbstractSpaceStation extends ElectricMultiblockMachine imp
     @Override
     public void onMachineRemoved() {
         super.onMachineRemoved();
-        clearOxygenBlocks();
+        clearOxygenBlocks(true);
     }
 
     public void clearOxygenBlocks() {
+        clearOxygenBlocks(getOffsetTimer() >= inheritedOxygenDeadline);
+    }
+
+    private void clearOxygenBlocks(boolean inherited) {
+        var space = inheritedOxygen;
+        if (inherited && space != null) {
+            inheritedOxygen = null;
+            lastDistributedBlocks.addAll(space);
+        }
         OxygenApi.API.removeOxygen(getLevel(), lastDistributedBlocks);
         TemperatureApi.API.removeTemperature(getLevel(), lastDistributedBlocks);
         lastDistributedBlocks.clear();

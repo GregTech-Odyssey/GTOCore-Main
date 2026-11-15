@@ -1,14 +1,17 @@
 package com.gtocore.common.quest.hot;
 
+import com.gtocore.common.quest.hot.QuestSource.ChainDecl;
 import com.gtocore.common.quest.hot.QuestSource.Decl;
 import com.gtocore.common.quest.hot.QuestSource.FileModel;
 import com.gtocore.common.quest.hot.QuestSource.LinkDecl;
 import com.gtocore.common.quest.hot.QuestSource.QuestDecl;
+import com.gtocore.common.quest.hot.QuestSource.TableDecl;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -41,6 +44,15 @@ public final class QuestEdits {
     public static final String TASK_OPT = "taskOpt";
     public static final String REWARD_ADD = "rewardAdd";
     public static final String REWARD_REMOVE = "rewardRemove";
+    public static final String REWARD_ARG_ADD = "rewardArgAdd";
+    public static final String TABLE_ENTRY_ADD = "tableEntryAdd";
+    public static final String TABLE_ENTRY_REMOVE = "tableEntryRemove";
+    public static final String TABLE_WEIGHT = "tableWeight";
+    public static final String TABLE_AMOUNT = "tableAmount";
+    public static final String TABLE_TITLE = "tableTitle";
+    public static final String TABLE_NUMBER = "tableNumber";
+    public static final String TABLE_CREATE = "tableCreate";
+    public static final String TABLE_DELETE = "tableDelete";
     public static final String STYLE_IMPORT = "static com.gtolib.api.quest.QuestStyle.*";
     private static final com.google.gson.Gson GSON = new com.google.gson.Gson();
     private static final java.lang.reflect.Type ENTRIES = new com.google.gson.reflect.TypeToken<List<TextEntry>>() {}.getType();
@@ -129,8 +141,44 @@ public final class QuestEdits {
             return new Op(0, REWARD_ADD, target, null, null, callText, System.nanoTime(), 0, 0, 0, false, List.copyOf(imports), false);
         }
 
-        public static Op rewardRemove(String target, int site) {
-            return new Op(0, REWARD_REMOVE, target, null, null, null, System.nanoTime(), 0, site, 0, false, null, false);
+        public static Op rewardRemove(String target, int entry) {
+            return new Op(0, REWARD_REMOVE, target, null, null, null, System.nanoTime(), 0, entry, 0, false, null, false);
+        }
+
+        public static Op rewardArgAdd(String target, int firstEntry, int argIndex, String argText) {
+            return new Op(0, REWARD_ARG_ADD, target, null, null, argText, System.nanoTime(), 0, firstEntry, argIndex, false, null, false);
+        }
+
+        public static Op tableEntryAdd(String target, int index, String callText, List<String> imports) {
+            return new Op(0, TABLE_ENTRY_ADD, target, null, null, callText, System.nanoTime(), 0, index, 0, false, List.copyOf(imports), false);
+        }
+
+        public static Op tableEntryRemove(String target, int index) {
+            return new Op(0, TABLE_ENTRY_REMOVE, target, null, null, null, System.nanoTime(), 0, index, 0, false, null, false);
+        }
+
+        public static Op tableWeight(String target, int index, long weight) {
+            return new Op(0, TABLE_WEIGHT, target, null, null, null, 0, 0, index, weight, false, null, false);
+        }
+
+        public static Op tableAmount(String target, int index, long value) {
+            return new Op(0, TABLE_AMOUNT, target, null, null, null, 0, 0, index, value, false, null, false);
+        }
+
+        public static Op tableTitle(String target, String title) {
+            return new Op(0, TABLE_TITLE, target, null, null, title, 0, 0, 0, 0, false, null, false);
+        }
+
+        public static Op tableNumber(String target, String method, long value) {
+            return new Op(0, TABLE_NUMBER, target, null, method, null, 0, 0, 0, value, false, null, false);
+        }
+
+        public static Op tableCreate(String id, String field, String title) {
+            return new Op(0, TABLE_CREATE, "t:" + id, null, field, title, 0, 0, 0, 0, false, null, false);
+        }
+
+        public static Op tableDelete(String id) {
+            return new Op(0, TABLE_DELETE, "t:" + id, null, null, null, 0, 0, 0, 0, false, null, false);
         }
 
         public static Op mainLine(String chapter, String argsText) {
@@ -155,10 +203,11 @@ public final class QuestEdits {
 
         public String key() {
             return switch (type) {
-                case FLAG, DEP, TEXT -> type + "|" + target + "|" + arg;
-                case AMOUNT, TASK_ITEM -> type + "|" + target + "|" + index;
+                case FLAG, DEP, TEXT, TABLE_NUMBER -> type + "|" + target + "|" + arg;
+                case AMOUNT, TASK_ITEM, TABLE_WEIGHT, TABLE_AMOUNT -> type + "|" + target + "|" + index;
+                case TABLE_ENTRY_ADD, TABLE_ENTRY_REMOVE -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case TASK_OPT -> type + "|" + target + "|" + arg + "|" + index;
-                case TASK_ADD, TASK_REMOVE, REWARD_ADD, REWARD_REMOVE -> type + "|" + target + "|" + Double.doubleToLongBits(x);
+                case TASK_ADD, TASK_REMOVE, REWARD_ADD, REWARD_REMOVE, REWARD_ARG_ADD -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case CREATE, COPY -> "node|" + target;
                 default -> type + "|" + target;
             };
@@ -186,6 +235,9 @@ public final class QuestEdits {
             case TASK_OPT -> taskOption(src, op, edit);
             case REWARD_ADD -> rewardAdd(src, op, edit);
             case REWARD_REMOVE -> rewardRemove(src, op, edit);
+            case REWARD_ARG_ADD -> rewardArgAdd(src, op, edit);
+            case TABLE_ENTRY_ADD, TABLE_ENTRY_REMOVE, TABLE_WEIGHT, TABLE_AMOUNT, TABLE_TITLE, TABLE_NUMBER, TABLE_DELETE -> table(src, op, edit);
+            case TABLE_CREATE -> tableCreate(src, op, edit);
             default -> "未知操作 " + op.type;
         };
         if (error != null || edit.isEmpty()) return error;
@@ -252,39 +304,76 @@ public final class QuestEdits {
             for (var arg : call.getArguments()) {
                 int index = taskIndex++;
                 var item = QuestItemSyntax.taskRoot(arg);
-                if (item == null) continue;
-                var itemArgs = QuestItemSyntax.itemArgs(item);
-                if (itemArgs == null) continue;
-                var args = item.getArguments();
-                var count = args.size() > itemArgs.size() ? args.get(args.size() - 1) : null;
-                out.add(new AmountSite(count, file.end(itemArgs.get(itemArgs.size() - 1)), count == null ? 1 : QuestSource.number(count).longValue(), itemArgs.get(0), true, index, false));
-            }
-        }
-        int rewardIndex = 0;
-        for (var call : decl.chain) {
-            var name = QuestDecl.name(call);
-            int first = rewardIndex;
-            switch (name) {
-                case "reward", "easySubsidy", "normalSubsidy", "expertSubsidy" -> rewardIndex += call.getArguments().size();
-                case "scaledReward" -> rewardIndex += 3;
-                default -> {
+                var itemArgs = item == null ? null : QuestItemSyntax.itemArgs(item);
+                if (itemArgs != null) {
+                    var args = item.getArguments();
+                    var count = args.size() > itemArgs.size() ? args.get(args.size() - 1) : null;
+                    out.add(new AmountSite(count, file.end(itemArgs.get(itemArgs.size() - 1)), count == null ? 1 : QuestSource.number(count).longValue(), itemArgs.get(0), true, index, false));
                     continue;
                 }
+                var root = factoryCall(arg, "Task");
+                if (root == null || root.getArguments().size() < 2) continue;
+                var args = root.getArguments();
+                ExpressionTree count = switch (QuestDecl.name(root)) {
+                    case "tag", "kill", "stat" -> args.get(args.size() - 1);
+                    case "anyOf" -> args.get(0);
+                    default -> null;
+                };
+                if (count == null || QuestSource.number(count) == null) continue;
+                out.add(new AmountSite(count, -1, QuestSource.number(count).longValue(), args.get(count == args.get(0) ? 1 : 0), true, index, false));
             }
-            if (!name.equals("scaledReward") && !name.equals("reward")) continue;
-            var site = countSite(call);
-            if (site == null) continue;
-            var count = last(site);
-            out.add(new AmountSite(count, -1, QuestSource.number(count).longValue(), site.getArguments().get(0), false, first, name.equals("scaledReward")));
+        }
+        for (var entry : rewardEntries(decl)) {
+            boolean scaled = entry.argIndex < 0;
+            if (entry.count != null) {
+                out.add(new AmountSite(entry.count, -1, QuestSource.number(entry.count).longValue(), entry.subject, false, entry.liveIndex, scaled));
+            } else if (entry.root != null && QuestDecl.name(entry.root).equals("item") && entry.root.getArguments().size() == 1) {
+                out.add(new AmountSite(null, file.end(entry.subject), 1, entry.subject, false, entry.liveIndex, false));
+            }
+        }
+        return out;
+    }
+
+    record RewardEntry(MethodInvocationTree call, int argIndex, String group, int liveIndex, @Nullable MethodInvocationTree root, @Nullable ExpressionTree count,
+                       ExpressionTree subject) {
+
+        ExpressionTree expression() {
+            return argIndex < 0 ? call : call.getArguments().get(argIndex);
+        }
+    }
+
+    static ObjectArrayList<RewardEntry> rewardEntries(QuestDecl decl) {
+        var out = new ObjectArrayList<RewardEntry>();
+        int liveIndex = 0;
+        for (var call : decl.chain) {
+            var name = QuestDecl.name(call);
+            var args = call.getArguments();
+            switch (name) {
+                case "scaledReward" -> {
+                    if (args.size() >= 2 && QuestSource.number(last(call)) != null) out.add(new RewardEntry(call, -1, name, liveIndex, call, last(call), args.get(0)));
+                    liveIndex += 3;
+                }
+                case "reward", "easySubsidy", "normalSubsidy", "expertSubsidy" -> {
+                    for (int i = 0; i < args.size(); i++) {
+                        var root = factoryCall(args.get(i), "Reward");
+                        var rootArgs = root == null ? null : root.getArguments();
+                        var count = rootArgs != null && !rootArgs.isEmpty() && QuestSource.number(last(root)) != null ? last(root) : null;
+                        out.add(new RewardEntry(call, i, name, liveIndex++, root, count, rootArgs == null || rootArgs.isEmpty() ? args.get(i) : rootArgs.get(0)));
+                    }
+                }
+                default -> {}
+            }
         }
         return out;
     }
 
     @Nullable
-    private static MethodInvocationTree countSite(MethodInvocationTree call) {
-        var args = call.getArguments();
-        if (args.size() >= 2 && QuestSource.number(last(call)) != null) return call;
-        if (args.size() == 1 && args.get(0) instanceof MethodInvocationTree inner && inner.getArguments().size() >= 2 && QuestSource.number(last(inner)) != null) return inner;
+    static MethodInvocationTree factoryCall(ExpressionTree arg, String owner) {
+        var e = arg;
+        while (e instanceof MethodInvocationTree call && call.getMethodSelect() instanceof MemberSelectTree select) {
+            if (select.getExpression() instanceof IdentifierTree id && id.getName().contentEquals(owner)) return call;
+            e = select.getExpression();
+        }
         return null;
     }
 
@@ -434,19 +523,6 @@ public final class QuestEdits {
         return null;
     }
 
-    record RewardSite(MethodInvocationTree call, int argIndex) {}
-
-    static ObjectArrayList<RewardSite> rewardSites(QuestDecl decl) {
-        var out = new ObjectArrayList<RewardSite>();
-        for (var call : decl.chain) {
-            var name = QuestDecl.name(call);
-            if (!name.equals("scaledReward") && !name.equals("reward")) continue;
-            if (countSite(call) == null) continue;
-            out.add(new RewardSite(call, name.equals("scaledReward") || call.getArguments().size() != 1 ? -1 : 0));
-        }
-        return out;
-    }
-
     @Nullable
     private static String rewardAdd(QuestSource src, Op op, Edit edit) {
         if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
@@ -458,9 +534,90 @@ public final class QuestEdits {
     @Nullable
     private static String rewardRemove(QuestSource src, Op op, Edit edit) {
         if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
-        var sites = rewardSites(decl);
-        if (op.index < 0 || op.index >= sites.size()) return decl.where() + "：第 " + (op.index + 1) + " 个奖励不存在";
-        edit.removeCall(decl, sites.get(op.index).call());
+        var entries = rewardEntries(decl);
+        if (op.index < 0 || op.index >= entries.size()) return decl.where() + "：第 " + (op.index + 1) + " 个奖励不存在";
+        var entry = entries.get(op.index);
+        if (entry.argIndex < 0) edit.removeCall(decl, entry.call);
+        else edit.removeArgument(decl, entry.call, entry.argIndex);
+        return null;
+    }
+
+    @Nullable
+    private static String rewardArgAdd(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var entries = rewardEntries(decl);
+        if (op.index < 0 || op.index >= entries.size() || entries.get(op.index).argIndex < 0) return decl.where() + "：第 " + (op.index + 1) + " 个奖励不存在";
+        var args = entries.get(op.index).call.getArguments();
+        int at = (int) op.value;
+        if (at >= args.size()) edit.insert(decl.file, decl.file.end(args.get(args.size() - 1)), ", " + op.text);
+        else edit.insert(decl.file, decl.file.start(args.get(Math.max(0, at))), op.text + ", ");
+        return null;
+    }
+
+    record TableEntry(MethodInvocationTree call, ExpressionTree reward, @Nullable ExpressionTree count, @Nullable ExpressionTree weight) {}
+
+    static ObjectArrayList<TableEntry> tableEntries(TableDecl decl) {
+        var out = new ObjectArrayList<TableEntry>();
+        for (var call : decl.calls("entry")) {
+            var args = call.getArguments();
+            if (args.isEmpty()) continue;
+            var root = factoryCall(args.get(0), "Reward");
+            var count = root != null && !root.getArguments().isEmpty() && QuestSource.number(last(root)) != null ? last(root) : null;
+            out.add(new TableEntry(call, args.get(0), count, args.size() >= 2 && QuestSource.number(args.get(1)) != null ? args.get(1) : null));
+        }
+        return out;
+    }
+
+    @Nullable
+    private static String table(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof TableDecl decl)) return missing(op);
+        var file = decl.file;
+        var entries = tableEntries(decl);
+        switch (op.type) {
+            case TABLE_DELETE -> edit.removeDeclaration(decl);
+            case TABLE_TITLE -> setCall(decl, edit, "title", literal(op.text));
+            case TABLE_NUMBER -> setCall(decl, edit, op.arg, Long.toString(op.value));
+            case TABLE_ENTRY_ADD -> {
+                if (op.imports != null) edit.imports(file, op.imports);
+                int at = op.index < 0 || op.index >= entries.size() ? decl.chainEnd() : decl.receiverEnd(entries.get(op.index).call);
+                edit.insert(file, at, "\n" + decl.callIndent() + "." + op.text);
+            }
+            default -> {
+                if (op.index < 0 || op.index >= entries.size()) return decl.where() + "：第 " + (op.index + 1) + " 项内容不存在";
+                var entry = entries.get(op.index);
+                if (op.type.equals(TABLE_ENTRY_REMOVE)) {
+                    edit.removeCall(decl, entry.call);
+                } else if (op.type.equals(TABLE_WEIGHT)) {
+                    if (entry.weight != null) edit.replace(file, entry.weight, Long.toString(op.value));
+                    else edit.insert(file, file.end(entry.reward), ", " + op.value);
+                } else {
+                    if (entry.count == null) return decl.where() + "：第 " + (op.index + 1) + " 项内容没有数量";
+                    edit.replace(file, entry.count, Long.toString(op.value));
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void setCall(TableDecl decl, Edit edit, String method, String argText) {
+        var calls = decl.calls(method);
+        if (!calls.isEmpty() && !calls.get(0).getArguments().isEmpty()) {
+            edit.replace(decl.file, calls.get(0).getArguments().get(0), argText);
+            return;
+        }
+        var titles = decl.calls("title");
+        int at = titles.isEmpty() || method.equals("title") ? decl.receiverEnd(decl.chain.get(0)) : decl.file.end(titles.get(0));
+        edit.insert(decl.file, at, "\n" + decl.callIndent() + "." + method + "(" + argText + ")");
+    }
+
+    @Nullable
+    private static String tableCreate(QuestSource src, Op op, Edit edit) {
+        var file = src.tableFile();
+        if (file == null || file.membersEnd < 0) return "找不到 " + QuestSource.TABLES_CLASS + ".java";
+        if (src.find(op.target) != null || file.fields.containsKey(op.arg)) return file.name() + "：奖励表 " + op.target.substring(2) + " 已存在";
+        var indent = file.tables.isEmpty() ? "    " : file.indentAt(file.start(file.tables.get(0).var));
+        edit.insert(file, file.membersEnd, "\n\n" + indent + "public static final RewardTable " + op.arg + " = RewardTable.of(" + literal(op.target.substring(2)) + ", t -> t\n" +
+                indent + "        .title(" + literal(op.text) + "));");
         return null;
     }
 
@@ -645,7 +802,7 @@ public final class QuestEdits {
         return BigDecimal.valueOf(hundredths, 2).stripTrailingZeros().toPlainString();
     }
 
-    private static String literal(String text) {
+    static String literal(String text) {
         var sb = new StringBuilder(text.length() + 2).append('"');
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -688,7 +845,7 @@ public final class QuestEdits {
             of(file).add(new Splice(pos, pos, text));
         }
 
-        void removeCall(QuestDecl decl, MethodInvocationTree call) {
+        void removeCall(ChainDecl decl, MethodInvocationTree call) {
             of(decl.file).add(new Splice(decl.receiverEnd(call), decl.file.end(call), ""));
         }
 
@@ -696,7 +853,7 @@ public final class QuestEdits {
             of(file).add(new Splice(file.end(((MemberSelectTree) call.getMethodSelect()).getExpression()), file.end(call), ""));
         }
 
-        void removeArgument(QuestDecl decl, MethodInvocationTree call, int index) {
+        void removeArgument(ChainDecl decl, MethodInvocationTree call, int index) {
             var args = call.getArguments();
             var file = decl.file;
             if (args.size() == 1) removeCall(decl, call);

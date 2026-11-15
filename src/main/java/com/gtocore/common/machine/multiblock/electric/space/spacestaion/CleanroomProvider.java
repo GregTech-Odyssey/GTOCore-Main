@@ -5,6 +5,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.machine.impl.part.DroneHatchPartMachine;
+import com.gtolib.api.scope.MachineScope;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
@@ -33,6 +34,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
 
     private int cleanroomTier;
     private final List<DroneHatchPartMachine> droneHatchPartMachine = new ArrayList<>();
+    private final MachineScope<CleanroomProvider> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, IDroneControlCenterMachine.class, this, self::formed));
 
     public CleanroomProvider(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
@@ -42,8 +44,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
     public void onStructureFormed() {
         droneHatchPartMachine.clear();
         super.onStructureFormed();
-        this.cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 0);
-        IIWirelessInteractor.addToNet(this, IDroneControlCenterMachine.class);
+        this.cleanroomTier = getAssembly().getOrDefault(Predicates.DataKey.FILTER_TYPE, 0);
     }
 
     @Override
@@ -51,14 +52,12 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
         super.onStructureInvalid();
         this.cleanroomTier = 0;
         droneHatchPartMachine.clear();
-        IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
     @Override
     public void onUnload() {
         super.onUnload();
         this.cleanroomTier = 0;
-        IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
     @Override

@@ -61,7 +61,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
 
             @Override
             public void customText(@NotNull List<Component> textList) {
-                if (hasStructurePart(MAGIC_MODULE)) {
+                if (getAssembly().has(MAGIC_MODULE)) {
                     super.customText(textList);
                 }
             }
@@ -87,7 +87,7 @@ public final class StellarForgeMachine extends TierCasingMultiblockMachine imple
         consecutiveRecipes++;
         var manat = MANATRecipeExtension.getMANAt(recipe);
         if (manat < 0) {
-            if (!hasStructurePart(MAGIC_MODULE)) {
+            if (!getAssembly().has(MAGIC_MODULE)) {
                 consecutiveRecipes = 0;
                 IdleReason.MAGIC_MODULE_MISSING.setReason(this);
                 return null;

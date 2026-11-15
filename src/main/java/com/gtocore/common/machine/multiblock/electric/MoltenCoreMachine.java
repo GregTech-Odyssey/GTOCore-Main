@@ -30,7 +30,7 @@ public final class MoltenCoreMachine extends CoilCrossRecipeMultiblockMachine {
 
     @Override
     public void onStructureFormed() {
-        distillery = hasStructurePart(DISTILLERY);
+        distillery = getAssembly().has(DISTILLERY);
         super.onStructureFormed();
     }
 

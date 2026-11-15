@@ -8,10 +8,7 @@ import com.gtocore.common.data.*;
 import com.gtocore.common.item.ItemMap;
 import com.gtocore.common.item.armor.HeatInsulationArmorItem;
 import com.gtocore.common.item.misc.OverseerCoke;
-import com.gtocore.common.machine.monitor.MonitorBlock;
 import com.gtocore.common.machine.multiblock.electric.voidseries.VoidTransporterMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
-import com.gtocore.common.medical.MedicalConditionSync;
 import com.gtocore.common.saved.*;
 import com.gtocore.common.wireless.energy.WirelessGridEvents;
 import com.gtocore.config.GTOConfig;
@@ -36,6 +33,8 @@ import com.gtolib.api.misc.FastSavedData;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.OrganEffects;
 import com.gtolib.api.player.attribute.PlayerAttributes;
+import com.gtolib.api.scope.GTOScopes;
+import com.gtolib.api.wireless.PartProxyConnections;
 import com.gtolib.quest.QuestServer;
 import com.gtolib.utils.RLUtils;
 import com.gtolib.utils.RegistriesUtils;
@@ -53,8 +52,6 @@ import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
-import com.gregtechceu.gtceu.common.item.CoverPlaceBehavior;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 import com.gregtechceu.gtceu.utils.memoization.GTMemoizer;
 
 import net.minecraft.ChatFormatting;
@@ -113,6 +110,7 @@ import com.glodblock.github.extendedae.common.parts.PartExPatternProvider;
 import com.glodblock.github.extendedae.common.tileentities.TileExPatternProvider;
 import com.google.common.collect.ImmutableMap;
 import com.hepdd.gtmthings.data.CustomItems;
+import com.suried.gtoutils.schedule.Schedulers;
 import earth.terrarium.adastra.common.entities.mob.GlacianRam;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.ApiStatus;
@@ -134,7 +132,6 @@ public final class ForgeCommonEvent {
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onRightClickItem);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerLoggedInEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerTickEvent);
-        MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onPlayerChangedDimensionEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onLevelLoad);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onServerStoppedEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeCommonEvent::onCommandRegister);
@@ -151,8 +148,7 @@ public final class ForgeCommonEvent {
         AnimalsRevengeEvent.init();
         WirelessEvents.init();
         WirelessGridEvents.init();
-        MedicalConditionSync.init();
-        MEPatternBufferConnectionHandler.init();
+        PartProxyConnections.init();
         QuestServer.init();
     }
 
@@ -204,17 +200,13 @@ public final class ForgeCommonEvent {
         ItemStack itemStack = player.getItemInHand(hand);
         Item item = itemStack.getItem();
 
-        if (level.getBlockState(pos).getBlock() instanceof MonitorBlock && CoverPlaceBehavior.getCoverDefinition(itemStack) != null) {
-            event.setUseItem(Event.Result.DENY);
-        }
-
         if (!level.isClientSide && player.isShiftKeyDown() && level instanceof ServerLevel serverLevel) {
             Direction clickedFace = event.getFace();
             if (isPatternProviderItem(item) && MetaMachine.getMachine(level, pos) instanceof SimpleTieredMachine) {
-                TaskHandler.enqueueTask(serverLevel, () -> configureMachineForPatternProvider(serverLevel, pos, clickedFace));
+                Schedulers.of(serverLevel).schedule(() -> configureMachineForPatternProvider(serverLevel, pos, clickedFace));
             } else if (item instanceof MetaMachineItem && isPatternProviderAt(level, pos, clickedFace)) {
                 BlockPos machinePos = pos.relative(clickedFace);
-                TaskHandler.enqueueTask(serverLevel, () -> configureMachineForPatternProvider(serverLevel, machinePos, clickedFace.getOpposite()));
+                Schedulers.of(serverLevel).schedule(() -> configureMachineForPatternProvider(serverLevel, machinePos, clickedFace.getOpposite()));
             }
         }
 
@@ -360,13 +352,10 @@ public final class ForgeCommonEvent {
                 player.displayClientMessage(Component.translatable("gtocore.lang." + COMMON_HOTKEY_HINT).withStyle(ChatFormatting.GREEN), false);
                 Configurator.setRootLevel(org.apache.logging.log4j.Level.INFO);
             }
-            showVoidTimeHint(player);
-            syncPlayerTime(player);
             WirelessSync.pushTo(player);
             TeamResearchSavedData.sync(player);
             TechTreeSavedData.sync(player);
             CelestialSavedData.sync(player);
-            MEPatternBufferConnectionHandler.syncToPlayer(player);
         }
     }
 
@@ -377,13 +366,25 @@ public final class ForgeCommonEvent {
         }
     }
 
-    public static void onPlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
+    public static void install() {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.Clone.class, ForgeCommonEvent::keepVoidTimeHint);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.PlayerChangedDimensionEvent.class, ForgeCommonEvent::resyncTimeAfterTravel);
+        GTOScopes.PRESENCE.install("void_time", (scope, player) -> {
             showVoidTimeHint(player);
             syncPlayerTime(player);
-            MEPatternBufferConnectionHandler.syncToPlayer(player);
-            // Removed server-side language-gated announcement; it will now be handled client-side in ClientHooks
-        }
+        });
+        GTOScopes.PRESENCE.install("pattern_buffer_connections", (scope, player) -> {
+            PartProxyConnections.PATTERN_BUFFERS.syncToPlayer(player);
+            PartProxyConnections.MIRROR_HATCHES.syncToPlayer(player);
+        });
+    }
+
+    private static void resyncTimeAfterTravel(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) syncPlayerTime(player);
+    }
+
+    private static void keepVoidTimeHint(PlayerEvent.Clone event) {
+        if (event.getOriginal().getPersistentData().getBoolean("gtocore_void_time_hint_shown")) event.getEntity().getPersistentData().putBoolean("gtocore_void_time_hint_shown", true);
     }
 
     public static void onLevelLoad(LevelEvent.Load event) {
@@ -491,11 +492,29 @@ public final class ForgeCommonEvent {
         }
     }
 
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static void remapAdvancedTerminal(MissingMappingsEvent event) {
+        event.getMappings(Registries.ITEM, "gtmthings").forEach(mapping -> {
+            if (mapping.getKey().getPath().equals("advanced_terminal")) mapping.remap(GTItems.TERMINAL.get());
+        });
+    }
+
+    @Deprecated(since = "0.6.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
+    private static void remapStructureDetect(MissingMappingsEvent event) {
+        event.getMappings(Registries.ITEM, GTOCore.MOD_ID).forEach(mapping -> {
+            if (mapping.getKey().getPath().equals("structure_detect")) mapping.remap(GTItems.TERMINAL.get());
+        });
+    }
+
     public static void remapIds(MissingMappingsEvent event) {
         SuperStorageMigration.remap(event);
         ElectrochemistryMigration.remap(event);
         SpeedCards.remap(event);
         TieredInterfaces.remap(event);
+        remapAdvancedTerminal(event);
+        remapStructureDetect(event);
         event.getMappings(Registries.BLOCK_ENTITY_TYPE, GTOCore.MOD_ID).forEach(mapping -> {
             if (mapping.getKey().equals(GTOCore.id("directed_tesseract_generator"))) mapping.remap(GTOMachines.ADVANCED_TESSERACT_GENERATOR.getBlockEntityType());
         });

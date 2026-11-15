@@ -31,7 +31,6 @@ import com.hollingsworth.arsnouveau.common.ritual.RitualBreed;
 import com.hollingsworth.arsnouveau.common.ritual.RitualCloudshaper;
 import com.hollingsworth.arsnouveau.common.ritual.RitualDig;
 import com.hollingsworth.arsnouveau.common.ritual.RitualDisintegration;
-import com.hollingsworth.arsnouveau.common.ritual.RitualFlight;
 import com.hollingsworth.arsnouveau.common.ritual.RitualHealing;
 import com.hollingsworth.arsnouveau.common.ritual.RitualMoonfall;
 import com.hollingsworth.arsnouveau.common.ritual.RitualOvergrowth;
@@ -62,7 +61,6 @@ public final class QuestExternalRefs {
     public static final ItemLike RITUAL_CONJURE_METEORITES = () -> ritualTablet(ConjureMeteoritesRitual.class);
     public static final ItemLike RITUAL_DISINTEGRATION = () -> ritualTablet(RitualDisintegration.class);
     public static final ItemLike RITUAL_FERTILITY = () -> ritualTablet(RitualBreed.class);
-    public static final ItemLike RITUAL_FLIGHT = () -> ritualTablet(RitualFlight.class);
     public static final ItemLike RITUAL_MOONFALL = () -> ritualTablet(RitualMoonfall.class);
     public static final ItemLike RITUAL_OVERGROWTH = () -> ritualTablet(RitualOvergrowth.class);
     public static final ItemLike RITUAL_RESTORATION = () -> ritualTablet(RitualHealing.class);

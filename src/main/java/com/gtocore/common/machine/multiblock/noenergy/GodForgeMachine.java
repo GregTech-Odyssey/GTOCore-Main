@@ -15,7 +15,6 @@ import com.gtolib.utils.MultiBlockFileReader;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
@@ -36,6 +35,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Task;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -56,7 +56,7 @@ public final class GodForgeMachine extends NoEnergyMultiblockMachine implements 
     @SaveToDisk(defaultValue = "0")
     public int tier;
 
-    private TickableSubscription rotationSubscription;
+    private Task rotationSubscription;
 
     private final TierCasingTrait tierCasingTrait;
 

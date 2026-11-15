@@ -1312,11 +1312,6 @@ public final class Magic1Chapter {
             .task(Task.item(QuestExternalRefs.RITUAL_AWAKENING))
             .dependsOn(RITUAL_BRAZIER));
 
-    public static final Quest RITUAL_FLIGHT = CHAPTER.quest("ritual_flight", q -> q
-            .at(29.75, 7)
-            .task(Task.item(QuestExternalRefs.RITUAL_FLIGHT))
-            .dependsOn(RITUAL_BRAZIER));
-
     public static final Quest RITUAL_WILDEN_SUMMON = CHAPTER.quest("ritual_wilden_summon", q -> q
             .at(29, 9)
             .task(Task.item(QuestExternalRefs.RITUAL_WILDEN_SUMMON))

@@ -408,12 +408,6 @@ public final class GTOItems {
             .onRegister(attach(TimeTwisterBehavior.INSTANCE))
             .register();
 
-    public static final ItemEntry<ComponentItem> STRUCTURE_DETECT = item("structure_detect", "结构检测工具", ComponentItem::create)
-            .properties(p -> p.stacksTo(1))
-            .onRegister(attach(StructureDetectBehavior.INSTANCE))
-            .model(NonNullBiConsumer.noop())
-            .register();
-
     public static final ItemEntry<ComponentItem> PATTERN_MODIFIER_PRO = item("pattern_modifier_pro", "样板修改器pro", ComponentItem::create)
             .tips(GTOItemTooltips.PatternModifierTooltips)
             .properties(p -> p.stacksTo(1))

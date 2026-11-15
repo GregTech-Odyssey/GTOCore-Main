@@ -21,6 +21,7 @@
 | 提交/推送、`runData` 空转或崩溃、Gradle 产物被占用、LeanObject/AE 启动兼容性               | [Agent 常见坑与协作约定](docs/agent-pitfalls.md)                                                      |
 | 搭建开发环境、IDE 导入、分支与 PR 要求，或修改 README                                      | [团队开发说明](docs/development.md)                                                                   |
 | 新写或修改任务章节（`data/quest`）、任务书热加载/热修改/编辑模式                           | [任务书热加载与热修改](docs/quest-hot-edit.md)；章节写法不合规时开发环境启动直接崩溃                  |
+| 生成任务文本清单、导入官网下载的任务文本数据集（译文与原文修改）、`assets/gtocore_quest` 下的语言文件 | [任务文本：清单、译文与官网修改的导入](docs/quest-text.md) |
 
 纯文档、提示词或其他不涉及代码语义的修改不要求读取编码规范，也不要求运行 Gradle。
 
@@ -28,6 +29,7 @@ GTM/AE2/EMI/Botania/Ars Nouveau 等模组均有本项目维护的 fork。修复�
 
 ## 编码规范
 
+- **修复前先查历史与根因**：修复问题时，必须先调查相关 Git 历史（如 `git log`、`git blame` 和相关提交 diff），查明问题为何发生及相关改动的背景；确认根因后，依据根因制定修复方案并实施。历史不足以确定原因时，继续结合当前代码、日志或复现验证，不得把推测当作已确认的根因。
 - **默认实现位置**：新增编写的代码逻辑默认在 `GTOLib/` 模块中实现；物品、方块、机器、配方等注册项在本体仓库实现；涉及 GTM/AE2/EMI/Botania 等已 fork 模组的内部行为时，仍按 [修改位置说明](docs/forked-dependencies.md) 判断是否直接修改对应 fork。
 - **特化功能局部实现**：新增功能时，不要在 `MetaMachine`、`MetaMachineItem`、`RecipeLogic` 等适用范围宽泛的共用父类或通用逻辑类中，通过 `if (this instanceof YourNewClass)` 等针对新类的特判实现特化功能。应将功能实现在对应的特化类或其他能限定适用范围的合适位置。
 - 首次编辑或审查 Java/Kotlin 代码前，必须打开 [CODING_GUIDELINES.md](CODING_GUIDELINES.md) 的相关章节；完成修改后按实际 diff 再检查一次。它是本仓性能与正确性约束，不是可选建议。
@@ -96,6 +98,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 修改 `GTOLib/` 代码时，完成当前任务前必须使用 JDK 21 运行一次 `buildGtolibProtected` 并确认通过。一个任务在收尾时重建一次即可，不要每改一处都重建；若构建失败，应明确任务尚未验证完成，不得作为正常完成结果收尾。
 - GTOLib 产物只生成在 `build/gtolib/`（按源码指纹缓存），始终不得提交、上传或打包分发；dev 轨保留类名/包名（`GTOLib/protect/proguard-rules.pro`），只有发行轨改名（`proguard-release-rules.pro`，字典每次构建重新打乱）。`libs/` 不再存放 GTOLib 产物，残留的旧 `libs/gtolib-*` 由 gitignore 兜底，不要绕过。开发运行需要 named 类，生产链使用 SRG，勿用 reobf 产物覆盖明文调试 jar。
 - GTOLib 新增按名反射、注解扫描、存盘键或配置里写类名时，必须用 `com.gtolib.api.annotation.KeepName` 标注（类级保类名+包名，成员级保成员名+所属类名）；第三方或 GTOSeal Runtime 写死、改不了源码的名字再补 `GTOLib/protect/proguard-release-rules.pro` 的 `-keepnames`。开发环境测不出漏补。
+- CI 的 Actions 缓存只放公开下载的内容（依赖、Gradle 发行包、Minecraft 构建中间产物），由 `build.yml` 的缓存步骤按目录列出；不得缓存 Gradle 用户目录的其余部分，构建命令保留 `--no-build-cache`。
 
 ## 云端签名
 

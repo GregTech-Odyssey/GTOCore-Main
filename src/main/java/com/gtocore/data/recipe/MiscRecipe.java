@@ -23,6 +23,7 @@ import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.api.recipe.ingredient.FluidContainerIngredient;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
@@ -244,7 +245,7 @@ public final class MiscRecipe {
                 .save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("water_agar_mix").EUt(VA[HV]).duration(600)
-                .chancedInput(GTOItems.RED_ALGAE_FIBER.asItem(), 1000, 0)
+                .chancedInput(GTOItems.RED_ALGAE_FIBER.asItem(), Chance.of(1000))
                 .inputItems(dust, Gelatin)
                 .inputFluids(DistilledWater, 1000)
                 .outputFluids(GTOMaterials.WaterAgarMix, 1000)

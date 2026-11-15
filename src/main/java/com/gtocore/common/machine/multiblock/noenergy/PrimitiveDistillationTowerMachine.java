@@ -169,7 +169,7 @@ public final class PrimitiveDistillationTowerMachine extends NoEnergyMultiblockM
     public void onPartScan(IMultiPart part) {
         super.onPartScan(part);
         if (part instanceof IHeatContainerPart heatContainerPart) {
-            if (getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.A, Collections.emptySet()).contains(heatContainerPart.self().getPos())) {
+            if (getAssembly().getOrDefault(GTOPredicates.DataKeys.A, Collections.emptySet()).contains(heatContainerPart.self().getPos())) {
                 this.heatMachineA = heatContainerPart;
             } else {
                 this.heatMachineB = heatContainerPart;

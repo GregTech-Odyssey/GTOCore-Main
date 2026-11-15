@@ -18,7 +18,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
@@ -36,7 +35,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -81,6 +79,8 @@ import com.google.common.collect.HashBiMap;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -119,6 +119,13 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     public static final String SLOT_CONFIG_TITLE = "gtocore.pattern_part.slot_config.title";
     @RegisterLanguage(cn = "中键点击：打开此样板的独立配置", en = "Middle-click: open this pattern's settings")
     public static final String SLOT_CONFIG_HINT = "gtocore.pattern_part.slot_config.hint";
+    @RegisterLanguage(cn = "配方处理", en = "Recipe Handling")
+    public static final String RECIPE_HANDLING = "gtceu.ae.pattern_part_machine.RECIPE_HANDLING";
+    @RegisterLanguage(cn = "启用此样板", en = "Enable Pattern")
+    public static final String RECIPE_HANDLING_ENABLED = "gtceu.ae.pattern_part_machine.RECIPE_HANDLING_ENABLED";
+    @RegisterLanguage(cn = "关闭后此样板不参与机器的配方匹配；样板的配置与缓存都会保留",
+                      en = "When off, this pattern takes no part in the machine's recipe matching; its configuration and cache are kept")
+    public static final String RECIPE_HANDLING_TOOLTIP = "gtceu.ae.pattern_part_machine.RECIPE_HANDLING_TOOLTIP";
     @RegisterLanguage(cn = "点击箭头或滚动滚轮切换电路编号", en = "Click the arrows or scroll to change the circuit number")
     public static final Component CIRCUIT_HINT = Component.translatable("gtocore.pattern_part.circuit_hint");
     @RegisterLanguage(cn = "-1 表示不放电路；0~32 为对应编号的编程电路", en = "-1 means no circuit; 0-32 select the programmed circuit with that number")
@@ -173,7 +180,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     private List<IPatternDetails> patterns = Collections.emptyList();
     private boolean needPatternSync;
     @Nullable
-    private TickableSubscription updateSubs;
+    private Task updateSubs;
 
     protected MEPatternPartMachine(MetaMachineBlockEntity holder, int maxPatternCount) {
         super(holder, IO.IN);
@@ -435,7 +442,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         if (getMainNode().isOnline()) {
             updateSubs = subscribeServerTick(updateSubs, this::update);
         } else if (updateSubs != null) {
-            updateSubs.unsubscribe();
+            updateSubs.cancel();
             updateSubs = null;
         }
     }
@@ -447,7 +454,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
                 needPatternSync = false;
             }
         } else if (updateSubs != null) {
-            updateSubs.unsubscribe();
+            updateSubs.cancel();
             updateSubs = null;
         }
     }
@@ -508,7 +515,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
             return;
         }
         if (!detailsInit && getLevel() instanceof ServerLevel level) {
-            TaskHandler.enqueueTask(level, () -> {
+            Schedulers.of(level).schedule(10, () -> {
                 var slots = getInternalInventory();
                 for (int i = 0; i < patternInventory.getSlots(); i++) {
                     var patternDetails = decodePattern(patternInventory.getStackInSlot(i), i);
@@ -517,7 +524,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
                 updatePatterns();
                 onDetailsPostInit();
                 detailsInit = true;
-            }, 10);
+            });
         }
     }
 
@@ -533,6 +540,29 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         if (!getMainNode().isActive()) return false;
         var slot = detailsSlotMap.get(patternDetails);
         return slot != null && slot.pushPattern(patternDetails, inputHolder);
+    }
+
+    /**
+     * 切换某个样板槽的配方处理开关：关闭后该样板不参与机器的配方匹配，
+     * 槽内配置、缓存与已推送的原料/产物都保留。
+     */
+    public void setPatternSlotActive(int index, boolean active) {
+        if (isRemote() || index < 0 || index >= internalInventory.length) return;
+        var slot = internalInventory[index];
+        if (slot.isRecipeProcessingEnabled() == active) return;
+        slot.setRecipeProcessingEnabled(active);
+        onChanged();
+        markControllersRecipeDirty();
+    }
+
+    /** 样板开关变化后让所属多方块机器的配方逻辑重新检索配方。 */
+    protected void markControllersRecipeDirty() {
+        for (var controller : getControllers()) {
+            if (controller instanceof IRecipeLogicMachine machine) {
+                machine.getRecipeLogic().markLastRecipeDirty();
+                machine.getRecipeLogic().updateTickSubscription();
+            }
+        }
     }
 
     @Override
@@ -835,6 +865,14 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         public abstract boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder);
 
         public abstract void onPatternChange();
+
+        /** 该样板是否启用配方处理；关闭后不参与机器的配方匹配。默认启用。 */
+        public boolean isRecipeProcessingEnabled() {
+            return true;
+        }
+
+        /** 切换该样板的配方处理开关；只有持久化该状态的槽位实现才有意义。 */
+        public void setRecipeProcessingEnabled(boolean enabled) {}
 
         /** 读取 LDLib 时代的 NBT 格式：拆下后物品 NBT 里仍是 {@link CompoundTag} 的旧槽位。 */
         public abstract void deserializeNBT(CompoundTag compoundTag);

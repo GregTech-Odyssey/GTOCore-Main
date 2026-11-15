@@ -28,12 +28,9 @@ import java.util.Objects;
  * <p>
  * 生命周期：
  * <ul>
- * <li>{@code onLoad}：在 {@code super.onLoad()} 之后调用 {@link #onWirelessLoad()}，注册 AE 首 tick 回调
- * （排在 GTM 建节点的回调之后，同一区块先进先出），回调里 {@link #attachWireless()}。</li>
- * <li>{@code onUnload}：什么都不做——AE 销毁节点时自动拆边。</li>
  * <li>放置：{@link #onWirelessPlaced} 处理潜行放置自动加入收藏网络。</li>
  * </ul>
- * 实现类只需提供网络 id 字段（存档键固定为 {@code _connectedNetworkId}，{@code @SyncToClient} 供客户端高亮与 Jade）。
+ * 实现类提供网络 id 字段（存档键固定为 {@code _connectedNetworkId}，{@code @SyncToClient} 供客户端高亮与 Jade）。
  */
 @DataGeneratorScanned
 public interface WirelessMachine extends IGridConnectedMachine {
@@ -90,6 +87,11 @@ public interface WirelessMachine extends IGridConnectedMachine {
 
     void setWirelessNetworkId(String id);
 
+    @Nullable
+    WirelessLink getWirelessLink();
+
+    void setWirelessLink(@Nullable WirelessLink link);
+
     /** 是否允许加入无线网络（例如简易样板总成不允许）。 */
     default boolean allowWirelessConnection() {
         return true;
@@ -101,7 +103,15 @@ public interface WirelessMachine extends IGridConnectedMachine {
     default void onWirelessLoad() {
         var machine = self();
         if (machine.isRemote()) return;
-        GridHelper.onFirstTick(machine.holder, blockEntity -> attachWireless());
+        GridHelper.onFirstTick(machine.holder, blockEntity -> WirelessLink.refresh(this));
+    }
+
+    default void onWirelessUnload() {
+        WirelessLink.close(this);
+    }
+
+    default void onWirelessOwnerChanged() {
+        WirelessLink.ownerChanged(this);
     }
 
     /** 潜行放置时自动加入放置者收藏的网络；失败在 actionbar 提示原因。 */
@@ -115,39 +125,16 @@ public interface WirelessMachine extends IGridConnectedMachine {
 
     // ==================== 连接 ====================
 
-    /**
-     * 按当前 id 连到对应网络的 hub（幂等）。网络已被删除（例如删除时本机所在区块未加载）则清空 id；
-     * 机器有主人且主人无权使用该网络时不连（{@link LinkState#NO_PERMISSION}，界面与 Jade 显示原因）；
-     * 无线数据不可用时不连、不改 id。
-     */
     default void attachWireless() {
-        var id = getWirelessNetworkId();
-        if (id.isEmpty()) return;
-        if (!allowWirelessConnection()) {
-            clearWirelessNetworkId();
-            return;
-        }
-        var server = Objects.requireNonNull(self().getLevel()).getServer();
-        var networks = WirelessNetworks.get(Objects.requireNonNull(server));
-        if (!networks.isAvailable()) return;
-        var network = networks.get(id);
-        if (network == null) {
-            clearWirelessNetworkId();
-            return;
-        }
-        var owner = self().getOwnerUUID();
-        if (owner != null && !network.canUse(owner)) return;
         var node = getMainNode().getNode();
-        // 放置当 tick 节点还没建：已排队的首 tick 回调会再调用本方法接上
         if (node == null) return;
-        var hub = WirelessHub.getOrCreate(server, id);
-        if (hub.isConnected(node)) return;
-        GridHelper.createConnection(node, hub.node(node.getLevel()));
+        var hub = WirelessHub.getOrCreate(node.getLevel().getServer(), getWirelessNetworkId());
+        if (!hub.isConnected(node)) GridHelper.createConnection(node, hub.node(node.getLevel()));
     }
 
     /**
      * 机器主人（有的话）能否使用该网络。操作玩家能管理机器、能用网络还不够：OP 可以管理别人的机器，
-     * 但机器仍以主人身份接入，主人无权使用的网络接不上（{@link #attachWireless} 同样按主人判定）。
+     * 但机器仍以主人身份接入，主人无权使用的网络接不上。
      */
     private boolean ownerCanUse(WirelessNetwork network) {
         var owner = self().getOwnerUUID();
@@ -179,10 +166,10 @@ public interface WirelessMachine extends IGridConnectedMachine {
         if (!network.canUse(player.getUUID()) || !ownerCanUse(network)) return WirelessStatus.NO_PERMISSION_NETWORK;
         if (!id.equals(getWirelessNetworkId())) {
             detachWireless();
-            setWirelessNetworkId(id);
-            markWirelessChanged();
+            assignWirelessNetwork(id);
+        } else {
+            WirelessLink.refresh(this);
         }
-        attachWireless();
         return WirelessStatus.OK;
     }
 
@@ -249,9 +236,14 @@ public interface WirelessMachine extends IGridConnectedMachine {
         self().requestSync();
     }
 
-    private void clearWirelessNetworkId() {
-        setWirelessNetworkId("");
+    default void assignWirelessNetwork(String id) {
+        setWirelessNetworkId(id);
         markWirelessChanged();
+        WirelessLink.refresh(this);
+    }
+
+    private void clearWirelessNetworkId() {
+        assignWirelessNetwork("");
     }
 
     /** ME 部件侧边的无线网络标签页。 */

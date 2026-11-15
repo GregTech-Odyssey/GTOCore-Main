@@ -12,7 +12,6 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.PercentField;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -23,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Schedulers;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -97,7 +97,7 @@ public final class CreativePowerAmplifierCover extends CoverBehavior implements 
 
     private void updateCoverSub() {
         if (coverHolder.getLevel() instanceof ServerLevel level) {
-            TaskHandler.enqueueTask(level, () -> {
+            Schedulers.of(level).schedule(() -> {
                 clampMultipliers();
                 MetaMachine machine = getMachine();
                 if (machine instanceof IConfigurablePowerAmplifierMachine amplifierMachine && amplifierMachine.gtolib$noPowerAmplifier()) {

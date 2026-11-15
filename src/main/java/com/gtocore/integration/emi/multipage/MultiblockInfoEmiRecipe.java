@@ -30,8 +30,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.fml.loading.FMLLoader;
 
 import com.gto.datasynclib.datastream.codec.ByteBufCodecs;
@@ -76,8 +74,6 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
 
     private static final Widget STRUCTURE = new Widget(0, 0, StructurePreviewWidget.WIDTH, StructurePreviewWidget.HEIGHT);
     private static final GTRecipeWidget.PageFrame COMPACT_FRAME = new GTRecipeWidget.PageFrame(StructurePreviewWidget.WIDTH, StructurePreviewWidget.HEIGHT, 0, false);
-
-    private static volatile List<MultiblockInfoEmiRecipe> pendingInputs = Collections.emptyList();
 
     public final MultiblockMachineDefinition definition;
     private volatile boolean inputsCollected;
@@ -128,32 +124,6 @@ public final class MultiblockInfoEmiRecipe extends ModularEmiRecipe<Widget> impl
     @Override
     public int getDisplayHeight() {
         return StructurePreviewWidget.HEIGHT;
-    }
-
-    public static void prepareInputsOnTagsUpdate(List<MultiblockInfoEmiRecipe> recipes) {
-        if (recipes.isEmpty()) return;
-        pendingInputs = List.copyOf(recipes);
-        MinecraftForge.EVENT_BUS.addListener(MultiblockInfoEmiRecipe::onTagsUpdated);
-    }
-
-    private static void onTagsUpdated(TagsUpdatedEvent event) {
-        if (event.getUpdateCause() != TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) return;
-        var recipes = pendingInputs;
-        if (recipes.isEmpty()) return;
-        pendingInputs = Collections.emptyList();
-        var thread = new Thread(() -> {
-            long time = System.currentTimeMillis();
-            for (var recipe : recipes) {
-                try {
-                    recipe.getInputs();
-                } catch (Throwable e) {
-                    GTOCore.LOGGER.warn("Failed to prepare multiblock EMI inputs for {}", recipe.definition.getId(), e);
-                }
-            }
-            GTOCore.LOGGER.info("Prepared {} multiblock EMI inputs in {}ms", recipes.size(), System.currentTimeMillis() - time);
-        }, "GTO Multiblock EMI Inputs");
-        thread.setDaemon(true);
-        thread.start();
     }
 
     @Override

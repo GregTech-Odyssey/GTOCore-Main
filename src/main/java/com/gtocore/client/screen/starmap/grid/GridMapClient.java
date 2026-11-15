@@ -223,6 +223,11 @@ public final class GridMapClient implements CanvasLayer {
     }
 
     private void onItemClick(CanvasItem item, int button, float worldX, float worldY) {
+        if (button == 1 && !decorator.isPicking()) {
+            int body = bodies.bodyOf(item);
+            if (body >= 0 && selection.toggle(body)) camera.reveal(body);
+            return;
+        }
         if (button != 0) return;
         int edge = edges.edgeOf(item);
         if (edge >= 0) {
@@ -245,7 +250,31 @@ public final class GridMapClient implements CanvasLayer {
     }
 
     private void onBackgroundClick(float worldX, float worldY, int button) {
-        if (button == 0 && !decorator.isPicking()) selection.clear();
+        if (button != 0 || decorator.isPicking()) return;
+        int orbit = orbitAt(worldX, worldY);
+        if (orbit >= 0) {
+            view.openEquipment(catalog.orbit(orbit));
+            return;
+        }
+        selection.clear();
+    }
+
+    private int orbitAt(float x, float y) {
+        double closest = 5 / (double) canvas.scale();
+        int result = -1;
+        for (int body = 0; body < catalog.bodyCount(); body++) {
+            if (catalog.isStellar(body) || catalog.isMoon(body) || catalog.orbit(body) == null) continue;
+            int system = catalog.system(body);
+            double dx = x - catalog.systemX(system), dy = (y - catalog.systemY(system)) / StarGeometry.TILT;
+            double radius = Math.sqrt(dx * dx + dy * dy);
+            if (radius == 0) continue;
+            double normal = Math.sqrt(dx * dx + dy * dy / (StarGeometry.TILT * StarGeometry.TILT)) / radius;
+            double distance = Math.abs(radius - catalog.ringRadius(system, catalog.order(body))) / normal;
+            if (distance > closest) continue;
+            closest = distance;
+            result = body;
+        }
+        return result;
     }
 
     private void click(int body) {
@@ -254,6 +283,7 @@ public final class GridMapClient implements CanvasLayer {
             if (dimRef > 0) view.sendPick(dimRef);
             return;
         }
-        if (selection.toggle(body)) camera.reveal(body);
+        var dimension = catalog.dimension(body);
+        if (dimension != null) view.openEquipment(dimension);
     }
 }

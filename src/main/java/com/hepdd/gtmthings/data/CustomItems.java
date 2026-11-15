@@ -142,11 +142,6 @@ public class CustomItems {
                 }), new CoverPlaceBehavior(amperage == 1 ? GTMTCovers.WIRELESS_ENERGY_RECEIVE[tier - 1] : GTMTCovers.WIRELESS_ENERGY_RECEIVE_4A[tier - 1]))).register();
     }
 
-    public static ItemEntry<ComponentItem> ADVANCED_TERMINAL = GTMTHINGS_REGISTRATE
-            .item("advanced_terminal", ComponentItem::create)
-            .properties(p -> p.stacksTo(1))
-            .register();
-
     public static ItemEntry<ComponentItem> WIRELESS_ENERGY_TERMINAL = GTMTHINGS_REGISTRATE
             .item("wireless_energy_terminal", ComponentItem::create)
             .properties(p -> p.stacksTo(1))

@@ -60,7 +60,7 @@ public final class DrawingTowerMachine extends CoilMultiblockMachine {
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        height = structureParam(LAYERS);
+        height = getAssembly().get(LAYERS);
         reduction = Math.max(0.00001, 2 / Math.pow(1.2, ((height / 8D) * ((getTemperature() - 5000D) / 900D))));
         parallels = (getTemperature() <= 10000) ? 1 : (int) Math.round(Math.log(getTemperature() - 9600) / Math.log(1.08) - 84);
     }

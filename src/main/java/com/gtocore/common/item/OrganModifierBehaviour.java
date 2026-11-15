@@ -20,6 +20,8 @@ import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.SlotGrid;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -70,6 +72,8 @@ public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
     @RegisterLanguage(cn = "每缺一件身体器官，生命上限按比例降低；整套达到标准级 (I) 起，生命上限随套装等级提高", en = "Each missing body organ lowers your max health; a full set of Standard (I) or higher raises it by set tier")
     private static final Component TIP_HEALTH = Component.translatable("gtocore.organ_modifier.health.tip");
 
+    private static final int INLINE_SLOT_LIMIT = UISizes.SLOTS_PER_ROW / 2;
+
     @Override
     public ModularUI createUI(HeldItemUIFactory.HeldItemHolder holder, Player player) {
         return MachineWindow.createUI(new Page(player), holder, player);
@@ -106,16 +110,25 @@ public class OrganModifierBehaviour implements IItemUIFactory, IAddInformation {
             }
             var body = UIElement.column(LayoutStyle.AUTO).addChildren(bodySlots, bodyLabels);
 
-            // 翅膀：名称 …… 4 格
-            var wingName = TextLine.constant(0, Component.translatable(OrganType.WING.translationKey));
-            wingName.layout(l -> l.flex(1));
-            var wings = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.alignCenter()).addChild(wingName);
-            for (int i = 0; i < OrganType.WING.slotCount; i++) {
-                wings.addChild(organSlot(organs, OrganType.WING, i));
+            var page = Form.page().addChildren(status, body);
+            for (var type : OrganType.VALUES) {
+                if (type.isBody()) continue;
+                if (type.slotCount > INLINE_SLOT_LIMIT) {
+                    page.addChild(UIElement.column(LayoutStyle.AUTO).addChildren(Form.fieldLabel(Component.translatable(type.translationKey)),
+                            SlotGrid.of(UISizes.SLOTS_PER_ROW, type.slotCount, i -> organSlot(organs, type, i))));
+                    continue;
+                }
+                var name = TextLine.constant(0, Component.translatable(type.translationKey));
+                name.layout(l -> l.flex(1));
+                var row = UIElement.row(UISizes.SLOT_SIZE).layout(l -> l.alignCenter()).addChild(name);
+                for (int i = 0; i < type.slotCount; i++) {
+                    row.addChild(organSlot(organs, type, i));
+                }
+                page.addChild(row);
             }
-
-            return Form.page()
-                    .addChildren(status, body, wings);
+            var scroller = ScrollerView.page("organ_modifier.page", UISizes.CONTENT_WIDTH).adaptiveWidth();
+            scroller.addScrollViewChild(page);
+            return UIElement.column(LayoutStyle.AUTO).addChild(scroller);
         }
 
         private static com.gregtechceu.gtceu.uipro.Level setTierLevel(@Nullable OrganTier setTier) {

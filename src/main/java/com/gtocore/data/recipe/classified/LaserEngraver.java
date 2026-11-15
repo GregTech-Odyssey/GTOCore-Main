@@ -204,7 +204,7 @@ final class LaserEngraver {
         LASER_ENGRAVER_RECIPES.builder("cascade_mfpc_dustp")
                 .inputItems(TagPrefix.dust, GTOMaterials.ExtremeTemperatureInterfaceStabilizedMFPC)
                 .notConsumable(GTOItems.ULTRASHORT_PULSE_LASER.asItem())
-                .outputItems(TagPrefix.dust, NetherStar)
+                .outputItems(TagPrefix.dust, GTOMaterials.CascadeMFPC)
                 .cleanroom(1)
                 .EUt(129600)
                 .duration(20)

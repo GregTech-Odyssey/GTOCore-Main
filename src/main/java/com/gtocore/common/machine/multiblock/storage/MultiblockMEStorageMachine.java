@@ -302,7 +302,7 @@ public class MultiblockMEStorageMachine extends MultiblockControllerMachine impl
 
     /** 容量（按 {@link #getCapacityUsage} 计）：密封机械方块数量 × 800 × (密封等级 + 1)。 */
     protected long computeCapacity() {
-        return cells * 800L * (getMultiblockState().getMatchContext().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1);
+        return cells * 800L * (getAssembly().getOrDefault(GTORecipeDataKeys.HERMETIC_CASING_TIER, 0) + 1);
     }
 
     @Override

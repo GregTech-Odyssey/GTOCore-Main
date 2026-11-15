@@ -107,7 +107,7 @@ public final class PCBFactoryMachine extends StorageMultiblockMachine {
     public void onStructureFormed() {
         super.onStructureFormed();
         var assembly = getAssembly();
-        structureTier = assembly == null ? 1 : 1 + (assembly.has(TIER2_MODULE) ? 1 : 0) + (assembly.has(TIER3_MODULE) ? 1 : 0);
+        structureTier = 1 + (assembly.has(TIER2_MODULE) ? 1 : 0) + (assembly.has(TIER3_MODULE) ? 1 : 0);
     }
 
     @Override

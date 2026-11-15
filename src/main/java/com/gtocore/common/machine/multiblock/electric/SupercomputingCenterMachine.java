@@ -20,7 +20,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IOpticalComputationProvider;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.machine.ConditionalSubscriptionHandler;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -35,7 +34,6 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.hpca.HPCACoolerPartM
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -49,6 +47,8 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.google.common.collect.ImmutableMap;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.common.registry.ModItems;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import lombok.Getter;
@@ -122,7 +122,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     private long maxEUt;
     private GTRecipeDefinition runRecipe;
     @Nullable
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor computationMonitor = holder.monitorTick(GTOTickTimeMonitors.RESEARCH_COMPUTATION, this::tick);
@@ -152,17 +152,17 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
 
         clean(scanOnly);
         if (!isFormed) return;
-        Integer computerTier = getMultiblockState().getMatchContext().get(GTORecipeDataKeys.COMPUTER_CASING_TIER);
+        Integer computerTier = getAssembly().get(GTORecipeDataKeys.COMPUTER_CASING_TIER);
         if (computerTier == null || machineTier != computerTier) {
             incompatible = true;
             return;
         }
-        Integer heatTier = getMultiblockState().getMatchContext().get(GTORecipeDataKeys.COMPUTER_HEAT_TIER);
+        Integer heatTier = getAssembly().get(GTORecipeDataKeys.COMPUTER_HEAT_TIER);
         if (heatTier == null || machineTier != heatTier) {
             incompatible = true;
             return;
         }
-        Integer glassTier = getMultiblockState().getMatchContext().get(GTORecipeDataKeys.GLASS_TIER);
+        Integer glassTier = getAssembly().get(GTORecipeDataKeys.GLASS_TIER);
         if (glassTier == null || glassTier < GLASS_MAP.get(machineTier)) {
             incompatible = true;
             return;
@@ -299,7 +299,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     public void onLoad() {
         super.onLoad();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            TaskHandler.enqueueTask(serverLevel, this::updateTickSubscription);
+            Schedulers.of(serverLevel).schedule(this::updateTickSubscription);
         }
     }
 
@@ -307,7 +307,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }
@@ -316,7 +316,7 @@ public final class SupercomputingCenterMachine extends StorageMultiblockMachine 
         if (isFormed && !incompatible) {
             tickSubs = subscribeServerTick(tickSubs, computationMonitor);
         } else if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

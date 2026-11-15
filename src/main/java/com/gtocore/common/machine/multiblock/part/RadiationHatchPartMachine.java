@@ -8,7 +8,6 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
@@ -30,6 +29,7 @@ import appeng.api.stacks.AEItemKey;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 
 import java.util.List;
@@ -65,7 +65,7 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     @SaveToDisk(defaultValue = "false")
     private boolean signalPowered;
 
-    private TickableSubscription radiationSubs;
+    private Task radiationSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor radiationMonitor = holder.monitorTick(GTOTickTimeMonitors.RADIATION, this::checkRadiation);
@@ -87,7 +87,7 @@ public final class RadiationHatchPartMachine extends MultiblockPartMachine imple
     public void onUnload() {
         super.onUnload();
         if (radiationSubs != null) {
-            radiationSubs.unsubscribe();
+            radiationSubs.cancel();
             radiationSubs = null;
         }
     }

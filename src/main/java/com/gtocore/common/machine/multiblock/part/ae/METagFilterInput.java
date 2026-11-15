@@ -39,7 +39,6 @@ final class METagFilterInput {
     private METagFilterInput() {}
 
     static void refreshConfigs(ExportOnlyAESlot[] slots, Class<? extends AEKey> keyType, TagPriorityList filter, long amount, IStorageService storage, IActionSource source) {
-        if (!filter.isReady()) return;
         boolean empty = filter.isEmpty();
         var network = storage.getCachedInventory();
         int free = 0;

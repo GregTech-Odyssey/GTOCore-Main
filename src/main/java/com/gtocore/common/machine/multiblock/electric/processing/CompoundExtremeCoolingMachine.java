@@ -68,7 +68,7 @@ public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMa
 
     @Override
     public boolean checkConditions(RecipeHandlerUnit unit, GTRecipeDefinition recipe) {
-        if (recipe.recipeType == GTORecipeTypes.PLASMA_CONDENSER_RECIPES && (!hasStructurePart(PLASMA_WINGS) || getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES)) {
+        if (recipe.recipeType == GTORecipeTypes.PLASMA_CONDENSER_RECIPES && (!getAssembly().has(PLASMA_WINGS) || getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES)) {
             (getRecipeType() != GTORecipeTypes.PLASMA_CONDENSER_RECIPES ? IdleReason.NOT_APPLICABLE : IdleReason.PLASMA_WINGS_MISSING).setReason(this);
             return false;
         }
@@ -78,19 +78,19 @@ public final class CompoundExtremeCoolingMachine extends CrossRecipeMultiblockMa
     @Override
     public void customText(List<Component> textList) {
         super.customText(textList);
-        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable(hasStructurePart(PLASMA_WINGS) ? WINGS_BUILT : WINGS_MISSING));
+        if (!MultiblockPage.isScreenText()) textList.add(Component.translatable(getAssembly().has(PLASMA_WINGS) ? WINGS_BUILT : WINGS_MISSING));
     }
 
     @Override
     public void addScreenReadouts(MultiblockPage page) {
         super.addScreenReadouts(page);
-        page.addLine(Component.translatable(WINGS_NAME), () -> hasStructurePart(PLASMA_WINGS) ? BUILT_TEXT : MISSING_TEXT)
+        page.addLine(Component.translatable(WINGS_NAME), () -> getAssembly().has(PLASMA_WINGS) ? BUILT_TEXT : MISSING_TEXT)
                 .bindLevel(this::wingsLevel)
                 .tooltips(Component.translatable(WINGS_DESC));
     }
 
     private Level wingsLevel() {
-        if (hasStructurePart(PLASMA_WINGS)) return Level.GOOD;
+        if (getAssembly().has(PLASMA_WINGS)) return Level.GOOD;
         return getRecipeType() == GTORecipeTypes.PLASMA_CONDENSER_RECIPES ? Level.WARNING : Level.NORMAL;
     }
 

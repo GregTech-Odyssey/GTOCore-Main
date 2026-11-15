@@ -26,6 +26,7 @@ public final class ComponentSlang {
     public static final Component EfficiencyBonus = global("效率加成", "Efficiency Bonus");
     public static final Component ParallelBonus = global("并行加成", "Parallel Bonus");
     public static final Component PowerGenerationEfficiency = global("发电效率", "Power Generation Efficiency");
+    public static final Component Overclock = global("超频", "Overclock");
     public static final Component AfterModuleInstallation = global("安装模块后", "After Module Installation");
     public static final Component CoilEfficiencyBonus = global("线圈效率加成", "Coil Efficiency Bonus");
     public static final Component BeAwareOfBurn = Tx.red(global("小心烫伤！", "BE AWARE OF BURNS!"));

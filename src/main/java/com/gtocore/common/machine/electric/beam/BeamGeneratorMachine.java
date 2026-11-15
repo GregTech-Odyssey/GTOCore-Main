@@ -11,7 +11,6 @@ import com.gtolib.api.beam.BeamProperties;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IOverclockMachine;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +40,7 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
     @SaveToDisk(defaultValue = "0")
     private float phiRad;
 
-    private TickableSubscription tickSubscription;
+    private Task tickSubscription;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::tick);
@@ -64,7 +64,7 @@ public class BeamGeneratorMachine extends SimpleTieredMachine {
     public void onUnload() {
         removeBeam();
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
         super.onUnload();

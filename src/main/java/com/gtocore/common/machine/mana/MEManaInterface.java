@@ -6,6 +6,8 @@ import com.gtocore.utils.ManaUnification;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.feature.IWirelessManaContainerHolder;
+import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.wireless.TeamContainerCache;
 import com.gtolib.api.wireless.WirelessManaContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -47,6 +49,7 @@ import vazkii.botania.forge.integration.ae2.ManaKey;
 import vazkii.botania.forge.integration.ae2.ManaKeyType;
 
 import java.math.BigInteger;
+import java.util.Objects;
 import java.util.UUID;
 
 @DataGeneratorScanned
@@ -62,8 +65,7 @@ public final class MEManaInterface extends MetaMachine implements
     public static final Component BOTANIA_MANA = Component.translatable("gtocore.machine.me_mana_interface.botania_mana");
 
     @Getter
-    @Setter
-    private WirelessManaContainer wirelessManaContainerCache;
+    private final TeamContainerCache<WirelessManaContainer> wirelessManaContainerCache = new TeamContainerCache<>(WirelessManaContainer::getOrCreateContainer);
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
     @SyncToClient
@@ -73,6 +75,12 @@ public final class MEManaInterface extends MetaMachine implements
     @SaveToDisk(defaultValue = "0")
     @Getter
     private int priority = 0;
+    @Nullable
+    private UUID mountedTeam;
+    private final MachineScope<MEManaInterface> scope = new MachineScope<>(this, (opened, self) -> {
+        mountedTeam = self.team();
+        opened.watch(self::team, this::identityChanged);
+    });
 
     public MEManaInterface(MetaMachineBlockEntity holder) {
         super(holder);
@@ -83,6 +91,12 @@ public final class MEManaInterface extends MetaMachine implements
     @Override
     public Object getResourceIdentity() {
         return getWirelessManaContainer();
+    }
+
+    private void identityChanged(@Nullable UUID team) {
+        if (Objects.equals(team, mountedTeam)) return;
+        mountedTeam = team;
+        if (getMainNode() != null) IStorageProvider.requestUpdate(getMainNode());
     }
 
     @Override

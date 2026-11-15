@@ -7,6 +7,7 @@ import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.tag.TagUtil;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -1176,7 +1177,7 @@ public final class WoodRecipes {
 
         EXTRACTOR_RECIPES.builder(mane + "_sapling")
                 .inputItems(leaves)
-                .chancedOutput(sapling, 1000, 100)
+                .chancedOutput(sapling, Chance.of(1000).risePerOverclock(100))
                 .EUt(30)
                 .duration(100)
                 .save();
@@ -1228,7 +1229,7 @@ public final class WoodRecipes {
 
         EXTRACTOR_RECIPES.builder(mane + "_sapling")
                 .inputItems(leaves)
-                .chancedOutput(sapling, 1000, 100)
+                .chancedOutput(sapling, Chance.of(1000).risePerOverclock(100))
                 .EUt(30)
                 .duration(100)
                 .save();

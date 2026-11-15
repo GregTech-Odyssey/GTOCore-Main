@@ -30,8 +30,6 @@ public class HiddenItems {
         deprecate(RegistriesUtils.getItem("ad_astra:cryo_freezer"));
         deprecate(RegistriesUtils.getItem("ad_astra:compressor"));
         deprecate(RegistriesUtils.getItem("ad_astra:etrionic_blast_furnace"));
-        deprecate(RegistriesUtils.getItem("guideme:guide"));
-        deprecate(RegistriesUtils.getItem("ars_nouveau:ritual_flight"));
         deprecate(GTOBlocks.LAURERIL_JAR.asItem());
         deprecate(RegistriesUtils.getItem("extrabotany:mana_reader"));
 

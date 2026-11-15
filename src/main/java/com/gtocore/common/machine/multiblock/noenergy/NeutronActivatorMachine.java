@@ -109,7 +109,7 @@ public class NeutronActivatorMachine extends NoEnergyMultiblockMachine implement
         acceleratorMachines.clear();
         busMachines.clear();
         super.onStructureFormed();
-        height = structureParam(LAYERS);
+        height = getAssembly().get(LAYERS);
         neutronEnergySubs.initialize(getLevel());
     }
 

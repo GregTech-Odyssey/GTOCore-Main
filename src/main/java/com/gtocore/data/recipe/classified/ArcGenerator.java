@@ -7,6 +7,7 @@ import com.gtocore.common.recipe.condition.GravityCondition;
 import com.gtocore.common.recipe.condition.VacuumCondition;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.ItemStack;
@@ -153,7 +154,7 @@ final class ArcGenerator {
                 .inputFluids(GTOMaterials.Antimatter, 1000)
                 .inputFluids(GTMaterials.EnderEye, 10000)
                 .inputFluids(GTMaterials.SterileGrowthMedium, 10000)
-                .chancedOutput(new ItemStack(Blocks.DRAGON_EGG.asItem()), 9000, 0)
+                .chancedOutput(new ItemStack(Blocks.DRAGON_EGG.asItem()), Chance.of(9000))
                 .EUt(491520)
                 .duration(2000)
                 .save();
@@ -319,7 +320,7 @@ final class ArcGenerator {
                 .circuitMeta(1)
                 .inputItems(TagPrefix.dust, GTOMaterials.FrozenVolatileIce, 8)
                 .outputItems("ad_astra:ice_shard", 4)
-                .chancedOutput(GTOMaterials.IceCrystalVolatiles.getFluid(1000), 2500, 0)
+                .chancedOutput(GTOMaterials.IceCrystalVolatiles.getFluid(1000), Chance.of(2500))
                 .EUt(256000)
                 .duration(120)
                 .save();

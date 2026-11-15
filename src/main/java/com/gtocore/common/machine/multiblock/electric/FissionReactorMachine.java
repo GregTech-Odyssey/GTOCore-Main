@@ -96,7 +96,7 @@ public final class FissionReactorMachine extends ElectricMultiblockMachine imple
         cooler = 0;
         heatAdjacent = 1;
         coolerAdjacent = 0;
-        var container = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.FISSION_COMPONENT);
+        var container = getAssembly().get(GTOPredicates.DataKeys.FISSION_COMPONENT);
         if (container != null) {
             fuel = container[0];
             cooler = container[1];

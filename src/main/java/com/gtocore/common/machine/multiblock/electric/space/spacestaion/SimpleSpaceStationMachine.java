@@ -80,9 +80,9 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
     /// @see com.gregtechceu.gtceu.common.machine.multiblock.electric.CleanroomMachine#onStructureFormed()
     @Override
     public void onStructureFormed() {
-        this.outputDistilledWaterHatches = getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.SPACE_MACHINE_PHOTOVOLTAIC_SUPP, Collections.emptySet());
+        this.outputDistilledWaterHatches = getAssembly().getOrDefault(GTOPredicates.DataKeys.SPACE_MACHINE_PHOTOVOLTAIC_SUPP, Collections.emptySet());
         super.onStructureFormed();
-        this.cleanroomTier = getMultiblockState().getMatchContext().getOrDefault(Predicates.DataKey.FILTER_TYPE, 1);
+        this.cleanroomTier = getAssembly().getOrDefault(Predicates.DataKey.FILTER_TYPE, 1);
         onFormed();
     }
 
@@ -181,7 +181,7 @@ public class SimpleSpaceStationMachine extends AbstractSpaceStation implements I
 
     int getInnerVolume() {
         if (!isFormed()) return 0;
-        return getMultiblockState().getMatchContext().getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()).size();
+        return getAssembly().getOrDefault(GTOPredicates.DataKeys.SPACE, Collections.emptySet()).size();
     }
 
     @Nullable

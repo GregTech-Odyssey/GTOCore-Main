@@ -17,7 +17,6 @@ import com.gtolib.utils.LegacyIO;
 import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.CircuitHandler;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
@@ -72,6 +71,7 @@ import com.gto.datasynclib.datastream.codec.ValueOps;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.suried.gtoutils.schedule.Task;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -113,7 +113,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
     };
 
     @Nullable
-    private TickableSubscription autoIOSubs;
+    private Task autoIOSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor meInputMonitor = holder.monitorTick(GTOTickTimeMonitors.ME_INPUT, this::autoIO);
@@ -143,7 +143,7 @@ public class MEInputBufferPartMachine extends MEPatternPartMachine<MEInputBuffer
         if (isWorkingEnabled() && getOnlineField()) {
             autoIOSubs = subscribeServerTick(autoIOSubs, meInputMonitor, 40);
         } else if (autoIOSubs != null) {
-            autoIOSubs.unsubscribe();
+            autoIOSubs.cancel();
             autoIOSubs = null;
         }
     }

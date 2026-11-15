@@ -44,8 +44,6 @@ public final class GTOGuiTextures {
 
     /// 机器小组件（窗口左侧配置标签）图标，画法标准见 {@link WidgetIconAtlas}；通用的在 GTM WidgetIcons
     private static final WidgetIconAtlas WIDGET_ICONS = new WidgetIconAtlas(GTOCore.id("textures/gui/widget_icons.png"), 12);
-    public static final IGuiTexture HUD_OFF = WIDGET_ICONS.icon(0, 0);
-    public static final IGuiTexture HUD_ON = WIDGET_ICONS.icon(0, 1);
     /// 在传送网络中显示
     public static final IGuiTexture TRAVEL_OFF = WIDGET_ICONS.icon(1, 0);
     public static final IGuiTexture TRAVEL_ON = WIDGET_ICONS.icon(1, 1);

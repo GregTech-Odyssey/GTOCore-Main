@@ -10,7 +10,6 @@ import com.gtolib.api.machine.mana.trait.NotifiableManaContainer;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import vazkii.botania.api.mana.ManaEndpoint;
 
@@ -31,7 +31,7 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
     /** tick 耗时监控（只有被 Jade 查看时才计时）；子类共用这一个。 */
     protected TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
 
-    TickableSubscription tickSubs;
+    Task tickSubs;
     @SaveToDisk
     private final NotifiableManaContainer manaContainer;
     final ManaEndpoint manaEndpoint;
@@ -70,7 +70,7 @@ public class ManaHatchPartMachine extends WorkableTieredIOPartMachine implements
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

@@ -18,12 +18,10 @@ import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.utils.MathUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineSubWindows;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
@@ -47,11 +45,11 @@ import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.api.planets.Planet;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +66,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     public static final int CYCLE_TICKS = 400;
     private static final int CWU_PER_TIER = 128;
 
-    private TickableSubscription highSubscription;
+    private Task highSubscription;
 
     public SpaceElevatorMachine(MetaMachineBlockEntity holder) {
         super(holder, GTORecipeDataKeys.POWER_MODULE_TIER);
@@ -83,8 +81,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     protected int moduleCount;
 
     @Getter
-    @Setter
-    SpaceElevatorConnectorModule netMachineCache;
+    private final NetCache<SpaceElevatorConnectorModule> netCache = new NetCache<>();
 
     final Set<SpaceElevatorDataModuleMachine> dataModules = new ReferenceOpenHashSet<>();
 
@@ -166,7 +163,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     @Override
     public void onStructureInvalidClient() {
         super.onStructureInvalidClient();
-        highSubscription = ITickSubscription.unsubscribe(highSubscription);
+        highSubscription = Task.cancel(highSubscription);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -190,8 +187,9 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
         update();
         if (spoolCount < getMaxSpoolCount()) textList.add(Component.translatable("item.gtocore.nanotube_spool").append(": ").append(Component.translatable("gui.ae2.Missing", getMaxSpoolCount() - spoolCount)));
         textList.add(Component.translatable("gtocore.machine.module", moduleCount));
-        if (netMachineCache != null) {
-            textList.add(Component.translatable(SpaceElevatorConnectorModule.SPACE_ELEVATOR_CONNECTED_CURRENT_PLANET_TEXT, Math.sqrt(netMachineCache.getDurationMultiplier())));
+        var connector = netCache.get();
+        if (connector != null) {
+            textList.add(Component.translatable(SpaceElevatorConnectorModule.SPACE_ELEVATOR_CONNECTED_CURRENT_PLANET_TEXT, Math.sqrt(connector.getDurationMultiplier())));
         } else {
             textList.add(Component.translatable(SpaceElevatorConnectorModule.SPACE_ELEVATOR_NOT_CONNECTED_CURRENT_PLANET_TEXT));
         }
@@ -244,7 +242,7 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
     }
 
     double exCWUt() {
-        return netMachineCache == null ? 1.0 : linkedComputationFactor();
+        return netCache.get() == null ? 1.0 : linkedComputationFactor();
     }
 
     @Override
@@ -277,9 +275,10 @@ public class SpaceElevatorMachine extends TierCasingMultiblockMachine implements
 
     @Override
     public void removeNetMachineCache() {
-        if (netMachineCache != null) {
-            netMachineCache.unregisterElevator(this);
-            netMachineCache = null;
+        var connector = netCache.get();
+        if (connector != null) {
+            connector.unregisterElevator(this);
+            netCache.clear();
         }
     }
 

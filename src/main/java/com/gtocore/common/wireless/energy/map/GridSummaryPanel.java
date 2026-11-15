@@ -1,5 +1,7 @@
 package com.gtocore.common.wireless.energy.map;
 
+import com.gtolib.api.scope.GTOScopes;
+import com.gtolib.api.wireless.energy.EnergyAccount;
 import com.gtolib.api.wireless.energy.GridClock;
 import com.gtolib.api.wireless.energy.GridSampler;
 import com.gtolib.api.wireless.energy.GridView;
@@ -19,11 +21,16 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import com.hepdd.gtmthings.utils.TeamUtil;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Cadence;
+import com.suried.gtoutils.schedule.OwnedScope;
+import com.suried.gtoutils.schedule.Poll;
+import com.suried.gtoutils.schedule.Scope;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -53,8 +60,9 @@ public class GridSummaryPanel extends UIElement {
     private GridMapToggles toggles;
     private boolean emptyHidden;
     private int localWindow;
-    private boolean resolved;
-    private int resolvedAt;
+    @Nullable
+    private OwnedScope scope;
+    private boolean opened;
     @Nullable
     private GridSampler sampler;
     private Component teamName = GridFormat.NO_VALUE;
@@ -169,33 +177,52 @@ public class GridSummaryPanel extends UIElement {
 
     @Override
     protected void onUIClosed() {
-        if (!isRemote()) release();
+        if (isRemote()) return;
+        opened = true;
+        var held = scope;
+        scope = null;
+        if (held != null) held.dispose();
     }
 
     private void tickServer() {
-        int now = GridClock.tick();
-        if (!resolved || now < resolvedAt || now - resolvedAt >= GridSampler.INTERVAL) {
-            resolved = true;
-            resolvedAt = now;
-            resolve();
+        if (!opened) {
+            opened = true;
+            var host = gui != null && gui.entityPlayer instanceof ServerPlayer serverPlayer ? GTOScopes.PLAYER.get(serverPlayer) : null;
+            if (host != null) {
+                var child = host.child("grid_summary");
+                scope = child;
+                mount(child);
+            }
         }
-        if (sampler != null) sampler.sample(now);
+        if (sampler != null) sampler.sample(GridClock.tick());
     }
 
-    private void resolve() {
-        var uuid = owner.get();
-        var account = WirelessGrid.accountIfPresent(uuid);
-        if (sampler == null || sampler.account() != account) {
-            release();
-            sampler = account.isNone() ? null : GridSampler.acquire(account);
-        }
-        teamName = uuid == null || gui == null ? GridFormat.NO_VALUE : TeamUtil.getName(gui.entityPlayer.level(), uuid);
+    private void mount(Scope scope) {
+        scope.effect(this::account, this::borrow, this::giveBack);
+        refreshName();
+        scope.repeat(Cadence.every(GridSampler.INTERVAL), this::refreshName);
     }
 
-    private void release() {
-        if (sampler == null) return;
-        sampler.release();
+    @Nullable
+    private EnergyAccount account() {
+        Poll.every(GridSampler.INTERVAL);
+        var account = WirelessGrid.trackedAccount(owner.get());
+        return account.isNone() ? null : account;
+    }
+
+    private void borrow(EnergyAccount account) {
+        sampler = GridSampler.acquire(account);
+    }
+
+    private void giveBack(EnergyAccount account) {
+        var held = sampler;
         sampler = null;
+        if (held != null) held.release();
+    }
+
+    private void refreshName() {
+        var uuid = owner.get();
+        teamName = uuid == null || gui == null ? GridFormat.NO_VALUE : TeamUtil.getName(gui.entityPlayer.level(), uuid);
     }
 
     private void refresh() {

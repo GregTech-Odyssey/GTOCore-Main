@@ -214,7 +214,7 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
         }
         autoTransfer = false;
         if (!hasSource) {
-            transferSubs.unsubscribe();
+            transferSubs.cancel();
             transferSubs = null;
         }
     }
@@ -279,7 +279,18 @@ public final class UniversalPipeBlockEntity extends PipeBlockEntity<UniversalPip
 
         @Override
         public int operationTime() {
-            return 1;
+            var net = pipe.getUniversalPipeNet();
+            if (net == null) return 0;
+            var time = 0;
+            for (var route : net.getNetData(pipe.getPipeLongPos(), pipe.getPipePos(), facing)) {
+                var target = route.getHandler(net.getLevel());
+                if (target == null) {
+                    time++;
+                } else {
+                    time += target.operationTime();
+                }
+            }
+            return time;
         }
 
         @Override

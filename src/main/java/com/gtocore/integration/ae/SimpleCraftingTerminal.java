@@ -2,10 +2,6 @@ package com.gtocore.integration.ae;
 
 import com.gtolib.GTOCore;
 
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.utils.TaskHandler;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -48,6 +44,9 @@ import appeng.parts.PartModel;
 import appeng.parts.reporting.AbstractTerminalPart;
 import appeng.util.inv.AppEngInternalInventory;
 
+import com.suried.gtoutils.schedule.Cadence;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -66,7 +65,7 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
 
     private final MEInventoryHandler handler = new MEInventoryHandler(NullInventory.of());
     @Nullable
-    private TickableSubscription subscription;
+    private Task subscription;
     @Nullable
     private ExternalStorageLookup lookup;
 
@@ -80,23 +79,29 @@ public class SimpleCraftingTerminal extends AbstractTerminalPart
 
     @Override
     public void onMenuOpen() {
-        if (getLevel() instanceof ServerLevel serverLevel) {
-            subscription = TaskHandler.enqueueTick(serverLevel, subscription, () -> this.getBlockEntity() == null || this.getBlockEntity().isRemoved(), () -> {
-                GridNode node = (GridNode) this.getMainNode().getNode();
-                if (node != null) {
-                    var storageService = (StorageService) node.getGrid().getStorageService();
-                    storageService.onServerEndTick(serverLevel.getServer());
-                    if (this.handler.getDelegate() instanceof CompositeStorage compositeStorage) {
-                        compositeStorage.onTick();
-                    }
-                }
-            }, 10, 1);
+        if (getLevel() instanceof ServerLevel serverLevel && !Task.isActive(subscription)) {
+            subscription = Schedulers.of(serverLevel).repeat(Cadence.every(10), this, SimpleCraftingTerminal::tickStorage, SimpleCraftingTerminal::isDetached);
+        }
+    }
+
+    private boolean isDetached() {
+        return this.getBlockEntity() == null || this.getBlockEntity().isRemoved();
+    }
+
+    private void tickStorage() {
+        GridNode node = (GridNode) this.getMainNode().getNode();
+        if (node != null && getLevel() instanceof ServerLevel serverLevel) {
+            var storageService = (StorageService) node.getGrid().getStorageService();
+            storageService.onServerEndTick(serverLevel.getServer());
+            if (this.handler.getDelegate() instanceof CompositeStorage compositeStorage) {
+                compositeStorage.onTick();
+            }
         }
     }
 
     @Override
     public void onMenuClose() {
-        subscription = ITickSubscription.unsubscribe(subscription);
+        subscription = Task.cancel(subscription);
     }
 
     @Override

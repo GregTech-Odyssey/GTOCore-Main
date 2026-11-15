@@ -1,6 +1,6 @@
 package com.gtocore.integration.botania;
 
-import com.gregtechceu.gtceu.core.ILevel;
+import com.gregtechceu.gtceu.api.pattern.MultiblockWorldData;
 
 import net.minecraft.server.level.ServerLevel;
 
@@ -16,7 +16,7 @@ public final class BotaniaFlowerTicking {
 
     private static boolean isInMultiblock(SpecialFlowerBlockEntity flower) {
         if (!(flower.getLevel() instanceof ServerLevel serverLevel)) return false;
-        var cache = ((ILevel) serverLevel).gtceu$getMultiblockWorldSavedData();
+        var cache = MultiblockWorldData.get(serverLevel);
         if (cache == null) return false;
         var pos = flower.getBlockPos();
         var states = cache.getControllersInChunk(serverLevel.getChunkAt(pos).getPos().toLong());

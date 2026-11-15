@@ -39,7 +39,7 @@ public abstract class ItemRecipeInfoMixin {
         int boost = contents.boost(contentIndex);
         long amount = contents.amount(contentIndex);
         slot.setOnAddedTooltips((w, tooltips) -> {
-            GTRecipeWidget.setConsumedChance(chance, boost, tooltips, recipeTier, chanceTier, recipe.chanceFunction);
+            GTRecipeWidget.appendChanceTooltips(io, chance, boost, tooltips, recipeTier, chanceTier, recipe.chanceFunction);
             tooltips.add(Component.translatable("gui.tooltips.ae2.Amount", amount).withStyle(ChatFormatting.GRAY));
         });
     }

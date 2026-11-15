@@ -11,6 +11,7 @@ import com.gtolib.api.machine.impl.part.DroneHatchPartMachine;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gtolib.api.misc.Drone;
 import com.gtolib.api.network.NetworkPack;
+import com.gtolib.api.scope.MachineScope;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -64,6 +65,7 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
     private PulseMachineMaintenanceCore core;
     @SaveToDisk(defaultValue = "0")
     private int totalResolvedProblems = 0;
+    private final MachineScope<PulseMachineMaintenancePedestal> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, IDroneControlCenterMachine.class, this, self::formed));
 
     public PulseMachineMaintenancePedestal(MetaMachineBlockEntity holder) {
         super(holder);
@@ -114,12 +116,6 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
-        IIWirelessInteractor.addToNet(this, IDroneControlCenterMachine.class);
-    }
-
-    @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
         var registered = problems.keySet().toArray(new MetaMachine[0]);
@@ -128,7 +124,6 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
             if (machine instanceof IIWirelessInteractor<?> interactor) interactor.removeNetMachineCache();
         }
         core = null;
-        IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
     @Override
@@ -136,7 +131,6 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
         super.onUnload();
         problems.clear();
         core = null;
-        IIWirelessInteractor.removeFromNet(this, IDroneControlCenterMachine.class);
     }
 
     public boolean inRange(BlockPos pos) {

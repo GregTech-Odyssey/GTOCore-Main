@@ -6,7 +6,6 @@ import com.gtolib.api.machine.multiblock.CrossRecipeMultiblockMachine;
 import com.gtolib.utils.MachineUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.ContentList;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.material.Fluid;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKeyTypes;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,7 +48,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     private int redstoneSignalOutput;
 
     @Nullable
-    private TickableSubscription meHoldSubs;
+    private Task meHoldSubs;
     private int meHoldUntil;
 
     public BiologicalExtractionMachine(MetaMachineBlockEntity holder) {
@@ -95,7 +95,7 @@ public final class BiologicalExtractionMachine extends CrossRecipeMultiblockMach
     private void stopMeHold() {
         meHoldUntil = 0;
         if (meHoldSubs != null) {
-            meHoldSubs.unsubscribe();
+            meHoldSubs.cancel();
             meHoldSubs = null;
         }
     }

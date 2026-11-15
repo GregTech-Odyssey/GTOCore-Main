@@ -1,0 +1,236 @@
+{
+  "parent": "gtocore:item/monitor/part_base",
+  "textures": {
+    "panel": "gtocore:block/monitor/panel",
+    "frame": "gtocore:block/monitor/frame",
+    "particle": "gtocore:block/monitor/panel"
+  },
+  "elements": [
+    {
+      "name": "Plate",
+      "from": [2, 2, 7.5],
+      "to": [14, 14, 8.5],
+      "faces": {
+        "north": {
+          "uv": [2, 2, 14, 14],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [2, 2, 14, 14],
+          "texture": "#panel"
+        },
+        "east": {
+          "uv": [2, 7, 14, 8],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "west": {
+          "uv": [2, 7, 14, 8],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "up": {
+          "uv": [2, 7, 14, 8],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "down": {
+          "uv": [2, 7, 14, 8],
+          "texture": "#frame",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Lip top",
+      "from": [2, 13.7, 7.3],
+      "to": [14, 14, 7.5],
+      "faces": {
+        "north": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "south": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "east": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "west": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "up": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "down": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Lip bottom",
+      "from": [2, 2, 7.3],
+      "to": [14, 2.3, 7.5],
+      "faces": {
+        "north": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "south": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "east": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "west": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "up": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "down": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Lip left",
+      "from": [2, 2.3, 7.3],
+      "to": [2.3, 13.7, 7.5],
+      "faces": {
+        "north": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "south": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "east": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "west": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "up": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "down": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Lip right",
+      "from": [13.7, 2.3, 7.3],
+      "to": [14, 13.7, 7.5],
+      "faces": {
+        "north": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "south": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "east": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "west": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "up": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        },
+        "down": {
+          "uv": [0, 0, 1, 1],
+          "texture": "#frame",
+          "tintindex": 2
+        }
+      }
+    },
+    {
+      "name": "Front glow",
+      "from": [2, 2, 7.49],
+      "to": [14, 14, 7.5],
+      "shade": false,
+      "faces": {
+        "north": {
+          "uv": [2, 2, 14, 14],
+          "texture": "#glow",
+          "forge_data": {
+            "block_light": 15,
+            "sky_light": 15
+          }
+        }
+      }
+    },
+    {
+      "name": "Mount",
+      "from": [4, 4, 8.5],
+      "to": [12, 12, 9.5],
+      "faces": {
+        "south": {
+          "uv": [4, 4, 12, 12],
+          "texture": "#panel"
+        },
+        "east": {
+          "uv": [4, 4, 12, 5],
+          "texture": "#panel"
+        },
+        "west": {
+          "uv": [4, 4, 12, 5],
+          "texture": "#panel"
+        },
+        "up": {
+          "uv": [4, 4, 12, 5],
+          "texture": "#panel"
+        },
+        "down": {
+          "uv": [4, 4, 12, 5],
+          "texture": "#panel"
+        }
+      }
+    }
+  ]
+}

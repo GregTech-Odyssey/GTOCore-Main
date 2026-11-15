@@ -4,13 +4,13 @@ import com.gtocore.common.cover.RainFilmCover;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
-import com.gregtechceu.gtceu.core.ILevel;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 
+import com.suried.gtoutils.level.LoadedChunks;
+import com.suried.gtoutils.schedule.Schedulers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -29,7 +29,7 @@ public interface IExplosionMachineMixin {
             var pos = machine.self().getPos();
             if (GTValues.RNG.nextInt(10) == 0) {
                 for (Direction side : GTUtil.DIRECTIONS) {
-                    var fluidState = ILevel.asyncGetBlockState(level, pos.relative(side)).getFluidState();
+                    var fluidState = LoadedChunks.blockState(level, pos.relative(side)).getFluidState();
                     if (!fluidState.isEmpty()) {
                         machine.executeExplosion(level, explosionPower);
                         return;
@@ -44,7 +44,7 @@ public interface IExplosionMachineMixin {
                         machine.executeExplosion(level, explosionPower);
                     } else if (GTValues.RNG.nextInt(10) == 0) {
                         machine.executeExplosion(level, explosionPower);
-                    } else TaskHandler.enqueueTask(level, () -> machine.setOnFire(additionalFireChance));
+                    } else Schedulers.of(level).schedule(() -> machine.setOnFire(additionalFireChance));
                 }
             }
         } catch (Exception ignored) {}

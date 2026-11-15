@@ -7,7 +7,6 @@ import com.gtolib.api.machine.SimpleNoEnergyMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.BlockAccessor;
@@ -53,7 +53,7 @@ public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaD
 
     private int timing;
     private boolean clearSky;
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor manaMonitor = holder.monitorTick(GTOTickTimeMonitors.MANA, this::tickUpdate);
@@ -115,7 +115,7 @@ public class CelestialCondenser extends SimpleNoEnergyMachine implements IWailaD
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

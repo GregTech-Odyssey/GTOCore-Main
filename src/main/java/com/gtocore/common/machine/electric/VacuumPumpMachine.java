@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyTooltip;
 import com.gregtechceu.gtceu.api.gui.fancy.TooltipsPanel;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.machines.GTMachineUtils;
@@ -21,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +35,7 @@ public final class VacuumPumpMachine extends SimpleTieredMachine implements IVac
     @SaveToDisk(defaultValue = "0")
     private int totalEU;
     @Getter
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
 
     public VacuumPumpMachine(MetaMachineBlockEntity holder, int tier, Object... args) {
         super(holder, tier, GTMachineUtils.defaultTankSizeFunction, args);
@@ -53,7 +53,7 @@ public final class VacuumPumpMachine extends SimpleTieredMachine implements IVac
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

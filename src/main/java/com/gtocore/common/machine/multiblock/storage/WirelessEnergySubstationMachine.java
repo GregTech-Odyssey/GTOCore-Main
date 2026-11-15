@@ -1,8 +1,6 @@
 package com.gtocore.common.machine.multiblock.storage;
 
-import com.gtocore.api.gui.GTOGuiTextures;
 import com.gtocore.api.pattern.GTOPredicates;
-import com.gtocore.client.hud.HUDConfigurator;
 import com.gtocore.common.block.BlockMap;
 import com.gtocore.common.block.WirelessEnergyTowerUnit;
 import com.gtocore.common.block.WirelessEnergyTransferUnitBlock;
@@ -22,6 +20,7 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoRecipeLogicMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
+import com.gtolib.api.scope.MachineScope;
 import com.gtolib.api.wireless.energy.EnergyAccount;
 import com.gtolib.api.wireless.energy.GridClock;
 import com.gtolib.api.wireless.energy.GridView;
@@ -34,7 +33,6 @@ import com.gtolib.api.wireless.energy.WirelessText;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyInfoProvider;
-import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
@@ -68,7 +66,6 @@ import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.uipro.window.Popup;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -94,6 +91,9 @@ import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Cell;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Scope;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparators;
@@ -123,6 +123,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     public static final int MIN_SIZE = 3;
     public static final int MAX_WIDTH = 11;
     public static final int MAX_HEIGHT = 20;
+    private static final int RELEASE_DELAY = 20;
 
     @RegisterLanguage(cn = "左侧宽度", en = "Left Width")
     private static final String LEFT_NAME = "gtocore.multiblock.wireless_energy_substation.left";
@@ -222,7 +223,6 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private int towerTier = -1;
     private int glassLimit = -1;
     private long throughput;
-    private List<Provider.Unit> registeredUnits = List.of();
     private int storageMultiplierHalf;
     private String storageMultiplierExpression = "1";
     private Component throughputFormulaText = MultiblockPage.NO_VALUE;
@@ -230,10 +230,38 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private int gridWindow;
     @Nullable
     private WirelessEnergyUnitBlockEntity.Snapshot pendingRelease;
+    private int formations;
+    private final Cell<TowerSpec> tower = Cell.of(null);
+    private final Cell<Boolean> retiring = Cell.of(Boolean.FALSE);
+    private final MachineScope<WirelessEnergySubstationMachine> scope = new MachineScope<>(this, this::mount);
 
     public WirelessEnergySubstationMachine(MetaMachineBlockEntity holder) {
         super(holder);
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.GLASS_TIER);
+    }
+
+    private void mount(Scope opened, MachineScope<WirelessEnergySubstationMachine> self) {
+        opened.watch(() -> {
+            var spec = tower.get();
+            return spec == null ? null : new Registration(self.owner(), spec);
+        }, this::apply);
+        opened.when(() -> retiring.get() && tower.get() == null, off -> off.schedule(RELEASE_DELAY, this::retire));
+    }
+
+    private void apply(@Nullable Registration registration) {
+        if (registration == null) return;
+        if (registration.owner() == null) {
+            ProviderRegistry.unregister(this);
+            return;
+        }
+        var spec = registration.spec();
+        ProviderRegistry.registerTower(this, spec.units(), spec.tier(), spec.throughput());
+        WirelessEnergyUnitBlockEntity.absorb(this, storagePositions, spec.glassTier());
+    }
+
+    private void retire() {
+        if (!isRemoved() && !isFormed()) release();
+        else retiring.set(Boolean.FALSE);
     }
 
     public static Structure structure(MultiblockMachineDefinition definition) {
@@ -310,7 +338,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private void register() {
         if (isRemote()) return;
         int glassTier = getCasingTier(GTORecipeDataKeys.GLASS_TIER);
-        var data = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.WIRELESS_ENERGY_UNIT);
+        var data = getAssembly().get(GTOPredicates.DataKeys.WIRELESS_ENERGY_UNIT);
         var counts = new int[GTValues.MAX + 1];
         int highestUnit = -1;
         long total = 0;
@@ -358,21 +386,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         unitsText = describe(storagePositions, superStoragePositions);
         transferText = describe(transferPositions, superTransferPositions);
         unitsOverTier = overTier(storagePositions, glassTier) || overTier(transferPositions, glassTier) || overTier(superStoragePositions, glassTier) || overTier(superTransferPositions, glassTier);
-        registeredUnits = units;
-        ProviderRegistry.registerTower(this, units, towerTier, throughput);
-        WirelessEnergyUnitBlockEntity.absorb(this, storagePositions, glassTier);
-    }
-
-    @Override
-    protected void onOwnerChanged() {
-        super.onOwnerChanged();
-        if (isRemote() || !isFormed()) return;
-        if (getOwnerUUID() == null) {
-            ProviderRegistry.unregister(this);
-            return;
-        }
-        ProviderRegistry.registerTower(this, registeredUnits, towerTier, throughput);
-        WirelessEnergyUnitBlockEntity.absorb(this, storagePositions, glassLimit);
+        tower.post(new TowerSpec(units, towerTier, throughput, glassTier, ++formations));
     }
 
     @Override
@@ -385,11 +399,10 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
-        if (getLevel() instanceof ServerLevel level) {
+        if (getLevel() instanceof ServerLevel) {
             pendingRelease = WirelessEnergyUnitBlockEntity.Snapshot.of(storagePositions, glassLimit, storageMultiplierHalf);
-            TaskHandler.enqueueTask(level, () -> {
-                if (!isRemoved() && level.isLoaded(getPos()) && !isFormed()) release();
-            }, 20);
+            retiring.post(Boolean.TRUE);
+            tower.post(null);
         }
         storagePositions.clear();
         transferPositions.clear();
@@ -401,7 +414,6 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         towerTier = -1;
         glassLimit = -1;
         throughput = 0;
-        registeredUnits = List.of();
         storageMultiplierHalf = 0;
         storageMultiplierExpression = "1";
         throughputFormulaText = MultiblockPage.NO_VALUE;
@@ -416,6 +428,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private void release() {
         var snapshot = pendingRelease;
         pendingRelease = null;
+        retiring.post(Boolean.FALSE);
         WirelessEnergyUnitBlockEntity.release(this, snapshot, null);
     }
 
@@ -436,9 +449,9 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private void releaseUnit(ServerLevel level, BlockPos pos) {
         if (!isFormed() || isRemoved() || !storagePositions.containsValue(pos)) return;
         WirelessEnergyUnitBlockEntity.release(this, WirelessEnergyUnitBlockEntity.Snapshot.of(storagePositions, glassLimit, storageMultiplierHalf), pos);
-        TaskHandler.enqueueTask(level, () -> {
+        Schedulers.of(level).schedule(1, () -> {
             if (!isRemoved() && isFormed()) requestCheck();
-        }, 1);
+        });
     }
 
     @Override
@@ -637,15 +650,6 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     }
 
     @Override
-    public void attachConfigurators(ConfiguratorPanel configuratorPanel) {
-        super.attachConfigurators(configuratorPanel);
-        HUDConfigurator c;
-        configuratorPanel.attachConfigurators(
-                c = new HUDConfigurator(GTOGuiTextures.HUD_ON, GTOGuiTextures.HUD_OFF));
-        if (isRemote()) c.setHudInstance("wireless_energy_hud");
-    }
-
-    @Override
     public Reference2IntMap<TierDataKey> getCasingTiers() {
         return tierCasingTrait.getCasingTiers();
     }
@@ -694,6 +698,10 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         var stats = account().stats();
         return stats == null ? 0 : (long) (stats.nowOut(GridClock.second()) * GridReadouts.TICKS_PER_SECOND);
     }
+
+    private record TowerSpec(List<Provider.Unit> units, int tier, long throughput, int glassTier, int formation) {}
+
+    private record Registration(@Nullable UUID owner, TowerSpec spec) {}
 
     public int substituteBlocks(WirelessEnergyTowerUnit unit, int count, ServerPlayer player) {
         if (getLevel() == null || count <= 0) {
@@ -745,7 +753,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     @ApiStatus.ScheduledForRemoval(inVersion = "0.7.0")
     public void onLoad() {
         super.onLoad();
-        if (getLevel() instanceof ServerLevel serverLevel) TaskHandler.enqueueTask(serverLevel, () -> convertLegacyTower(0), 1);
+        if (getLevel() instanceof ServerLevel serverLevel) Schedulers.of(serverLevel).schedule(1, () -> convertLegacyTower(0));
     }
 
     @Deprecated(since = "0.6.0", forRemoval = true)
@@ -766,7 +774,7 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
         for (int a = -LEGACY_RADIUS; a <= LEGACY_RADIUS; a += LEGACY_RADIUS * 2) {
             for (int b = 0; b <= LEGACY_DEPTH; b += LEGACY_DEPTH) {
                 if (!level.isLoaded(origin.relative(side, a).relative(back, b))) {
-                    if (attempt < LEGACY_RETRIES) TaskHandler.enqueueTask(level, () -> convertLegacyTower(attempt + 1), 40);
+                    if (attempt < LEGACY_RETRIES) Schedulers.of(level).schedule(40, () -> convertLegacyTower(attempt + 1));
                     return;
                 }
             }

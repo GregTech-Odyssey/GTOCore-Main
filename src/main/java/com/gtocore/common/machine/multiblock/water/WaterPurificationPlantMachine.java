@@ -7,6 +7,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
+import com.gtolib.api.scope.MachineScope;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -65,7 +66,8 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
 
     long availableEu;
 
-    final Object2BooleanSortedMap<WaterPurificationUnitMachine> waterPurificationUnitMachineMap = new Object2BooleanRBTreeMap<>(Comparator.comparingLong(a -> -a.multiple));
+    final Object2BooleanSortedMap<WaterPurificationUnitMachine> waterPurificationUnitMachineMap = new Object2BooleanRBTreeMap<>(Comparator.<WaterPurificationUnitMachine>comparingLong(a -> -a.multiple).thenComparingLong(a -> a.getPos().asLong()));
+    private final MachineScope<WaterPurificationPlantMachine> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, WaterPurificationPlantMachine.class, this, self::formed));
 
     public WaterPurificationPlantMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -77,20 +79,13 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     }
 
     @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
-        IIWirelessInteractor.addToNet(this);
-    }
-
-    @Override
-    public void onUnload() {
-        super.onUnload();
-        IIWirelessInteractor.removeFromNet(this);
+    protected void onOwnerChanged() {
+        super.onOwnerChanged();
+        IIWirelessInteractor.touch(this, WaterPurificationPlantMachine.class);
     }
 
     @Override
     public void onStructureInvalid() {
-        IIWirelessInteractor.removeFromNet(this);
         for (var entry : waterPurificationUnitMachineMap.object2BooleanEntrySet()) {
             if (entry.getBooleanValue()) {
                 entry.getKey().getRecipeLogic().resetRecipeLogic();
@@ -149,7 +144,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             if (entry.getBooleanValue() && m.recipe != null && m.unit != null) {
                 var l = m.getRecipeLogic();
                 l.resetRecipeLogic();
-                if (!l.isSuspend() && m.isRecipeLogicAvailable()) l.setupRecipe(m.unit, m.recipe);
+                entry.setValue(!l.isSuspend() && m.isRecipeLogicAvailable() && l.setupRecipe(m.unit, m.recipe));
             }
         }
     }
@@ -216,7 +211,12 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
             entry.setValue(false);
             var machine = entry.getKey();
             if (machine.isFormed() && !machine.isRemoved()) {
-                if (machine.getRecipeLogic().isIdle()) {
+                var logic = machine.getRecipeLogic();
+                if (logic.isWorking() || logic.isWaiting()) {
+                    if (logic.getLastRecipe() != null) logic.onRecipeFinish();
+                    else logic.resetRecipeLogic();
+                }
+                if (logic.isIdle()) {
                     for (var u : machine.getInputUnits()) {
                         long eu = machine.prepareRecipe(u);
                         if (eu > 0) {

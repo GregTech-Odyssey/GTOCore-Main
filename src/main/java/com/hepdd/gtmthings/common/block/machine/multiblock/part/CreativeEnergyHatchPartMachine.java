@@ -3,7 +3,6 @@ package com.hepdd.gtmthings.common.block.machine.multiblock.part;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
@@ -28,6 +27,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +46,7 @@ public class CreativeEnergyHatchPartMachine extends WorkableTieredIOPartMachine 
     public final NotifiableEnergyContainer energyContainer;
     @Nullable
     protected ISubscription energyListener;
-    protected TickableSubscription energySubs;
+    protected Task energySubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor energyMonitor = holder.monitorTick(GTTickTimeMonitors.ENERGY_TRANSFER, this::addEng);

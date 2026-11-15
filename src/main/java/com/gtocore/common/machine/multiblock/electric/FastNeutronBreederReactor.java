@@ -16,7 +16,6 @@ import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.utils.GTOUtils;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IExplosionMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
@@ -38,6 +37,7 @@ import appeng.api.stacks.AEKeyTypes;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,7 +137,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     }
 
     @Nullable
-    private TickableSubscription tickSubscription;
+    private Task tickSubscription;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor reactorHeatMonitor = holder.monitorTick(GTOTickTimeMonitors.REACTOR_HEAT, this::tick);
@@ -146,7 +146,7 @@ public class FastNeutronBreederReactor extends CustomParallelMultiblockMachine i
     public void onUnload() {
         super.onUnload();
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
     }

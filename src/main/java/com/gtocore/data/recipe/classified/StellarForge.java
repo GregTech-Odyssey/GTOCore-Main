@@ -5,6 +5,7 @@ import com.gtocore.common.data.*;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import net.minecraft.world.item.Items;
@@ -20,7 +21,7 @@ final class StellarForge {
                 .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem())
                 .inputItems(TagPrefix.dust, GTMaterials.Stone, 1024)
                 .outputItems(TagPrefix.dust, GTOMaterials.CompressedStone)
-                .chancedOutput(TagPrefix.nugget, GTOMaterials.Bedrockium, 1, 100, 1)
+                .chancedOutput(TagPrefix.nugget, GTOMaterials.Bedrockium, 1, Chance.of(100).risePerOverclock(1))
                 .EUt(31457280)
                 .duration(200)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)
@@ -468,7 +469,7 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.recipeBuilder("mana1")
                 .notConsumable("botania:entropinnyum", 64)
                 .inputItems(GTOBlocks.NAQUADRIA_CHARGE.asItem(), 16)
-                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 14400), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 14400), Chance.of(7000).risePerOverclock(10))
                 .circuitMeta(1)
                 .MANAt(-150_000_000)
                 .EUt(31457280)
@@ -479,7 +480,7 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.recipeBuilder("mana2")
                 .notConsumable("botania:entropinnyum", 64)
                 .inputItems(GTOBlocks.LEPTONIC_CHARGE.asItem(), 16)
-                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 57600), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 57600), Chance.of(7000).risePerOverclock(10))
                 .circuitMeta(2)
                 .MANAt(-1_200_000_000)
                 .EUt(31457280)
@@ -490,7 +491,7 @@ final class StellarForge {
         STELLAR_FORGE_RECIPES.recipeBuilder("mana3")
                 .notConsumable("botania:entropinnyum", 64)
                 .inputItems(GTOBlocks.QUANTUM_CHROMODYNAMIC_CHARGE.asItem(), 16)
-                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 307200), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 307200), Chance.of(7000).risePerOverclock(10))
                 .circuitMeta(3)
                 .MANAt(-14_400_000_000L)
                 .EUt(31457280)
@@ -502,7 +503,7 @@ final class StellarForge {
                 .notConsumable("botania:entropinnyum", 4)
                 .notConsumable("botania:alfheim_portal")
                 .inputItems(Items.BREAD.asItem())
-                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 7200), 7000, 10)
+                .chancedOutput(GTOMaterials.Mana.getFluid(LIQUID, 7200), Chance.of(7000).risePerOverclock(10))
                 .EUt(69)
                 .MANAt(-420)
                 .addData(GTORecipeDataKeys.STELLAR_CONTAINMENT_TIER, 1)

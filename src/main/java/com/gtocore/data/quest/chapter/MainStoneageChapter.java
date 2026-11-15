@@ -38,7 +38,6 @@ import appeng.core.definitions.AEItems;
 
 import com.chaosthedude.explorerscompass.ExplorersCompass;
 import com.chaosthedude.naturescompass.NaturesCompass;
-import com.hepdd.gtmthings.data.CustomItems;
 import commoble.jumbofurnace.JumboFurnace;
 import earth.terrarium.adastra.common.registry.ModItems;
 import vazkii.botania.common.item.BotaniaItems;
@@ -511,7 +510,9 @@ public final class MainStoneageChapter {
             .desc(d -> d
                     .line("多方块机器需要手撘？不不不，终端会帮你搞定一切")
                     .line()
-                    .line("手持终端，确保物品栏或背包中有需要的方块，潜行右键多方块主机即可搭建结构")
+                    .line("手持终端右键多方块主机，打开结构预览，进入建造配置选好每种方块，确保物品栏或背包中有需要的方块，点建造即可搭建结构")
+                    .line()
+                    .line("在建造配置里点「设为终端一键搭建方案」，以后潜行右键同种机器的主机就会按这个方案直接搭建")
                     .line()
                     .line("当然多方块的成型判定会有一定延迟")
                     .line()
@@ -519,37 +520,6 @@ public final class MainStoneageChapter {
             .task(Task.item(GTItems.TERMINAL))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 4))
             .dependsOn(ANCIENT_STEELMAKING));
-
-    public static final Quest STRONGER_AND_BIGGER = CHAPTER.quest("stronger_and_bigger", q -> q
-            .at(0, 4.5)
-            .title("更强更大")
-            .subtitle("Ter-100-EX全能型终端")
-            .desc(d -> d
-                    .line("高级终端功能极其强大，蹲下并右键可以看到详细的设置，这里将一一详细介绍：")
-                    .line()
-                    .line("{等级方块：}点开右上角选择要安装的等级方块，包括但不限于玻璃，线圈，外壳等", RED)
-                    .line()
-                    .line("{重复结构次数：}影响多方块的重复结构层数，例如装配线的长度，中子活化器的高度等。", DARK_PURPLE)
-                    .line("eg.在搭建装配线的时候选择了重复结构15，则自动搭建合成配方16格的装配线")
-                    .line()
-                    .line("{无仓室模式：}在这个模式开启之后，可在该多方块上放置多个的功能性仓室将不会被放置，而唯一的功能性仓室则不受影响。", YELLOW)
-                    .line("eg.在电力高炉上开启该模式后放置时，只会放置消声仓而不会放置输入输出仓等")
-                    .line()
-                    .line("{替换模式：}模式开启后，对现有的多方块使用终端的时候会尝试使用物品栏/背包/AE内的符合的等级方块来进行替换", GREEN)
-                    .line()
-                    .line("{使用AE物品：}顾名思义会使用AE的物品，前提是你身上有终端并且终端通过无线链接到了你的ME存储", AQUA)
-                    .page()
-                    .line()
-                    .line("{镜像搭建：}将多方块左右镜像搭建", BLUE)
-                    .line()
-                    .line("{模块搭建：}仅搭建对应多方块的附属模块", DARK_GREEN)
-                    .line()
-                    .line("{拆除模式：}拆除搭建好的多方块", DARK_RED)
-                    .line()
-                    .line("注：{拆除模式}配合{模块搭建}可以指定要拆除的部分（模块or本体）", YELLOW, YELLOW))
-            .task(Task.item(CustomItems.ADVANCED_TERMINAL))
-            .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 4))
-            .dependsOn(MULTIBLOCK_HELPER, SteamChapter.FIRST_STEEL_INGOT));
 
     public static final Quest Q_1BA9FA93 = CHAPTER.quest("q_1ba9fa93", q -> q
             .at(-3, 8)

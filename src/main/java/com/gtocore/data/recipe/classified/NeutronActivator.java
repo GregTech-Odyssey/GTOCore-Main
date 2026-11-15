@@ -8,6 +8,7 @@ import com.gtocore.common.data.GTORecipeDataKeys;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -52,7 +53,7 @@ final class NeutronActivator {
                 .inputFluids(GTOMaterials.UuAmplifier, 1000)
                 .outputItems(TagPrefix.dust, GTMaterials.EnderEye, 8)
                 .outputItems(TagPrefix.dust, GTMaterials.EnderPearl, 4)
-                .chancedOutput(GTOItems.DRACONIUM_DIRT.asItem(), 4000, 0)
+                .chancedOutput(GTOItems.DRACONIUM_DIRT.asItem(), Chance.of(4000))
                 .duration(800)
                 .addData(GTORecipeDataKeys.EV_MIN, 800)
                 .addData(GTORecipeDataKeys.EV_MAX, 900)
@@ -113,7 +114,7 @@ final class NeutronActivator {
                 .inputItems(AEItems.MATTER_BALL.asItem(), 64)
                 .inputItems(TagPrefix.dust, GTOMaterials.Photonium, 16)
                 .notConsumable(GTOItems.HIGH_FREQUENCY_LASER.asStack())
-                .chancedInput(GTOBlocks.ELECTRON_PERMEABLE_AMPROSIUM_COATED_GLASS.asStack(), 75, 0)
+                .chancedInput(GTOBlocks.ELECTRON_PERMEABLE_AMPROSIUM_COATED_GLASS.asStack(), Chance.of(75))
                 .outputItems(TagPrefix.dustSmall, GTOMaterials.PhotonicKristallite, 16)
                 .inputFluids(GTOMaterials.Quantanium, 1000)
                 .outputFluids(GTOMaterials.PhotonicKristallite, 4000)
@@ -128,7 +129,7 @@ final class NeutronActivator {
                 .outputItems(TagPrefix.dust, GTOMaterials.ScorchingCosmicDust, 2)
                 .outputItems(TagPrefix.dust, GTOMaterials.ExcitedScorchingCosmicDust, 8)
                 .inputFluids(GTOMaterials.CosmicDustDispersant, 1000)
-                .chancedOutput(GTOMaterials.Sanguinite.getFluid(500), 5000, 0)
+                .chancedOutput(GTOMaterials.Sanguinite.getFluid(500), Chance.of(5000))
                 .duration(100)
                 .addData(GTORecipeDataKeys.EV_MIN, 420)
                 .addData(GTORecipeDataKeys.EV_MAX, 1280)

@@ -8,7 +8,6 @@ import com.gtolib.api.recipe.IdleReason;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeDefinition;
@@ -23,6 +22,7 @@ import appeng.api.stacks.AEKeyLongMap;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
@@ -43,7 +43,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     private long plannedAmount;
 
     @Nullable
-    private TickableSubscription retrySubs;
+    private Task retrySubs;
 
     protected AbstractMEPatternAssemblerMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -151,7 +151,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
 
     private void cancelRetry() {
         if (retrySubs != null) {
-            retrySubs.unsubscribe();
+            retrySubs.cancel();
             retrySubs = null;
         }
     }

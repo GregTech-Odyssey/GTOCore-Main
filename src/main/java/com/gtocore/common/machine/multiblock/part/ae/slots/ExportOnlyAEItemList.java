@@ -241,4 +241,9 @@ public class ExportOnlyAEItemList extends NotifiableContentHandler implements IR
     public boolean isStocking() {
         return false;
     }
+
+    @Override
+    public boolean isDirectKey() {
+        return true;
+    }
 }
