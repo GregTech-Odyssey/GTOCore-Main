@@ -51,6 +51,9 @@ public class PatternDestinationPanel implements ICompositeWidget {
     private static final AEKey[] NO_OUTPUTS = new AEKey[0];
     private static final Blitter CLOSE = Icon.CLEAR.getBlitter();
     private static final Blitter PANEL_FILL = Blitter.texture("guis/me_panel.png").src(21, 4, 1, 1);
+    private static final Blitter SCROLL_TRACK_TOP = PANEL_FILL.copy().src(11, 31, 9, 4);
+    private static final Blitter SCROLL_TRACK_MIDDLE = PANEL_FILL.copy().src(11, 35, 9, 64);
+    private static final Blitter SCROLL_TRACK_BOTTOM = PANEL_FILL.copy().src(11, 99, 9, 4);
     private static final Blitter MATCH_OUTPUTS_ON = Icon.PATTERN_ACCESS_SHOW.getBlitter();
     private static final Blitter MATCH_OUTPUTS_OFF = Icon.PATTERN_ACCESS_HIDE.getBlitter();
     private static final Blitter STATUS_READY = Icon.VALID.getBlitter();
@@ -231,7 +234,6 @@ public class PatternDestinationPanel implements ICompositeWidget {
             entries.add(new Entry(i, destinations[i]));
         }
         searchField.setValue("");
-        searchField.setFocused(true);
         scrollbar.setCurrentScroll(0);
         updateSearch();
         if (!positioned) {
@@ -393,6 +395,11 @@ public class PatternDestinationPanel implements ICompositeWidget {
         PANEL_FILL.copy().dest(x + 3, y + 3, width - 6, HEADER_H - 3).blit(guiGraphics);
         int footerY = bodyY + rows * ROW_H;
         PANEL_FILL.copy().dest(x + 3, footerY, width - 6, FOOTER_H - 3).blit(guiGraphics);
+        int trackX = x + MePanelFrame.LEFT_MARGIN_WIDTH;
+        int trackCap = SCROLL_TRACK_TOP.getSrcHeight();
+        SCROLL_TRACK_TOP.dest(trackX, bodyY).blit(guiGraphics);
+        SCROLL_TRACK_MIDDLE.dest(trackX, bodyY + trackCap, MePanelFrame.SCROLLBAR_TRACK_WIDTH, rows * ROW_H - trackCap * 2).blit(guiGraphics);
+        SCROLL_TRACK_BOTTOM.dest(trackX, footerY - trackCap).blit(guiGraphics);
 
         (dragging ? MePanelFrame.DRAG_MARK_ACTIVE : MePanelFrame.DRAG_MARK).copy().dest(x + 8, y + 2).blit(guiGraphics);
         guiGraphics.drawString(font, title.get(font, getCloseX() - x - 35), x + 29, y + 6, titleColor, false);
