@@ -14,6 +14,7 @@ import com.gtolib.api.recipe.extension.MANATRecipeExtension;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeBuilder;
 import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
+import com.gregtechceu.gtceu.api.recipe.info.FluidRecipeInfo;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTRecipeTypes;
 import com.gregtechceu.gtceu.common.machine.steam.SteamLiquidBoilerMachine;
@@ -98,7 +99,7 @@ public final class RecipeTypeModify {
                     var recipe = DIMENSIONAL_FOCUS_ENGRAVING_ARRAY_RECIPES.copyFrom(recipeBuilder)
                             .duration((int) (recipeBuilder.getDuration() * 0.2))
                             .EUt(recipeBuilder.EUt() << 2);
-                    if (!recipeBuilder.getId().getPath().equals("make_mfpc_5")) {
+                    if (recipe.getFluidInputs().size() < DIMENSIONAL_FOCUS_ENGRAVING_ARRAY_RECIPES.getMaxInputs(FluidRecipeInfo.INSTANCE)) {
                         double value = Math.log10(recipeBuilder.EUt()) / Math.log10(4);
                         if (value > 10) {
                             recipe.inputFluids(GTOMaterials.EuvPhotoresist.getFluid((int) (value / 2)));
