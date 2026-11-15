@@ -26,7 +26,6 @@ import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.StatusPanel;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -41,6 +40,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Schedulers;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -104,7 +104,7 @@ public class MEMufflerHatchPartMachine extends StatusTrackedMEPartMachine implem
 
     @Override
     public void gtolib$insertAsh(MultiblockControllerMachine controller, GTRecipe lastRecipe) {
-        TaskHandler.enqueueTask(getLevel(), () -> IGTOMufflerMachine.super.gtolib$insertAsh(controller, lastRecipe), 0);
+        Schedulers.of(getLevel()).schedule(() -> IGTOMufflerMachine.super.gtolib$insertAsh(controller, lastRecipe));
     }
 
     @Override

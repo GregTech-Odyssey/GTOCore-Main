@@ -7,7 +7,6 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.beam.*;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import java.util.List;
 public class BeamAccessPartMachine extends MultiblockPartMachine implements IBeamOperator {
 
     private final BeamReceiverHistory history = new BeamReceiverHistory();
-    private TickableSubscription tickSubscription;
+    private Task tickSubscription;
     private final TickTimeMonitor beamMonitor = holder.monitorTick(GTOTickTimeMonitors.BEAM, this::sampleCurrentTick);
 
     public BeamAccessPartMachine(MetaMachineBlockEntity holder) {
@@ -79,7 +79,7 @@ public class BeamAccessPartMachine extends MultiblockPartMachine implements IBea
     @Override
     public void onUnload() {
         if (tickSubscription != null) {
-            tickSubscription.unsubscribe();
+            tickSubscription.cancel();
             tickSubscription = null;
         }
         clearBeamInputs();

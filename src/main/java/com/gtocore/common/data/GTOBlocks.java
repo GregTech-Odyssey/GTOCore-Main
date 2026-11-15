@@ -10,6 +10,7 @@ import com.gtocore.common.item.UniversalPipeBlockItem;
 import com.gtocore.common.item.WirelessEnergyUnitBlockItem;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperDisplayBlock;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperFrameBlock;
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.common.pipe.heat.HeatPipeType;
 import com.gtocore.common.pipe.mana.ManaPipeType;
 import com.gtocore.common.pipe.muffler.MufflerPipeType;
@@ -89,6 +90,7 @@ public final class GTOBlocks {
         GTO.defaultCreativeTab(GTOCreativeModeTabs.GTO_MATERIAL_PIPE);
         registerPipeBlocks();
         GTOBlockEntities.init();
+        MonitorRegistries.init();
     }
 
     public static final BlockEntry<GelidCryotheumBlock> GELID_CRYOTHEUM = block("gelid_cryotheum", "极寒之凛冰", GelidCryotheumBlock::new)

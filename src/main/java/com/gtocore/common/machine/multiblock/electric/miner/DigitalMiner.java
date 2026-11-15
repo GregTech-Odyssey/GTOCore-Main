@@ -174,7 +174,7 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
         tier = Math.min(getCasingTier(GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER), tier);
         this.energyPerTickBase = (int) Math.pow(4, getTier()) * 2L;
         this.energyPerTick = energyPerTickBase * (silkLevel == 0 ? 1 : 4);
-        this.parallelMining = (int) Math.min(4096, 4 * Math.pow(2, getTier()));
+        this.parallelMining = (int) (4 * Math.pow(2, getTier()));
         this.maxRadius = (int) Math.min(8 * Math.pow(2, getTier()), 128);
         this.prospectorRadius = Math.min(getTier() / 2 + 1, 6);
         resetRecipe();
@@ -227,14 +227,7 @@ public class DigitalMiner extends TierCasingMultiblockMachine implements IDigita
     }
 
     public boolean drainInput(boolean simulate) {
-        var energyContainer = getEnergyContainer();
-        long resultEnergy = energyContainer.getEnergyStored() - energyPerTick;
-        if (resultEnergy >= 0L && resultEnergy <= energyContainer.getEnergyCapacity()) {
-            if (!simulate)
-                energyContainer.removeEnergy(energyPerTick);
-            return true;
-        }
-        return false;
+        return useEnergy(energyPerTick, simulate);
     }
 
     @Override

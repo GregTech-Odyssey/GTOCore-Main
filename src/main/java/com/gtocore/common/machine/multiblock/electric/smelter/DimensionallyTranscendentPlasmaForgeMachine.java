@@ -40,7 +40,7 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
-        isUruiumCoil = getMultiblockState().getMatchContext().get(GTOPredicates.DataKeys.DTPF_COIL) == GTOBlocks.URUIUM_COIL_BLOCK.get();
+        isUruiumCoil = getAssembly().get(GTOPredicates.DataKeys.DTPF_COIL) == GTOBlocks.URUIUM_COIL_BLOCK.get();
     }
 
     @Override

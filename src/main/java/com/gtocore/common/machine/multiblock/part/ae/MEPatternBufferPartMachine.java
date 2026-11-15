@@ -13,6 +13,7 @@ import com.gtolib.api.machine.trait.NotifiableNotConsumableItemHandler;
 import com.gtolib.api.network.NetworkPack;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.RecipeType;
+import com.gtolib.api.wireless.PartProxyConnections;
 import com.gtolib.utils.LegacyIO;
 import com.gtolib.utils.RLUtils;
 
@@ -20,6 +21,7 @@ import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.ButtonConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.CircuitFancyConfigurator;
 import com.gregtechceu.gtceu.api.machine.fancyconfigurator.FancyInvConfigurator;
@@ -42,6 +44,7 @@ import com.gregtechceu.gtceu.client.util.TooltipHelper;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
@@ -54,6 +57,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -87,6 +91,7 @@ import com.gto.recipesearch.IntLongMap;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
 import com.lowdragmc.lowdraglib.gui.util.ClickData;
+import com.suried.gtoutils.level.LoadedChunks;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiStack;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -213,6 +218,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     @SaveToDisk
     private final Set<BlockPos> proxies = new OpenCacheHashSet<>();
     private final Set<MEPatternBufferProxyPartMachine> proxyMachines = new ReferenceOpenHashSet<>();
+    private int proxySweepAt;
     public final InternalSlotRecipeHandler internalRecipeHandler;
 
     protected ConfiguratorPanel configuratorPanel;
@@ -320,7 +326,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
     }
 
     private boolean isUsableByProxies(GTRecipeType type) {
-        if (proxyMachines.size() < proxies.size()) return true;
+        if (proxyMachines.size() < proxies.size() && !dropDeadProxies()) return true;
         for (var proxy : proxyMachines) {
             var controllers = proxy.getControllers();
             if (controllers.isEmpty()) return true;
@@ -329,6 +335,18 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
             }
         }
         return false;
+    }
+
+    private boolean dropDeadProxies() {
+        if (!(getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread()) return false;
+        var now = getOffsetTimer();
+        if (now < proxySweepAt) return false;
+        proxySweepAt = now + 200;
+        var self = getPos();
+        if (proxies.removeIf(pos -> LoadedChunks.isLoaded(level, pos) && !(MetaMachine.getMachine(LoadedChunks.blockEntity(level, pos)) instanceof MEPatternBufferProxyPartMachine proxy && self.equals(proxy.getBufferPos())))) {
+            onChanged();
+        }
+        return proxyMachines.size() >= proxies.size();
     }
 
     private void refundAll(ClickData clickData) {
@@ -351,7 +369,7 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
 
     @Override
     public void onUnload() {
-        MEPatternBufferConnectionHandler.unregisterBuffer(getLevel(), getPos());
+        PartProxyConnections.PATTERN_BUFFERS.unregisterTarget(getLevel(), getPos());
         super.onUnload();
     }
 
@@ -495,10 +513,14 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         return true;
     }
 
-    /** 单槽配置：物品输入、流体输入、电路、记录的配方，各占一个面板区块。 */
+    /** 单槽配置：配方处理开关、物品输入、流体输入、电路、记录的配方，各占一个面板区块。 */
     @Override
     protected void buildSlotConfig(UIElement column, int index) {
         var slot = getInternalInventory()[index];
+
+        var handling = MEPatternPartUI.section(column, RECIPE_HANDLING);
+        handling.addChild(MEPatternPartUI.labeledRow(handling.getContentWidth(), RECIPE_HANDLING_ENABLED,
+                Switch.of(slot::isRecipeProcessingEnabled, enabled -> setPatternSlotActive(index, enabled)), RECIPE_HANDLING_TOOLTIP));
 
         var items = MEPatternPartUI.section(column, ITEM_SPECIAL);
         MEPatternPartUI.slotRows(items, slot.lockableInventory.getSlots(),
@@ -726,6 +748,9 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         @Getter
         @SaveToDisk(defaultValue = "false", listener = "setLock")
         private boolean lock;
+        /** 该样板是否参与配方处理；关掉后只保留配置与缓存，不再参与机器配方匹配。 */
+        @SaveToDisk(defaultValue = "true")
+        private boolean recipeProcessingEnabled = true;
         @Setter
         private boolean shouldLockRecipe = true;
         private final LazyFieldDataManager fieldDataManager = new LazyFieldDataManager(this);
@@ -831,6 +856,16 @@ public class MEPatternBufferPartMachine extends MEPatternPartMachine<MEPatternBu
         public void onPatternChange() {
             setRecipe(null);
             refund();
+        }
+
+        @Override
+        public boolean isRecipeProcessingEnabled() {
+            return recipeProcessingEnabled;
+        }
+
+        @Override
+        public void setRecipeProcessingEnabled(boolean enabled) {
+            recipeProcessingEnabled = enabled;
         }
 
         @Override

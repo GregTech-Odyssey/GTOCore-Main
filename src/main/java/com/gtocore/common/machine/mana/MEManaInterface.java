@@ -1,12 +1,13 @@
 package com.gtocore.common.machine.mana;
 
 import com.gtocore.common.machine.multiblock.part.ae.MEPartUI;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 import com.gtocore.utils.ManaUnification;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.feature.IWirelessManaContainerHolder;
+import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.wireless.TeamContainerCache;
 import com.gtolib.api.wireless.WirelessManaContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -16,8 +17,10 @@ import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.Form;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,6 +49,7 @@ import vazkii.botania.forge.integration.ae2.ManaKey;
 import vazkii.botania.forge.integration.ae2.ManaKeyType;
 
 import java.math.BigInteger;
+import java.util.Objects;
 import java.util.UUID;
 
 @DataGeneratorScanned
@@ -61,8 +65,7 @@ public final class MEManaInterface extends MetaMachine implements
     public static final Component BOTANIA_MANA = Component.translatable("gtocore.machine.me_mana_interface.botania_mana");
 
     @Getter
-    @Setter
-    private WirelessManaContainer wirelessManaContainerCache;
+    private final TeamContainerCache<WirelessManaContainer> wirelessManaContainerCache = new TeamContainerCache<>(WirelessManaContainer::getOrCreateContainer);
     @SaveToDisk
     private final GridNodeHolder nodeHolder;
     @SyncToClient
@@ -72,6 +75,12 @@ public final class MEManaInterface extends MetaMachine implements
     @SaveToDisk(defaultValue = "0")
     @Getter
     private int priority = 0;
+    @Nullable
+    private UUID mountedTeam;
+    private final MachineScope<MEManaInterface> scope = new MachineScope<>(this, (opened, self) -> {
+        mountedTeam = self.team();
+        opened.watch(self::team, this::identityChanged);
+    });
 
     public MEManaInterface(MetaMachineBlockEntity holder) {
         super(holder);
@@ -82,6 +91,12 @@ public final class MEManaInterface extends MetaMachine implements
     @Override
     public Object getResourceIdentity() {
         return getWirelessManaContainer();
+    }
+
+    private void identityChanged(@Nullable UUID team) {
+        if (Objects.equals(team, mountedTeam)) return;
+        mountedTeam = team;
+        if (getMainNode() != null) IStorageProvider.requestUpdate(getMainNode());
     }
 
     @Override
@@ -170,11 +185,11 @@ public final class MEManaInterface extends MetaMachine implements
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
-        storageMounts.mount(this);
+        storageMounts.mount(this, priority);
     }
 
-    /// 优先级范围
-    private static final int PRIORITY_LIMIT = 100000000;
+    private static final int PRIORITY_MIN = Integer.MIN_VALUE + 1;
+    private static final int PRIORITY_MAX = Integer.MAX_VALUE - 1;
     private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
     private static final Component EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
     private static final Component INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
@@ -193,7 +208,7 @@ public final class MEManaInterface extends MetaMachine implements
     private UIElement buildPage() {
         var section = UIElement.section();
         section.addChild(Form.numberRow(PRIORITY,
-                MEPatternPartUI.intField(0, this::getPriority, value -> setPriority(Math.min(value, PRIORITY_LIMIT)), -PRIORITY_LIMIT),
+                NumberField.ofInt(LayoutStyle.AUTO, this::getPriority, this::setPriority, PRIORITY_MIN, PRIORITY_MAX),
                 EXTRACTION_HINT, INSERTION_HINT));
         return Form.page().addChild(section);
     }

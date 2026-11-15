@@ -115,7 +115,7 @@ public final class AdvancedFusionReactorMachine extends CrossRecipeMultiblockMac
             size++;
         }
         var assembly = getAssembly();
-        highEnergyModules = assembly == null ? 0 : assembly.get(HIGH_ENERGY_1) + assembly.get(HIGH_ENERGY_2) + assembly.get(HIGH_ENERGY_3) + assembly.get(HIGH_ENERGY_4);
+        highEnergyModules = assembly.get(HIGH_ENERGY_1) + assembly.get(HIGH_ENERGY_2) + assembly.get(HIGH_ENERGY_3) + assembly.get(HIGH_ENERGY_4);
         energyContainer.resetBasicInfo(calculateEnergyStorageFactor(tier + highEnergyModules, size));
         preHeatSubs.initialize(getLevel());
     }

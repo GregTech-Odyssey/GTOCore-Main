@@ -1,0 +1,16 @@
+{
+  "values": [
+    "gtocore:mind_implant",
+    "gtocore:drone_implant",
+    "gtocore:fault_vision_implant",
+    "gtocore:stock_sense_implant",
+    "gtocore:current_vision_implant",
+    "gtocore:remote_touch_implant",
+    "gtocore:team_marker_implant",
+    "gtocore:restock_implant",
+    "gtocore:tool_implant",
+    "gtocore:beam_implant",
+    "gtocore:cannon_implant",
+    "gtocore:tether_implant"
+  ]
+}

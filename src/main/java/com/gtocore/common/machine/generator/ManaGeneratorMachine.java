@@ -11,7 +11,6 @@ import com.gtolib.api.machine.mana.trait.NotifiableManaContainer;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IControllable;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -30,6 +29,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
+import com.suried.gtoutils.schedule.Task;
 import vazkii.botania.api.mana.ManaEndpoint;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -63,7 +63,7 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
     private final long manaPerTick;
     @SaveToDisk(defaultValue = "true")
     private boolean enabled = true;
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
 
     public ManaGeneratorMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier);
@@ -100,7 +100,7 @@ public final class ManaGeneratorMachine extends TieredEnergyMachine implements I
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

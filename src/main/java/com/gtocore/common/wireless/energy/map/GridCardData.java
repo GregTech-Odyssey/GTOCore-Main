@@ -130,23 +130,20 @@ final class GridCardData {
         relayOut = GridFormat.rate(detail.lineOut(), tier);
     }
 
-    boolean isPortHere(int key) {
-        var port = detail().port(key);
-        return port != null && ctx.isInPlayerDimension(port.dimension());
-    }
-
     boolean hasStorage() {
         topology();
         return info != null && info.towers() > 0;
     }
 
-    boolean hasPorts() {
-        return detail().portCount() > 0;
-    }
-
     Component title() {
         resolve();
         return title;
+    }
+
+    @Nullable
+    ResourceKey<net.minecraft.world.level.Level> dimension() {
+        resolve();
+        return dimension;
     }
 
     Component location() {

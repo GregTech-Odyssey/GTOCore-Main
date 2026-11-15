@@ -126,8 +126,7 @@ public final class WirelessReceiveCover extends CoverBehavior implements IBindab
             port = new EnergyPort(PortKind.RECEIVE_COVER, host, tier);
             port.setService(this::serve);
         }
-        port.setPriority(priority);
-        port.wake();
+        port.open(priority);
     }
 
     private void stop() {

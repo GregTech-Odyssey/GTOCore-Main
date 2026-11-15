@@ -8,6 +8,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
+import com.gtolib.monitor.sources.PowerLossLedger;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
@@ -103,6 +104,7 @@ public class DataFormTestingPlantMachine extends ElectricMultiblockMachine imple
     @Override
     public void regressRecipe(RecipeLogic recipeLogic) {
         if (mode == Mode.TESTING) {
+            PowerLossLedger.report(this, recipeLogic);
             setWorkingEnabled(false);
             recipeLogic.resetRecipeLogic();
             mode = Mode.IDLE;

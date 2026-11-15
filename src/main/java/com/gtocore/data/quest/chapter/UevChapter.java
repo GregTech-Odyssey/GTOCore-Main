@@ -251,16 +251,6 @@ public final class UevChapter {
             .dependsOn(CHAOTIC_ENERGY_CORE)
             .optional());
 
-    public static final Quest BARYONIC_PERFECTION_WATER_EXCHANGE = CHAPTER.quest("baryonic_perfection_water_exchange", q -> q
-            .at(-8, -0.5)
-            .icon(GTOMaterials.DegassedWater.getBucket())
-            .title("重子完美水 兑换处")
-            .desc(d -> d.line("夸克释放催化剂目前还做不了，所以只要你做出了7级水，就可以直接来这里领取8级水的元件"))
-            .task(Task.item(GTOMaterials.DegassedWater.getBucket()))
-            .reward(
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEFluidKey.of(GTOMaterials.BaryonicPerfectionWater.getFluid())), 1))
-            .hideDependentLines());
-
     public static final Quest Q_635BFF4E = CHAPTER.quest("q_635bff4e", q -> q
             .at(2, -6)
             .desc(d -> d.line("缺失配方的材料，直接送你了"))

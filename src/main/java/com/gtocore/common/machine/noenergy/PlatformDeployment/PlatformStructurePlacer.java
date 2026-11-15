@@ -4,8 +4,6 @@ import com.gtocore.common.data.GTOMachines;
 
 import com.gtolib.utils.MultiBlockFileReader;
 
-import com.gregtechceu.gtceu.utils.TaskHandler;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +18,9 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LightEngine;
 
-import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import com.suried.gtoutils.schedule.Cadence;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import it.unimi.dsi.fastutil.chars.Char2ReferenceOpenHashMap;
 
 import java.io.*;
@@ -45,7 +45,7 @@ final class PlatformStructurePlacer {
     private final IntConsumer onBatch;
     private final Runnable onFinished;
 
-    private final ISubscription subscription;
+    private final Task subscription;
 
     private PlatformStructurePlacer(ServerLevel serverLevel,
                                     BlockIterator blockIterator,
@@ -67,7 +67,7 @@ final class PlatformStructurePlacer {
 
         // tickTask 是机器那边的耗时监控（监控的 task 必须固定，而每次部署都是一个新 placer，
         // 所以这里不能直接把 this::placeBatch 交给监控）。
-        this.subscription = TaskHandler.enqueueTick(serverLevel, tickTask, 0, 0);
+        this.subscription = Schedulers.of(serverLevel).repeat(Cadence.EVERY_TICK, tickTask);
     }
 
     /**
@@ -154,7 +154,7 @@ final class PlatformStructurePlacer {
         }
 
         if (!blockIterator.hasNext()) {
-            subscription.unsubscribe();
+            subscription.cancel();
             if (onFinished != null) {
                 onFinished.run();
             }

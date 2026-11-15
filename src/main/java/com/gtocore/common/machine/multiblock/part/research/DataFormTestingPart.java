@@ -37,7 +37,7 @@ public class DataFormTestingPart extends AmountConfigurationPartMachine implemen
     private boolean isOnline;
 
     public DataFormTestingPart(MetaMachineBlockEntity holder) {
-        super(holder, GTValues.EV, -1000000, 1000000);
+        super(holder, GTValues.EV, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
         this.getMainNode().addService(IStorageProvider.class, this);
     }
 

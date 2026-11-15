@@ -1,0 +1,6 @@
+{
+  "loader": "gtocore:monitor_bus",
+  "textures": {
+    "particle": "gtocore:block/monitor/panel"
+  }
+}

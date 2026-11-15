@@ -11,6 +11,7 @@ import com.gtolib.utils.MachineUtils;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
+import com.gregtechceu.gtceu.api.machine.fancyconfigurator.OverclockCountConfigurator;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IVoidable;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDisplayUIMachine;
@@ -18,6 +19,7 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.misc.EnergyContainerList;
+import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 
 import net.minecraft.core.Direction;
@@ -64,6 +66,11 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
         gtolib$speed = 1;
         gtolib$energy = 1;
         gtolib$ocLimit = GTOConfig.INSTANCE.gamePlay.defaultMinOverclockDuration;
+        // 无损超频的机器没有能量损耗，时长下限直接取 1 tick
+        RecipeModifier recipeModifier = definition.getRecipeModifier();
+        if (recipeModifier != null && recipeModifier.has(RecipeModifier.PERFECT_OVERCLOCKING)) {
+            gtolib$ocLimit = 1;
+        }
     }
 
     protected WorkableElectricMultiblockMachineMixin(MetaMachineBlockEntity holder, Object... args) {
@@ -110,7 +117,10 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
             }
         }
         if (isGenerator()) return;
-        gtolib$ocLimit = tag.getInt("ocLimit");
+        // 没有存过就用 init 里定的默认值
+        if (tag.contains("ocLimit")) {
+            gtolib$ocLimit = tag.getInt("ocLimit");
+        }
     }
 
     /**
@@ -125,6 +135,7 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
             if (hasOverclockConfig()) configuratorPanel.attachConfigurators(new OverclockConfigurator(this));
             attachBatchConfigurator(configuratorPanel);
         }
+        if (hasOverclockConfig()) configuratorPanel.attachConfigurators(new OverclockCountConfigurator(this));
         IRecipeLogicMachine.attachRecipeLockConfigurator(configuratorPanel, this);
         MachineUtils.attachStructureCheckConfigurators(configuratorPanel, this);
         for (var direction : Direction.values()) {

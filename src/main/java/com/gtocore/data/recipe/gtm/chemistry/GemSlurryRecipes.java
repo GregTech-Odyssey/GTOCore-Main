@@ -1,5 +1,7 @@
 package com.gtocore.data.recipe.gtm.chemistry;
 
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
+
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.crushed;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.dust;
@@ -21,9 +23,9 @@ final class GemSlurryRecipes {
                 .inputFluids(RubySlurry, 3000)
                 .outputItems(dust, Aluminium, 2)
                 .outputItems(dust, Chromium)
-                .chancedOutput(dust, Titanium, 200, 0)
-                .chancedOutput(dust, Iron, 200, 0)
-                .chancedOutput(dust, Vanadium, 200, 0)
+                .chancedOutput(dust, Titanium, Chance.of(200))
+                .chancedOutput(dust, Iron, Chance.of(200))
+                .chancedOutput(dust, Vanadium, Chance.of(200))
                 .outputFluids(DilutedHydrochloricAcid.getFluid(2000))
                 .save();
 
@@ -37,9 +39,9 @@ final class GemSlurryRecipes {
         CENTRIFUGE_RECIPES.recipeBuilder("sapphire_slurry_centrifuging").duration(320).EUt(VA[HV])
                 .inputFluids(SapphireSlurry, 3000)
                 .outputItems(dust, Aluminium, 2)
-                .chancedOutput(dust, Titanium, 200, 0)
-                .chancedOutput(dust, Iron, 200, 0)
-                .chancedOutput(dust, Vanadium, 200, 0)
+                .chancedOutput(dust, Titanium, Chance.of(200))
+                .chancedOutput(dust, Iron, Chance.of(200))
+                .chancedOutput(dust, Vanadium, Chance.of(200))
                 .outputFluids(DilutedHydrochloricAcid.getFluid(2000))
                 .save();
 
@@ -53,10 +55,10 @@ final class GemSlurryRecipes {
         CENTRIFUGE_RECIPES.recipeBuilder("green_sapphire_slurry_centrifuging").duration(320).EUt(VA[HV])
                 .inputFluids(GreenSapphireSlurry, 3000)
                 .outputItems(dust, Aluminium, 2)
-                .chancedOutput(dust, Beryllium, 200, 0)
-                .chancedOutput(dust, Titanium, 200, 0)
-                .chancedOutput(dust, Iron, 200, 0)
-                .chancedOutput(dust, Vanadium, 200, 0)
+                .chancedOutput(dust, Beryllium, Chance.of(200))
+                .chancedOutput(dust, Titanium, Chance.of(200))
+                .chancedOutput(dust, Iron, Chance.of(200))
+                .chancedOutput(dust, Vanadium, Chance.of(200))
                 .outputFluids(DilutedHydrochloricAcid.getFluid(2000))
                 .save();
     }

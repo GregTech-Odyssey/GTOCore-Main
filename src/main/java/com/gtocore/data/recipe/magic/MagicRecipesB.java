@@ -17,6 +17,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
@@ -58,8 +59,8 @@ public final class MagicRecipesB {
                     .inputItems(dust, StarStone, 4)
                     .inputFluids(FractalPetalSolvent, 2000)
                     .inputFluids(Ethanol, 1000)
-                    .chancedOutput(CycleofBlossomsSolvent.getFluid(1500), 10, 0)
-                    .chancedOutput(FractalPetalSolvent.getFluid(250), 1, 0)
+                    .chancedOutput(CycleofBlossomsSolvent.getFluid(1500), Chance.of(10))
+                    .chancedOutput(FractalPetalSolvent.getFluid(250), Chance.of(1))
                     .duration(240)
                     .temperature(1200)
                     .addData(GTORecipeDataKeys.PARAM1, 20)
@@ -385,8 +386,8 @@ public final class MagicRecipesB {
                         .inputItems(crushed, OriginCoreCrystal)
                         .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                         .outputItems(crushedPurified, OriginCoreCrystal)
-                        .chancedOutput(SOURCE_SPIRIT_DEBRIS.asItem(), 5000, 300)
-                        .chancedOutput(dust, OriginCoreCrystal, 2000, 0)
+                        .chancedOutput(SOURCE_SPIRIT_DEBRIS.asItem(), Chance.of(5000).risePerOverclock(300))
+                        .chancedOutput(dust, OriginCoreCrystal, Chance.of(2000))
                         .duration(200).EUt(VA[LV])
                         .category(GTRecipeCategories.ORE_BATHING)
                         .save();
@@ -394,8 +395,8 @@ public final class MagicRecipesB {
                 ELECTROMAGNETIC_SEPARATOR_RECIPES.recipeBuilder("origin_core_crystal_pure_dust_to_dust")
                         .inputItems(dustPure, OriginCoreCrystal)
                         .outputItems(dust, OriginCoreCrystal)
-                        .chancedOutput(HOLY_ROOT_MYCELIUM.asItem(), 1000, 250)
-                        .chancedOutput(dust, OriginCoreCrystal, 500, 0)
+                        .chancedOutput(HOLY_ROOT_MYCELIUM.asItem(), Chance.of(1000).risePerOverclock(250))
+                        .chancedOutput(dust, OriginCoreCrystal, Chance.of(500))
                         .duration(200).EUt(24)
                         .save();
 
@@ -403,8 +404,8 @@ public final class MagicRecipesB {
                         .inputItems(crushed, StarBloodCrystal)
                         .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                         .outputItems(crushedPurified, StarBloodCrystal)
-                        .chancedOutput(STAR_DEBRIS_SAND.asItem(), 5000, 300)
-                        .chancedOutput(dust, StarBloodCrystal, 2000, 0)
+                        .chancedOutput(STAR_DEBRIS_SAND.asItem(), Chance.of(5000).risePerOverclock(300))
+                        .chancedOutput(dust, StarBloodCrystal, Chance.of(2000))
                         .duration(200).EUt(VA[LV])
                         .category(GTRecipeCategories.ORE_BATHING)
                         .save();
@@ -412,8 +413,8 @@ public final class MagicRecipesB {
                 ELECTROMAGNETIC_SEPARATOR_RECIPES.recipeBuilder("star_blood_crystal_pure_dust_to_dust")
                         .inputItems(dustPure, StarBloodCrystal)
                         .outputItems(dust, StarBloodCrystal)
-                        .chancedOutput(VEIN_BLOOD_MUCUS.asItem(), 1000, 250)
-                        .chancedOutput(dust, StarBloodCrystal, 500, 0)
+                        .chancedOutput(VEIN_BLOOD_MUCUS.asItem(), Chance.of(1000).risePerOverclock(250))
+                        .chancedOutput(dust, StarBloodCrystal, Chance.of(500))
                         .duration(200).EUt(24)
                         .save();
 
@@ -421,8 +422,8 @@ public final class MagicRecipesB {
                         .inputItems(crushed, SoulJadeCrystal)
                         .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                         .outputItems(crushedPurified, SoulJadeCrystal)
-                        .chancedOutput(SOUL_SHADOW_DUST.asItem(), 5000, 300)
-                        .chancedOutput(dust, SoulJadeCrystal, 2000, 0)
+                        .chancedOutput(SOUL_SHADOW_DUST.asItem(), Chance.of(5000).risePerOverclock(300))
+                        .chancedOutput(dust, SoulJadeCrystal, Chance.of(2000))
                         .duration(200).EUt(VA[LV])
                         .category(GTRecipeCategories.ORE_BATHING)
                         .save();
@@ -430,8 +431,8 @@ public final class MagicRecipesB {
                 ELECTROMAGNETIC_SEPARATOR_RECIPES.recipeBuilder("soul_jade_crystal_pure_dust_to_dust")
                         .inputItems(dustPure, SoulJadeCrystal)
                         .outputItems(dust, SoulJadeCrystal)
-                        .chancedOutput(CONSCIOUSNESS_THREAD.asItem(), 1000, 250)
-                        .chancedOutput(dust, SoulJadeCrystal, 500, 0)
+                        .chancedOutput(CONSCIOUSNESS_THREAD.asItem(), Chance.of(1000).risePerOverclock(250))
+                        .chancedOutput(dust, SoulJadeCrystal, Chance.of(500))
                         .duration(200).EUt(24)
                         .save();
 
@@ -439,8 +440,8 @@ public final class MagicRecipesB {
                         .inputItems(crushed, RemnantSpiritStone)
                         .inputFluids(TheWaterFromTheWellOfWisdom, 1000)
                         .outputItems(crushedPurified, RemnantSpiritStone)
-                        .chancedOutput(BONE_ASH_GRANULE.asItem(), 5000, 300)
-                        .chancedOutput(dust, RemnantSpiritStone, 2000, 0)
+                        .chancedOutput(BONE_ASH_GRANULE.asItem(), Chance.of(5000).risePerOverclock(300))
+                        .chancedOutput(dust, RemnantSpiritStone, Chance.of(2000))
                         .duration(200).EUt(VA[LV])
                         .category(GTRecipeCategories.ORE_BATHING)
                         .save();
@@ -448,8 +449,8 @@ public final class MagicRecipesB {
                 ELECTROMAGNETIC_SEPARATOR_RECIPES.recipeBuilder("remnant_spirit_stone_pure_dust_to_dust")
                         .inputItems(dustPure, RemnantSpiritStone)
                         .outputItems(dust, RemnantSpiritStone)
-                        .chancedOutput(SPIRIT_BONE_FRAGMENT.asItem(), 1000, 250)
-                        .chancedOutput(dust, RemnantSpiritStone, 500, 0)
+                        .chancedOutput(SPIRIT_BONE_FRAGMENT.asItem(), Chance.of(1000).risePerOverclock(250))
+                        .chancedOutput(dust, RemnantSpiritStone, Chance.of(500))
                         .duration(200).EUt(24)
                         .save();
             }
@@ -778,10 +779,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("sifter_crudely_purified_origin_core_crystal_ore")
                             .inputItems(CRUDELY_PURIFIED_ORIGIN_CORE_CRYSTAL_ORE)
-                            .chancedOutput(gemFlawless, OriginCoreCrystal, chance, chanceBoost)
-                            .chancedOutput(gem, OriginCoreCrystal, chance * 2, 100)
-                            .chancedOutput(dust, OriginCoreCrystalResidue, 6500 - 3 * chance, 600)
-                            .chancedOutput(dustPure, OriginCoreCrystal, 5000, 0)
+                            .chancedOutput(gemFlawless, OriginCoreCrystal, new Chance(chance, chanceBoost))
+                            .chancedOutput(gem, OriginCoreCrystal, Chance.of(chance * 2).risePerOverclock(100))
+                            .chancedOutput(dust, OriginCoreCrystalResidue, Chance.of(6500 - 3 * chance).risePerOverclock(600))
+                            .chancedOutput(dustPure, OriginCoreCrystal, Chance.of(5000))
                             .duration(600).EUt(VA[HV])
                             .save();
                 }
@@ -809,10 +810,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("sifter_crudely_fused_star_blood_crystal_ore")
                             .inputItems(CRUDELY_FUSED_STAR_BLOOD_CRYSTAL_ORE)
-                            .chancedOutput(gemFlawless, StarBloodCrystal, chance, chanceBoost)
-                            .chancedOutput(gem, StarBloodCrystal, chance * 2, 100)
-                            .chancedOutput(dust, StarBloodCrystalResidue, 6500 - 3 * chance, 600)
-                            .chancedOutput(dustPure, StarBloodCrystal, 5000, 0)
+                            .chancedOutput(gemFlawless, StarBloodCrystal, new Chance(chance, chanceBoost))
+                            .chancedOutput(gem, StarBloodCrystal, Chance.of(chance * 2).risePerOverclock(100))
+                            .chancedOutput(dust, StarBloodCrystalResidue, Chance.of(6500 - 3 * chance).risePerOverclock(600))
+                            .chancedOutput(dustPure, StarBloodCrystal, Chance.of(5000))
                             .duration(600).EUt(VA[HV])
                             .save();
                 }
@@ -840,10 +841,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("sifter_crudely_harmonized_soul_jade_crystal_ore")
                             .inputItems(CRUDELY_HARMONIZED_SOUL_JADE_CRYSTAL_ORE)
-                            .chancedOutput(gemFlawless, SoulJadeCrystal, chance, chanceBoost)
-                            .chancedOutput(gem, SoulJadeCrystal, chance * 2, 100)
-                            .chancedOutput(dust, SoulJadeCrystalResidue, 6500 - 3 * chance, 600)
-                            .chancedOutput(dustPure, SoulJadeCrystal, 5000, 0)
+                            .chancedOutput(gemFlawless, SoulJadeCrystal, new Chance(chance, chanceBoost))
+                            .chancedOutput(gem, SoulJadeCrystal, Chance.of(chance * 2).risePerOverclock(100))
+                            .chancedOutput(dust, SoulJadeCrystalResidue, Chance.of(6500 - 3 * chance).risePerOverclock(600))
+                            .chancedOutput(dustPure, SoulJadeCrystal, Chance.of(5000))
                             .duration(600).EUt(VA[HV])
                             .save();
                 }
@@ -871,10 +872,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("sifter_crudely_shaped_remnant_spirit_stone_ore")
                             .inputItems(CRUDELY_SHAPED_REMNANT_SPIRIT_STONE_ORE)
-                            .chancedOutput(gemFlawless, RemnantSpiritStone, chance, chanceBoost)
-                            .chancedOutput(gem, RemnantSpiritStone, chance * 2, 100)
-                            .chancedOutput(dust, RemnantSpiritStoneResidue, 6500 - 3 * chance, 600)
-                            .chancedOutput(dustPure, RemnantSpiritStone, 5000, 0)
+                            .chancedOutput(gemFlawless, RemnantSpiritStone, new Chance(chance, chanceBoost))
+                            .chancedOutput(gem, RemnantSpiritStone, Chance.of(chance * 2).risePerOverclock(100))
+                            .chancedOutput(dust, RemnantSpiritStoneResidue, Chance.of(6500 - 3 * chance).risePerOverclock(600))
+                            .chancedOutput(dustPure, RemnantSpiritStone, Chance.of(5000))
                             .duration(600).EUt(VA[HV])
                             .save();
                 }
@@ -947,10 +948,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("origin_core_crystal_spectral_sifting")
                             .inputItems(INFILTRATED_ORIGIN_CORE_CRYSTAL)
-                            .chancedOutput(gemExquisite, OriginCoreCrystal, 300, 0)
-                            .chancedOutput(gemFlawless, OriginCoreCrystal, 4000, 0)
-                            .chancedOutput(gem, OriginCoreCrystal, 2500, 0)
-                            .chancedOutput(dust, OriginCoreCrystalResidue, 3500, 0)
+                            .chancedOutput(gemExquisite, OriginCoreCrystal, Chance.of(300))
+                            .chancedOutput(gemFlawless, OriginCoreCrystal, Chance.of(4000))
+                            .chancedOutput(gem, OriginCoreCrystal, Chance.of(2500))
+                            .chancedOutput(dust, OriginCoreCrystalResidue, Chance.of(3500))
                             .duration(720).EUt(VA[UV])
                             .save();
                 }
@@ -1016,10 +1017,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("star_blood_crystal_spectral_sifting")
                             .inputItems(INFILTRATED_STAR_BLOOD_CRYSTAL)
-                            .chancedOutput(gemExquisite, StarBloodCrystal, 300, 0)
-                            .chancedOutput(gemFlawless, StarBloodCrystal, 4000, 0)
-                            .chancedOutput(gem, StarBloodCrystal, 2500, 0)
-                            .chancedOutput(dust, StarBloodCrystalResidue, 3500, 0)
+                            .chancedOutput(gemExquisite, StarBloodCrystal, Chance.of(300))
+                            .chancedOutput(gemFlawless, StarBloodCrystal, Chance.of(4000))
+                            .chancedOutput(gem, StarBloodCrystal, Chance.of(2500))
+                            .chancedOutput(dust, StarBloodCrystalResidue, Chance.of(3500))
                             .duration(600).EUt(VA[ZPM])
                             .save();
                 }
@@ -1085,10 +1086,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("soul_jade_crystal_spectral_sifting")
                             .inputItems(INFILTRATED_SOUL_JADE_CRYSTAL)
-                            .chancedOutput(gemExquisite, SoulJadeCrystal, 300, 0)
-                            .chancedOutput(gemFlawless, SoulJadeCrystal, 4000, 0)
-                            .chancedOutput(gem, SoulJadeCrystal, 2500, 0)
-                            .chancedOutput(dust, SoulJadeCrystalResidue, 3500, 0)
+                            .chancedOutput(gemExquisite, SoulJadeCrystal, Chance.of(300))
+                            .chancedOutput(gemFlawless, SoulJadeCrystal, Chance.of(4000))
+                            .chancedOutput(gem, SoulJadeCrystal, Chance.of(2500))
+                            .chancedOutput(dust, SoulJadeCrystalResidue, Chance.of(3500))
                             .duration(780).EUt(VA[UV])
                             .save();
                 }
@@ -1153,10 +1154,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("remnant_spirit_stone_spectral_sifting")
                             .inputItems(INFILTRATED_REMNANT_SPIRIT_STONE)
-                            .chancedOutput(gemExquisite, RemnantSpiritStone, 300, 0)
-                            .chancedOutput(gemFlawless, RemnantSpiritStone, 4000, 0)
-                            .chancedOutput(gem, RemnantSpiritStone, 2500, 0)
-                            .chancedOutput(dust, RemnantSpiritStoneResidue, 3500, 0)
+                            .chancedOutput(gemExquisite, RemnantSpiritStone, Chance.of(300))
+                            .chancedOutput(gemFlawless, RemnantSpiritStone, Chance.of(4000))
+                            .chancedOutput(gem, RemnantSpiritStone, Chance.of(2500))
+                            .chancedOutput(dust, RemnantSpiritStoneResidue, Chance.of(3500))
                             .duration(660).EUt(VA[ZPM])
                             .save();
                 }
@@ -1262,10 +1263,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("origin_core_crystal_boost_sifting")
                             .inputItems(ORIGIN_CORE_CRYSTAL_GIANT_POLYCRYSTAL)
-                            .chancedOutput(gemExquisite, OriginCoreCrystal, 8, 3000, 0)
-                            .chancedOutput(gemFlawless, OriginCoreCrystal, 16, 5000, 0)
-                            .chancedOutput(gem, OriginCoreCrystal, 32, 2500, 0)
-                            .chancedOutput(dust, OriginCoreCrystalResidue, 32, 3000, 0)
+                            .chancedOutput(gemExquisite, OriginCoreCrystal, 8, Chance.of(3000))
+                            .chancedOutput(gemFlawless, OriginCoreCrystal, 16, Chance.of(5000))
+                            .chancedOutput(gem, OriginCoreCrystal, 32, Chance.of(2500))
+                            .chancedOutput(dust, OriginCoreCrystalResidue, 32, Chance.of(3000))
                             .duration(900).EUt(VA[UEV])
                             .save();
                 }
@@ -1360,10 +1361,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("star_blood_crystal_boost_sifting")
                             .inputItems(STAR_BLOOD_CRYSTAL_GIANT_POLYCRYSTAL)
-                            .chancedOutput(gemExquisite, StarBloodCrystal, 8, 3000, 0)
-                            .chancedOutput(gemFlawless, StarBloodCrystal, 16, 5000, 0)
-                            .chancedOutput(gem, StarBloodCrystal, 32, 2500, 0)
-                            .chancedOutput(dust, StarBloodCrystalResidue, 32, 3000, 0)
+                            .chancedOutput(gemExquisite, StarBloodCrystal, 8, Chance.of(3000))
+                            .chancedOutput(gemFlawless, StarBloodCrystal, 16, Chance.of(5000))
+                            .chancedOutput(gem, StarBloodCrystal, 32, Chance.of(2500))
+                            .chancedOutput(dust, StarBloodCrystalResidue, 32, Chance.of(3000))
                             .duration(800).EUt(VA[UEV])
                             .save();
                 }
@@ -1458,10 +1459,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("soul_jade_crystal_boost_sifting")
                             .inputItems(SOUL_JADE_CRYSTAL_GIANT_POLYCRYSTAL)
-                            .chancedOutput(gemExquisite, SoulJadeCrystal, 8, 3000, 0)
-                            .chancedOutput(gemFlawless, SoulJadeCrystal, 16, 5000, 0)
-                            .chancedOutput(gem, SoulJadeCrystal, 32, 2500, 0)
-                            .chancedOutput(dust, SoulJadeCrystalResidue, 32, 3000, 0)
+                            .chancedOutput(gemExquisite, SoulJadeCrystal, 8, Chance.of(3000))
+                            .chancedOutput(gemFlawless, SoulJadeCrystal, 16, Chance.of(5000))
+                            .chancedOutput(gem, SoulJadeCrystal, 32, Chance.of(2500))
+                            .chancedOutput(dust, SoulJadeCrystalResidue, 32, Chance.of(3000))
                             .duration(950).EUt(VA[UEV])
                             .save();
                 }
@@ -1556,10 +1557,10 @@ public final class MagicRecipesB {
 
                     SIFTER_RECIPES.recipeBuilder("remnant_spirit_stone_boost_sifting")
                             .inputItems(REMNANT_SPIRIT_STONE_GIANT_POLYCRYSTAL)
-                            .chancedOutput(gemExquisite, RemnantSpiritStone, 8, 3000, 0)
-                            .chancedOutput(gemFlawless, RemnantSpiritStone, 16, 5000, 0)
-                            .chancedOutput(gem, RemnantSpiritStone, 32, 2500, 0)
-                            .chancedOutput(dust, RemnantSpiritStoneResidue, 32, 3000, 0)
+                            .chancedOutput(gemExquisite, RemnantSpiritStone, 8, Chance.of(3000))
+                            .chancedOutput(gemFlawless, RemnantSpiritStone, 16, Chance.of(5000))
+                            .chancedOutput(gem, RemnantSpiritStone, 32, Chance.of(2500))
+                            .chancedOutput(dust, RemnantSpiritStoneResidue, 32, Chance.of(3000))
                             .duration(1000).EUt(VA[UEV])
                             .save();
                 }
@@ -1629,7 +1630,7 @@ public final class MagicRecipesB {
                     CUTTER_RECIPES.recipeBuilder("cutter_" + material[i].getName() + "_gem")
                             .inputItems(gemFlawless, material[i])
                             .inputFluids(FinalPurifier, 1000)
-                            .chancedOutput(plate, material[i], 1000, 0)
+                            .chancedOutput(plate, material[i], Chance.of(1000))
                             .duration(2400).EUt(VA[ZPM])
                             .cleanroom(1)
                             .addCondition(new VacuumCondition(4))

@@ -87,7 +87,7 @@ public final class MachinesNode {
                             .addMaterialNeeded(MECHANICS, 256)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:manipulator"), 0.8F)
                             .build())
-            .tier(5)
+            .tier(4)
             .build();
 
     public static final TechNode TimeDilationDimensionSeriesCasing = BaseNodes.MachinesTree.builder("time_dilation_dimension_series_casing", "时间膨胀维度级系列外壳", "Time Dilation Dimension Series Casings")
@@ -423,7 +423,7 @@ public final class MachinesNode {
                             .addMaterialNeeded(MATERIAL, 2560)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:kerr_newman_homogenizer"), 0.8F)
                             .build())
-            .tier(5)
+            .tier(4)
             .build();
 
     public static final TechNode QFTManipulator = BaseNodes.MachinesTree.builder("qft_manipulator", "量子场论操纵器", "Quantum Field Theory Manipulator")
@@ -436,7 +436,7 @@ public final class MachinesNode {
                             .addMaterialNeeded(MECHANICS, 256)
                             .setEurekaItem(RegistriesUtils.getItem("gtocore:quantum_force_transformer_coil"), 0.7F)
                             .build())
-            .tier(5)
+            .tier(4)
             .build();
 
     private MachinesNode() {}

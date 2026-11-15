@@ -11,7 +11,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyUIProvider;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IAutoOutputItem;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
@@ -61,6 +60,7 @@ import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib.gui.texture.ItemStackTexture;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,9 +82,9 @@ import static com.gtocore.common.data.GTOItems.*;
 public class VillageTradingStationMachine extends MetaMachine implements IAutoOutputItem, IFancyUIMachine, IMachineLife {
 
     // 定时任务订阅
-    private TickableSubscription tickSubs;
+    private Task tickSubs;
     @Nullable
-    private TickableSubscription autoOutputSubs;
+    private Task autoOutputSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor autoOutputMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_OUTPUT, this::autoOutput);
@@ -198,9 +198,9 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     @Override
     public void onUnload() {
         super.onUnload();
-        if (tickSubs != null) tickSubs.unsubscribe();
+        if (tickSubs != null) tickSubs.cancel();
         if (exportItemSubs != null) exportItemSubs.unsubscribe();
-        if (autoOutputSubs != null) autoOutputSubs.unsubscribe();
+        if (autoOutputSubs != null) autoOutputSubs.cancel();
     }
 
     /////////////////////////////////////
@@ -213,13 +213,14 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
     // 定时更新
     private void tickUpdate() {
         // 定时补货
-        if (tickSubs.lastTick > replenishment) {
+        int now = getOffsetTimer();
+        if (now > replenishment) {
             villagersRestock();
-            replenishment = tickSubs.lastTick + replenishmentInterval;
+            replenishment = now + replenishmentInterval;
         }
         // 执行交易
-        if (tickSubs.lastTick > executeTrades) {
-            executeTrades = tickSubs.lastTick + 200;
+        if (now > executeTrades) {
+            executeTrades = now + 200;
             for (int slot = 0; slot < 9; slot++) {
                 executeTrades(slot);
             }
@@ -854,7 +855,7 @@ public class VillageTradingStationMachine extends MetaMachine implements IAutoOu
         if (autoOutputItems && !output.isEmpty() && outputFacing != null && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), outputFacing, AEKeyTypes.ITEMS, StorageAccess.INSERT)) {
             autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
-            autoOutputSubs.unsubscribe();
+            autoOutputSubs.cancel();
             autoOutputSubs = null;
         }
     }

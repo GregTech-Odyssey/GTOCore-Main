@@ -10,6 +10,7 @@ import com.gtolib.api.data.Galaxy;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.tags.TagKey;
@@ -97,7 +98,7 @@ final class SpaceDebrisCollection {
                 builder.inputItems(drones[i]);
             }
             for (CosmicPileOutput output : outputs) {
-                builder.chancedOutput(output.item.asItem(), output.baseMultiplier * (1 << i), output.chancePer100Milli, output.chanceBoostPer100Milli);
+                builder.chancedOutput(output.item.asItem(), output.baseMultiplier * (1 << i), new Chance(output.chancePer100Milli, output.chanceBoostPer100Milli));
             }
             builder.circuitMeta(circuitMeta)
                     .save();

@@ -1043,7 +1043,7 @@ public final class MultiBlockC {
                             .where('M', blocks(GTOBlocks.AMPROSIUM_GEARBOX.get()))
                             .where('N', blocks(GTOBlocks.SPS_CASING.get()))
                             .where('O', blocks(GTOBlocks.EXTREME_DENSITY_CASING.get()))
-                            .where('P', blocks(GTOBlocks.INFINITY_GLASS.get()))
+                            .where('P', blocks(GTOBlocks.COSMIC_NEUTRONIUM_BOROSILICATE_GLASS.get()))
                             .wherePart('Q', blocks(GTOBlocks.DIMENSIONALLY_TRANSCENDENT_CASING.get())
                                     .or(GTOPredicates.autoLaserAbilities(definition.getRecipeTypes()))
                                     .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))

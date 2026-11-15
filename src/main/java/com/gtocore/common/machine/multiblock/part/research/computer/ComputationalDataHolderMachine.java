@@ -8,7 +8,6 @@ import com.gtocore.common.machine.multiblock.part.research.SimpleResearchTagPart
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IHPCAComponentHatch;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.common.machine.multiblock.electric.research.HPCAMachine;
 
@@ -16,6 +15,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +31,7 @@ public class ComputationalDataHolderMachine extends SimpleResearchTagPartMachine
     @SyncToClient(scheduleUpdate = true)
     private boolean damaged;
 
-    private TickableSubscription subscription;
+    private Task subscription;
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private final TickTimeMonitor dataMonitor = holder.monitorTick(GTOTickTimeMonitors.RESEARCH_COMPUTATION, this::addDataFromController);
 
@@ -63,7 +63,7 @@ public class ComputationalDataHolderMachine extends SimpleResearchTagPartMachine
     public void onUnload() {
         super.onUnload();
         if (subscription != null) {
-            subscription.unsubscribe();
+            subscription.cancel();
             subscription = null;
         }
     }

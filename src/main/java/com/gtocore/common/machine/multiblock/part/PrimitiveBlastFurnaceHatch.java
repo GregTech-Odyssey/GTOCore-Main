@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.multiblock.part;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.InventoryProxyTrait;
@@ -23,6 +22,7 @@ import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.StorageAccess;
 
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -38,7 +38,7 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
 
     private final InventoryProxyTrait<AEItemKey> inputInventory, outputInventory;
     @Nullable
-    private TickableSubscription autoIOSubs;
+    private Task autoIOSubs;
 
     /** tick 耗时监控（只有被 Jade 查看时才计时）。 */
     private TickTimeMonitor autoIOMonitor = holder.monitorTick(GTTickTimeMonitors.AUTO_IO, this::autoIO);
@@ -119,7 +119,7 @@ public final class PrimitiveBlastFurnaceHatch extends MultiblockPartMachine {
         if ((!outputInventory.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getFrontFacing(), AEKeyTypes.ITEMS, StorageAccess.INSERT))) {
             autoIOSubs = subscribeServerTick(autoIOSubs, autoIOMonitor, 20);
         } else if (autoIOSubs != null) {
-            autoIOSubs.unsubscribe();
+            autoIOSubs.cancel();
             autoIOSubs = null;
         }
     }

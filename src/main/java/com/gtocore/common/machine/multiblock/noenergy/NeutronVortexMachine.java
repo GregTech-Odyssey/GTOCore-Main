@@ -82,7 +82,7 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
     }
 
     boolean isEnergyMode() {
-        return energy && hasStructurePart(ENERGY_RECEIVER);
+        return energy && getAssembly().has(ENERGY_RECEIVER);
     }
 
     boolean isEnergySwitchOn() {
@@ -94,7 +94,7 @@ public final class NeutronVortexMachine extends NeutronActivatorMachine implemen
     }
 
     boolean hasEnergyReceiver() {
-        return hasStructurePart(ENERGY_RECEIVER);
+        return getAssembly().has(ENERGY_RECEIVER);
     }
 
     @Override

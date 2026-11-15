@@ -202,7 +202,7 @@ public final class SteamPipeBlockEntity extends PipeBlockEntity<SteamPipeType, S
         }
         autoTransfer = false;
         if (!hasStorage) {
-            transferSubs.unsubscribe();
+            transferSubs.cancel();
             transferSubs = null;
         }
     }

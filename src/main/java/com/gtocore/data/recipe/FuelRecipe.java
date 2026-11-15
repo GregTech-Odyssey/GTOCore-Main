@@ -3,9 +3,12 @@ package com.gtocore.data.recipe;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
+import com.gtolib.api.item.FurnaceFuels;
 import com.gtolib.utils.RegistriesUtils;
 
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
+import com.gregtechceu.gtceu.api.recipe.content.KeyIngredient;
 import com.gregtechceu.gtceu.utils.GTUtil;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,24 +30,32 @@ import static com.gtocore.common.data.GTORecipeTypes.*;
 
 public final class FuelRecipe {
 
+    private static void addSolidFuel(String id, Object input, long burnTime) {
+        STEAM_BOILER_RECIPES.recipeBuilder(id)
+                .inputItems(input)
+                .duration((int) Math.min(Integer.MAX_VALUE, burnTime << 3))
+                .save();
+
+        int time = (int) (burnTime / 20);
+        if (time > 0) LARGE_BOILER_RECIPES.recipeBuilder(id)
+                .inputItems(input)
+                .duration(time)
+                .save();
+    }
+
     public static void init() {
         Set<Item> addedItems = new ReferenceOpenHashSet<>();
+
+        for (var fuel : FurnaceFuels.captureTagFuels()) {
+            var tag = fuel.tag().location();
+            addSolidFuel("tag_" + tag.getNamespace() + "_" + tag.getPath(), fuel.tag(), fuel.burnTime());
+        }
 
         for (var fuelEntry : FurnaceBlockEntity.getFuel().entrySet()) {
             if (fuelEntry.getKey() instanceof BucketItem) continue;
             addedItems.add(fuelEntry.getKey());
             var resLoc = RegistriesUtils.getIdLocation(fuelEntry.getKey());
-            long burnTime = fuelEntry.getValue();
-            STEAM_BOILER_RECIPES.recipeBuilder(resLoc.getNamespace() + "_" + resLoc.getPath())
-                    .inputItems(fuelEntry.getKey())
-                    .duration((int) Math.min(Integer.MAX_VALUE, burnTime << 3))
-                    .save();
-
-            int time = (int) (burnTime / 20);
-            if (time > 0) LARGE_BOILER_RECIPES.recipeBuilder(resLoc.getNamespace() + "_" + resLoc.getPath())
-                    .inputItems(fuelEntry.getKey())
-                    .duration(time)
-                    .save();
+            addSolidFuel(resLoc.getNamespace() + "_" + resLoc.getPath(), KeyIngredient.item(fuelEntry.getKey()), fuelEntry.getValue());
         }
 
         for (Item item : BuiltInRegistries.ITEM) {
@@ -52,16 +63,7 @@ public final class FuelRecipe {
             long burnTime = GTUtil.getItemBurnTime(item);
             if (burnTime > 0 && !addedItems.contains(item)) {
                 var resLoc = RegistriesUtils.getIdLocation(item);
-                STEAM_BOILER_RECIPES.recipeBuilder(resLoc.getNamespace() + "_" + resLoc.getPath())
-                        .inputItems(item)
-                        .duration((int) Math.min(Integer.MAX_VALUE, burnTime << 3))
-                        .save();
-
-                int time = (int) (burnTime / 20);
-                if (time > 0) LARGE_BOILER_RECIPES.recipeBuilder(resLoc.getNamespace() + "_" + resLoc.getPath())
-                        .inputItems(item)
-                        .duration(time)
-                        .save();
+                addSolidFuel(resLoc.getNamespace() + "_" + resLoc.getPath(), KeyIngredient.item(item), burnTime);
             }
         }
 
@@ -373,7 +375,7 @@ public final class FuelRecipe {
         PLASMA_GENERATOR_FUELS.recipeBuilder("raw_star_matter")
                 .inputFluids(RawStarMatter, 1)
                 .outputFluids(Lava, 20000)
-                .chancedOutput(MagnetohydrodynamicallyConstrainedStarMatter.getFluid(), 1, 10, 0)
+                .chancedOutput(MagnetohydrodynamicallyConstrainedStarMatter.getFluid(), 1, Chance.of(10))
                 .duration(100)
                 .EUt(-V[UV])
                 .save();

@@ -12,9 +12,7 @@ import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.misc.Drone;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredPartMachine;
@@ -43,6 +41,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
 
+import com.suried.gtoutils.schedule.Task;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -66,14 +65,14 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
     private KeyInventory<AEItemKey> inventory;
     @Shadow(remap = false)
     @Nullable
-    protected TickableSubscription particleSubs;
+    protected Task particleSubs;
 
     @OnlyIn(Dist.CLIENT)
     @Shadow(remap = false)
     protected abstract void particlesTick();
 
     @Unique
-    private IDroneControlCenterMachine gtolib$cache;
+    private NetCache<IDroneControlCenterMachine> gtolib$cache;
     @Unique
     private AirScrubberMachine gtolib$airScrubberCache;
     @Unique
@@ -106,14 +105,15 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
         gtolib$airScrubberCache = cache;
     }
 
-    @Unique
-    public IDroneControlCenterMachine getNetMachineCache() {
-        return gtolib$cache;
+    @Override
+    public NetCache<IDroneControlCenterMachine> getNetCache() {
+        var cache = gtolib$cache;
+        if (cache == null) gtolib$cache = cache = new NetCache<>(this::gto$cacheChanged);
+        return cache;
     }
 
     @Unique
-    public void setNetMachineCache(IDroneControlCenterMachine cache) {
-        gtolib$cache = cache;
+    private void gto$cacheChanged(IDroneControlCenterMachine cache) {
         var oldManaCenter = gto$manaCenter;
         if (oldManaCenter != null) {
             oldManaCenter.removeProblem(this);
@@ -193,7 +193,7 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
 
     @Unique
     private void gto$unsubParticle() {
-        particleSubs = ITickSubscription.unsubscribe(particleSubs);
+        particleSubs = Task.cancel(particleSubs);
     }
 
     @Override

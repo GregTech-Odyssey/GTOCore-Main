@@ -586,7 +586,7 @@ public final class EvChapter {
     public static final Quest VOID_MINER = CHAPTER.quest("void_miner", q -> q
             .at(-0.5, -10.5)
             .desc(d -> d.line("{进阶基岩采矿机}的延伸版本，仅需在指定维度即可产出矿石", GOLD))
-            .task(Task.item(GTMultiMachines.LARGE_PLASMA_TURBINE))
+            .task(Task.item(MultiBlockA.VOID_MINER))
             .dependsOn(HvChapter.HV_BEDROCK_ORE_MINER, NANOPROCESSOR_SUPERCOMPUTER)
             .hideDependencyLines(false));
 

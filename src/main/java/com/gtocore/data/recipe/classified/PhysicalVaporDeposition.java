@@ -53,10 +53,10 @@ final class PhysicalVaporDeposition {
                 .save();
 
         PHYSICAL_VAPOR_DEPOSITION_RECIPES.recipeBuilder("non_photonic_matter_exclusion_glass")
-                .inputItems(GTOBlocks.QUARKS_BOROSILICATE_GLASS.asItem())
-                .inputFluids(GTOMaterials.Legendarium.getFluid(FluidStorageKeys.PLASMA, 576))
+                .inputItems(GTOBlocks.OMNI_PURPOSE_INFINITY_FUSED_GLASS.asItem())
+                .inputFluids(GTOMaterials.HeavyQuarkDegenerateMatter.getFluid(FluidStorageKeys.PLASMA, 288))
                 .outputItems(GTOBlocks.NON_PHOTONIC_MATTER_EXCLUSION_GLASS.asItem())
-                .EUt(1966080)
+                .EUt(7864320)
                 .duration(400)
                 .cleanroom(1)
                 .save();

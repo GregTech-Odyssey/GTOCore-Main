@@ -33,7 +33,7 @@ import static net.minecraft.network.chat.Component.translatable;
 public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine implements IFluidDrillLogic, ICustomRecipeLogicHolder {
 
     private List<FluidStack> fluidStacks;
-    private DrillingControlCenterMachine cache;
+    private final NetCache<DrillingControlCenterMachine> cache = new NetCache<>();
 
     public VoidFluidDrillingRigMachine(MetaMachineBlockEntity holder) {
         super(holder, 1, i -> i.is(GTOItems.DIMENSION_DATA.get()) && i.hasTag());
@@ -62,13 +62,8 @@ public final class VoidFluidDrillingRigMachine extends StorageMultiblockMachine 
     }
 
     @Override
-    public DrillingControlCenterMachine getNetMachineCache() {
+    public NetCache<DrillingControlCenterMachine> getNetCache() {
         return cache;
-    }
-
-    @Override
-    public void setNetMachineCache(DrillingControlCenterMachine cache) {
-        this.cache = cache;
     }
 
     @Override

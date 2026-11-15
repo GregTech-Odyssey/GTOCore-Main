@@ -375,6 +375,18 @@ final class PrecisionAssembler {
                 .cleanroom(3)
                 .save();
 
+        PRECISION_ASSEMBLER_RECIPES.recipeBuilder("unaligned_quark_releasing_catalyst")
+                .inputItems(GTOItems.EMPTY_QUARK_RELEASE_CATALYST_HOUSING)
+                .inputItems(TagPrefix.ingot, GTOMaterials.HeavyQuarkDegenerateMatter, 4)
+                .inputItems(GTOItems.UNSTABLE_STAR)
+                .inputFluids(GTOMaterials.QuarkGluon, FluidStorageKeys.PLASMA, 4000)
+                .inputFluids(GTOMaterials.Gluons, 1000)
+                .outputItems(GTOItems.UNALIGNED_QUARK_RELEASING_CATALYST)
+                .EUt(31457280)
+                .duration(600)
+                .cleanroom(3)
+                .save();
+
         PRECISION_ASSEMBLER_RECIPES.recipeBuilder("annihilation_constrainer")
                 .inputItems(GTOItems.HYPERCUBE)
                 .inputItems(GTOItems.CONTAINED_REISSNER_NORDSTROM_SINGULARITY, 8)

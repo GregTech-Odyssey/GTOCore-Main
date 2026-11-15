@@ -5,11 +5,10 @@ import com.gtocore.common.machine.multiblock.electric.space.SpaceElevatorMachine
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
+import com.gtolib.api.scope.MachineScope;
 import com.gtolib.utils.MathUtil;
 
-import com.gregtechceu.gtceu.api.blockentity.ITickSubscription;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.MultiblockPage;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
 
@@ -20,6 +19,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.fastcollection.fastutil.O2IOpenCacheHashMap;
 
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +40,8 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
     @Getter
     @SyncToClient
     protected double high = 15;
-    private TickableSubscription highSubscription;
+    private Task highSubscription;
+    private final MachineScope<SpaceElevatorConnectorModule> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, SpaceElevatorConnectorModule.class, this, self::formed));
 
     public SpaceElevatorConnectorModule(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);
@@ -73,23 +74,10 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
     }
 
     @Override
-    public void onUnload() {
-        super.onUnload();
-        IIWirelessInteractor.removeFromNet(this);
-    }
-
-    @Override
-    public void onStructureFormed() {
-        super.onStructureFormed();
-        IIWirelessInteractor.addToNet(this);
-    }
-
-    @Override
     public void onStructureInvalid() {
         elevatorTiers.clear();
         maxTier = 0;
         super.onStructureInvalid();
-        IIWirelessInteractor.removeFromNet(this);
     }
 
     @Override
@@ -126,7 +114,7 @@ public class SpaceElevatorConnectorModule extends Extension implements ISpaceSer
     @Override
     public void onStructureInvalidClient() {
         super.onStructureInvalidClient();
-        highSubscription = ITickSubscription.unsubscribe(highSubscription);
+        highSubscription = Task.cancel(highSubscription);
     }
 
     @OnlyIn(Dist.CLIENT)

@@ -36,7 +36,7 @@ public final class FluidRenderUtils {
 
     private static void loadFluidBlockOffsets(Set<BlockPos> fluidBlockOffsets, MultiblockControllerMachine machine, DataComponentKey<Set<BlockPos>> key) {
         BlockPos origin = machine.getPos();
-        for (BlockPos pos : machine.getMultiblockState().getMatchContext().getOrDefault(key, Collections.emptySet())) {
+        for (BlockPos pos : machine.getAssembly().getOrDefault(key, Collections.emptySet())) {
             if (pos != null) {
                 fluidBlockOffsets.add(pos.subtract(origin));
             }

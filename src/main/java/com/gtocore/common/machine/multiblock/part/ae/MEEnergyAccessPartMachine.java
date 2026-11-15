@@ -10,7 +10,6 @@ import com.gtolib.api.machine.multiblock.TierCasingMultiblockMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
@@ -35,6 +34,7 @@ import appeng.api.networking.events.GridPowerStorageStateChanged;
 import appeng.me.service.EnergyService;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -71,7 +71,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
 
     private boolean powerNotifyQueued = false;
 
-    private TickableSubscription tickSubs = null;
+    private Task tickSubs = null;
 
     private double maxPower = 0;
 
@@ -94,7 +94,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
         ratio = ConfigHolder.INSTANCE.compat.energy.euToFeRatio * PowerUnits.FE.convertTo(PowerUnits.AE, 1);
         if (controller != null) {
             ratio *= 1 + 0.3 * controller.getCasingTier(GTORecipeDataKeys.GLASS_TIER);
-            if (controller.hasStructurePart(StructureModuleKeys.ME_ENERGY_SUBSTATION_EXTENSION)) ratio *= 2;
+            if (controller.getAssembly().has(StructureModuleKeys.ME_ENERGY_SUBSTATION_EXTENSION)) ratio *= 2;
         }
     }
 
@@ -183,7 +183,7 @@ public class MEEnergyAccessPartMachine extends MEPartMachine implements IAEPower
     public void onUnload() {
         super.onUnload();
         if (tickSubs != null) {
-            tickSubs.unsubscribe();
+            tickSubs.cancel();
             tickSubs = null;
         }
     }

@@ -520,21 +520,32 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.craft.highlight_pending_provider", "Shift + 左键：在世界中高亮其所在样板供应器", "Shift + Left-Click: Highlight pattern provider in the world");
         addCNEN("gtocore.ae.appeng.craft.encode_send", "§a§o[右键点击] 编码并发送样板§r", "§a§o[Right Click] Encode and send pattern§r");
         addCNEN("gtocore.ae.appeng.craft.encode_send.desc", "点击将样板发送至该目的地", "Click to send the pattern to this destination");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.full", "满", "Full");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.ready", "可发送", "Ready");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.full", "已满", "Full");
         addCNEN("gtocore.ae.appeng.craft.encode_send.full.desc", "该目的地样板槽已满", "This destination has no empty pattern slot");
         addCNEN("gtocore.ae.appeng.craft.encode_send.same_pattern", "已有相同样板", "Already has the same pattern");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.same_pattern.short", "已有样板", "Already present");
         addCNEN("gtocore.ae.appeng.craft.encode_send.title", "发送样板至", "Send Pattern To");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.destinations", "%s / %s 个目的地", "%s / %s destinations");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.empty", "没有可用的目的地", "No destinations available");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.no_results", "没有匹配的目的地", "No matching destinations");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.no_results.hint", "试试其他名称或开启产物匹配", "Try another name or match outputs");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.loading", "正在加载样板产物…", "Loading pattern outputs…");
         addCNEN("gtocore.ae.appeng.craft.encode_send.close", "关闭", "Close");
         addCNEN("gtocore.ae.appeng.craft.encode_send.search", "搜索名称或样板产物", "Name or pattern output");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.search.desc", "按供应器名称或机器名称搜索；打开右上角的开关后，也会搜索已有样板的产物", "Search by provider or machine name; turn on the toggle at the top right to also search outputs of existing patterns");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.search.desc", "搜索供应器或机器名称", "Search provider or machine names");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match", "产物匹配：", "Output match: ");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_provider", "供应器名称匹配", "Provider name match");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_provider.short", "供应器", "Provider");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_provider.desc", "样板供应器改过的名称与搜索词匹配", "The provider's custom name matches the search");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_machine", "机器名称匹配", "Machine name match");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_machine.short", "机器", "Machine");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match_machine.desc", "对接机器的名称与搜索词匹配", "The connected machine's name matches the search");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.on", "匹配样板产物：开", "Match pattern outputs: On");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.off", "匹配样板产物：关", "Match pattern outputs: Off");
-        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.desc", "开启后，搜索也会匹配目的地已有样板的产物", "When on, the search also matches outputs of patterns already in each destination");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.on", "匹配产物：开", "Match outputs: On");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.off", "匹配产物：关", "Match outputs: Off");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.short", "产物", "Outputs");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.match_outputs.desc", "同时搜索已有样板的产物", "Also search existing pattern outputs");
+        addCNEN("gtocore.ae.appeng.craft.encode_send.search.clear", "清除搜索", "Clear search");
         addCNEN("gtocore.ae.appeng.craft.encode_send.search.names", "搜索供应器或机器名称", "Provider or machine name");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match.desc", "以下是该目的地已有样板中与搜索词匹配的产物：", "Outputs of patterns already in this destination that match the search:");
         addCNEN("gtocore.ae.appeng.craft.encode_send.match.more", "……以及另外 %s 项", "...and %s more");
@@ -542,18 +553,11 @@ public final class LangHandler {
         addCNEN("gtocore.ae.appeng.wft.wireless", "无线设施管理终端", "Wireless Facility Management Terminal");
         addCNEN("gtocore.ae.appeng.wrt.wireless", "无线请求器终端", "Wireless Requester Terminal");
 
-        addCNEN("gtocore.adv_terminal.setting_already_existed", "存在已有设置", "Setting Already Existed");
-
         addCNEN("gtocore.travel.missing_block", "[未设置方块]", "[No block set]");
 
         addCNEN("ftbultimine.shape.area", "不定形 (不连续)", "Shapeless (Area)");
 
         addCNEN("gtocore.source", "结构来源：%s", "Structure From: %s");
-
-        addCNEN("multiblocked.pattern.error.chunk", "有区块未加载", "There are chunk not loaded");
-        addCNEN("multiblocked.pattern.error.init", "机器未初始化", "Machine not initialized");
-        addCNEN("multiblocked.pattern.error.share", "该方块不能共享", "This block cannot be shared");
-        addCNEN("multiblocked.pattern.error.banned", "该方块被禁止", "This block is banned");
 
         addCNEN("gtocore.multiblock.invalid.message", "多方块%s位于(%s)未成型！运行 /" + GTOCore.MOD_ID + "c multiblock on 查看详情。", "Multiblock %s at (%s) is not formed! Run /" + GTOCore.MOD_ID + "c multiblock on for details.");
 
@@ -618,8 +622,8 @@ public final class LangHandler {
         addCNEN("gtocore.tooltip.space_resource.fuel", "     燃料：%s", "     Fuel: %s");
         addCNEN("gtocore.tooltip.space_resource.galaxy", "     星系：%s", "     Galaxy: %s");
         addCNEN("gtocore.tooltip.space_resource.dimension", "     维度：%s", "     Dimension: %s");
-        addCNEN("gtocore.tooltip.space_resource.chance", "     概率：%s%%", "     Chance: %s%%");
-        addCNEN("gtocore.tooltip.space_resource.chance_boost", "     概率：%s%%（每超一级电压 +%s%%）", "     Chance: %s%% (+%s%% per voltage tier)");
+        addCNEN("gtocore.tooltip.space_resource.chance", "     产出概率：%s%%", "     Output Chance: %s%%");
+        addCNEN("gtocore.tooltip.space_resource.chance_boost", "     产出概率：%s%%（每次超频提高%s个百分点）", "     Output Chance: %s%% (+%s%% per overclock)");
 
         addCNEN("gtocore.emi.space_elevator.min_drone_tier", "最低无人机等级: %s", "Minimum Drone Tier: %s");
         addCNEN("gtocore.emi.space_elevator.next_drone", "查看下一级无人机配方", "View next tier drone recipe");
@@ -648,12 +652,15 @@ public final class LangHandler {
 
         addCNEN("gtocore.message.otherside_pass_required", "你感受到来自幽冥的隔绝感...", "You feel a sense of isolation from the Other Side...");
         addCNEN("gtocore.message.otherside_pass_required.1", "似乎需要伪装成幽冥中最强大的生物之一，才能通过这里。", "It seems you need to disguise yourself as one of the most powerful beings in the Other Side to pass through here.");
-        addCNEN("key.gtocore.movable_hud_toggle", "HUD 调节", "HUD Editing key");
+        addCNEN("key.gtocore.hud_interact", "GTO HUD操作模式", "GTO HUD Interaction Mode");
+        addCNEN("key.gtocore.hud_layout", "GTO HUD设置", "GTO HUD Settings");
     }
 
     public static void enInitialize(LanguageProvider provider) {
         init();
         MachineLang.init();
+        MonitorLang.init();
+        ImplantLang.init();
         BlockLang.init();
         ItemLang.init();
         LANGS.forEach((k, v) -> {

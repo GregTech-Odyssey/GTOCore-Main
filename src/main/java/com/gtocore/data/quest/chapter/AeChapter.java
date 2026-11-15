@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.data.machines.MultiBlockG;
 import com.gtocore.common.data.machines.OptionalMachine;
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.data.quest.QuestExternalRefs;
 import com.gtocore.data.quest.QuestTextures;
 import com.gtocore.integration.ae.TieredInterfaces;
@@ -483,48 +484,42 @@ public final class AeChapter {
 
     public static final Quest BASIC_MONITOR = CHAPTER.quest("basic_monitor", q -> q
             .at(1.5, 13.5)
-            .icon(GTOMachines.BASIC_MONITOR)
+            .icon(MonitorRegistries.DISPLAY_PANEL.get())
             .desc(d -> d
-                    .line("使用列出的方块互相拼接，可以拼出一个或多个自定义的监控墙，供实时观察基地内情况")
+                    .line("显示器贴在监控总线的任意一面，同色、同朝向、连成矩形的显示器组成一块屏幕")
+                    .line("右键屏幕打开画布，点空格子添加组件；电网、算力、魔力与文字由屏幕自带")
                     .line()
-                    .line("{搭建一面监控器墙!}", GREEN))
-            .task(Task.item(GTOMachines.BASIC_MONITOR), Task.item(GTOItems.COORDINATE_CARD).optional())
+                    .line("{搭建一块屏幕!}", GREEN))
+            .task(Task.item(MonitorRegistries.DISPLAY_PANEL.get()))
             .dependsOn(LvChapter.ALUMINIUM_INGOT));
 
-    public static final Quest MONITOR_ELECTRICITY = CHAPTER.quest("monitor_electricity", q -> q
+    public static final Quest MONITOR_DATA_PANEL = CHAPTER.quest("monitor_data_panel", q -> q
             .at(2.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_MACHINE_ELECTRICITY))
+            .icon(MonitorRegistries.MACHINE_PANEL.get())
+            .desc(d -> d
+                    .line("机器控件读取正对的机器，ME控件读取正对的 ME 设备；与屏幕同处一格或用同色监控线缆连到屏幕即可")
+                    .line("最简单的用法：机器前放一格总线，背面贴机器控件、正面贴显示器")
+                    .line("机器控件还提供运行状态与启停开关，直接右键屏幕上的开关即可启停机器；潜行右键屏幕始终打开画布"))
+            .task(Task.item(MonitorRegistries.MACHINE_PANEL.get()))
             .dependsOn(BASIC_MONITOR));
 
-    public static final Quest MONITOR_MANA = CHAPTER.quest("monitor_mana", q -> q
+    public static final Quest MONITOR_CABLE = CHAPTER.quest("monitor_cable", q -> q
             .at(3.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_MACHINE_MANA))
-            .dependsOn(BASIC_MONITOR));
+            .icon(MonitorRegistries.CABLE_ITEM.get())
+            .desc(d -> d
+                    .line("监控线缆把远处的控件接到屏幕；只有颜色完全相同的线缆才相连，无色只连无色；八根无色线缆围一个染料可合成彩色线缆"))
+            .task(Task.item(MonitorRegistries.CABLE_ITEM.get()))
+            .dependsOn(MONITOR_DATA_PANEL));
 
-    public static final Quest MONITOR_CWU = CHAPTER.quest("monitor_cwu", q -> q
+    public static final Quest MONITOR_REDSTONE_PANEL = CHAPTER.quest("monitor_redstone_panel", q -> q
             .at(4.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_MACHINE_CWU))
-            .dependsOn(BASIC_MONITOR));
-
-    public static final Quest MONITOR_CUSTOM = CHAPTER.quest("monitor_custom", q -> q
-            .at(5.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_MACHINE_CUSTOM))
-            .dependsOn(BASIC_MONITOR));
-
-    public static final Quest MONITOR_AE_THROUGHPUT = CHAPTER.quest("monitor_ae_throughput", q -> q
-            .at(6.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_AE_THROUGHPUT))
-            .dependsOn(BASIC_MONITOR));
-
-    public static final Quest MONITOR_AE_CPU = CHAPTER.quest("monitor_ae_cpu", q -> q
-            .at(7.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_AE_CPU))
-            .dependsOn(BASIC_MONITOR));
-
-    public static final Quest MONITOR_MACHINE = CHAPTER.quest("monitor_machine", q -> q
-            .at(8.5, 13.5)
-            .task(Task.item(GTOMachines.MONITOR_MACHINE))
-            .dependsOn(BASIC_MONITOR));
+            .icon(MonitorRegistries.REDSTONE_PANEL.get())
+            .desc(d -> d
+                    .line("红石控件读取正对方块传来的红石信号，也能向它输出信号；旁边的红石粉会连到红石控件上")
+                    .line("开关组件输出 0 或 15，滑块组件输出 0~15，两者共用同一个输出强度")
+                    .line("右键屏幕上的开关即可切换；按住右键在滑块上移动准星即可拖动"))
+            .task(Task.item(MonitorRegistries.REDSTONE_PANEL.get()))
+            .dependsOn(MONITOR_CABLE));
 
     public static final Quest CONDENSER = CHAPTER.quest("condenser", q -> q
             .at(-17, 13.5)
@@ -1683,13 +1678,6 @@ public final class AeChapter {
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_EV, -7.5, 7.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_EV, -7.5, 9.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_HV, 1, 10.5, 1, 1).after(UtilChapter.NORMAL_EXPERT))
-                .image(QuestImage.of(QuestTextures.MONITOR_AE_CPU, 7.5, 12.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.MONITOR_AE_THROUGHPUT, 6.5, 12.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.MONITOR_CUSTOM, 5.5, 12.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.MONITOR_CWU, 4.5, 12.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.MONITOR_ELECTRICITY, 2.5, 12.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.MONITOR_MACHINE, 8.5, 12.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.MONITOR_MANA, 3.5, 12.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_MV, -9.5, 21.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_LUV, -3.7, 5.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_LUV, -1.7, 5.5, 1, 1))

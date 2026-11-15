@@ -6,8 +6,6 @@ import com.gregtechceu.gtceu.api.capability.ICoverable;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.cover.CoverDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
@@ -15,13 +13,16 @@ import net.minecraft.server.level.ServerLevel;
 
 import appeng.api.stacks.AEFluidKey;
 
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
+
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public final class AirVentCover extends CoverBehavior {
 
-    private TickableSubscription subscription;
+    private Task subscription;
     private MetaMachine machine;
 
     public AirVentCover(CoverDefinition definition, ICoverable coverHolder, Direction attachedSide) {
@@ -37,7 +38,7 @@ public final class AirVentCover extends CoverBehavior {
     public void onLoad() {
         super.onLoad();
         if (coverHolder.getLevel() instanceof ServerLevel serverLevel) {
-            TaskHandler.enqueueTask(serverLevel, () -> {
+            Schedulers.of(serverLevel).schedule(() -> {
                 machine = MetaMachine.getMachine(coverHolder.holder());
                 subscription = coverHolder.subscribeServerTick(subscription, this::update, 20);
             });
@@ -48,7 +49,7 @@ public final class AirVentCover extends CoverBehavior {
     public void onRemoved() {
         super.onRemoved();
         if (subscription != null) {
-            subscription.unsubscribe();
+            subscription.cancel();
             subscription = null;
         }
     }
@@ -57,7 +58,7 @@ public final class AirVentCover extends CoverBehavior {
         if (machine != null && machine.getNeighborBlockState(attachedSide).isAir()) {
             var fluid = InfiniteIntakeHatchPartMachine.AIR_MAP.get(coverHolder.getLevel().dimension());
             if (fluid == null) {
-                subscription.unsubscribe();
+                subscription.cancel();
                 return;
             }
             var handler = machine.getFluidHandlerCap(attachedSide, false);

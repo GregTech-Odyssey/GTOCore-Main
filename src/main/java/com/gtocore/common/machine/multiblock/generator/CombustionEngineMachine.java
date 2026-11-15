@@ -86,7 +86,7 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine {
             tankSubs.unsubscribe();
             return;
         }
-        tank.storage.insert(AEFluidKey.of(fluid), hasStructurePart(EXTENSION) ? 24000 : 8000, false);
+        tank.storage.insert(AEFluidKey.of(fluid), getAssembly().has(EXTENSION) ? 24000 : 8000, false);
         tankSubs.updateSubscription();
     }
 
@@ -128,7 +128,7 @@ public final class CombustionEngineMachine extends ElectricMultiblockMachine {
     //////////////////////////////////////
     @Override
     public long getOverclockVoltage() {
-        int shift = hasStructurePart(EXTENSION) ? 3 : 1;
+        int shift = getAssembly().has(EXTENSION) ? 3 : 1;
         return GTValues.V[tier] << (isOxygenBoosted ? shift + 1 : shift);
     }
 

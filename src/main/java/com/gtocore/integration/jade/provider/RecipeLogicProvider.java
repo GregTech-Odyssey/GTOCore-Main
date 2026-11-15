@@ -16,7 +16,9 @@ import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.machine.SimpleGeneratorMachine;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDummyEnergyMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IOverclockMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.steam.SimpleSteamMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
@@ -55,6 +57,13 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
     private static final String ENERGY_CONSUMPTION = "gtocore.machine.energy_consumption";
     @RegisterLanguage(cn = "产能 %s §f(%s§f)", en = "Energy Production %s §f(%s§f)")
     private static final String ENERGY_PRODUCTION = "gtocore.machine.energy_production";
+    @RegisterLanguage(cn = "超频次数：%s / %s", en = "Overclock count: %s / %s")
+    private static final String OVERCLOCK_COUNT = "gtocore.machine.overclock_count";
+    @RegisterLanguage(cn = "超频次数限制：%s", en = "Overclock count limit: %s")
+    private static final String OVERCLOCK_COUNT_LIMIT = "gtocore.machine.overclock_count.limit";
+
+    private static final String OVERCLOCK_COUNT_LIMIT_KEY = "overclock_count_limit";
+    private static final String OVERCLOCK_COUNT_USED_KEY = "overclock_count_used";
 
     private static final ResourceLocation UID = GTCEu.id("recipe_logic_provider");
     private static final String UID_KEY = UID.toString();
@@ -144,6 +153,15 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
 
             }
         }
+        if (capData.contains(OVERCLOCK_COUNT_LIMIT_KEY)) {
+            Component limit = Component.literal(String.valueOf(capData.getInt(OVERCLOCK_COUNT_LIMIT_KEY))).withStyle(ChatFormatting.DARK_AQUA);
+            if (capData.contains(OVERCLOCK_COUNT_USED_KEY)) {
+                Component used = Component.literal(String.valueOf(capData.getInt(OVERCLOCK_COUNT_USED_KEY))).withStyle(ChatFormatting.AQUA);
+                tooltip.add(Component.translatable(OVERCLOCK_COUNT, used, limit));
+            } else {
+                tooltip.add(Component.translatable(OVERCLOCK_COUNT_LIMIT, limit));
+            }
+        }
     }
 
     private static boolean hidesReason(CompoundTag data, CompoundTag reason) {
@@ -191,6 +209,12 @@ public final class RecipeLogicProvider implements IBlockComponentProvider, IServ
                     compoundTag.putBoolean("Working", capability.isWorking());
                     var recipeInfo = getRecipeInfo(capability);
                     compoundTag.put("Recipe", recipeInfo);
+                }
+                if (machineBlock.metaMachine instanceof IOverclockMachine overclockMachine && machineBlock.metaMachine instanceof IWorkableMultiController) {
+                    compoundTag.putInt(OVERCLOCK_COUNT_LIMIT_KEY, overclockMachine.getOverclockCountLimit());
+                    if (capability.isWorking() && capability.getLastRecipe() != null) {
+                        compoundTag.putInt(OVERCLOCK_COUNT_USED_KEY, capability.getLastRecipe().ocLevel);
+                    }
                 }
             }
         }

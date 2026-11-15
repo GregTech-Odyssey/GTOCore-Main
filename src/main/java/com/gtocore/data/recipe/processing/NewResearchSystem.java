@@ -12,6 +12,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
@@ -287,7 +288,7 @@ public final class NewResearchSystem {
             CHEMICAL_BATH_RECIPES.recipeBuilder("chemical_wash_electronic_grade_silicon")
                     .inputItems(dust, ElectronicGradeSilicon, 1)
                     .inputFluids(HydrofluoricAcid, 1000)
-                    .chancedOutput(ChemicalHelper.get(dust, PickledElectronicGradeSilicon, 1), 9500, 0)
+                    .chancedOutput(ChemicalHelper.get(dust, PickledElectronicGradeSilicon, 1), Chance.of(9500))
                     .outputFluids(HydrofluoricAcid.getFluid(950))
                     .duration(200)
                     .EUt(VA[EV])
@@ -315,10 +316,10 @@ public final class NewResearchSystem {
 
             DISTILLATION_RECIPES.recipeBuilder("distillation_pure_silane")
                     .inputFluids(Silane, 1000)
-                    .chancedOutput(ChemicalHelper.get(dustTiny, BariumChloride, 1), 1000, 0)
+                    .chancedOutput(ChemicalHelper.get(dustTiny, BariumChloride, 1), Chance.of(1000))
                     .outputFluids(PureSilane.getFluid(850))
                     .outputFluids(Steam.getFluid(100))
-                    .chancedOutput(PhosphorusTrichloride.getFluid(30), 1000, 0)
+                    .chancedOutput(PhosphorusTrichloride.getFluid(30), Chance.of(1000))
                     .duration(100)
                     .EUt(VA[HV])
                     .save();
@@ -345,7 +346,7 @@ public final class NewResearchSystem {
                     .inputItems(REGIONAL_SMELTING_SILICON_BOULE, 1)
                     .notConsumable(dust, Radium, 1)
                     .outputItems(ETCHED_SILICON_BOULE, 1)
-                    .chancedOutput(CarbonMonoxide.getFluid(10), 100, 0)
+                    .chancedOutput(CarbonMonoxide.getFluid(10), Chance.of(100))
                     .duration(600)
                     .EUt(VA[ZPM])
                     .addCondition(new VacuumCondition(4))

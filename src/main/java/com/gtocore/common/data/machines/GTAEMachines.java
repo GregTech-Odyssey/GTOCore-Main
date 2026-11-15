@@ -7,6 +7,7 @@ import com.gtocore.common.machine.multiblock.part.ae.*;
 import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.common.machine.noenergy.InfiniteResourceProviderMachine;
 import com.gtocore.common.machine.noenergy.MEDiskBoxMachine;
+import com.gtocore.common.machine.noenergy.MEVoidBoxMachine;
 import com.gtocore.common.machine.noenergy.VirtualIngredientProviderMachine;
 import com.gtocore.common.machine.noenergy.VirtualItemProviderMachine;
 
@@ -117,6 +118,15 @@ public final class GTAEMachines {
     public static final MachineDefinition ME_DISK_BOX = machine("me_disk_box", "ME磁盘箱子", MEDiskBoxMachine::new)
             .langValue("ME Disk Box")
             .tips(GTOMachineTooltips.MeDiskBoxTooltips)
+            .tier(MV)
+            .allRotation()
+            .notAllowSharedTooltips()
+            .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/me_pattern_buffer_proxy")))
+            .register();
+
+    public static final MachineDefinition ME_VOID_BOX = machine("me_void_box", "ME虚空箱子", MEVoidBoxMachine::new)
+            .langValue("ME Void Box")
+            .tips(GTOMachineTooltipsA.meVoidBoxTooltips)
             .tier(MV)
             .allRotation()
             .notAllowSharedTooltips()

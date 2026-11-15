@@ -3,6 +3,7 @@ package com.gtocore.common.data.translation;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
+import com.gtocore.common.machine.multiblock.generator.MagneticFluidGeneratorMachine;
 import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.tooltip.TipSlot;
@@ -16,6 +17,7 @@ import appeng.api.config.PowerUnits;
 import static com.gtocore.common.data.translation.ComponentSlang.AfterModuleInstallation;
 import static com.gtocore.common.data.translation.ComponentSlang.EfficiencyBonus;
 import static com.gtocore.common.data.translation.ComponentSlang.MainFunction;
+import static com.gtocore.common.data.translation.ComponentSlang.Overclock;
 import static com.gtocore.common.data.translation.ComponentSlang.RunningRequirements;
 
 public final class GTOMachineTooltipsA {
@@ -443,6 +445,11 @@ public final class GTOMachineTooltipsA {
         t.bonus(t.tr("提升效率 x 2", "Efficiency is increased by x 2"));
         t.bonus(t.tr("基础并行 x 4", "Basic parallel x 4"));
         t.bonus(t.tr("激光源仓的并行加成提升为 x 4", "The Laser Source Hatch parallel bonus is increased to x 4"));
+
+        t.heading(Overclock);
+        t.feature(t.tr("超频输出每级 ×4，燃料消耗倍率从 %s 起每 %s 级 +1", "Output x4 per overclock level; fuel cost starts at %s and rises by 1 every %s levels",
+                MagneticFluidGeneratorMachine.BASE_FUEL_COST, MagneticFluidGeneratorMachine.FUEL_COST_STEP));
+        t.feature(t.tr("超频级数越高，单位燃料换到的能量越少", "Higher overclock levels yield less energy per unit of fuel"));
     });
 
     public static final TipSpec dysonSphereReceivingStationTooltips = GTOTips.of("dyson_sphere_receiving_station", t -> {
@@ -472,6 +479,16 @@ public final class GTOMachineTooltipsA {
         t.feature(t.tr("默认解锁水、圆石与石头", "Water, cobblestone and stone are unlocked by default"));
         t.control(t.tr("放入一份样机解锁对应资源，拿走即收起", "Insert one sample to unlock that resource; remove it to stop"));
         t.control(t.tr("在机器界面里逐个开关要供应的资源", "Toggle each supplied resource in the machine GUI"));
+        t.control(t.tr("界面里可以设置存储优先级", "Storage priority can be set in the GUI"));
+    });
+
+    public static final TipSpec meVoidBoxTooltips = GTOTips.of("me_void_box", t -> {
+        t.heading(MainFunction);
+        t.feature(t.tr("销毁送进ME网络的物品与流体", "Destroys items and fluids inserted into the ME network"));
+        t.feature(t.tr("只销毁标记的物品与流体，没标记就销毁全部", "Only marked items and fluids are destroyed; with no marks everything is destroyed"));
+        t.control(t.tr("在机器界面里标记要销毁的物品与流体", "Mark the items and fluids to destroy in the machine GUI"));
+        t.control(t.tr("界面里可以设置存储优先级", "Storage priority can be set in the GUI"));
+        t.feature(t.tr("可产出物质球或奇点", "Can produce matter balls or singularities"));
     });
 
     public static final TipSpec BeamGeneratorTooltips = GTOTips.of("beam_generator", t -> {

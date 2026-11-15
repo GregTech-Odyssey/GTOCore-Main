@@ -147,7 +147,7 @@ public final class WirelessEnergyInterfaceMachine extends TieredIOPartMachine im
         @Override
         public void updateTick() {
             if (updateSubs != null) {
-                updateSubs.unsubscribe();
+                updateSubs.cancel();
                 updateSubs = null;
             }
         }

@@ -27,7 +27,6 @@ import com.gregtechceu.gtceu.api.recipe.handler.ICustomRecipeLogicHolder;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.config.ConfigHolder;
-import com.gregtechceu.gtceu.core.ILevel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 
+import com.suried.gtoutils.level.LoadedChunks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -71,6 +71,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
     private static final int MAX_LR_DIST = 14, MAX_B_DIST = 29;
     private static final int MIN_LR_DIST = 1, MIN_B_DIST = 3;
     private static final int STEAM_GENERATION_INTERVAL = 20;
+    private static final boolean SKIP_DRY_BIOME = Boolean.parseBoolean(System.getProperty("gtocore.solarBoiler.skipDryBiome", "true"));
 
     private int lDist, rDist, bDist, sunlit;
     private int steamGenerated;
@@ -87,7 +88,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
                         .or(abilities(IMPORT_FLUIDS)))
                 .where('b', blocks(GTOBlocks.SOLAR_HEAT_COLLECTOR_PIPE_CASING.get()))
                 .where('~', controller(definition));
-        var rowEnd = new TraceabilityPredicate(state -> !isSolar(ILevel.asyncGetBlockState(state.world, state.getPos().relative(state.controller.self().getFrontFacing().getOpposite()))), null, null);
+        var rowEnd = new TraceabilityPredicate(state -> !isSolar(LoadedChunks.blockState(state.world, state.getPos().relative(state.controller.self().getFrontFacing().getOpposite()))), null, null);
         var backEnd = new TraceabilityPredicate(state -> !isSolar(state.getBlockState()), null, null);
         return Structure.root(Piece.sized(LargeSteamSolarBoilerMachine::body))
                 .symbols(symbols)
@@ -176,6 +177,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
     private static boolean hasClearSky(Level world, BlockPos pos) {
         BlockPos checkPos = pos.above();
         if (!world.canSeeSky(checkPos)) return false;
+        if (SKIP_DRY_BIOME && !world.isRaining()) return true;
         Biome biome = world.getBiome(checkPos).value();
         boolean hasPrecipitation = world.isRaining() && (biome.warmEnoughToRain(checkPos) || biome.coldEnoughToSnow(checkPos));
         return !hasPrecipitation;

@@ -5,7 +5,6 @@ import com.gregtechceu.gtceu.api.capability.ICoverable;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.cover.CoverDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.TieredEnergyMachine;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.tooltip.ElectricText;
@@ -21,6 +20,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.suried.gtoutils.schedule.Task;
+
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -30,7 +31,7 @@ import static com.gregtechceu.gtceu.api.capability.GTCapabilityHelper.getEnergyC
 @MethodsReturnNonnullByDefault
 public class CreativeEnergyCover extends CoverBehavior {
 
-    private TickableSubscription subscription;
+    private Task subscription;
 
     private static final int MAX_AMPERAGE = 16;
 
@@ -74,7 +75,7 @@ public class CreativeEnergyCover extends CoverBehavior {
     public void onRemoved() {
         super.onRemoved();
         if (subscription != null) {
-            subscription.unsubscribe();
+            subscription.cancel();
         }
     }
 

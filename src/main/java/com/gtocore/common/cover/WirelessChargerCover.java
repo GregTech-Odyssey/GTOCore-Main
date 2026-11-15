@@ -8,7 +8,6 @@ import com.gregtechceu.gtceu.api.capability.ICoverable;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
 import com.gregtechceu.gtceu.api.cover.CoverDefinition;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.transfer.key.IKeyHandler;
 import com.gregtechceu.gtceu.api.transfer.key.KeyHandlerList;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
@@ -23,17 +22,18 @@ import net.minecraft.world.level.Level;
 
 import appeng.api.stacks.AEItemKey;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
 public final class WirelessChargerCover extends CoverBehavior implements IWirelessChargerInteraction {
 
-    private WirelessChargerMachine wirelessChargerMachine;
+    private final NetCache<WirelessChargerMachine> netCache = new NetCache<>();
 
     private MetaMachine machine;
 
-    private TickableSubscription subscription;
+    private Task subscription;
 
     private IKeyHandler<AEItemKey> handlerModifiable;
 
@@ -72,7 +72,7 @@ public final class WirelessChargerCover extends CoverBehavior implements IWirele
 
     private void unsubscribe() {
         if (subscription != null) {
-            subscription.unsubscribe();
+            subscription.cancel();
             subscription = null;
         }
     }
@@ -143,13 +143,8 @@ public final class WirelessChargerCover extends CoverBehavior implements IWirele
     }
 
     @Override
-    public WirelessChargerMachine getNetMachineCache() {
-        return wirelessChargerMachine;
-    }
-
-    @Override
-    public void setNetMachineCache(WirelessChargerMachine cache) {
-        wirelessChargerMachine = cache;
+    public NetCache<WirelessChargerMachine> getNetCache() {
+        return netCache;
     }
 
     @Override

@@ -12,12 +12,16 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.api.transfer.forge.ForgeFluidAdapter;
 import com.gregtechceu.gtceu.api.transfer.key.KeyInventory;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProvider;
+import com.gregtechceu.gtceu.api.transfer.key.MEStorageProviderIndex;
 import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
+import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.UIElement;
 import com.gregtechceu.gtceu.uipro.elements.FluidSlot;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
+import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.ae.AEKeySlot;
@@ -56,12 +60,19 @@ import java.util.function.IntFunction;
  * 拿走样机就收起供应。已解锁的资源可以在界面里逐个关掉。解锁状态就是样机槽本身，不另记一份。
  */
 @DataGeneratorScanned
-public final class InfiniteResourceProviderMachine extends MetaMachine implements IGridConnectedMachine, MEStorage, IStorageProvider, IFancyUIMachine {
+public final class InfiniteResourceProviderMachine extends MetaMachine implements IGridConnectedMachine, MEStorage, IStorageProvider, MEStorageProvider, IFancyUIMachine {
 
     private static final long SUPPLY_AMOUNT = IParallelMachine.MAX_PARALLEL;
     private static final int SAMPLE_SLOTS = UISizes.SLOTS_PER_ROW << 1;
     private static final int SAMPLE_CAPACITY = 1000;
     private static final String PAGE_SCROLLER = "infinite_resource_provider.page";
+
+    private static final int PRIORITY_MIN = Integer.MIN_VALUE + 1;
+    private static final int PRIORITY_MAX = Integer.MAX_VALUE - 1;
+
+    private static final Component PRIORITY = Component.translatable("gui.ae2.Priority");
+    private static final Component PRIORITY_EXTRACTION_HINT = Component.translatable("gui.ae2.PriorityExtractionHint");
+    private static final Component PRIORITY_INSERTION_HINT = Component.translatable("gui.ae2.PriorityInsertionHint");
 
     @RegisterLanguage(cn = "解锁资源", en = "Unlock Resources")
     private static final Component UNLOCK = Component.translatable("gtocore.machine.infinite_resource_provider.unlock");
@@ -79,6 +90,10 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
     @SaveToDisk
     @SaveToItem
     private final AEKeySet<AEKey> disabled = new AEKeySet<>();
+
+    @SaveToDisk(defaultValue = "2147483646")
+    @SaveToItem
+    private int priority = PRIORITY_MAX;
     @SaveToDisk
     @SaveToItem
     private final NotifiableInventory<AEItemKey> itemSample;
@@ -108,10 +123,22 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
     }
 
     @Override
+    public MEStorage getStorageCap(net.minecraft.core.Direction side) {
+        return this;
+    }
+
+    @Override
     public void onLoad() {
         super.onLoad();
         if (isRemote()) return;
         rebuildSupplied();
+        MEStorageProviderIndex.add(getLevel(), this);
+    }
+
+    @Override
+    public void onUnload() {
+        MEStorageProviderIndex.remove(getLevel(), this);
+        super.onUnload();
     }
 
     private void onSuppliedChanged() {
@@ -157,6 +184,18 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
         onSuppliedChanged();
     }
 
+    private int getPriority() {
+        return priority;
+    }
+
+    /// 换优先级要重新挂一次存储
+    private void setPriority(int value) {
+        if (value == priority) return;
+        priority = value;
+        if (!isRemote()) IStorageProvider.requestUpdate(getMainNode());
+        onChanged();
+    }
+
     private void addSupplied(KeyCounter out) {
         for (int i = 0; i < suppliedOrder.size(); i++) {
             out.add(suppliedOrder.get(i), SUPPLY_AMOUNT);
@@ -182,7 +221,7 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
 
     @Override
     public void mountInventories(IStorageMounts storageMounts) {
-        storageMounts.mount(this, Integer.MAX_VALUE - 1);
+        storageMounts.mount(this, priority);
     }
 
     @Override
@@ -223,6 +262,8 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
     @Override
     public Widget createUIWidget() {
         var page = Form.page();
+        page.addChild(Form.numberRow(PRIORITY, NumberField.ofInt(LayoutStyle.AUTO, this::getPriority, this::setPriority, PRIORITY_MIN, PRIORITY_MAX),
+                PRIORITY_EXTRACTION_HINT, PRIORITY_INSERTION_HINT));
         var unlock = Form.section(UNLOCK);
         unlock.addChild(Form.label(ITEM_SAMPLE));
         addSlots(unlock, SAMPLE_SLOTS, i -> ItemSlot.of(itemSample.storage, i));

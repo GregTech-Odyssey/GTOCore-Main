@@ -7,7 +7,6 @@ import com.gtolib.api.machine.heat.feature.IHeatContainerMachine;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.GTCapabilityHelper;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 
+import com.suried.gtoutils.schedule.Schedulers;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +67,7 @@ public class HeatValveMachine extends SimpleNoEnergyMachine implements IHeatCont
     public void onLoad() {
         super.onLoad();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            TaskHandler.enqueueTask(serverLevel, this::updateValveState, 0);
+            Schedulers.of(serverLevel).schedule(this::updateValveState);
         }
     }
 

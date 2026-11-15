@@ -2,6 +2,8 @@ package com.gtocore.data.recipe.processing;
 
 import com.gtocore.common.data.GTORecipeDataKeys;
 
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
+
 import static com.gregtechceu.gtceu.api.GTValues.*;
 import static com.gregtechceu.gtceu.api.data.tag.TagPrefix.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
@@ -146,7 +148,7 @@ public final class NaquadahProcess {
 
         DISTILLATION_RECIPES.recipeBuilder("enriched_naquadah_waste_separation").EUt(VA[HV]).duration(300)
                 .inputFluids(EnrichedNaquadahWaste, 2000)
-                .chancedOutput(dust, BariumSulfide, 5000, 0)
+                .chancedOutput(dust, BariumSulfide, Chance.of(5000))
                 .outputFluids(SulfuricAcid.getFluid(500))
                 .outputFluids(EnrichedNaquadahSolution.getFluid(250))
                 .outputFluids(NaquadriaSolution.getFluid(100))
@@ -200,8 +202,8 @@ public final class NaquadahProcess {
                 .outputFluids(NaquadriaWaste.getFluid(2000))
                 .outputFluids(Fluorine.getFluid(500))
                 .outputItems(dustTiny, NaquadriaSulfate, 2)
-                .chancedOutput(dustTiny, NaquadriaSulfate, 1, 6000, 100)
-                .chancedOutput(dustTiny, NaquadriaSulfate, 1, 4000, 100)
+                .chancedOutput(dustTiny, NaquadriaSulfate, 1, Chance.of(6000).risePerOverclock(100))
+                .chancedOutput(dustTiny, NaquadriaSulfate, 1, Chance.of(4000).risePerOverclock(100))
                 .save();
 
         CHEMICAL_RECIPES.recipeBuilder("xenon_trioxide")
@@ -271,7 +273,7 @@ public final class NaquadahProcess {
 
         DISTILLATION_RECIPES.recipeBuilder("naquadria_waste_separation").EUt(VA[EV]).duration(400)
                 .inputFluids(NaquadriaWaste, 2000)
-                .chancedOutput(dust, TriniumSulfide, 8000, 500)
+                .chancedOutput(dust, TriniumSulfide, Chance.of(8000).risePerOverclock(500))
                 .outputFluids(NaquadriaSolution.getFluid(250))
                 .outputFluids(EnrichedNaquadahSolution.getFluid(100))
                 .save();

@@ -21,7 +21,6 @@ import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachi
 import com.gregtechceu.gtceu.integration.ae2.machine.trait.GridNodeHolder;
 import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.utils.GTUtil;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,6 +54,7 @@ import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
 import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
+import com.suried.gtoutils.schedule.Schedulers;
 
 @Deprecated
 public final class VirtualItemProviderMachine extends MetaMachine implements IUIMachine, IDropSaveMachine, MEStorage, IGridConnectedMachine, IStorageProvider {
@@ -112,7 +112,7 @@ public final class VirtualItemProviderMachine extends MetaMachine implements IUI
         super.onLoad();
         inventory.notifyListeners();
         if (getLevel() instanceof ServerLevel serverLevel) {
-            TaskHandler.enqueueTask(serverLevel, this::migrateToIngredientProvider, 1);
+            Schedulers.of(serverLevel).schedule(1, this::migrateToIngredientProvider);
         }
     }
 

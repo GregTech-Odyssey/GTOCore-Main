@@ -1,0 +1,84 @@
+{
+  "parent": "gtocore:item/monitor/part_base",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "fiber": "gtocore:block/monitor/cable_fiber",
+    "sheath": "gtocore:block/monitor/cable_sheath",
+    "node": "gtocore:block/monitor/cable_node",
+    "particle": "gtocore:block/monitor/cable_sheath"
+  },
+  "elements": [
+    {
+      "name": "Fiber",
+      "from": [7, 7, 0],
+      "to": [9, 9, 16],
+      "faces": {
+        "north": {
+          "uv": [7, 7, 9, 9],
+          "texture": "#fiber",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [7, 7, 9, 9],
+          "texture": "#fiber",
+          "tintindex": 1
+        },
+        "east": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#fiber",
+          "rotation": 90,
+          "tintindex": 1
+        },
+        "west": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#fiber",
+          "rotation": 90,
+          "tintindex": 1
+        },
+        "up": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#fiber",
+          "tintindex": 1
+        },
+        "down": {
+          "uv": [7, 0, 9, 16],
+          "texture": "#fiber",
+          "tintindex": 1
+        }
+      }
+    },
+    {
+      "name": "Sheath",
+      "from": [6, 6, 0],
+      "to": [10, 10, 16],
+      "faces": {
+        "north": {
+          "uv": [6, 6, 10, 10],
+          "texture": "#node"
+        },
+        "south": {
+          "uv": [6, 6, 10, 10],
+          "texture": "#node"
+        },
+        "east": {
+          "uv": [6, 0, 10, 16],
+          "texture": "#sheath",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [6, 0, 10, 16],
+          "texture": "#sheath",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [6, 0, 10, 16],
+          "texture": "#sheath"
+        },
+        "down": {
+          "uv": [6, 0, 10, 16],
+          "texture": "#sheath"
+        }
+      }
+    }
+  ]
+}

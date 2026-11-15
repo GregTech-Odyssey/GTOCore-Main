@@ -5,13 +5,13 @@ import com.gtolib.api.machine.impl.WirelessChargerMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IElectricMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableEnergyContainer;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
 import com.gregtechceu.gtceu.common.machine.multiblock.part.EnergyHatchPartMachine;
 
+import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -30,10 +30,10 @@ public class EnergyHatchPartMachineMixin extends WorkableTieredIOPartMachine imp
     @Shadow(remap = false)
     @Final
     public NotifiableEnergyContainer energyContainer;
-    @SuppressWarnings("all")
-    private WirelessChargerMachine netMachineCache;
     @Unique
-    private TickableSubscription gtolib$tickSubs;
+    private NetCache<WirelessChargerMachine> gtolib$netCache;
+    @Unique
+    private Task gtolib$tickSubs;
 
     public EnergyHatchPartMachineMixin(MetaMachineBlockEntity holder, int tier, IO io) {
         super(holder, tier, io);
@@ -49,7 +49,7 @@ public class EnergyHatchPartMachineMixin extends WorkableTieredIOPartMachine imp
     @Inject(method = "onUnload", at = @At("TAIL"), remap = false)
     private void onUnload(CallbackInfo ci) {
         if (gtolib$tickSubs != null) {
-            gtolib$tickSubs.unsubscribe();
+            gtolib$tickSubs.cancel();
             gtolib$tickSubs = null;
         }
         removeNetMachineCache();
@@ -61,14 +61,11 @@ public class EnergyHatchPartMachineMixin extends WorkableTieredIOPartMachine imp
         return getOwnerUUID();
     }
 
-    @SuppressWarnings("all")
-    public void setNetMachineCache(final WirelessChargerMachine netMachineCache) {
-        this.netMachineCache = netMachineCache;
-    }
-
-    @SuppressWarnings("all")
-    public WirelessChargerMachine getNetMachineCache() {
-        return this.netMachineCache;
+    @Override
+    public NetCache<WirelessChargerMachine> getNetCache() {
+        var cache = gtolib$netCache;
+        if (cache == null) gtolib$netCache = cache = new NetCache<>();
+        return cache;
     }
 
     @Override

@@ -11,7 +11,6 @@ import com.gregtechceu.gtceu.api.cover.filter.ItemFilter;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.SimpleTieredMachine;
-import com.gregtechceu.gtceu.api.machine.TickableSubscription;
 import com.gregtechceu.gtceu.api.machine.feature.IDataInfoProvider;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
@@ -25,7 +24,6 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uiwidgets.display.MachineDisplay;
 import com.gregtechceu.gtceu.uiwidgets.icon.WidgetIcons;
 import com.gregtechceu.gtceu.uiwidgets.multiblock.ControlPanel;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -48,6 +46,8 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.lowdragmc.lowdraglib.syncdata.ISubscription;
 import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Task;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +68,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
     protected final StackInventory filterInventory;
     private final int maximumRadius;
     @Nullable
-    protected TickableSubscription autoOutputSubs;
+    protected Task autoOutputSubs;
 
     /** 复用父类 SimpleTieredMachine 的 autoOutputMonitor（同一个 entry 只会有一个监控器）。 */
     @Nullable
@@ -159,7 +159,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
         if (!isRemote()) {
             filterChange();
             if (getLevel() instanceof ServerLevel serverLevel) {
-                TaskHandler.enqueueTask(serverLevel, this::updateAutoOutputSubscription);
+                Schedulers.of(serverLevel).schedule(this::updateAutoOutputSubscription);
             }
             exportItemSubs = exportItems.addChangedListener(this::updateAutoOutputSubscription);
         }
@@ -187,7 +187,7 @@ public class SingleDigitalMiner extends SimpleTieredMachine implements IDigitalM
         if (!exportItems.isEmpty() && holder.blockEntityDirectionCache.hasAdjacentTarget(getLevel(), getPos(), getFrontFacing(), AEKeyTypes.ITEMS, StorageAccess.INSERT)) {
             autoOutputSubs = subscribeServerTick(autoOutputSubs, autoOutputMonitor, 20);
         } else if (autoOutputSubs != null) {
-            autoOutputSubs.unsubscribe();
+            autoOutputSubs.cancel();
             autoOutputSubs = null;
         }
     }

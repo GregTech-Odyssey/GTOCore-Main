@@ -50,6 +50,16 @@ final class HatchRecipe {
         var activeTransformer = GTMultiMachines.ACTIVE_TRANSFORMER.asItem();
         var coverEnergyDetector = GTItems.COVER_ENERGY_DETECTOR_ADVANCED.asItem();
 
+        ASSEMBLER_RECIPES.builder("mirror_hatch")
+                .inputItems(GTOMachines.TESSERACT_GENERATOR.asItem())
+                .inputItems(GTMachines.HULL[HV].asItem())
+                .inputItems(GTItems.SENSOR_HV)
+                .inputItems(GTItems.EMITTER_HV)
+                .outputItems(GTOMachines.MIRROR_HATCH.asItem())
+                .EUt(VA[HV])
+                .duration(200)
+                .save();
+
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("rotor_holder_uhv"), GTMachines.ROTOR_HOLDER[UHV].asItem(),
                 "SGS", "GHG", "SGS", 'H', GTMachines.HULL[UHV].asItem(), 'G',
                 new MaterialEntry(TagPrefix.gear, GTOMaterials.Orichalcum), 'S',

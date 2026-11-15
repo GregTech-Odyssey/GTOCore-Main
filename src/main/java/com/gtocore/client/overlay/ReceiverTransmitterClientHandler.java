@@ -5,10 +5,11 @@ import com.gtocore.client.forge.ThickPolylineRenderer;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.common.item.DataStickExtension;
 import com.gtocore.common.machine.multiblock.part.WirelessOpticalDataHatchMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferConnectionHandler.Connection;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 
+import com.gtolib.api.item.MirrorHatchDataStick;
+import com.gtolib.api.wireless.PartProxyConnections;
+import com.gtolib.api.wireless.PartProxyConnections.Connection;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler;
 import com.gtolib.api.wireless.ReceiverTransmitterHandler.ConnectionType;
 
@@ -53,21 +54,36 @@ public final class ReceiverTransmitterClientHandler {
     private static final int DATA_LINE_COLOR = 0x90FFE673;
     private static final int PATTERN_BUFFER_LINE_COLOR = 0x9059E6FF;
     private static final int PATTERN_PROXY_LINE_COLOR = 0x90BF73FF;
+    private static final float MIRROR_TARGET_RED = 1.0F;
+    private static final float MIRROR_TARGET_GREEN = 0.65F;
+    private static final float MIRROR_TARGET_BLUE = 0.15F;
+    private static final float MIRROR_RED = 1.0F;
+    private static final float MIRROR_GREEN = 0.9F;
+    private static final float MIRROR_BLUE = 0.2F;
+    private static final int MIRROR_TARGET_LINE_COLOR = 0x90FFA626;
+    private static final int MIRROR_LINE_COLOR = 0x90FFE633;
 
     private static final ObjectArrayList<Pair<Vec3, Vec3>> COMPUTATION_SEGMENTS = new ObjectArrayList<>();
     private static final ObjectArrayList<Pair<Vec3, Vec3>> DATA_SEGMENTS = new ObjectArrayList<>();
     private static final ObjectArrayList<Pair<Vec3, Vec3>> PATTERN_SEGMENTS = new ObjectArrayList<>();
     private static final LongOpenHashSet HIGHLIGHTED_PATTERN_BUFFERS = new LongOpenHashSet();
+    private static final ObjectArrayList<Pair<Vec3, Vec3>> MIRROR_SEGMENTS = new ObjectArrayList<>();
+    private static final LongOpenHashSet HIGHLIGHTED_MIRROR_TARGETS = new LongOpenHashSet();
     private static final StoredPosition COMPUTATION_TRANSMITTER_POS = new StoredPosition(COMPUTATION_TRANSMITTER);
     private static final StoredPosition COMPUTATION_RECEIVER_POS = new StoredPosition(COMPUTATION_RECEIVER);
     private static final StoredPosition DATA_TRANSMITTER_POS = new StoredPosition(WirelessOpticalDataHatchMachine.KEY_TRANSMITTER);
     private static final StoredPosition DATA_RECEIVER_POS = new StoredPosition(WirelessOpticalDataHatchMachine.KEY_RECEIVER);
     private static final StoredPosition PATTERN_BUFFER_POS = new StoredPosition(MEPatternBufferPartMachine.DATA_STICK_POS);
+    private static final StoredPosition MIRROR_TARGET_POS = new StoredPosition("pos");
 
     private static ReceiverTransmitterHandler.Connection[] cachedConnections;
     private static Connection[] cachedPatternConnections;
     private static ResourceKey<Level> cachedDimension;
     private static ResourceKey<Level> cachedPatternDimension;
+    private static Connection[] cachedMirrorConnections;
+    private static ResourceKey<Level> cachedMirrorDimension;
+    private static ResourceKey<Level> storedMirrorDimension;
+    private static String storedMirrorDimensionId;
 
     private ReceiverTransmitterClientHandler() {}
 
@@ -96,14 +112,14 @@ public final class ReceiverTransmitterClientHandler {
                 event.getPoseStack(), event.getCamera(), COMPUTATION_LINE_COLOR, LINE_WIDTH, COMPUTATION_SEGMENTS);
         ThickPolylineRenderer.drawSegments(
                 event.getPoseStack(), event.getCamera(), DATA_LINE_COLOR, LINE_WIDTH, DATA_SEGMENTS);
-        Connection[] patternConnections = MEPatternBufferConnectionHandler.getClientConnections(dimension);
+        Connection[] patternConnections = PartProxyConnections.PATTERN_BUFFERS.getClientConnections(dimension);
         rebuildPatternSegmentsIfNeeded(dimension, patternConnections);
         HIGHLIGHTED_PATTERN_BUFFERS.clear();
         for (Connection connection : patternConnections) {
-            if (HIGHLIGHTED_PATTERN_BUFFERS.add(connection.bufferPos().asLong())) {
+            if (HIGHLIGHTED_PATTERN_BUFFERS.add(connection.targetPos().asLong())) {
                 RenderHelper.highlightBlock(event.getCamera(), event.getPoseStack(),
                         PATTERN_BUFFER_RED, PATTERN_BUFFER_GREEN, PATTERN_BUFFER_BLUE, 1.5F,
-                        connection.bufferPos(), connection.bufferPos());
+                        connection.targetPos(), connection.targetPos());
             }
             RenderHelper.highlightBlock(event.getCamera(), event.getPoseStack(),
                     PATTERN_PROXY_RED, PATTERN_PROXY_GREEN, PATTERN_PROXY_BLUE, 1.5F,
@@ -112,6 +128,7 @@ public final class ReceiverTransmitterClientHandler {
         GradientThickPolylineRenderer.drawSegments(
                 event.getPoseStack(), event.getCamera(), PATTERN_BUFFER_LINE_COLOR, PATTERN_PROXY_LINE_COLOR,
                 LINE_WIDTH, PATTERN_SEGMENTS);
+        renderMirrors(event, dimension);
         renderStoredPositions(event, level, dataStick.getTag());
     }
 
@@ -120,15 +137,22 @@ public final class ReceiverTransmitterClientHandler {
         cachedPatternConnections = null;
         cachedDimension = null;
         cachedPatternDimension = null;
+        cachedMirrorConnections = null;
+        cachedMirrorDimension = null;
         COMPUTATION_SEGMENTS.clear();
         DATA_SEGMENTS.clear();
         PATTERN_SEGMENTS.clear();
         HIGHLIGHTED_PATTERN_BUFFERS.clear();
+        MIRROR_SEGMENTS.clear();
+        HIGHLIGHTED_MIRROR_TARGETS.clear();
         COMPUTATION_TRANSMITTER_POS.clear();
         COMPUTATION_RECEIVER_POS.clear();
         DATA_TRANSMITTER_POS.clear();
         DATA_RECEIVER_POS.clear();
         PATTERN_BUFFER_POS.clear();
+        MIRROR_TARGET_POS.clear();
+        storedMirrorDimension = null;
+        storedMirrorDimensionId = null;
     }
 
     private static ItemStack heldDataStick(LocalPlayer player) {
@@ -168,8 +192,31 @@ public final class ReceiverTransmitterClientHandler {
         PATTERN_SEGMENTS.clear();
         for (Connection connection : connections) {
             PATTERN_SEGMENTS.add(new Pair<>(
-                    Vec3.atCenterOf(connection.bufferPos()), Vec3.atCenterOf(connection.proxyPos())));
+                    Vec3.atCenterOf(connection.targetPos()), Vec3.atCenterOf(connection.proxyPos())));
         }
+    }
+
+    private static void renderMirrors(RenderLevelStageEvent event, ResourceKey<Level> dimension) {
+        var connections = PartProxyConnections.MIRROR_HATCHES.getClientConnections(dimension);
+        if (cachedMirrorConnections != connections || cachedMirrorDimension != dimension) {
+            cachedMirrorConnections = connections;
+            cachedMirrorDimension = dimension;
+            MIRROR_SEGMENTS.clear();
+            for (var connection : connections) {
+                MIRROR_SEGMENTS.add(new Pair<>(Vec3.atCenterOf(connection.targetPos()), Vec3.atCenterOf(connection.proxyPos())));
+            }
+        }
+        HIGHLIGHTED_MIRROR_TARGETS.clear();
+        for (var connection : connections) {
+            if (HIGHLIGHTED_MIRROR_TARGETS.add(connection.targetPos().asLong())) {
+                RenderHelper.highlightBlock(event.getCamera(), event.getPoseStack(),
+                        MIRROR_TARGET_RED, MIRROR_TARGET_GREEN, MIRROR_TARGET_BLUE, 1.5F, connection.targetPos(), connection.targetPos());
+            }
+            RenderHelper.highlightBlock(event.getCamera(), event.getPoseStack(),
+                    MIRROR_RED, MIRROR_GREEN, MIRROR_BLUE, 1.5F, connection.proxyPos(), connection.proxyPos());
+        }
+        GradientThickPolylineRenderer.drawSegments(event.getPoseStack(), event.getCamera(),
+                MIRROR_TARGET_LINE_COLOR, MIRROR_LINE_COLOR, LINE_WIDTH, MIRROR_SEGMENTS);
     }
 
     private static void renderStoredPositions(RenderLevelStageEvent event, Level level, CompoundTag tag) {
@@ -178,6 +225,13 @@ public final class ReceiverTransmitterClientHandler {
         DATA_TRANSMITTER_POS.update(tag);
         DATA_RECEIVER_POS.update(tag);
         PATTERN_BUFFER_POS.updateIntArray(tag);
+        if (storedMirrorDimension != level.dimension()) {
+            storedMirrorDimension = level.dimension();
+            storedMirrorDimensionId = storedMirrorDimension.location().toString();
+        }
+        var mirrorTag = tag != null && tag.contains(MirrorHatchDataStick.TARGET_KEY, Tag.TAG_COMPOUND) ?
+                tag.getCompound(MirrorHatchDataStick.TARGET_KEY) : null;
+        MIRROR_TARGET_POS.updateIntArray(mirrorTag != null && storedMirrorDimensionId.equals(mirrorTag.getString("dimension")) ? mirrorTag : null);
         float pulse = 0.5F + 0.5F * Mth.sin((level.getGameTime() + event.getPartialTick()) * 0.2F);
         highlightStored(event, COMPUTATION_TRANSMITTER_POS.pos, pulse,
                 COMPUTATION_RED, COMPUTATION_GREEN, COMPUTATION_BLUE);
@@ -187,6 +241,8 @@ public final class ReceiverTransmitterClientHandler {
         highlightStored(event, DATA_RECEIVER_POS.pos, 1.0F - pulse, DATA_RED, DATA_GREEN, DATA_BLUE);
         highlightStored(event, PATTERN_BUFFER_POS.pos, pulse,
                 PATTERN_BUFFER_RED, PATTERN_BUFFER_GREEN, PATTERN_BUFFER_BLUE);
+        highlightStored(event, MIRROR_TARGET_POS.pos, pulse,
+                MIRROR_TARGET_RED, MIRROR_TARGET_GREEN, MIRROR_TARGET_BLUE);
     }
 
     private static void highlightStored(RenderLevelStageEvent event, @Nullable BlockPos pos,

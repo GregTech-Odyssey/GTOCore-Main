@@ -36,6 +36,9 @@ import com.gtolib.api.emi.stack.EmiTagprefixStackSerializer;
 import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.gtm.recipe.editor.CraftAction;
 import com.gtolib.gtm.recipe.editor.GTEmiRecipeHandler;
+import com.gtolib.monitor.MonitorControlFactory;
+import com.gtolib.monitor.MonitorEditorFactory;
+import com.gtolib.monitor.MonitorHudEditorFactory;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
 
@@ -80,6 +83,7 @@ import com.hollingsworth.arsnouveau.client.jei.JEIArsNouveauPlugin;
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.emi.EMIPlugin;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
+import com.lowdragmc.lowdraglib.gui.modular.ModularUIGuiContainer;
 import de.mari_023.ae2wtlib.wct.WCTMenu;
 import de.mari_023.ae2wtlib.wet.WETMenu;
 import dev.emi.emi.VanillaPlugin;
@@ -91,6 +95,7 @@ import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
+import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.jemi.JemiPlugin;
 import dev.emi.emi.registry.EmiPluginContainer;
 import dev.emi.emi.screen.EmiScreenManager;
@@ -106,6 +111,7 @@ import jeresources.jei.JEIConfig;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.library.plugins.jei.JeiInternalPlugin;
 import mythicbotany.jei.MythicJei;
+import org.jetbrains.annotations.Nullable;
 import snownee.jade.compat.JEICompat;
 import umpaz.farmersrespite.integration.jei.JEIFRPlugin;
 import vazkii.botania.api.BotaniaAPI;
@@ -204,6 +210,13 @@ public final class GTEMIPlugin implements EmiPlugin {
     }
 
     // 用于在 EMI 中注册维度数据的变体
+    @Nullable
+    private static Bounds monitorWindowBounds(ModularUIGuiContainer screen) {
+        var holder = screen.modularUI.holder;
+        if (!(holder instanceof MonitorEditorFactory.Target) && !(holder instanceof MonitorControlFactory.Target) && !(holder instanceof MonitorHudEditorFactory.Target)) return null;
+        return new Bounds(screen.getGuiLeft(), screen.getGuiTop(), screen.getXSize(), screen.getYSize());
+    }
+
     private static void registerDimensionDataVariants(EmiRegistry registry) {
         var previousDimensionData = EmiStack.of(GTOItems.DIMENSION_DATA.asItem());
         for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
@@ -249,6 +262,7 @@ public final class GTEMIPlugin implements EmiPlugin {
             }
         });
         registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
+        registry.addScreenBoundsProvider(ModularUIGuiContainer.class, GTEMIPlugin::monitorWindowBounds);
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTPatternEditorRecipeHandler());
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());

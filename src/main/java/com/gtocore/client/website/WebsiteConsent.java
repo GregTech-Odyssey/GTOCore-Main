@@ -16,7 +16,6 @@ import com.gregtechceu.gtceu.uipro.elements.TextLine;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.Popup;
-import com.gregtechceu.gtceu.utils.TaskHandler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -28,6 +27,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.suried.gtoutils.schedule.Schedulers;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -179,7 +179,7 @@ public final class WebsiteConsent {
     private static void promptLater(int delay, int retries) {
         var level = Minecraft.getInstance().level;
         if (level == null) return;
-        TaskHandler.enqueueTask(level, () -> {
+        Schedulers.of(level).schedule(delay, () -> {
             var minecraft = Minecraft.getInstance();
             if (minecraft.player == null || decided) return;
             if (minecraft.screen != null) {
@@ -187,7 +187,7 @@ public final class WebsiteConsent {
                 return;
             }
             open(null);
-        }, delay);
+        });
     }
 
     private static void content(UIElement content, Runnable close) {
