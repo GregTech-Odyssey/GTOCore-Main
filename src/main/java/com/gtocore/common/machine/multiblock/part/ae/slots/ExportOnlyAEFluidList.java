@@ -241,4 +241,9 @@ public class ExportOnlyAEFluidList extends NotifiableContentHandler implements I
     public boolean isStocking() {
         return false;
     }
+
+    @Override
+    public boolean isDirectKey() {
+        return true;
+    }
 }

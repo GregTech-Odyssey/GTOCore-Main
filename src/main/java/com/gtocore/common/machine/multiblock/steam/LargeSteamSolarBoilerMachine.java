@@ -71,6 +71,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
     private static final int MAX_LR_DIST = 14, MAX_B_DIST = 29;
     private static final int MIN_LR_DIST = 1, MIN_B_DIST = 3;
     private static final int STEAM_GENERATION_INTERVAL = 20;
+    private static final boolean SKIP_DRY_BIOME = Boolean.parseBoolean(System.getProperty("gtocore.solarBoiler.skipDryBiome", "true"));
 
     private int lDist, rDist, bDist, sunlit;
     private int steamGenerated;
@@ -176,6 +177,7 @@ public class LargeSteamSolarBoilerMachine extends WorkableMultiblockMachine impl
     private static boolean hasClearSky(Level world, BlockPos pos) {
         BlockPos checkPos = pos.above();
         if (!world.canSeeSky(checkPos)) return false;
+        if (SKIP_DRY_BIOME && !world.isRaining()) return true;
         Biome biome = world.getBiome(checkPos).value();
         boolean hasPrecipitation = world.isRaining() && (biome.warmEnoughToRain(checkPos) || biome.coldEnoughToSnow(checkPos));
         return !hasPrecipitation;

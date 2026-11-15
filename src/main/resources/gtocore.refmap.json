@@ -529,7 +529,9 @@
     },
     "com/gtolib/mixin/mc/client/DroneLevelRendererMixin": {
       "Lnet/minecraft/client/renderer/LevelRenderer;setupRender(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V": "Lnet/minecraft/client/renderer/LevelRenderer;m_194338_(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V",
-      "renderLevel": "Lnet/minecraft/client/renderer/LevelRenderer;m_109599_(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V"
+      "renderLevel": "Lnet/minecraft/client/renderer/LevelRenderer;m_109599_(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+      "setBlocksDirty": "Lnet/minecraft/client/renderer/LevelRenderer;m_109494_(IIIIII)V",
+      "setBlockDirty(Lnet/minecraft/core/BlockPos;Z)V": "Lnet/minecraft/client/renderer/LevelRenderer;m_109732_(Lnet/minecraft/core/BlockPos;Z)V"
     },
     "com/gtolib/mixin/mc/world/DroneTrackedEntityMixin": {
       "Lnet/minecraft/server/level/ServerPlayer;position()Lnet/minecraft/world/phys/Vec3;": "Lnet/minecraft/server/level/ServerPlayer;m_20182_()Lnet/minecraft/world/phys/Vec3;",
@@ -573,6 +575,9 @@
     },
     "com/gtolib/mixin/mc/AbstractFurnaceBlockEntityMixin": {
       "add(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V": "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;m_204302_(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V"
+    },
+    "com/gtolib/mixin/mc/client/DroneRenderChunkRegionMixin": {
+      "getBlockState": "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
     }
   },
   "data": {
@@ -1106,7 +1111,9 @@
       },
       "com/gtolib/mixin/mc/client/DroneLevelRendererMixin": {
         "Lnet/minecraft/client/renderer/LevelRenderer;setupRender(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V": "Lnet/minecraft/client/renderer/LevelRenderer;m_194338_(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V",
-        "renderLevel": "Lnet/minecraft/client/renderer/LevelRenderer;m_109599_(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V"
+        "renderLevel": "Lnet/minecraft/client/renderer/LevelRenderer;m_109599_(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",
+        "setBlocksDirty": "Lnet/minecraft/client/renderer/LevelRenderer;m_109494_(IIIIII)V",
+        "setBlockDirty(Lnet/minecraft/core/BlockPos;Z)V": "Lnet/minecraft/client/renderer/LevelRenderer;m_109732_(Lnet/minecraft/core/BlockPos;Z)V"
       },
       "com/gtolib/mixin/mc/world/DroneTrackedEntityMixin": {
         "Lnet/minecraft/server/level/ServerPlayer;position()Lnet/minecraft/world/phys/Vec3;": "Lnet/minecraft/server/level/ServerPlayer;m_20182_()Lnet/minecraft/world/phys/Vec3;",
@@ -1150,6 +1157,9 @@
       },
       "com/gtolib/mixin/mc/AbstractFurnaceBlockEntityMixin": {
         "add(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V": "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;m_204302_(Ljava/util/Map;Lnet/minecraft/tags/TagKey;I)V"
+      },
+      "com/gtolib/mixin/mc/client/DroneRenderChunkRegionMixin": {
+        "getBlockState": "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
       }
     }
   }
