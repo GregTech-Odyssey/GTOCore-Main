@@ -1,9 +1,10 @@
 package com.gtocore.utils;
 
+import com.gtocore.integration.Mods;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.UsernameCache;
-import net.minecraftforge.fml.ModList;
 
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import org.jetbrains.annotations.Nullable;
@@ -49,7 +50,7 @@ public final class PlayerNameUtils {
 
     @Nullable
     private static String findFromFTBTeams(UUID uuid) {
-        if (!ModList.get().isLoaded("ftbteams")) {
+        if (!Mods.FTB_TEAMS.isLoaded()) {
             return null;
         }
 
