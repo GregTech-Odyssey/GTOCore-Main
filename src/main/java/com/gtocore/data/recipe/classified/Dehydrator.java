@@ -4,6 +4,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gtocore.common.data.GTORecipeTypes.DEHYDRATOR_RECIPES;
@@ -20,20 +21,20 @@ final class Dehydrator {
 
         DEHYDRATOR_RECIPES.recipeBuilder("er_lu_oxides_solution")
                 .inputFluids(GTOMaterials.ErLuOxidesSolution, 4000)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.ErbiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.ThuliumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.YtterbiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.LutetiumOxide, 5, 4300, 275)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.ErbiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.ThuliumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.YtterbiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.LutetiumOxide, 5, Chance.of(4300).risePerOverclock(275))
                 .EUt(480)
                 .duration(220)
                 .save();
 
         DEHYDRATOR_RECIPES.recipeBuilder("tb_ho_oxides_solution")
                 .inputFluids(GTOMaterials.TbHoOxidesSolution, 4000)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.YttriumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.TerbiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.DysprosiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.HolmiumOxide, 5, 4300, 275)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.YttriumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.TerbiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.DysprosiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.HolmiumOxide, 5, Chance.of(4300).risePerOverclock(275))
                 .EUt(480)
                 .duration(220)
                 .save();
@@ -58,8 +59,8 @@ final class Dehydrator {
                 .inputFluids(GTOMaterials.ResidualTriniiteSolution, 2000)
                 .outputItems(TagPrefix.dust, GTMaterials.Salt)
                 .outputItems(TagPrefix.dust, GTOMaterials.SodiumNitrate, 20)
-                .chancedOutput(TagPrefix.dust, GTMaterials.Naquadria, 2, 4800, 0)
-                .chancedOutput(TagPrefix.dust, GTMaterials.NaquadahEnriched, 5200, 0)
+                .chancedOutput(TagPrefix.dust, GTMaterials.Naquadria, 2, Chance.of(4800))
+                .chancedOutput(TagPrefix.dust, GTMaterials.NaquadahEnriched, Chance.of(5200))
                 .EUt(7680)
                 .duration(190)
                 .save();
@@ -75,10 +76,10 @@ final class Dehydrator {
 
         DEHYDRATOR_RECIPES.recipeBuilder("la_nd_oxides_solution")
                 .inputFluids(GTOMaterials.LaNdOxidesSolution, 4000)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.LanthanumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.CeriumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.PraseodymiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.NeodymiumOxide, 5, 4300, 275)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.LanthanumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.CeriumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.PraseodymiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.NeodymiumOxide, 5, Chance.of(4300).risePerOverclock(275))
                 .EUt(480)
                 .duration(220)
                 .save();
@@ -133,10 +134,10 @@ final class Dehydrator {
 
         DEHYDRATOR_RECIPES.recipeBuilder("sm_gd_oxides_solution")
                 .inputFluids(GTOMaterials.SmGdOxidesSolution, 4000)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.ScandiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.SamariumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.EuropiumOxide, 5, 4300, 275)
-                .chancedOutput(TagPrefix.dust, GTOMaterials.GadoliniumOxide, 5, 4300, 275)
+                .chancedOutput(TagPrefix.dust, GTOMaterials.ScandiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.SamariumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.EuropiumOxide, 5, Chance.of(4300).risePerOverclock(275))
+                .chancedOutput(TagPrefix.dust, GTOMaterials.GadoliniumOxide, 5, Chance.of(4300).risePerOverclock(275))
                 .EUt(480)
                 .duration(220)
                 .save();

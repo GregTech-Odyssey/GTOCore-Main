@@ -7,6 +7,7 @@ import com.gtocore.data.techtree.BaseNodes;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.config.ConfigHolder;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
@@ -518,14 +519,14 @@ public final class CircuitRecipes {
         AUTOCLAVE_RECIPES.recipeBuilder("raw_crystal_chip_emerald")
                 .inputItems(gemExquisite, Emerald)
                 .inputFluids(Europium.getFluid(L / 9))
-                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), 1000, 2000)
+                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), Chance.of(1000).risePerOverclock(2000))
                 .cleanroom(1)
                 .duration(12000).EUt(320).save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("raw_crystal_chip_olivine")
                 .inputItems(gemExquisite, Olivine)
                 .inputFluids(Europium.getFluid(L / 9))
-                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), 1000, 2000)
+                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), Chance.of(1000).risePerOverclock(2000))
                 .cleanroom(1)
                 .duration(12000).EUt(320).save();
 
@@ -544,14 +545,14 @@ public final class CircuitRecipes {
         AUTOCLAVE_RECIPES.recipeBuilder("raw_crystal_chip_from_part_mutagen")
                 .inputItems(RAW_CRYSTAL_CHIP_PART)
                 .inputFluids(Mutagen, 250)
-                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), 8000, 250)
+                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), Chance.of(8000).risePerOverclock(250))
                 .cleanroom(1)
                 .duration(12000).EUt(VA[HV]).save();
 
         AUTOCLAVE_RECIPES.recipeBuilder("raw_crystal_chip_from_part_bacterial_sludge")
                 .inputItems(RAW_CRYSTAL_CHIP_PART)
                 .inputFluids(BacterialSludge, 250)
-                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), 8000, 250)
+                .chancedOutput(RAW_CRYSTAL_CHIP.asItem(), Chance.of(8000).risePerOverclock(250))
                 .cleanroom(1)
                 .duration(12000).EUt(VA[HV]).save();
     }

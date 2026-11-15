@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 
@@ -59,10 +60,13 @@ public final class QuestEditQueue {
     private static volatile int version;
     private static volatile boolean flushing;
     private static boolean loaded;
+    private static final AtomicBoolean SAVE_QUEUED = new AtomicBoolean();
     private static List<Op> snapshot = Collections.emptyList();
     private static int snapshotVersion = -1;
     @Nullable
     private static ScheduledFuture<?> scheduled;
+    @Nullable
+    private static volatile QuestHotProgress.Job flushJob;
     @Nullable
     private static BiConsumer<Boolean, String> reporter;
 
@@ -90,6 +94,9 @@ public final class QuestEditQueue {
         synchronized (LOCK) {
             if (loaded) return;
             loaded = true;
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (SAVE_QUEUED.get()) save();
+            }, "GTO Quest Edit Journal"));
             var path = journalPath();
             if (path == null || !Files.isRegularFile(path)) return;
             try {
@@ -103,16 +110,22 @@ public final class QuestEditQueue {
             }
             version++;
         }
-        if (!PENDING.isEmpty()) report(true, "操作表里有 " + PENDING.size() + " 项上次未写入源码的修改，开始重放");
+        if (!PENDING.isEmpty()) report(true, "重放上次未写入的 " + PENDING.size() + " 项修改");
+    }
+
+    private static void saveLater() {
+        if (SAVE_QUEUED.compareAndSet(false, true)) WORKER.execute(QuestEditQueue::save);
     }
 
     private static void save() {
+        SAVE_QUEUED.set(false);
         var path = journalPath();
         if (path == null) return;
-        String json;
+        Journal journal;
         synchronized (LOCK) {
-            json = GSON.toJson(new Journal(nextSeq, new ObjectArrayList<>(PENDING)));
+            journal = new Journal(nextSeq, new ObjectArrayList<>(PENDING));
         }
+        var json = GSON.toJson(journal);
         try {
             Files.createDirectories(path.getParent());
             var temp = path.resolveSibling(path.getFileName() + ".tmp");
@@ -172,7 +185,7 @@ public final class QuestEditQueue {
             REDO.clear();
             version++;
         }
-        save();
+        saveLater();
         schedule(IDLE_MILLIS);
         return QuestHot.Result.ok(label);
     }
@@ -222,7 +235,9 @@ public final class QuestEditQueue {
             action = UNDO.top();
             for (var op : action.inverse) {
                 if (op.type().equals(UNDELETE) && !deletePending(op.target())) {
-                    return QuestHot.Result.fail("删除已写入源码，无法在游戏里撤销；请在 VS Code 源代码管理里还原");
+                    UNDO.pop();
+                    version++;
+                    return QuestHot.Result.fail("删除已写入源码，无法撤销，已跳过这一步");
                 }
             }
             UNDO.pop();
@@ -231,7 +246,7 @@ public final class QuestEditQueue {
             REDO.push(action);
             version++;
         }
-        save();
+        saveLater();
         schedule(IDLE_MILLIS);
         return QuestHot.Result.ok("撤销：" + action.label);
     }
@@ -246,7 +261,7 @@ public final class QuestEditQueue {
             UNDO.push(action);
             version++;
         }
-        save();
+        saveLater();
         schedule(IDLE_MILLIS);
         return QuestHot.Result.ok("重做：" + action.label);
     }
@@ -270,6 +285,11 @@ public final class QuestEditQueue {
         WORKER.execute(QuestEditQueue::flush);
     }
 
+    public static void sourceTouched() {
+        var root = QuestHotConfig.sourceRoot();
+        if (root != null) WORKER.execute(() -> QuestSource.refresh(root, null));
+    }
+
     private static synchronized void schedule(long delay) {
         var previous = scheduled;
         if (previous != null) previous.cancel(false);
@@ -282,6 +302,23 @@ public final class QuestEditQueue {
     }
 
     private static void flush() {
+        try {
+            flushBatch();
+        } catch (RuntimeException | Error e) {
+            abandon("写入源码", e);
+        }
+    }
+
+    private static void abandon(String stage, Throwable error) {
+        GTOCore.LOGGER.error("[任务热修改] {}时出错，本批修改留在操作表中", stage, error);
+        var job = flushJob;
+        flushJob = null;
+        if (job != null) job.end();
+        flushing = false;
+        report(false, stage + "时出错，修改留在操作表中：" + error);
+    }
+
+    private static void flushBatch() {
         if (flushing || QuestHotConfig.sourceRoot() == null) return;
         ObjectArrayList<Op> batch;
         ObjectArrayList<Path> external;
@@ -295,9 +332,10 @@ public final class QuestEditQueue {
         boolean rebuild = !external.isEmpty();
         for (var op : batch) rebuild |= !op.live();
         var job = QuestHotProgress.begin(!external.isEmpty());
+        flushJob = job;
         job.stage(QuestHotProgress.WRITE, batch.size() + " 项操作", 0.05f, 0.25f, 200L + 40L * batch.size());
         batch.sort((a, b) -> order(a) != order(b) ? Integer.compare(order(a), order(b)) : Long.compare(a.seq(), b.seq()));
-        var src = QuestSource.load(QuestHotConfig.sourceRoot()).copy();
+        var src = QuestSource.refresh(QuestHotConfig.sourceRoot(), external).copy();
         var before = new O2OOpenCacheHashMap<Path, String>();
         var errors = new ObjectArrayList<String>();
         for (var op : batch) {
@@ -312,9 +350,9 @@ public final class QuestEditQueue {
         if (!errors.isEmpty()) report(false, "有 " + errors.size() + " 项修改无法写入源码，已丢弃：\n" + QuestHot.summarize(errors));
         var written = after.isEmpty() ? new ObjectArrayList<Path>() : write(after);
         if (written == null) {
-            report(false, "写入源码失败，这一批修改留在操作表里，稍后重试");
+            report(false, "写入源码失败，稍后自动重试");
+            done(job);
             flushing = false;
-            job.end();
             return;
         }
         var paths = new ObjectArrayList<Path>(written);
@@ -323,25 +361,45 @@ public final class QuestEditQueue {
         }
         if (paths.isEmpty()) {
             finish(batch);
-            job.end();
+            done(job);
             return;
         }
         QuestHot.reload(paths, job.blocking(), rebuild, failure -> {
             if (failure != null && !after.isEmpty()) {
-                boolean untouched = true;
-                for (var it = after.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
-                    var entry = it.next();
-                    if (!entry.getValue().equals(read(entry.getKey()))) untouched = false;
-                }
-                report(false, "这一批修改刷新失败，" + (untouched ? "已还原源码并丢弃" : "源码已在别处改动，未还原") + "：\n" + failure);
-                if (untouched) {
-                    var restored = write(before);
-                    if (restored != null) QuestHot.reload(restored, job.blocking(), true, f -> {});
-                }
+                WORKER.execute(() -> revert(batch, before, after, failure, job));
+                return;
             }
             finish(batch);
-            job.end();
+            done(job);
         });
+    }
+
+    private static void done(QuestHotProgress.Job job) {
+        if (flushJob == job) flushJob = null;
+        job.end();
+    }
+
+    private static void revert(List<Op> batch, O2OOpenCacheHashMap<Path, String> before, O2OOpenCacheHashMap<Path, String> after, String failure, QuestHotProgress.Job job) {
+        try {
+            boolean untouched = true;
+            for (var it = after.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
+                if (!entry.getValue().equals(read(entry.getKey()))) untouched = false;
+            }
+            report(false, "刷新失败，" + (untouched ? "已还原源码并丢弃本批修改" : "源码已被外部修改，未还原") + "：\n" + failure);
+            var restored = untouched ? write(before) : null;
+            if (restored != null) {
+                QuestHot.reload(restored, job.blocking(), true, ignored -> {
+                    finish(batch);
+                    done(job);
+                });
+                return;
+            }
+            finish(batch);
+            done(job);
+        } catch (RuntimeException | Error e) {
+            abandon("还原源码", e);
+        }
     }
 
     private static void finish(List<Op> batch) {
@@ -355,7 +413,7 @@ public final class QuestEditQueue {
             more = !PENDING.isEmpty();
         }
         flushing = false;
-        save();
+        saveLater();
         if (external) WORKER.execute(QuestEditQueue::flush);
         else if (more) schedule(IDLE_MILLIS);
     }
@@ -374,15 +432,17 @@ public final class QuestEditQueue {
         var paths = new ObjectArrayList<Path>(contents.size());
         for (var it = contents.object2ObjectEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
-            QuestSource.forget(entry.getKey());
+            paths.add(entry.getKey());
+            QuestHot.writing(entry.getKey(), entry.getValue());
             try {
                 Files.writeString(entry.getKey(), entry.getValue(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 GTOCore.LOGGER.warn("[任务热修改] 写入 {} 失败", entry.getKey(), e);
+                QuestSource.refresh(QuestHotConfig.sourceRoot(), paths);
                 return null;
             }
-            paths.add(entry.getKey());
         }
+        QuestSource.refresh(QuestHotConfig.sourceRoot(), paths);
         return paths;
     }
 }

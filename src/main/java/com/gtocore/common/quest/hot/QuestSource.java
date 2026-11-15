@@ -32,12 +32,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
 import javax.tools.JavaCompiler;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 /**
@@ -47,31 +50,47 @@ import javax.tools.ToolProvider;
 public final class QuestSource {
 
     static final String CHAPTER_DIR = "com/gtocore/data/quest/chapter";
+    static final String TABLES_CLASS = "QuestRewardTables";
 
     @Nullable
     private static JavaCompiler compiler;
     @Nullable
     private static StandardJavaFileManager fileManager;
     private static final O2OOpenCacheHashMap<Path, FileModel> CACHE = new O2OOpenCacheHashMap<>();
+    @Nullable
+    private static volatile QuestSource current;
 
     private final Path sourceRoot;
     final ObjectArrayList<FileModel> files = new ObjectArrayList<>();
     final O2OOpenCacheHashMap<String, FileModel> byClass = new O2OOpenCacheHashMap<>();
     final O2OOpenCacheHashMap<String, FileModel> byChapter = new O2OOpenCacheHashMap<>();
+    final O2OOpenCacheHashMap<String, TableDecl> byTable = new O2OOpenCacheHashMap<>();
     final ObjectArrayList<String> parseErrors = new ObjectArrayList<>();
 
     private QuestSource(Path sourceRoot) {
         this.sourceRoot = sourceRoot;
     }
 
-    static synchronized QuestSource load(Path sourceRoot) {
+    static QuestSource load(Path sourceRoot) {
+        var snapshot = current;
+        return snapshot != null && snapshot.sourceRoot.equals(sourceRoot) ? snapshot : refresh(sourceRoot, null);
+    }
+
+    static synchronized QuestSource refresh(Path sourceRoot, @Nullable Collection<Path> changed) {
+        if (changed != null) {
+            for (var path : changed) CACHE.remove(path);
+        }
         var source = new QuestSource(sourceRoot);
         var dir = sourceRoot.resolve(CHAPTER_DIR);
         List<Path> paths;
         try (Stream<Path> list = Files.list(dir)) {
-            paths = list.filter(p -> p.toString().endsWith(".java")).sorted().toList();
+            var found = new ObjectArrayList<Path>(list.filter(p -> p.toString().endsWith(".java")).sorted().toList());
+            var tables = dir.resolveSibling(TABLES_CLASS + ".java");
+            if (Files.isRegularFile(tables)) found.add(tables);
+            paths = found;
         } catch (IOException e) {
             source.parseErrors.add("无法列出章节源码目录 " + dir + "：" + e);
+            if (current == null) current = source;
             return source;
         }
         var stale = new ObjectArrayList<Path>();
@@ -114,6 +133,7 @@ public final class QuestSource {
             }
         }
         source.files.sort((a, b) -> a.path.compareTo(b.path));
+        current = source;
         return source;
     }
 
@@ -134,6 +154,8 @@ public final class QuestSource {
         byClass.put(model.className, model);
         if (old.chapterId != null) byChapter.remove(old.chapterId);
         if (model.chapterId != null) byChapter.put(model.chapterId, model);
+        for (var table : old.tables) byTable.remove(table.tableId);
+        for (var table : model.tables) byTable.put(table.tableId, table);
         return null;
     }
 
@@ -142,6 +164,9 @@ public final class QuestSource {
         if (identity.length() < 3 || identity.charAt(1) != ':') return null;
         var body = identity.substring(2);
         switch (identity.charAt(0)) {
+            case 't' -> {
+                return byTable.get(body);
+            }
             case 'q' -> {
                 int slash = body.indexOf('/');
                 if (slash < 0) return null;
@@ -190,21 +215,23 @@ public final class QuestSource {
         return null;
     }
 
-    static synchronized void forget(Path path) {
-        CACHE.remove(path);
-    }
-
     private void add(FileModel model) {
         files.add(model);
         byClass.put(model.className, model);
         if (model.chapterId != null) byChapter.put(model.chapterId, model);
+        for (var table : model.tables) byTable.put(table.tableId, table);
+    }
+
+    @Nullable
+    FileModel tableFile() {
+        return byClass.get(TABLES_CLASS);
     }
 
     static boolean compilerAvailable() {
         return ToolProvider.getSystemJavaCompiler() != null;
     }
 
-    private static ObjectArrayList<FileModel> parse(List<Path> paths, List<String> contents, ObjectArrayList<String> errors) {
+    private static synchronized ObjectArrayList<FileModel> parse(List<Path> paths, List<String> contents, ObjectArrayList<String> errors) {
         var out = new ObjectArrayList<FileModel>(paths.size());
         if (compiler == null) {
             compiler = ToolProvider.getSystemJavaCompiler();
@@ -212,7 +239,11 @@ public final class QuestSource {
                 errors.add("当前运行环境没有 Java 编译器（需要用 JDK 启动），无法解析任务源码");
                 return out;
             }
-            fileManager = compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8);
+            var manager = compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8);
+            try {
+                manager.setLocation(StandardLocation.CLASS_PATH, Collections.emptyList());
+            } catch (IOException ignored) {}
+            fileManager = manager;
         }
         var units = new ObjectArrayList<Source>(paths.size());
         var byUri = new O2OOpenCacheHashMap<URI, Source>(paths.size());
@@ -429,6 +460,7 @@ public final class QuestSource {
         final O2OOpenCacheHashMap<String, QuestDecl> questsById = new O2OOpenCacheHashMap<>();
         final ObjectArrayList<QuestDecl> quests = new ObjectArrayList<>();
         final ObjectArrayList<LinkDecl> links = new ObjectArrayList<>();
+        final ObjectArrayList<TableDecl> tables = new ObjectArrayList<>();
         @Nullable
         MethodInvocationTree mainLine;
         final ObjectArrayList<String> imports = new ObjectArrayList<>();
@@ -480,6 +512,16 @@ public final class QuestSource {
                 chapterField = field;
                 chapter = new ChapterDecl(this, field, var);
                 fields.put(field, chapter);
+                return;
+            }
+            if (method.equals("of") && select.getExpression() instanceof IdentifierTree owner && owner.getName().contentEquals("RewardTable") && args.size() == 2 &&
+                    args.get(0) instanceof LiteralTree id && id.getValue() instanceof String tableId && args.get(1) instanceof LambdaExpressionTree lambda &&
+                    lambda.getBody() instanceof ExpressionTree body) {
+                var decl = new TableDecl(this, field, var, tableId, lambda, body);
+                if (decl.chainValid) {
+                    fields.put(field, decl);
+                    tables.add(decl);
+                }
                 return;
             }
             if (method.equals("quest") && select.getExpression() instanceof IdentifierTree owner && chapterField != null && owner.getName().contentEquals(chapterField)) {
@@ -555,7 +597,7 @@ public final class QuestSource {
         }
     }
 
-    abstract static sealed class Decl permits ChapterDecl, QuestDecl, LinkDecl {
+    abstract static sealed class Decl permits ChapterDecl, ChainDecl, LinkDecl {
 
         final FileModel file;
         @Nullable
@@ -581,18 +623,16 @@ public final class QuestSource {
         }
     }
 
-    static final class QuestDecl extends Decl {
+    abstract static sealed class ChainDecl extends Decl permits QuestDecl, TableDecl {
 
-        final String questId;
         final LambdaExpressionTree lambda;
         final ExpressionTree body;
         final String param;
         final ObjectArrayList<MethodInvocationTree> chain = new ObjectArrayList<>();
         final boolean chainValid;
 
-        QuestDecl(FileModel file, String field, VariableTree var, String questId, LambdaExpressionTree lambda, ExpressionTree body) {
+        ChainDecl(FileModel file, String field, VariableTree var, LambdaExpressionTree lambda, ExpressionTree body) {
             super(file, field, var);
-            this.questId = questId;
             this.lambda = lambda;
             this.body = body;
             this.param = lambda.getParameters().isEmpty() ? "" : lambda.getParameters().get(0).getName().toString();
@@ -603,6 +643,65 @@ public final class QuestSource {
             }
             java.util.Collections.reverse(chain);
             chainValid = e instanceof IdentifierTree id && id.getName().contentEquals(param) && !chain.isEmpty();
+        }
+
+        int nameStart(MethodInvocationTree call) {
+            return file.end(call.getMethodSelect()) - name(call).length();
+        }
+
+        ObjectArrayList<MethodInvocationTree> calls(String name) {
+            var out = new ObjectArrayList<MethodInvocationTree>(1);
+            for (int i = 0; i < chain.size(); i++) {
+                if (name(chain.get(i)).equals(name)) out.add(chain.get(i));
+            }
+            return out;
+        }
+
+        static String name(MethodInvocationTree call) {
+            return ((MemberSelectTree) call.getMethodSelect()).getIdentifier().toString();
+        }
+
+        int receiverEnd(MethodInvocationTree call) {
+            return file.end(((MemberSelectTree) call.getMethodSelect()).getExpression());
+        }
+
+        int chainEnd() {
+            return file.end(chain.get(chain.size() - 1));
+        }
+
+        String callIndent() {
+            for (int i = 0; i < chain.size(); i++) {
+                var call = chain.get(i);
+                int dot = file.content.lastIndexOf('.', file.end(call.getMethodSelect()) - name(call).length());
+                int lineStart = file.content.lastIndexOf('\n', dot) + 1;
+                if (file.content.substring(lineStart, dot).isBlank()) return file.content.substring(lineStart, dot);
+            }
+            return file.indentAt(file.start(var)) + "        ";
+        }
+    }
+
+    static final class TableDecl extends ChainDecl {
+
+        final String tableId;
+
+        TableDecl(FileModel file, String field, VariableTree var, String tableId, LambdaExpressionTree lambda, ExpressionTree body) {
+            super(file, field, var, lambda, body);
+            this.tableId = tableId;
+        }
+
+        @Override
+        String where() {
+            return file.name() + ":" + file.line(file.start(var)) + "（" + tableId + "）";
+        }
+    }
+
+    static final class QuestDecl extends ChainDecl {
+
+        final String questId;
+
+        QuestDecl(FileModel file, String field, VariableTree var, String questId, LambdaExpressionTree lambda, ExpressionTree body) {
+            super(file, field, var, lambda, body);
+            this.questId = questId;
         }
 
         String key() {
@@ -635,10 +734,6 @@ public final class QuestSource {
             return new DescChain(call, param, chain, valid);
         }
 
-        int nameStart(MethodInvocationTree call) {
-            return file.end(call.getMethodSelect()) - name(call).length();
-        }
-
         @Nullable
         String textProblem() {
             for (var part : new String[] { "title", "subtitle" }) {
@@ -659,36 +754,6 @@ public final class QuestSource {
                 }
             }
             return null;
-        }
-
-        ObjectArrayList<MethodInvocationTree> calls(String name) {
-            var out = new ObjectArrayList<MethodInvocationTree>(1);
-            for (int i = 0; i < chain.size(); i++) {
-                if (name(chain.get(i)).equals(name)) out.add(chain.get(i));
-            }
-            return out;
-        }
-
-        static String name(MethodInvocationTree call) {
-            return ((MemberSelectTree) call.getMethodSelect()).getIdentifier().toString();
-        }
-
-        int receiverEnd(MethodInvocationTree call) {
-            return file.end(((MemberSelectTree) call.getMethodSelect()).getExpression());
-        }
-
-        int chainEnd() {
-            return file.end(chain.get(chain.size() - 1));
-        }
-
-        String callIndent() {
-            for (int i = 0; i < chain.size(); i++) {
-                var call = chain.get(i);
-                int dot = file.content.lastIndexOf('.', file.end(call.getMethodSelect()) - name(call).length());
-                int lineStart = file.content.lastIndexOf('\n', dot) + 1;
-                if (file.content.substring(lineStart, dot).isBlank()) return file.content.substring(lineStart, dot);
-            }
-            return file.indentAt(file.start(var)) + "        ";
         }
     }
 

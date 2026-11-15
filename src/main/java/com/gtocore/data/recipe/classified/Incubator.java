@@ -10,6 +10,7 @@ import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -132,7 +133,7 @@ final class Incubator {
                 .save();
 
         INCUBATOR_RECIPES.recipeBuilder("stem_cells")
-                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), 2000, 100)
+                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), Chance.of(2000).dropPerOverclock(100))
                 .inputItems(GTItems.STEM_CELLS, 32)
                 .inputFluids(GTMaterials.SterileGrowthMedium, 400)
                 .outputItems(GTItems.STEM_CELLS, 64)
@@ -278,7 +279,7 @@ final class Incubator {
                 .save();
 
         INCUBATOR_RECIPES.recipeBuilder("dragon_cells")
-                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), 6000, 100)
+                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), Chance.of(6000).dropPerOverclock(100))
                 .inputItems(GTOItems.DRAGON_CELLS, 32)
                 .inputFluids(GTOMaterials.BiohmediumSterilized, 4000)
                 .outputItems(GTOItems.DRAGON_CELLS, 64)
@@ -520,7 +521,7 @@ final class Incubator {
                 .save();
 
         INCUBATOR_RECIPES.recipeBuilder("biological_cells")
-                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), 4000, 100)
+                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), Chance.of(4000).dropPerOverclock(100))
                 .inputItems(GTOItems.BIOLOGICAL_CELLS, 32)
                 .inputFluids(GTOMaterials.BiohmediumSterilized, 400)
                 .outputItems(GTOItems.BIOLOGICAL_CELLS, 64)
@@ -530,7 +531,7 @@ final class Incubator {
                 .save();
 
         INCUBATOR_RECIPES.recipeBuilder("glacio_spirit")
-                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), 4, 1000, 100)
+                .chancedInput(GTOItems.GLACIO_SPIRIT.asItem(), 4, Chance.of(1000).dropPerOverclock(100))
                 .inputItems(TagPrefix.dust, GTOMaterials.Celestine, 16)
                 .inputItems(GTOItems.ESSENCE)
                 .inputFluids(new FluidStack(ModFluids.CRYO_FUEL.get(), 100))
@@ -730,7 +731,7 @@ final class Incubator {
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)
                 .save();
         INCUBATOR_RECIPES.builder("spider_eye")
-                .chancedInput(new ItemStack(Items.SPIDER_EYE.asItem()), 4000, 100)
+                .chancedInput(new ItemStack(Items.SPIDER_EYE.asItem()), Chance.of(4000).dropPerOverclock(100))
                 .inputItems(GTItems.STEM_CELLS)
                 .inputItems("botania:mutated_seeds", 4)
                 .outputItems(Items.SPIDER_EYE.asItem(), 64)
@@ -741,10 +742,10 @@ final class Incubator {
                 .duration(400)
                 .save();
         INCUBATOR_RECIPES.builder("dopamine")
-                .chancedInput(GTOItems.CEREBRUM.asItem(), 32, 2000, 100)
+                .chancedInput(GTOItems.CEREBRUM.asItem(), 32, Chance.of(2000).dropPerOverclock(100))
                 .inputItems(TagPrefix.dustTiny, GTMaterials.RockSalt)
                 .inputItems(TagPrefix.dustTiny, GTMaterials.Salt)
-                .chancedInput(GTOMaterials.Perfluorobenzene.getFluid(1000), 1000, 0)
+                .chancedInput(GTOMaterials.Perfluorobenzene.getFluid(1000), Chance.of(1000))
                 .inputFluids(GTOMaterials.BiohmediumSterilized, 400)
                 .outputFluids(GTOMaterials.Dopamine, 1000)
                 .EUt(7200)
@@ -766,7 +767,7 @@ final class Incubator {
                 .inputItems(GTItems.STEM_CELLS, 16)
                 .inputItems(GTOItems.BIOLOGICAL_CELLS, 4)
                 .inputItems(GTOOrganItems.tierOrgan(OrganType.HEART, OrganTier.SPROUT), 1024)
-                .chancedOutput(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.asItem(), 300, 300)
+                .chancedOutput(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER.asItem(), Chance.of(300).risePerOverclock(300))
                 .inputFluids(GTMaterials.Mutagen, 1000)
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)
                 .EUt(32768)
@@ -777,7 +778,7 @@ final class Incubator {
                 .inputItems(GTOItems.BIO_CARDIOMYOCYTE_CLUSTER)
                 .inputItems(GTOItems.SPACE_ESSENCE, 512)
                 .inputItems(GTOItems.DRACONIUM_DIRT, 16)
-                .chancedOutput(GTOItems.MUTANT_CARDIOMYOCYTE_CLUSTER.asItem(), 2500, 500)
+                .chancedOutput(GTOItems.MUTANT_CARDIOMYOCYTE_CLUSTER.asItem(), Chance.of(2500).risePerOverclock(500))
                 .inputFluids(GTMaterials.Mutagen, 10000)
                 .inputFluids(GTOMaterials.RapidlyReplicatingAnimalCells, 10000)
                 .addData(GTORecipeDataKeys.FILTER_CASING, 2)
@@ -789,7 +790,7 @@ final class Incubator {
                 .inputItems(GTOItems.MUTANT_CARDIOMYOCYTE_CLUSTER)
                 .inputItems(GTOItems.DRAGON_STEM_CELLS, 16)
                 .inputItems(GTOBlocks.MAGIC_CORE.asItem())
-                .chancedOutput(GTOItems.DRAGON_CARDIOMYOCYTE_CLUSTER.asItem(), 1500, 500)
+                .chancedOutput(GTOItems.DRAGON_CARDIOMYOCYTE_CLUSTER.asItem(), Chance.of(1500).risePerOverclock(500))
                 .EUt(32768)
                 .duration(600)
                 .save();

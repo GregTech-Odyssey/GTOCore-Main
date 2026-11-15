@@ -74,6 +74,8 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     protected BlockPos targetPos;
     @SaveToDisk
     protected Direction facing;
+    @SaveToDisk
+    protected Direction targetSide;
 
     @SaveToDisk
     @SyncToClient
@@ -113,8 +115,10 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         if (globalPos != null) {
             this.dimensionId = globalPos.dimension().location().toString();
             this.targetPos = globalPos.pos();
-            this.facing = readFacingOrFallback(itemStack.getTag().getString(WirelessTransferCoverPlaceBehavior.TAG_FACING), attachedSide);
+            this.targetSide = readFacingOrFallback(itemStack.getTag().getString(WirelessTransferCoverPlaceBehavior.TAG_FACING), attachedSide);
             getTargetLevel();
+        } else {
+            this.targetSide = attachedSide;
         }
         var targetMachine = MetaMachine.getMachine(coverHolder.holder());
         if (targetMachine instanceof SimpleTieredMachine simpleTieredMachine) {
@@ -143,7 +147,10 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     @Override
     public void onLoad() {
         super.onLoad();
-        getSafeFacing();
+        if (targetSide == null) {
+            targetSide = sanitizeFacing(facing, attachedSide).getOpposite();
+            facing = null;
+        }
         getTargetLevel();
         subscription = coverHolder.subscribeServerTick(subscription, this::update, 20);
     }
@@ -184,7 +191,7 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getTargetItemTransfer() {
-        return target.items(getSafeFacing().getOpposite(), StorageAccess.INSERT);
+        return target.items(getTargetSide(), StorageAccess.INSERT);
     }
 
     protected @Nullable IKeyHandler<AEFluidKey> getOwnFluidTransfer() {
@@ -192,12 +199,11 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
     }
 
     protected @Nullable IKeyHandler<AEFluidKey> getTargetFluidTransfer() {
-        return target.fluids(getSafeFacing().getOpposite(), StorageAccess.INSERT);
+        return target.fluids(getTargetSide(), StorageAccess.INSERT);
     }
 
-    private Direction getSafeFacing() {
-        this.facing = sanitizeFacing(this.facing, attachedSide);
-        return this.facing;
+    private @Nullable Direction getTargetSide() {
+        return targetSide;
     }
 
     static Direction readFacingOrFallback(@Nullable String facingName, @Nullable Direction fallback) {

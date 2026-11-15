@@ -13,7 +13,11 @@ import com.gtolib.api.quest.QuestLine;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestLive;
 import com.gtolib.api.quest.QuestScreenLang;
+import com.gtolib.api.quest.reward.CommandReward;
 import com.gtolib.api.quest.reward.ItemReward;
+import com.gtolib.api.quest.reward.Reward;
+import com.gtolib.api.quest.reward.RewardTable;
+import com.gtolib.api.quest.reward.TableReward;
 import com.gtolib.api.quest.task.ItemTask;
 import com.gtolib.api.quest.task.Task;
 
@@ -30,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -89,7 +94,12 @@ public final class QuestHot {
     private static LiveListener liveListener;
 
     @Nullable
+    private static Runnable warmer;
+
+    @Nullable
     private static Reloader reloader;
+    @Nullable
+    private static BiConsumer<Path, String> writeListener;
     @Nullable
     private static Consumer<RuntimeException> startupFailure;
 
@@ -105,8 +115,26 @@ public final class QuestHot {
         else target.reload(paths, blocking, rebuild, done);
     }
 
+    public static void setWriteListener(BiConsumer<Path, String> listener) {
+        writeListener = listener;
+    }
+
+    static void writing(Path path, String content) {
+        var target = writeListener;
+        if (target != null) target.accept(path, content);
+    }
+
     public static void setLiveListener(LiveListener listener) {
         liveListener = listener;
+    }
+
+    public static void setWarmer(Runnable warmer) {
+        QuestHot.warmer = warmer;
+    }
+
+    public static void warm() {
+        var target = warmer;
+        if (target != null) target.run();
     }
 
     private static boolean edited(boolean applied, boolean logic) {
@@ -177,7 +205,26 @@ public final class QuestHot {
         if (!(object instanceof QuestLink link)) return null;
         var src = source();
         var decl = src.declOf(link);
-        return decl == null ? null : src.identityOf(decl);
+        return decl == null ? movedLinkIdentity(src, link) : src.identityOf(decl);
+    }
+
+    @Nullable
+    private static String movedLinkIdentity(QuestSource src, QuestLink link) {
+        var ops = QuestEditQueue.pending();
+        for (int i = ops.size() - 1; i >= 0; i--) {
+            var op = ops.get(i);
+            if (!op.type().equals(QuestEdits.MOVE) || op.x() != link.x() || op.y() != link.y()) continue;
+            if (src.find(op.target()) instanceof LinkDecl decl && link.chapter().id().equals(decl.file.chapterId) &&
+                    src.resolve(decl.file, decl.targetRef) instanceof QuestSource.QuestDecl target && target.key().equals(link.target().key())) {
+                return op.target();
+            }
+        }
+        return null;
+    }
+
+    private static String name(Quest quest) {
+        var title = quest.title().getString();
+        return title.isEmpty() ? quest.id() : title;
     }
 
     @Nullable
@@ -200,7 +247,7 @@ public final class QuestHot {
     @Nullable
     private static Result guard() {
         if (!QuestHotConfig.enabled()) return Result.fail("热修改未启用");
-        if (!editable) return Result.fail("章节源码当前不能被热修改系统解析，先修好：\n" + problem);
+        if (!editable) return Result.fail("章节源码无法解析，请先修复：\n" + problem);
         return null;
     }
 
@@ -223,7 +270,7 @@ public final class QuestHot {
             after.add(new double[] { x, y });
             before.add(old);
         }
-        return QuestEditQueue.submit("移动 " + placements.size() + " 个节点", forward, inverse, () -> relocate(targets, after), () -> relocate(targets, before));
+        return QuestEditQueue.submit("移动 " + placements.size() + " 个任务", forward, inverse, () -> relocate(targets, after), () -> relocate(targets, before));
     }
 
     private static boolean relocate(List<QuestDependency> targets, List<double[]> positions) {
@@ -243,7 +290,7 @@ public final class QuestHot {
         if (blocked != null) return blocked;
         if (hasFlag(quest, flag) == on) return Result.ok("");
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit((on ? "打开 " : "关闭 ") + flag.method() + " " + quest.id(), List.of(Op.flag(id, flag.method(), on)), List.of(Op.flag(id, flag.method(), !on)),
+        return QuestEditQueue.submit((on ? "开启：" : "关闭：") + flag.label().cn() + " · " + name(quest), List.of(Op.flag(id, flag.method(), on)), List.of(Op.flag(id, flag.method(), !on)),
                 () -> edited(QuestLive.setFlag(quest, flag.method(), on), true), () -> edited(QuestLive.setFlag(quest, flag.method(), !on), true));
     }
 
@@ -253,18 +300,16 @@ public final class QuestHot {
         if (decl == null) return out;
         var sites = QuestEdits.amountSites(decl);
         var tasks = quest.tasks();
-        int taskIndex = 0;
         var id = "q:" + quest.key();
         var ops = QuestEditQueue.pending();
         for (int i = 0; i < sites.size(); i++) {
             var site = sites.get(i);
             String label;
             if (site.task()) {
-                var task = taskIndex < tasks.size() ? tasks.get(taskIndex) : null;
-                taskIndex++;
+                var task = site.liveIndex() < tasks.size() ? tasks.get(site.liveIndex()) : null;
                 label = task instanceof ItemTask it && it.item() != null ? "目标：" + it.item().getDescription().getString() : "目标：" + clip(decl.file.text(site.subject()));
             } else {
-                label = "奖励：" + rewardName(quest, decl, site);
+                label = "奖励：" + clip(decl.file.text(site.subject()));
             }
             long value = site.value();
             for (int k = ops.size() - 1; k >= 0; k--) {
@@ -279,22 +324,6 @@ public final class QuestHot {
         return out;
     }
 
-    private static String rewardName(Quest quest, QuestSource.QuestDecl decl, QuestEdits.AmountSite site) {
-        var file = decl.file;
-        var expression = file.content.substring(file.start(site.subject()), file.start(site.literal())).strip();
-        if (expression.endsWith(",")) expression = expression.substring(0, expression.length() - 1).strip();
-        var source = source();
-        var rewards = quest.rewards();
-        for (int i = 0; i < rewards.size(); i++) {
-            if (!(rewards.get(i) instanceof ItemReward reward)) continue;
-            var stack = reward.template();
-            if (stack.isEmpty()) continue;
-            var syntax = QuestItemSyntax.of(source, stack.getItem());
-            if (syntax != null && syntax.args().equals(expression)) return stack.getHoverName().getString();
-        }
-        return clip(expression);
-    }
-
     public static Result setAmount(Quest quest, int index, long value) {
         var blocked = guard();
         if (blocked != null) return blocked;
@@ -305,7 +334,7 @@ public final class QuestHot {
         long old = amount.value();
         if (old == value) return Result.ok("");
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit("改数量 " + quest.id(), List.of(Op.amount(id, index, value)), List.of(Op.amount(id, index, old)),
+        return QuestEditQueue.submit("修改数量：" + name(quest), List.of(Op.amount(id, index, value)), List.of(Op.amount(id, index, old)),
                 () -> edited(liveAmount(quest, amount, old, value), true), () -> edited(liveAmount(quest, amount, value, old), true));
     }
 
@@ -373,26 +402,44 @@ public final class QuestHot {
         return false;
     }
 
-    public static Result toggleDependency(Quest dependent, QuestDependency prerequisite) {
+    public record DependencyCheck(boolean present, String error) {
+
+        public boolean allowed() {
+            return error.isEmpty();
+        }
+    }
+
+    public static DependencyCheck checkDependency(Quest dependent, QuestDependency prerequisite) {
         var blocked = guard();
-        if (blocked != null) return blocked;
+        if (blocked != null) return new DependencyCheck(false, blocked.message());
         var prereqId = identity(prerequisite);
-        if (prereqId == null) return Result.fail("找不到依赖目标的源码");
-        if (prereqId.startsWith("d:")) return Result.fail("章节装饰里的复制节点没有字段，不能当依赖；请改用原任务");
+        if (prereqId == null) return new DependencyCheck(false, "找不到依赖目标的源码");
+        if (prereqId.startsWith("d:")) return new DependencyCheck(false, "装饰中的复制节点不可作依赖，请改用原任务");
         var prerequisiteQuest = prerequisite instanceof QuestLink link ? link.target() : (Quest) prerequisite;
-        var id = "q:" + dependent.key();
         boolean present = dependsOnDisplayed(dependent, prerequisite);
         if (!present) {
-            if (prerequisiteQuest == dependent) return Result.fail("任务不能依赖自己");
-            if (reaches(prerequisiteQuest, dependent, new ReferenceOpenHashSet<>())) return Result.fail("会形成依赖环：" + prerequisiteQuest.key() + " 已经依赖 " + dependent.key());
+            if (prerequisiteQuest == dependent) return new DependencyCheck(false, "任务不能依赖自己");
+            if (reaches(prerequisiteQuest, dependent, new ReferenceOpenHashSet<>())) {
+                return new DependencyCheck(false, "会形成依赖环：" + name(prerequisiteQuest) + " 已依赖 " + name(dependent));
+            }
         }
         var line = dependent.chapter().mainLine();
         int di = line.indexOf(dependent), pi = line.indexOf(prerequisiteQuest);
         if (di >= 0 && pi >= 0) {
-            if (!present && pi != di - 1) return Result.fail("主线只能是一条单线：主线任务只能依赖紧挨着的上一个主线任务");
-            if (present && pi == di - 1) return Result.fail("这是主线上相邻任务之间的依赖，不能单独去掉；要调整请在编辑窗口里用“移出主线”");
+            if (!present && pi != di - 1) return new DependencyCheck(false, "主线任务只能依赖上一个主线任务");
+            if (present && pi == di - 1) return new DependencyCheck(true, "主线依赖不可单独移除，请用“移出主线”");
         }
-        var label = (present ? "去掉依赖 " : "添加依赖 ") + dependent.id() + " ← " + prerequisiteQuest.id();
+        return new DependencyCheck(present, "");
+    }
+
+    public static Result toggleDependency(Quest dependent, QuestDependency prerequisite) {
+        var check = checkDependency(dependent, prerequisite);
+        if (!check.allowed()) return Result.fail(check.error());
+        var prereqId = identity(prerequisite);
+        var prerequisiteQuest = prerequisite instanceof QuestLink link ? link.target() : (Quest) prerequisite;
+        var id = "q:" + dependent.key();
+        boolean present = check.present();
+        var label = (present ? "移除依赖：" : "添加依赖：") + name(prerequisiteQuest) + " → " + name(dependent);
         var before = QuestLive.dependencies(dependent);
         var after = new ObjectArrayList<QuestDependency>(before.size() + 1);
         for (var dep : before) {
@@ -430,12 +477,12 @@ public final class QuestHot {
         var file = src.fileOf(chapter);
         if (file == null || file.chapterField == null) return Result.fail("找不到章节 " + chapter.id() + " 的源码");
         var syntax = QuestItemSyntax.of(src, item);
-        if (syntax == null) return Result.fail("找不到 " + BuiltInRegistries.ITEM.getKey(item) + " 的 Java 写法，请先在源码里手写这个任务");
+        if (syntax == null) return Result.fail(BuiltInRegistries.ITEM.getKey(item) + " 无可用 Java 写法，请在源码中手写");
         var base = BuiltInRegistries.ITEM.getKey(item).getPath().replaceAll("[^a-z0-9_]", "_");
         var id = base;
         for (int n = 2; taken(file, chapter.id(), id); n++) id = base + "_" + n;
         var op = Op.create(chapter.id(), id, QuestEdits.round(x), QuestEdits.round(y), syntax.args(), syntax.imports());
-        return QuestEditQueue.submit("新建任务 " + chapter.id() + "/" + id, List.of(op), List.of(Op.delete(op.target())));
+        return QuestEditQueue.submit("新建任务：" + chapter.id() + "/" + id, List.of(op), List.of(Op.delete(op.target())));
     }
 
     private static boolean taken(QuestSource.FileModel file, String chapter, String id) {
@@ -460,7 +507,7 @@ public final class QuestHot {
             field = targetDecl.field + "_COPY_" + n;
         }
         var op = Op.copy(chapter.id(), field, "q:" + target.key(), QuestEdits.round(x), QuestEdits.round(y));
-        return QuestEditQueue.submit("复制 " + target.key(), List.of(op), List.of(Op.delete(op.target())));
+        return QuestEditQueue.submit("放置复制节点：" + name(target), List.of(op), List.of(Op.delete(op.target())));
     }
 
     public static Result delete(List<? extends QuestDependency> objects) {
@@ -483,7 +530,7 @@ public final class QuestHot {
             if (decl.field == null) continue;
             for (var ref : src.referencesTo(decl)) {
                 if (!inside(deleting, ref.file(), ref.pos()) && !removedByPending(src, ref)) {
-                    return Result.fail(decl.field + " 还被 " + ref.file().name() + ":" + ref.file().line(ref.pos()) + " 引用，先去掉这些依赖或复制再删");
+                    return Result.fail(decl.field + " 被 " + ref.file().name() + ":" + ref.file().line(ref.pos()) + " 引用，请先移除该依赖或复制节点");
                 }
             }
         }
@@ -565,10 +612,10 @@ public final class QuestHot {
         for (var entry : entries) {
             if (!entry.isLine()) continue;
             var text = entry.text() == null ? "" : entry.text();
-            if (text.indexOf('&') >= 0 || text.indexOf('§') >= 0 || text.indexOf('\n') >= 0) return Result.fail("文字里不能有 & § 或换行");
+            if (text.indexOf('&') >= 0 || text.indexOf('§') >= 0 || text.indexOf('\n') >= 0) return Result.fail("文字中不可含 &、§ 或换行");
             if (!part.equals("desc")) {
                 for (var marker : MARKERS) {
-                    if (text.contains("[" + marker + "]")) return Result.fail("标题和副标题不能插入物品或流体，只能用文字样式");
+                    if (text.contains("[" + marker + "]")) return Result.fail("标题与副标题不可插入物品或流体");
                 }
             }
         }
@@ -581,7 +628,7 @@ public final class QuestHot {
             }
         }
         var id = "q:" + quest.key();
-        var label = (part.equals("title") ? "改标题 " : part.equals("subtitle") ? "改副标题 " : "改描述 ") + quest.id();
+        var label = (part.equals("title") ? "修改标题：" : part.equals("subtitle") ? "修改副标题：" : "修改描述：") + name(quest);
         if (liveParts == null) return QuestEditQueue.submit(label, List.of(Op.text(id, part, entries, imports)), List.of(Op.text(id, part, old, List.of())));
         var oldParts = liveText(quest, part);
         return QuestEditQueue.submit(label, List.of(Op.text(id, part, entries, imports)), List.of(Op.text(id, part, old, List.of())),
@@ -693,12 +740,12 @@ public final class QuestHot {
         if (blocked != null) return blocked;
         var chapter = quest.chapter();
         var line = chapter.mainLine();
-        if (line.contains(quest)) return Result.fail("这个任务已经在主线上");
+        if (line.contains(quest)) return Result.fail("该任务已在主线上");
         int at = line.indexOf(after);
-        if (at < 0) return Result.fail("要点选本章主线上的任务");
+        if (at < 0) return Result.fail("须选择本章主线上的任务");
         var src = source();
         var file = src.fileOf(chapter);
-        if (file == null || file.mainLine == null) return Result.fail("本章源码里没有 .mainLine(…)，请先在源码里定好主线起点");
+        if (file == null || file.mainLine == null) return Result.fail("本章源码缺少 .mainLine(…)，请先设定主线");
         var newLine = new ObjectArrayList<Quest>(line);
         newLine.add(at + 1, quest);
         var text = mainLineText(src, file, newLine);
@@ -715,7 +762,7 @@ public final class QuestHot {
             depChange(forward, inverse, deps, next, quest, true);
             depChange(forward, inverse, deps, next, after, false);
         }
-        return submitMainLine("设为主线 " + quest.id(), quest, chapter, newLine, true, forward, inverse, deps);
+        return submitMainLine("设为主线：" + name(quest), quest, chapter, newLine, true, forward, inverse, deps);
     }
 
     public static Result leaveMainLine(Quest quest) {
@@ -724,11 +771,11 @@ public final class QuestHot {
         var chapter = quest.chapter();
         var line = chapter.mainLine();
         int at = line.indexOf(quest);
-        if (at < 0) return Result.fail("这个任务不在主线上");
-        if (line.size() <= 1) return Result.fail("主线至少要留一个任务");
+        if (at < 0) return Result.fail("该任务不在主线上");
+        if (line.size() <= 1) return Result.fail("主线至少保留一个任务");
         var src = source();
         var file = src.fileOf(chapter);
-        if (file == null || file.mainLine == null) return Result.fail("本章源码里没有 .mainLine(…)");
+        if (file == null || file.mainLine == null) return Result.fail("本章源码缺少 .mainLine(…)");
         var newLine = new ObjectArrayList<Quest>(line);
         newLine.remove(at);
         var text = mainLineText(src, file, newLine);
@@ -745,19 +792,19 @@ public final class QuestHot {
             depChange(forward, inverse, deps, next, quest, false);
             if (previous != null) depChange(forward, inverse, deps, next, previous, true);
         }
-        return submitMainLine("移出主线 " + quest.id(), quest, chapter, newLine, false, forward, inverse, deps);
+        return submitMainLine("移出主线：" + name(quest), quest, chapter, newLine, false, forward, inverse, deps);
     }
 
-    public record TaskRow(int index, ItemStack icon, Component name, long count, int amountIndex, boolean item, boolean consume, boolean optional) {}
+    public record TaskRow(int index, @Nullable Task live, Component name, long count, int amountIndex, boolean item, boolean consume, boolean optional) {}
 
-    public record RewardRow(int site, int amountIndex, ItemStack icon, Component name, long count, boolean scaled) {}
+    public record RewardRow(int index, int amountIndex, @Nullable Reward live, Component name, long count, boolean scaled, String group) {}
 
     public static boolean structuralPending(Quest quest) {
         var id = "q:" + quest.key();
         for (var op : QuestEditQueue.pending()) {
             if (!op.target().equals(id)) continue;
             switch (op.type()) {
-                case QuestEdits.TASK_ADD, QuestEdits.TASK_REMOVE, QuestEdits.TASK_ITEM, QuestEdits.REWARD_ADD, QuestEdits.REWARD_REMOVE -> {
+                case QuestEdits.TASK_ADD, QuestEdits.TASK_REMOVE, QuestEdits.TASK_ITEM, QuestEdits.REWARD_ADD, QuestEdits.REWARD_REMOVE, QuestEdits.REWARD_ARG_ADD -> {
                     return true;
                 }
                 default -> {}
@@ -781,11 +828,12 @@ public final class QuestHot {
                 if (amounts.get(k).task() && amounts.get(k).liveIndex() == i) amountIndex = k;
             }
             long count = amountIndex >= 0 ? amounts.get(amountIndex).value() : task instanceof ItemTask it ? it.count() : 1;
-            var icon = task instanceof ItemTask it && it.item() != null && it.item() != net.minecraft.world.item.Items.AIR ? new ItemStack(it.item()) : ItemStack.EMPTY;
+            var icon = task instanceof ItemTask it && !it.isTag() && !it.isAnyOf() && it.item() != null && it.item() != net.minecraft.world.item.Items.AIR ? new ItemStack(it.item()) :
+                    ItemStack.EMPTY;
             Component name = !icon.isEmpty() ? icon.getHoverName() : task == null ? Component.literal(clip(decl.file.text(args.get(i).arg()))) : task.title();
             boolean consume = option(id, i, "consume", QuestEdits.optionCall(args.get(i).arg(), "consume") != null);
             boolean optional = option(id, i, "optional", QuestEdits.optionCall(args.get(i).arg(), "optional") != null);
-            out.add(new TaskRow(i, icon, name, count, amountIndex, QuestItemSyntax.taskRoot(args.get(i).arg()) != null, consume, optional));
+            out.add(new TaskRow(i, task, name, count, amountIndex, QuestItemSyntax.taskRoot(args.get(i).arg()) != null, consume, optional));
         }
         return out;
     }
@@ -803,40 +851,40 @@ public final class QuestHot {
         var out = new ObjectArrayList<RewardRow>();
         var decl = source().declOf(quest);
         if (decl == null) return out;
+        var entries = QuestEdits.rewardEntries(decl);
         var amounts = amounts(quest);
         var live = quest.rewards();
-        int site = 0;
-        for (int k = 0; k < amounts.size(); k++) {
-            var amount = amounts.get(k);
-            if (amount.task()) continue;
-            var reward = amount.liveIndex() >= 0 && amount.liveIndex() + (amount.scaled() ? 2 : 0) < live.size() ? live.get(amount.liveIndex() + (amount.scaled() ? 2 : 0)) : null;
-            var icon = reward instanceof ItemReward item ? item.template() : ItemStack.EMPTY;
-            Component name = icon.isEmpty() ? Component.literal(amount.label()) : icon.getHoverName();
-            out.add(new RewardRow(site++, k, icon, name, amount.value(), amount.scaled()));
+        for (int i = 0; i < entries.size(); i++) {
+            var entry = entries.get(i);
+            boolean scaled = entry.argIndex() < 0;
+            int at = entry.liveIndex() + (scaled ? 2 : 0);
+            var reward = at < live.size() ? live.get(at) : null;
+            int amountIndex = -1;
+            for (int k = 0; k < amounts.size(); k++) {
+                if (!amounts.get(k).task() && amounts.get(k).liveIndex() == entry.liveIndex()) amountIndex = k;
+            }
+            Component name = reward instanceof ItemReward item && !item.template().isEmpty() ? item.template().getHoverName() :
+                    reward instanceof CommandReward command ? Component.empty().append(reward.title()).append("：" + command.command()) :
+                            reward instanceof TableReward table ? Component.empty().append(QuestKinds.tableKind(table).label().get()).append("：").append(reward.title()) :
+                                    reward != null ? reward.title() : Component.literal(clip(decl.file.text(entry.expression())));
+            out.add(new RewardRow(i, amountIndex, reward, name, amountIndex < 0 ? 0 : amounts.get(amountIndex).value(), scaled, entry.group()));
         }
         return out;
     }
 
-    @Nullable
-    private static String taskArgsText(Item item, long count, List<String> imports) {
-        var syntax = QuestItemSyntax.of(source(), item);
-        if (syntax == null) return null;
-        imports.addAll(syntax.imports());
-        return syntax.args() + (count > 1 ? ", " + count : "");
-    }
-
-    public static Result addTask(Quest quest, Item item, long count) {
+    public static Result addTask(Quest quest, QuestKinds.TaskKind kind, @Nullable Object value) {
         var blocked = guard();
         if (blocked != null) return blocked;
-        var decl = source().declOf(quest);
+        var src = source();
+        var decl = src.declOf(quest);
         if (decl == null) return Result.fail("找不到任务的源码声明");
-        var imports = new ObjectArrayList<String>();
-        var args = taskArgsText(item, count, imports);
-        if (args == null) return Result.fail("找不到 " + BuiltInRegistries.ITEM.getKey(item) + " 的 Java 写法");
+        var expr = kind.build(src, value);
+        if (expr.text() == null) return Result.fail(expr.error());
+        var imports = new ObjectArrayList<String>(expr.imports());
         imports.add("com.gtolib.api.quest.task.Task");
         int index = QuestEdits.taskArgs(decl).size();
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit("添加目标 " + quest.id(), List.of(Op.taskAdd(id, index, "Task.item(" + args + ")", imports)), List.of(Op.taskRemove(id, index)));
+        return QuestEditQueue.submit("添加目标：" + name(quest), List.of(Op.taskAdd(id, index, expr.text(), imports)), List.of(Op.taskRemove(id, index)));
     }
 
     public static Result removeTask(Quest quest, int index) {
@@ -847,7 +895,7 @@ public final class QuestHot {
         var args = QuestEdits.taskArgs(decl);
         if (index < 0 || index >= args.size()) return Result.fail("目标位置已变化，请重新打开");
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit("删除目标 " + quest.id(), List.of(Op.taskRemove(id, index)), List.of(Op.taskAdd(id, index, decl.file.text(args.get(index).arg()), List.of())));
+        return QuestEditQueue.submit("移除目标：" + name(quest), List.of(Op.taskRemove(id, index)), List.of(Op.taskAdd(id, index, decl.file.text(args.get(index).arg()), List.of())));
     }
 
     public static Result replaceTaskItem(Quest quest, int index, Item item) {
@@ -859,47 +907,194 @@ public final class QuestHot {
         if (index < 0 || index >= args.size()) return Result.fail("目标位置已变化，请重新打开");
         var root = QuestItemSyntax.taskRoot(args.get(index).arg());
         var itemArgs = root == null ? null : QuestItemSyntax.itemArgs(root);
-        if (itemArgs == null) return Result.fail("这个目标不是物品目标，请在源码里改");
+        if (itemArgs == null) return Result.fail("非物品目标，请在源码中修改");
         var syntax = QuestItemSyntax.of(source(), item);
-        if (syntax == null) return Result.fail("找不到 " + BuiltInRegistries.ITEM.getKey(item) + " 的 Java 写法");
+        if (syntax == null) return Result.fail(BuiltInRegistries.ITEM.getKey(item) + " 无可用 Java 写法，请在源码中手写");
         var file = decl.file;
         var old = file.content.substring(file.start(itemArgs.get(0)), file.end(itemArgs.get(itemArgs.size() - 1)));
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit("更换目标物品 " + quest.id(), List.of(Op.taskItem(id, index, syntax.args(), syntax.imports())), List.of(Op.taskItem(id, index, old, List.of())));
+        return QuestEditQueue.submit("更换目标物品：" + name(quest), List.of(Op.taskItem(id, index, syntax.args(), syntax.imports())), List.of(Op.taskItem(id, index, old, List.of())));
     }
 
     public static Result setTaskOption(Quest quest, int index, String method, boolean on) {
         var blocked = guard();
         if (blocked != null) return blocked;
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit((on ? "打开 " : "关闭 ") + method + " " + quest.id(), List.of(Op.taskOption(id, index, method, on)), List.of(Op.taskOption(id, index, method, !on)));
+        return QuestEditQueue.submit((on ? "开启：" : "关闭：") + (method.equals("consume") ? "消耗" : "可选") + " · " + name(quest), List.of(Op.taskOption(id, index, method, on)), List.of(Op.taskOption(id, index, method, !on)));
     }
 
-    public static Result addReward(Quest quest, Item item, long count) {
+    public static Result addReward(Quest quest, QuestKinds.RewardKind kind, @Nullable Object value) {
         var blocked = guard();
         if (blocked != null) return blocked;
-        var syntax = QuestItemSyntax.of(source(), item);
-        if (syntax == null) return Result.fail("找不到 " + BuiltInRegistries.ITEM.getKey(item) + " 的 Java 写法");
-        var imports = new ObjectArrayList<String>(syntax.imports());
+        var src = source();
+        var decl = src.declOf(quest);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        var expr = kind.build(src, value);
+        if (expr.text() == null) return Result.fail(expr.error());
+        var imports = new ObjectArrayList<String>(expr.imports());
         imports.add("com.gtolib.api.quest.reward.Reward");
         var id = "q:" + quest.key();
-        var op = Op.rewardAdd(id, "reward(Reward.item(" + syntax.args() + ", " + Math.max(1, count) + "))", imports);
-        var decl = source().declOf(quest);
-        int site = decl == null ? 0 : QuestEdits.rewardSites(decl).size();
-        return QuestEditQueue.submit("添加奖励 " + quest.id(), List.of(op), List.of(Op.rewardRemove(id, site)));
+        int entry = QuestEdits.rewardEntries(decl).size();
+        return QuestEditQueue.submit("添加奖励：" + name(quest), List.of(Op.rewardAdd(id, "reward(" + expr.text() + ")", imports)), List.of(Op.rewardRemove(id, entry)));
     }
 
-    public static Result removeReward(Quest quest, int site) {
+    public static Result removeReward(Quest quest, int index) {
         var blocked = guard();
         if (blocked != null) return blocked;
         var decl = source().declOf(quest);
         if (decl == null) return Result.fail("找不到任务的源码声明");
-        var sites = QuestEdits.rewardSites(decl);
-        if (site < 0 || site >= sites.size()) return Result.fail("奖励位置已变化，请重新打开");
-        var call = sites.get(site).call();
-        var text = decl.file.content.substring(decl.nameStart(call), decl.file.end(call));
+        var entries = QuestEdits.rewardEntries(decl);
+        if (index < 0 || index >= entries.size()) return Result.fail("奖励位置已变化，请重新打开");
+        var entry = entries.get(index);
+        var call = entry.call();
         var id = "q:" + quest.key();
-        return QuestEditQueue.submit("删除奖励 " + quest.id(), List.of(Op.rewardRemove(id, site)), List.of(Op.rewardAdd(id, text, List.of())));
+        var inverse = entry.argIndex() < 0 || call.getArguments().size() == 1 ? Op.rewardAdd(id, decl.file.content.substring(decl.nameStart(call), decl.file.end(call)), List.of()) :
+                Op.rewardArgAdd(id, index - entry.argIndex(), entry.argIndex(), decl.file.text(entry.expression()));
+        return QuestEditQueue.submit("移除奖励：" + name(quest), List.of(Op.rewardRemove(id, index)), List.of(inverse));
+    }
+
+    public record TableRow(int index, @Nullable Reward live, Component name, long count, boolean counted, long weight) {}
+
+    public record TableView(String id, Component title, String titleText, boolean titleEditable, long lootSize, long emptyWeight, List<TableRow> rows, boolean pending) {}
+
+    @Nullable
+    public static RewardTable liveTable(String id) {
+        var tables = QuestBook.rewardTables();
+        for (int i = 0; i < tables.size(); i++) {
+            if (tables.get(i).id().equals(id)) return tables.get(i);
+        }
+        return null;
+    }
+
+    @Nullable
+    public static TableView table(String id) {
+        if (!(source().find("t:" + id) instanceof QuestSource.TableDecl decl)) return null;
+        var live = liveTable(id);
+        var entries = QuestEdits.tableEntries(decl);
+        var liveEntries = live == null ? null : live.entries();
+        var target = "t:" + id;
+        var ops = QuestEditQueue.pending();
+        boolean pending = false;
+        var titles = decl.calls("title");
+        var titleArgs = titles.isEmpty() ? null : titles.get(0).getArguments();
+        String titleText = titleArgs != null && !titleArgs.isEmpty() && titleArgs.get(0) instanceof com.sun.source.tree.LiteralTree literal && literal.getValue() instanceof String text ? text : "";
+        long lootSize = tableNumber(decl, "lootSize", 1), emptyWeight = tableNumber(decl, "emptyWeight", 0);
+        long[] counts = new long[entries.size()], weights = new long[entries.size()];
+        for (int i = 0; i < entries.size(); i++) {
+            var entry = entries.get(i);
+            counts[i] = entry.count() == null ? 0 : QuestSource.number(entry.count()).longValue();
+            weights[i] = entry.weight() == null ? 1 : QuestSource.number(entry.weight()).longValue();
+        }
+        for (var op : ops) {
+            if (!op.target().equals(target)) continue;
+            switch (op.type()) {
+                case QuestEdits.TABLE_TITLE -> titleText = op.text();
+                case QuestEdits.TABLE_NUMBER -> {
+                    if (op.arg().equals("lootSize")) lootSize = op.value();
+                    else emptyWeight = op.value();
+                }
+                case QuestEdits.TABLE_WEIGHT -> {
+                    if (op.index() < weights.length) weights[op.index()] = op.value();
+                }
+                case QuestEdits.TABLE_AMOUNT -> {
+                    if (op.index() < counts.length) counts[op.index()] = op.value();
+                }
+                default -> pending = true;
+            }
+        }
+        var rows = new ObjectArrayList<TableRow>(entries.size());
+        for (int i = 0; i < entries.size(); i++) {
+            var entry = entries.get(i);
+            var reward = liveEntries != null && liveEntries.size() == entries.size() ? liveEntries.get(i).reward() : null;
+            Component name = reward instanceof ItemReward item && !item.template().isEmpty() ? item.template().getHoverName() :
+                    reward instanceof CommandReward command ? Component.empty().append(reward.title()).append("：" + command.command()) :
+                            reward != null ? reward.title() : Component.literal(clip(decl.file.text(entry.reward())));
+            rows.add(new TableRow(i, reward, name, counts[i], entry.count() != null, weights[i]));
+        }
+        boolean plainTitle = titleArgs == null || titleArgs.size() <= 1;
+        return new TableView(id, titleText.isEmpty() && live != null ? live.title() : Component.literal(titleText), titleText, plainTitle, lootSize, emptyWeight, rows, pending);
+    }
+
+    private static long tableNumber(QuestSource.TableDecl decl, String method, long fallback) {
+        var calls = decl.calls(method);
+        if (calls.isEmpty() || calls.get(0).getArguments().isEmpty()) return fallback;
+        var value = QuestSource.number(calls.get(0).getArguments().get(0));
+        return value == null ? fallback : value.longValue();
+    }
+
+    private static Result tableOp(String id, String label, Op forward, Op inverse) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        return QuestEditQueue.submit(label + "：" + id, List.of(forward), List.of(inverse));
+    }
+
+    public static Result addTableEntry(String id, QuestKinds.RewardKind kind, @Nullable Object value) {
+        var src = source();
+        if (!(src.find("t:" + id) instanceof QuestSource.TableDecl decl)) return Result.fail("找不到奖励表 " + id + " 的源码声明");
+        var expr = kind.build(src, value);
+        if (expr.text() == null) return Result.fail(expr.error());
+        var imports = new ObjectArrayList<String>(expr.imports());
+        imports.add("com.gtolib.api.quest.reward.Reward");
+        int index = QuestEdits.tableEntries(decl).size();
+        return tableOp(id, "添加奖励表内容", Op.tableEntryAdd("t:" + id, index, "entry(" + expr.text() + ")", imports), Op.tableEntryRemove("t:" + id, index));
+    }
+
+    public static Result removeTableEntry(String id, int index) {
+        if (!(source().find("t:" + id) instanceof QuestSource.TableDecl decl)) return Result.fail("找不到奖励表 " + id + " 的源码声明");
+        var entries = QuestEdits.tableEntries(decl);
+        if (index < 0 || index >= entries.size()) return Result.fail("内容位置已变化，请重新打开");
+        var call = entries.get(index).call();
+        var text = decl.file.content.substring(decl.nameStart(call), decl.file.end(call));
+        return tableOp(id, "移除奖励表内容", Op.tableEntryRemove("t:" + id, index), Op.tableEntryAdd("t:" + id, index, text, List.of()));
+    }
+
+    public static Result setTableWeight(String id, int index, long weight) {
+        var view = table(id);
+        if (view == null || index < 0 || index >= view.rows().size()) return Result.fail("内容位置已变化，请重新打开");
+        if (weight < 0) return Result.fail("权重不能为负数");
+        long old = view.rows().get(index).weight();
+        return old == weight ? Result.ok("") : tableOp(id, "修改权重", Op.tableWeight("t:" + id, index, weight), Op.tableWeight("t:" + id, index, old));
+    }
+
+    public static Result setTableCount(String id, int index, long count) {
+        var view = table(id);
+        if (view == null || index < 0 || index >= view.rows().size() || !view.rows().get(index).counted()) return Result.fail("内容位置已变化，请重新打开");
+        if (count < 1) return Result.fail("数量至少为 1");
+        long old = view.rows().get(index).count();
+        return old == count ? Result.ok("") : tableOp(id, "修改数量", Op.tableAmount("t:" + id, index, count), Op.tableAmount("t:" + id, index, old));
+    }
+
+    public static Result setTableNumber(String id, String method, long value) {
+        var view = table(id);
+        if (view == null) return Result.fail("找不到奖励表 " + id + " 的源码声明");
+        boolean loot = method.equals("lootSize");
+        if (value < (loot ? 1 : 0)) return Result.fail(loot ? "抽取次数至少为 1" : "空奖权重不能为负数");
+        long old = loot ? view.lootSize() : view.emptyWeight();
+        return old == value ? Result.ok("") : tableOp(id, loot ? "修改抽取次数" : "修改空奖权重", Op.tableNumber("t:" + id, method, value), Op.tableNumber("t:" + id, method, old));
+    }
+
+    public static Result setTableTitle(String id, String title) {
+        var view = table(id);
+        if (view == null) return Result.fail("找不到奖励表 " + id + " 的源码声明");
+        var text = title.strip();
+        if (!view.titleEditable()) return Result.fail("标题带样式，请在源码中修改");
+        if (text.isEmpty() || text.indexOf('{') >= 0 || text.indexOf('}') >= 0) return Result.fail("标题不能为空，也不能包含花括号");
+        return text.equals(view.titleText()) ? Result.ok("") : tableOp(id, "修改标题", Op.tableTitle("t:" + id, text), Op.tableTitle("t:" + id, view.titleText()));
+    }
+
+    public static Result createTable(String id) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        if (!id.matches("[a-z][a-z0-9_]*")) return Result.fail("奖励表 id 只能用小写字母、数字、下划线，并以字母开头");
+        var src = source();
+        var file = src.tableFile();
+        var field = id.toUpperCase(Locale.ROOT);
+        if (file == null) return Result.fail("找不到 QuestRewardTables.java");
+        if (src.find("t:" + id) != null || liveTable(id) != null || file.fields.containsKey(field)) return Result.fail("奖励表 " + id + " 已存在");
+        for (var op : QuestEditQueue.pending()) {
+            if (op.type().equals(QuestEdits.TABLE_CREATE) && op.target().equals("t:" + id)) return Result.fail("奖励表 " + id + " 已存在");
+        }
+        return QuestEditQueue.submit("新建奖励表：" + id, List.of(Op.tableCreate(id, field, id)), List.of(Op.tableDelete(id)));
     }
 
     public static Result undo() {

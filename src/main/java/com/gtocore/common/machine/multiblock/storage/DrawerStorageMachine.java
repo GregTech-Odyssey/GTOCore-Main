@@ -51,7 +51,7 @@ public final class DrawerStorageMachine extends MultiblockMEStorageMachine imple
     private static final Component ITEM_LIMIT = Component.translatable("gtocore.machine.drawer_storage.item_limit");
     @RegisterLanguage(cn = "流体种类上限", en = "Fluid Type Limit")
     private static final Component FLUID_LIMIT = Component.translatable("gtocore.machine.drawer_storage.fluid_limit");
-    @RegisterLanguage(cn = "最多为箱缸提供的格数之和；种类越少每种类容量越大，不能低于已存种类数", en = "Up to the total compartments of the containers; fewer types give more capacity per type, but never fewer than the stored types")
+    @RegisterLanguage(cn = "每个箱缸提供 4 种；种类越少每种类容量越大，不能低于已存种类数", en = "Each container provides 4 types; fewer types give more capacity per type, but never fewer than the stored types")
     private static final Component TYPE_LIMIT_TIP = Component.translatable("gtocore.machine.drawer_storage.type_limit_tip");
     @RegisterLanguage(cn = "可设置种类：物品 %s，流体 %s", en = "Maximum configurable types: %s items, %s fluids")
     private static final Component MAX_TYPES = Component.translatable("gtocore.machine.drawer_storage.max_types");

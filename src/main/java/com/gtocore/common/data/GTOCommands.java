@@ -13,6 +13,7 @@ import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
 import com.gtolib.api.misc.PlanetManagement;
 import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.scope.GTOScopes;
 import com.gtolib.quest.QuestCommands;
 import com.gtolib.utils.GTOUtils;
 import com.gtolib.utils.RLUtils;
@@ -130,6 +131,7 @@ public final class GTOCommands {
                     for (var line : lines) ctx.getSource().sendSuccess(() -> line, false);
                     return lines.size();
                 }))
+                .then(GTOScopes.command())
                 .then(TechTreeCommands.register())
                 .then(GameLeaderboardBrowser.register())
                 .then(ResarchTagCommands.register())

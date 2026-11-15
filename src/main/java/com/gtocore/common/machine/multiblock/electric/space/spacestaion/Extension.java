@@ -82,6 +82,13 @@ public class Extension extends AbstractSpaceStation implements ILargeSpaceStatio
     }
 
     @Override
+    public void onUnload() {
+        var root = core;
+        if (root != null) root.markDirty(true);
+        super.onUnload();
+    }
+
+    @Override
     public void customText(@NotNull List<Component> list) {
         super.customText(list);
         ILargeSpaceStationMachine.super.customText(list);

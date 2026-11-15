@@ -1,9 +1,13 @@
 package com.gtocore.data.recipe.classified;
 
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
+import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
+
+import net.minecraft.world.level.ItemLike;
 
 import static com.gtocore.common.data.GTORecipeTypes.SUPER_PARTICLE_COLLIDER_RECIPES;
 
@@ -168,6 +172,25 @@ final class SuperParticleCollider {
                 .outputFluids(GTMaterials.Fermium, 4000)
                 .EUt(491520)
                 .duration(200)
+                .save();
+
+        align(1, "up", GTOItems.UP_QUARK_RELEASING_CATALYST, GTOMaterials.LightQuarks, GTOMaterials.PositiveElectron, 1966080);
+        align(2, "down", GTOItems.DOWN_QUARK_RELEASING_CATALYST, GTOMaterials.LightQuarks, GTOMaterials.Antiproton, 1966080);
+        align(3, "strange", GTOItems.STRANGE_QUARK_RELEASING_CATALYST, GTOMaterials.HeavyQuarkEnrichedMixture, GTOMaterials.Antiproton, 7864320);
+        align(4, "charm", GTOItems.CHARM_QUARK_RELEASING_CATALYST, GTOMaterials.HeavyQuarkEnrichedMixture, GTOMaterials.PositiveElectron, 7864320);
+        align(5, "bottom", GTOItems.BOTTOM_QUARK_RELEASING_CATALYST, GTOMaterials.HeavyQuarks, GTOMaterials.Antiproton, 31457280);
+        align(6, "top", GTOItems.TOP_QUARK_RELEASING_CATALYST, GTOMaterials.HeavyQuarks, GTOMaterials.PositiveElectron, 31457280);
+    }
+
+    private static void align(int circuit, String flavor, ItemLike catalyst, Material generation, Material charge, long eut) {
+        SUPER_PARTICLE_COLLIDER_RECIPES.recipeBuilder(flavor + "_quark_releasing_catalyst")
+                .circuitMeta(circuit)
+                .inputItems(GTOItems.UNALIGNED_QUARK_RELEASING_CATALYST)
+                .inputFluids(generation, 1000)
+                .inputFluids(charge, 100)
+                .outputItems(catalyst)
+                .EUt(eut)
+                .duration(400)
                 .save();
     }
 }

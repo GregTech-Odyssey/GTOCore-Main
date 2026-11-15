@@ -7,6 +7,7 @@ import com.gtocore.common.data.GTOMaterials;
 
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
@@ -149,7 +150,7 @@ final class DimensionallytranscendentPlasmaForge {
                 .inputItems(GTOTagPrefix.NANITES, GTOMaterials.Eternity)
                 .inputFluids(GTOMaterials.RawStarMatter.getFluid(FluidStorageKeys.PLASMA, 100000))
                 .inputFluids(GTOMaterials.ExcitedDtsc, 100000)
-                .chancedOutput(GTOTagPrefix.CONTAMINABLE_NANITES, GTOMaterials.Eternity, 5000, 0)
+                .chancedOutput(GTOTagPrefix.CONTAMINABLE_NANITES, GTOMaterials.Eternity, Chance.of(5000))
                 .outputFluids(GTOMaterials.MagnetohydrodynamicallyConstrainedStarMatter, 100000)
                 .outputFluids(GTOMaterials.DimensionallyTranscendentResidue, 100)
                 .EUt(2061584302080L)

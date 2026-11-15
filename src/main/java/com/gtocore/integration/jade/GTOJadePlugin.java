@@ -17,6 +17,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 import com.gregtechceu.gtceu.integration.jade.provider.*;
 import com.gregtechceu.gtceu.integration.jade.provider.MultiblockStructureProvider;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -36,7 +37,7 @@ import java.util.Objects;
 public final class GTOJadePlugin implements IWailaPlugin {
 
     public static float getProgress(long progress, long maxProgress) {
-        return maxProgress == 0 ? 0 : (float) ((double) progress / maxProgress);
+        return maxProgress == 0 ? 0 : Mth.clamp((float) ((double) progress / maxProgress), 0F, 1F);
     }
 
     @Override

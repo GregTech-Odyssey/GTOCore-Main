@@ -1,9 +1,6 @@
 package com.gtocore.utils.register;
 
-import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.common.machine.mana.SimpleWorkManaMachine;
-import com.gtocore.common.machine.monitor.MonitorBlock;
-import com.gtocore.common.machine.monitor.MonitorBlockItem;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
@@ -18,7 +15,6 @@ import com.gtolib.utils.GTOUtils;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.data.RotationState;
 import com.gregtechceu.gtceu.api.machine.*;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.ICoilMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
@@ -331,21 +327,5 @@ public final class MachineRegisterUtils {
     public static GTOMachineBuilder blockEntityMachine(String name, String cn, Function<MetaMachineBlockEntity, MetaMachine> metaMachine, TriFunction<BlockEntityType<?>, BlockPos, BlockState, MetaMachineBlockEntity> blockEntityFactory) {
         addLang(name, cn);
         return GTO.machine(name, metaMachine, blockEntityFactory);
-    }
-
-    public static GTOMachineBuilder registerMonitor(String id, String cn, Function<MetaMachineBlockEntity, MetaMachine> monitorConstructor) {
-        addLang(id, cn);
-        MonitorBlockItem.addItem(GTOCore.id(id));
-        return new GTOMachineBuilder(
-                GTO,
-                id,
-                MachineDefinition::createDefinition,
-                monitorConstructor,
-                MonitorBlock::new,
-                MonitorBlockItem::new,
-                MetaMachineBlockEntity::createBlockEntity)
-                .rotationState(RotationState.NON_Y_AXIS)
-                .renderer(MonitorRenderer::new)
-                .hasTESR(true);
     }
 }

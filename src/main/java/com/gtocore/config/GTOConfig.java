@@ -376,13 +376,6 @@ public final class GTOConfig {
     public static class Client {
 
         @Configurable
-        @Configurable.Comment({ "义体 HUD 的背景不透明度，0 为透明，100 为不透明", "Implant HUD background opacity: 0 is transparent, 100 is opaque" })
-        @Configurable.Range(min = 0, max = 100)
-        @Configurable.Gui.Slider
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Implant HUD Background Opacity", cn = "义体 HUD 背景不透明度")
-        public int implantHudBackgroundOpacity = 80;
-
-        @Configurable
         @Configurable.Comment({ "AE 终端在切换页面时使用选择器替代循环顺序切换", "AE Terminals use a selector instead of cycling through pages when switching pages" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "AE Terminal Page Switch Style Rework", cn = "AE 终端页面切换样式重做")
         public boolean aeTerminalPageSwitchStyleSelector = false;
@@ -397,6 +390,14 @@ public final class GTOConfig {
         @Configurable.Comment({ "启用后，当游戏窗口未聚焦时，AE2 合成任务完成将发送系统桌面通知（仅支持 Windows 与 macOS）", "When enabled, a desktop notification is sent when an AE2 crafting job finishes while the game window is unfocused (Windows and macOS only)" })
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Crafting Job Finished Notification", cn = "合成任务完成桌面通知")
         public boolean craftingJobFinishedNotification = true;
+
+        @Configurable
+        @Configurable.Comment({ "Ctrl+左键编码样板时，若配方既无不消耗输入也无催化剂，按此项补充空白虚拟提供器",
+                "BOTH：物品与流体各一个；ITEM：仅虚拟物品提供器；FLUID：仅虚拟流体提供器；NONE：不补充",
+                "Blank virtual providers added when Ctrl+click encoding a recipe that has no non-consumed inputs and no catalysts",
+                "BOTH: one item and one fluid provider; ITEM: item provider only; FLUID: fluid provider only; NONE: none" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Blank Virtual Providers on Ctrl Encoding", cn = "Ctrl 编码时补充的空白虚拟提供器")
+        public BlankVirtualProviders blankVirtualProviders = BlankVirtualProviders.BOTH;
 
         @Configurable
         @RegisterLanguage(namePrefix = "config.gtocore.option", en = "Rendering Settings", cn = "渲染设置")

@@ -8,6 +8,7 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKeys;
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
@@ -17,12 +18,12 @@ final class QuantumForceTransformer {
 
     public static void init() {
         QUANTUM_FORCE_TRANSFORMER_RECIPES.recipeBuilder("hyper_stable_self_healing_adhesive")
-                .chancedInput(ChemicalHelper.get(GTOTagPrefix.NANITES, GTOMaterials.Uruium), 500, 0)
+                .chancedInput(ChemicalHelper.get(GTOTagPrefix.NANITES, GTOMaterials.Uruium), Chance.of(500))
                 .inputItems(TagPrefix.dust, GTMaterials.ActivatedCarbon, 64)
                 .inputItems(TagPrefix.dust, GTMaterials.Bismuth, 64)
                 .inputFluids(GTMaterials.Oxygen, 20000)
                 .inputFluids(GTMaterials.Hydrogen, 20000)
-                .chancedOutput(GTOItems.HYPER_STABLE_SELF_HEALING_ADHESIVE.asItem(), 2000, 0)
+                .chancedOutput(GTOItems.HYPER_STABLE_SELF_HEALING_ADHESIVE.asItem(), Chance.of(2000))
                 .EUt(8053063680L)
                 .duration(20)
                 .save();
@@ -108,7 +109,7 @@ final class QuantumForceTransformer {
 
         QUANTUM_FORCE_TRANSFORMER_RECIPES.recipeBuilder("cosmic_ingot")
                 .notConsumable(GTOTagPrefix.NANITES, GTOMaterials.CosmicNeutronium)
-                .chancedInput(GTOItems.COSMIC_SINGULARITY.asItem(), 1000, 0)
+                .chancedInput(GTOItems.COSMIC_SINGULARITY.asItem(), Chance.of(1000))
                 .inputItems(GTOItems.HYPERCUBE)
                 .inputItems(TagPrefix.ingot, GTOMaterials.Infinity)
                 .inputFluids(GTOMaterials.WhiteDwarfMatter, 576)
@@ -120,22 +121,22 @@ final class QuantumForceTransformer {
                 .save();
 
         QUANTUM_FORCE_TRANSFORMER_RECIPES.recipeBuilder("quantum_anomaly")
-                .chancedInput(ChemicalHelper.get(GTOTagPrefix.NANITES, GTOMaterials.Draconium), 100, 0)
+                .chancedInput(ChemicalHelper.get(GTOTagPrefix.NANITES, GTOMaterials.Draconium), Chance.of(100))
                 .inputItems(GTOItems.ENTANGLED_SINGULARITY)
                 .inputFluids(GTMaterials.Duranium, 144)
                 .inputFluids(GTOMaterials.ExcitedDtec, 100)
-                .chancedOutput(GTOItems.QUANTUM_ANOMALY.asItem(), 1000, 0)
+                .chancedOutput(GTOItems.QUANTUM_ANOMALY.asItem(), Chance.of(1000))
                 .EUt(503316480)
                 .duration(400)
                 .save();
 
         QUANTUM_FORCE_TRANSFORMER_RECIPES.recipeBuilder("black_body_naquadria_supersolid")
-                .chancedInput(ChemicalHelper.get(GTOTagPrefix.NANITES, GTOMaterials.Uruium), 500, 0)
+                .chancedInput(ChemicalHelper.get(GTOTagPrefix.NANITES, GTOMaterials.Uruium), Chance.of(500))
                 .inputItems(TagPrefix.dust, GTMaterials.Naquadria, 64)
                 .inputItems(TagPrefix.dust, GTMaterials.Magnesium, 64)
                 .inputFluids(GTMaterials.PhosphoricAcid, 20000)
                 .inputFluids(GTMaterials.SulfuricAcid, 20000)
-                .chancedOutput(GTOItems.BLACK_BODY_NAQUADRIA_SUPERSOLID.asItem(), 2000, 0)
+                .chancedOutput(GTOItems.BLACK_BODY_NAQUADRIA_SUPERSOLID.asItem(), Chance.of(2000))
                 .EUt(8053063680L)
                 .duration(20)
                 .save();
@@ -254,9 +255,9 @@ final class QuantumForceTransformer {
         QUANTUM_FORCE_TRANSFORMER_RECIPES.recipeBuilder("timepiece")
                 .notConsumable(GTOTagPrefix.NANITES, GTOMaterials.WhiteDwarfMatter)
                 .notConsumable(GTOTagPrefix.NANITES, GTOMaterials.BlackDwarfMatter)
-                .chancedInput(ChemicalHelper.get(TagPrefix.wireGtHex, GTOMaterials.SpaceTime), 1, 0)
+                .chancedInput(ChemicalHelper.get(TagPrefix.wireGtHex, GTOMaterials.SpaceTime), Chance.of(1))
                 .inputFluids(GTOMaterials.CosmicElement, 100)
-                .chancedOutput(GTOItems.TIMEPIECE.asItem(), 2500, 0)
+                .chancedOutput(GTOItems.TIMEPIECE.asItem(), Chance.of(2500))
                 .EUt(2013265920)
                 .duration(200)
                 .save();

@@ -79,25 +79,6 @@ public final class WirelessHub {
         }
     }
 
-    /** 队伍变化后只断开无权使用网络的成员，不修改其网络 id。 */
-    static void detachUnauthorized(MinecraftServer server, WirelessNetworks networks) {
-        for (var level : server.getAllLevels()) {
-            var hubs = HUBS.getIfPresent(level);
-            if (hubs == null) continue;
-            var iterator = hubs.object2ObjectEntrySet().fastIterator();
-            while (iterator.hasNext()) {
-                var entry = iterator.next();
-                var network = networks.get(entry.getKey());
-                if (network == null) continue;
-                // Member detaches mutate the connection list, so use a member snapshot here.
-                for (var member : entry.getValue().localMembers()) {
-                    var owner = member.self().getOwnerUUID();
-                    if (owner != null && !network.canUse(owner)) member.detachWireless();
-                }
-            }
-        }
-    }
-
     public IGridNode node() {
         return node.getNode();
     }
@@ -169,12 +150,6 @@ public final class WirelessHub {
         addMembers(result);
         var other = otherHub();
         if (other != null) other.addMembers(result);
-        return result;
-    }
-
-    private ArrayList<WirelessMachine> localMembers() {
-        var result = new ArrayList<WirelessMachine>(((GridNodeAccessor) node()).gto$getConnections().size());
-        addMembers(result);
         return result;
     }
 

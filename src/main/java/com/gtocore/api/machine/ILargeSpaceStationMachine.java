@@ -25,6 +25,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
+import com.suried.gtoutils.level.LoadedChunks;
 import earth.terrarium.adastra.api.planets.PlanetApi;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.NotNull;
@@ -87,7 +88,7 @@ public interface ILargeSpaceStationMachine extends ICustomHighlightMachine, ISpa
 
         Set<ILargeSpaceStationMachine> machines = new ReferenceOpenHashSet<>();
         for (BlockPos pos : ((AbstractSpaceStation) self()).getStationPorts()) {
-            var blockEntity = getLevel().getBlockEntity(pos);
+            var blockEntity = LoadedChunks.blockEntity(getLevel(), pos);
             if (blockEntity instanceof MetaMachineBlockEntity metaMachineBlockEntity) {
                 var machine = metaMachineBlockEntity.getMetaMachine();
                 if (machine instanceof ILargeSpaceStationMachine largeSpaceStationMachine) {

@@ -5,20 +5,23 @@ import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
+import com.suried.gtoutils.schedule.Cell;
 import com.suried.gtoutils.schedule.CoalescedTask;
 import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Scope;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-public final class TesseractTargets implements RemoteKeyTarget.Listener {
+public final class TesseractTargets {
 
     private static final RemoteKeyTarget[] NONE = new RemoteKeyTarget[0];
 
     private final TesseractCapCache.Holder holder;
+    private final Cell<Integer> bound = Cell.of(0);
+    private final Runnable changed = this::onTargetChanged;
     private RemoteKeyTarget[] targets = NONE;
     private int size;
-    private boolean subscribed;
     @Nullable
     private CoalescedTask refresh;
 
@@ -44,30 +47,30 @@ public final class TesseractTargets implements RemoteKeyTarget.Listener {
         if (size > array.length) targets = array = Arrays.copyOf(array, size);
         for (int i = size; i < this.size; i++) array[i].bind(null, null);
         for (int i = this.size; i < size; i++) {
-            if (array[i] == null) {
-                var target = new RemoteKeyTarget();
-                if (subscribed) target.subscribe(this);
-                array[i] = target;
-            }
+            if (array[i] == null) array[i] = new RemoteKeyTarget();
         }
+        if (this.size == size) return;
         this.size = size;
+        rebound();
     }
 
     public void bind(int i, @Nullable Level level, @Nullable BlockPos pos) {
-        targets[i].bind(level, pos);
+        if (targets[i].bind(level, pos)) rebound();
     }
 
-    public void subscribe(boolean subscribed) {
-        if (this.subscribed == subscribed) return;
-        this.subscribed = subscribed;
-        var listener = subscribed ? this : null;
-        for (var target : targets) {
-            if (target != null) target.subscribe(listener);
-        }
+    private void rebound() {
+        bound.set(bound.peek() + 1);
     }
 
-    @Override
-    public void onTargetChanged(RemoteKeyTarget target) {
+    public void mount(Scope scope) {
+        scope.select(bound::get, (mounted, version) -> {
+            var array = targets;
+            for (int i = 0, n = size; i < n; i++) array[i].mount(mounted, changed);
+            if (holder.getItemCaps().handedOut() || holder.getFluidCaps().handedOut()) onTargetChanged();
+        });
+    }
+
+    private void onTargetChanged() {
         var machine = holder.self();
         if (machine.isRemoved()) return;
         if (!holder.isCalled()) {

@@ -29,6 +29,7 @@ import net.minecraftforge.event.TickEvent;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 
+import com.sun.source.util.JavacTask;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
@@ -84,6 +86,7 @@ public final class QuestHotReload {
     private static final O2OOpenCacheHashMap<Path, String> SUBMITTED = new O2OOpenCacheHashMap<>();
     private static final ConcurrentLinkedQueue<Runnable> DEFERRED = new ConcurrentLinkedQueue<>();
     private static boolean replayed;
+    private static boolean warmed;
 
     @Nullable
     private static Path questDir;
@@ -120,7 +123,9 @@ public final class QuestHotReload {
         }
         questDir = root.resolve(PACKAGE_PATH);
         QuestHot.setReloader(QuestHotReload::submit);
+        QuestHot.setWriteListener(QuestHotReload::expect);
         QuestHot.setLiveListener(QuestHotReload::edited);
+        QuestHot.setWarmer(QuestHotReload::warm);
         QuestEditQueue.setReporter((ok, text) -> report(Component.literal("[任务热修改] " + text).withStyle(ok ? ChatFormatting.GREEN : ChatFormatting.RED)));
         QuestEditQueue.load();
         MinecraftForge.EVENT_BUS.addListener(QuestHotReload::onClientTick);
@@ -189,7 +194,57 @@ public final class QuestHotReload {
                 if (content != null) SUBMITTED.put(path.toAbsolutePath().normalize(), content);
             }
         }
-        EXECUTOR.execute(() -> reload(batch, rebuild, job, done));
+        EXECUTOR.execute(() -> {
+            try {
+                reload(batch, rebuild, job, done);
+            } catch (RuntimeException | Error e) {
+                GTOCore.LOGGER.error("[任务热加载] 编译时出错", e);
+                job.end();
+                finish(done, "编译时出错：" + e);
+            }
+        });
+    }
+
+    private static void expect(Path path, String content) {
+        synchronized (SUBMITTED) {
+            SUBMITTED.put(path.toAbsolutePath().normalize(), content);
+        }
+    }
+
+    private static void warm() {
+        if (warmed) return;
+        warmed = true;
+        EXECUTOR.execute(QuestHotReload::warmCompiler);
+    }
+
+    private static void warmCompiler() {
+        var javac = compiler();
+        var dir = questDir;
+        if (javac == null || dir == null) return;
+        Path sample = null;
+        long smallest = Long.MAX_VALUE;
+        try (Stream<Path> list = Files.list(dir.resolve("chapter"))) {
+            for (var path : list.filter(QuestHotReload::isSource).toList()) {
+                long size = Files.size(path);
+                if (size < smallest) {
+                    smallest = size;
+                    sample = path;
+                }
+            }
+        } catch (IOException e) {
+            return;
+        }
+        if (sample == null) return;
+        long start = System.nanoTime();
+        var options = List.of("-encoding", "UTF-8", "-proc:none", "-implicit:none", "-nowarn", "-Xlint:none");
+        var task = (JavacTask) javac.getTask(null, fileManager, diagnostic -> {}, options, null, fileManager.getJavaFileObjectsFromPaths(List.of(sample)));
+        try {
+            task.analyze();
+        } catch (IOException | RuntimeException | Error e) {
+            GTOCore.LOGGER.warn("[任务热加载] 编译器预热失败", e);
+            return;
+        }
+        GTOCore.LOGGER.info("[任务热加载] 编译器预热 {}ms", (System.nanoTime() - start) / 1_000_000);
     }
 
     private static boolean isSource(Path path) {
@@ -220,6 +275,7 @@ public final class QuestHotReload {
             var changed = new ObjectArrayList<Path>();
             while (true) {
                 collect(service, service.take(), changed);
+                QuestEditQueue.sourceTouched();
                 WatchKey key;
                 while ((key = service.poll(DEBOUNCE_MS, TimeUnit.MILLISECONDS)) != null) collect(service, key, changed);
                 changed.removeIf(QuestHotReload::alreadySubmitted);
@@ -322,6 +378,7 @@ public final class QuestHotReload {
         try {
             manager.setLocationFromPaths(StandardLocation.CLASS_PATH, path);
             manager.setLocationFromPaths(StandardLocation.CLASS_OUTPUT, List.of(overlay));
+            manager.setLocationFromPaths(StandardLocation.ANNOTATION_PROCESSOR_PATH, Collections.emptyList());
         } catch (IOException e) {
             GTOCore.LOGGER.warn("[任务热加载] 设置编译路径失败", e);
             return null;

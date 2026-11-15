@@ -46,7 +46,7 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     @Unique
     private boolean gtolib$hasPowerAmplifier;
     @Unique
-    private WirelessChargerMachine gtolib$netMachineCache;
+    private NetCache<WirelessChargerMachine> gtolib$netCache;
     @Unique
     private Task gtolib$tickSubs;
     @Unique
@@ -182,13 +182,10 @@ public abstract class SimpleTieredMachineMixin extends WorkableTieredMachine imp
     }
 
     @Override
-    public void setNetMachineCache(final WirelessChargerMachine netMachineCache) {
-        this.gtolib$netMachineCache = netMachineCache;
-    }
-
-    @Override
-    public WirelessChargerMachine getNetMachineCache() {
-        return this.gtolib$netMachineCache;
+    public NetCache<WirelessChargerMachine> getNetCache() {
+        var cache = gtolib$netCache;
+        if (cache == null) gtolib$netCache = cache = new NetCache<>();
+        return cache;
     }
 
     @Override

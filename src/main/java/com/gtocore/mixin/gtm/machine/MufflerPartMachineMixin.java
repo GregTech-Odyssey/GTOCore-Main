@@ -72,7 +72,7 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
     protected abstract void particlesTick();
 
     @Unique
-    private IDroneControlCenterMachine gtolib$cache;
+    private NetCache<IDroneControlCenterMachine> gtolib$cache;
     @Unique
     private AirScrubberMachine gtolib$airScrubberCache;
     @Unique
@@ -105,14 +105,15 @@ public abstract class MufflerPartMachineMixin extends WorkableTieredPartMachine 
         gtolib$airScrubberCache = cache;
     }
 
-    @Unique
-    public IDroneControlCenterMachine getNetMachineCache() {
-        return gtolib$cache;
+    @Override
+    public NetCache<IDroneControlCenterMachine> getNetCache() {
+        var cache = gtolib$cache;
+        if (cache == null) gtolib$cache = cache = new NetCache<>(this::gto$cacheChanged);
+        return cache;
     }
 
     @Unique
-    public void setNetMachineCache(IDroneControlCenterMachine cache) {
-        gtolib$cache = cache;
+    private void gto$cacheChanged(IDroneControlCenterMachine cache) {
         var oldManaCenter = gto$manaCenter;
         if (oldManaCenter != null) {
             oldManaCenter.removeProblem(this);

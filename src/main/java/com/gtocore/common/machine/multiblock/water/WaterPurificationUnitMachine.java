@@ -40,7 +40,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     /// 本轮产出下一级净化水的成功率（0-100），仅在运行时有意义
     abstract double getSuccessChance();
 
-    private WaterPurificationPlantMachine netMachineCache;
+    private final NetCache<WaterPurificationPlantMachine> netCache = new NetCache<>();
     GTRecipe recipe;
     RecipeHandlerUnit unit;
     @SaveToDisk
@@ -77,6 +77,8 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         super.setWorkingEnabled(isWorkingAllowed);
     }
 
+    void onLogicReset() {}
+
     @Override
     public boolean supportLockRecipe() {
         return false;
@@ -101,7 +103,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     public boolean firstTestMachine(WaterPurificationPlantMachine machine) {
         Level level = machine.getLevel();
         if (level != null && isFormed() && machine.isFormed() && testUUID(machine) && GTOUtils.calculateDistance(machine.getPos(), getPos()) < 32) {
-            machine.waterPurificationUnitMachineMap.put(this, getRecipeLogic().isWorking());
+            machine.waterPurificationUnitMachineMap.put(this, (getRecipeLogic().isWorking() || getRecipeLogic().isWaiting()) && getRecipeLogic().getLastRecipe() != null);
             return true;
         }
         return false;
@@ -113,10 +115,16 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     }
 
     @Override
+    public boolean cacheMiss() {
+        return true;
+    }
+
+    @Override
     public void removeNetMachineCache() {
-        if (netMachineCache != null) {
-            netMachineCache.waterPurificationUnitMachineMap.removeBoolean(this);
-            netMachineCache = null;
+        var plant = netCache.get();
+        if (plant != null) {
+            plant.waterPurificationUnitMachineMap.removeBoolean(this);
+            netCache.clear();
         }
     }
 
@@ -125,6 +133,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         unit = null;
         super.onStructureFormed();
         if (!isRemote()) {
+            netCache.retry();
             getNetMachine();
             tickSubs.initialize(getLevel());
         }
@@ -207,6 +216,12 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         public void serverTick() {}
 
         @Override
+        public void resetRecipeLogic() {
+            super.resetRecipeLogic();
+            ((WaterPurificationUnitMachine) machine).onLogicReset();
+        }
+
+        @Override
         public boolean onRecipeFinish() {
             machine.afterWorking();
             if (lastRecipe != null) {
@@ -227,12 +242,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     }
 
     @Override
-    public void setNetMachineCache(final WaterPurificationPlantMachine netMachineCache) {
-        this.netMachineCache = netMachineCache;
-    }
-
-    @Override
-    public WaterPurificationPlantMachine getNetMachineCache() {
-        return this.netMachineCache;
+    public NetCache<WaterPurificationPlantMachine> getNetCache() {
+        return netCache;
     }
 }

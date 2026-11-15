@@ -8,7 +8,6 @@ import com.gtocore.config.GTORules;
 import com.gtocore.data.quest.QuestBookContents;
 import com.gtocore.data.recipe.*;
 import com.gtocore.data.recipe.ae2.AE2;
-import com.gtocore.data.recipe.ae2.Ae2wtlibRecipes;
 import com.gtocore.data.recipe.classified.$ClassifiedRecipe;
 import com.gtocore.data.recipe.generated.*;
 import com.gtocore.data.recipe.gtm.SuperStorageAdditionalRecipe;
@@ -62,9 +61,7 @@ import dev.emi.emi.recipe.special.EmiRepairItemRecipe;
 import dev.shadowsoffire.placebo.loot.LootSystem;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import static com.gtocore.common.data.GTORecipes.EMI_RECIPES;
 
@@ -155,7 +152,6 @@ public final class Data {
         DyeRecipes.init();
         WoodRecipes.init();
         AE2.init();
-        Ae2wtlibRecipes.init();
         ImmersiveAircraft.init();
         ComputerCraft.init();
         ModularRouters.init();
@@ -221,16 +217,12 @@ public final class Data {
                 }
                 type.getRecipesInCategory(category).stream().map(recipe -> new GTEMIRecipe(recipe, emiCategory)).forEach(recipes::add);
             }
-            List<MultiblockInfoEmiRecipe> multiblocks = new ArrayList<>();
             for (MachineDefinition machine : GTRegistries.MACHINES.values()) {
                 if (machine instanceof MultiblockMachineDefinition definition && definition.isRenderXEIPreview()) {
-                    var recipe = new MultiblockInfoEmiRecipe(definition);
-                    multiblocks.add(recipe);
-                    recipes.add(recipe);
+                    recipes.add(new MultiblockInfoEmiRecipe(definition));
                 }
             }
             EMI_RECIPES = recipes.build();
-            MultiblockInfoEmiRecipe.prepareInputsOnTagsUpdate(multiblocks);
             for (GTRecipeType type : GTRegistries.RECIPE_TYPES) {
                 if (type == GTORecipeTypes.FURNACE_RECIPES) {
                     type.getCategoryMap().putIfAbsent(GTRecipeTypes.FURNACE_RECIPES.getCategory(), Collections.emptySet());

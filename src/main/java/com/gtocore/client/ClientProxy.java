@@ -13,9 +13,7 @@ import com.gtocore.client.renderer.HappyWaterGodStatueRenderer;
 import com.gtocore.client.renderer.SolarGlobeGlowShader;
 import com.gtocore.client.renderer.entity.FrostCoatLayer;
 import com.gtocore.client.renderer.fx.DysonForceFieldRenderer;
-import com.gtocore.client.renderer.item.MonitorItemDecorations;
 import com.gtocore.client.renderer.item.WirelessEnergyUnitItemDecorations;
-import com.gtocore.client.renderer.machine.MonitorRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.client.website.WebsiteAccount;
 import com.gtocore.client.website.WebsiteConsent;
@@ -26,7 +24,6 @@ import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
 import com.gtocore.common.forge.ClientForge;
 import com.gtocore.common.item.misc.WingTrails;
-import com.gtocore.common.machine.monitor.MonitorBlockItem;
 import com.gtocore.common.quest.hot.QuestHotConfig;
 import com.gtocore.eio_travel.TravelEvents;
 import com.gtocore.eio_travel.client.TravelParticleHandler;
@@ -141,12 +138,12 @@ public final class ClientProxy extends CommonProxy {
         GuiExPatternTerminal.setScreenInitializer(screen -> screen.addToLeftToolbar(new PatternEncoderStatsButton(button -> screen.switchToScreen(new PatternEncoderStatsScreen<>(screen, PatternEncoderStats.collect(screen.getPatternRecords().values()))))));
         SuperStorageClient.init();
         GTOKeyBind.init();
+        QuestBookEntries.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
         MonitorClient.install();
         ImplantClient.install();
         ScreenRenderer.init();
-        MonitorRenderer.RenderedCacheClearer.init();
         GTORender.init();
         DebugScreenInspector.init();
         CelestialSkyRenderer.init();
@@ -262,11 +259,6 @@ public final class ClientProxy extends CommonProxy {
     }
 
     private static void registerItemDeco(RegisterItemDecorationsEvent event) {
-        MonitorBlockItem.getItemList().forEach(item -> {
-            if (item != null) {
-                event.register(BuiltInRegistries.BLOCK.get(item), MonitorItemDecorations.DECORATOR);
-            }
-        });
         for (var item : BuiltInRegistries.ITEM) {
             if (item instanceof BlockItem blockItem && blockItem.getBlock() instanceof WirelessEnergyUnitBlock unit && !unit.isSuperUnit()) {
                 event.register(item, WirelessEnergyUnitItemDecorations.DECORATOR);

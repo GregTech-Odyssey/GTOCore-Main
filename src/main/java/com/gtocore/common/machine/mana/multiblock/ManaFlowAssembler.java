@@ -370,6 +370,8 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
 
     private class InWorldManaContainer implements IManaContainer {
 
+        private final NetCache<ManaDistributorMachine> netCache = new NetCache<>();
+
         @Override
         public boolean acceptDistributor() {
             return false;
@@ -456,12 +458,9 @@ public class ManaFlowAssembler extends ManaMultiblockMachine {
         }
 
         @Override
-        public ManaDistributorMachine getNetMachineCache() {
-            return null;
+        public NetCache<ManaDistributorMachine> getNetCache() {
+            return netCache;
         }
-
-        @Override
-        public void setNetMachineCache(ManaDistributorMachine cache) {}
     }
 
     public static Supplier<TraceabilityPredicate> MANA_PYLON = GTMemoizer.memoize(

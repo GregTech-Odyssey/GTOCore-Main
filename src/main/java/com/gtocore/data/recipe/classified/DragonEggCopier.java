@@ -2,6 +2,8 @@ package com.gtocore.data.recipe.classified;
 
 import com.gtocore.common.data.GTOMaterials;
 
+import com.gregtechceu.gtceu.api.recipe.content.Chance;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
@@ -14,7 +16,7 @@ final class DragonEggCopier {
                 .inputItems(Blocks.DRAGON_EGG.asItem())
                 .inputFluids(GTOMaterials.BiohmediumSterilized, 100)
                 .outputItems(Blocks.DRAGON_EGG.asItem())
-                .chancedOutput(new ItemStack(Blocks.DRAGON_EGG.asItem()), 2000, 1000)
+                .chancedOutput(new ItemStack(Blocks.DRAGON_EGG.asItem()), Chance.of(2000).risePerOverclock(1000))
                 .EUt(122880)
                 .duration(200)
                 .cleanroom(3)

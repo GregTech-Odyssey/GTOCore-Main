@@ -20,7 +20,7 @@ import java.util.List;
 
 public final class INFFluidDrillLogic extends BedrockVeinDrillLogic<BedrockFluidDefinition> implements IFluidDrillLogic {
 
-    private DrillingControlCenterMachine cache;
+    private final NetCache<DrillingControlCenterMachine> cache = new NetCache<>();
 
     public INFFluidDrillLogic(INFFluidDrillMachine machine) {
         super(machine, BedrockVeinKind.FLUID);
@@ -62,18 +62,13 @@ public final class INFFluidDrillLogic extends BedrockVeinDrillLogic<BedrockFluid
     protected void onDrillFinish() {}
 
     @Override
-    public DrillingControlCenterMachine getNetMachineCache() {
+    public NetCache<DrillingControlCenterMachine> getNetCache() {
         return cache;
-    }
-
-    @Override
-    public void setNetMachineCache(DrillingControlCenterMachine cache) {
-        this.cache = cache;
     }
 
     @Override
     public void onMachineUnLoad() {
         super.onMachineUnLoad();
-        this.cache = null;
+        cache.clear();
     }
 }

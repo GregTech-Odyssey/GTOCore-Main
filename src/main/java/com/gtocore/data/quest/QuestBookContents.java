@@ -80,8 +80,30 @@ public final class QuestBookContents {
             .devChapters(SopDatabaseChapter.CHAPTER, UtilChapter.CHAPTER)
             .chapters(ShopChapter.CHAPTER));
 
-    public static final QuestGroup NEW_MAIN = QuestGroup.of("new_main", g -> g
+    public static final QuestGroup MAIN = QuestGroup.of("main", g -> g
             .title("主线")
+            .chapters(
+                    GregtechOdysseyChapter.CHAPTER,
+                    MainStoneageChapter.CHAPTER,
+                    SteamChapter.CHAPTER,
+                    UlvChapter.CHAPTER,
+                    LvChapter.CHAPTER,
+                    MvChapter.CHAPTER,
+                    HvChapter.CHAPTER,
+                    EvChapter.CHAPTER,
+                    IvChapter.CHAPTER,
+                    LuvChapter.CHAPTER,
+                    ZpmChapter.CHAPTER,
+                    UvChapter.CHAPTER,
+                    UhvChapter.CHAPTER,
+                    UevChapter.CHAPTER,
+                    UivChapter.CHAPTER,
+                    UxvChapter.CHAPTER,
+                    OpvChapter.CHAPTER));
+
+    public static final QuestGroup NEW_MAIN = QuestGroup.of("new_main", g -> g
+            .title("参考主线")
+            .devOnly()
             .chapters(
                     NewGregtechOdysseyChapter.CHAPTER,
                     NeolithicChapter.CHAPTER,
@@ -102,36 +124,12 @@ public final class QuestBookContents {
                     NewOpvChapter.CHAPTER,
                     NewMaxChapter.CHAPTER));
 
-    public static final QuestGroup MAIN = QuestGroup.of("main", g -> g
-            .title("旧主线")
-            .devOnly()
-            .chapters(
-                    GregtechOdysseyChapter.CHAPTER,
-                    MainStoneageChapter.CHAPTER,
-                    SteamChapter.CHAPTER,
-                    UlvChapter.CHAPTER,
-                    LvChapter.CHAPTER,
-                    MvChapter.CHAPTER,
-                    HvChapter.CHAPTER,
-                    EvChapter.CHAPTER,
-                    IvChapter.CHAPTER,
-                    LuvChapter.CHAPTER,
-                    ZpmChapter.CHAPTER,
-                    UvChapter.CHAPTER,
-                    UhvChapter.CHAPTER,
-                    UevChapter.CHAPTER,
-                    UivChapter.CHAPTER,
-                    UxvChapter.CHAPTER,
-                    OpvChapter.CHAPTER));
-
     public static final QuestGroup TECH_TREE = QuestGroup.of("tech_tree", g -> g
             .title("科技树")
-            .devOnly()
             .chapters(TechtreeChapter.CHAPTER, TechtreeFtbqChapter.CHAPTER, TechnodeChapter.CHAPTER));
 
     public static final QuestGroup MULTIBLOCK = QuestGroup.of("multiblock", g -> g
             .title("多方块机器")
-            .devOnly()
             .chapters(
                     MassiveManufacturingChapter.CHAPTER,
                     HiEndManufaturingChapter.CHAPTER,
@@ -141,7 +139,6 @@ public final class QuestBookContents {
 
     public static final QuestGroup SELF_SUFFICIENT = QuestGroup.of("self_sufficient", g -> g
             .title("独善其身")
-            .devOnly()
             .chapters(
                     AeChapter.CHAPTER,
                     Magic1Chapter.CHAPTER,
@@ -153,7 +150,6 @@ public final class QuestBookContents {
 
     public static final QuestGroup RESOURCES = QuestGroup.of("resources", g -> g
             .title("资源与产线")
-            .devOnly()
             .chapters(
                     OreProcessingChapter.CHAPTER,
                     WirelessEnergyChapter.CHAPTER,
@@ -164,7 +160,6 @@ public final class QuestBookContents {
 
     public static final QuestGroup MILESTONE = QuestGroup.of("milestone", g -> g
             .title("里程碑")
-            .devOnly()
             .chapters(TitlesChapter.CHAPTER, ProgressChapter.CHAPTER, PeriodicTableChapter.CHAPTER));
 
     private QuestBookContents() {}
