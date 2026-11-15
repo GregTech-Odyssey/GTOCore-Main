@@ -218,7 +218,6 @@
     "gtm.registry.GTOresMixin",
     "gtm.registry.GTRecipeTypesMixin",
     "gtm.registry.GTRegistrationMixin",
-    "guideme.GuideMEMixin",
     "inventoryessentials.ServerInventoryTransfersMixin",
     "jade.CommonProxyMixin",
     "jade.JadeForgeUtilsMixin",
