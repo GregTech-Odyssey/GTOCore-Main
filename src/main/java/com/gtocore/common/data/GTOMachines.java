@@ -1154,7 +1154,7 @@ public final class GTOMachines {
             .langValue("IO Mirror Hatch")
             .tier(HV)
             .allRotation()
-            .abilities(PartAbility.UTILITY, PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.EXPORT_FLUIDS, PartAbility.EXPORT_ITEMS)
+            .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.EXPORT_FLUIDS, PartAbility.EXPORT_ITEMS)
             .tips(GTOMachineTooltips.MirrorHatchTooltips)
             .renderer(() -> new OverlayTieredMachineRenderer(HV, GTCEu.id("block/machine/part/dual_hatch.import")))
             .allowCoverOnFront(true)
