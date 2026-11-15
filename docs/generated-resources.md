@@ -7,6 +7,7 @@
 - `src/generated/resources` 下的文件是生成结果。需要调整内容时修改 Java/Kotlin 中的生成源，再运行 `.\gradlew.bat runData` 并检查输出。
 - 不要直接编辑或用脚本改写生成文件作为最终实现。若生成结果不符合预期，继续修正生成源。
 - `runData --rerun-tasks` 只强制 Gradle 任务执行，不保证 Minecraft `HashCache` 重写磁盘上被外部修改过的文件。
+- 临时验证模组若向数据生成参数追加第二个 `--mod`，Forge 会把结果输出到 `src/generated/resources/<modid>/`。探针运行成功后，最终仍须使用标准单模组 `runData` 写回 `assets/` 与 `data/`，并检查目标文件内容和 mtime；不要将分目录结果手工复制为最终生成物。
 
 ## 语言数据
 
@@ -25,6 +26,8 @@ provider 按 `enInitialize()` → `cnInitialize()` → `twInitialize()` 的顺�
 - `twInitialize()` 使用 `ChineseConverter` 将同一份简体中文源转换为繁体中文。
 
 新增或修改中文文案时只维护翻译源中的简体中文，不单独维护 `zh_tw.json`。
+
+嵌套配置里出现同名字段时，不要让它们共用 `config.gtocore.option.<字段名>`。使用 `@Configurable(key = Configurable.LocalizationKey.FULL)`，并让 `@RegisterLanguage` 的键包含完整字段路径，例如 `config.gtocore.option.dimensions.enabled`；配置文件中的字段名保持原样。
 
 ## HashCache 强制回写
 

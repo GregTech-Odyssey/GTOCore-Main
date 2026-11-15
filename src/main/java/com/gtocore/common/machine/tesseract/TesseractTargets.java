@@ -1,8 +1,12 @@
 package com.gtocore.common.machine.tesseract;
 
+import com.gtolib.api.dimension.hooks.DimensionRemoteTarget;
+
 import com.gregtechceu.gtceu.api.transfer.key.RemoteKeyTarget;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 
 import com.suried.gtoutils.schedule.Cell;
@@ -56,6 +60,11 @@ public final class TesseractTargets {
 
     public void bind(int i, @Nullable Level level, @Nullable BlockPos pos) {
         if (targets[i].bind(level, pos)) rebound();
+    }
+
+    public void bind(int i, MinecraftServer server, ResourceKey<Level> key, BlockPos pos) {
+        ((DimensionRemoteTarget) (Object) targets[i]).gtolib$bindDimension(server, key, pos);
+        rebound();
     }
 
     private void rebound() {

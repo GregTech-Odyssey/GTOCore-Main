@@ -2,6 +2,7 @@ package com.gtocore.common.machine.multiblock.electric.voidseries;
 
 import com.gtocore.data.IdleReason;
 
+import com.gtolib.api.dimension.DimensionManager;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.machine.trait.EnergyContainerTrait;
 import com.gtolib.utils.GTOUtils;
@@ -59,7 +60,9 @@ public final class VoidTransporterMachine extends ElectricMultiblockMachine impl
             if (level == null) return;
             MinecraftServer server = level.getServer();
             if (server == null) return;
-            ServerLevel serverLevel = server.getLevel(dim);
+            var dimensions = DimensionManager.get(server);
+            if (!dimensions.mayTransfer(player, dim)) return;
+            ServerLevel serverLevel = dimensions.loadFor(player, dim);
             if (serverLevel == null) return;
             CompoundTag data = player.getPersistentData();
             data.putDouble("pos_x_" + m.id, player.getX());

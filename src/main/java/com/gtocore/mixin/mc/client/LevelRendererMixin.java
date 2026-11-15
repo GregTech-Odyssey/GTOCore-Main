@@ -1,6 +1,5 @@
 package com.gtocore.mixin.mc.client;
 
-import com.gtocore.client.renderer.fx.SolarStormFX;
 import com.gtocore.client.renderer.item.ItemCountRenderer;
 import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.common.data.DysonSphereEffects;
@@ -14,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -48,16 +46,6 @@ public abstract class LevelRendererMixin {
                               to = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;SUN_LOCATION:Lnet/minecraft/resources/ResourceLocation;")))
     private float dimDysonSunrise(float alpha) {
         return alpha * DysonSphereEffects.sunlightTransmission(Minecraft.getInstance().level);
-    }
-
-    @Inject(method = { "renderSnowAndRain", "tickRain" }, at = @At("HEAD"), cancellable = true)
-    private void replaceSolarRain(CallbackInfo ci) {
-        if (SolarStormFX.isSolarSurface(Minecraft.getInstance().level)) ci.cancel();
-    }
-
-    @ModifyExpressionValue(method = "renderSky", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
-    private float preserveSolarSkyBrightness(float rain) {
-        return SolarStormFX.isSolarSurface(Minecraft.getInstance().level) ? 0.0F : rain;
     }
 
     @Inject(method = "renderSky", at = @At("RETURN"))

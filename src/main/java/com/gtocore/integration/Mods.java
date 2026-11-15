@@ -38,7 +38,8 @@ public enum Mods {
     XAERO_WORLDMAP("xaeroworldmap"),
     XAERO_MINIMAP("xaerominimap"),
     TOOLBELT("toolbelt"),
-    CORPSE("corpse");
+    CORPSE("corpse"),
+    FTB_TEAMS("ftbteams"),;
 
     @Getter
     private final boolean loaded;
