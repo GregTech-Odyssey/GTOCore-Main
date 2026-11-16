@@ -50,6 +50,7 @@ import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.api.machine.impl.part.*;
 import com.gtolib.api.machine.part.ItemPartMachine;
+import com.gtolib.api.machine.storage.TravelAnchorRenderer;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -75,7 +76,6 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -1191,7 +1191,7 @@ public final class GTOMachines {
     public static final MachineDefinition TRAVEL_ANCHOR = machine("travel_anchor", "旅行锚", TravelAnchorMachine::new)
             .noneRotation()
             .tips(GTOMachineStories.travelAnchorTooltips)
-            .modelRenderer(() -> ResourceLocation.fromNamespaceAndPath("enderio", "block/travel_anchor"))
+            .renderer(TravelAnchorRenderer::new)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();
 

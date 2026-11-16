@@ -10,8 +10,11 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IFancyUIMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.feature.IStorageAppearance;
+import com.gregtechceu.gtceu.api.machine.trait.StorageAppearance;
 import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.PhantomItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
@@ -19,10 +22,13 @@ import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.TextField;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
+import com.gto.datasynclib.annotations.AdditionalHolder;
 import com.gto.datasynclib.annotations.SaveToDisk;
 
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
@@ -31,7 +37,7 @@ import com.lowdragmc.lowdraglib.misc.ItemStackTransfer;
 import java.util.Optional;
 
 @DataGeneratorScanned
-public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine, IMachineLife {
+public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine, IMachineLife, IStorageAppearance, IDropSaveMachine {
 
     private static final int NAME_MAX_LENGTH = 32;
     private static final String PAGE_SCROLLER = "travel_anchor.page";
@@ -56,10 +62,38 @@ public class TravelAnchorMachine extends MetaMachine implements IFancyUIMachine,
     @SaveToDisk
     private final ItemStackTransfer itemTransfer;
 
+    @AdditionalHolder
+    private final StorageAppearance storageAppearance = new StorageAppearance(this);
+
     public TravelAnchorMachine(MetaMachineBlockEntity holder) {
         super(holder);
         itemTransfer = new ItemStackTransfer();
         itemTransfer.setOnContentsChanged(this::onInventoryContentsChanged);
+    }
+
+    @Override
+    public StorageAppearance getStorageAppearance() {
+        return storageAppearance;
+    }
+
+    @Override
+    public boolean savePickClone() {
+        return false;
+    }
+
+    @Override
+    public boolean saveBreak() {
+        return storageAppearance.getBlock() != Blocks.AIR;
+    }
+
+    @Override
+    public void saveToItem(CompoundTag tag) {
+        storageAppearance.saveCustomPersistedData(tag, true);
+    }
+
+    @Override
+    public void loadFromItem(CompoundTag tag) {
+        storageAppearance.loadCustomPersistedData(tag);
     }
 
     @Override

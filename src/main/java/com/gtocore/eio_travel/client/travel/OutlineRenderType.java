@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
@@ -65,6 +66,9 @@ public class OutlineRenderType extends RenderType {
     @Override
     public void setupRenderState() {
         this.parent.setupRenderState();
+        // Apply at batch draw time, after the parent has enabled its depth state.
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
         if (!isIrisShaderActive() && Minecraft.getInstance().levelRenderer.entityTarget() != null) {
             Minecraft.getInstance().levelRenderer.entityTarget().bindWrite(false);
         }
@@ -76,6 +80,8 @@ public class OutlineRenderType extends RenderType {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
         }
         this.parent.clearRenderState();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
     }
 
     public static RenderType createLines(String name, int strength) {
