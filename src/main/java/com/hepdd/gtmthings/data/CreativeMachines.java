@@ -58,7 +58,7 @@ public class CreativeMachines {
             .tier(MAX)
             .register();
 
-    public static final MachineDefinition CREATIVE_INPUT_ASSEMBLY = GTMTHINGS_REGISTRATE.machine(
+    public static final MachineDefinition CREATIVE_DUAL_INPUT_HATCH = GTMTHINGS_REGISTRATE.machine(
             "creative_dual_input_hatch", CreativeInputDualHatchPartMachine::new)
             .rotationState(RotationState.ALL)
             .renderer(() -> new OverlayTieredMachineRenderer(MAX, GTCEu.id("block/machine/part/item_bus.import")))
