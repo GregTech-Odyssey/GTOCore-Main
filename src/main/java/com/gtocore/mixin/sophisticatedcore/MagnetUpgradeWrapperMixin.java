@@ -3,6 +3,7 @@ package com.gtocore.mixin.sophisticatedcore;
 import com.gtocore.utils.StxckUtil;
 
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.magnet.MagnetUpgradeWrapper;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,12 +20,12 @@ public class MagnetUpgradeWrapperMixin {
     private boolean gtocore$draining;
 
     @Shadow
-    private boolean tryToInsertItem(ItemEntity itemEntity) {
+    private boolean tryToInsertItem(Player player, ItemEntity itemEntity) {
         throw new AssertionError();
     }
 
     @Inject(method = "tryToInsertItem", at = @At("RETURN"))
-    private void gtocore$drainStackedItems(ItemEntity itemEntity, CallbackInfoReturnable<Boolean> cir) {
+    private void gtocore$drainStackedItems(Player player, ItemEntity itemEntity, CallbackInfoReturnable<Boolean> cir) {
         if (gtocore$draining || !cir.getReturnValueZ()) return;
         gtocore$draining = true;
         try {
@@ -35,7 +36,7 @@ public class MagnetUpgradeWrapperMixin {
                     StxckUtil.setExtraItemCount(itemEntity, extra);
                     break;
                 }
-                if (!tryToInsertItem(itemEntity)) break;
+                if (!tryToInsertItem(player, itemEntity)) break;
             }
         } finally {
             gtocore$draining = false;
