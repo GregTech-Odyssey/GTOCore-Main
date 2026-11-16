@@ -32,6 +32,8 @@ public final class HalfReactionUI extends GTRecipeTypeUI {
     private static final String TEXTURES = "gtocore:textures/gui/uipro/electrochemical/";
     private static final ResourceTexture CELL = new ResourceTexture(TEXTURES + "cell.png");
     private static final ResourceTexture INPUT_LINE = new ResourceTexture(TEXTURES + "input_line.png");
+    private static final ResourceTexture INPUT_BAR = INPUT_LINE.getSubTexture(0, 0, 1 / 68F, 2 / 29F);
+    private static final int MAX_INPUT_COLUMNS = 7;
     private static final ResourceTexture ION_ARROW = new ResourceTexture(TEXTURES + "ion_arrow.png");
     private static final ResourceTexture PRODUCT_ARROW = new ResourceTexture(TEXTURES + "product_arrow.png");
     private static final ResourceTexture IONS = new ResourceTexture(TEXTURES + "ions.png");
@@ -116,16 +118,19 @@ public final class HalfReactionUI extends GTRecipeTypeUI {
         private final UIElement products;
 
         private HalfCellCanvas(RecipeSlots slots) {
-            inputExtra = extraRows(count(slots, IO.IN), 4, 1);
+            int inputs = count(slots, IO.IN);
+            int columns = Math.min(MAX_INPUT_COLUMNS, Math.max(4, inputs));
+            inputExtra = extraRows(inputs, columns, 1);
             int outputExtra = extraRows(count(slots, IO.OUT), 2, 2);
             baseHeight = HEIGHT + inputExtra + outputExtra;
             layout(l -> l.size(WIDTH, baseHeight));
             setBackground(UITheme.PANEL);
             image(this, CELL, 12, 55 - 16 + inputExtra, 71, 86);
             image(this, INPUT_LINE, 30, 40 - 16 + inputExtra, 68, 29);
+            if (columns > 4) image(this, INPUT_BAR, 98, 40 - 16 + inputExtra, (columns - 4) * SLOT_SIZE, 2);
             image(this, IONS, 89, 70 - 16 + inputExtra, 20, 18);
             image(this, ION_ARROW, 91, 89 - 16 + inputExtra, 37, 10);
-            placeSlots(this, slots, IO.IN, 4, 4, 28, 20 - 16);
+            placeSlots(this, slots, IO.IN, columns, 4, 28, 20 - 16);
             image(this, UITheme.FLUID_SLOT, 134, 83 - 16 + inputExtra, SLOT_SIZE, SLOT_SIZE);
             image(this, UITheme.FLUID_SLOT, 152, 83 - 16 + inputExtra, SLOT_SIZE, SLOT_SIZE);
 

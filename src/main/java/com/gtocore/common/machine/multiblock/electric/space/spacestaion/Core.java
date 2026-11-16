@@ -13,7 +13,7 @@ import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.IdleReason;
 import com.gtolib.api.recipe.RecipeBuilder;
 import com.gtolib.api.recipe.TierDataKey;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
@@ -63,7 +63,7 @@ public class Core extends AbstractSpaceStation implements ILargeSpaceStationMach
 
     private final ReferenceOpenHashSet<ILargeSpaceStationMachine> subMachinesFlat;
     private final TierCasingTrait tierCasingTrait;
-    private final MachineScope<Core> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, Core.class, this, self::formed));
+    private final MachineScopeTrait<Core> scope = new MachineScopeTrait<>(this, (s, self) -> IIWirelessInteractor.provide(s, Core.class, this, self::formed));
 
     @Getter
     private boolean dirty = false;

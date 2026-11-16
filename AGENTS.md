@@ -111,5 +111,6 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 保留用户已有和无关改动，只处理当前任务范围内的文件。
 - 提交只带自己的路径（`git commit --only <paths>` 或 `git commit -F msg -- <paths>`）：同一工作区里可能有别人并行 `git add`，不带路径的 `git commit` 与 `git commit --amend` 会把对方的暂存一起提交。误提交后用 `git reset --mixed <上一个好提交>` 重做，再把对方原本暂存的文件原样 `git add` 回去。
 - 推送前先 `git fetch` 并用 `git rev-list --left-right --count origin/<branch>...HEAD` 看差距：远端可能已有内容等价的提交，这种情况不要 force，reset 到远端后只补真正的增量。详细流程与其它坑见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
+- **PR、issue、评论不靠提交仓库文件配图**：`gh` CLI 不能上传到 `user-attachments`，禁止为了配图把截图提交进仓库（如 `docs/images/`、`.github/assets/`），再用 `raw.githubusercontent.com` 或 `blob/...?raw=true` 链接引用。截图交给用户在网页上拖进 PR 或评论，或改用文字说明。
 - 报告实际执行的验证；若某项必要检查不可运行，说明具体原因，不用无关检查代替。
 - 若本次修改新增了可长期复用的仓库约束，将简短触发条件放在本文件，将详细流程放进 `docs/`，避免再次把全部背景塞回常驻上下文。

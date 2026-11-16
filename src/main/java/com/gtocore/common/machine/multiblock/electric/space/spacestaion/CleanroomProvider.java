@@ -5,7 +5,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.feature.multiblock.IDroneControlCenterMachine;
 import com.gtolib.api.machine.impl.part.DroneHatchPartMachine;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.ICleanroomProvider;
@@ -34,7 +34,7 @@ public class CleanroomProvider extends Extension implements IDroneControlCenterM
 
     private int cleanroomTier;
     private final List<DroneHatchPartMachine> droneHatchPartMachine = new ArrayList<>();
-    private final MachineScope<CleanroomProvider> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, IDroneControlCenterMachine.class, this, self::formed));
+    private final MachineScopeTrait<CleanroomProvider> scope = new MachineScopeTrait<>(this, (s, self) -> IIWirelessInteractor.provide(s, IDroneControlCenterMachine.class, this, self::formed));
 
     public CleanroomProvider(MetaMachineBlockEntity metaMachineBlockEntity) {
         super(metaMachineBlockEntity);

@@ -1,6 +1,6 @@
 package com.gtocore.mixin.gtm.machine;
 
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -19,16 +19,16 @@ public abstract class MultiblockControllerMachineMixin {
 
     @Inject(method = "onStructureFormed", at = @At("TAIL"), remap = false)
     private void gto$formed(CallbackInfo ci) {
-        MachineScope.changed((MultiblockControllerMachine) (Object) this);
+        MachineScopeTrait.changed((MultiblockControllerMachine) (Object) this);
     }
 
     @Inject(method = "onStructureInvalid", at = @At("TAIL"), remap = false)
     private void gto$invalid(CallbackInfo ci) {
-        MachineScope.changed((MultiblockControllerMachine) (Object) this);
+        MachineScopeTrait.changed((MultiblockControllerMachine) (Object) this);
     }
 
     @Inject(method = "onUnload", at = @At("TAIL"), remap = false)
     private void gto$partsLostController(CallbackInfo ci) {
-        for (var part : parts) MachineScope.changed(part.self());
+        for (var part : parts) MachineScopeTrait.changed(part.self());
     }
 }

@@ -1,6 +1,6 @@
 package com.gtocore.mixin.farmersdelight;
 
-import com.gtolib.utils.TagUtils;
+import com.gtocore.data.tag.Tags;
 
 import com.gregtechceu.gtceu.api.GTValues;
 
@@ -46,7 +46,7 @@ public abstract class CuttingBoardBlockEntityMixin extends SyncedBlockEntity {
     @Redirect(method = "processStoredItemUsingTool", at = @At(value = "INVOKE", target = "Ljava/util/Optional;ifPresent(Ljava/util/function/Consumer;)V", remap = false), remap = false)
     private void redirectIfPresent(Optional<CuttingBoardRecipe> instance, Consumer<CuttingBoardRecipe> action, @Local(argsOnly = true, name = "arg2") @Nullable Player player) {
         if (!(level instanceof ServerLevel)) return;
-        var cutResult = this.getStoredItem().is(TagUtils.createForgeItemTag("crops/onion")) && instance.isPresent();
+        var cutResult = this.getStoredItem().is(Tags.CROPS_ONION) && instance.isPresent();
         instance.ifPresent(action);
 
         if (cutResult) {

@@ -1,7 +1,7 @@
 package com.gtocore.mixin.gtm.machine;
 
 import com.gtolib.api.capability.IIWirelessInteractor;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
@@ -15,11 +15,11 @@ public abstract class MetaMachineMixin implements IIWirelessInteractor.IWireless
 
     @Inject(method = "setOwnerUUID", at = @At("TAIL"), remap = false)
     private void gto$ownerChanged(CallbackInfo ci) {
-        MachineScope.changed((MetaMachine) (Object) this);
+        MachineScopeTrait.changed((MetaMachine) (Object) this);
     }
 
     @Inject(method = "loadCustomPersistedData", at = @At("TAIL"), remap = false)
     private void gto$reloaded(CallbackInfo ci) {
-        MachineScope.changed((MetaMachine) (Object) this);
+        MachineScopeTrait.changed((MetaMachine) (Object) this);
     }
 }

@@ -1,6 +1,6 @@
 package com.gtocore.mixin.gtm.machine;
 
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.machine.multiblock.part.MultiblockPartMachine;
 
@@ -14,11 +14,11 @@ public abstract class MultiblockPartMachineMixin {
 
     @Inject(method = "addedToController", at = @At("TAIL"), remap = false)
     private void gto$added(CallbackInfo ci) {
-        MachineScope.changed((MultiblockPartMachine) (Object) this);
+        MachineScopeTrait.changed((MultiblockPartMachine) (Object) this);
     }
 
     @Inject(method = "removedFromController", at = @At("TAIL"), remap = false)
     private void gto$removed(CallbackInfo ci) {
-        MachineScope.changed((MultiblockPartMachine) (Object) this);
+        MachineScopeTrait.changed((MultiblockPartMachine) (Object) this);
     }
 }

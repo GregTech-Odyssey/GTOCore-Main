@@ -11,7 +11,7 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoRecipeLogicMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.api.wireless.energy.GridBody;
 import com.gtolib.api.wireless.energy.IWirelessGridProvider;
 import com.gtolib.api.wireless.energy.Provider;
@@ -73,14 +73,14 @@ public final class WirelessDimensionRepeaterMachine extends NoRecipeLogicMultibl
     private ObjectList<ResourceKey<Level>> targetOptions;
     private final Cell<Spec> relay = Cell.of(null);
     private final Cell<Boolean> retiring = Cell.of(Boolean.FALSE);
-    private final MachineScope<WirelessDimensionRepeaterMachine> scope = new MachineScope<>(this, this::mount);
+    private final MachineScopeTrait<WirelessDimensionRepeaterMachine> scope = new MachineScopeTrait<>(this, this::mount);
 
     public WirelessDimensionRepeaterMachine(MetaMachineBlockEntity holder) {
         super(holder);
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.INTEGRAL_FRAMEWORK_TIER);
     }
 
-    private void mount(Scope opened, MachineScope<WirelessDimensionRepeaterMachine> self) {
+    private void mount(Scope opened, MachineScopeTrait<WirelessDimensionRepeaterMachine> self) {
         opened.watch(() -> {
             var spec = relay.get();
             return spec == null ? null : new Registration(self.owner(), spec);

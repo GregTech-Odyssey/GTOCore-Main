@@ -2,7 +2,7 @@ package com.gtocore.common.machine.multiblock.part.ae;
 
 import com.gtocore.common.machine.trait.ProxySlotRecipeHandler;
 
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.api.wireless.PartProxyConnections;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -74,10 +74,10 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
 
     public MEPatternBufferProxyPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.LuV, IO.IN);
-        new MachineScope<>(this, this::mount);
+        new MachineScopeTrait<>(this, this::mount);
     }
 
-    private void mount(Scope opened, MachineScope<MEPatternBufferProxyPartMachine> self) {
+    private void mount(Scope opened, MachineScopeTrait<MEPatternBufferProxyPartMachine> self) {
         opened.select(() -> self.get(MEPatternBufferProxyPartMachine::getBufferPos), (bound, pos) -> {
             var level = getLevel();
             if (level == null || pos == null) return;
@@ -141,7 +141,7 @@ public final class MEPatternBufferProxyPartMachine extends WorkableTieredIOPartM
         if (previous != null && previous != target) previous.removeProxy(this);
         buffer = target;
         if (target != null) bufferPos = target.getPos();
-        MachineScope.changed(this);
+        MachineScopeTrait.changed(this);
         var old = proxySlotRecipeHandler;
         old.release();
         if (target == null) {

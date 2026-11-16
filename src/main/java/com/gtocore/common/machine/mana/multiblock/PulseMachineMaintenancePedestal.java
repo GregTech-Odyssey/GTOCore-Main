@@ -11,7 +11,7 @@ import com.gtolib.api.machine.impl.part.DroneHatchPartMachine;
 import com.gtolib.api.machine.multiblock.NoEnergyMultiblockMachine;
 import com.gtolib.api.misc.Drone;
 import com.gtolib.api.network.NetworkPack;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -65,7 +65,7 @@ public class PulseMachineMaintenancePedestal extends NoEnergyMultiblockMachine i
     private PulseMachineMaintenanceCore core;
     @SaveToDisk(defaultValue = "0")
     private int totalResolvedProblems = 0;
-    private final MachineScope<PulseMachineMaintenancePedestal> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, IDroneControlCenterMachine.class, this, self::formed));
+    private final MachineScopeTrait<PulseMachineMaintenancePedestal> scope = new MachineScopeTrait<>(this, (s, self) -> IIWirelessInteractor.provide(s, IDroneControlCenterMachine.class, this, self::formed));
 
     public PulseMachineMaintenancePedestal(MetaMachineBlockEntity holder) {
         super(holder);

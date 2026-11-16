@@ -6,7 +6,7 @@ import com.gtocore.common.item.CoordinateCardBehavior;
 import com.gtolib.api.ae2.PatternTarget;
 import com.gtolib.api.ae2.machine.PatternTargetSource;
 import com.gtolib.api.player.IEnhancedPlayer;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
@@ -85,7 +85,7 @@ public class AdvancedTesseractMachine extends MetaMachine implements IFancyUIMac
 
     public AdvancedTesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        new MachineScope<>(this, (scope, self) -> remotes.mount(scope));
+        new MachineScopeTrait<>(this, (scope, self) -> remotes.mount(scope));
         inventory = NotifiableInventory.items(this, MAX_TARGETS, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
         inventory.storage.setOnChanged(this::refreshTargets);
     }

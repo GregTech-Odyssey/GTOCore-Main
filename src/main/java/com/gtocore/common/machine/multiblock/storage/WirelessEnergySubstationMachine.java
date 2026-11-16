@@ -20,7 +20,7 @@ import com.gtolib.api.machine.feature.multiblock.ITierCasingMachine;
 import com.gtolib.api.machine.multiblock.NoRecipeLogicMultiblockMachine;
 import com.gtolib.api.machine.trait.TierCasingTrait;
 import com.gtolib.api.recipe.TierDataKey;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.api.wireless.energy.EnergyAccount;
 import com.gtolib.api.wireless.energy.GridClock;
 import com.gtolib.api.wireless.energy.GridView;
@@ -233,14 +233,14 @@ public final class WirelessEnergySubstationMachine extends NoRecipeLogicMultiblo
     private int formations;
     private final Cell<TowerSpec> tower = Cell.of(null);
     private final Cell<Boolean> retiring = Cell.of(Boolean.FALSE);
-    private final MachineScope<WirelessEnergySubstationMachine> scope = new MachineScope<>(this, this::mount);
+    private final MachineScopeTrait<WirelessEnergySubstationMachine> scope = new MachineScopeTrait<>(this, this::mount);
 
     public WirelessEnergySubstationMachine(MetaMachineBlockEntity holder) {
         super(holder);
         tierCasingTrait = new TierCasingTrait(this, GTORecipeDataKeys.GLASS_TIER);
     }
 
-    private void mount(Scope opened, MachineScope<WirelessEnergySubstationMachine> self) {
+    private void mount(Scope opened, MachineScopeTrait<WirelessEnergySubstationMachine> self) {
         opened.watch(() -> {
             var spec = tower.get();
             return spec == null ? null : new Registration(self.owner(), spec);

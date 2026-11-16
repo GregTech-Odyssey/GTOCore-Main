@@ -4,7 +4,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.item.CoordinateCardBehavior;
 
 import com.gtolib.api.player.IEnhancedPlayer;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.cover.CoverBehavior;
@@ -63,7 +63,7 @@ public class TesseractMachine extends MetaMachine implements IFancyUIMachine, IM
 
     public TesseractMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        new MachineScope<>(this, (scope, self) -> remotes.mount(scope));
+        new MachineScopeTrait<>(this, (scope, self) -> remotes.mount(scope));
         inventory = NotifiableInventory.items(this, 1, IO.NONE, IO.NONE).setFilter(k -> k instanceof AEItemKey item && item.getItem() == GTOItems.COORDINATE_CARD.asItem());
         inventory.storage.setOnChanged(() -> {
             onChanged();

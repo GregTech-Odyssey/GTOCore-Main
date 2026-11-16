@@ -7,7 +7,7 @@ import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.capability.IIWirelessInteractor;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.IdleReason;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.utils.ClientUtil;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -67,7 +67,7 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     long availableEu;
 
     final Object2BooleanSortedMap<WaterPurificationUnitMachine> waterPurificationUnitMachineMap = new Object2BooleanRBTreeMap<>(Comparator.<WaterPurificationUnitMachine>comparingLong(a -> -a.multiple).thenComparingLong(a -> a.getPos().asLong()));
-    private final MachineScope<WaterPurificationPlantMachine> scope = new MachineScope<>(this, (s, self) -> IIWirelessInteractor.provide(s, WaterPurificationPlantMachine.class, this, self::formed));
+    private final MachineScopeTrait<WaterPurificationPlantMachine> scope = new MachineScopeTrait<>(this, (s, self) -> IIWirelessInteractor.provide(s, WaterPurificationPlantMachine.class, this, self::formed));
 
     public WaterPurificationPlantMachine(MetaMachineBlockEntity holder) {
         super(holder);

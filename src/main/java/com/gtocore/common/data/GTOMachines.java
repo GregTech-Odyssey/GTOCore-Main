@@ -38,6 +38,7 @@ import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
 import com.gtocore.common.machine.tesseract.AdvancedTesseractMachine;
 import com.gtocore.common.machine.tesseract.TesseractMachine;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.tag.Tags;
 import com.gtocore.integration.ae.wireless.MeWirelessConnectMachine;
 
 import com.gtolib.GTOCore;
@@ -49,7 +50,6 @@ import com.gtolib.api.machine.feature.multiblock.IParallelMachine;
 import com.gtolib.api.machine.impl.CraftingStationMachine;
 import com.gtolib.api.machine.impl.part.*;
 import com.gtolib.api.machine.part.ItemPartMachine;
-import com.gtolib.utils.TagUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -929,10 +929,7 @@ public final class GTOMachines {
             .allowCoverOnFront(true)
             .register();
 
-    public static final MachineDefinition LENS_HOUSING = machine("lens_housing", "透镜仓", h -> {
-        var lenses = TagUtils.createForgeItemTag("lenses");
-        return new ItemPartMachine(h, 1, i -> i.is(lenses));
-    })
+    public static final MachineDefinition LENS_HOUSING = machine("lens_housing", "透镜仓", h -> new ItemPartMachine(h, 1, i -> i.is(Tags.LENSES)))
             .tier(EV)
             .allRotation()
             .notAllowSharedTooltips()

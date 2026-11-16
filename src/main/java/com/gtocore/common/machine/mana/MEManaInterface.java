@@ -6,7 +6,7 @@ import com.gtocore.utils.ManaUnification;
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.machine.mana.feature.IWirelessManaContainerHolder;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.api.wireless.TeamContainerCache;
 import com.gtolib.api.wireless.WirelessManaContainer;
 
@@ -77,7 +77,7 @@ public final class MEManaInterface extends MetaMachine implements
     private int priority = 0;
     @Nullable
     private UUID mountedTeam;
-    private final MachineScope<MEManaInterface> scope = new MachineScope<>(this, (opened, self) -> {
+    private final MachineScopeTrait<MEManaInterface> scope = new MachineScopeTrait<>(this, (opened, self) -> {
         mountedTeam = self.team();
         opened.watch(self::team, this::identityChanged);
     });

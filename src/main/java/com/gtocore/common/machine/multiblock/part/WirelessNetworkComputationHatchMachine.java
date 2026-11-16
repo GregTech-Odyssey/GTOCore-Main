@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.multiblock.part;
 
 import com.gtolib.api.machine.trait.WirelessComputationContainerTrait;
-import com.gtolib.api.scope.MachineScope;
+import com.gtolib.api.scope.MachineScopeTrait;
 import com.gtolib.api.wireless.WirelessComputationContainer;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
@@ -41,11 +41,11 @@ public final class WirelessNetworkComputationHatchMachine extends WorkableMultib
     public WirelessNetworkComputationHatchMachine(MetaMachineBlockEntity holder, boolean transmitter) {
         super(holder);
         trait = new WirelessComputationContainerTrait(this, transmitter);
-        if (transmitter) new MachineScope<>(this, (opened, self) -> opened.effect(() -> link(self), Link::add, Link::remove));
+        if (transmitter) new MachineScopeTrait<>(this, (opened, self) -> opened.effect(() -> link(self), Link::add, Link::remove));
     }
 
     @Nullable
-    private Link link(MachineScope<WirelessNetworkComputationHatchMachine> self) {
+    private Link link(MachineScopeTrait<WirelessNetworkComputationHatchMachine> self) {
         if (self.team() == null || !(self.controller() instanceof IOpticalComputationProvider provider)) return null;
         var container = trait.getWirelessComputationContainer();
         return container == null ? null : new Link(container, provider);
