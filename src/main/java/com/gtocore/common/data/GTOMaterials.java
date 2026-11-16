@@ -3,7 +3,6 @@ package com.gtocore.common.data;
 import com.gtocore.common.data.material.*;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import java.util.Map;
 
@@ -1585,11 +1584,5 @@ public final class GTOMaterials {
         MaterialComposite.init();
         MaterialIgnored.init();
         MaterialPostInit.init();
-
-        MATERIAL_VOLTAGE = Map.of(
-                GTMaterials.Gold, VA[LV],
-                GTMaterials.Copper, VH[LV],
-                GTMaterials.Cupronickel, VH[LV],
-                GTMaterials.AnnealedCopper, VH[LV]);
     }
 }

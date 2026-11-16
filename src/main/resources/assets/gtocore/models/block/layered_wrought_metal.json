@@ -1,0 +1,115 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "translucent",
+  "textures": {
+    "particle": "#primary",
+    "primary": "gtocore:block/material_sets/layered_wrought_iron/block",
+    "secondary": "gtocore:block/material_sets/layered_wrought_iron/block_secondary",
+    "overlay": "gtocore:block/material_sets/layered_wrought_iron/block_overlay"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": {
+          "texture": "#primary",
+          "cullface": "down",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#primary",
+          "cullface": "up",
+          "tintindex": 0
+        },
+        "north": {
+          "texture": "#primary",
+          "cullface": "north",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#primary",
+          "cullface": "south",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#primary",
+          "cullface": "west",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#primary",
+          "cullface": "east",
+          "tintindex": 0
+        }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": {
+          "texture": "#secondary",
+          "cullface": "down",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#secondary",
+          "cullface": "up",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#secondary",
+          "cullface": "north",
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#secondary",
+          "cullface": "south",
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#secondary",
+          "cullface": "west",
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#secondary",
+          "cullface": "east",
+          "tintindex": 1
+        }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "shade": false,
+      "faces": {
+        "down": {
+          "texture": "#overlay",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#overlay",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#overlay",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#overlay",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#overlay",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#overlay",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}
