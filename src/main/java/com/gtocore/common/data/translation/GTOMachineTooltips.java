@@ -1440,9 +1440,10 @@ public final class GTOMachineTooltips {
         t.feature(t.tr("自动链接§e32§r个方块半径内的净化单元控制器", "Automatically link purification unit controllers within a §e32§r-blocks radius"));
         t.feature(t.tr("主机GUI中可查看链接范围", "The linking range can be viewed in the controller GUI"));
         t.feature(t.tr("为链接的单元控制器提供电力", "Provide power to linked unit controllers"));
-        t.formula(t.tr("默认耗能 = 输出水量 × 2^(净化水等级 - 2)", "Default energy = output water × 2^(purification tier - 2)"));
+        t.formula(t.tr("耗电 = 输入水量(mB) × 2^(净化等级 - 2) EU/t", "Power = input water (mB) × 2^(purification tier - 2) EU/t"));
         t.heading(t.tr("处理周期系统", "Processing Cycle System"));
         t.statText(t.tr("固定处理周期: 120 秒", "Fixed processing cycle: 120 seconds"));
+        t.feature(t.tr("净化单元1并行=每个周期处理1B水", "Purification units: 1 parallel = 1B of water per cycle"));
         t.formula(t.tr("所有控制器同步周期，净化水输出转化率 = 输入水量 × 90%", "All controllers sync cycle — purified output = input water × 90%"));
         t.warning(t.tr("前三道净化工序概率判定失败时，返还90%的输入水；其余工序判定失败时不返还净化水", "If the chance roll fails during the first three purification steps, 90% of the input water is returned; failed rolls in later steps return no purified water"));
     });

@@ -433,7 +433,7 @@ public final class EvChapter {
 
     public static final Quest CLARIFIER_PURIFICATION_UNIT = CHAPTER.quest("clarifier_purification_unit", q -> q
             .at(9, -12)
-            .desc(d -> d.line("净化水机器并行需要调至{1000}的整数倍才会运行，并行数决定了一次周期内制作多少水和耗电量", GREEN))
+            .desc(d -> d.line("净化水机器的{1}并行对应每个周期处理{1B}水，并行数决定了一次周期内制作多少水和耗电量", GREEN, GREEN))
             .task(Task.item(MultiBlockB.CLARIFIER_PURIFICATION_UNIT))
             .dependsOn(WATER_PURIFICATION_PLANT));
 

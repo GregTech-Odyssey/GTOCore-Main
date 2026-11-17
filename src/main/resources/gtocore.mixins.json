@@ -34,6 +34,7 @@
     "emi.RecipeScreenMixin",
     "emi.RecipeTabMixin",
     "extrabotany.HUDMixin",
+    "flerovium.FastSimpleFrustumMixin",
     "forge.ClientModLoaderMixin",
     "ftbu.FTBUltimineClientAccessor",
     "ftbxmodcompat.FTBQuestsJEIIntegrationMixin",

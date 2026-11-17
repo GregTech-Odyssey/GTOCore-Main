@@ -40,6 +40,8 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     /// 本轮产出下一级净化水的成功率（0-100），仅在运行时有意义
     abstract double getSuccessChance();
 
+    private static final long MB_PER_PARALLEL = 1000;
+
     private final NetCache<WaterPurificationPlantMachine> netCache = new NetCache<>();
     GTRecipe recipe;
     RecipeHandlerUnit unit;
@@ -49,10 +51,35 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
     private final ConditionalSubscriptionHandler tickSubs;
 
     WaterPurificationUnitMachine(MetaMachineBlockEntity holder, long multiple) {
-        super(holder, m -> IParallelMachine.MAX_PARALLEL, m -> 1000L);
+        super(holder, m -> IParallelMachine.MAX_PARALLEL, m -> MB_PER_PARALLEL);
         this.multiple = multiple;
         tickSubs = new ConditionalSubscriptionHandler(this, this::tickUpdate, 80, this::isFormed);
         customParallelTrait.setDefaultMax(false);
+    }
+
+    @Override
+    public long getParallel() {
+        return Math.max(getMinParallel(), super.getParallel() / MB_PER_PARALLEL);
+    }
+
+    @Override
+    public void setParallel(long number) {
+        super.setParallel(Math.clamp(number, getMinParallel(), getMaxParallel()) * MB_PER_PARALLEL);
+    }
+
+    @Override
+    public long getMinParallel() {
+        return super.getMinParallel() / MB_PER_PARALLEL;
+    }
+
+    @Override
+    public long getMaxParallel() {
+        return super.getMaxParallel() / MB_PER_PARALLEL;
+    }
+
+    @Override
+    public Component getParallelHint() {
+        return WaterPurificationPlantMachine.PARALLEL_HINT;
     }
 
     private void tickUpdate() {
@@ -70,7 +97,7 @@ abstract class WaterPurificationUnitMachine extends NoEnergyCustomParallelMultib
         if (machine == null) {
             return 0;
         }
-        return Math.min(super.getParallel(), (machine.availableEu << 1) / multiple);
+        return Math.min(getParallel() * MB_PER_PARALLEL, (machine.availableEu << 1) / multiple);
     }
 
     void setWorking(boolean isWorkingAllowed) {

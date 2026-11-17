@@ -50,6 +50,8 @@ public final class WaterPurificationPlantMachine extends ElectricMultiblockMachi
     private static final Component LINK_RANGE_TOOLTIP = Component.translatable("gtocore.machine.water_purification_plant.link_range.tooltip");
     @RegisterLanguage(cn = "成功率", en = "Success Chance")
     static final Component SUCCESS_CHANCE = Component.translatable("gtocore.machine.water_purification_unit.success_chance.label");
+    @RegisterLanguage(cn = "1并行=每个周期处理1B水", en = "1 parallel = 1B of water per cycle")
+    static final Component PARALLEL_HINT = Component.translatable("gtocore.machine.water_purification_unit.parallel_hint");
     private static final Component SHOW_RANGE = Component.translatable("gtocore.digital_miner.show_range");
 
     static final int DURATION = 2400;

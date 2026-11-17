@@ -22,6 +22,9 @@ public final class MixinConfigPlugin extends AbstractMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtocore.mixin.morered.")) {
             return Mods.MORE_RED.isLoaded();
         }
+        if (mixinClassName.startsWith("com.gtocore.mixin.flerovium.")) {
+            return Mods.FLEROVIUM.isLoaded();
+        }
         if (mixinClassName.startsWith("com.gtocore.mixin.inventoryessentials.")) {
             if (mixinClassName.endsWith(".ServerInventoryTransfersMixin")) return Mods.INVENTORY_ESSENTIALS.isLoaded() && Mods.CHISEL.isLoaded();
             return Mods.INVENTORY_ESSENTIALS.isLoaded();
