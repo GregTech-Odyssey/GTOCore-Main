@@ -60,6 +60,7 @@ public final class OrganRecipes {
                 'E', new MaterialEntry(TagPrefix.ingot, GTMaterials.Titanium));
 
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("mind_implant")
+                .circuitMeta(32)
                 .inputItems(MonitorRegistries.DISPLAY_PANEL.asStack())
                 .inputItems(GTItems.SENSOR_MV)
                 .inputItems(CustomTags.MV_CIRCUITS, 2)
@@ -70,6 +71,7 @@ public final class OrganRecipes {
                 .duration(200)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("drone_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.EMITTER_HV)
                 .inputItems(GTItems.SENSOR_HV)
                 .inputItems(CustomTags.HV_CIRCUITS, 2)
@@ -80,6 +82,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("fault_vision_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_HV_LITHIUM)
                 .inputItems(GTItems.SENSOR_HV, 2)
                 .inputItems(CustomTags.HV_CIRCUITS, 2)
@@ -90,6 +93,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("stock_sense_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_HV_LITHIUM)
                 .inputItems(GTItems.SENSOR_HV)
                 .inputItems(GTItems.EMITTER_HV)
@@ -101,6 +105,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("current_vision_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_MV_LITHIUM)
                 .inputItems(GTItems.SENSOR_MV)
                 .inputItems(GTItems.VOLTAGE_COIL_MV, 2)
@@ -112,6 +117,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("remote_touch_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_EV_VANADIUM)
                 .inputItems(GTItems.EMITTER_EV)
                 .inputItems(GTItems.SENSOR_EV)
@@ -124,6 +130,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("team_marker_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_MV_LITHIUM)
                 .inputItems(GTItems.EMITTER_MV, 2)
                 .inputItems(CustomTags.MV_CIRCUITS, 2)
@@ -134,6 +141,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("restock_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_EV_VANADIUM)
                 .inputItems(GTItems.CONVEYOR_MODULE_EV, 2)
                 .inputItems(GTItems.SENSOR_EV)
@@ -145,6 +153,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("tool_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_HV_LITHIUM)
                 .inputItems(GTItems.ROBOT_ARM_HV, 2)
                 .inputItems(GTItems.ELECTRIC_MOTOR_HV, 2)
@@ -156,6 +165,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("beam_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_EV_VANADIUM)
                 .inputItems(GTItems.EMITTER_EV, 4)
                 .inputItems(CustomTags.EV_CIRCUITS, 4)
@@ -166,6 +176,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("cannon_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_IV_VANADIUM)
                 .inputItems(GTItems.EMITTER_IV, 4)
                 .inputItems(GTItems.FIELD_GENERATOR_IV)
@@ -177,6 +188,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("tether_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_EV_VANADIUM)
                 .inputItems(GTItems.FIELD_GENERATOR_EV, 2)
                 .inputItems(GTItems.EMITTER_EV)
