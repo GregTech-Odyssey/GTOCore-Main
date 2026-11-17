@@ -70,6 +70,7 @@ public final class OrganRecipes {
                 .duration(200)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("drone_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.EMITTER_HV)
                 .inputItems(GTItems.SENSOR_HV)
                 .inputItems(CustomTags.HV_CIRCUITS, 2)
@@ -80,6 +81,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("fault_vision_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_HV_LITHIUM)
                 .inputItems(GTItems.SENSOR_HV, 2)
                 .inputItems(CustomTags.HV_CIRCUITS, 2)
@@ -156,6 +158,7 @@ public final class OrganRecipes {
                 .duration(300)
                 .save();
         GTORecipeTypes.ASSEMBLER_RECIPES.builder("beam_implant")
+                .circuitMeta(32)
                 .inputItems(GTItems.BATTERY_EV_VANADIUM)
                 .inputItems(GTItems.EMITTER_EV, 4)
                 .inputItems(CustomTags.EV_CIRCUITS, 4)
