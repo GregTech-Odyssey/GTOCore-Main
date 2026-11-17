@@ -7654,6 +7654,7 @@
   "gtocore.me_cpu.started": "开始：%s",
   "gtocore.me_cpu.storage": "占用：%s / %s B",
   "gtocore.me_cpu.stored": "已存储",
+  "gtocore.me_cpu.threads": "线程：%s（可同时进行的合成任务数）",
   "gtocore.me_cpu.time": "已用 %s · 预计剩余 %s",
   "gtocore.me_cpu.unknown": "未知",
   "gtocore.me_front": "ME仓只允许正面连接",
