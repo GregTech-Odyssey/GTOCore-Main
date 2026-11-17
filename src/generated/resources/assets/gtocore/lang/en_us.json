@@ -7654,6 +7654,7 @@
   "gtocore.me_cpu.started": "Started: %s",
   "gtocore.me_cpu.storage": "Storage: %s / %s B",
   "gtocore.me_cpu.stored": "Stored",
+  "gtocore.me_cpu.threads": "Threads: %s (crafting jobs that can run at once)",
   "gtocore.me_cpu.time": "Elapsed %s | ETA %s",
   "gtocore.me_cpu.unknown": "Unknown",
   "gtocore.me_front": "ME hatch only allows connection from the front side.",

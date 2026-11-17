@@ -7793,6 +7793,7 @@
   "gtocore.me_cpu.started": "開始：%s",
   "gtocore.me_cpu.storage": "佔用：%s / %s B",
   "gtocore.me_cpu.stored": "已存儲",
+  "gtocore.me_cpu.threads": "線程：%s（可同時進行的合成任務數）",
   "gtocore.me_cpu.time": "已用 %s · 預計剩餘 %s",
   "gtocore.me_cpu.unknown": "未知",
   "gtocore.me_front": "ME倉只允許正面連接",
