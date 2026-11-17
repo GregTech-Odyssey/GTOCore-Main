@@ -57,13 +57,12 @@ import com.lowdragmc.lowdraglib.gui.texture.ResourceTexture;
 import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import dev.vfyjxf.taffy.style.AlignContent;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -781,7 +780,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             }
         }
         List<IntObjectHolder<ItemStack>> extraMaterials = structure.extraMaterials();
-        Map<Item, Integer> inventoryCount = new HashMap<>();
+        Reference2IntOpenHashMap inventoryCount = new Reference2IntOpenHashMap<>();
         int coordinateCards = 0;
         var storage = inventory.storage;
         for (int i = 0; i < storage.size(); i++) {
@@ -789,7 +788,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
             if (count <= 0) continue;
             var key = storage.keyAt(i);
             Item item = key.getItem();
-            inventoryCount.put(item, inventoryCount.getOrDefault(item, 0) + (int) count);
+            inventoryCount.addTo(item, (int) count);
             if (item == GTOItems.COORDINATE_CARD.asItem()) {
                 if (coordinateCards == 0) pos1 = getStoredCoordinates(key.getTag());
                 else pos2 = getStoredCoordinates(key.getTag());
@@ -799,7 +798,7 @@ public class PlatformDeploymentMachine extends MetaMachine implements IFancyUIMa
         for (IntObjectHolder<ItemStack> holder : extraMaterials) {
             Item item = holder.value.getItem();
             int required = holder.priority;
-            int available = inventoryCount.getOrDefault(item, 0);
+            int available = inventoryCount.getInt(item);
             if (available < required) {
                 materialsSufficient = false;
                 break;

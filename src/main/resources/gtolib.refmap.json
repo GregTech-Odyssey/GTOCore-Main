@@ -578,6 +578,30 @@
     },
     "com/gtolib/mixin/mc/client/DroneRenderChunkRegionMixin": {
       "getBlockState": "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
+    },
+    "com/gtolib/mixin/mc/world/gen/RecordHashMixin": {
+      "net.minecraft.world.level.levelgen.DensityFunctions$Marker": "net/minecraft/world/level/levelgen/DensityFunctions$Marker",
+      "net.minecraft.world.level.levelgen.DensityFunctions$RangeChoice": "net/minecraft/world/level/levelgen/DensityFunctions$RangeChoice",
+      "net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate": "net/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate",
+      "net.minecraft.world.level.levelgen.DensityFunctions$MulOrAdd": "net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd",
+      "net.minecraft.world.level.levelgen.DensityFunctions$ShiftedNoise": "net/minecraft/world/level/levelgen/DensityFunctions$ShiftedNoise",
+      "net.minecraft.world.level.levelgen.DensityFunctions$Clamp": "net/minecraft/world/level/levelgen/DensityFunctions$Clamp",
+      "net.minecraft.world.level.levelgen.DensityFunctions$Noise": "net/minecraft/world/level/levelgen/DensityFunctions$Noise",
+      "net.minecraft.util.CubicSpline$Multipoint": "net/minecraft/util/CubicSpline$Multipoint",
+      "net.minecraft.world.level.levelgen.DensityFunctions$BlendDensity": "net/minecraft/world/level/levelgen/DensityFunctions$BlendDensity",
+      "net.minecraft.world.level.levelgen.DensityFunctions$Ap2": "net/minecraft/world/level/levelgen/DensityFunctions$Ap2",
+      "net.minecraft.world.level.levelgen.DensityFunctions$Spline": "net/minecraft/world/level/levelgen/DensityFunctions$Spline",
+      "hashCode": "hashCode()I",
+      "net.minecraft.world.level.levelgen.DensityFunctions$HolderHolder": "net/minecraft/world/level/levelgen/DensityFunctions$HolderHolder",
+      "net.minecraft.world.level.levelgen.DensityFunctions$Mapped": "net/minecraft/world/level/levelgen/DensityFunctions$Mapped",
+      "net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder": "net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder",
+      "net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler": "net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler"
+    },
+    "com/gtolib/mixin/mc/world/gen/NoiseChunkMixin": {
+      "Lnet/minecraft/world/level/levelgen/DensityFunction;mapAll(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;": "Lnet/minecraft/world/level/levelgen/DensityFunction;m_207456_(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;",
+      "Lnet/minecraft/world/level/levelgen/NoiseRouter;mapAll(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/NoiseRouter;": "Lnet/minecraft/world/level/levelgen/NoiseRouter;m_224412_(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/NoiseRouter;",
+      "cachedClimateSampler": "Lnet/minecraft/world/level/levelgen/NoiseChunk;m_224359_(Lnet/minecraft/world/level/levelgen/NoiseRouter;Ljava/util/List;)Lnet/minecraft/world/level/biome/Climate$Sampler;",
+      "<init>": "Lnet/minecraft/world/level/levelgen/NoiseChunk;<init>(ILnet/minecraft/world/level/levelgen/RandomState;IILnet/minecraft/world/level/levelgen/NoiseSettings;Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierOrMarker;Lnet/minecraft/world/level/levelgen/NoiseGeneratorSettings;Lnet/minecraft/world/level/levelgen/Aquifer$FluidPicker;Lnet/minecraft/world/level/levelgen/blending/Blender;)V"
     }
   },
   "data": {
@@ -1160,6 +1184,30 @@
       },
       "com/gtolib/mixin/mc/client/DroneRenderChunkRegionMixin": {
         "getBlockState": "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;m_8055_(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
+      },
+      "com/gtolib/mixin/mc/world/gen/RecordHashMixin": {
+        "net.minecraft.world.level.levelgen.DensityFunctions$Marker": "net/minecraft/world/level/levelgen/DensityFunctions$Marker",
+        "net.minecraft.world.level.levelgen.DensityFunctions$RangeChoice": "net/minecraft/world/level/levelgen/DensityFunctions$RangeChoice",
+        "net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate": "net/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate",
+        "net.minecraft.world.level.levelgen.DensityFunctions$MulOrAdd": "net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd",
+        "net.minecraft.world.level.levelgen.DensityFunctions$ShiftedNoise": "net/minecraft/world/level/levelgen/DensityFunctions$ShiftedNoise",
+        "net.minecraft.world.level.levelgen.DensityFunctions$Clamp": "net/minecraft/world/level/levelgen/DensityFunctions$Clamp",
+        "net.minecraft.world.level.levelgen.DensityFunctions$Noise": "net/minecraft/world/level/levelgen/DensityFunctions$Noise",
+        "net.minecraft.util.CubicSpline$Multipoint": "net/minecraft/util/CubicSpline$Multipoint",
+        "net.minecraft.world.level.levelgen.DensityFunctions$BlendDensity": "net/minecraft/world/level/levelgen/DensityFunctions$BlendDensity",
+        "net.minecraft.world.level.levelgen.DensityFunctions$Ap2": "net/minecraft/world/level/levelgen/DensityFunctions$Ap2",
+        "net.minecraft.world.level.levelgen.DensityFunctions$Spline": "net/minecraft/world/level/levelgen/DensityFunctions$Spline",
+        "hashCode": "hashCode()I",
+        "net.minecraft.world.level.levelgen.DensityFunctions$HolderHolder": "net/minecraft/world/level/levelgen/DensityFunctions$HolderHolder",
+        "net.minecraft.world.level.levelgen.DensityFunctions$Mapped": "net/minecraft/world/level/levelgen/DensityFunctions$Mapped",
+        "net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder": "net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder",
+        "net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler": "net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler"
+      },
+      "com/gtolib/mixin/mc/world/gen/NoiseChunkMixin": {
+        "Lnet/minecraft/world/level/levelgen/DensityFunction;mapAll(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;": "Lnet/minecraft/world/level/levelgen/DensityFunction;m_207456_(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;",
+        "Lnet/minecraft/world/level/levelgen/NoiseRouter;mapAll(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/NoiseRouter;": "Lnet/minecraft/world/level/levelgen/NoiseRouter;m_224412_(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/NoiseRouter;",
+        "cachedClimateSampler": "Lnet/minecraft/world/level/levelgen/NoiseChunk;m_224359_(Lnet/minecraft/world/level/levelgen/NoiseRouter;Ljava/util/List;)Lnet/minecraft/world/level/biome/Climate$Sampler;",
+        "<init>": "Lnet/minecraft/world/level/levelgen/NoiseChunk;<init>(ILnet/minecraft/world/level/levelgen/RandomState;IILnet/minecraft/world/level/levelgen/NoiseSettings;Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierOrMarker;Lnet/minecraft/world/level/levelgen/NoiseGeneratorSettings;Lnet/minecraft/world/level/levelgen/Aquifer$FluidPicker;Lnet/minecraft/world/level/levelgen/blending/Blender;)V"
       }
     }
   }
