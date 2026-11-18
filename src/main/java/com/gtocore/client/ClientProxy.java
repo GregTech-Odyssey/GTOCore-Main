@@ -39,6 +39,9 @@ import com.gtocore.integration.ae.client.PatternEncoderStatsScreen;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
 import com.gtocore.integration.emi.WildcardRecipeTooltip;
+import com.gtocore.integration.emi.jer.JerEmi;
+import com.gtocore.integration.ftbquests.emi.EmiQuestRecipeHelper;
+import com.gtocore.integration.jade.JadeRecipeKeys;
 import com.gtocore.integration.xaero.XaeroMinimapHud;
 
 import com.gtolib.GTOCore;
@@ -141,6 +144,8 @@ public final class ClientProxy extends CommonProxy {
         QuestBookEntries.init();
         // Forge 总线监听显式注册（本包禁用 @SubscribeEvent，见 CODING_GUIDELINES「事件注册」）
         ForgeClientEvent.init();
+        JadeRecipeKeys.init();
+        JerEmi.Client.init();
         MonitorClient.install();
         ImplantClient.install();
         ScreenRenderer.init();
@@ -176,6 +181,7 @@ public final class ClientProxy extends CommonProxy {
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.GELID_CRYOTHEUM.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(GTOFluids.FLOWING_GELID_CRYOTHEUM.get(), RenderType.translucent());
         registerIdleReasonIcons();
+        if (Mods.FTBQUESTS.isLoaded()) event.enqueueWork(EmiQuestRecipeHelper::install);
     }
 
     private static void registerIdleReasonIcons() {

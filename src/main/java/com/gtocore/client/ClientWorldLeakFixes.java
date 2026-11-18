@@ -1,7 +1,6 @@
 package com.gtocore.client;
 
 import com.gtocore.integration.Mods;
-import com.gtocore.integration.emi.NotDevCompat;
 import com.gtocore.mixin.balm.ForgeBalmModelsAccessor;
 import com.gtocore.mixin.balm.ModelManagerAccessor;
 import com.gtocore.mixin.inventoryessentials.InventoryEssentialsClientAccessor;
@@ -59,7 +58,6 @@ public final class ClientWorldLeakFixes {
         // EMI clears its registry in Minecraft.clearLevel; a second clear can restart its worker.
         releaseWorldReferences();
         releaseLogoutOnlyReferences();
-        if (Mods.FTB_XMOD_COMPAT.isLoaded()) NotDevCompat.clearRuntime();
     }
 
     private static void onPlayerClone(ClientPlayerNetworkEvent.Clone event) {

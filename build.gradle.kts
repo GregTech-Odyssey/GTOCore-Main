@@ -54,7 +54,6 @@ val resourcefullib_version = prop("resourcefullib_version")
 val resourcefulconfig_version = prop("resourcefulconfig_version")
 val botarium_version = prop("botarium_version")
 val ad_astra_version = prop("ad_astra_version")
-val jei_version = prop("jei_version")
 val curiosVersion = prop("curiosVersion")
 
 version = mod_version
@@ -215,8 +214,8 @@ repositories {
             includeGroup("maven.modrinth")
         }
     }
-    maven("https://maven.blamejared.com/") { name = "Jared's Maven" } // JEI
-    maven("https://modmaven.dev") { name = "ModMaven" } // JEI 镜像、AE2
+    maven("https://maven.blamejared.com/") { name = "Jared's Maven" }
+    maven("https://modmaven.dev") { name = "ModMaven" } // AE2
     maven("https://maven.firstdarkdev.xyz/snapshots/")
     maven("https://maven.quiltmc.org/repository/release/")
     maven("https://maven.parchmentmc.org")
@@ -329,11 +328,8 @@ dependencies {
     modImplementation("earth.terrarium.adastra:ad_astra-forge-$minecraft_version:$ad_astra_version") { isTransitive = false }
     modImplementation("curse.maven:ad-astra-rocketed-996980:5245376")
 
-    // JEI / EMI
+    // EMI
     modImplementation("dev.emi:emi-forge-1.20.1:$emi_version")
-    modCompileOnly("mezz.jei:jei-$minecraft_version-forge-api:$jei_version") { isTransitive = false }
-    modCompileOnly("mezz.jei:jei-$minecraft_version-common-api:$jei_version") { isTransitive = false }
-    modImplementation("mezz.jei:jei-$minecraft_version-forge:$jei_version") { isTransitive = false }
 
     // Botania
     modImplementation("top.theillusivec4.curios:curios-forge:$curiosVersion+$minecraft_version")
@@ -367,7 +363,6 @@ dependencies {
     modImplementation("curse.maven:deeperdarker-659011:5906086")
     modImplementation("curse.maven:modernfix-790626:9597914")
     modCompileOnly("curse.maven:spark-361579:4738952")
-    modImplementation("curse.maven:just-enough-resources-jer-240630:5057220")
     modImplementation("curse.maven:construction-wand-399558:4684054")
     modImplementation("curse.maven:pipez-443900:6945379")
     modImplementation("curse.maven:jumbo-furnace-390880:4685578")
@@ -439,8 +434,6 @@ dependencies {
     modCompileOnly("curse.maven:inventory-essentials-368825:6977231")
     modCompileOnly("curse.maven:balm-531761:6978679")
     modCompileOnly("dev:gtoepp:1.0.1")
-    modCompileOnly("com.ref:calculatoroverlay:1.0.2")
-    modCompileOnly("dev:calculatoroverlay:1.0.2")
 
 //    // 开发客户端内存分析：named 产物无需重映射，只加入客户端运行时。
 //    "clientRuntimeOnly"("com.gto:memory-tool-dev-forge-1.20.1:0.1.2")

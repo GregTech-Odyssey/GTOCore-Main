@@ -9,9 +9,14 @@ import com.gtocore.config.GTOConfig;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 import com.gtocore.integration.chisel.ChiselRecipe;
+import com.gtocore.integration.emi.apotheosis.ApotheosisEmi;
+import com.gtocore.integration.emi.arsnouveau.ArsNouveauEmi;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStack;
 import com.gtocore.integration.emi.electrochemistry.IonEmiStackSerializer;
+import com.gtocore.integration.emi.farmersrespite.FarmersRespiteEmi;
+import com.gtocore.integration.emi.jer.JerEmi;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
+import com.gtocore.integration.emi.mythicbotany.MythicBotanyEmi;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
 import com.gtocore.integration.emi.research.DataScanningEmiRecipe;
@@ -21,7 +26,7 @@ import com.gtocore.integration.emi.research.TechNodeEmiStack;
 import com.gtocore.integration.emi.research.TechNodeEmiStackSerializer;
 import com.gtocore.integration.emi.research.TechTreeEmiRecipe;
 import com.gtocore.integration.emi.space.SatelliteEmiCategory;
-import com.gtocore.integration.misc.CalculatorOverlay;
+import com.gtocore.integration.ftbquests.emi.QuestEmiPlugin;
 
 import com.gtolib.api.GTOApi;
 import com.gtolib.api.ae2.me2in1.ME2in1Helper;
@@ -40,7 +45,6 @@ import com.gtolib.monitor.MonitorControlFactory;
 import com.gtolib.monitor.MonitorEditorFactory;
 import com.gtolib.monitor.MonitorHudEditorFactory;
 import com.gtolib.utils.GTOUtils;
-import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -79,7 +83,6 @@ import com.gto.datasynclib.util.ByteBufCodecExtends;
 import com.arsmeteorites.arsmeteorites.ArsMeteorites;
 import com.arsmeteorites.arsmeteorites.emi.MeteoritesEmiPlugin;
 import com.glodblock.github.extendedae.xmod.emi.ExtendedAEEmiPlugin;
-import com.hollingsworth.arsnouveau.client.jei.JEIArsNouveauPlugin;
 import com.lowdragmc.lowdraglib.LDLib;
 import com.lowdragmc.lowdraglib.emi.EMIPlugin;
 import com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer;
@@ -96,24 +99,13 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.api.widget.Bounds;
-import dev.emi.emi.jemi.JemiPlugin;
 import dev.emi.emi.registry.EmiPluginContainer;
 import dev.emi.emi.screen.EmiScreenManager;
-import dev.shadowsoffire.apotheosis.adventure.compat.AdventureJEIPlugin;
-import dev.shadowsoffire.apotheosis.ench.compat.EnchJEIPlugin;
-import dev.shadowsoffire.apotheosis.potion.compat.PotionJEIPlugin;
-import dev.shadowsoffire.apotheosis.village.compat.VillageJEIPlugin;
 import io.github.lounode.extrabotany.api.ExtraBotanyAPI;
 import io.github.lounode.extrabotany.client.integration.emi.EmiExtrabotanyPlugin;
 import io.github.prismwork.emitrades.EMITradesPlugin;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import jeresources.jei.JEIConfig;
-import mezz.jei.api.IModPlugin;
-import mezz.jei.library.plugins.jei.JeiInternalPlugin;
-import mythicbotany.jei.MythicJei;
 import org.jetbrains.annotations.Nullable;
-import snownee.jade.compat.JEICompat;
-import umpaz.farmersrespite.integration.jei.JEIFRPlugin;
 import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.client.integration.emi.BotaniaEmiPlugin;
 import vectorwing.farmersdelight.FarmersDelight;
@@ -122,22 +114,16 @@ import java.util.function.Consumer;
 
 public final class GTEMIPlugin implements EmiPlugin {
 
-    private static final ResourceLocation SCRY_RITUAL = RLUtils.ars("scry_ritual");
-
     public static void init() {
         RecipeTierPreview.register(ManaTierPreview::of);
         GTOApi.EMI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addEMIPlugin);
-        GTOApi.JEI_PLUGIN_EVENT.addListener(CommonProxy.class, GTEMIPlugin::addJEIPlugin);
         if (GTOConfig.INSTANCE.misc.enableEmiJeiExternalPlugins.length > 0) {
             var emi = new ReferenceOpenHashSet<Class<? extends EmiPlugin>>();
-            var jei = new ReferenceOpenHashSet<Class<? extends IModPlugin>>();
             for (var name : GTOConfig.INSTANCE.misc.enableEmiJeiExternalPlugins) {
                 try {
                     var clazz = Class.forName(name);
                     if (EmiPlugin.class.isAssignableFrom(clazz)) {
                         emi.add(clazz.asSubclass(EmiPlugin.class));
-                    } else if (IModPlugin.class.isAssignableFrom(clazz)) {
-                        jei.add(clazz.asSubclass(IModPlugin.class));
                     }
                 } catch (Throwable ignored) {}
             }
@@ -148,40 +134,12 @@ public final class GTEMIPlugin implements EmiPlugin {
                     } catch (Throwable ignored) {}
                 }));
             }
-            if (!jei.isEmpty()) {
-                GTOApi.JEI_PLUGIN_EVENT.addListener(GTOConfig.class, c -> jei.forEach(clazz -> {
-                    try {
-                        c.accept(clazz.getDeclaredConstructor().newInstance());
-                    } catch (Throwable ignored) {}
-                }));
-            }
         }
         GTOApi.EMI_HIDE_ITEM_EVENT.addListener(HiddenItems.class, HiddenItems::registerHiddenItems);
         if (GTCEu.isClientSide()) {
             GTOApi.EMI_ADD_STACK_EVENT.addListener(IonEmiStack.class, IonEmiStack::registerIonEmiStacks);
             GTOApi.EMI_ADD_STACK_EVENT.addListener(TechNodeEmiStack.class, TechNodeEmiStack::registerTechNodeEmiStack);
             GTOApi.EMI_ADD_STACK_EVENT.addListener(ResearchTagEmiStack.class, ResearchTagEmiStack::registerResearchTagEmiStack);
-        }
-    }
-
-    private static void addJEIPlugin(Consumer<IModPlugin> list) {
-        list.accept(new mezz.jei.library.plugins.vanilla.VanillaPlugin());
-        list.accept(new JeiInternalPlugin());
-        list.accept(new JemiPlugin());
-        list.accept(new EnchJEIPlugin());
-        list.accept(new AdventureJEIPlugin());
-        list.accept(new PotionJEIPlugin());
-        list.accept(new VillageJEIPlugin());
-        list.accept(new JEIConfig());
-        list.accept(new MythicJei());
-        list.accept(new JEIFRPlugin());
-        list.accept(new JEIArsNouveauPlugin());
-        list.accept(new JEICompat());
-        if (GTCEu.isModLoaded("ftbxmodcompat")) {
-            NotDevCompat.addPlugin(list);
-        }
-        if (GTCEu.isModLoaded("calculatoroverlay")) {
-            CalculatorOverlay.initJEI(list);
         }
     }
 
@@ -202,6 +160,14 @@ public final class GTEMIPlugin implements EmiPlugin {
         list.accept(new EmiPluginContainer(new AppEngEmiPlugin(), AppEng.MOD_ID));
         list.accept(new EmiPluginContainer(new ExtendedAEEmiPlugin(), "expatternprovider"));
         list.accept(new EmiPluginContainer(new vectorwing.farmersdelight.integration.emi.EMIPlugin(), FarmersDelight.MODID));
+        list.accept(new EmiPluginContainer(new ApotheosisEmi(), "apotheosis"));
+        list.accept(new EmiPluginContainer(new ArsNouveauEmi(), "ars_nouveau"));
+        list.accept(new EmiPluginContainer(new MythicBotanyEmi(), "mythicbotany"));
+        list.accept(new EmiPluginContainer(new FarmersRespiteEmi(), "farmersrespite"));
+        list.accept(new EmiPluginContainer(new JerEmi(), "jeresources"));
+        if (Mods.FTBQUESTS.isLoaded() && Mods.FTB_XMOD_COMPAT.isLoaded()) {
+            list.accept(new EmiPluginContainer(new QuestEmiPlugin(), "ftbquests"));
+        }
         try {
             list.accept(new EmiPluginContainer(new fzzyhmstrs.emi_loot.emi.EmiClientPlugin(), fzzyhmstrs.emi_loot.EMILoot.MOD_ID));
         } catch (Throwable ignored) {
@@ -246,8 +212,6 @@ public final class GTEMIPlugin implements EmiPlugin {
             });
         }
         if (Mods.CHISEL.isLoaded()) ChiselRecipe.register(registry);
-        registry.removeRecipes(recipe -> SCRY_RITUAL.equals(recipe.getCategory().getId()));
-
         registry.addCategory(OreProcessingEmiCategory.CATEGORY);
         registry.addCategory(GTOreVeinEmiCategory.CATEGORY);
         registry.addCategory(GTBedrockFluidEmiCategory.CATEGORY);

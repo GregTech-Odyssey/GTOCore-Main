@@ -468,13 +468,15 @@ public final class GTOConfig {
         public boolean emiGlobalFavorites = true;
 
         @Configurable
-        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "EMI/JEI External Plugins", cn = "EMI/JEI 外部插件")
-        @Configurable.Comment({ "本整合包默认禁用了一些 EMI/JEI 外部插件以跳过插件扫描阶段来避免GTM原版的插件冲突并提升性能",
-                "如果你安装了其他模组，且该模组提供了 EMI/JEI 外部插件（查看配方等功能），请添加模组提供的插件类名到此选项以加载那些外部插件",
-                "添加格式例：- com.simibubi.create.compat.jei.CreateJEI",
-                "Some EMI/JEI external plugins are disabled by default in this pack to skip the plugin scanning phase to avoid conflicts with GTM's original plugins and improve performance.",
-                "If you have other mods installed and they provide EMI/JEI external plugins (such as recipe viewing), please add the plugin class names provided by the mod to this option to load those external plugins.",
-                "Example format: - com.simibubi.create.compat.jei.CreateJEI" })
+        @RegisterLanguage(namePrefix = "config.gtocore.option", en = "EMI External Plugins", cn = "EMI 外部插件")
+        @Configurable.Comment({ "本整合包默认跳过 EMI 外部插件的扫描，以避免与 GTM 原版插件冲突并提升性能",
+                "额外安装的模组提供 EMI 插件时，将其插件类名添加到此选项以加载",
+                "本整合包不含 JEI，JEI 插件不会被加载",
+                "添加格式例：- com.example.mod.emi.ExampleEmiPlugin",
+                "EMI external plugins are skipped by default in this pack to avoid conflicts with GTM's original plugins and improve performance.",
+                "If an additional mod provides an EMI plugin, add its plugin class name to this option to load it.",
+                "This pack does not include JEI; JEI plugins are not loaded.",
+                "Example format: - com.example.mod.emi.ExampleEmiPlugin" })
         @Configurable.Gui.CharacterLimit(256)
         public String[] enableEmiJeiExternalPlugins = new String[0];
 

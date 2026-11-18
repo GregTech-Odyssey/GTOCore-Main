@@ -14,3 +14,17 @@ Functional Storage by Buuz135 and Rid (MIT License)
 https://github.com/Buuz135/FunctionalStorage
 License: licenses/functional-storage-MIT.txt
 Source revision, asset mapping and modifications: licenses/functional-storage-assets.md
+
+Third-party EMI recipe pages rewritten from JEI integrations:
+Apotheosis by Shadows_of_Fire (MIT License)
+https://github.com/Shadows-of-Fire/Apotheosis
+License: licenses/apotheosis-MIT.txt
+Ars Nouveau by Bailey Hollingsworth (LGPL-3.0)
+https://github.com/baileyholl/Ars-Nouveau
+MythicBotany by noeppi_noeppi (Apache License 2.0)
+https://github.com/noeppi-noeppi/MythicBotany
+License: licenses/mythicbotany-Apache-2.0.txt
+Just Enough Resources by way2muchnoise ("Don't Be a Jerk" non-commercial care-free license)
+https://github.com/way2muchnoise/JustEnoughResources
+License: licenses/jeresources-LICENSE.md
+Source revisions, packages and modifications: licenses/emi-recipe-pages.md

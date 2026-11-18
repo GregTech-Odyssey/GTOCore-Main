@@ -24,7 +24,6 @@ EMI-gto 的 README、jar 内 `NOTICE`、`LICENSE-EMI` 和 `LICENSE-EMITrades` �
 | 全局/服务器分组 JSON 读写与旧格式兼容 | EMI-gto `dev.emi.emi.runtime.EmiPersistentData` |
 | 工作站多列布局 | EMI-gto `RecipeScreen` |
 | 异步搜索烘焙、搜索就绪状态与进度显示 | EMI-gto `EmiSearch`、`EmiReloadManager`、`EmiScreenManager` |
-| 延迟启动 JEI 的 JEMI 侧状态与消费入口 | EMI-gto `dev.emi.emi.jemi.JemiPlugin` |
 | 收藏对应的 AE key 缓存 | AE `EmiFavoriteKeyCache` |
 | AE/EMI 转换 | AE `EmiStackHelper` |
 | 大数量按 AE 格式渲染、AE 包装流体的配方查询、收藏变动回调 | AE `AppEngEmiHooks`（接 EMI-gto 的 `EmiHooks`） |
@@ -46,7 +45,9 @@ ExtendedAE 的配方传输、样板显示槽查询和电路切割器配方由其
 
 `GTOLib/src/main/java/com/gtolib/emi` 保留 GT/GTO 专用行为：GT 物品和配方收集、机器等级筛选、TagPrefix/通用电路、研究提示、玩家 AE 数据、合成站库存、GT 流体单元，以及 FTB 界面返回行为。
 
-服务器收藏配置与服务器身份仍由 GTO 决定，再调用 EMI 的分组存储入口。身份尚未同步时，GTO 跳过写入并加载空数据，不能把未知身份写进全局收藏。Spark 启动分析的停止策略与 JEI 自身启动拦截也保留在 GTO。
+服务器收藏配置与服务器身份仍由 GTO 决定，再调用 EMI 的分组存储入口。身份尚未同步时，GTO 跳过写入并加载空数据，不能把未知身份写进全局收藏。Spark 启动分析的停止策略也保留在 GTO。
+
+整合包不再安装 JEI，EMI-gto 也不再带 JEI 兼容层。第三方模组原有的 JEI 配方页由 GTOCore 的 `com.gtocore.integration.emi.<模组>` 包以原生 EMI 插件提供，并在 `GTEMIPlugin.addEMIPlugin` 登记；新代码不得引用 `mezz.jei` 或各模组只为 JEI 准备的类。
 
 新增通用逻辑时不要让 EMI-gto 依赖 AE、GTM、`com.gtolib`、`com.gtocore`，也不要让 AE fork 反向依赖 `com.gtolib`、`com.gtocore` 或 GT 机器类；需要整合包参与的行为，在 EMI-gto 开放通用钩子，由对方注册。已迁入本体的实现不要再用 GTO overwrite 覆盖。
 
@@ -54,7 +55,7 @@ ExtendedAE 的配方传输、样板显示槽查询和电路切割器配方由其
 
 EMI 加载/重载中的逐配方、逐原料、逐标签操作按局部高频路径处理，不能因为入口低频而保留内部的 stream pipeline、装箱或重复构建集合。索引直接构建最终列表，注册对象与驻留键使用引用容器，哈希对象使用哈希缓存容器；AE 侧以 AEKey 为键的容器用 `AEKeySet`/`AEKeyObjectMap`/`AEKeyIntMap` 等专用容器。排序先缓存比较所需的数据，避免在 comparator 中反复遍历。
 
-对外 EMI/JEI 协议保留必要的接口类型、Stream/Optional 返回值；内部使用具体容器、原始类型与显式循环。参数和空值约束通过 JetBrains `@NotNull`、`@Nullable`、`@Contract`、`@UnmodifiableView` 表达，直接共享只读缓存，不增加运行时防御检查或不可变包装。
+对外 EMI 协议保留必要的接口类型、Stream/Optional 返回值；内部使用具体容器、原始类型与显式循环。参数和空值约束通过 JetBrains `@NotNull`、`@Nullable`、`@Contract`、`@UnmodifiableView` 表达，直接共享只读缓存，不增加运行时防御检查或不可变包装。
 
 ## 精妙系列兼容
 

@@ -1,5 +1,7 @@
 package com.gtocore.mixin.emi;
 
+import com.gtocore.integration.emi.jer.JerMobRecipe;
+import com.gtocore.integration.emi.jer.JerPlantRecipe;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
 
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -25,6 +27,6 @@ public class EmiFavoriteMixin {
 
     @Inject(method = "getTooltip", at = @At("RETURN"))
     private void gtocore$hideMultiblockPreview(CallbackInfoReturnable<List<ClientTooltipComponent>> cir) {
-        if (recipe instanceof MultiblockInfoEmiRecipe) cir.getReturnValue().removeIf(component -> component instanceof RecipeTooltipComponent);
+        if (recipe instanceof MultiblockInfoEmiRecipe || recipe instanceof JerMobRecipe || recipe instanceof JerPlantRecipe) cir.getReturnValue().removeIf(component -> component instanceof RecipeTooltipComponent);
     }
 }
