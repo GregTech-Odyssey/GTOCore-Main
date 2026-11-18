@@ -76,9 +76,6 @@ import com.hepdd.gtmthings.data.CreativeModeTabs;
 import com.lowdragmc.lowdraglib.utils.LocalizationUtils;
 import earth.terrarium.adastra.common.registry.ModFluids;
 import org.jetbrains.annotations.NotNull;
-import vazkii.botania.common.BotaniaItems;
-import vazkii.botania.common.ExtraBotanyItems;
-import vazkii.botania.common.MythicBotanyItems;
 
 import java.util.Map;
 
@@ -134,9 +131,6 @@ public final class GTOItems {
                     .model((a, b) -> b.generated(a, GTOCore.id("item/stopgap_measures")))
                     .register();
         }
-        BotaniaItems.init();
-        MythicBotanyItems.init();
-        ExtraBotanyItems.init();
     }
 
     public static final ItemEntry<Item> PULSATING_CRYSTAL = register("pulsating_crystal", "脉冲水晶");

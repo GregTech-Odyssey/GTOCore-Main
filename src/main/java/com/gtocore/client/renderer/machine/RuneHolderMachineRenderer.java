@@ -1,8 +1,10 @@
 package com.gtocore.client.renderer.machine;
 
+import com.gtocore.common.machine.magic.rune.CentralRuneHolderMachine;
 import com.gtocore.common.machine.magic.rune.RuneHolderMachine;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.client.renderer.machine.MachineRenderer;
 
 import net.minecraft.client.Minecraft;
@@ -43,7 +45,7 @@ public class RuneHolderMachineRenderer extends MachineRenderer implements com.gr
         var box = new net.minecraft.world.phys.AABB(blockEntity.getBlockPos()).inflate(1);
         if (blockEntity instanceof MetaMachineBlockEntity holder && holder.getMetaMachine() instanceof RuneHolderMachine machine) {
             BlockPos target = machine.getFloatTarget();
-            if (target != null) {
+            if (target != null && isRunningRitual(holder, target)) {
                 BlockPos current = holder.getBlockPos();
                 box = box.expandTowards(target.getX() - current.getX(), 0, target.getZ() - current.getZ());
             }
@@ -67,7 +69,7 @@ public class RuneHolderMachineRenderer extends MachineRenderer implements com.gr
 
         BlockPos target = machine.getFloatTarget();
         double progress = machine.getFloatProgress();
-        if (target != null && progress > 0 && !current.equals(target)) {
+        if (target != null && progress > 0 && !current.equals(target) && isRunningRitual(holder, target)) {
             pose.translate((target.getX() - current.getX()) * progress, Math.sin(progress * Math.PI),
                     (target.getZ() - current.getZ()) * progress);
             Vector3f axis = new Vector3f(target.getX() - current.getX(), 0, target.getZ() - current.getZ());
@@ -88,5 +90,10 @@ public class RuneHolderMachineRenderer extends MachineRenderer implements com.gr
         Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, light,
                 OverlayTexture.NO_OVERLAY, pose, buffer, holder.getLevel(), 0);
         pose.popPose();
+    }
+
+    /** 目标位置仍是正在举行仪式的大师符文支托时才让符文漂浮过去，否则停在原位。 */
+    private static boolean isRunningRitual(MetaMachineBlockEntity holder, BlockPos target) {
+        return MetaMachine.getMachine(holder.getLevel(), target) instanceof CentralRuneHolderMachine central && central.isRunning();
     }
 }
