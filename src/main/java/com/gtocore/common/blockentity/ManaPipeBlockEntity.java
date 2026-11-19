@@ -27,7 +27,6 @@ import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaCollector;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
-import vazkii.botania.api.mana.spark.SparkAttachable;
 
 import java.lang.ref.WeakReference;
 
@@ -253,7 +252,6 @@ public final class ManaPipeBlockEntity extends PipeBlockEntity<ManaPipeType, Man
     private static int getMaxMana(@Nullable ManaReceiver receiver) {
         if (receiver instanceof ManaCollector collector) return collector.getMaxMana();
         if (receiver instanceof ManaPool pool) return pool.getMaxMana();
-        if (receiver instanceof SparkAttachable attachable) return attachable.getAvailableSpaceForMana();
         return receiver == null || receiver.isFull() ? 0 : 10000000;
     }
 

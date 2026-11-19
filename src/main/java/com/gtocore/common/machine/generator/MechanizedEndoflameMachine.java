@@ -43,7 +43,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @DataGeneratorScanned
 public final class MechanizedEndoflameMachine extends TieredMachine implements IManaMachine, IControllable, IFancyUIMachine {
 
-    public static final long MANA_CAPACITY = 100_000L;
+    public static final long MANA_CAPACITY = 10_000L;
     /** 每个燃料 tick 产生的魔力，刻意压低以保持“缓慢”产出。 */
     public static final long MANA_PER_FUEL_TICK = 2L;
 

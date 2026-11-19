@@ -33,11 +33,9 @@ import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
 import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.api.mana.ManaCollector;
 import vazkii.botania.api.mana.ManaEndpoint;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
-import vazkii.botania.api.mana.spark.SparkAttachable;
 
 import java.util.Optional;
 
@@ -163,13 +161,6 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     private void outputSource(ISourceTile sourceTile) {
         if (sourceTile == this || !sourceTile.canAcceptSource()) return;
         ManaEndpoint.transfer(manaEndpoint, ManaUnification.of(sourceTile), manaContainer.getCurrentMana());
-    }
-
-    private static int getMaxMana(ManaReceiver receiver) {
-        if (receiver instanceof ManaCollector collector) return collector.getMaxMana();
-        if (receiver instanceof ManaPool pool) return pool.getMaxMana();
-        if (receiver instanceof SparkAttachable attachable) return attachable.getAvailableSpaceForMana();
-        return receiver.isFull() ? 0 : UNKNOWN_RECEIVER_CAPACITY;
     }
 
     //////////////////////////////////////

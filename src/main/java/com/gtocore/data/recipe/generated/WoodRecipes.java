@@ -26,7 +26,6 @@ import com.kyanite.deeperdarker.DeeperDarker;
 import com.kyanite.deeperdarker.content.DDBlocks;
 import earth.terrarium.adastra.AdAstra;
 import earth.terrarium.adastra.common.registry.ModBlocks;
-import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.common.BotaniaBlocks;
 
 import java.util.ArrayList;
@@ -315,7 +314,7 @@ public final class WoodRecipes {
                 .button(DDBlocks.BLOOM_BUTTON.get().asItem(), "bloom_button")
                 .pressurePlate(DDBlocks.BLOOM_PRESSURE_PLATE.get().asItem(), "bloom_pressure_plate")
                 .build());
-        entries.add(new WoodTypeEntry.Builder(BotaniaAPI.MODID, "livingwood")
+        entries.add(new WoodTypeEntry.Builder("botania", "livingwood")
                 .planks(BotaniaBlocks.getBlock("livingwood_planks").asItem(), "livingwood_planks")
                 .log(BotaniaBlocks.getBlock("livingwood_log").asItem())
                 .strippedLog(BotaniaBlocks.getBlock("stripped_livingwood_log").asItem())
@@ -326,7 +325,7 @@ public final class WoodRecipes {
                 .fenceGate(BotaniaBlocks.getBlock("livingwood_fence_gate").asItem(), "livingwood_fence_gate")
                 .stairs(BotaniaBlocks.getBlock("livingwood_planks_stairs").asItem(), "livingwood_planks_stairs")
                 .build());
-        entries.add(new WoodTypeEntry.Builder(BotaniaAPI.MODID, "dreamwood")
+        entries.add(new WoodTypeEntry.Builder("botania", "dreamwood")
                 .planks(BotaniaBlocks.getBlock("dreamwood_planks").asItem(), "dreamwood_planks")
                 .log(BotaniaBlocks.getBlock("dreamwood_log").asItem())
                 .strippedLog(BotaniaBlocks.getBlock("stripped_dreamwood_log").asItem())
