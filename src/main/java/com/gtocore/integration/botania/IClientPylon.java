@@ -39,15 +39,19 @@ public interface IClientPylon {
         WispParticleData data = WispParticleData.wisp(size, r, g, b).withNoClip(true);
         level.addAlwaysVisibleParticle(data, thisVec.x, thisVec.y, thisVec.z, motion.x, motion.y, motion.z);
 
-        WispParticleData data0 = WispParticleData.wisp(0.25F + rs.nextFloat() * 0.1F, rs.nextFloat() * 0.25F, 0.75F + rs.nextFloat() * 0.25F, rs.nextFloat() * 0.25F, 1);
+        WispParticleData data0 = WispParticleData.wisp(0.25F + rs.nextFloat() * 0.1F, rs.nextFloat() * 0.25F, 0.75F +
+                rs.nextFloat() * 0.25F, rs.nextFloat() * 0.25F, 1);
         level.addParticle(data0, x, pylon.getY() + 0.25, z, 0, -(-0.075F - rs.nextFloat() * 0.015F), 0);
         if (rs.nextInt(3) == 0) {
-            WispParticleData data1 = WispParticleData.wisp(0.25F + rs.nextFloat() * 0.1F, rs.nextFloat() * 0.25F, 0.75F + rs.nextFloat() * 0.25F, rs.nextFloat() * 0.25F);
-            level.addParticle(data1, x, pylon.getY() + 0.25, z, (float) movementVector.x, (float) movementVector.y, (float) movementVector.z);
+            WispParticleData data1 = WispParticleData.wisp(0.25F + rs.nextFloat() * 0.1F, rs.nextFloat() * 0.25F, 0.75F +
+                    rs.nextFloat() * 0.25F, rs.nextFloat() * 0.25F);
+            level.addParticle(data1, x, pylon.getY() + 0.25, z, (float) movementVector.x, (float) movementVector.y,
+                    (float) movementVector.z);
         }
         if (rs.nextBoolean()) {
             SparkleParticleData data2 = SparkleParticleData.sparkle(rs.nextFloat(), r, g, b, 2);
-            level.addParticle(data2, pylon.getX() + Math.random(), pylon.getY() + Math.random() * 1.5, pylon.getZ() + Math.random(), 0, 0, 0);
+            level.addParticle(data2, pylon.getX() + Math.random(), pylon.getY() + Math.random() * 1.5, pylon.getZ() +
+                    Math.random(), 0, 0, 0);
         }
     }
 }

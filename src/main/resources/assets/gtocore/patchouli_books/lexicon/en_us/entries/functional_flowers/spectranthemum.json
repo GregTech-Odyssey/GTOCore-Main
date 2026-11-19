@@ -1,0 +1,23 @@
+{
+  "name": "botania.entry.spectranthemum",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:spectranthemum",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.spectranthemum0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.spectranthemum1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.spectranthemum2"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:floating_spectranthemum": 1
+  }
+}

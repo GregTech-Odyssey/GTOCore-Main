@@ -21,7 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import de.maxhenkel.easyvillagers.items.ModItems;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -57,7 +57,7 @@ public final class NewGregtechOdysseyChapter {
     public static final Quest Q_6517DDBE = CHAPTER.quest("q_6517ddbe", q -> q
             .at(6, 0)
             .milestone()
-            .icon(BotaniaItems.questgiverMark)
+            .icon(BotaniaItems.getItem("cosmetic_questgiver_mark"))
             .desc(d -> d
                     .line("GTO的所有生物根据难度对怪物进行了血量和攻击力强化")
                     .line()
@@ -65,7 +65,7 @@ public final class NewGregtechOdysseyChapter {
                     .line()
                     .line("注意安全"))
             .task(Task.checkmark().title("关于生存"))
-            .reward(Reward.item(BotaniaItems.wickedEyepatch).title("愿中二之魂燃烧你的战意"))
+            .reward(Reward.item(BotaniaItems.getItem("cosmetic_wicked_eyepatch")).title("愿中二之魂燃烧你的战意"))
             .dependsOn(TipsChapter.DIFFICULTY_AND_MODES));
 
     public static final Quest Q_278F2909 = CHAPTER.quest("q_278f2909", q -> q
@@ -152,7 +152,7 @@ public final class NewGregtechOdysseyChapter {
             .subtitle("电压等级对应的主要内容")
             .desc(d -> d.line("开发中"))
             .task(Task.checkmark().title("关于内容"))
-            .reward(Reward.item(BotaniaItems.manaCookie))
+            .reward(Reward.item(BotaniaItems.getItem("mana_cookie")))
             .dependsOn(HELLO_WORLD)
             .optional().invisible());
 

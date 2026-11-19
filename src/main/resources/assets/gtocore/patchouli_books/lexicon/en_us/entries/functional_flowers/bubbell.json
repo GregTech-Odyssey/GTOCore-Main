@@ -1,0 +1,13 @@
+{
+  "name": "botania.entry.bubbell",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:bubbell",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.bubbell0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

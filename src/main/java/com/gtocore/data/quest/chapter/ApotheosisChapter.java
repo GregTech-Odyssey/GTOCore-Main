@@ -20,7 +20,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import dev.shadowsoffire.apotheosis.Apoth;
 import dev.shadowsoffire.apotheosis.adventure.Adventure;
 import dev.shadowsoffire.apotheosis.ench.Ench;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -151,7 +151,7 @@ public final class ApotheosisChapter {
 
     public static final Quest SOME_TIPS = CHAPTER.quest("some_tips", q -> q
             .at(-21, -5)
-            .icon(BotaniaItems.questgiverMark)
+            .icon(BotaniaItems.getItem("cosmetic_questgiver_mark"))
             .title("一些小提示")
             .subtitle("为什么不看我呢?")
             .task(Task.checkmark().title("一些小提示")));

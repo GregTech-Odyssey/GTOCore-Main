@@ -1,0 +1,195 @@
+{
+  "name": "botania.entry.lens",
+  "category": "gtocore:mana",
+  "icon": "botania:lens_normal",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.lens0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens1",
+      "recipe": "botania:lens_normal"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.lens4"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.lens5"
+    },
+    {
+      "anchor": "speed",
+      "type": "text",
+      "text": "botania.page.lens6"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens7",
+      "recipe": "botania:lens_speed"
+    },
+    {
+      "anchor": "power",
+      "type": "text",
+      "text": "botania.page.lens8"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens9",
+      "recipe": "botania:lens_power"
+    },
+    {
+      "anchor": "time",
+      "type": "text",
+      "text": "botania.page.lens10"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens11",
+      "recipe": "botania:lens_time"
+    },
+    {
+      "anchor": "efficiency",
+      "type": "text",
+      "text": "botania.page.lens12"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens13",
+      "recipe": "botania:lens_efficiency"
+    },
+    {
+      "anchor": "messenger",
+      "type": "text",
+      "text": "botania.page.lens38"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens39",
+      "recipe": "botania:lens_messenger"
+    },
+    {
+      "anchor": "bounce",
+      "type": "text",
+      "text": "botania.page.lens14"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens15",
+      "recipe": "botania:lens_bounce"
+    },
+    {
+      "anchor": "gravity",
+      "type": "text",
+      "text": "botania.page.lens16"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens17",
+      "recipe": "botania:lens_gravity"
+    },
+    {
+      "anchor": "mine",
+      "type": "text",
+      "text": "botania.page.lens18"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens19",
+      "recipe": "botania:lens_mine"
+    },
+    {
+      "anchor": "damage",
+      "type": "text",
+      "text": "botania.page.lens20"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens21",
+      "recipe": "botania:lens_damage"
+    },
+    {
+      "anchor": "phantom",
+      "type": "text",
+      "text": "botania.page.lens22"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens23",
+      "recipe": "botania:lens_phantom"
+    },
+    {
+      "anchor": "magnet",
+      "type": "text",
+      "text": "botania.page.lens24"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens25",
+      "recipe": "botania:lens_magnet"
+    },
+    {
+      "anchor": "explosive",
+      "type": "text",
+      "text": "botania.page.lens26"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens27",
+      "recipe": "botania:lens_explosive"
+    },
+    {
+      "anchor": "influence",
+      "type": "text",
+      "text": "botania.page.lens28"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens29",
+      "recipe": "botania:lens_influence"
+    },
+    {
+      "anchor": "weight",
+      "type": "text",
+      "text": "botania.page.lens30"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens31",
+      "recipe": "botania:lens_weight"
+    },
+    {
+      "anchor": "fire",
+      "type": "text",
+      "text": "botania.page.lens32"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens33",
+      "recipe": "botania:lens_fire"
+    },
+    {
+      "anchor": "piston",
+      "type": "text",
+      "text": "botania.page.lens34"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens35",
+      "recipe": "botania:lens_piston"
+    },
+    {
+      "anchor": "light",
+      "type": "text",
+      "text": "botania.page.lens36"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.lens37",
+      "recipe": "botania:lens_light",
+      "recipe2": "botania:lens_light_alt"
+    }
+  ]
+}

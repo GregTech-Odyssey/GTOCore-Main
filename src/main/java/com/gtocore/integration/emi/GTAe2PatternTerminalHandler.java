@@ -34,7 +34,6 @@ import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.recipe.EmiCookingRecipe;
 import dev.emi.emi.recipe.EmiStonecuttingRecipe;
 import dev.emi.emi.screen.RecipeScreen;
-import vazkii.botania.client.integration.emi.BotaniaEmiRecipe;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +57,7 @@ final class GTAe2PatternTerminalHandler<T extends PatternEncodingTermMenu> imple
     }
 
     static boolean supportsEncodingRecipe(EmiRecipe recipe) {
-        return recipe instanceof GTEMIRecipe gtRecipe && gtRecipe.supportsTransfer() || recipe instanceof MultiblockInfoEmiRecipe || recipe instanceof EmiCookingRecipe || isCrafting(recipe) || recipe instanceof BotaniaEmiRecipe;
+        return recipe instanceof GTEMIRecipe gtRecipe && gtRecipe.supportsTransfer() || recipe instanceof MultiblockInfoEmiRecipe || recipe instanceof EmiCookingRecipe || isCrafting(recipe);
     }
 
     private Set<AEKey> getCraftableKeys(T menu) {

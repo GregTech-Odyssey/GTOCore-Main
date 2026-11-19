@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.spellCloth",
+  "category": "gtocore:tools",
+  "icon": "botania:spell_cloth",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.spellCloth0"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.spellCloth1",
+      "recipe": "botania:spell_cloth"
+    }
+  ]
+}

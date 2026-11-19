@@ -26,7 +26,6 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraftforge.common.Tags;
@@ -39,7 +38,7 @@ import com.chaosthedude.explorerscompass.ExplorersCompass;
 import com.chaosthedude.naturescompass.NaturesCompass;
 import commoble.jumbofurnace.JumboFurnace;
 import earth.terrarium.adastra.common.registry.ModItems;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -621,7 +620,7 @@ public final class NeolithicChapter {
     public static final Quest Q_1BA9FA93 = CHAPTER.quest("q_1ba9fa93", q -> q
             .at(4, 6)
             .side()
-            .iconStack(() -> QuestStacks.withNbt(new ItemStack(BotaniaItems.lexicon), "{\"botania:elven_unlock\":1b}"))
+            .iconStack(() -> QuestStacks.withNbt(BotaniaItems.getItem("lexicon").getDefaultInstance(), "{\"botania:elven_unlock\":1b}"))
             .desc(d -> d
                     .line("如果你暂时不想推进主线了，可以看看支线：{独善其身}", AQUA)
                     .line()

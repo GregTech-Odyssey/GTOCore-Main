@@ -4,3 +4,7 @@
 [submodule "GTOSeal"]
 	path = GTOSeal
 	url = https://github.com/GregTech-Odyssey/GTOCore-Seal.git
+[submodule "Botania"]
+	path = Botania
+	url = https://github.com/GregTech-Odyssey/Botania-gto.git
+	branch = 1.20.x

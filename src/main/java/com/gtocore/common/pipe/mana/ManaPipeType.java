@@ -14,17 +14,18 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 魔力管道的等级：按魔法金属分级，方块 id 与显示名都取材料名。
  * <p>
- * 顺序跟本包的魔法材料阶梯一致（原始青铜=ULV → 魔力钢 → 泰拉钢 → 源质钢 → 精灵钢 → 盖亚钢），流量按池算：
- * 第一档 1 池/秒起步，每档翻倍（一池 = 1000000 魔力）。
+ * 顺序跟本包的魔法材料阶梯一致（活木 → 原始青铜 → 魔力钢 → 泰拉钢 → 源质钢 → 精灵钢 → 盖亚钢），流量按池算：
+ * 活木 0.5 池/秒，原始青铜 1 池/秒，之后每档翻倍（一池 = 1000000 魔力）。
  */
 public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringRepresentable {
 
-    ORIGINAL_BRONZE("原始青铜", GTOMaterials.OriginalBronze),
-    MANASTEEL("魔力钢", GTOMaterials.Manasteel),
-    TERRASTEEL("泰拉钢", GTOMaterials.Terrasteel),
-    ELEMENTIUM("源质钢", GTOMaterials.Elementium),
-    ALFSTEEL("精灵钢", GTOMaterials.Alfsteel),
-    GAIASTEEL("盖亚钢", GTOMaterials.Gaiasteel);
+    LIVINGWOOD("活木", GTOMaterials.Livingwood, 0.5D),
+    ORIGINAL_BRONZE("原始青铜", GTOMaterials.OriginalBronze, 1D),
+    MANASTEEL("魔力钢", GTOMaterials.Manasteel, 2D),
+    TERRASTEEL("泰拉钢", GTOMaterials.Terrasteel, 4D),
+    ELEMENTIUM("源质钢", GTOMaterials.Elementium, 8D),
+    ALFSTEEL("精灵钢", GTOMaterials.Alfsteel, 16D),
+    GAIASTEEL("盖亚钢", GTOMaterials.Gaiasteel, 32D);
 
     public static final ResourceLocation TYPE = GTCEu.id("mana");
 
@@ -33,13 +34,15 @@ public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringReprese
 
     public final String cnName;
     public final Material material;
+    private final double poolsPerSecond;
     /** 本档共享的节点数据，管内所有同档管道共用同一份。 */
     public final ManaPipeProperties properties;
 
-    ManaPipeType(String cnName, Material material) {
+    ManaPipeType(String cnName, Material material, double poolsPerSecond) {
         this.cnName = cnName;
         this.material = material;
-        this.properties = new ManaPipeProperties(MANA_PER_POOL << ordinal());
+        this.poolsPerSecond = poolsPerSecond;
+        this.properties = new ManaPipeProperties((long) (MANA_PER_POOL * poolsPerSecond));
     }
 
     @Override
@@ -49,7 +52,7 @@ public enum ManaPipeType implements IPipeType<ManaPipeProperties>, StringReprese
 
     /** 本档每秒过多少池，供工具提示显示。 */
     public double poolsPerSecond() {
-        return 1 << ordinal();
+        return poolsPerSecond;
     }
 
     @Override

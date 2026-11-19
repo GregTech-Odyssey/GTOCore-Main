@@ -1,0 +1,22 @@
+{
+  "name": "botania.entry.gourmaryllis",
+  "category": "gtocore:generating_flowers",
+  "icon": "botania:gourmaryllis",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.gourmaryllis0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gourmaryllis1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.gourmaryllis2"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:floating_gourmaryllis": 1
+  }
+}

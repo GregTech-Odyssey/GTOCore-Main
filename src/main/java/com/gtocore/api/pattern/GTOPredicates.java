@@ -53,7 +53,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import vazkii.botania.common.block.block_entity.mana.ManaPoolBlockEntity;
+import vazkii.botania.common.block.mana.ManaPools;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -403,7 +403,7 @@ public final class GTOPredicates {
     }
 
     static {
-        Structure.addWhitelistBlockEntity(ManaPoolBlockEntity.class);
+        Structure.addWhitelistBlockEntity(ManaPools.Pool.class);
     }
 
     public static final class DataKeys {

@@ -1,0 +1,31 @@
+{
+  "name": "botania.entry.elfResources",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:dragonstone",
+  "entry_color": "aa00",
+  "priority": true,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.elfResources0"
+    },
+    {
+      "type": "crafting",
+      "title": "botania.page.elfResources2.title",
+      "recipe": "botania:dreamwood_twig",
+      "recipe2": "botania:dreamwood_wand",
+      "text": "item.botania.dreamwood_wand"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.elfResources6"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.elfResources8"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:elementium_nugget": 3
+  }
+}

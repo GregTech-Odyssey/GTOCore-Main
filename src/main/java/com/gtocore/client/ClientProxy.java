@@ -18,7 +18,6 @@ import com.gtocore.client.renderer.sky.CelestialSkyRenderer;
 import com.gtocore.client.website.WebsiteAccount;
 import com.gtocore.client.website.WebsiteConsent;
 import com.gtocore.common.CommonProxy;
-import com.gtocore.common.block.LaurerilManaPools;
 import com.gtocore.common.block.WirelessEnergyUnitBlock;
 import com.gtocore.common.data.GTOAEParts;
 import com.gtocore.common.data.GTOFluids;
@@ -107,6 +106,7 @@ import com.lowdragmc.shimmer.client.light.LightManager;
 import com.lowdragmc.shimmer.event.ShimmerReloadEvent.ReloadType;
 import com.lowdragmc.shimmer.forge.event.ForgeShimmerReloadEvent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import vazkii.botania.client.BotaniaClientSetup;
 
 @OnlyIn(Dist.CLIENT)
 public final class ClientProxy extends CommonProxy {
@@ -123,9 +123,9 @@ public final class ClientProxy extends CommonProxy {
         eventBus.addListener(ClientProxy::registerGuiOverlays);
         eventBus.addListener(ClientProxy::registerAdditionalModels);
         eventBus.addListener(ClientProxy::registerGeometryLoaders);
+        BotaniaClientSetup.init(eventBus);
         eventBus.addListener(ClientProxy::registerMenuScreen);
         eventBus.addListener(ClientProxy::registerItemColors);
-        eventBus.addListener(LaurerilManaPools.Client::registerBlockColors);
         eventBus.addListener(ClientProxy::registerShaders);
         eventBus.addListener(ClientProxy::registerReloadListeners);
         eventBus.addListener(WildcardRecipeTooltip::register);

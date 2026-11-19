@@ -47,12 +47,12 @@ public class TestReportOutput extends MetaMachine implements IFancyUIMachine {
                 case "export_all_loot_tables" -> LootTableExporter.exportAllLootTables();
                 case "export_loot_tables" -> {
                     List<String> LOOT_TABLES = Arrays.asList(
-                            "extrabotany:reward_bags/eins",
-                            "extrabotany:reward_bags/zwei",
-                            "extrabotany:reward_bags/drei",
-                            "extrabotany:reward_bags/vier",
-                            "extrabotany:reward_bags/nine_and_three_quarters",
-                            "extrabotany:reward_bags/pandoras_box");
+                            "gtocore:reward_bags/eins_reward_bag_loot",
+                            "gtocore:reward_bags/zwei_reward_bag_loot",
+                            "gtocore:reward_bags/drei_reward_bag_loot",
+                            "gtocore:reward_bags/vier_reward_bag_loot",
+                            "gtocore:reward_bags/nine_and_three_quarters_reward_bag_loot",
+                            "gtocore:reward_bags/pandoras_box_loot");
                     LootTableExporter.exportLootTables(LOOT_TABLES);
                 }
                 case "material_reporter" -> MaterialReport.generateReport();

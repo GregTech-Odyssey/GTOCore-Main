@@ -1,0 +1,17 @@
+{
+  "name": "botania.entry.loonium",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:loonium",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.loonium0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.looniumStructures"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}
