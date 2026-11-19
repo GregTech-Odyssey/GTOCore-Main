@@ -75,13 +75,15 @@ public final class AeChapter {
 
     public static final Quest ALIEN_TECHNOLOGY = CHAPTER.quest("alien_technology", q -> q
             .at(-13, 3.5)
-            .icon(AEBlocks.MYSTERIOUS_CUBE)
+            .icon(AEBlocks.SUSPICIOUS_SKY_STONE)
             .title("外星科技")
             .subtitle("小小的压印模板铸造宏大的自动化网络")
             .desc(d -> d
-                    .line("在外探索看到一个巨坑，挖掉外层的陨石（不要丢），挖掉神秘方块即可获得")
+                    .line("前往{远古世界}，在{赛特斯石英矿脉}中寻找少量{可疑的陨石}", GOLD, GOLD, GOLD)
                     .line()
-                    .line("如果你不知道该怎么寻找，不妨试试{指南针}", link(TipsChapter.EXPLORERSCOMPASS)))
+                    .line("使用{刷子}考古，每次随机获得一种压印模板、福鲁伊克斯升级锻造模板或水晶", GOLD)
+                    .line()
+                    .line("普通陨石块可在远古世界的{陨石矿脉}中采集", GOLD))
             .task(
                     Task.item(AEItems.CALCULATION_PROCESSOR_PRESS),
                     Task.item(AEItems.ENGINEERING_PROCESSOR_PRESS),

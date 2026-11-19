@@ -212,6 +212,7 @@ public final class LangHandler {
         addCNEN("gtocore.patternModifierPro.0", "设置完成后，潜行右击样板供应器以应用", "After setup,shift + right-click template provider to apply");
 
         addCNEN("gtceu.jei.ore_vein.bauxite_vein", "铝土矿脉", "Bauxite Vein");
+        addCNEN("gtceu.jei.ore_vein.sky_stone_vein", "陨石矿脉", "Sky Stone Vein");
         addCNEN("gtceu.jei.ore_vein.chromite_vein", "铬铁矿脉", "Chromite Vein");
         addCNEN("gtceu.jei.ore_vein.pitchblende_vein", "沥青铀矿脉", "Pitchblende Vein");
         addCNEN("gtceu.jei.ore_vein.magnetite_vein", "磁铁矿脉", "Magnetite Vein");
