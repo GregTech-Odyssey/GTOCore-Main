@@ -4,7 +4,7 @@ import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.common.CommonProxy;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTORecipeTypes;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2;
 import com.gtocore.config.GTOConfig;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
@@ -175,14 +175,19 @@ public final class GTEMIPlugin implements EmiPlugin {
         }
     }
 
-    // 用于在 EMI 中注册维度数据的变体
     @Nullable
-    private static Bounds monitorWindowBounds(ModularUIGuiContainer screen) {
+    private static Bounds modularWindowBounds(ModularUIGuiContainer screen) {
+        var window = MachineWindow.find(screen.modularUI);
+        if (window != null) {
+            var bounds = window.getPageContainer().toRectangleBox();
+            return new Bounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        }
         var holder = screen.modularUI.holder;
         if (!(holder instanceof MonitorEditorFactory.Target) && !(holder instanceof MonitorControlFactory.Target) && !(holder instanceof MonitorHudEditorFactory.Target)) return null;
         return new Bounds(screen.getGuiLeft(), screen.getGuiTop(), screen.getXSize(), screen.getYSize());
     }
 
+    // 用于在 EMI 中注册维度数据的变体
     private static void registerDimensionDataVariants(EmiRegistry registry) {
         var previousDimensionData = EmiStack.of(GTOItems.DIMENSION_DATA.asItem());
         for (ResourceLocation layer : Dimension.all().stream().filter(Dimension::canGenerate).map(Dimension::getLocation).toList()) {
@@ -226,7 +231,7 @@ public final class GTEMIPlugin implements EmiPlugin {
             }
         });
         registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
-        registry.addScreenBoundsProvider(ModularUIGuiContainer.class, GTEMIPlugin::monitorWindowBounds);
+        registry.addScreenBoundsProvider(ModularUIGuiContainer.class, GTEMIPlugin::modularWindowBounds);
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTPatternEditorRecipeHandler());
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());
@@ -361,16 +366,16 @@ public final class GTEMIPlugin implements EmiPlugin {
                 });
         CraftAction.registerCanCraftOverride(
                 (recipe, context, simulate) -> {
-                    if (context.getScreenHandler().getModularUI().holder instanceof MEPatternBufferPartMachine patternBuffer) {
+                    if (context.getScreenHandler().getModularUI().holder instanceof MEPatternBufferPartMachineV2 patternBuffer) {
                         if (simulate) {
                             return true;
                         }
                         if (recipe.getId() != null) {
                             // 写进当前打开着单槽配置弹出面板的那个样板槽；没打开时不写
                             var window = MachineWindow.find(context.getScreenHandler().getModularUI());
-                            int currentSlot = window == null ? -1 : window.getPopupArgument(MEPatternBufferPartMachine.SLOT_CONFIG_POPUP);
+                            int currentSlot = window == null ? -1 : window.getPopupArgument(MEPatternBufferPartMachineV2.SLOT_CONFIG_POPUP);
                             if (currentSlot < 0) return true;
-                            MEPatternBufferPartMachine.SET_ID_CHANNEL
+                            MEPatternBufferPartMachineV2.SET_ID_CHANNEL
                                     .send(buf -> {
                                         buf.writeBlockPos(patternBuffer.getPos());
                                         buf.writeVarInt(currentSlot);

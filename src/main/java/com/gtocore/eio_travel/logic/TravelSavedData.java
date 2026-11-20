@@ -17,8 +17,11 @@ import net.minecraft.world.level.saveddata.SavedData;
 import com.suried.gtoutils.spatial.BlockIndex;
 import com.suried.gtoutils.spatial.BlockRange;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +32,11 @@ import java.util.stream.Stream;
 public class TravelSavedData extends SavedData {
 
     private static final TravelSavedData CLIENT_INSTANCE = new TravelSavedData();
+    private static WeakReference<Level> syncedClientLevel = new WeakReference<>(null);
     public static final String TARGETS = "targets";
     private final Map<BlockPos, ITravelTarget> travelTargets = new HashMap<>();
     private final BlockIndex<ITravelTarget> targetIndex = new BlockIndex<>();
+    private long revision;
 
     public TravelSavedData() {}
 
@@ -47,7 +52,25 @@ public class TravelSavedData extends SavedData {
         }
     }
 
-    public void loadNBT(CompoundTag nbt) {
+    public static void syncClient(@Nullable Level level, CompoundTag nbt) {
+        CLIENT_INSTANCE.loadNBT(nbt);
+        syncedClientLevel = new WeakReference<>(level);
+    }
+
+    @Nullable
+    public static TravelSavedData getSyncedClientData(Level level) {
+        return syncedClientLevel.get() == level ? CLIENT_INSTANCE : null;
+    }
+
+    public long revision() {
+        return revision;
+    }
+
+    public Collection<ITravelTarget> targets() {
+        return travelTargets.values();
+    }
+
+    private void loadNBT(CompoundTag nbt) {
         this.travelTargets.clear();
         this.targetIndex.clear();
         ListTag targets = nbt.getList(TARGETS, Tag.TAG_COMPOUND);
@@ -55,6 +78,7 @@ public class TravelSavedData extends SavedData {
                 .map(TravelRegistry::deserialize)
                 .flatMap(Optional::stream)
                 .forEach(this::putTarget);
+        revision++;
     }
 
     public Optional<ITravelTarget> getTravelTarget(BlockPos pos) {
@@ -84,6 +108,7 @@ public class TravelSavedData extends SavedData {
         }
         if (TravelRegistry.isRegistered(target)) {
             putTarget(target);
+            revision++;
         } else {
             GTOCore.LOGGER.warn("Tried to add a not registered TravelTarget to the TravelSavedData with name {}", target);
         }
@@ -93,8 +118,10 @@ public class TravelSavedData extends SavedData {
         if (level instanceof ServerLevel serverLevel) {
             TravelNetworks.onServerTravelRemoved(serverLevel, pos);
         }
-        travelTargets.remove(pos);
-        targetIndex.remove(pos);
+        if (travelTargets.remove(pos) != null) {
+            targetIndex.remove(pos);
+            revision++;
+        }
     }
 
     @Override

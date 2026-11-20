@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae.widget;
 
-import com.gtocore.common.machine.multiblock.part.ae.MEInputBufferPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEInputBufferPartMachineV2;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartUI;
 
 import com.gregtechceu.gtceu.uipro.UIElement;
@@ -11,7 +11,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 
 import net.minecraft.network.chat.Component;
 
-import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine.*;
+import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2.*;
 
 /**
  * ME 输入总成的单槽配置：物品、流体、电路三个输入区块，外加补货条件（低存量触发、发信合成、请求合成）、
@@ -21,7 +21,7 @@ public final class MEInputBufferPartMachineUI {
 
     private MEInputBufferPartMachineUI() {}
 
-    public static void buildSlotConfig(UIElement column, MEInputBufferPartMachine machine, int index) {
+    public static void buildSlotConfig(UIElement column, MEInputBufferPartMachineV2 machine, int index) {
         var slot = machine.getInternalInventory()[index];
 
         var itemHandlers = slot.itemUiHandlers;

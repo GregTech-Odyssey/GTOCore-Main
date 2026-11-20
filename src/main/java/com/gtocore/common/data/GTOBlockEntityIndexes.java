@@ -2,6 +2,8 @@ package com.gtocore.common.data;
 
 import com.gtocore.integration.ae.wireless.WirelessMachine;
 
+import com.gtolib.api.machine.trait.MEStorageCapacity;
+
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
 import com.gregtechceu.gtceu.common.blockentity.CableBlockEntity;
@@ -16,6 +18,8 @@ public final class GTOBlockEntityIndexes {
 
     public static final BlockEntityIndex<MetaMachineBlockEntity> CLIENT_WIRELESS_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
             be -> be.getLevel().isClientSide() && be.getMetaMachine() instanceof WirelessMachine);
+    public static final BlockEntityIndex<MetaMachineBlockEntity> CLIENT_CAPACITY_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
+            be -> be.getLevel().isClientSide() && be.getMetaMachine().getTraits(MEStorageCapacity.class).length != 0);
     public static final BlockEntityIndex<MetaMachineBlockEntity> TIERED_WORKABLE_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
             be -> !be.getLevel().isClientSide() && be.getMetaMachine() instanceof WorkableTieredMachine);
     public static final BlockEntityIndex<MetaMachineBlockEntity> MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,

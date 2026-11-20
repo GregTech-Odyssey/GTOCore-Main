@@ -4,12 +4,14 @@ import com.gtocore.integration.ae.wireless.WirelessLink;
 import com.gtocore.integration.ae.wireless.WirelessMachine;
 
 import com.gtolib.api.machine.feature.IMEPartMachine;
+import com.gtolib.api.machine.trait.MEStorageCapacity;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 import com.gregtechceu.gtceu.api.item.tool.GTToolType;
+import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IDistinctPart;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
@@ -23,13 +25,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.networking.IManagedGridNode;
 import appeng.api.networking.security.IActionSource;
@@ -56,7 +61,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public abstract class MEPartMachine extends WorkableTieredIOPartMachine implements WirelessMachine, IMEPartMachine, IDistinctPart, IMachineLife {
+public abstract class MEPartMachine extends WorkableTieredIOPartMachine implements WirelessMachine, IMEPartMachine, IDistinctPart, IMachineLife, IInteractedMachine {
 
     /// ME 输入总线/仓的配置格数：界面每行 9 格、两行（2026-09 由 16 改为 18）。
     /// 旧存档是 16 格：配置/库存数组按下标读入、多出的格子留空（DataSyncLib 数组读取取两者较短的长度），无需额外迁移；
@@ -213,6 +218,10 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
     public void onMachinePlaced(@Nullable LivingEntity player, ItemStack stack) {
         IMachineLife.super.onMachinePlaced(player, stack);
         onWirelessPlaced(player, stack);
+        if (player instanceof ServerPlayer placer) {
+            var capacity = MEStorageCapacity.of(this);
+            if (capacity != null) capacity.installDefault(placer);
+        }
     }
 
     @Override
@@ -264,6 +273,11 @@ public abstract class MEPartMachine extends WorkableTieredIOPartMachine implemen
     }
 
     // ==================== GUI ====================
+
+    @Override
+    public InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return MEStorageCapacity.useOn(this, player, hand);
+    }
 
     @Override
     public ModularUI createUI(Player entityPlayer) {

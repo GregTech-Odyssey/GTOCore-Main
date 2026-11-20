@@ -4,6 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.recipe.MEHatchRecipes;
 import com.gtocore.integration.Mods;
 
 import com.gtolib.GTOCore;
@@ -797,16 +798,7 @@ final class Vanilla {
                 "BCB",
                 "DBD",
                 'A', CustomTags.HV_CIRCUITS, 'B', RegistriesUtils.getItem("expatternprovider:ex_molecular_assembler"), 'C', GTOBlocks.MULTI_FUNCTIONAL_CASING.asItem(), 'D', new MaterialEntry(TagPrefix.gearSmall, GTMaterials.StainlessSteel));
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("molecular_assembly_factory_pattern_hatch"), GTAEMachines.MOLECULAR_ASSEMBLY_FACTORY_PATTERN_HATCH.asItem(),
-                "ABA",
-                "CDE",
-                "ABA",
-                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.StainlessSteel), 'B', AEBlocks.PATTERN_PROVIDER.asItem(), 'C', AEItems.CAPACITY_CARD.asItem(), 'D', GTMachines.DUAL_IMPORT_HATCH[GTValues.MV].asItem(), 'E', AEItems.SPEED_CARD.asItem());
-        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("molecular_assembly_factory_pull_pattern_hatch"), GTAEMachines.MOLECULAR_ASSEMBLY_FACTORY_PULL_PATTERN_HATCH.asItem(),
-                "ABA",
-                "CDE",
-                "ABA",
-                'A', new MaterialEntry(TagPrefix.plate, GTMaterials.StainlessSteel), 'B', AEBlocks.PATTERN_PROVIDER.asItem(), 'C', AEItems.CRAFTING_CARD.asItem(), 'D', GTMachines.DUAL_IMPORT_HATCH[GTValues.MV].asItem(), 'E', AEItems.SPEED_CARD.asItem());
+        MEHatchRecipes.registerMolecularAssemblyPatternHatches();
         VanillaRecipeHelper.addShapedRecipe(true, GTOCore.id("spool_hatch"), GTOMachines.SPOOL_HATCH.asItem(),
                 "ABA",
                 "BCB",

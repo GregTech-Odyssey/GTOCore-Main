@@ -5,7 +5,7 @@ import com.gtocore.client.forge.ThickPolylineRenderer;
 import com.gtocore.client.renderer.RenderHelper;
 import com.gtocore.common.item.DataStickExtension;
 import com.gtocore.common.machine.multiblock.part.WirelessOpticalDataHatchMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2;
 
 import com.gtolib.api.item.MirrorHatchDataStick;
 import com.gtolib.api.wireless.PartProxyConnections;
@@ -73,7 +73,7 @@ public final class ReceiverTransmitterClientHandler {
     private static final StoredPosition COMPUTATION_RECEIVER_POS = new StoredPosition(COMPUTATION_RECEIVER);
     private static final StoredPosition DATA_TRANSMITTER_POS = new StoredPosition(WirelessOpticalDataHatchMachine.KEY_TRANSMITTER);
     private static final StoredPosition DATA_RECEIVER_POS = new StoredPosition(WirelessOpticalDataHatchMachine.KEY_RECEIVER);
-    private static final StoredPosition PATTERN_BUFFER_POS = new StoredPosition(MEPatternBufferPartMachine.DATA_STICK_POS);
+    private static final StoredPosition PATTERN_BUFFER_POS = new StoredPosition(MEPatternBufferPartMachineV2.DATA_STICK_POS);
     private static final StoredPosition MIRROR_TARGET_POS = new StoredPosition("pos");
 
     private static ReceiverTransmitterHandler.Connection[] cachedConnections;

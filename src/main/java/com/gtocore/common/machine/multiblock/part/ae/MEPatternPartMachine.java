@@ -19,7 +19,6 @@ import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.IFancyConfiguratorButton;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
-import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
@@ -38,20 +37,14 @@ import com.gregtechceu.gtceu.uipro.window.Popup;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 
 import appeng.api.config.Actionable;
 import appeng.api.crafting.IPatternDetails;
@@ -103,7 +96,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 @DataGeneratorScanned
 public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.AbstractInternalSlot> extends MEPartMachine
-                                          implements ICraftingProvider, WirelessMachine, IInteractedMachine, IExtendedPatternContainer, IDropSaveMachine {
+                                          implements ICraftingProvider, WirelessMachine, IExtendedPatternContainer, IDropSaveMachine {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -474,11 +467,6 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     }
 
     // ==================== 生命周期 ====================
-
-    @Override
-    public InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return IInteractedMachine.super.onUse(state, world, pos, player, hand, hit);
-    }
 
     @Override
     public void onLoad() {

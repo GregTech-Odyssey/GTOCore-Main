@@ -3,7 +3,7 @@ package com.gtocore.mixin.ae2.menu;
 import com.gtocore.api.ae2.pattern.IEncodingLogic;
 import com.gtocore.client.Message;
 import com.gtocore.common.machine.multiblock.electric.SuperMolecularAssemblerMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MECraftPatternPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MECraftPatternPartMachineV2;
 import com.gtocore.common.machine.multiblock.part.ae.MEPatternPartMachine;
 import com.gtocore.integration.ae.hooks.IExtendedPatternContainer;
 import com.gtocore.integration.ae.hooks.IExtendedPatternEncodingTerm;
@@ -329,7 +329,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
             return gto$shouldRemoveClusterMember(matrix, gto$getMatrixContainers(matrixPattern), patternStack, sameCluster, hasSpace);
         }
         if (patternInv instanceof MEPatternPartMachine.PatternInventory inv &&
-                inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
+                inv.getMachine() instanceof MECraftPatternPartMachineV2 mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
             return gto$shouldRemoveClusterMember(smaMachine, gto$getSmaContainers(smaMachine), patternStack, sameCluster, hasSpace);
         }
@@ -380,7 +380,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
                 matrixPattern.getCluster() != null) {
             members = gto$getMatrixContainers(matrixPattern);
         } else if (patternInv instanceof MEPatternPartMachine.PatternInventory inv &&
-                inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
+                inv.getMachine() instanceof MECraftPatternPartMachineV2 mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
                     members = gto$getSmaContainers(smaMachine);
                 }
@@ -420,7 +420,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
                     .noneMatch(p -> gto$canAddPattern(p, patternStack));
         }
         if (patternInv instanceof MEPatternPartMachine.PatternInventory inv &&
-                inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
+                inv.getMachine() instanceof MECraftPatternPartMachineV2 mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
             return Arrays.stream(smaMachine.getParts(IExtendedPatternContainer.class))
                     .noneMatch(p -> gto$canAddPattern(p, patternStack));
@@ -537,7 +537,7 @@ public abstract class PatternEncodingTermMenuMixin extends MEStorageMenu impleme
                 if (member instanceof IExtendedPatternContainer c) gto$collectPatternOutputs(c, level, outputs);
             }
         } else if (patternInv instanceof MEPatternPartMachine.PatternInventory inv &&
-                inv.getMachine() instanceof MECraftPatternPartMachine mecppm &&
+                inv.getMachine() instanceof MECraftPatternPartMachineV2 mecppm &&
                 mecppm.getController() instanceof SuperMolecularAssemblerMachine smaMachine) {
                     for (var part : smaMachine.getParts(IExtendedPatternContainer.class)) {
                         gto$collectPatternOutputs(part, level, outputs);

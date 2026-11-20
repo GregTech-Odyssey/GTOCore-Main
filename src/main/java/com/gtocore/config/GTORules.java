@@ -301,6 +301,12 @@ public final class GTORules {
             .name("gtocore.rule.me.simple_pattern_buffer_slots", "ME简单样板总成插槽数", "ME Simple Pattern Buffer Slots")
             .desc("gtocore.rule.me.simple_pattern_buffer_slots.desc", "为 0 时不提供 ME 简单样板总成。", "The ME Simple Pattern Buffer is unavailable when this is 0.")
             .register();
+    public static final BoolRule ME_CAPACITY_LIMIT = Rules.boolRule("me.capacity_limit").group(ME)
+            .defaults(false, true, true)
+            .name("gtocore.rule.me.capacity_limit", "ME仓容量限制", "ME Hatch Capacity Limit")
+            .desc("gtocore.rule.me.capacity_limit.desc", "基础容量取决于难度。存储组件为每种资源增加容量。各样板槽独立计算容量。", "Difficulty determines base capacity. Storage components add capacity per type. Each pattern slot has its own limit.")
+            .register();
+
     public static final IntRule ME_MUFFLER_MAX = Rules.intRule("me.muffler_amplifier_max").group(ME)
             .defaults(4, 16, 64).range(1, 64)
             .name("gtocore.rule.me.muffler_amplifier_max", "ME消声仓集控核心最大数量", "ME Muffler Hatch Amplifier Maximum")

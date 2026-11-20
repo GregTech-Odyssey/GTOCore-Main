@@ -131,13 +131,16 @@ public class TravelHandler {
         if (!target.canTeleportTo()) {
             return false;
         }
-        if (targetLevel == player.level()) {
-            return blockTeleportAround(targetLevel, player, pos, false);
-        }
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return false;
         }
+        return teleportAround(serverPlayer, targetLevel, pos);
+    }
 
+    public static boolean teleportAround(ServerPlayer player, ServerLevel targetLevel, BlockPos pos) {
+        if (targetLevel == player.level()) {
+            return blockTeleportAround(targetLevel, player, pos, false);
+        }
         Vec3 destination = findTeleportPositionAround(targetLevel, pos);
         if (destination == null) {
             return false;
@@ -146,15 +149,15 @@ public class TravelHandler {
         if (eventPosition == null) {
             return false;
         }
-        serverPlayer.teleportTo(targetLevel, eventPosition.x(), eventPosition.y(), eventPosition.z(),
-                serverPlayer.getYRot(), serverPlayer.getXRot());
-        if (serverPlayer.level() != targetLevel) {
+        player.teleportTo(targetLevel, eventPosition.x(), eventPosition.y(), eventPosition.z(),
+                player.getYRot(), player.getXRot());
+        if (player.level() != targetLevel) {
             // 传送可能被其它模组的 EntityTravelToDimensionEvent 取消；此时不提示成功、不扣电、不设冷却。
             return false;
         }
         // Stop "moved too quickly" warnings
-        serverPlayer.connection.resetPosition();
-        serverPlayer.resetFallDistance();
+        player.connection.resetPosition();
+        player.resetFallDistance();
         targetLevel.playSound(null, BlockPos.containing(eventPosition), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1F);
         return true;
     }

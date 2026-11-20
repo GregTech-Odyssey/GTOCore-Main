@@ -26,7 +26,6 @@ import net.minecraft.world.item.Items;
 import appeng.core.definitions.AEBlocks;
 
 import com.hepdd.gtmthings.data.CustomItems;
-import com.hepdd.gtmthings.data.CustomMachines;
 import com.hepdd.gtmthings.data.WirelessMachines;
 
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
@@ -576,15 +575,7 @@ public final class GTMTRecipe {
                 .EUt(GTValues.VA[GTValues.EV])
                 .save();
 
-        ASSEMBLER_RECIPES.recipeBuilder("me_export_buffer")
-                .inputItems(GTMachines.BUFFER[GTValues.LuV].asItem())
-                .inputItems(GTAEMachines.ITEM_EXPORT_BUS_ME.asItem())
-                .inputItems(GTAEMachines.FLUID_EXPORT_HATCH_ME.asItem())
-                .inputFluids(GTMaterials.SolderingAlloy, 576)
-                .outputItems(CustomMachines.ME_EXPORT_BUFFER.asItem())
-                .duration(400)
-                .EUt(GTValues.VA[GTValues.LuV])
-                .save();
+        MEHatchRecipes.registerExportBuffer();
 
         ASSEMBLER_RECIPES.recipeBuilder("wireless_computation_transmitter_hatch")
                 .inputItems(GTResearchMachines.COMPUTATION_HATCH_TRANSMITTER.asItem())

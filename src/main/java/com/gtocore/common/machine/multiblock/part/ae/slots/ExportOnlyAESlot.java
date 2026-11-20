@@ -18,7 +18,19 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.LongSupplier;
+
 public abstract class ExportOnlyAESlot extends AbstractDataSerializable implements IConfigurableSlot {
+
+    private LongSupplier capacity = () -> Long.MAX_VALUE;
+
+    public void setCapacity(LongSupplier capacity) {
+        this.capacity = capacity;
+    }
+
+    public long getCapacity() {
+        return capacity.getAsLong();
+    }
 
     private static final String CONFIG_TAG = "config";
     private static final String STOCK_TAG = "stock";
@@ -48,11 +60,12 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
         if (this.config == null || (this.stock != null && !this.config.what().matches(this.stock))) {
             return null;
         }
+        long target = Math.min(this.config.amount(), getCapacity());
         if (this.stock == null) {
-            return copy(this.config);
+            return copy(this.config, target);
         }
-        if (this.stock.amount() <= this.config.amount()) {
-            return copy(this.config, this.config.amount() - this.stock.amount());
+        if (this.stock.amount() <= target) {
+            return copy(this.config, target - this.stock.amount());
         }
         return null;
     }
@@ -66,8 +79,9 @@ public abstract class ExportOnlyAESlot extends AbstractDataSerializable implemen
             return copy(this.stock);
         }
         if (this.config != null && this.stock != null) {
-            if (this.config.what().matches(this.stock) && this.config.amount() < this.stock.amount()) {
-                return copy(this.stock, this.stock.amount() - this.config.amount());
+            long target = Math.min(this.config.amount(), getCapacity());
+            if (this.config.what().matches(this.stock) && target < this.stock.amount()) {
+                return copy(this.stock, this.stock.amount() - target);
             }
             if (!this.config.what().matches(this.stock)) {
                 return copy(this.stock);

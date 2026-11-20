@@ -1,123 +1,17 @@
 package com.gtocore.common.machine.multiblock.part.ae;
 
-import com.gtocore.api.machine.ITagFilterMachine;
-import com.gtocore.common.machine.multiblock.part.ae.slots.ExportOnlyAEItemList;
-import com.gtocore.utils.Caches;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
-import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
-import com.gregtechceu.gtceu.api.machine.annotation.SaveToDataStick;
-import com.gregtechceu.gtceu.uipro.elements.Form;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.nbt.CompoundTag;
-
-import appeng.api.stacks.AEItemKey;
-
-import com.gto.datasynclib.annotations.SaveToDisk;
-
-import com.glodblock.github.extendedae.common.me.taglist.TagPriorityList;
-import com.lowdragmc.lowdraglib.gui.widget.Widget;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
-public class METagFilterInputBusPartMachine extends MEInputBusPartMachine implements ITagFilterMachine {
-
-    private static final long MAX_KEEP_AMOUNT = Integer.MAX_VALUE;
-
-    @SaveToDataStick(setter = "setTagWhite")
-    @SaveToDisk(defaultValue = "")
-    private String tagWhite = "";
-    @SaveToDataStick(setter = "setTagBlack")
-    @SaveToDisk(defaultValue = "")
-    private String tagBlack = "";
-    @SaveToDataStick(setter = "setKeepAmount")
-    @SaveToDisk(defaultValue = "64")
-    private long keepAmount = 64;
-
-    private TagPriorityList filter;
+/** Legacy machine ID; existing machines retain unlimited capacity. */
+@Deprecated
+public final class METagFilterInputBusPartMachine extends METagFilterInputBusPartMachineV2 {
 
     public METagFilterInputBusPartMachine(MetaMachineBlockEntity holder) {
         super(holder);
     }
 
     @Override
-    ExportOnlyAEItemList createInventory() {
-        return new ExportOnlyAEItemList(this, CONFIG_SIZE) {
-
-            @Override
-            public boolean isAutoPull() {
-                return true;
-            }
-        };
-    }
-
-    @Override
-    public Widget createMainPage(FancyMachineUIWidget widget) {
-        return MEPartUI.mainPage(this, widget, Form.page().addChildren(TagFilterUI.create(this),
-                METagFilterInput.keepAmountSection(this::getKeepAmount, this::setKeepAmount, MAX_KEEP_AMOUNT, false), createUIWidget()));
-    }
-
-    @Override
-    void syncME() {
-        var grid = getMainNode().getGrid();
-        if (grid == null) return;
-        if (filter == null) filter = Caches.getTagPriorityList(tagWhite, tagBlack);
-        METagFilterInput.refreshConfigs(aeItemHandler.getInventory(), AEItemKey.class, filter, keepAmount, grid.getStorageService(), getActionSourceField());
-        super.syncME();
-    }
-
-    @Override
-    public void saveToItem(CompoundTag tag) {
-        ITagFilterMachine.super.saveToItem(tag);
-        tag.putLong("KeepAmount", keepAmount);
-    }
-
-    @Override
-    public void loadFromItem(CompoundTag tag) {
-        ITagFilterMachine.super.loadFromItem(tag);
-        if (tag.contains("KeepAmount")) {
-            setKeepAmount(tag.getLong("KeepAmount"));
-        }
-    }
-
-    @Override
-    public void setTagWhite(final String tagWhite) {
-        this.tagWhite = tagWhite;
-        filter = Caches.getTagPriorityList(tagWhite, tagBlack);
-        onChanged();
-    }
-
-    @Override
-    public void setTagBlack(final String tagBlack) {
-        this.tagBlack = tagBlack;
-        filter = Caches.getTagPriorityList(tagWhite, tagBlack);
-        onChanged();
-    }
-
-    private long getKeepAmount() {
-        return keepAmount;
-    }
-
-    private void setKeepAmount(long keepAmount) {
-        this.keepAmount = Math.clamp(keepAmount, 1, MAX_KEEP_AMOUNT);
-        onChanged();
-    }
-
-    @Override
-    public boolean isItemFilter() {
-        return true;
-    }
-
-    @Override
-    public String getTagWhite() {
-        return this.tagWhite;
-    }
-
-    @Override
-    public String getTagBlack() {
-        return this.tagBlack;
+    protected boolean isCapacityLimited() {
+        return false;
     }
 }

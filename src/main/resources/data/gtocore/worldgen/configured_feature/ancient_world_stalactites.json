@@ -1,0 +1,33 @@
+{
+  "type": "gtocore:hanging_column_cluster",
+  "config": {
+    "dimension": "gtocore:ancient_world",
+    "stem": {
+      "Name": "ae2:sky_stone_wall"
+    },
+    "guaranteed_tip": {
+      "Name": "ae2:mysterious_cube"
+    },
+    "tips": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": { "Name": "ae2:mysterious_cube" },
+          "weight": 1
+        },
+        {
+          "data": { "Name": "ae2:not_so_mysterious_cube" },
+          "weight": 1
+        },
+        {
+          "data": { "Name": "ae2:quartz_glass" },
+          "weight": 1
+        },
+        {
+          "data": { "Name": "ae2:quartz_vibrant_glass" },
+          "weight": 1
+        }
+      ]
+    }
+  }
+}

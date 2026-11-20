@@ -26,6 +26,7 @@ import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
 import com.gtolib.api.data.Dimension;
 import com.gtolib.api.data.GTODimensions;
+import com.gtolib.api.data.storage.MEHatchMigration;
 import com.gtolib.api.data.storage.SuperStorageMigration;
 import com.gtolib.api.item.tool.VajraItem;
 import com.gtolib.api.machine.feature.IVacuumMachine;
@@ -509,6 +510,7 @@ public final class ForgeCommonEvent {
     }
 
     public static void remapIds(MissingMappingsEvent event) {
+        MEHatchMigration.remap(event);
         SuperStorageMigration.remap(event);
         ElectrochemistryMigration.remap(event);
         SpeedCards.remap(event);

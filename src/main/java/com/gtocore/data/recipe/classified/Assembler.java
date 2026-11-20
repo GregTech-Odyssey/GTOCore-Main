@@ -6,6 +6,7 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.*;
+import com.gtocore.data.recipe.MEHatchRecipes;
 import com.gtocore.integration.ae.TieredInterfaces;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -4003,45 +4004,7 @@ final class Assembler {
                 .duration(400)
                 .save();
 
-        ASSEMBLER_RECIPES.builder("me_tag_filter_stock_bus_part_machine")
-                .inputItems("gtceu:me_stocking_input_bus")
-                .inputItems(GTItems.TAG_FILTER, 16)
-                .inputItems(GTItems.SMART_ITEM_FILTER, 16)
-                .outputItems(GTAEMachines.ME_TAG_FILTER_STOCK_BUS.asItem())
-                .inputFluids(GTMaterials.SolderingAlloy, 576)
-                .EUt(480)
-                .duration(400)
-                .save();
-
-        ASSEMBLER_RECIPES.builder("me_tag_filter_stock_hatch_part_machine")
-                .inputItems("gtceu:me_stocking_input_hatch")
-                .inputItems(GTItems.FLUID_FILTER, 16)
-                .inputItems(GTItems.SMART_ITEM_FILTER, 16)
-                .outputItems(GTAEMachines.ME_TAG_FILTER_STOCK_HATCH.asItem())
-                .inputFluids(GTMaterials.SolderingAlloy, 576)
-                .EUt(480)
-                .duration(400)
-                .save();
-
-        ASSEMBLER_RECIPES.builder("me_tag_filter_input_bus_part_machine")
-                .inputItems("gtceu:me_input_bus")
-                .inputItems(GTItems.TAG_FILTER, 16)
-                .inputItems(GTItems.SMART_ITEM_FILTER, 16)
-                .outputItems(GTAEMachines.ME_TAG_FILTER_INPUT_BUS.asItem())
-                .inputFluids(GTMaterials.SolderingAlloy, 576)
-                .EUt(480)
-                .duration(400)
-                .save();
-
-        ASSEMBLER_RECIPES.builder("me_tag_filter_input_hatch_part_machine")
-                .inputItems("gtceu:me_input_hatch")
-                .inputItems(GTItems.FLUID_FILTER, 16)
-                .inputItems(GTItems.SMART_ITEM_FILTER, 16)
-                .outputItems(GTAEMachines.ME_TAG_FILTER_INPUT_HATCH.asItem())
-                .inputFluids(GTMaterials.SolderingAlloy, 576)
-                .EUt(480)
-                .duration(400)
-                .save();
+        MEHatchRecipes.registerTagFilterParts();
 
         ASSEMBLER_RECIPES.builder("abs_white_casing")
                 .inputItems(TagPrefix.frameGt, GTMaterials.Europium)

@@ -3,7 +3,7 @@ package com.gtocore.data.recipe.classified;
 import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
-import com.gtocore.integration.ae.TieredInterfaces;
+import com.gtocore.data.recipe.MEHatchRecipes;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.fluids.FluidStack;
 
 import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEItems;
 
 import com.kyanite.deeperdarker.content.DDItems;
 
@@ -42,7 +41,7 @@ final class AssemblyLine {
     @SuppressWarnings("DataFlowIssue")
     public static void init() {
         AssemblyLineA.init();
-        AssemblyLineDifficultyRelated.init();
+        MEHatchRecipes.registerWildcardPatternBuffer();
         SuperWirelessEnergyUnitRecipes.init();
         ASSEMBLY_LINE_RECIPES.builder("integrated_vapor_deposition_system")
                 .inputItems(MultiBlockC.CHEMICAL_VAPOR_DEPOSITION.asItem(), 16)
@@ -657,103 +656,7 @@ final class AssemblyLine {
                 .researchNode(DataCenterAggregationTerminal)
                 .save();
 
-        ASSEMBLY_LINE_RECIPES.builder("me_pattern_buffer")
-                .inputItems(GTMachines.DUAL_IMPORT_HATCH[LuV], 1)
-                .inputItems(GTItems.EMITTER_LuV, 2)
-                .inputItems(CustomTags.LuV_CIRCUITS, 4)
-                .inputItems(GTOItems.CELL_COMPONENT_1M)
-                .inputItems("expatternprovider:ex_pattern_provider", 3)
-                .inputItems(TieredInterfaces.block(1).asItem(), 3)
-                .inputItems(AEItems.SPEED_CARD.asItem(), 4)
-                .inputItems(AEItems.CAPACITY_CARD.asItem(), 2)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputFluids(GTMaterials.SolderingAlloy, L << 2)
-                .inputFluids(GTMaterials.Lubricant, 500)
-                .outputItems(GTAEMachines.ME_PATTERN_BUFFER)
-                .scanner(b -> b.researchStack(GTMachines.DUAL_IMPORT_HATCH[LuV].asItem())
-                        .duration(1200)
-                        .EUt(VA[LuV]))
-                .duration(600).EUt(VA[LuV])
-                .researchNode(BaseMEMachines)
-                .save();
-
-        ASSEMBLY_LINE_RECIPES.builder("me_pattern_buffer_proxy")
-                .inputItems(GTMachines.HULL[LuV], 1)
-                .inputItems(GTOMachines.ME_WIRELESS_CONNECTION_MACHINE, 1)
-                .inputItems(GTItems.SENSOR_LuV, 16)
-                .inputItems(GTItems.FIELD_GENERATOR_LuV, 16)
-                .inputItems(CustomTags.UV_CIRCUITS, 16)
-                .inputItems(AEBlocks.QUANTUM_LINK.asItem(), 1)
-                .inputItems(AEBlocks.QUANTUM_RING.asItem(), 8)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputFluids(GTMaterials.SolderingAlloy, L << 2)
-                .inputFluids(GTMaterials.Lubricant, 500)
-                .outputItems(GTAEMachines.ME_PATTERN_BUFFER_PROXY)
-                .researchStation(b -> b.researchStack(GTAEMachines.ME_PATTERN_BUFFER.asItem())
-                        .CWUt(32))
-                .researchNode(BaseMEMachines)
-                .duration(600).EUt(VA[ZPM])
-                .save();
-
-        ASSEMBLY_LINE_RECIPES.builder("me_catalyst_pattern_buffer")
-                .inputItems(GTMachines.DUAL_IMPORT_HATCH[ZPM], 1)
-                .inputItems(GTOMachines.ADVANCED_CATALYST_HATCH, 1)
-                .inputItems(GTOItems.INTEGRATED_CONTROL_CORE_UV, 8)
-                .inputItems(CustomTags.UHV_CIRCUITS, 16)
-                .inputItems(GTOItems.CELL_COMPONENT_4M)
-                .inputItems("expatternprovider:ex_pattern_provider", 3)
-                .inputItems(TieredInterfaces.block(1).asItem(), 3)
-                .inputItems(AEItems.SPEED_CARD.asItem(), 4)
-                .inputItems(AEItems.CAPACITY_CARD.asItem(), 2)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputFluids(GTMaterials.SolderingAlloy, L << 2)
-                .inputFluids(GTMaterials.Lubricant, 1000)
-                .outputItems(GTAEMachines.ME_CATALYST_ME_PATTERN_BUFFER)
-                .researchStation(b -> b.researchStack(GTOMachines.ADVANCED_CATALYST_HATCH.asItem())
-                        .duration(1200)
-                        .CWUt(128))
-                .duration(600).EUt(VA[UV])
-                .researchNode(MECatalystSupplying)
-                .save();
-
-        ASSEMBLY_LINE_RECIPES.builder("me_extend_pattern_buffer")
-                .inputItems(GTMachines.DUAL_IMPORT_HATCH[UV], 1)
-                .inputItems(GTAEMachines.ME_PATTERN_BUFFER, 1)
-                .inputItems(GTOItems.CELL_COMPONENT_16M, 4)
-                .inputItems("expatternprovider:ex_pattern_provider", 4)
-                .inputItems(TieredInterfaces.block(1).asItem(), 4)
-                .inputItems(AEItems.SPEED_CARD.asItem(), 6)
-                .inputItems(AEItems.CAPACITY_CARD.asItem(), 4)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputFluids(GTMaterials.SolderingAlloy, L << 2)
-                .outputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER)
-                .researchStation(b -> b.researchStack(GTAEMachines.ME_PATTERN_BUFFER_PROXY.asItem())
-                        .duration(1200)
-                        .CWUt(128))
-                .duration(600).EUt(VA[UV])
-                .researchNode(MECapacityExpansion)
-                .save();
-
-        ASSEMBLY_LINE_RECIPES.builder("me_extend_pattern_buffer_ultra")
-                .inputItems(GTMachines.DUAL_IMPORT_HATCH[UHV], 1)
-                .inputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER, 4)
-                .inputItems(GTOItems.CELL_COMPONENT_256M, 16)
-                .inputItems("expatternprovider:ex_pattern_provider", 16)
-                .inputItems(TieredInterfaces.block(1).asItem(), 16)
-                .inputItems(AEItems.SPEED_CARD.asItem(), 6)
-                .inputItems(AEItems.CAPACITY_CARD.asItem(), 4)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputFluids(GTMaterials.SolderingAlloy, L << 2)
-                .outputItems(GTAEMachines.ME_EXTEND_PATTERN_BUFFER_ULTRA)
-                .researchStation(b -> b.researchStack(GTAEMachines.ME_EXTEND_PATTERN_BUFFER.asItem())
-                        .duration(1200)
-                        .CWUt(256))
-                .duration(2400).EUt(VA[UHV])
-                .researchNode(MECapacityExpansion)
-                .save();
+        MEHatchRecipes.registerPatternBuffers();
 
         ASSEMBLY_LINE_RECIPES.builder("dynamo_hatch_luv")
                 .inputItems(GTMachines.HULL[LuV])
@@ -4588,25 +4491,7 @@ final class AssemblyLine {
                 .researchNode(EnergyIOs[MAX])
                 .save();
 
-        ASSEMBLY_LINE_RECIPES.builder("me_craft_pattern_part_machine")
-                .inputItems(GTMachines.DUAL_IMPORT_HATCH[GTValues.ZPM].asItem())
-                .inputItems("expatternprovider:assembler_matrix_pattern")
-                .inputItems("expatternprovider:assembler_matrix_crafter")
-                .inputItems("expatternprovider:assembler_matrix_speed")
-                .inputItems(GTItems.EMITTER_ZPM, 2)
-                .inputItems(CustomTags.UV_CIRCUITS, 4)
-                .inputItems(TagPrefix.wireFine, GTMaterials.YttriumBariumCuprate, 64)
-                .inputItems(TagPrefix.wireFine, GTMaterials.YttriumBariumCuprate, 64)
-                .outputItems(GTAEMachines.ME_CRAFT_PATTERN_PART_MACHINE.asItem())
-                .inputFluids(GTOMaterials.Indalloy140, 288)
-                .inputFluids(GTMaterials.Polybenzimidazole, 576)
-                .EUt(122880)
-                .duration(200)
-                .researchStation(b -> b.researchStack(AEItems.CRAFTING_PATTERN)
-                        .CWUt(32)
-                        .EUt(122880))
-                .researchNode(MEAdvancedAssembly)
-                .save();
+        MEHatchRecipes.registerCraftPatternHatch();
 
         ASSEMBLY_LINE_RECIPES.builder("super_molecular_assembler")
                 .inputItems(GTMachines.ASSEMBLER[ZPM].asItem())

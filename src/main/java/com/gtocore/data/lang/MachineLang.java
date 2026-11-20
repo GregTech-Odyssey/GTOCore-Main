@@ -342,6 +342,7 @@ final class MachineLang {
 
         addCNEN("block.gtceu.ulv_super_chest", "超级箱青春版", "Super Chest Lite");
         addCNEN("block.gtceu.ulv_super_tank", "超级缸青春版", "Super Tank Lite");
+        addCNEN("block.gtmthings.me_export_buffer_v2", "ME输出总成", "ME Export Buffer");
         addSingleMachineTooltips();
     }
 

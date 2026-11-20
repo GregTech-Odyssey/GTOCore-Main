@@ -4,6 +4,7 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.*;
 import com.gtocore.data.CraftingComponents;
+import com.gtocore.data.recipe.MEHatchRecipes;
 
 import com.gtolib.utils.RegistriesUtils;
 
@@ -21,11 +22,7 @@ import net.minecraftforge.fluids.FluidStack;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
 
-import com.almostreliable.merequester.Registration;
-
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
-import static com.gtocore.data.techtree.AENodes.BaseMEMachines;
-import static com.gtocore.data.techtree.AENodes.MESmartGatingClustering;
 import static com.gtocore.data.techtree.BaseNodes.*;
 import static com.gtocore.data.techtree.EnergyNodes.*;
 import static com.gtocore.data.techtree.MachinesNode.*;
@@ -660,51 +657,7 @@ final class AssemblyLineA {
                 .researchNode(GWCAComputingTech)
                 .save();
 
-        ASSEMBLY_LINE_RECIPES.builder("me_requestable_input_bus_machine")
-                .inputItems("gtceu:me_input_bus")
-                .inputItems(AEItems.CRAFTING_CARD.asItem())
-                .inputItems(TagPrefix.plateDouble, GTMaterials.RhodiumPlatedPalladium, 4)
-                .inputItems(GTItems.ROBOT_ARM_IV, 2)
-                .outputItems(GTAEMachines.ME_REQUESTABLE_INPUT_BUS_MACHINE)
-                .inputFluids(GTMaterials.SolderingAlloy, 1296)
-                .EUt(480)
-                .duration(1440)
-                .researchNode(BaseMEMachines)
-                .scanner(GTAEMachines.ITEM_IMPORT_BUS_ME.asItem())
-                .save();
-
-        ASSEMBLY_LINE_RECIPES.builder("me_requestable_input_hatch_machine")
-                .inputItems("gtceu:me_input_hatch")
-                .inputItems(AEItems.CRAFTING_CARD.asItem())
-                .inputItems(TagPrefix.plateDouble, GTMaterials.RhodiumPlatedPalladium, 4)
-                .inputItems(GTItems.ROBOT_ARM_IV, 2)
-                .outputItems(GTAEMachines.ME_REQUESTABLE_INPUT_HATCH_MACHINE)
-                .inputFluids(GTMaterials.SolderingAlloy, 1296)
-                .EUt(480)
-                .duration(1440)
-                .researchNode(BaseMEMachines)
-                .scanner(GTAEMachines.FLUID_IMPORT_HATCH_ME.asItem())
-                .save();
-        ASSEMBLY_LINE_RECIPES.builder("me_input_buffer_part_machine")
-                .inputItems(GTAEMachines.ME_REQUESTABLE_INPUT_BUS_MACHINE, 2)
-                .inputItems(GTAEMachines.ME_REQUESTABLE_INPUT_HATCH_MACHINE, 2)
-                .inputItems("gtceu:me_pattern_buffer")
-                .inputItems(GTItems.FIELD_GENERATOR_LuV, 4)
-                .inputItems(GTMachines.BUFFER[GTValues.LuV].asItem(), 2)
-                .inputItems(TagPrefix.pipeNonupleFluid, GTMaterials.NiobiumTitanium, 2)
-                .inputItems(GTBlocks.CASING_LAMINATED_GLASS.asItem(), 2)
-                .inputItems(AEItems.SPEED_CARD.asItem(), 8)
-                .inputItems(AEItems.CAPACITY_CARD.asItem(), 4)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .inputItems(TagPrefix.wireFine, GTMaterials.Europium, 64)
-                .outputItems(GTAEMachines.ME_INPUT_BUFFER_PART_MACHINE)
-                .inputFluids(GTMaterials.SolderingAlloy, 1296)
-                .inputFluids(GTMaterials.Lubricant, 500)
-                .scanner(Registration.REQUESTER.asItem())
-                .EUt(480)
-                .duration(1440)
-                .researchNode(MESmartGatingClustering)
-                .save();
+        MEHatchRecipes.registerRequestableInputsAndInputBuffer();
 
         ASSEMBLY_LINE_RECIPES.builder("bio_oscillation_generator")
                 .inputItems(GTItems.ULTRA_HIGH_POWER_INTEGRATED_CIRCUIT, 64)
@@ -986,17 +939,7 @@ final class AssemblyLineA {
                 .researchNode(ScannerInnovation)
                 .duration(700)
                 .save();
-        ASSEMBLY_LINE_RECIPES.builder("intelligent_scanning_me_proxy")
-                .inputItems("gtceu:me_pattern_buffer_proxy")
-                .inputItems(GTOTagPrefix.NANITES, GTMaterials.Naquadah)
-                .inputItems(GTItems.EMITTER_UHV)
-                .inputItems(GTItems.SENSOR_UHV)
-                .outputItems(ExResearchMachines.INTELLIGENT_SCANNING_ME_PROXY)
-                .inputFluids(GTMaterials.SolderingAlloy, 2880)
-                .EUt(24576)
-                .researchNode(ScannerInnovation)
-                .duration(700)
-                .save();
+        MEHatchRecipes.registerIntelligentScanningProxy();
         ASSEMBLY_LINE_RECIPES.builder("adjustable_semi_reflector")
                 .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_UHV.asItem())
                 .inputItems(TagPrefix.plate, GTMaterials.Germanium, 6)

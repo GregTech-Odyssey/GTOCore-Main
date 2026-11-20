@@ -23,6 +23,7 @@ import com.gregtechceu.gtceu.uipro.elements.Form;
 import com.gregtechceu.gtceu.uipro.elements.ItemSlot;
 import com.gregtechceu.gtceu.uipro.elements.NumberField;
 import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
+import com.gregtechceu.gtceu.uipro.elements.ServerList;
 import com.gregtechceu.gtceu.uipro.elements.Switch;
 import com.gregtechceu.gtceu.uipro.elements.ae.AEKeySlot;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
@@ -47,7 +48,9 @@ import appeng.api.storage.MEStorage;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.blockentity.SaveToItem;
+import com.gto.datasynclib.datastream.codec.StreamCodec;
 
+import com.glodblock.github.extendedae.common.items.InfinityCell;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -57,7 +60,8 @@ import java.util.function.IntFunction;
  * 无限资源供应器：把已解锁的资源挂到 ME 网络当存储供应，取多少给多少、永不耗尽。
  * <p>
  * 默认供应的资源开箱即用；标签注册的整组资源把其中任意一份放进样机槽解锁，只解锁放进去的那一项，
- * 拿走样机就收起供应。已解锁的资源可以在界面里逐个关掉。解锁状态就是样机槽本身，不另记一份。
+ * ME 无限元件也可放入物品样机槽，解锁其中记录的物品或流体。拿走样机或元件就收起对应供应。
+ * 已解锁的资源可以在界面里逐个关掉。
  */
 @DataGeneratorScanned
 public final class InfiniteResourceProviderMachine extends MetaMachine implements IGridConnectedMachine, MEStorage, IStorageProvider, MEStorageProvider, IFancyUIMachine {
@@ -76,7 +80,7 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
 
     @RegisterLanguage(cn = "解锁资源", en = "Unlock Resources")
     private static final Component UNLOCK = Component.translatable("gtocore.machine.infinite_resource_provider.unlock");
-    @RegisterLanguage(cn = "放入物品样机解锁对应资源，拿走样机即收起", en = "Insert an item sample to unlock that resource; remove it to stop")
+    @RegisterLanguage(cn = "放入物品样机或 ME 无限元件解锁对应资源", en = "Insert an item sample or ME Infinity Cell to unlock its resource")
     private static final Component ITEM_SAMPLE = Component.translatable("gtocore.machine.infinite_resource_provider.item_sample");
     @RegisterLanguage(cn = "放入流体样机解锁对应流体，抽走样机即收起", en = "Insert a fluid sample to unlock that fluid; drain it to stop")
     private static final Component FLUID_SAMPLE = Component.translatable("gtocore.machine.infinite_resource_provider.fluid_sample");
@@ -109,6 +113,8 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
     private final AEKeySet<AEKey> unlockedKeys = new AEKeySet<>();
     private final AEKeySet<AEKey> suppliedKeys = new AEKeySet<>();
     private final ObjectArrayList<AEKey> suppliedOrder = new ObjectArrayList<>();
+    private final ObjectArrayList<AEKey> resourceOrder = new ObjectArrayList<>();
+    private int resourceRevision;
 
     public InfiniteResourceProviderMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -154,21 +160,39 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
 
     private void rebuildSupplied() {
         samples.clear();
-        collect(itemSample.storage, samples);
+        resourceOrder.clear();
+        resourceOrder.addAll(InfiniteResourceRegistry.keys());
+        collectItemSamples();
         collect(fluidSample.storage, samples);
         unlockedKeys.clear();
         suppliedKeys.clear();
         suppliedOrder.clear();
-        var keys = InfiniteResourceRegistry.keys();
-        for (int i = 0; i < keys.size(); i++) {
-            var key = keys.get(i);
+        for (int i = 0; i < resourceOrder.size(); i++) {
+            var key = resourceOrder.get(i);
             if (!InfiniteResourceRegistry.isDefault(key) && !samples.containKey(key)) continue;
             unlockedKeys.add(key);
             if (disabled.containKey(key)) continue;
             suppliedKeys.add(key);
             suppliedOrder.add(key);
         }
+        resourceRevision++;
         cache.markAsDirty();
+    }
+
+    private void collectItemSamples() {
+        var storage = itemSample.storage;
+        for (int i = 0; i < storage.size(); i++) {
+            var sample = storage.keyAt(i);
+            if (sample == null || storage.amountAt(i) <= 0) continue;
+            if (sample.getItem() instanceof InfinityCell cell) {
+                var resource = cell.getRecord(sample.getReadOnlyStack());
+                if (supportsKeyType(resource.getType()) && samples.add(resource) && !InfiniteResourceRegistry.contains(resource)) {
+                    resourceOrder.add(resource);
+                }
+            } else if (InfiniteResourceRegistry.contains(sample)) {
+                samples.add(sample);
+            }
+        }
     }
 
     private static void collect(KeyInventory<? extends AEKey> storage, AEKeySet<AEKey> out) {
@@ -271,15 +295,14 @@ public final class InfiniteResourceProviderMachine extends MetaMachine implement
         var tanks = new ForgeFluidAdapter(fluidSample.storage);
         addSlots(unlock, SAMPLE_SLOTS, i -> FluidSlot.of(tanks, i, true, true));
         var resources = Form.section(RESOURCES);
-        var keys = InfiniteResourceRegistry.keys();
-        if (keys.isEmpty()) resources.addChild(Form.label(NO_RESOURCES));
-        for (int i = 0; i < keys.size(); i++) {
-            resources.addChild(resourceRow(keys.get(i)));
-        }
+        resources.addChild(ServerList.of(StreamCodec.of(AEKey::writeKey, AEKey::readKey), () -> resourceOrder, this::resourceRow)
+                .version(() -> resourceRevision)
+                .emptyText(NO_RESOURCES));
         page.addChildren(unlock, resources);
         var scroller = ScrollerView.page(PAGE_SCROLLER, UISizes.CONTENT_WIDTH).adaptiveWidth();
         scroller.addScrollViewChild(page);
-        return scroller;
+        // Let the machine window reposition the player inventory when the scroll viewport resizes.
+        return Form.page().addChild(scroller);
     }
 
     private static void addSlots(UIElement section, int count, IntFunction<Widget> factory) {

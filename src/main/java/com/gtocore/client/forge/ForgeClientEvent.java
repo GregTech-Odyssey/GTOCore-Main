@@ -24,6 +24,7 @@ import com.gtocore.integration.ae.wireless.WirelessClientCache;
 import com.gtocore.integration.emi.HiddenItems;
 
 import com.gtolib.GTOCore;
+import com.gtolib.api.client.MEStorageCapacityOverlay;
 import com.gtolib.api.item.IItem;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.PlayerData;
@@ -223,6 +224,7 @@ public final class ForgeClientEvent {
             if (WirelessAEClientHandler.shouldHighlight()) {
                 WirelessAEClientHandler.highlightMachines(camera, poseStack, event.getLevelRenderer().renderBuffers.bufferSource());
             }
+            MEStorageCapacityOverlay.render(mc, camera, poseStack);
             if (item != Items.AIR && itemStack.hasTag()) {
                 if (GTCEu.isDev() && StructureWriteBehavior.isItem(itemStack)) {
                     poses = StructureWriteBehavior.getPos(itemStack);

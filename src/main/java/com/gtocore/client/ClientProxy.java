@@ -58,6 +58,7 @@ import com.gtolib.api.client.FluidNameOverlay;
 import com.gtolib.api.client.YLayeredModelLoader;
 import com.gtolib.api.emi.stack.TagPrefixRenderer;
 import com.gtolib.api.machine.storage.SuperStorageClient;
+import com.gtolib.api.wireless.energy.client.XaeroMachineMap;
 import com.gtolib.drone.client.DroneClient;
 import com.gtolib.drone.client.DroneHud;
 import com.gtolib.implant.client.ImplantClient;
@@ -282,6 +283,7 @@ public final class ClientProxy extends CommonProxy {
         MonitorHudClient.registerPanel("info.clock", InfoReadouts.CLOCK);
         MonitorHudClient.registerPanel("info.rendered", InfoReadouts.RENDERED);
         if (Mods.XAERO_MINIMAP.isLoaded()) XaeroMinimapHud.install();
+        if (Mods.XAERO_WORLDMAP.isLoaded()) XaeroMachineMap.install();
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
         event.registerAboveAll("monitor_hud", (gui, graphics, partialTick, width, height) -> MonitorHudClient.render(graphics, width, height, partialTick));
     }

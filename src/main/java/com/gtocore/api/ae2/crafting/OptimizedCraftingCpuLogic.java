@@ -1,10 +1,12 @@
 package com.gtocore.api.ae2.crafting;
 
 import com.gtocore.common.data.GTOItems;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2;
 import com.gtocore.integration.ae.CraftingCpuHelperExtended;
 import com.gtocore.integration.ae.hooks.ITemporaryCraftableService;
 
 import com.gtolib.GTOCore;
+import com.gtolib.ae2.pattern.ParallelAEProcessingPattern;
 import com.gtolib.api.ae2.IPatternProviderLogic;
 import com.gtolib.api.ae2.PushBatch;
 import com.gtolib.api.ae2.pattern.IDetails;
@@ -219,113 +221,29 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
                 }
             }
 
-            var tmp_details = task.getKey();
-            boolean isParallel = tmp_details instanceof IParallelPatternDetails;
-            job.expectedOutputs.clear();
-            KeyCounter[] container = null;
-            long parallelValue = 1;
-            if (isParallel && progress.value > 1) {
-                var parallel = getMaxParallel(progress.value, tmp_details, inventory.list.getMap());
-                if (parallel == 0) continue;
-                if (parallel > 1) {
-                    var parallelPatternDetails = ((IParallelPatternDetails) tmp_details).getCopy();
-                    parallelPatternDetails.parallel(parallel);
-                    if ((container = extractPatternInputs(parallelPatternDetails, inventory, job.expectedOutputs)) == null) {
-                        continue;
-                    } else {
-                        parallelValue = parallel;
-                        tmp_details = parallelPatternDetails;
-                    }
-                } else {
-                    // parallel == 1：库存恰好只够一轮。此时不需要并行副本，按单轮取料，
-                    // parallelValue 保持 1，与下方非并行分支语义一致。
-                    container = extractPatternInputs(tmp_details, inventory, job.expectedOutputs);
-                }
-            } else {
-                container = extractPatternInputs(tmp_details, inventory, job.expectedOutputs);
-            }
-            if (container == null) continue;
-            var details = tmp_details;
-
-            // 查找优先物品数量和识别可用并行
-            var targetOutputKey = details.getPrimaryOutput().what();
-            boolean allocationLimited = false;
-            long cappedParallel = parallelValue;
-
-            if (!job.allocations.isEmpty()) {
-                job.totalConsumed.clear();
-                for (var kc : container) {
-                    if (kc == null) continue;
-                    for (var entry : kc) {
-                        job.totalConsumed.insert(entry.getKey(), entry.getLongValue());
-                    }
-                }
-                long minAllowedUnits = Long.MAX_VALUE;
-                var patternDefinition = details.getDefinition();
-                for (var e : job.totalConsumed) {
-                    var consumedKey = e.getKey();
-                    long consumedTotal = e.getLongValue();
-                    var allocMap = job.allocations.get(consumedKey);
-                    if (allocMap == null || allocMap.isEmpty()) {
-                        continue;
-                    }
-                    IPatternDetails allocKey = null;
-                    for (var aeIt = allocMap.object2LongEntrySet().fastIterator(); aeIt.hasNext();) {
-                        var ae = aeIt.next();
-                        if (ae.getKey().getDefinition().equals(patternDefinition)) {
-                            allocKey = ae.getKey();
-                            break;
-                        }
-                    }
-
-                    if (allocKey == null) {
-                        this.craftingResults.put(targetOutputKey, IPatternProviderLogic.PushResult.INSUFFICIENT_PRIORITY);
-
-                        CraftingCpuHelper.reinjectPatternInputs(inventory, container);
-                        continue taskLoop;
-                    }
-                    long quota = allocMap.getLong(allocKey);
-                    long perUnit = Math.max(1, consumedTotal / parallelValue);
-                    long allowedUnits = quota / perUnit;
-                    if (allowedUnits < minAllowedUnits) {
-                        minAllowedUnits = allowedUnits;
-                        if (minAllowedUnits == 0) {
-                            break;
-                        }
-                    }
-                }
-                if (minAllowedUnits != Long.MAX_VALUE) {
-                    if (minAllowedUnits <= 0) {
-                        this.craftingResults.put(targetOutputKey, IPatternProviderLogic.PushResult.INSUFFICIENT_PRIORITY);
-
-                        CraftingCpuHelper.reinjectPatternInputs(inventory, container);
-                        continue;
-                    }
-                    if (minAllowedUnits < parallelValue) {
-                        if (details instanceof IParallelPatternDetails parDetails && parDetails.getParallel() > 1) {
-                            CraftingCpuHelper.reinjectPatternInputs(inventory, container);
-                            parDetails.parallel(minAllowedUnits);
-                            job.expectedOutputs.reset();
-                            container = extractPatternInputs(details, inventory, job.expectedOutputs);
-                            if (container == null) {
-                                continue;
-                            }
-                            cappedParallel = minAllowedUnits;
-                            allocationLimited = true;
-                        } else {
-                            this.craftingResults.put(targetOutputKey, IPatternProviderLogic.PushResult.INSUFFICIENT_PRIORITY);
-                            CraftingCpuHelper.reinjectPatternInputs(inventory, container);
-                            continue;
-                        }
-                    }
-                }
-            }
-
-            batch.begin(it, progress, details, container, cappedParallel, isParallel || allocationLimited);
-            for (ICraftingProvider iCraftingProvider : craftingService.getProviders(details)) {
-                var inputs = batch.inputs();
-                if (inputs == null) break;
+            var pattern = task.getKey();
+            long maxParallel = pattern instanceof ParallelAEProcessingPattern processing ? batch.limitProcessingParallel(processing, progress.value) :
+                    pattern instanceof IParallelPatternDetails && progress.value > 1 ? getMaxParallel(progress.value, pattern, inventory.list.getMap()) : 1;
+            if (maxParallel == 0) continue;
+            var targetOutputKey = pattern.getPrimaryOutput().what();
+            batch.begin(it, progress);
+            long preparedParallel = 0;
+            for (ICraftingProvider iCraftingProvider : craftingService.getProviders(pattern)) {
                 if (iCraftingProvider.isBusy()) continue;
+
+                long parallel = maxParallel;
+                if (iCraftingProvider instanceof MEPatternBufferPartMachineV2 buffer && pattern instanceof ParallelAEProcessingPattern processing) {
+                    parallel = buffer.limitInputParallel(processing, parallel);
+                    if (parallel == 0) continue;
+                }
+                if (parallel != preparedParallel) {
+                    batch.returnInputs();
+                    preparedParallel = parallel;
+                    batch.prepare(pattern, parallel);
+                }
+                var inputs = batch.inputs();
+                if (inputs == null) continue;
+                var details = batch.details();
 
                 job.currentConsumed.clear();
                 for (var kc : inputs) {
@@ -363,12 +281,10 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
                 }
                 if (batch.stop == TaskBatch.STOP_ALL) break taskLoop;
                 if (batch.stop == TaskBatch.STOP_TASK) continue taskLoop;
+                if (batch.inputs() == null) break;
             }
 
-            var rest = batch.inputs();
-            if (rest != null) {
-                CraftingCpuHelper.reinjectPatternInputs(inventory, rest);
-            }
+            batch.returnInputs();
         }
 
         return batch.finish();
@@ -398,14 +314,97 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
             this.pushed = 0;
         }
 
-        private void begin(Iterator<?> tasks, LongHolder progress, IPatternDetails details, KeyCounter[] inputs, long parallel, boolean oneShot) {
+        private void begin(Iterator<?> tasks, LongHolder progress) {
             this.tasks = tasks;
             this.progress = progress;
+            this.stop = GO;
+        }
+
+        private long limitProcessingParallel(ParallelAEProcessingPattern pattern, long parallel) {
+            var stock = inventory.list.getMap();
+            var definition = pattern.getDefinition();
+            boolean allocate = !job.allocations.isEmpty();
+            long allocated = parallel;
+            for (var input : pattern.getInputs()) {
+                var key = input.getPossibleInputs()[0].what();
+                long perCraft = input.getMultiplier();
+                if (perCraft <= 0) return 0;
+                parallel = Math.min(parallel, stock.getAmount(key) / perCraft);
+                if (parallel == 0) return 0;
+                if (allocate) {
+                    allocated = Math.min(allocated, getAllocationQuota(key, definition) / perCraft);
+                }
+            }
+            if (allocated == 0) {
+                craftingResults.put(pattern.getPrimaryOutput().what(), IPatternProviderLogic.PushResult.INSUFFICIENT_PRIORITY);
+            }
+            return Math.min(parallel, allocated);
+        }
+
+        private void prepare(IPatternDetails pattern, long requestedParallel) {
+            var details = pattern;
+            if (pattern instanceof IParallelPatternDetails parallelPattern &&
+                    (requestedParallel > 1 || pattern instanceof ParallelAEProcessingPattern && parallelPattern.getParallel() != 1)) {
+                var scaled = parallelPattern.getCopy();
+                scaled.parallel(requestedParallel);
+                details = scaled;
+            }
+            job.expectedOutputs.clear();
+            var inputs = extractPatternInputs(details, inventory, job.expectedOutputs);
+            if (inputs == null) return;
+
+            long allocatedParallel = pattern instanceof ParallelAEProcessingPattern ? requestedParallel :
+                    limitByAllocation(details, inputs, requestedParallel);
+            if (allocatedParallel < requestedParallel) {
+                CraftingCpuHelper.reinjectPatternInputs(inventory, inputs);
+                if (allocatedParallel <= 0 || !(details instanceof IParallelPatternDetails scaled) || scaled.getParallel() <= 1) {
+                    craftingResults.put(pattern.getPrimaryOutput().what(), IPatternProviderLogic.PushResult.INSUFFICIENT_PRIORITY);
+                    return;
+                }
+                scaled.parallel(allocatedParallel);
+                job.expectedOutputs.reset();
+                inputs = extractPatternInputs(details, inventory, job.expectedOutputs);
+                if (inputs == null) return;
+            }
             this.details = details;
             this.inputs = inputs;
-            this.parallel = parallel;
-            this.oneShot = oneShot;
-            this.stop = GO;
+            this.parallel = allocatedParallel;
+            this.oneShot = pattern instanceof IParallelPatternDetails;
+        }
+
+        private long limitByAllocation(IPatternDetails pattern, KeyCounter[] inputs, long parallel) {
+            if (job.allocations.isEmpty()) return parallel;
+            job.totalConsumed.clear();
+            for (var input : inputs) {
+                for (var entry : input) {
+                    job.totalConsumed.insert(entry.getKey(), entry.getLongValue());
+                }
+            }
+            long allowed = parallel;
+            var definition = pattern.getDefinition();
+            for (var consumed : job.totalConsumed) {
+                long quota = getAllocationQuota(consumed.getKey(), definition);
+                long perCraft = Math.max(1, consumed.getLongValue() / parallel);
+                allowed = Math.min(allowed, quota / perCraft);
+                if (allowed <= 0) return 0;
+            }
+            return allowed;
+        }
+
+        private long getAllocationQuota(AEKey key, AEItemKey definition) {
+            var allocations = job.allocations.get(key);
+            if (allocations == null || allocations.isEmpty()) return Long.MAX_VALUE;
+            for (var it = allocations.object2LongEntrySet().fastIterator(); it.hasNext();) {
+                var allocation = it.next();
+                if (allocation.getKey().getDefinition().equals(definition)) return allocation.getLongValue();
+            }
+            return 0;
+        }
+
+        private void returnInputs() {
+            if (inputs == null) return;
+            CraftingCpuHelper.reinjectPatternInputs(inventory, inputs);
+            inputs = null;
         }
 
         private boolean powered(double power) {

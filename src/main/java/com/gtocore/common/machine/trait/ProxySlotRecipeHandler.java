@@ -1,7 +1,7 @@
 package com.gtocore.common.machine.trait;
 
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferProxyPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferProxyPartMachineV2;
 
 import com.gtolib.api.machine.trait.ProxyRecipeHandler;
 
@@ -34,7 +34,7 @@ public final class ProxySlotRecipeHandler {
         handlers = NO_HANDLERS;
     }
 
-    public ProxySlotRecipeHandler(MEPatternBufferProxyPartMachine machine, MEPatternBufferPartMachine patternBuffer) {
+    public ProxySlotRecipeHandler(MEPatternBufferProxyPartMachineV2 machine, MEPatternBufferPartMachineV2 patternBuffer) {
         int slots = patternBuffer.getMaxPatternCount();
         var slotHandlers = patternBuffer.internalRecipeHandler.getSlotHandlers();
         var circuit = new ProxyRecipeHandler(machine, patternBuffer.circuitInventorySimulated, true, false);
@@ -66,11 +66,11 @@ public final class ProxySlotRecipeHandler {
 
     private static final class PatternBufferProxyRHL extends InternalSlotRecipeHandler.PatternSlotRHL {
 
-        private PatternBufferProxyRHL(MEPatternBufferProxyPartMachine machine, MEPatternBufferPartMachine.InternalSlot slot, ProxyRecipeHandler slotHandler, ProxyRecipeHandler circuit, ProxyRecipeHandler slotCircuit, ProxyRecipeHandler sharedItem, ProxyRecipeHandler slotSharedItem, ProxyRecipeHandler sharedFluid, ProxyRecipeHandler slotSharedFluid) {
+        private PatternBufferProxyRHL(MEPatternBufferProxyPartMachineV2 machine, MEPatternBufferPartMachineV2.InternalSlot slot, ProxyRecipeHandler slotHandler, ProxyRecipeHandler circuit, ProxyRecipeHandler slotCircuit, ProxyRecipeHandler sharedItem, ProxyRecipeHandler slotSharedItem, ProxyRecipeHandler sharedFluid, ProxyRecipeHandler slotSharedFluid) {
             super(slot, machine, slotHandler, circuit, slotCircuit, sharedItem, slotSharedItem, sharedFluid, slotSharedFluid);
         }
 
-        private PatternBufferProxyRHL(MEPatternBufferPartMachine.InternalSlot slot, IRecipeHandler[] handlers) {
+        private PatternBufferProxyRHL(MEPatternBufferPartMachineV2.InternalSlot slot, IRecipeHandler[] handlers) {
             super(slot, null, handlers);
         }
 

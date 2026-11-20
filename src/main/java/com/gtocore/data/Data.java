@@ -160,7 +160,7 @@ public final class Data {
         $ClassifiedRecipe.init();
         Temporary.init();
         if (GTCEu.isDev() || GTORules.RECIPE_TIER.isEasy()) {
-            EasyModeRecipe.init();
+            MEHatchRecipes.registerSimplePatternBuffer();
         }
 
         GenerateDisassembly.DISASSEMBLY_RECORD.clear();
