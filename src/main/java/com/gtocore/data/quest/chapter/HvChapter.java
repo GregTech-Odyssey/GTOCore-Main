@@ -17,6 +17,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -44,7 +45,6 @@ public final class HvChapter {
             .title("6. 高压(HV)")
             .subtitle("Tier3-HV")
             .icon(GTMultiMachines.CLEANROOM)
-            .hideQuestsUntilDepsVisible()
             .autofocus(HvChapter.WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest RECYCLER = CHAPTER.quest("recycler", q -> q
@@ -65,6 +65,8 @@ public final class HvChapter {
 
     public static final Quest WELCOME_TO_THE_HIGH_VOLTAGE_STAGE = CHAPTER.quest("welcome_to_the_high_voltage_stage", q -> q
             .at(-6, 1)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{高压}阶段", GOLD)
             .subtitle("{你需要天马行空般的想象力}", GOLD)
             .desc(d -> d
@@ -76,7 +78,8 @@ public final class HvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.HV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(MvChapter.STAINLESS_STEEL_INGOT, MvChapter.POLYVINYL_CHLORIDE_PLATE));
+            .dependsOn(MvChapter.STAINLESS_STEEL_INGOT, MvChapter.POLYVINYL_CHLORIDE_PLATE)
+            .mainNode());
 
     public static final Quest HV_CHEMICAL_BATH = CHAPTER.quest("hv_chemical_bath", q -> q
             .at(-4, 1)
@@ -124,7 +127,7 @@ public final class HvChapter {
                     .line("任何维护问题都会使洁净度上限降低10%.使用维护提示覆盖板配上红石灯来监控你的超净间.或者直接使用自动维护仓免去维护的痛苦."))
             .task(Task.item(GTMultiMachines.CLEANROOM), Task.item(GTBlocks.FILTER_CASING, 8))
             .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MvChapter.ADVANCED_INTEGRATED_CIRCUIT)
-            .hideDependentLines());
+            .mainNode());
 
     public static final Quest CONFIGURABLE_MAINTENANCE_HATCH = CHAPTER.quest("configurable_maintenance_hatch", q -> q
             .at(-8, 0)
@@ -258,6 +261,7 @@ public final class HvChapter {
 
     public static final Quest HV_ASSEMBLER = CHAPTER.quest("hv_assembler", q -> q
             .at(-6, 3.5)
+            .preset(QuestPreset.IMPORTANT)
             .desc(d -> d.line("制造出{HV组装机}，你可以开始大批量生产{贴片元件}！", GOLD, GOLD))
             .task(Task.item(GTMachines.ASSEMBLER[GTValues.HV]))
             .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MvChapter.ADVANCED_INTEGRATED_CIRCUIT));
@@ -270,7 +274,7 @@ public final class HvChapter {
     public static final Quest LPIC_CHIP = CHAPTER.quest("lpic_chip", q -> q
             .at(-3.5, 4)
             .task(Task.item(GTItems.LOW_POWER_INTEGRATED_CIRCUIT))
-            .dependsOn(ORANGE_GLASS_LENS, HV_CUTTER, CLEANROOM));
+            .dependsOn(ORANGE_GLASS_LENS, HV_CUTTER));
 
     public static final Quest HV_ENERGY_INPUT_HATCH = CHAPTER.quest("hv_energy_input_hatch", q -> q
             .at(-3.5, 5.5)
@@ -358,7 +362,8 @@ public final class HvChapter {
             .title("{微型处理器超级计算机}", YELLOW)
             .desc(d -> d.line("EV电路！我的天哪！"))
             .task(Task.item(GTItems.WORKSTATION_EV))
-            .dependsOn(MICROPROCESSOR_ASSEMBLY));
+            .dependsOn(MICROPROCESSOR_ASSEMBLY)
+            .mainNode());
 
     public static final Quest HV_CIRCUIT_ASSEMBLER = CHAPTER.quest("hv_circuit_assembler", q -> q
             .at(4.75, -1.5)
@@ -509,6 +514,7 @@ public final class HvChapter {
 
     public static final Quest LARGE_CHEMICAL_REACTOR = CHAPTER.quest("large_chemical_reactor", q -> q
             .at(9.75, -6)
+            .preset(QuestPreset.IMPORTANT)
             .subtitle("没有人比我更懂化学")
             .desc(d -> d
                     .line("有条件的{无损超频}，运行低压配方速度更快", YELLOW)
@@ -642,12 +648,12 @@ public final class HvChapter {
                     .line()
                     .line("高级的{芯片}通常只能由更高级的{晶圆}蚀刻出，并且低级的{芯片}也能获得巨量的产能加成，{拉制}现阶段最高级的{单晶硅}通常是不二选择", YELLOW, YELLOW, YELLOW, AQUA, YELLOW))
             .task(Task.item(GTItems.NOR_MEMORY_CHIP))
-            .dependsOn(PINK_GLASS_LENS, HV_CUTTER, CLEANROOM, PHOSPHORUS_WAFER));
+            .dependsOn(PINK_GLASS_LENS, HV_CUTTER, PHOSPHORUS_WAFER));
 
     public static final Quest NAND_MEMORY_CHIP = CHAPTER.quest("nand_memory_chip", q -> q
             .at(-2, 4)
             .task(Task.item(GTItems.NAND_MEMORY_CHIP))
-            .dependsOn(HV_CUTTER, GRAY_GLASS_LENS, CLEANROOM, PHOSPHORUS_WAFER));
+            .dependsOn(HV_CUTTER, GRAY_GLASS_LENS, PHOSPHORUS_WAFER));
 
     public static final Quest DATA_STICK = CHAPTER.quest("data_stick", q -> q
             .at(1, 4)
@@ -745,7 +751,8 @@ public final class HvChapter {
                     .line()
                     .line("EMI自带{配方树}功能，好好研究一下如何使用它，它会带给你极大的方便", GOLD))
             .task(Task.item(ModItems.TIER_1_ROCKET.get()))
-            .dependsOn(ROCKET_COMPONENTS, ROCKET_ASSEMBLER));
+            .dependsOn(ROCKET_COMPONENTS, ROCKET_ASSEMBLER)
+            .mainNode());
 
     public static final Quest UNLOCK_MOON = CHAPTER.quest("unlock_moon", q -> q
             .at(9, 1)
@@ -760,7 +767,8 @@ public final class HvChapter {
             .reward(
                     Reward.stack(() -> QuestStacks.filled(GTItems.FLUID_CELL_LARGE_STEEL, new FluidStack(GTMaterials.RocketFuel.getFluid(), 8000)), 2),
                     Reward.item(ModItems.LAUNCH_PAD.get()))
-            .dependsOn(PLANET_SCAN_SATELLITE, TIER_1_ROCKET, SATELLITE_CONTROL_CENTER, PLANET_DATA_CHIP, ROCKET_FUEL_BUCKET));
+            .dependsOn(PLANET_SCAN_SATELLITE, TIER_1_ROCKET, SATELLITE_CONTROL_CENTER, PLANET_DATA_CHIP, ROCKET_FUEL_BUCKET)
+            .mainNode());
 
     public static final Quest HEAD_TO_THE_MOON = CHAPTER.quest("head_to_the_moon", q -> q
             .at(12, 1)
@@ -776,7 +784,8 @@ public final class HvChapter {
                     .line("最后着陆前注意提前{打开助推器减速}，否则在有不幸的事情发生前就会有{更不幸的事情发生}", YELLOW, DARK_RED))
             .task(Task.dimension(Dimension.MOON).title("造访月球").icon(ModItems.MOON_GLOBE.get()))
             .reward(Reward.stack(() -> QuestStacks.charged(GTItems.PROSPECTOR_HV, 1600000L), 1))
-            .dependsOn(UNLOCK_MOON, ROCKET_FUEL_BUCKET, BeyondTheStarsChapter.FLESH_IS_WEAK_MACHINERY_ASCENDS, BeyondTheStarsChapter.BASIC_SPACE_SUIT));
+            .dependsOn(UNLOCK_MOON, ROCKET_FUEL_BUCKET, BeyondTheStarsChapter.FLESH_IS_WEAK_MACHINERY_ASCENDS, BeyondTheStarsChapter.BASIC_SPACE_SUIT)
+            .mainNode());
 
     public static final Quest RAW_BAUXITE = CHAPTER.quest("raw_bauxite", q -> q
             .at(13.5, 0)
@@ -821,7 +830,8 @@ public final class HvChapter {
             .at(15, -3)
             .desc(d -> d.line("你的努力终有回报"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.Titanium))
-            .dependsOn(TITANIUM_TETRACHLORIDE_BUCKET, VACUUM_FREEZER));
+            .dependsOn(TITANIUM_TETRACHLORIDE_BUCKET, VACUUM_FREEZER)
+            .mainNode());
 
     public static final Quest THREE_DIMENSIONAL_PRINTER = CHAPTER.quest("three_dimensional_printer", q -> q
             .at(15, -6)
@@ -885,7 +895,7 @@ public final class HvChapter {
                 .link(QuestLink.of(AeChapter.ASSEMBLY_MATRIX, 1.5, -4.5))
                 .link(QuestLink.of(AeChapter.P2P_SAMPLE, 1, 5.5))
                 .link(QuestLink.of(SpaceStationChapter.WE_NEED_A_HOUSE_IN_SPACE, 12, 3.5))
-                .link(QuestLink.of(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE, 18, -3))
+                .link(QuestLink.of(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE, 18.5, -3).mainNode())
                 .link(QuestLink.of(MvChapter.COMPONENT_ASSEMBLER, -4.5, -8.25))
                 .link(QuestLink.of(MvChapter.PROCESSING_PLANT, -3, -8.25))
                 .link(QuestLink.of(BeyondTheStarsChapter.HEAVY_DUTY_PLATE_1, 5, 5.5))

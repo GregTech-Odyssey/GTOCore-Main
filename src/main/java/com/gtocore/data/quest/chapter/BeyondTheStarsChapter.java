@@ -34,7 +34,6 @@ public final class BeyondTheStarsChapter {
             .title("冯虚御风")
             .subtitle("Voyage to the Void")
             .icon(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_7_ROCKET.get())
-            .hideQuestsUntilDepsVisible()
             .flexible()
             .autofocus(BeyondTheStarsChapter.STARGAZING)
             .background(QuestTextures.BEYONDSTARS, 0x555555));
@@ -115,11 +114,13 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest A_SPARK_IGNITES = CHAPTER.quest("a_spark_ignites", q -> q
             .at(-1.25, 1)
+            .nodeScale(2)
             .title("微火初燃")
             .subtitle("这里是T1火箭")
             .desc(d -> d.line("现在你可以前往月球和地球空间站了"))
             .task(Task.item(ModItems.TIER_1_ROCKET.get()))
-            .dependsOn(ROCKET_ASSEMBLER, ROCKET_NOSE_CONE, STEEL_TANK, STEEL_ENGINE, ROCKET_FIN, LAUNCH_PAD));
+            .dependsOn(ROCKET_ASSEMBLER, ROCKET_NOSE_CONE, STEEL_TANK, STEEL_ENGINE, ROCKET_FIN, LAUNCH_PAD)
+            .mainNode());
 
     public static final Quest PLANET_DATA_CHIP = CHAPTER.quest("planet_data_chip", q -> q
             .at(1.5, -3)
@@ -165,6 +166,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest FIND_THE_MOON = CHAPTER.quest("find_the_moon", q -> q
             .at(2.5, 1)
+            .nodeScale(1.5)
             .icon(ModItems.EARTH_GLOBE.get())
             .title("寻找月球")
             .subtitle("找到你了！")
@@ -237,6 +239,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T1_ROCKET_FUEL_ROCKET_FUEL = CHAPTER.quest("t1_rocket_fuel_rocket_fuel", q -> q
             .at(-9, -2)
+            .nodeScale(1.5)
             .icon(GTMaterials.RocketFuel.getBucket())
             .title("T1火箭燃料：火箭燃料")
             .subtitle("圆梦时刻！")
@@ -294,7 +297,8 @@ public final class BeyondTheStarsChapter {
             .requireAny());
 
     public static final Quest GREG_TO_THE_MOON = CHAPTER.quest("greg_to_the_moon", q -> q
-            .at(8, 1).iconScale(1.5)
+            .at(8, 1)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(ModItems.MOON_GLOBE.get())
             .title("格雷奔月")
             .subtitle("格雷科技的一小步")
@@ -373,6 +377,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T2_ROCKET_FUEL_ROCKET_FUEL_RP = CHAPTER.quest("t2_rocket_fuel_rocket_fuel_rp", q -> q
             .at(-9, 1)
+            .nodeScale(1.5)
             .icon(GTOMaterials.RocketFuelRp1.getBucket())
             .title("T2火箭燃料：火箭燃料RP-1")
             .subtitle("让我们把东方一号送上天")
@@ -461,6 +466,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T3_ROCKET_FUEL_DENSE_HYDRAZINE_FUEL = CHAPTER.quest("t3_rocket_fuel_dense_hydrazine_fuel", q -> q
             .at(-9, 4)
+            .nodeScale(1.5)
             .icon(GTOMaterials.DenseHydrazineFuelMixture.getBucket())
             .title("T3火箭燃料：浓缩肼混合燃料")
             .subtitle("土星五号的光辉")
@@ -516,6 +522,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T4_ROCKET_FUEL_METHYLHYDRAZINE_NITRATE = CHAPTER.quest("t4_rocket_fuel_methylhydrazine_nitrate", q -> q
             .at(-9, 7)
+            .nodeScale(1.5)
             .icon(GTOMaterials.RocketFuelCn3h7o3.getBucket())
             .title("T4火箭燃料：硝酸甲肼")
             .subtitle("黑火药的后继传人")
@@ -538,6 +545,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T5_ROCKET_FUEL_UNSYMMETRICAL_DIMETHYLHYDRAZINE_DINITROGEN = CHAPTER.quest("t5_rocket_fuel_unsymmetrical_dimethylhydrazine_dinitrogen", q -> q
             .at(-9, 10)
+            .nodeScale(1.5)
             .icon(GTOMaterials.RocketFuelH8n4c2o4.getBucket())
             .title("T5火箭燃料：偏二甲肼-四氧化二氮")
             .subtitle("重走长征路")
@@ -566,6 +574,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T6_ROCKET_FUEL_FRIGID_ICE_FUEL = CHAPTER.quest("t6_rocket_fuel_frigid_ice_fuel", q -> q
             .at(-9, 13)
+            .nodeScale(1.5)
             .icon(ModItems.CRYO_FUEL_BUCKET.get())
             .title("T6火箭燃料：凛冰燃料")
             .subtitle("低温发射！")
@@ -578,6 +587,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T7_ROCKET_FUEL_STELLAR_ENERGY_ROCKET = CHAPTER.quest("t7_rocket_fuel_stellar_energy_rocket", q -> q
             .at(-9, 16)
+            .nodeScale(1.5)
             .icon(GTOMaterials.StellarEnergyRocketFuel.getBucket())
             .title("T7火箭燃料：星能火箭燃料")
             .subtitle("恒星之力，借我一用！")
@@ -626,14 +636,17 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest A_LIGHT_BOAT_CARRIES_A_GENTLE = CHAPTER.quest("a_light_boat_carries_a_gentle", q -> q
             .at(14.5, 1)
+            .nodeScale(2)
             .title("轻舟载微")
             .subtitle("这里是T2火箭")
             .desc(d -> d.line("现在你可以前往火星了"))
             .task(Task.item(ModItems.TIER_2_ROCKET.get()))
-            .dependsOn(HEAVY_DUTY_PLATE_2));
+            .dependsOn(HEAVY_DUTY_PLATE_2)
+            .mainNode());
 
     public static final Quest MARTIAN_WATCH = CHAPTER.quest("martian_watch", q -> q
-            .at(17.5, 1).iconScale(1.5)
+            .at(17.5, 1)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(ModItems.MARS_GLOBE.get())
             .title("荧惑守望")
             .subtitle("寻找生命存在的证明")
@@ -686,11 +699,13 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest A_BOLT_FROM_THE_BLUE = CHAPTER.quest("a_bolt_from_the_blue", q -> q
             .at(24, 1)
+            .nodeScale(2)
             .title("平地惊雷")
             .subtitle("这里是T3火箭")
             .desc(d -> d.line("现在你可以前往金星了"))
             .task(Task.item(ModItems.TIER_3_ROCKET.get()))
-            .dependsOn(HEAVY_DUTY_PLATE_3));
+            .dependsOn(HEAVY_DUTY_PLATE_3)
+            .mainNode());
 
     public static final Quest ORE_SPECIALTY_II_MARS = CHAPTER.quest("ore_specialty_ii_mars", q -> q
             .at(17.5, 3)
@@ -705,7 +720,8 @@ public final class BeyondTheStarsChapter {
             .dependsOn(MARTIAN_WATCH));
 
     public static final Quest TAI_BAI_PASSING_THROUGH_THE_SKY = CHAPTER.quest("tai_bai_passing_through_the_sky", q -> q
-            .at(27, 1).iconScale(1.5)
+            .at(27, 1)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(ModItems.VENUS_GLOBE.get())
             .title("太白经天")
             .subtitle("与晨曦同频")
@@ -770,14 +786,17 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest ROARING_THROUGH_THE_SKIES = CHAPTER.quest("roaring_through_the_skies", q -> q
             .at(27, 8)
+            .nodeScale(2)
             .title("声震云霄")
             .subtitle("这里是T4火箭")
             .desc(d -> d.line("现在你可以前往水星和谷神星了"))
             .task(Task.item(ModItems.TIER_4_ROCKET.get()))
-            .dependsOn(DESH_ENGINE, DESH_TANK));
+            .dependsOn(DESH_ENGINE, DESH_TANK)
+            .mainNode());
 
     public static final Quest CHASING_THE_SUN_AT_DAWN = CHAPTER.quest("chasing_the_sun_at_dawn", q -> q
-            .at(22.5, 8).iconScale(1.5)
+            .at(22.5, 8)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(ModItems.MERCURY_GLOBE.get())
             .title("晨星逐日")
             .subtitle("真的很热热热！！！")
@@ -820,7 +839,8 @@ public final class BeyondTheStarsChapter {
             .dependsOn(CHASING_THE_SUN_AT_DAWN));
 
     public static final Quest YIN_YANG_RIFT = CHAPTER.quest("yin_yang_rift", q -> q
-            .at(27, 11).iconScale(1.5)
+            .at(27, 11)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(GTOGlobes.Items.CERES_GLOBE.get())
             .title("阴阳之隙")
             .subtitle("来自于一颗完整行星的碎片")
@@ -879,14 +899,17 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest HERCULEAN_STRENGTH = CHAPTER.quest("herculean_strength", q -> q
             .at(21.5, 13)
+            .nodeScale(2)
             .title("力拔山河")
             .subtitle("这里是T5火箭")
             .desc(d -> d.line("现在你可以前往木卫一和木卫三了"))
             .task(Task.item(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_5_ROCKET.get()))
-            .dependsOn(OSTRUM_ENGINE, OSTRUM_TANK));
+            .dependsOn(OSTRUM_ENGINE, OSTRUM_TANK)
+            .mainNode());
 
     public static final Quest MOON_OF_THE_REALM_LORD = CHAPTER.quest("moon_of_the_realm_lord", q -> q
-            .at(21.5, 15.5).iconScale(1.5)
+            .at(21.5, 15.5)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(GTOGlobes.Items.GANYMEDE_GLOBE.get())
             .title("界主之月")
             .subtitle("最大的卫星")
@@ -905,7 +928,8 @@ public final class BeyondTheStarsChapter {
             .dependsOn(CONFINEMENT_OF_SPACE_AND_TIME_ETERNAL, HERCULEAN_STRENGTH));
 
     public static final Quest JUPITER_IN_THE_SKY = CHAPTER.quest("jupiter_in_the_sky", q -> q
-            .at(18, 13).iconScale(1.5)
+            .at(18, 13)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(GTOGlobes.Items.IO_GLOBE.get())
             .title("岁星当空")
             .subtitle("这是火山星")
@@ -984,14 +1008,17 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest STELLAR_BRIDGE_CROSSING = CHAPTER.quest("stellar_bridge_crossing", q -> q
             .at(10.5, 13)
+            .nodeScale(2)
             .title("星桥飞渡")
             .subtitle("这里是T6火箭")
             .desc(d -> d.line("现在你可以前往土卫二、土卫六和冥王星了"))
             .task(Task.item(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_6_ROCKET.get()))
-            .dependsOn(CALORITE_TANK, CALORITE_ENGINE));
+            .dependsOn(CALORITE_TANK, CALORITE_ENGINE)
+            .mainNode());
 
     public static final Quest SHINING_STARFIELD = CHAPTER.quest("shining_starfield", q -> q
-            .at(7.5, 15.5).iconScale(1.5)
+            .at(7.5, 15.5)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(GTOGlobes.Items.ENCELADUS_GLOBE.get())
             .title("光耀星野")
             .subtitle("看啊，闪闪发光！")
@@ -1021,7 +1048,8 @@ public final class BeyondTheStarsChapter {
             .dependsOn(SHINING_STARFIELD));
 
     public static final Quest STELLAR_DELIMITATION = CHAPTER.quest("stellar_delimitation", q -> q
-            .at(7.5, 10.5).iconScale(1.5)
+            .at(7.5, 10.5)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(GTOGlobes.Items.TITAN_GLOBE.get())
             .title("镇星定界")
             .subtitle("寻找惠更斯号")
@@ -1055,7 +1083,8 @@ public final class BeyondTheStarsChapter {
             .dependsOn(STELLAR_DELIMITATION));
 
     public static final Quest FAR_ORBIT_PATROL = CHAPTER.quest("far_orbit_patrol", q -> q
-            .at(7.5, 13).iconScale(1.5)
+            .at(7.5, 13)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(GTOGlobes.Items.PLUTO_GLOBE.get())
             .title("远日巡疆")
             .subtitle("沧海一粟")
@@ -1088,14 +1117,17 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest SOARING_SKY_AND_SAILING_SEA = CHAPTER.quest("soaring_sky_and_sailing_sea", q -> q
             .at(4.5, 13)
+            .nodeScale(2)
             .title("擎天驾海")
             .subtitle("这里是T7火箭")
             .desc(d -> d.line("现在你可以前往霜原星了"))
             .task(Task.item(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_7_ROCKET.get()))
-            .dependsOn(FAR_ORBIT_PATROL));
+            .dependsOn(FAR_ORBIT_PATROL)
+            .mainNode());
 
     public static final Quest ICE_MIRROR_SHINES_THE_SKY = CHAPTER.quest("ice_mirror_shines_the_sky", q -> q
-            .at(1.5, 13).iconScale(1.5)
+            .at(1.5, 13)
+            .nodeScale(1.5).iconScale(1.5)
             .icon(ModItems.GLACIO_GLOBE.get())
             .title("冰镜耀空")
             .subtitle("比邻星的比邻星")
@@ -1128,14 +1160,17 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest RECONSTRUCT_THE_UNIVERSE = CHAPTER.quest("reconstruct_the_universe", q -> q
             .at(-3, 13)
+            .nodeScale(2)
             .title("重构乾坤")
             .subtitle("我们的目标是星辰大海")
             .desc(d -> d.line("这是T8火箭，解锁巴纳德C"))
             .task(Task.item(MultiBlockD.SPACE_ELEVATOR))
-            .dependsOn(ZpmChapter.WETWARE_PROCESSOR_MAINFRAME, GLACIO_SPIRIT));
+            .dependsOn(ZpmChapter.WETWARE_PROCESSOR_MAINFRAME, GLACIO_SPIRIT)
+            .mainNode());
 
     public static final Quest STELLAR_HORIZONS = CHAPTER.quest("stellar_horizons", q -> q
-            .at(-3, 19).iconScale(2)
+            .at(-3, 19)
+            .nodeScale(1.5).iconScale(2)
             .icon(GTOGlobes.Items.BARNARDA_C_GLOBE.get())
             .title("苍穹彼岸")
             .subtitle("第二个地球？")
@@ -1241,6 +1276,7 @@ public final class BeyondTheStarsChapter {
 
     public static final Quest T8_ROCKET_DOES_NOT_NEED_FUEL = CHAPTER.quest("t8_rocket_does_not_need_fuel", q -> q
             .at(-9, 19)
+            .nodeScale(1.5)
             .title("T8火箭不需要燃料")
             .task(Task.checkmark())
             .dependsOn(T7_ROCKET_FUEL_STELLAR_ENERGY_ROCKET));

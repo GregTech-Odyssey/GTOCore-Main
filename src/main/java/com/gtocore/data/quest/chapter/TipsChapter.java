@@ -58,7 +58,6 @@ public final class TipsChapter {
             .title("提示")
             .subtitle("Tips and Tricks")
             .icon(Items.WRITABLE_BOOK)
-            .hideQuestsUntilDepsVisible()
             .autofocus(TipsChapter.Q_79646E8E));
 
     public static final Quest Q_79646E8E = CHAPTER.quest("q_79646e8e", q -> q
@@ -960,7 +959,7 @@ public final class TipsChapter {
                     .line("维护消声仓时会自动调用皮带中的工具"))
             .task(Task.item(QuestExternalRefs.ToolBeltItems.BELT))
             .reward(Reward.item(QuestExternalRefs.ToolBeltItems.POUCH))
-            .dependsOn(MainStoneageChapter.A_FULL_ARSENAL));
+            .dependsOn(StoneageChapter.A_FULL_ARSENAL));
 
     public static final Quest LV_ITEM_MAGNET = CHAPTER.quest("lv_item_magnet", q -> q
             .at(3.75, 6)

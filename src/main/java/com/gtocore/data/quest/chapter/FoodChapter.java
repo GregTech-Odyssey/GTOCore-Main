@@ -17,7 +17,6 @@ public final class FoodChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("food", c -> c
             .title("种地与吃饭")
             .subtitle("Farmer's Delight")
-            .hideQuestsUntilDepsVisible()
             .autofocus(FoodChapter.GLASS_BOTTLE));
 
     public static final Quest CRAFTSMANSHIP = CHAPTER.quest("craftsmanship", q -> q

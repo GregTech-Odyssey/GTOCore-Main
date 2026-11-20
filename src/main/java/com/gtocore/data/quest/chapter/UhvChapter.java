@@ -17,6 +17,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -34,8 +35,7 @@ public final class UhvChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("uhv", c -> c
             .title("12. 极高压(UHV)")
             .subtitle("Tier9-UHV")
-            .icon(MultiBlockA.STELLAR_FORGE)
-            .hideQuestsUntilDepsVisible());
+            .icon(MultiBlockA.STELLAR_FORGE));
 
     public static final Quest NETHERITE_INGOT = CHAPTER.quest("netherite_ingot", q -> q
             .at(-0.5, 2.5)
@@ -94,13 +94,12 @@ public final class UhvChapter {
             .at(-1.5, 12.5)
             .icon(GTOMaterials.UuAmplifier.getBucket())
             .task(Task.item(GTOMaterials.UuAmplifier.getBucket()).optional(), Task.checkmark())
-            .dependsOn(MATTER_FABRICATOR)
-            .hideDependentLines());
+            .dependsOn(MATTER_FABRICATOR));
 
     public static final Quest GLOWSTONE_NANITES = CHAPTER.quest("glowstone_nanites", q -> q
             .at(10.5, 8.5)
             .task(Task.item(GTOTagPrefix.NANITES, GTMaterials.Glowstone))
-            .dependsOn(UvChapter.NANO_FORGE, UU_AMPLIFIER_BUCKET));
+            .dependsOn(UvChapter.NANO_FORGE));
 
     public static final Quest SPACE_DRONE_MK2 = CHAPTER.quest("space_drone_mk2", q -> q
             .at(0.5, 10.5)
@@ -119,10 +118,12 @@ public final class UhvChapter {
             .at(8.5, 4.5)
             .desc(d -> d.line("在主机里放一个{山铜}蜂群以将{PCB工厂}提升至2级", LIGHT_PURPLE, GOLD))
             .task(Task.item(GTOTagPrefix.NANITES, GTOMaterials.Orichalcum))
-            .dependsOn(UvChapter.PCB_FACTORY, UU_AMPLIFIER_BUCKET));
+            .dependsOn(UvChapter.PCB_FACTORY));
 
     public static final Quest WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE = CHAPTER.quest("welcome_to_the_extreme_high_voltage", q -> q
             .at(-3.5, -1)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{极高压}阶段", DARK_RED)
             .subtitle("{你需要天马行空般的想象力}", DARK_RED)
             .desc(d -> d
@@ -134,7 +135,8 @@ public final class UhvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.UHV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(UvChapter.POLYETHERETHERKETONE_BUCKET, UvChapter.AMPROSIUM_INGOT));
+            .dependsOn(UvChapter.POLYETHERETHERKETONE_BUCKET, UvChapter.AMPROSIUM_INGOT)
+            .mainNode());
 
     public static final Quest PERIODICALLY_POLED_LITHIUM_NIOBATE_BOULE = CHAPTER.quest("periodically_poled_lithium_niobate_boule", q -> q
             .at(5, 1)
@@ -247,7 +249,8 @@ public final class UhvChapter {
             .at(3.5, -1)
             .subtitle("蓝莓甜甜圈")
             .task(Task.item(MultiBlockD.FUSION_REACTOR[GTValues.UHV]))
-            .dependsOn(UHV_ENERGY_INPUT_HATCH));
+            .dependsOn(UHV_ENERGY_INPUT_HATCH)
+            .mainNode());
 
     public static final Quest LEMURITE_BUCKET = CHAPTER.quest("lemurite_bucket", q -> q
             .at(6, -1)
@@ -356,7 +359,8 @@ public final class UhvChapter {
                     OPTICAL_PRINTED_CIRCUIT_BOARD,
                     OPTICAL_DATA_STICK,
                     FULLERENE_DUST,
-                    BOSE_EINSTEIN_COOLING_CONTAINER));
+                    BOSE_EINSTEIN_COOLING_CONTAINER)
+            .mainNode());
 
     public static final Quest OPTICAL_PROCESSOR = CHAPTER.quest("optical_processor", q -> q
             .at(2.5, 4.5)
@@ -393,7 +397,8 @@ public final class UhvChapter {
                     .line()
                     .line("{别手残在基地里点了！！！}", GRAY.italic()))
             .task(Task.item(GTOBlocks.NAQUADRIA_CHARGE))
-            .dependsOn(HEXANITROHEXAAXAISOWURTZITANE_DUST, STELLAR_FORGE));
+            .dependsOn(HEXANITROHEXAAXAISOWURTZITANE_DUST, STELLAR_FORGE)
+            .mainNode());
 
     public static final Quest ENDERIUM_INGOT = CHAPTER.quest("enderium_ingot", q -> q
             .at(0.5, 8.5)
@@ -416,7 +421,8 @@ public final class UhvChapter {
     public static final Quest TITANSTEEL_INGOT = CHAPTER.quest("titansteel_ingot", q -> q
             .at(-1.5, 10.5)
             .task(Task.item(TagPrefix.ingot, GTOMaterials.TitanSteel))
-            .dependsOn(UU_AMPLIFIER_BUCKET, SPACE_DRONE_MK2));
+            .dependsOn(UU_AMPLIFIER_BUCKET, SPACE_DRONE_MK2)
+            .mainNode());
 
     public static final Quest TITANSTEEL_COIL_BLOCK = CHAPTER.quest("titansteel_coil_block", q -> q
             .at(-1.5, 8.5)
@@ -431,6 +437,8 @@ public final class UhvChapter {
 
     public static final Quest OPTICAL_PROCESSOR_CONTROLLER = CHAPTER.quest("optical_processor_controller", q -> q
             .at(-3.5, 4.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{光}{学}{处}{理}{器}{主}{机}", GOLD, YELLOW, GOLD, YELLOW, GOLD, YELLOW, GOLD)
             .subtitle("史诗级跃进")
             .desc(d -> d
@@ -441,7 +449,8 @@ public final class UhvChapter {
                     .line("{做出它实际上需要你在UEV阶段有一定的进度，但是由于后面没写所以全放这了}", GRAY.italic()))
             .task(Task.item(GTOItems.OPTICAL_MAINFRAME))
             .dependsOn(OPTICAL_PROCESSOR_SUPER_COMPUTER, ENDERITE_INGOT, TRANSCENDING_MATTER_BUCKET, SpaceStationChapter.SPACE_DRONE_DOCK)
-            .ignoreRewardBlocking());
+            .ignoreRewardBlocking()
+            .mainNode());
 
     public static final Quest SPACE_DRONE_MK3 = CHAPTER.quest("space_drone_mk3", q -> q
             .at(-3.5, 10.5)
@@ -487,8 +496,8 @@ public final class UhvChapter {
                 .link(QuestLink.of(UvChapter.ORICHALCUM_INGOT, -0.5, -3))
                 .link(QuestLink.of(SpaceStationChapter.ORBITAL_SMELTING_FACILITY, -3.5, 6.5))
                 .link(QuestLink.of(UvChapter.NANO_FORGE, 10.5, 6.5))
-                .link(QuestLink.of(UvChapter.PCB_FACTORY, 10.5, 4.5))
-                .link(QuestLink.of(UevChapter.WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, 10.5, -1))
+                .link(QuestLink.of(UvChapter.PCB_FACTORY, 10.5, 4.5).mainNode())
+                .link(QuestLink.of(UevChapter.WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, 10.5, -1).mainNode())
                 .link(QuestLink.of(UtilChapter.ME_WILDCARD_PATTERN_BUFFER_2, 1.5, -3))
                 .link(QuestLink.of(SpaceStationChapter.SPACE_DRONE_DOCK, -5.5, 6.5)));
     }
