@@ -416,7 +416,6 @@ dependencies {
     clientMod("curse.maven:moremorelang-1444917:8673054")
     clientMod("maven.modrinth:oculus:1.20.1-1.8.0")
     "modClientRuntimeOnly"("curse.maven:fzzy-config-1005914:7085017")
-    "modClientRuntimeOnly"("curse.maven:imblocker-483760:6922546")
 
     // 只编译（含 gtolib mixin 目标）
     modCompileOnly("curse.maven:ferritecore-429235:4810975")
