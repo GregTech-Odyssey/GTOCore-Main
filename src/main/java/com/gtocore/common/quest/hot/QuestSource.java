@@ -24,6 +24,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -461,8 +462,7 @@ public final class QuestSource {
         final ObjectArrayList<QuestDecl> quests = new ObjectArrayList<>();
         final ObjectArrayList<LinkDecl> links = new ObjectArrayList<>();
         final ObjectArrayList<TableDecl> tables = new ObjectArrayList<>();
-        @Nullable
-        MethodInvocationTree mainLine;
+        final ObjectOpenHashSet<MethodInvocationTree> mainNodeCalls = new ObjectOpenHashSet<>();
         final ObjectArrayList<String> imports = new ObjectArrayList<>();
         final ObjectArrayList<String> staticImports = new ObjectArrayList<>();
         final ObjectArrayList<String> problems = new ObjectArrayList<>();
@@ -500,6 +500,12 @@ public final class QuestSource {
         private void index(VariableTree var) {
             var field = var.getName().toString();
             var init = var.getInitializer();
+            boolean mainNode = false;
+            if (init instanceof MethodInvocationTree wrapper && wrapper.getMethodSelect() instanceof MemberSelectTree wrapperSelect &&
+                    wrapperSelect.getIdentifier().contentEquals("mainNode") && wrapper.getArguments().isEmpty()) {
+                init = wrapperSelect.getExpression();
+                mainNode = true;
+            }
             if (!(init instanceof MethodInvocationTree call) || !(call.getMethodSelect() instanceof MemberSelectTree select)) {
                 scanLinks(var);
                 return;
@@ -538,7 +544,7 @@ public final class QuestSource {
                 return;
             }
             if (method.equals("copy") && select.getExpression() instanceof IdentifierTree owner && chapterField != null && owner.getName().contentEquals(chapterField)) {
-                var decl = LinkDecl.of(this, field, var, call);
+                var decl = LinkDecl.of(this, field, var, call, mainNode);
                 if (decl == null) {
                     problems.add(name() + ":" + line(start(var)) + "：复制节点 " + field + " 必须写成 " + chapterField + ".copy(目标, x, y)，坐标直接写数字");
                     return;
@@ -555,14 +561,15 @@ public final class QuestSource {
 
                 @Override
                 public Void visitMethodInvocation(MethodInvocationTree node, Void v) {
+                    if (node.getMethodSelect() instanceof MemberSelectTree select && select.getIdentifier().contentEquals("mainNode") &&
+                            node.getArguments().isEmpty() && select.getExpression() instanceof MethodInvocationTree inner) {
+                        mainNodeCalls.add(inner);
+                    }
                     if (node.getMethodSelect() instanceof MemberSelectTree select && select.getIdentifier().contentEquals("of") &&
                             select.getExpression() instanceof IdentifierTree owner && owner.getName().contentEquals("QuestLink")) {
-                        var decl = LinkDecl.of(FileModel.this, null, null, node);
+                        var decl = LinkDecl.of(FileModel.this, null, null, node, mainNodeCalls.contains(node));
                         if (decl != null) links.add(decl);
                         else problems.add(name() + ":" + line(start(node)) + "：QuestLink.of 的坐标必须直接写数字");
-                    }
-                    if (node.getMethodSelect() instanceof MemberSelectTree select && select.getIdentifier().contentEquals("mainLine") && !node.getArguments().isEmpty()) {
-                        mainLine = node;
                     }
                     return super.visitMethodInvocation(node, v);
                 }
@@ -766,23 +773,26 @@ public final class QuestSource {
         final double x;
         final double y;
         final boolean copy;
+        final boolean mainNode;
 
-        private LinkDecl(FileModel file, @Nullable String field, @Nullable VariableTree var, MethodInvocationTree call, ExpressionTree targetRef, double x, double y) {
+        private LinkDecl(FileModel file, @Nullable String field, @Nullable VariableTree var, MethodInvocationTree call, ExpressionTree targetRef, double x, double y,
+                         boolean mainNode) {
             super(file, field, var);
             this.call = call;
             this.targetRef = targetRef;
             this.x = x;
             this.y = y;
             this.copy = var != null;
+            this.mainNode = mainNode;
         }
 
         @Nullable
-        static LinkDecl of(FileModel file, @Nullable String field, @Nullable VariableTree var, MethodInvocationTree call) {
+        static LinkDecl of(FileModel file, @Nullable String field, @Nullable VariableTree var, MethodInvocationTree call, boolean mainNode) {
             var args = call.getArguments();
             if (args.size() != 3) return null;
             Double x = number(args.get(1)), y = number(args.get(2));
             if (x == null || y == null) return null;
-            return new LinkDecl(file, field, var, call, args.get(0), x, y);
+            return new LinkDecl(file, field, var, call, args.get(0), x, y, mainNode);
         }
 
         @Override
