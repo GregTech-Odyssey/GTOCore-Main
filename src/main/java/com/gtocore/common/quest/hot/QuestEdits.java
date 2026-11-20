@@ -37,7 +37,6 @@ public final class QuestEdits {
     public static final String COPY = "copy";
     public static final String DELETE = "delete";
     public static final String TEXT = "text";
-    public static final String MAIN_LINE = "mainLine";
     public static final String TASK_ADD = "taskAdd";
     public static final String TASK_REMOVE = "taskRemove";
     public static final String TASK_ITEM = "taskItem";
@@ -53,9 +52,42 @@ public final class QuestEdits {
     public static final String TABLE_NUMBER = "tableNumber";
     public static final String TABLE_CREATE = "tableCreate";
     public static final String TABLE_DELETE = "tableDelete";
+    public static final String DUPLICATE = "duplicate";
+    public static final String SHAPE = "shape";
+    public static final String ICON_SCALE = "iconScale";
+    public static final String PRESET = "preset";
+    public static final String NODE_SCALE = "nodeScale";
+    public static final String NODE_FILL = "nodeFill";
+    public static final String ICON = "icon";
+    public static final String LINK_MAIN = "linkMain";
+    public static final String REWARD_TIER = "rewardTier";
     public static final String STYLE_IMPORT = "static com.gtolib.api.quest.QuestStyle.*";
     private static final com.google.gson.Gson GSON = new com.google.gson.Gson();
     private static final java.lang.reflect.Type ENTRIES = new com.google.gson.reflect.TypeToken<List<TextEntry>>() {}.getType();
+    private static final java.lang.reflect.Type DUPLICATE_TYPE = new com.google.gson.reflect.TypeToken<DuplicatePayload>() {}.getType();
+
+    public record DuplicateRef(int offset, String original, @Nullable String className, String chapter, String field) {}
+
+    public record DuplicateDepArg(int start, int end, String chapter, String field) {}
+
+    public record DuplicateDepCall(int callStart, int callEnd, List<DuplicateDepArg> args) {}
+
+    public record DuplicateRemoval(int start, int end) {}
+
+    public record DuplicatePayload(String chapterField, String sourceField, String field, int fieldOffset, int idStart, int idEnd,
+                                   int xStart, int xEnd, int yStart, int yEnd, String body,
+                                   List<DuplicateRef> refs, @Nullable List<DuplicateDepCall> deps,
+                                   @Nullable List<DuplicateRemoval> removals, List<String> imports) {}
+
+    public static String encodeDuplicate(DuplicatePayload payload) {
+        return GSON.toJson(payload, DUPLICATE_TYPE);
+    }
+
+    @Nullable
+    public static DuplicatePayload decodeDuplicate(@Nullable String json) {
+        if (json == null || json.isEmpty()) return null;
+        return GSON.fromJson(json, DUPLICATE_TYPE);
+    }
 
     public record TextEntry(String kind, @Nullable String text, @Nullable List<String> args, @Nullable String raw) {
 
@@ -113,8 +145,20 @@ public final class QuestEdits {
             return new Op(0, CREATE, "q:" + chapter + "/" + id, chapter, id, itemArgs, x, y, 0, 0, false, List.copyOf(imports), false);
         }
 
-        public static Op copy(String chapter, String field, String targetQuest, double x, double y) {
-            return new Op(0, COPY, "c:" + chapter + ":" + field, chapter, field, targetQuest, x, y, 0, 0, false, null, false);
+        public static Op copy(String chapter, String field, String targetQuest, double x, double y, boolean mainNode) {
+            return new Op(0, COPY, "c:" + chapter + ":" + field, chapter, field, targetQuest, x, y, 0, 0, mainNode, null, false);
+        }
+
+        public static Op duplicate(String chapter, String field, String questId, String payload, double x, double y) {
+            return new Op(0, DUPLICATE, "q:" + chapter + "/" + questId, chapter, field, payload, x, y, 0, 0, false, null, false);
+        }
+
+        public static Op shape(String target, String constant) {
+            return new Op(0, SHAPE, target, null, constant, null, 0, 0, 0, 0, false, null, false);
+        }
+
+        public static Op iconScale(String target, double scale) {
+            return new Op(0, ICON_SCALE, target, null, null, null, scale, 0, 0, 0, false, null, false);
         }
 
         public static Op text(String target, String part, List<TextEntry> entries, List<String> imports) {
@@ -181,8 +225,28 @@ public final class QuestEdits {
             return new Op(0, TABLE_DELETE, "t:" + id, null, null, null, 0, 0, 0, 0, false, null, false);
         }
 
-        public static Op mainLine(String chapter, String argsText) {
-            return new Op(0, MAIN_LINE, "chapter:" + chapter, chapter, null, argsText, 0, 0, 0, 0, false, null, false);
+        public static Op preset(String target, String constant) {
+            return new Op(0, PRESET, target, null, constant, null, 0, 0, 0, 0, false, null, false);
+        }
+
+        public static Op nodeScale(String target, double scale) {
+            return new Op(0, NODE_SCALE, target, null, null, null, scale, 0, 0, 0, false, null, false);
+        }
+
+        public static Op nodeFill(String target, int rgb) {
+            return new Op(0, NODE_FILL, target, null, null, null, 0, 0, 0, rgb, false, null, false);
+        }
+
+        public static Op icon(String target, String argsText, List<String> imports, boolean restore, @Nullable String oldGroup) {
+            return new Op(0, ICON, target, null, oldGroup, argsText, 0, 0, 0, 0, restore, List.copyOf(imports), false);
+        }
+
+        public static Op linkMain(String target, boolean on) {
+            return new Op(0, LINK_MAIN, target, null, null, null, 0, 0, 0, 0, on, null, false);
+        }
+
+        public static Op rewardTier(String target, int index, String group, String expression, int argIndex, boolean on, @Nullable String restoreTier) {
+            return new Op(0, REWARD_TIER, target, restoreTier, group, expression, 0, 0, index, argIndex, on, null, false);
         }
 
         public static Op delete(String target) {
@@ -203,12 +267,17 @@ public final class QuestEdits {
 
         public String key() {
             return switch (type) {
-                case FLAG, DEP, TEXT, TABLE_NUMBER -> type + "|" + target + "|" + arg;
+                case FLAG, DEP, TEXT, TABLE_NUMBER, PRESET -> type + "|" + target + "|" + arg;
+                case ICON -> type + "|" + target + "|" + text;
+                case LINK_MAIN -> type + "|" + target + "|" + on;
+                case NODE_SCALE -> type + "|" + target + "|" + Double.doubleToLongBits(x);
+                case NODE_FILL -> type + "|" + target + "|" + value;
+                case REWARD_TIER -> type + "|" + target + "|" + index;
                 case AMOUNT, TASK_ITEM, TABLE_WEIGHT, TABLE_AMOUNT -> type + "|" + target + "|" + index;
                 case TABLE_ENTRY_ADD, TABLE_ENTRY_REMOVE -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case TASK_OPT -> type + "|" + target + "|" + arg + "|" + index;
                 case TASK_ADD, TASK_REMOVE, REWARD_ADD, REWARD_REMOVE, REWARD_ARG_ADD -> type + "|" + target + "|" + Double.doubleToLongBits(x);
-                case CREATE, COPY -> "node|" + target;
+                case CREATE, COPY, DUPLICATE -> "node|" + target;
                 default -> type + "|" + target;
             };
         }
@@ -226,9 +295,17 @@ public final class QuestEdits {
             case DEP -> dependency(src, op, edit);
             case CREATE -> create(src, op, edit);
             case COPY -> copy(src, op, edit);
+            case DUPLICATE -> duplicate(src, op, edit);
+            case SHAPE -> shape(src, op, edit);
+            case ICON_SCALE -> iconScale(src, op, edit);
+            case PRESET -> preset(src, op, edit);
+            case NODE_SCALE -> nodeScale(src, op, edit);
+            case NODE_FILL -> nodeFill(src, op, edit);
+            case ICON -> icon(src, op, edit);
+            case LINK_MAIN -> linkMain(src, op, edit);
+            case REWARD_TIER -> rewardTier(src, op, edit);
             case DELETE -> delete(src, op, edit);
             case TEXT -> text(src, op, edit);
-            case MAIN_LINE -> mainLine(src, op, edit);
             case TASK_ADD -> taskAdd(src, op, edit);
             case TASK_REMOVE -> taskRemove(src, op, edit);
             case TASK_ITEM -> taskItem(src, op, edit);
@@ -334,8 +411,8 @@ public final class QuestEdits {
         return out;
     }
 
-    record RewardEntry(MethodInvocationTree call, int argIndex, String group, int liveIndex, @Nullable MethodInvocationTree root, @Nullable ExpressionTree count,
-                       ExpressionTree subject) {
+    record RewardEntry(MethodInvocationTree call, int argIndex, String group, @Nullable String tier, int liveIndex, @Nullable MethodInvocationTree root,
+                       @Nullable ExpressionTree count, ExpressionTree subject) {
 
         ExpressionTree expression() {
             return argIndex < 0 ? call : call.getArguments().get(argIndex);
@@ -350,21 +427,40 @@ public final class QuestEdits {
             var args = call.getArguments();
             switch (name) {
                 case "scaledReward" -> {
-                    if (args.size() >= 2 && QuestSource.number(last(call)) != null) out.add(new RewardEntry(call, -1, name, liveIndex, call, last(call), args.get(0)));
+                    if (args.size() >= 2 && QuestSource.number(last(call)) != null) out.add(new RewardEntry(call, -1, name, null, liveIndex, call, last(call), args.get(0)));
                     liveIndex += 3;
+                }
+                case "rewardFor" -> {
+                    if (args.isEmpty()) continue;
+                    String tier = tierId(args.get(0));
+                    for (int i = 1; i < args.size(); i++) {
+                        var root = factoryCall(args.get(i), "Reward");
+                        var rootArgs = root == null ? null : root.getArguments();
+                        var count = rootArgs != null && !rootArgs.isEmpty() && QuestSource.number(last(root)) != null ? last(root) : null;
+                        out.add(new RewardEntry(call, i, name, tier, liveIndex++, root, count, rootArgs == null || rootArgs.isEmpty() ? args.get(i) : rootArgs.get(0)));
+                    }
                 }
                 case "reward", "easySubsidy", "normalSubsidy", "expertSubsidy" -> {
                     for (int i = 0; i < args.size(); i++) {
                         var root = factoryCall(args.get(i), "Reward");
                         var rootArgs = root == null ? null : root.getArguments();
                         var count = rootArgs != null && !rootArgs.isEmpty() && QuestSource.number(last(root)) != null ? last(root) : null;
-                        out.add(new RewardEntry(call, i, name, liveIndex++, root, count, rootArgs == null || rootArgs.isEmpty() ? args.get(i) : rootArgs.get(0)));
+                        out.add(new RewardEntry(call, i, name, null, liveIndex++, root, count, rootArgs == null || rootArgs.isEmpty() ? args.get(i) : rootArgs.get(0)));
                     }
                 }
                 default -> {}
             }
         }
         return out;
+    }
+
+    @Nullable
+    private static String tierId(ExpressionTree arg) {
+        var e = arg;
+        while (e instanceof MethodInvocationTree call && call.getMethodSelect() instanceof MemberSelectTree select) e = select.getExpression();
+        if (e instanceof MemberSelectTree select) return select.getIdentifier().toString();
+        if (e instanceof IdentifierTree id) return id.getName().toString();
+        return null;
     }
 
     @Nullable
@@ -442,12 +538,169 @@ public final class QuestEdits {
     }
 
     @Nullable
-    private static String mainLine(QuestSource src, Op op, Edit edit) {
-        var file = src.byChapter.get(op.chapter);
-        if (file == null || file.mainLine == null) return "章节 " + op.chapter + " 的源码里没有 .mainLine(…)";
-        var args = file.mainLine.getArguments();
-        edit.replaceRange(file, file.start(args.get(0)), file.end(args.get(args.size() - 1)), op.text);
+    private static String preset(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var calls = decl.calls("preset");
+        var file = decl.file;
+        if (op.arg().isEmpty()) {
+            for (var call : calls) edit.removeCall(decl, call);
+            return null;
+        }
+        var text = "QuestPreset." + op.arg();
+        if (!calls.isEmpty()) {
+            var args = calls.get(0).getArguments();
+            if (args.size() == 1) edit.replace(file, args.get(0), text);
+            else edit.replaceRange(file, decl.nameStart(calls.get(0)), file.end(calls.get(0)), "preset(" + text + ")");
+        } else {
+            var at = decl.calls("at");
+            if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+            edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + ".preset(" + text + ")");
+        }
+        edit.imports(file, List.of("com.gtolib.api.quest.QuestPreset"));
         return null;
+    }
+
+    @Nullable
+    private static String nodeScale(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var file = decl.file;
+        var calls = decl.calls("nodeScale");
+        if (!calls.isEmpty() && !calls.get(0).getArguments().isEmpty()) {
+            edit.replace(file, calls.get(0).getArguments().get(0), number(op.x()));
+            return null;
+        }
+        var at = decl.calls("at");
+        if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+        edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + ".nodeScale(" + number(op.x()) + ")");
+        return null;
+    }
+
+    @Nullable
+    private static String nodeFill(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var file = decl.file;
+        var calls = decl.calls("nodeFill");
+        if (op.value < 0) {
+            for (var call : calls) edit.removeCall(decl, call);
+            return null;
+        }
+        var text = String.format("0x%06X", op.value & 0xFFFFFF);
+        if (!calls.isEmpty() && !calls.get(0).getArguments().isEmpty()) {
+            edit.replace(file, calls.get(0).getArguments().get(0), text);
+            return null;
+        }
+        var at = decl.calls("at");
+        if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+        edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + ".nodeFill(" + text + ")");
+        return null;
+    }
+
+    @Nullable
+    private static String icon(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var file = decl.file;
+        var iconCalls = decl.calls("icon");
+        var stackCalls = decl.calls("iconStack");
+        if (op.on) {
+            for (var call : iconCalls) edit.removeCall(decl, call);
+            for (var call : stackCalls) edit.removeCall(decl, call);
+            if (op.text().isEmpty()) return null;
+            var at = decl.calls("at");
+            if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+            var text = op.arg() != null && op.arg().equals("iconStack") ? op.text() : "icon(" + op.text() + ")";
+            edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + "." + text);
+            return null;
+        }
+        if (op.imports != null) edit.imports(file, op.imports);
+        for (var call : stackCalls) edit.removeCall(decl, call);
+        if (!iconCalls.isEmpty()) {
+            var args = iconCalls.get(0).getArguments();
+            if (args.size() == 1) edit.replace(file, args.get(0), op.text());
+            else edit.replaceRange(file, decl.nameStart(iconCalls.get(0)), file.end(iconCalls.get(0)), "icon(" + op.text() + ")");
+            return null;
+        }
+        var at = decl.calls("at");
+        if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+        edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + ".icon(" + op.text() + ")");
+        return null;
+    }
+
+    @Nullable
+    private static String linkMain(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof LinkDecl decl)) return missing(op);
+        var file = decl.file;
+        int end = file.end(decl.call);
+        int pos = end;
+        while (pos < file.content.length() && Character.isWhitespace(file.content.charAt(pos))) pos++;
+        boolean present = file.content.startsWith(".mainNode()", pos);
+        if (op.on && !present) edit.insert(file, end, ".mainNode()");
+        else if (!op.on && present) edit.replaceRange(file, pos, pos + ".mainNode()".length(), "");
+        return null;
+    }
+
+    @Nullable
+    private static String rewardTier(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var file = decl.file;
+        if (op.on) {
+            var entries = rewardEntries(decl);
+            if (op.index < 0 || op.index >= entries.size()) return decl.where() + "：奖励位置已变化，请重新打开";
+            var entry = entries.get(op.index);
+            if (entry.argIndex < 0) return decl.where() + "：scaledReward 不支持单独设置难度";
+            if (op.arg().equals(effectiveTier(entry))) return null;
+            var expr = file.text(entry.expression());
+            edit.imports(file, List.of("com.gtolib.api.quest.QuestTierSet"));
+            if (entry.group.equals("rewardFor") && entry.call.getArguments().size() == 2) {
+                edit.replace(file, entry.call.getArguments().get(0), "QuestTierSet." + op.arg());
+                return null;
+            }
+            if (entry.call.getArguments().size() == 1) {
+                edit.replaceRange(file, decl.nameStart(entry.call), file.end(entry.call), "rewardFor(QuestTierSet." + op.arg() + ", " + expr + ")");
+                return null;
+            }
+            edit.removeArgument(decl, entry.call, entry.argIndex);
+            edit.insert(file, decl.chainEnd(), "\n" + decl.callIndent() + ".rewardFor(QuestTierSet." + op.arg() + ", " + expr + ")");
+            return null;
+        }
+        var expr = op.text();
+        var entries = rewardEntries(decl);
+        RewardEntry found = null;
+        for (var entry : entries) {
+            if (entry.argIndex < 0 || !file.text(entry.expression()).equals(expr)) continue;
+            found = entry;
+            break;
+        }
+        if (found == null) return decl.where() + "：找不到要恢复的奖励";
+        edit.imports(file, List.of("com.gtolib.api.quest.QuestTierSet"));
+        if (found.group.equals("rewardFor") && found.call.getArguments().size() == 2) {
+            var text = op.arg().equals("rewardFor") ? "rewardFor(QuestTierSet." + (op.chapter() == null ? "ALL" : op.chapter()) + ", " + expr + ")" :
+                    op.arg() + "(" + expr + ")";
+            edit.replaceRange(file, decl.nameStart(found.call), file.end(found.call), text);
+            return null;
+        }
+        edit.removeArgument(decl, found.call, found.argIndex);
+        var calls = decl.calls(op.arg());
+        if (!calls.isEmpty()) {
+            var args = calls.get(0).getArguments();
+            if (op.value < 0 || op.value >= args.size()) edit.insert(file, file.end(args.get(args.size() - 1)), ", " + expr);
+            else edit.insert(file, file.start(args.get((int) op.value)), expr + ", ");
+        } else if (op.arg().equals("rewardFor")) {
+            String tier = op.chapter();
+            edit.insert(file, decl.chainEnd(), "\n" + decl.callIndent() + ".rewardFor(QuestTierSet." + (tier == null ? "ALL" : tier) + ", " + expr + ")");
+        } else {
+            edit.insert(file, decl.chainEnd(), "\n" + decl.callIndent() + "." + op.arg() + "(" + expr + ")");
+        }
+        return null;
+    }
+
+    static String effectiveTier(RewardEntry entry) {
+        if (entry.tier != null) return entry.tier;
+        return switch (entry.group) {
+            case "easySubsidy" -> "EASY";
+            case "normalSubsidy" -> "NORMAL";
+            case "expertSubsidy" -> "EXPERT";
+            default -> "ALL";
+        };
     }
 
     record TaskArg(MethodInvocationTree call, int argIndex, ExpressionTree arg) {}
@@ -631,7 +884,97 @@ public final class QuestEdits {
         edit.imports(file, List.of("com.gtolib.api.quest.QuestLink"));
         var indent = file.indentAt(file.start(file.chapter.var));
         edit.insert(file, file.membersEnd, "\n\n" + indent + "public static final QuestLink " + op.arg + " = " + file.chapterField + ".copy(" + src.refText(file, target) + ", " +
-                number(op.x) + ", " + number(op.y) + ");");
+                number(op.x) + ", " + number(op.y) + ")" + (op.on ? ".mainNode()" : "") + ";");
+        return null;
+    }
+
+    private record Rep(int start, int end, String text) {}
+
+    private static boolean inside(List<DuplicateRemoval> removals, int offset) {
+        for (var removal : removals) {
+            if (offset >= removal.start() && offset < removal.end()) return true;
+        }
+        return false;
+    }
+
+    @Nullable
+    private static String duplicate(QuestSource src, Op op, Edit edit) {
+        var file = src.byChapter.get(op.chapter);
+        if (file == null || file.chapterField == null || file.chapter == null) return "找不到章节 " + op.chapter + " 的源码";
+        var payload = decodeDuplicate(op.text);
+        if (payload == null) return "复制数据损坏";
+        int slash = op.target().indexOf('/');
+        String questId = slash < 0 ? op.target() : op.target().substring(slash + 1);
+        if (file.fields.containsKey(payload.field()) || file.questsById.containsKey(questId)) return null;
+        var reps = new ObjectArrayList<Rep>(payload.refs().size() + 8);
+        reps.add(new Rep(payload.yStart(), payload.yEnd(), number(op.y())));
+        reps.add(new Rep(payload.xStart(), payload.xEnd(), number(op.x())));
+        reps.add(new Rep(payload.idStart(), payload.idEnd(), literal(questId)));
+        reps.add(new Rep(payload.fieldOffset(), payload.fieldOffset() + payload.sourceField().length(), payload.field()));
+        if (payload.removals() != null) {
+            for (var removal : payload.removals()) reps.add(new Rep(removal.start(), removal.end(), ""));
+        }
+        for (var ref : payload.refs()) {
+            if (payload.removals() != null && inside(payload.removals(), ref.offset())) continue;
+            String text;
+            if (ref.chapter().equals(op.chapter())) text = ref.field();
+            else if (ref.className() != null && !ref.className().isEmpty()) text = ref.className() + "." + ref.field();
+            else text = ref.original();
+            if (text.equals(ref.original())) continue;
+            reps.add(new Rep(ref.offset(), ref.offset() + ref.original().length(), text));
+        }
+        reps.sort((a, b) -> Integer.compare(b.start, a.start));
+        var body = new StringBuilder(payload.body());
+        for (var rep : reps) {
+            if (rep.start < 0 || rep.end > body.length() || rep.start > rep.end) return "复制数据位置越界";
+            body.replace(rep.start, rep.end, rep.text);
+        }
+        if (!payload.chapterField().equals(file.chapterField)) {
+            int at = body.indexOf(payload.chapterField() + ".quest(");
+            if (at < 0) return "复制数据找不到章节字段 " + payload.chapterField();
+            body.replace(at, at + payload.chapterField().length(), file.chapterField);
+        }
+        var indent = file.indentAt(file.start(file.chapter.var));
+        edit.imports(file, payload.imports());
+        edit.insert(file, file.membersEnd, "\n\n" + indent + body);
+        return null;
+    }
+
+    @Nullable
+    private static String shape(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var calls = decl.calls("shape");
+        var file = decl.file;
+        if (op.arg().isEmpty()) {
+            for (var call : calls) edit.removeCall(decl, call);
+            return null;
+        }
+        var text = "QuestShape." + op.arg();
+        if (!calls.isEmpty()) {
+            var args = calls.get(0).getArguments();
+            if (args.size() == 1) edit.replace(file, args.get(0), text);
+            else edit.replaceRange(file, decl.nameStart(calls.get(0)), file.end(calls.get(0)), "shape(" + text + ")");
+        } else {
+            var at = decl.calls("at");
+            if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+            edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + ".shape(" + text + ")");
+        }
+        edit.imports(file, List.of("com.gtolib.api.quest.QuestShape"));
+        return null;
+    }
+
+    @Nullable
+    private static String iconScale(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var file = decl.file;
+        var calls = decl.calls("iconScale");
+        if (!calls.isEmpty() && !calls.get(0).getArguments().isEmpty()) {
+            edit.replace(file, calls.get(0).getArguments().get(0), number(op.x()));
+            return null;
+        }
+        var at = decl.calls("at");
+        if (at.size() != 1) return decl.where() + "：需要恰好一个 .at(x, y)";
+        edit.insert(file, file.end(at.get(0)), "\n" + decl.callIndent() + ".iconScale(" + number(op.x()) + ")");
         return null;
     }
 

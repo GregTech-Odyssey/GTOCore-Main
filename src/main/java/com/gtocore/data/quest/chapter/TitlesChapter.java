@@ -70,7 +70,7 @@ public final class TitlesChapter {
                     .line("这是一个可选系统，会让你的名字多出一个电压前缀"))
             .task(Task.checkmark().title("获得称号:\"石器时代\""))
             .reward(Reward.command("/team join STONE @s").elevated().silent().autoClaim(AutoClaim.NO_TOAST))
-            .dependsOn(GregtechOdysseyChapter.HELLO_WORLD, TITLE_SYSTEM)
+            .dependsOn(TITLE_SYSTEM, GregtechOdysseyChapter.HELLO_WORLD)
             .repeatable());
 
     public static final Quest Q_3BE8790F = CHAPTER.quest("q_3be8790f", q -> q
@@ -78,7 +78,7 @@ public final class TitlesChapter {
             .icon(TagPrefix.ingot, GTMaterials.Bronze)
             .task(Task.checkmark().title("获得称号:\"蒸汽时代\""))
             .reward(Reward.command("/team join STEAM @s").elevated().silent().autoClaim(AutoClaim.NO_TOAST))
-            .dependsOn(TITLE_SYSTEM, SteamChapter.MISTY_MOVEMENT)
+            .dependsOn(TITLE_SYSTEM)
             .repeatable());
 
     public static final Quest Q_16D11BE4 = CHAPTER.quest("q_16d11be4", q -> q

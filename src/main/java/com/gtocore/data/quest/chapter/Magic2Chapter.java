@@ -14,6 +14,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -38,7 +39,6 @@ public final class Magic2Chapter {
             .title("英雄之路")
             .subtitle("当魔法遇上格雷")
             .icon(BotaniaItems.dice)
-            .hideQuestsUntilDepsVisible()
             .autofocus(Magic2Chapter.Q_43F6C913));
 
     public static final Quest VARIOUS_RUNES = CHAPTER.quest("various_runes", q -> q
@@ -62,7 +62,8 @@ public final class Magic2Chapter {
                     Task.item(BotaniaItems.runeWrath),
                     Task.item(BotaniaItems.runeEnvy),
                     Task.item(BotaniaItems.runePride))
-            .dependsOn(Magic1Chapter.RUNIC_ALTAR));
+            .dependsOn(Magic1Chapter.RUNIC_ALTAR)
+            .mainNode());
 
     public static final Quest AMPLIFY_MANA_SPREADER = CHAPTER.quest("amplify_mana_spreader", q -> q
             .at(-0.25, 10).minWidth(300)
@@ -228,7 +229,8 @@ public final class Magic2Chapter {
             .at(-0.3125, 1.875)
             .desc(d -> d.line("以棋盘格形式摆放5块活石与4块青金石，将凝聚板置于中央活石上即可完成构建"))
             .task(Task.item(BotaniaBlocks.terraPlate))
-            .dependsOn(CRAFT_RUNEROCK));
+            .dependsOn(CRAFT_RUNEROCK)
+            .mainNode());
 
     public static final Quest CRAFT_TERRASTEEL_THAUMIUM = CHAPTER.quest("craft_terrasteel_thaumium", q -> q
             .at(2.1875, 1.875)
@@ -268,7 +270,8 @@ public final class Magic2Chapter {
                     Task.item(BotaniaItems.pixieDust),
                     Task.item(BotaniaBlocks.dreamwood),
                     Task.item(BotaniaBlocks.elfGlass))
-            .dependsOn(OPEN_WARP_GATE));
+            .dependsOn(OPEN_WARP_GATE)
+            .mainNode());
 
     public static final Quest CONJURATION_CATALYST = CHAPTER.quest("conjuration_catalyst", q -> q
             .at(4.375, 7.5)
@@ -577,10 +580,12 @@ public final class Magic2Chapter {
                     .line()
                     .line("需在{激活的信标}四周放置4枚{盖亚水晶}{,并准备一块泰拉钢锭.结构建成后,持泰拉钢锭在潜行状态下}{右击}{信标,准备迎接生死之战.}", GREEN, GREEN, WHITE, GREEN, WHITE))
             .task(Task.item(BotaniaBlocks.gaiaPylon, 4), Task.item(Items.BEACON))
-            .dependsOn(GAIASTEEL_INGOT, LAURERIL_INGOT, ALFSTEEL_PYLON));
+            .dependsOn(GAIASTEEL_INGOT, LAURERIL_INGOT, ALFSTEEL_PYLON)
+            .mainNode());
 
     public static final Quest GAIA = CHAPTER.quest("gaia", q -> q
             .at(15.625, 1.875)
+            .nodeScale(3)
             .icon(BotaniaBlocks.gaiaHead)
             .title("{盖亚魂}", GREEN)
             .desc(d -> d
@@ -588,7 +593,8 @@ public final class Magic2Chapter {
                     .line()
                     .line("游戏难度与参与仪式的人数将共同影响战利品的数量"))
             .task(Task.item(BotaniaItems.lifeEssence), Task.kill(BotaniaEntities.DOPPLEGANGER, 1).icon(BotaniaBlocks.gaiaHead))
-            .dependsOn(SUMMON_GUARDIAN_OF_GAIA));
+            .dependsOn(SUMMON_GUARDIAN_OF_GAIA)
+            .mainNode());
 
     public static final Quest GUARDIAN_OF_GAIA_2_0 = CHAPTER.quest("guardian_of_gaia_2_0", q -> q
             .at(15.625, 5.625)
@@ -599,7 +605,8 @@ public final class Magic2Chapter {
                     .line()
                     .line("{盖亚2.0将比1.0难度更高，但也会带来更加丰富的奖励}", WHITE))
             .task(Task.item(BotaniaItems.gaiaIngot))
-            .dependsOn(GAIA));
+            .dependsOn(GAIA)
+            .mainNode());
 
     public static final Quest DICE_OF_FATE = CHAPTER.quest("dice_of_fate", q -> q
             .at(15.625, 9.375).iconScale(2)
@@ -662,7 +669,8 @@ public final class Magic2Chapter {
             .title("盖亚魂循环")
             .desc(d -> d.line("通过击杀盖亚累计获取4个{盖亚之魂}以开启盖亚魂循环。", GOLD))
             .task(Task.item(GTOItems.UNSTABLE_GAIA_SOUL), Task.item(GTOItems.GAIA_CORE), Task.item(BotaniaItems.lifeEssence, 64))
-            .dependsOn(GAIA_SOLVENT_BUCKET));
+            .dependsOn(GAIA_SOLVENT_BUCKET)
+            .mainNode());
 
     public static final Quest MANA_GARDEN = CHAPTER.quest("mana_garden", q -> q
             .at(15.625, 0)
@@ -823,7 +831,8 @@ public final class Magic2Chapter {
                     Task.item(GTOMaterials.HerosBrawlers.getBucket()),
                     Task.item(GTOMaterials.HerosBreach.getBucket()),
                     Task.item(GTOMaterials.HerosSplendor.getBucket()))
-            .dependsOn(HEROS_SOUL, QUICKSILVER_INGOT, ApotheosisChapter.THE_PRIMORDIAL_RECONSTRUCTOR));
+            .dependsOn(HEROS_SOUL, QUICKSILVER_INGOT, ApotheosisChapter.THE_PRIMORDIAL_RECONSTRUCTOR)
+            .mainNode());
 
     public static final Quest PROSPECTOR_MANA_LV = CHAPTER.quest("prospector_mana_lv", q -> q
             .at(-2.1875, 0)
@@ -887,7 +896,8 @@ public final class Magic2Chapter {
             .desc(d -> d.line("将若干符文支托围绕1个大师符文支托摆成特定形状，然后在符文支托和大师符文支托上放上对应的物品，将合成物品丢进符文仪式的范围内即可"))
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.CENTRAL_RUNE_HOLDER), Task.item(QuestExternalRefs.MythicBotanyItems.RUNE_HOLDER))
             .dependsOn(FIMBULTYR_TABLET)
-            .hideDependentLines());
+            .hideDependentLines()
+            .mainNode());
 
     public static final Quest MJOELLNIR = CHAPTER.quest("mjoellnir", q -> q
             .at(32.5, 5.625).iconScale(2)
@@ -934,7 +944,8 @@ public final class Magic2Chapter {
             .hideDependentLines());
 
     public static final Quest KVASIR_MEAD = CHAPTER.quest("kvasir_mead", q -> q
-            .at(23.75, 11.25).iconScale(2)
+            .at(23.75, 11.25)
+            .nodeScale(1).iconScale(2)
             .subtitle("精灵诗人的不传之秘")
             .desc(d -> d.line("喝下它，身体似乎会发生奇妙的变化..."))
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.KVASIR_MEAD))
@@ -943,6 +954,8 @@ public final class Magic2Chapter {
 
     public static final Quest VISIT_ALFHEIM = CHAPTER.quest("visit_alfheim", q -> q
             .at(29.375, 5.625)
+            .shape(QuestShape.GEAR)
+            .nodeScale(3)
             .subtitle("魔法线毕业")
             .desc(d -> d
                     .line("{迷雾笼罩的}{亚尔夫海姆}{即将开放准入 —— 唯有饮下}{「诗之蜜酒」}{、集齐 12 件}{远古遗物}{的行者，方能踏足这片秘境。任何规避准入规则的偷渡操作均不被允许，空间法则将自动击杀未满足条件的闯入者。}", ITALIC, AQUA.italic(), ITALIC, GOLD.italic(), ITALIC, GOLD.italic(), ITALIC)
@@ -962,7 +975,8 @@ public final class Magic2Chapter {
                     ACHILLES_SHIELD,
                     THOR_RING,
                     FLUGEL_EYE,
-                    KVASIR_MEAD));
+                    KVASIR_MEAD)
+            .mainNode());
 
     public static final Quest RESONANCE_FLOWER = CHAPTER.quest("resonance_flower", q -> q
             .at(23.75, 1.875)
@@ -1003,7 +1017,7 @@ public final class Magic2Chapter {
         CHAPTER.decorate(d -> d
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_LUV, 23.125, 11.25, 1.25, 1.25))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_LUV, 19.375, -0.25, 1.25, 1.25))
-                .link(QuestLink.of(Magic1Chapter.RUNIC_ALTAR, -2.8125, 5.625))
+                .link(QuestLink.of(Magic1Chapter.RUNIC_ALTAR, -2.8125, 5.625).mainNode())
                 .link(QuestLink.of(ApotheosisChapter.THE_PRIMORDIAL_RECONSTRUCTOR, 21.875, 9.375)));
     }
 }

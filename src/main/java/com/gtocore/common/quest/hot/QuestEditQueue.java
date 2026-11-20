@@ -197,14 +197,14 @@ public final class QuestEditQueue {
                 return;
             }
             case QuestEdits.DELETE -> {
-                boolean created = PENDING.removeIf(p -> (p.type().equals(QuestEdits.CREATE) || p.type().equals(QuestEdits.COPY)) && p.target().equals(op.target()));
+                boolean created = PENDING.removeIf(p -> (p.type().equals(QuestEdits.CREATE) || p.type().equals(QuestEdits.COPY) || p.type().equals(QuestEdits.DUPLICATE)) && p.target().equals(op.target()));
                 PENDING.removeIf(p -> p.target().equals(op.target()) && !p.type().equals(QuestEdits.DELETE));
                 if (created) return;
             }
             case QuestEdits.MOVE -> {
                 for (int i = 0; i < PENDING.size(); i++) {
                     var p = PENDING.get(i);
-                    if ((p.type().equals(QuestEdits.CREATE) || p.type().equals(QuestEdits.COPY)) && p.target().equals(op.target())) {
+                    if ((p.type().equals(QuestEdits.CREATE) || p.type().equals(QuestEdits.COPY) || p.type().equals(QuestEdits.DUPLICATE)) && p.target().equals(op.target())) {
                         PENDING.set(i, p.movedTo(op.x(), op.y()));
                         return;
                     }

@@ -16,6 +16,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -49,11 +50,13 @@ public final class AeChapter {
             .title("应用能源")
             .subtitle("Applied Energistics 2")
             .icon(AEBlocks.INTERFACE)
-            .hideQuestsUntilDepsVisible()
             .autofocus(AeChapter.LOGIC_PROCESSOR));
 
     public static final Quest GETTING_STARTED_WITH_AE = CHAPTER.quest("getting_started_with_ae", q -> q
             .at(-9, 1.5)
+            .nodeScale(1.4)
+            .shape(QuestShape.DIAMOND)
+            .nodeFill(0x4F86C6)
             .icon(AEBlocks.ENERGY_ACCEPTOR)
             .title("应用能源起步")
             .subtitle("没有频道的AE真好")
@@ -158,6 +161,9 @@ public final class AeChapter {
 
     public static final Quest DRIVE = CHAPTER.quest("drive", q -> q
             .at(-9, 11.5)
+            .nodeFill(0x4F86C6)
+            .nodeScale(1.4)
+            .shape(QuestShape.DIAMOND)
             .icon(AEBlocks.DRIVE)
             .subtitle("你的网络存储~扩容区")
             .desc(d -> d

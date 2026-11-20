@@ -15,6 +15,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.QuestStyle;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
@@ -111,18 +112,20 @@ public final class Magic1Chapter {
             .title("魔力导论")
             .subtitle("从百花园走到符文祭坛")
             .icon(GTOItems.COLORFUL_MYSTICAL_FLOWER)
-            .hideQuestsUntilDepsVisible()
             .flexible()
             .defaultMinWidth(200));
 
     public static final Quest WELCOME_TO_THE_MAGIC_LINE = CHAPTER.quest("welcome_to_the_magic_line", q -> q
             .at(5, 2)
+            .nodeScale(3)
             .title("欢迎来到{魔法线}", QuestStyle.LIGHT_PURPLE)
             .desc(d -> d.line("魔法线糅合了{植物魔法}和{新生魔艺}两个模组", QuestStyle.GREEN, QuestStyle.YELLOW))
-            .task(Task.item(BotaniaItems.lexicon), Task.item(ItemsRegistry.WORN_NOTEBOOK)));
+            .task(Task.item(BotaniaItems.lexicon), Task.item(ItemsRegistry.WORN_NOTEBOOK))
+            .mainNode());
 
     public static final Quest APOTHECARY_DEFAULT = CHAPTER.quest("apothecary_default", q -> q
-            .at(10.5, 6).minWidth(250)
+            .at(10.5, 6)
+            .nodeScale(2).minWidth(250)
             .desc(d -> d
                     .line("现在我们已经拥有基础花卉,可以通过{花药台}将普通植物转化为功能性产能花!", QuestStyle.GREEN)
                     .line()
@@ -136,6 +139,7 @@ public final class Magic1Chapter {
 
     public static final Quest OUR_FIRST_FLOWER = CHAPTER.quest("our_first_flower", q -> q
             .at(15, 6)
+            .nodeScale(2)
             .title("我们的第一朵花")
             .desc(d -> d
                     .line("{白雏菊}是您最早制作的神奇花卉之一!", QuestStyle.GREEN)
@@ -146,13 +150,15 @@ public final class Magic1Chapter {
 
     public static final Quest LIVINGROCK = CHAPTER.quest("livingrock", q -> q
             .at(18, 6)
+            .nodeScale(2)
             .title("{活石}", QuestStyle.GRAY)
             .desc(d -> d.line("使用{白雏菊}将石头转化为活石!", QuestStyle.GREEN))
             .task(Task.item(BotaniaBlocks.livingrock, 8))
             .dependsOn(OUR_FIRST_FLOWER));
 
     public static final Quest MANA = CHAPTER.quest("mana", q -> q
-            .at(22, 6).minWidth(300)
+            .at(22, 6)
+            .nodeScale(2).minWidth(300)
             .title("{魔力}", QuestStyle.AQUA)
             .desc(d -> d
                     .line("现在我们制作了{活石},可以开始合成{魔力池}了.", QuestStyle.AQUA, QuestStyle.GREEN)
@@ -625,6 +631,7 @@ public final class Magic1Chapter {
 
     public static final Quest NOVICE_SPELL_BOOK = CHAPTER.quest("novice_spell_book", q -> q
             .at(10.5, 2)
+            .nodeScale(2)
             .subtitle("第一本法术书")
             .desc(d -> d
                     .line("要开始使用,你需要先合成一本{新手法术书}.", QuestStyle.YELLOW)
@@ -639,6 +646,7 @@ public final class Magic1Chapter {
 
     public static final Quest ARCHWOOD_TREES = CHAPTER.quest("archwood_trees", q -> q
             .at(14, 2)
+            .nodeScale(2)
             .title("至高木")
             .desc(d -> d.line("为了魔法,我们需要特殊魔法木材!"))
             .task(Task.tag(QuestExternalRefs.TAG_FORGE_LOGS_ARCHWOOD, 1).title("至高木"))
@@ -646,6 +654,7 @@ public final class Magic1Chapter {
 
     public static final Quest LIVINGWOOD = CHAPTER.quest("livingwood", q -> q
             .at(18, 2)
+            .nodeScale(2)
             .title("{活木}", QuestStyle.DARK_GREEN)
             .desc(d -> d.line("使用{白雏菊}将至高木转化为活木!", QuestStyle.GREEN))
             .task(Task.item(BotaniaBlocks.livingwoodLog, 8))
@@ -653,6 +662,7 @@ public final class Magic1Chapter {
 
     public static final Quest BOTANIA_S_UNIVERSAL_TOOL = CHAPTER.quest("botania_s_universal_tool", q -> q
             .at(22, 2)
+            .nodeScale(2)
             .title("{植物魔法}{的万用工具}", QuestStyle.LIGHT_PURPLE, QuestStyle.WHITE)
             .desc(d -> d
                     .line("{森林法杖}是{植物魔法}{的必备工具.}", QuestStyle.GREEN, QuestStyle.LIGHT_PURPLE, QuestStyle.WHITE)
@@ -667,6 +677,7 @@ public final class Magic1Chapter {
 
     public static final Quest INFUSE_MAGIC_MATERIALS = CHAPTER.quest("infuse_magic_materials", q -> q
             .at(25.5, 4)
+            .nodeScale(2)
             .title("灌注魔法材料")
             .desc(d -> d
                     .line("将特定物品投入{魔力池}可灌注{魔力}.", QuestStyle.GREEN, QuestStyle.BLUE)
@@ -677,10 +688,12 @@ public final class Magic1Chapter {
                     Task.item(BotaniaItems.manaDiamond),
                     Task.item(TagPrefix.ingot, GTOMaterials.InfusedGold),
                     Task.item(TagPrefix.ingot, GTOMaterials.OriginalBronze))
-            .dependsOn(MANA, BOTANIA_S_UNIVERSAL_TOOL));
+            .dependsOn(MANA, BOTANIA_S_UNIVERSAL_TOOL)
+            .mainNode());
 
     public static final Quest MANA_CONDUCTION = CHAPTER.quest("mana_conduction", q -> q
             .at(22, -1)
+            .nodeScale(2)
             .title("魔力传导")
             .desc(d -> d
                     .line("{魔力发射器}通过发射{魔力脉冲}{引导魔力流向.}", QuestStyle.GREEN, QuestStyle.GREEN, QuestStyle.WHITE)
@@ -691,6 +704,7 @@ public final class Magic1Chapter {
 
     public static final Quest REDSTONE_SPREADER = CHAPTER.quest("redstone_spreader", q -> q
             .at(22, -3)
+            .nodeScale(2)
             .desc(d -> d
                     .line("将{红石}与{魔力发射器}结合可制作{红石魔力发射器}.", QuestStyle.DARK_RED, QuestStyle.GREEN, QuestStyle.GREEN)
                     .line()
@@ -1026,6 +1040,7 @@ public final class Magic1Chapter {
 
     public static final Quest IMBUEMENT_CHAMBER = CHAPTER.quest("imbuement_chamber", q -> q
             .at(25.5, 0)
+            .nodeScale(2)
             .subtitle("制造 {魔源水晶}", QuestStyle.GREEN)
             .desc(d -> d
                     .line("要制作奥术核心合成材料{魔源水晶},我们'需要先建造{灌注室}.", QuestStyle.GREEN, QuestStyle.GREEN)
@@ -1130,6 +1145,7 @@ public final class Magic1Chapter {
 
     public static final Quest SOURCE_CRYSTAL = CHAPTER.quest("source_crystal", q -> q
             .at(25.5, -4)
+            .nodeScale(2)
             .title("{魔源水晶}", QuestStyle.GREEN)
             .desc(d -> d.line("制作{魔源水晶}{需将}{猫眼石}或{橄榄石}{放入}{灌注室}{,经过转化即可获得!}", QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE))
             .task(Task.item(ItemsRegistry.SOURCE_GEM, 2))
@@ -1137,6 +1153,7 @@ public final class Magic1Chapter {
 
     public static final Quest SOURCE_JAR = CHAPTER.quest("source_jar", q -> q
             .at(25.5, -7)
+            .nodeScale(2)
             .subtitle("储存源能")
             .desc(d -> d
                     .line("在{新生魔艺}{中,能源称作}{魔源}.", QuestStyle.LIGHT_PURPLE, QuestStyle.WHITE, QuestStyle.BLUE)
@@ -1200,11 +1217,13 @@ public final class Magic1Chapter {
 
     public static final Quest SOURCESTONE = CHAPTER.quest("sourcestone", q -> q
             .at(29, -4)
+            .nodeScale(2)
             .task(Task.item(QuestExternalRefs.SOURCESTONE))
             .dependsOn(SOURCE_CRYSTAL));
 
     public static final Quest ARCANE_PEDESTAL = CHAPTER.quest("arcane_pedestal", q -> q
             .at(29, 0)
+            .nodeScale(2)
             .title("{奥术基座}", QuestStyle.GREEN)
             .subtitle("神秘工作台")
             .desc(d -> d
@@ -1216,6 +1235,7 @@ public final class Magic1Chapter {
 
     public static final Quest ENCHANTING_APPARATUS = CHAPTER.quest("enchanting_apparatus", q -> q
             .at(33, 0)
+            .nodeScale(2)
             .title("{附魔装置}", QuestStyle.GREEN)
             .desc(d -> d
                     .line("{附魔装置}用于制作模组内各类物品,需消耗源能运作.", QuestStyle.GREEN)
@@ -1224,7 +1244,8 @@ public final class Magic1Chapter {
                     .line()
                     .line("{首先在地面放置}{奥术核心}{,再将}{附魔装置}{置于其上.最后用}{奥术基座}{环绕装置布置.}", QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE))
             .task(Task.item(BlockRegistry.ENCHANTING_APP_BLOCK), Task.item(BlockRegistry.ARCANE_CORE_BLOCK))
-            .dependsOn(ARCANE_PEDESTAL));
+            .dependsOn(ARCANE_PEDESTAL)
+            .mainNode());
 
     public static final Quest RITUAL_BRAZIER = CHAPTER.quest("ritual_brazier", q -> q
             .at(29, 4)
@@ -1289,6 +1310,7 @@ public final class Magic1Chapter {
 
     public static final Quest MAGEBLOOM_SEED = CHAPTER.quest("magebloom_seed", q -> q
             .at(33, 3)
+            .nodeScale(2)
             .title("{法师之花种子}", QuestStyle.GREEN)
             .subtitle("培育魔法")
             .desc(d -> d
@@ -1300,6 +1322,7 @@ public final class Magic1Chapter {
 
     public static final Quest MAGEBLOOM_FIBER = CHAPTER.quest("magebloom_fiber", q -> q
             .at(33, 7)
+            .nodeScale(2)
             .desc(d -> d
                     .line("当魔灵花完成生长周期后,可用其花瓣制作魔法纤维.")
                     .line()
@@ -1329,12 +1352,14 @@ public final class Magic1Chapter {
 
     public static final Quest SPELL_PARCHMENT = CHAPTER.quest("spell_parchment", q -> q
             .at(33, 11)
+            .nodeScale(2)
             .desc(d -> d.line("需配合{抄写台}{进行法术铭刻}", QuestStyle.GREEN, QuestStyle.WHITE))
             .task(Task.item(ItemsRegistry.SPELL_PARCHMENT))
             .dependsOn(MAGEBLOOM_FIBER));
 
     public static final Quest RUNIC_CHALK = CHAPTER.quest("runic_chalk", q -> q
             .at(36, 11)
+            .nodeScale(2)
             .subtitle("可布设法术")
             .desc(d -> d
                     .line("{符文粉笔}{用于在地面绘制永久符文.这些符文会对经过的生物施法.}", QuestStyle.GREEN, QuestStyle.WHITE)
@@ -1483,12 +1508,14 @@ public final class Magic1Chapter {
 
     public static final Quest LIVINGCLAY_BLOCK = CHAPTER.quest("livingclay_block", q -> q
             .at(18, 4)
+            .nodeScale(2)
             .desc(d -> d.line("使用{白雏菊}将泥土转化为活土!", QuestStyle.GREEN))
             .task(Task.item(TagPrefix.block, GTOMaterials.Livingclay))
             .dependsOn(OUR_FIRST_FLOWER));
 
     public static final Quest LIVINGSTEEL_INGOT = CHAPTER.quest("livingsteel_ingot", q -> q
             .at(21, 4)
+            .nodeScale(2)
             .desc(d -> d.line("将{ 活石} {活木} {活土} 粉碎后与钢粉混合 得到 {活铁} (钢?)", QuestStyle.YELLOW, QuestStyle.YELLOW, QuestStyle.YELLOW, QuestStyle.GREEN))
             .task(Task.item(TagPrefix.ingot, GTOMaterials.Livingsteel))
             .dependsOn(LIVINGROCK, LIVINGWOOD, LIVINGCLAY_BLOCK));
@@ -1505,6 +1532,7 @@ public final class Magic1Chapter {
 
     public static final Quest FROZEN_PEARL = CHAPTER.quest("frozen_pearl", q -> q
             .at(36, 0)
+            .nodeScale(2)
             .desc(d -> d.line("你可以使用 {锯 }来采集冰块", QuestStyle.DARK_PURPLE))
             .task(Task.item(ModItems.itemFrozenPearl.get()))
             .dependsOn(ENCHANTING_APPARATUS)
@@ -1512,11 +1540,13 @@ public final class Magic1Chapter {
 
     public static final Quest MANA_PEARL = CHAPTER.quest("mana_pearl", q -> q
             .at(39, 0)
+            .nodeScale(2)
             .task(Task.item(BotaniaItems.manaPearl))
             .dependsOn(FROZEN_PEARL));
 
     public static final Quest ALCHEMY_CATALYST = CHAPTER.quest("alchemy_catalyst", q -> q
             .at(36, 3)
+            .nodeScale(2)
             .desc(d -> d.line("将{炼金催化器}置于{魔力池}下方可开启{炼金术},实现物品转化(如腐肉变皮革).", QuestStyle.GREEN, QuestStyle.GREEN, QuestStyle.BLUE))
             .task(Task.item(BotaniaBlocks.alchemyCatalyst))
             .dependsOn(MANA_PEARL));
@@ -1540,11 +1570,13 @@ public final class Magic1Chapter {
 
     public static final Quest MANA_STRING = CHAPTER.quest("mana_string", q -> q
             .at(36, 6)
+            .nodeScale(2)
             .task(Task.item(BotaniaItems.manaString))
             .dependsOn(MAGEBLOOM_FIBER));
 
     public static final Quest MANA_INFUSER = CHAPTER.quest("mana_infuser", q -> q
             .at(39, 3)
+            .nodeScale(2)
             .subtitle("多方块魔力池")
             .task(Task.item(ManaMultiBlock.MANA_INFUSER))
             .dependsOn(MANA_PEARL));
@@ -1707,6 +1739,7 @@ public final class Magic1Chapter {
 
     public static final Quest ELVEN_SPREADER = CHAPTER.quest("elven_spreader", q -> q
             .at(20, -1)
+            .nodeScale(2)
             .desc(d -> d.line("快一些"))
             .task(Task.item(BotaniaBlocks.elvenSpreader))
             .dependsOn(MANA_CONDUCTION, Magic2Chapter.OPEN_WARP_GATE)
@@ -1714,6 +1747,7 @@ public final class Magic1Chapter {
 
     public static final Quest GAIA_SPREADER = CHAPTER.quest("gaia_spreader", q -> q
             .at(18, -1)
+            .nodeScale(2)
             .desc(d -> d.line("更快一些"))
             .task(Task.item(BotaniaBlocks.gaiaSpreader))
             .dependsOn(MANA_CONDUCTION, Magic2Chapter.GAIA)
@@ -1721,11 +1755,13 @@ public final class Magic1Chapter {
 
     public static final Quest MANASTEEL_CASING = CHAPTER.quest("manasteel_casing", q -> q
             .at(24.5, 7)
+            .nodeScale(1.25)
             .task(Task.item(GTOBlocks.MANASTEEL_CASING))
             .dependsOn(INFUSE_MAGIC_MATERIALS));
 
     public static final Quest FRACTAL_PETAL_SOLVENT_BUCKET = CHAPTER.quest("fractal_petal_solvent_bucket", q -> q
             .at(20, -5)
+            .nodeScale(2)
             .icon(GTOMaterials.FractalPetalSolvent.getBucket())
             .subtitle("并不是0.1%")
             .desc(d -> d.line("炼药锅的概率机制是一个复杂的函数，不过你只需要几次持续的配方运作就能获得溶剂"))
@@ -1735,6 +1771,7 @@ public final class Magic1Chapter {
 
     public static final Quest ELEMENTAL_MAGIC_CRYSTAL = CHAPTER.quest("elemental_magic_crystal", q -> q
             .at(17, -9)
+            .nodeScale(2)
             .title("元素魔晶")
             .desc(d -> d
                     .line("如何你真的找不到矿脉，可以采用异构花加活石转化")
@@ -1746,10 +1783,11 @@ public final class Magic1Chapter {
                     Task.item(TagPrefix.rawOre, GTOMaterials.SylphCrystal).optional(),
                     Task.item(TagPrefix.rawOre, GTOMaterials.UndineCrystal).optional(),
                     Task.item(TagPrefix.rawOre, GTOMaterials.SalamanderCrystal).optional())
-            .dependsOn(MainStoneageChapter.TIME_TO_MINE));
+            .dependsOn(StoneageChapter.TIME_TO_MINE));
 
     public static final Quest CRYSTAL_POWDER = CHAPTER.quest("crystal_powder", q -> q
             .at(20, -9)
+            .nodeScale(2)
             .title("魔晶粉")
             .desc(d -> d.line("获取混沌魔晶粉即可完成此任务"))
             .task(
@@ -1762,6 +1800,7 @@ public final class Magic1Chapter {
 
     public static final Quest ELEMENTAL_STEAMS = CHAPTER.quest("elemental_steams", q -> q
             .at(22, -7)
+            .nodeScale(2)
             .icon(GTOMaterials.Aether.getBucket())
             .title("元素蒸汽们")
             .desc(d -> d.line("以太蒸汽你会用到很多"))
@@ -1776,6 +1815,7 @@ public final class Magic1Chapter {
 
     public static final Quest VARIOUS_ESSENCES = CHAPTER.quest("various_essences", q -> q
             .at(36, -2)
+            .nodeScale(2)
             .title("各种精华们")
             .desc(d -> d
                     .line("合成操纵之精华即可完成此任务")
@@ -1794,6 +1834,8 @@ public final class Magic1Chapter {
 
     public static final Quest RUNIC_ALTAR = CHAPTER.quest("runic_altar", q -> q
             .at(39, -4)
+            .preset(QuestPreset.END)
+            .nodeScale(3)
             .desc(d -> d
                     .line("{符文}是{植物魔法}{中众多高阶合成配方的重要组件,需在}{符文祭坛}{上制作.}", QuestStyle.BLUE, QuestStyle.LIGHT_PURPLE, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE)
                     .line()
@@ -1803,7 +1845,8 @@ public final class Magic1Chapter {
                     .line()
                     .line("{注意:}{符文祭坛}{配方中使用的符文部分作为催化剂不会被消耗.类似}{花药台}{,配方完成后空手右键点击祭坛可自动填充上次配方所需物品.}", QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE))
             .task(Task.item(BotaniaBlocks.runeAltar))
-            .dependsOn(MANA_PEARL, VARIOUS_ESSENCES));
+            .dependsOn(MANA_PEARL, VARIOUS_ESSENCES)
+            .mainNode());
 
     public static final Quest WILDEN_TRIBUTE = CHAPTER.quest("wilden_tribute", q -> q
             .at(31, 9)
@@ -1831,11 +1874,13 @@ public final class Magic1Chapter {
 
     public static final Quest WARP_SCROLL = CHAPTER.quest("warp_scroll", q -> q
             .at(36, 8)
+            .nodeScale(2)
             .task(Task.item(ItemsRegistry.WARP_SCROLL))
             .dependsOn(MAGEBLOOM_FIBER));
 
     public static final Quest STABLE_WARP_SCROLL = CHAPTER.quest("stable_warp_scroll", q -> q
             .at(39, 8)
+            .nodeScale(2)
             .subtitle("魔法的跨维度传送")
             .desc(d -> d
                     .line("用于记录一个传送点进行永久传送，可用于跨维度传送(你也可以用其他办法)")
@@ -1916,17 +1961,20 @@ public final class Magic1Chapter {
 
     public static final Quest LV_MANA_MACHINE_HULL = CHAPTER.quest("lv_mana_machine_hull", q -> q
             .at(24.5, 9)
+            .nodeScale(1.25)
             .subtitle("{你需要天马行空般的想象力}", QuestStyle.GRAY)
             .task(Task.item(ManaMachine.MANA_HULL[GTValues.LV]))
             .dependsOn(MANASTEEL_CASING));
 
     public static final Quest LV_MANA_ASSEMBLER = CHAPTER.quest("lv_mana_assembler", q -> q
             .at(24.5, 11)
+            .nodeScale(1.25)
             .task(Task.item(ManaMachine.MANA_ASSEMBLER[GTValues.LV]))
             .dependsOn(LV_MANA_MACHINE_HULL));
 
     public static final Quest EXP_OBELISK = CHAPTER.quest("exp_obelisk", q -> q
             .at(26.5, 7)
+            .nodeScale(1.25)
             .desc(d -> d.line("可以存储经验，贴上存储总线即可连入ME网络"))
             .task(Task.item(ManaMachine.XP_OBELISK))
             .dependsOn(INFUSE_MAGIC_MATERIALS));
@@ -1939,6 +1987,7 @@ public final class Magic1Chapter {
 
     public static final Quest NORMAL_MANA_PIPE = CHAPTER.quest("normal_mana_pipe", q -> q
             .at(27.2, 1.88)
+            .nodeScale(1.5)
             .desc(d -> d.line("它可以用来运输魔力或魔源，{并按 4 魔源 = 1 魔力互相换算}", QuestStyle.YELLOW))
             .task(Task.item(GTOBlocks.MANA_PIPES[0]))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))

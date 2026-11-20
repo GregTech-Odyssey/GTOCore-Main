@@ -20,6 +20,8 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -27,8 +29,6 @@ import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMachines;
-
-import net.minecraft.world.item.Items;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
@@ -43,8 +43,7 @@ public final class UevChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("uev", c -> c
             .title("13. 极超压(UEV)")
             .subtitle("Tier10-UEV")
-            .icon(MultiBlockA.SPS_CRAFTING)
-            .hideQuestsUntilDepsVisible());
+            .icon(MultiBlockA.SPS_CRAFTING));
 
     public static final Quest OBSIDIAN_MATRIX = CHAPTER.quest("obsidian_matrix", q -> q
             .at(-8, 1)
@@ -134,13 +133,16 @@ public final class UevChapter {
 
     public static final Quest WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE = CHAPTER.quest("welcome_to_the_extreme_overpressure_stage", q -> q
             .at(-10, -5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{极超压}阶段", DARK_GREEN)
             .subtitle("{你需要天马行空般的想象力}", DARK_GREEN)
             .desc(d -> d.line("未完待续..."))
             .task(Task.item(GTMachines.HULL[GTValues.UEV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(UhvChapter.QUANTANIUM_INGOT));
+            .dependsOn(UhvChapter.QUANTANIUM_INGOT)
+            .mainNode());
 
     public static final Quest Q_4BEE8DA7 = CHAPTER.quest("q_4bee8da7", q -> q
             .at(-6, -4)
@@ -151,7 +153,8 @@ public final class UevChapter {
                     .line()
                     .line("{/gtocore givecell 可快捷获取所需物品的创造元件}", GRAY.italic()))
             .task(Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, UhvChapter.OPTICAL_PROCESSOR_CONTROLLER));
+            .dependsOn(WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, UhvChapter.OPTICAL_PROCESSOR_CONTROLLER)
+            .mainNode());
 
     public static final Quest MEGASTRUCTURES = CHAPTER.quest("megastructures", q -> q
             .at(-6, -6)
@@ -176,23 +179,27 @@ public final class UevChapter {
     public static final Quest EXOTIC_MAINFRAME = CHAPTER.quest("exotic_mainframe", q -> q
             .at(-4, -4)
             .task(Task.item(GTOItems.EXOTIC_MAINFRAME))
-            .dependsOn(Q_4BEE8DA7));
+            .dependsOn(Q_4BEE8DA7)
+            .mainNode());
 
     public static final Quest COSMIC_MAINFRAME = CHAPTER.quest("cosmic_mainframe", q -> q
             .at(-2, -4)
             .task(Task.item(GTOItems.COSMIC_MAINFRAME))
-            .dependsOn(EXOTIC_MAINFRAME));
+            .dependsOn(EXOTIC_MAINFRAME)
+            .mainNode());
 
     public static final Quest SUPRACAUSAL_MAINFRAME = CHAPTER.quest("supracausal_mainframe", q -> q
             .at(0, -4)
             .task(Task.item(GTOItems.SUPRACAUSAL_MAINFRAME))
-            .dependsOn(COSMIC_MAINFRAME));
+            .dependsOn(COSMIC_MAINFRAME)
+            .mainNode());
 
     public static final Quest SUPRACHRONAL_CIRCUIT_MAX = CHAPTER.quest("suprachronal_circuit_max", q -> q
             .at(2, -4)
             .desc(d -> d.line("可以低价大批量制作"))
             .task(Task.item(GTOItems.SUPRACHRONAL_CIRCUIT[GTValues.MAX]))
-            .dependsOn(SUPRACAUSAL_MAINFRAME));
+            .dependsOn(SUPRACAUSAL_MAINFRAME)
+            .mainNode());
 
     public static final Quest ADVANCED_INTEGRATED_ORE_PROCESSOR = CHAPTER.quest("advanced_integrated_ore_processor", q -> q
             .at(-4, 5.5)
@@ -220,26 +227,23 @@ public final class UevChapter {
     public static final Quest SUPRACHRONAL_MAINFRAME_COMPLEX = CHAPTER.quest("suprachronal_mainframe_complex", q -> q
             .at(4, -4)
             .task(Task.item(GTOItems.SUPRACHRONAL_MAINFRAME_COMPLEX))
-            .dependsOn(SUPRACHRONAL_CIRCUIT_MAX));
+            .dependsOn(SUPRACHRONAL_CIRCUIT_MAX)
+            .mainNode());
 
     public static final Quest CREATE_ULTIMATE_BATTERY = CHAPTER.quest("create_ultimate_battery", q -> q
             .at(4, -2)
             .task(Task.item(GTOItems.CREATE_ULTIMATE_BATTERY))
             .dependsOn(SUPRACHRONAL_MAINFRAME_COMPLEX)
-            .optional());
-
-    public static final Quest CHAOTIC_ENERGY_CORE = CHAPTER.quest("chaotic_energy_core", q -> q
-            .at(4, -0.5)
-            .desc(d -> d.line("创造之门以及后面的东西都没了，所以直接送你命令方块"))
-            .task(Task.item(GTOItems.CHAOTIC_ENERGY_CORE))
-            .reward(Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(Items.CHAIN_COMMAND_BLOCK)), 1))
-            .dependsOn(CREATE_ULTIMATE_BATTERY)
-            .optional());
+            .optional()
+            .mainNode());
 
     public static final Quest CREATIVE_LASER_HATCH = CHAPTER.quest("creative_laser_hatch", q -> q
-            .at(4, 1)
+            .at(4, 2)
+            .nodeFill(0xB4453F)
+            .nodeScale(2)
+            .shape(QuestShape.HEART)
+            .preset(QuestPreset.END)
             .subtitle("毕业了")
-            .task(Task.item(CreativeMachines.CREATIVE_LASER_INPUT_HATCH))
             .reward(
                     Reward.item(GTMachines.CREATIVE_ITEM, 99L),
                     Reward.item(GTMachines.CREATIVE_FLUID, 99L),
@@ -248,8 +252,10 @@ public final class UevChapter {
                     Reward.item(CreativeMachines.CREATIVE_LASER_INPUT_HATCH, 99L),
                     Reward.item(GTMachines.CREATIVE_COMPUTATION_PROVIDER, 99L),
                     Reward.item(GTOItems.ALL_FLUIDS_CELL))
-            .dependsOn(CHAOTIC_ENERGY_CORE)
-            .optional());
+            .optional()
+            .task(Task.item(GTOBlocks.HAPPY_WATER_GOD_STATUE))
+            .dependsOn(UevChapter.HAPPY_WATER_GOD_CORE)
+            .mainNode());
 
     public static final Quest Q_635BFF4E = CHAPTER.quest("q_635bff4e", q -> q
             .at(2, -6)
@@ -288,6 +294,12 @@ public final class UevChapter {
             .task(Task.item(GeneratorMultiblock.ANNIHILATE_GENERATOR))
             .reward(Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(GTOBlocks.ANTIMATTER_CONTAINMENT_CASING)), 1)));
 
+    public static final Quest HAPPY_WATER_GOD_CORE = CHAPTER.quest("happy_water_god_core", q -> q
+            .at(4, 0)
+            .task(Task.item(GTOItems.HAPPY_WATER_GOD_CORE))
+            .mainNode()
+            .dependsOn(CREATE_ULTIMATE_BATTERY));
+
     static {
         CHAPTER.decorate(d -> d
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_UEV, -4, -4.5, 1, 1))
@@ -295,6 +307,6 @@ public final class UevChapter {
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_UXV, 0, -4.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_OPV, 2, -4.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_MAX, 4, -4.5, 1, 1))
-                .link(QuestLink.of(UhvChapter.OPTICAL_PROCESSOR_CONTROLLER, -10, -3)));
+                .link(QuestLink.of(UhvChapter.OPTICAL_PROCESSOR_CONTROLLER, -10, -3).mainNode()));
     }
 }

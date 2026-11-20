@@ -14,6 +14,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -38,7 +39,6 @@ public final class UlvChapter {
             .title("3. 超低压(ULV)")
             .subtitle("Tier0.5-ULV")
             .icon(MultiBlockC.PRIMITIVE_DISTILLATION_TOWER)
-            .hideQuestsUntilDepsVisible()
             .autofocus(UlvChapter.WELCOME_TO_THE_ULTRA_LOW_PRESSURE));
 
     public static final Quest WHERE_DOES_AIR_COME_FROM = CHAPTER.quest("where_does_air_come_from", q -> q
@@ -50,8 +50,7 @@ public final class UlvChapter {
                     .line()
                     .line("{可以安装在多个侧面并行工作，增加抽入速度}", GRAY.italic()))
             .task(Task.item(GTOItems.AIR_VENT))
-            .dependsOn(SteamChapter.FIRST_STEEL_INGOT)
-            .hideDependentLines());
+            .dependsOn(SteamChapter.FIRST_STEEL_INGOT));
 
     public static final Quest BIGGER_AND_STRONGER_VACUUM = CHAPTER.quest("bigger_and_stronger_vacuum", q -> q
             .at(3.5, 2.85)
@@ -103,6 +102,8 @@ public final class UlvChapter {
 
     public static final Quest WELCOME_TO_THE_ULTRA_LOW_PRESSURE = CHAPTER.quest("welcome_to_the_ultra_low_pressure", q -> q
             .at(-2, -6.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{超低压}阶段", GRAY)
             .subtitle("{你需要天马行空般的想象力}", GRAY)
             .desc(d -> d
@@ -114,7 +115,8 @@ public final class UlvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.ULV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(SteamChapter.ULV_SUPERCONDUCTOR));
+            .dependsOn(SteamChapter.ULV_SUPERCONDUCTOR)
+            .mainNode());
 
     public static final Quest ULV_BATTERY_BUFFER_4X = CHAPTER.quest("ulv_battery_buffer_4x", q -> q
             .at(-4, -8)
@@ -142,7 +144,8 @@ public final class UlvChapter {
                     .line("超低压的时代的六件套主要需要{铜}和{锡}来制造，也是蒸汽时代的主要材料的延续", link(OresChapter.COPPER_VEIN), link(OresChapter.TIN_ORE_VEIN)))
             .task(Task.item(GTOItems.ULV_ELECTRIC_MOTOR))
             .reward(Reward.item(GTOItems.ULV_ELECTRIC_MOTOR, 4))
-            .dependsOn(WELCOME_TO_THE_ULTRA_LOW_PRESSURE));
+            .dependsOn(WELCOME_TO_THE_ULTRA_LOW_PRESSURE)
+            .mainNode());
 
     public static final Quest PRIMITIVE_GENERATOR = CHAPTER.quest("primitive_generator", q -> q
             .at(-3.5, -5)
@@ -254,6 +257,7 @@ public final class UlvChapter {
 
     public static final Quest PRIMITIVE_MEANS_PRIMITIVE_RECIPE = CHAPTER.quest("primitive_means_primitive_recipe", q -> q
             .at(12.5, -5)
+            .nodeScale(1.4)
             .title("原始手段，原始配方")
             .subtitle("似曾相识故人来")
             .desc(d -> d
@@ -323,7 +327,8 @@ public final class UlvChapter {
                     .line("很可怜，并没有几台机器支持{ULV}电压...", ULV))
             .task(Task.item(GTOMachines.ULV_ASSEMBLER[GTValues.ULV]))
             .reward(Reward.item(QuestExternalRefs.FarmersRespiteItems.ROSE_HIP_PIE_SLICE))
-            .dependsOn(IT_CAN_HELP_ME_MOVE_THINGS, PLACE_IN_POSITION));
+            .dependsOn(IT_CAN_HELP_ME_MOVE_THINGS, PLACE_IN_POSITION)
+            .mainNode());
 
     public static final Quest RUBY_ROD = CHAPTER.quest("ruby_rod", q -> q
             .at(0.75, -1)
@@ -348,7 +353,8 @@ public final class UlvChapter {
                     .line()
                     .line("你需要准备三种原料：真空管、电阻和覆膜印刷电路基板"))
             .task(Task.checkmark().title("电路"))
-            .dependsOn(PRIMITIVE_ASSEMBLY, ORIGINAL_CAULDRON));
+            .dependsOn(PRIMITIVE_ASSEMBLY, ORIGINAL_CAULDRON)
+            .mainNode());
 
     public static final Quest THE_THREE_MUSKETEERS_ONE_VACUUM_TUBE = CHAPTER.quest("the_three_musketeers_one_vacuum_tube", q -> q
             .at(3.5, -1)
@@ -417,7 +423,7 @@ public final class UlvChapter {
             .optional());
 
     public static final Quest ULV_COMPONENT_SUBSIDY = CHAPTER.quest("ulv_component_subsidy", q -> q
-            .at(-3.5, 1)
+            .at(-3, 1)
             .icon(GTOItems.ULV_ELECTRIC_MOTOR)
             .title("ULV部件补助")
             .task(Task.checkmark())
@@ -487,7 +493,8 @@ public final class UlvChapter {
                     .line("一般来说新一级电压带来的{新电路板}都会比上一级电压的电路板{便宜}，记得做好更新迭代", YELLOW, AQUA))
             .task(Task.item(GTItems.ELECTRONIC_CIRCUIT_LV))
             .reward(Reward.item(QuestExternalRefs.FarmersDelightItems.HAMBURGER, 8), Reward.item(GTItems.ELECTRONIC_CIRCUIT_LV, 2))
-            .dependsOn(THE_THREE_MUSKETEERS_PART_3_RESIN, THE_THREE_MUSKETEERS_ONE_VACUUM_TUBE, THE_THREE_MUSKETEERS_PART_2_RESISTOR));
+            .dependsOn(THE_THREE_MUSKETEERS_PART_3_RESIN, THE_THREE_MUSKETEERS_ONE_VACUUM_TUBE, THE_THREE_MUSKETEERS_PART_2_RESISTOR)
+            .mainNode());
 
     public static final Quest DEVELOPMENT_AND_ENERGY = CHAPTER.quest("development_and_energy", q -> q
             .at(5, -3.5)
@@ -503,7 +510,8 @@ public final class UlvChapter {
                     .line()
                     .line("{避免出现为了一桶产物倒回去重新运行一次配方的尴尬}", DARK_GRAY.strike()))
             .task(Task.checkmark().title("化工、能源"))
-            .dependsOn(BASIC_ELECTRONIC_CIRCUIT));
+            .dependsOn(BASIC_ELECTRONIC_CIRCUIT)
+            .mainNode());
 
     public static final Quest A_BUCKET_OF_CRUDE_OIL = CHAPTER.quest("a_bucket_of_crude_oil", q -> q
             .at(6.5, -2)
@@ -518,7 +526,7 @@ public final class UlvChapter {
             .task(Task.item(GTMaterials.RawOil.getBucket()))
             .reward(
                     Reward.stack(() -> QuestStacks.filled(GTItems.FLUID_CELL_LARGE_ALUMINIUM, new FluidStack(GTMaterials.RawOil.getFluid(), 32000)), 1))
-            .dependsOn(MainStoneageChapter.OIL_MEDIUM_BUCKET, DEVELOPMENT_AND_ENERGY));
+            .dependsOn(StoneageChapter.OIL_MEDIUM_BUCKET, DEVELOPMENT_AND_ENERGY));
 
     public static final Quest BRONZE_LARGE_BOILER = CHAPTER.quest("bronze_large_boiler", q -> q
             .at(6.5, -5)
@@ -587,7 +595,7 @@ public final class UlvChapter {
                     .line()
                     .line("什么，你现在还没有搭建{蒸汽分离机}？", GOLD))
             .task(Task.item(ModItems.HYDROGEN_BUCKET.get()).optional(), Task.checkmark())
-            .dependsOn(BAKE_THEN_TRANSFORM, SteamChapter.CENTRIFUGE));
+            .dependsOn(BAKE_THEN_TRANSFORM));
 
     public static final Quest INFINITE_INTAKE_HATCH = CHAPTER.quest("infinite_intake_hatch", q -> q
             .at(-3.5, 2.85)
@@ -623,7 +631,7 @@ public final class UlvChapter {
             .dependsOn(BASIC_ELECTRONIC_CIRCUIT));
 
     public static final Quest CHIP_SUBSIDY = CHAPTER.quest("chip_subsidy", q -> q
-            .at(6, 1.5)
+            .at(6, 1)
             .icon(GTItems.ELECTRONIC_CIRCUIT_LV)
             .title("芯片补助")
             .task(Task.checkmark())
@@ -664,10 +672,11 @@ public final class UlvChapter {
                     Task.item(GTOItems.HEAT_DETECTOR_COVER).optional(),
                     Task.item(GTOItems.HEAT_INTERFACE).optional())
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(MainStoneageChapter.ANCIENT_STEELMAKING));
+            .dependsOn(StoneageChapter.ANCIENT_STEELMAKING));
 
     public static final Quest SOME_PRIMITIVE_PETROCHEMICAL_PROCESSING = CHAPTER.quest("some_primitive_petrochemical_processing", q -> q
             .at(8.5, -2)
+            .nodeScale(1.4)
             .icon(MultiBlockC.PRIMITIVE_DISTILLATION_TOWER)
             .title("来点原始人的石化处理")
             .subtitle("原始蒸馏塔")
@@ -756,7 +765,7 @@ public final class UlvChapter {
                     .line()
                     .line("在{Jade 提示框HUD}上{没有温度属性}的机器，需要额外贴一个{导热接口}来赋予其温度属性，且导热接口需要贴在加热的那一面", AQUA, RED, GOLD))
             .task(Task.item(GTOItems.HEAT_INTERFACE), Task.item(GTMaterials.Polyethylene.getBucket()))
-            .dependsOn(RUBY_ROD, C2H4_PRONOUNCED_ETHYLENE, WHERE_DOES_AIR_COME_FROM));
+            .dependsOn(RUBY_ROD, C2H4_PRONOUNCED_ETHYLENE));
 
     public static final Quest PLASTIC_SHEETS = CHAPTER.quest("plastic_sheets", q -> q
             .at(14.5, -7)
@@ -765,7 +774,8 @@ public final class UlvChapter {
             .desc(d -> d.line("在超低压时代先造一些凑活用点，后面电压上去了一定要换其他的机器来制作它"))
             .task(Task.item(TagPrefix.plate, GTMaterials.Polyethylene))
             .reward(Reward.item(TagPrefix.plate, GTMaterials.Polyethylene, 8))
-            .dependsOn(SOLIDIFICATION, SteamChapter.PLATE_CASTING_MOLD, ETHYLENE_UNITE));
+            .dependsOn(SOLIDIFICATION, SteamChapter.PLATE_CASTING_MOLD, ETHYLENE_UNITE)
+            .mainNode());
 
     public static final Quest PLASTIC_SUBSIDY = CHAPTER.quest("plastic_subsidy", q -> q
             .at(15.5, -8)
@@ -777,12 +787,13 @@ public final class UlvChapter {
             .dependsOn(PLASTIC_SHEETS)
             .optional().hideUntilDepsVisible());
 
+    public static final QuestLink CENTRIFUGE_COPY_1 = CHAPTER.copy(SteamChapter.CENTRIFUGE, 0, 1.5);
+
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(SteamChapter.HUH_YOU_TOO, -2, -8.5))
                 .link(QuestLink.of(ApotheosisChapter.RARITY_FORGE, -2, 1.5))
                 .link(QuestLink.of(ApotheosisChapter.BOSS_SUMMONER, -3.5, 0))
-                .link(QuestLink.of(LvChapter.WELCOME_TO_THE_LOW_VOLTAGE_STAGE, 17, -7))
-                .link(QuestLink.of(SteamChapter.CENTRIFUGE, 0, 1.5)));
+                .link(QuestLink.of(LvChapter.WELCOME_TO_THE_LOW_VOLTAGE_STAGE, 17, -7).mainNode()));
     }
 }

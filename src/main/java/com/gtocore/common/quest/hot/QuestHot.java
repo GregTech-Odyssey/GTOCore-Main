@@ -2,17 +2,22 @@ package com.gtocore.common.quest.hot;
 
 import com.gtocore.common.quest.hot.QuestEdits.Op;
 import com.gtocore.common.quest.hot.QuestSource.LinkDecl;
+import com.gtocore.common.quest.hot.QuestSource.QuestDecl;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestBook;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestDependency;
+import com.gtolib.api.quest.QuestIcon;
 import com.gtolib.api.quest.QuestLang;
 import com.gtolib.api.quest.QuestLine;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestLive;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.QuestScreenLang;
+import com.gtolib.api.quest.QuestShape;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.CommandReward;
 import com.gtolib.api.quest.reward.ItemReward;
 import com.gtolib.api.quest.reward.Reward;
@@ -26,6 +31,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+import com.gto.fastcollection.fastutil.OpenCacheHashSet;
+
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreeScanner;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
@@ -395,9 +408,12 @@ public final class QuestHot {
 
     public static boolean dependsOnDisplayed(Quest dependent, QuestDependency prerequisite) {
         var prereqId = identity(prerequisite);
-        if (prereqId == null) return false;
+        var target = prerequisite instanceof QuestLink link ? link.target() : (Quest) prerequisite;
         for (var dep : dependencies(dependent)) {
-            if (prereqId.equals(dep.identity())) return true;
+            if (prereqId != null && prereqId.equals(dep.identity())) return true;
+            var object = dep.target();
+            var existing = object instanceof QuestLink link ? link.target() : object instanceof Quest quest ? quest : null;
+            if (existing == target) return true;
         }
         return false;
     }
@@ -412,22 +428,14 @@ public final class QuestHot {
     public static DependencyCheck checkDependency(Quest dependent, QuestDependency prerequisite) {
         var blocked = guard();
         if (blocked != null) return new DependencyCheck(false, blocked.message());
-        var prereqId = identity(prerequisite);
-        if (prereqId == null) return new DependencyCheck(false, "找不到依赖目标的源码");
-        if (prereqId.startsWith("d:")) return new DependencyCheck(false, "装饰中的复制节点不可作依赖，请改用原任务");
         var prerequisiteQuest = prerequisite instanceof QuestLink link ? link.target() : (Quest) prerequisite;
-        boolean present = dependsOnDisplayed(dependent, prerequisite);
+        if (prerequisiteQuest == null || identity(prerequisiteQuest) == null) return new DependencyCheck(false, "找不到依赖目标的源码");
+        boolean present = dependsOnDisplayed(dependent, prerequisiteQuest);
         if (!present) {
             if (prerequisiteQuest == dependent) return new DependencyCheck(false, "任务不能依赖自己");
             if (reaches(prerequisiteQuest, dependent, new ReferenceOpenHashSet<>())) {
                 return new DependencyCheck(false, "会形成依赖环：" + name(prerequisiteQuest) + " 已依赖 " + name(dependent));
             }
-        }
-        var line = dependent.chapter().mainLine();
-        int di = line.indexOf(dependent), pi = line.indexOf(prerequisiteQuest);
-        if (di >= 0 && pi >= 0) {
-            if (!present && pi != di - 1) return new DependencyCheck(false, "主线任务只能依赖上一个主线任务");
-            if (present && pi == di - 1) return new DependencyCheck(true, "主线依赖不可单独移除，请用“移出主线”");
         }
         return new DependencyCheck(present, "");
     }
@@ -435,17 +443,18 @@ public final class QuestHot {
     public static Result toggleDependency(Quest dependent, QuestDependency prerequisite) {
         var check = checkDependency(dependent, prerequisite);
         if (!check.allowed()) return Result.fail(check.error());
-        var prereqId = identity(prerequisite);
         var prerequisiteQuest = prerequisite instanceof QuestLink link ? link.target() : (Quest) prerequisite;
+        var prereqId = identity(prerequisiteQuest);
         var id = "q:" + dependent.key();
         boolean present = check.present();
         var label = (present ? "移除依赖：" : "添加依赖：") + name(prerequisiteQuest) + " → " + name(dependent);
         var before = QuestLive.dependencies(dependent);
         var after = new ObjectArrayList<QuestDependency>(before.size() + 1);
         for (var dep : before) {
-            if (!present || !prereqId.equals(identity(dep))) after.add(dep);
+            var target = dep instanceof QuestLink link ? link.target() : (Quest) dep;
+            if (!present || target != prerequisiteQuest) after.add(dep);
         }
-        if (!present) after.add(prerequisite);
+        if (!present) after.add(prerequisiteQuest);
         return QuestEditQueue.submit(label, List.of(Op.dependency(id, prereqId, !present)), List.of(Op.dependency(id, prereqId, present)),
                 () -> setLiveDependencies(dependent, after), () -> setLiveDependencies(dependent, before));
     }
@@ -506,8 +515,466 @@ public final class QuestHot {
         for (int n = 1; field == null || file.fields.containsKey(field) || pending(QuestEdits.COPY, "c:" + chapter.id() + ":" + field, null) != null; n++) {
             field = targetDecl.field + "_COPY_" + n;
         }
-        var op = Op.copy(chapter.id(), field, "q:" + target.key(), QuestEdits.round(x), QuestEdits.round(y));
+        var op = Op.copy(chapter.id(), field, "q:" + target.key(), QuestEdits.round(x), QuestEdits.round(y), false);
         return QuestEditQueue.submit("放置复制节点：" + name(target), List.of(op), List.of(Op.delete(op.target())));
+    }
+
+    private record Clip(String chapter, String className, String chapterField, String field, String questId, String body,
+                        int fieldOffset, int idStart, int idEnd, int xStart, int xEnd, int yStart, int yEnd,
+                        double x, double y, List<QuestEdits.DuplicateRef> refs,
+                        @Nullable List<QuestEdits.DuplicateDepCall> deps, List<String> imports) {}
+
+    private record LinkClip(String targetId, @Nullable String field, double x, double y, boolean mainNode) {}
+
+    private static final ObjectArrayList<Clip> CLIPBOARD = new ObjectArrayList<>();
+    private static final ObjectArrayList<LinkClip> LINK_CLIPBOARD = new ObjectArrayList<>();
+    private static double clipAnchorX;
+    private static double clipAnchorY;
+
+    public static boolean hasClipboard() {
+        return !CLIPBOARD.isEmpty() || !LINK_CLIPBOARD.isEmpty();
+    }
+
+    public static Result copyToClipboard(List<? extends QuestDependency> objects) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var result = capture(objects);
+        return result.ok() ? Result.ok("已复制 " + (CLIPBOARD.size() + LINK_CLIPBOARD.size()) + " 个节点") : result;
+    }
+
+    public static Result cutToClipboard(List<? extends QuestDependency> objects) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var backup = new ObjectArrayList<Clip>(CLIPBOARD);
+        var linkBackup = new ObjectArrayList<LinkClip>(LINK_CLIPBOARD);
+        var result = capture(objects);
+        if (!result.ok()) return result;
+        var deleted = delete(objects);
+        if (!deleted.ok()) {
+            CLIPBOARD.clear();
+            CLIPBOARD.addAll(backup);
+            LINK_CLIPBOARD.clear();
+            LINK_CLIPBOARD.addAll(linkBackup);
+            return deleted;
+        }
+        return Result.ok("已剪切 " + (CLIPBOARD.size() + LINK_CLIPBOARD.size()) + " 个节点");
+    }
+
+    @Nullable
+    private static Quest targetOf(QuestDependency object) {
+        if (object instanceof Quest quest) return quest;
+        return object instanceof QuestLink link ? link.target() : null;
+    }
+
+    private static Result capture(List<? extends QuestDependency> objects) {
+        var src = source();
+        var clips = new ObjectArrayList<Clip>(objects.size());
+        var links = new ObjectArrayList<LinkClip>(objects.size());
+        double anchorX = Double.NaN, anchorY = Double.NaN;
+        for (var object : objects) {
+            if (object instanceof QuestLink link) {
+                var id = identity(link);
+                var decl = id == null ? null : src.find(id);
+                if (src.declOf(link.target()) == null || !(decl instanceof LinkDecl linkDecl)) return Result.fail("复制节点 " + name(link.target()) + " 的源码写法无法复制");
+                links.add(new LinkClip("q:" + link.target().key(), linkDecl.field, link.x(), link.y(), link.isMainNode()));
+                if (Double.isNaN(anchorX)) {
+                    anchorX = link.x();
+                    anchorY = link.y();
+                }
+                continue;
+            }
+            var target = targetOf(object);
+            if (target == null) return Result.fail("只能复制任务或复制节点");
+            var decl = src.declOf(target);
+            if (decl == null) return Result.fail("找不到任务 " + target.key() + " 的源码声明");
+            var clip = captureDecl(src, decl);
+            if (clip == null) return Result.fail("任务 " + target.key() + " 的源码写法无法复制");
+            clips.add(clip);
+            if (Double.isNaN(anchorX)) {
+                anchorX = clip.x();
+                anchorY = clip.y();
+            }
+        }
+        if (clips.isEmpty() && links.isEmpty()) return Result.fail("没有可复制的任务");
+        CLIPBOARD.clear();
+        CLIPBOARD.addAll(clips);
+        LINK_CLIPBOARD.clear();
+        LINK_CLIPBOARD.addAll(links);
+        clipAnchorX = anchorX;
+        clipAnchorY = anchorY;
+        return Result.ok("");
+    }
+
+    @Nullable
+    private static Clip captureDecl(QuestSource src, QuestDecl decl) {
+        var file = decl.file;
+        if (decl.field == null || decl.var == null || file.chapterId == null || file.chapterField == null || !(decl.var.getInitializer() instanceof MethodInvocationTree init)) return null;
+        int bodyStart = file.start(decl.var), bodyEnd = file.end(decl.var);
+        var body = file.content.substring(bodyStart, bodyEnd);
+        int fieldOffset = body.indexOf(decl.field);
+        if (fieldOffset < 0) return null;
+        var at = decl.calls("at");
+        if (at.size() != 1 || at.get(0).getArguments().size() != 2) return null;
+        var atArgs = at.get(0).getArguments();
+        Double atX = QuestSource.number(atArgs.get(0)), atY = QuestSource.number(atArgs.get(1));
+        if (atX == null || atY == null) return null;
+        var idArg = init.getArguments().get(0);
+        var refs = new ObjectArrayList<QuestEdits.DuplicateRef>();
+        var roots = new OpenCacheHashSet<String>();
+        new TreeScanner<Void, Void>() {
+
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void unused) {
+                var target = src.resolve(file, node);
+                if (target != null) addRef(node, target);
+                else roots.add(node.getName().toString());
+                return null;
+            }
+
+            @Override
+            public Void visitMemberSelect(MemberSelectTree node, Void unused) {
+                var target = src.resolve(file, node);
+                if (target != null) {
+                    addRef(node, target);
+                    return null;
+                }
+                if (node.getExpression() instanceof IdentifierTree owner) roots.add(owner.getName().toString());
+                return super.visitMemberSelect(node, unused);
+            }
+
+            private void addRef(Tree tree, QuestSource.Decl target) {
+                if (target.field == null || target instanceof QuestSource.ChapterDecl) return;
+                int offset = file.start(tree) - bodyStart;
+                if (offset < 0 || offset >= body.length()) return;
+                refs.add(new QuestEdits.DuplicateRef(offset, file.text(tree), target.file.className, target.file.chapterId, target.field));
+            }
+        }.scan(decl.var.getInitializer(), null);
+        var imports = new ObjectArrayList<String>();
+        for (var imp : file.imports) {
+            if (roots.contains(imp.substring(imp.lastIndexOf('.') + 1))) imports.add(imp);
+        }
+        for (var imp : file.staticImports) {
+            int dot = imp.lastIndexOf('.');
+            if (dot < 0) continue;
+            var owner = imp.substring(0, dot);
+            if (roots.contains(owner.substring(owner.lastIndexOf('.') + 1))) imports.add("static " + imp);
+        }
+        imports.add("com.gtolib.api.quest.Quest");
+        var deps = new ObjectArrayList<QuestEdits.DuplicateDepCall>();
+        for (var call : decl.calls("dependsOn")) {
+            var args = call.getArguments();
+            if (args.isEmpty()) continue;
+            var depArgs = new ObjectArrayList<QuestEdits.DuplicateDepArg>(args.size());
+            for (var arg : args) {
+                var target = src.resolve(file, arg);
+                if (target == null || target.field == null || target instanceof QuestSource.ChapterDecl) continue;
+                depArgs.add(new QuestEdits.DuplicateDepArg(file.start(arg) - bodyStart, file.end(arg) - bodyStart, target.file.chapterId, target.field));
+            }
+            if (!depArgs.isEmpty()) {
+                deps.add(new QuestEdits.DuplicateDepCall(decl.receiverEnd(call) - bodyStart, file.end(call) - bodyStart, depArgs));
+            }
+        }
+        return new Clip(file.chapterId, file.className, file.chapterField, decl.field, decl.questId, body,
+                fieldOffset, file.start(idArg) - bodyStart, file.end(idArg) - bodyStart,
+                file.start(atArgs.get(0)) - bodyStart, file.end(atArgs.get(0)) - bodyStart,
+                file.start(atArgs.get(1)) - bodyStart, file.end(atArgs.get(1)) - bodyStart,
+                atX, atY, refs, deps, imports);
+    }
+
+    private static boolean pendingNode(String chapter, String id, @Nullable String field) {
+        var ops = QuestEditQueue.pending();
+        for (int i = 0; i < ops.size(); i++) {
+            var op = ops.get(i);
+            if (!op.type().equals(QuestEdits.DUPLICATE)) continue;
+            if (field != null ? field.equals(op.arg()) : op.target().equals("q:" + chapter + "/" + id)) return true;
+        }
+        return false;
+    }
+
+    private static String uniqueField(QuestSource.FileModel file, String chapter, String base) {
+        for (int n = 1;; n++) {
+            var candidate = base + "_COPY_" + n;
+            if (!file.fields.containsKey(candidate) && !pendingNode(chapter, null, candidate)) return candidate;
+        }
+    }
+
+    private static String uniqueId(QuestSource.FileModel file, String chapter, String base) {
+        for (int n = 1;; n++) {
+            var candidate = base + "_copy_" + n;
+            if (!file.questsById.containsKey(candidate) && !pendingNode(chapter, candidate, null)) return candidate;
+        }
+    }
+
+    public static Result paste(QuestChapter chapter, double x, double y) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        if (CLIPBOARD.isEmpty() && LINK_CLIPBOARD.isEmpty()) return Result.fail("剪贴板是空的");
+        var src = source();
+        var file = src.fileOf(chapter);
+        if (file == null || file.chapterField == null) return Result.fail("找不到章节 " + chapter.id() + " 的源码");
+        var ordered = orderedClips();
+        if (ordered == null) return Result.fail("选中任务之间存在循环依赖，无法一次性粘贴");
+        var fields = new ObjectArrayList<String>(ordered.size());
+        var ids = new ObjectArrayList<String>(ordered.size());
+        var mapping = new O2OOpenCacheHashMap<String, String>();
+        for (var clip : ordered) {
+            var field = uniqueField(file, chapter.id(), clip.field());
+            var id = uniqueId(file, chapter.id(), clip.questId());
+            fields.add(field);
+            ids.add(id);
+            mapping.put(clip.chapter() + "/" + clip.field(), field);
+        }
+        var forward = new ObjectArrayList<Op>(ordered.size() + LINK_CLIPBOARD.size());
+        var inverse = new ObjectArrayList<Op>(ordered.size() + LINK_CLIPBOARD.size());
+        for (int i = 0; i < ordered.size(); i++) {
+            var clip = ordered.get(i);
+            var removals = removals(clip, mapping);
+            var refs = new ObjectArrayList<QuestEdits.DuplicateRef>(clip.refs().size());
+            for (var ref : clip.refs()) {
+                if (removed(removals, ref.offset())) continue;
+                var mapped = mapping.get(ref.chapter() + "/" + ref.field());
+                refs.add(mapped == null ? ref : new QuestEdits.DuplicateRef(ref.offset(), ref.original(), file.className, chapter.id(), mapped));
+            }
+            var payload = new QuestEdits.DuplicatePayload(clip.chapterField(), clip.field(), fields.get(i), clip.fieldOffset(),
+                    clip.idStart(), clip.idEnd(), clip.xStart(), clip.xEnd(), clip.yStart(), clip.yEnd(), clip.body(), refs,
+                    clip.deps(), removals, clip.imports());
+            forward.add(Op.duplicate(chapter.id(), fields.get(i), ids.get(i), QuestEdits.encodeDuplicate(payload),
+                    QuestEdits.round(x + clip.x() - clipAnchorX), QuestEdits.round(y + clip.y() - clipAnchorY)));
+            inverse.add(0, Op.delete("q:" + chapter.id() + "/" + ids.get(i)));
+        }
+        for (var link : LINK_CLIPBOARD) {
+            var field = uniqueField(file, chapter.id(), link.field() == null ? "LINK" : link.field());
+            forward.add(Op.copy(chapter.id(), field, link.targetId(), QuestEdits.round(x + link.x() - clipAnchorX),
+                    QuestEdits.round(y + link.y() - clipAnchorY), link.mainNode()));
+            inverse.add(0, Op.delete("c:" + chapter.id() + ":" + field));
+        }
+        return QuestEditQueue.submit("粘贴 " + (ordered.size() + LINK_CLIPBOARD.size()) + " 个节点", forward, inverse);
+    }
+
+    @Nullable
+    private static ObjectArrayList<Clip> orderedClips() {
+        int n = CLIPBOARD.size();
+        var state = new byte[n];
+        var out = new ObjectArrayList<Clip>(n);
+        for (int i = 0; i < n; i++) {
+            if (!visitClip(i, state, out)) return null;
+        }
+        return out;
+    }
+
+    private static boolean visitClip(int index, byte[] state, ObjectArrayList<Clip> out) {
+        if (state[index] == 2) return true;
+        if (state[index] == 1) return false;
+        state[index] = 1;
+        for (var ref : CLIPBOARD.get(index).refs()) {
+            int target = indexOfClip(ref.chapter(), ref.field());
+            if (target >= 0 && !visitClip(target, state, out)) return false;
+        }
+        state[index] = 2;
+        out.add(CLIPBOARD.get(index));
+        return true;
+    }
+
+    private static int indexOfClip(String chapter, String field) {
+        for (int i = 0; i < CLIPBOARD.size(); i++) {
+            var clip = CLIPBOARD.get(i);
+            if (clip.chapter().equals(chapter) && clip.field().equals(field)) return i;
+        }
+        return -1;
+    }
+
+    private static ObjectArrayList<QuestEdits.DuplicateRemoval> removals(Clip clip, O2OOpenCacheHashMap<String, String> mapping) {
+        var raw = new ObjectArrayList<QuestEdits.DuplicateRemoval>();
+        var deps = clip.deps();
+        if (deps != null) {
+            for (var call : deps) {
+                var args = call.args();
+                int first = -1;
+                for (int k = 0; k < args.size(); k++) {
+                    var arg = args.get(k);
+                    if (mapping.containsKey(arg.chapter() + "/" + arg.field())) {
+                        first = k;
+                        break;
+                    }
+                }
+                if (first < 0) {
+                    raw.add(new QuestEdits.DuplicateRemoval(call.callStart(), call.callEnd()));
+                    continue;
+                }
+                if (first > 0) {
+                    raw.add(new QuestEdits.DuplicateRemoval(args.get(0).start(), args.get(first).start()));
+                }
+                for (int k = first + 1; k < args.size(); k++) {
+                    var arg = args.get(k);
+                    if (mapping.containsKey(arg.chapter() + "/" + arg.field())) continue;
+                    raw.add(new QuestEdits.DuplicateRemoval(args.get(k - 1).end(), arg.end()));
+                }
+            }
+        }
+        return merge(raw);
+    }
+
+    private static ObjectArrayList<QuestEdits.DuplicateRemoval> merge(ObjectArrayList<QuestEdits.DuplicateRemoval> list) {
+        if (list.size() < 2) return list;
+        list.sort((a, b) -> Integer.compare(a.start(), b.start()));
+        var out = new ObjectArrayList<QuestEdits.DuplicateRemoval>(list.size());
+        var current = list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+            var next = list.get(i);
+            if (next.start() <= current.end()) {
+                current = new QuestEdits.DuplicateRemoval(current.start(), Math.max(current.end(), next.end()));
+            } else {
+                out.add(current);
+                current = next;
+            }
+        }
+        out.add(current);
+        return out;
+    }
+
+    private static boolean removed(List<QuestEdits.DuplicateRemoval> removals, int offset) {
+        for (var removal : removals) {
+            if (offset >= removal.start() && offset < removal.end()) return true;
+        }
+        return false;
+    }
+
+    public static Result mirrorToChapter(List<? extends QuestDependency> objects, QuestChapter chapter, double x, double y) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var src = source();
+        var file = src.fileOf(chapter);
+        if (file == null || file.chapterField == null) return Result.fail("找不到章节 " + chapter.id() + " 的源码");
+        var forward = new ObjectArrayList<Op>(objects.size());
+        var inverse = new ObjectArrayList<Op>(objects.size());
+        for (int i = 0; i < objects.size(); i++) {
+            var target = targetOf(objects.get(i));
+            if (target == null) return Result.fail("只能镜像任务节点");
+            var decl = src.declOf(target);
+            if (decl == null || decl.field == null) return Result.fail("找不到任务 " + target.key() + " 的源码声明");
+            var field = uniqueLinkField(file, chapter.id(), decl.field);
+            var op = Op.copy(chapter.id(), field, "q:" + target.key(), QuestEdits.round(x + i * 2), QuestEdits.round(y + i * 2), false);
+            forward.add(op);
+            inverse.add(0, Op.delete(op.target()));
+        }
+        return QuestEditQueue.submit("镜像 " + objects.size() + " 个任务到 " + chapter.id(), forward, inverse);
+    }
+
+    private static String uniqueLinkField(QuestSource.FileModel file, String chapter, String base) {
+        for (int n = 1;; n++) {
+            var candidate = base + "_COPY_" + n;
+            if (!file.fields.containsKey(candidate) && pending(QuestEdits.COPY, "c:" + chapter + ":" + candidate, null) == null) return candidate;
+        }
+    }
+
+    public static Result setShape(Quest quest, @Nullable QuestShape shape) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var id = "q:" + quest.key();
+        var old = quest.shape();
+        var constant = shape == null ? "" : shape.id().toUpperCase(Locale.ROOT);
+        var oldConstant = old == null ? "" : old.id().toUpperCase(Locale.ROOT);
+        return QuestEditQueue.submit("更改边框样式：" + name(quest), List.of(Op.shape(id, constant)), List.of(Op.shape(id, oldConstant)),
+                () -> edited(QuestLive.setShape(quest, shape), true), () -> edited(QuestLive.setShape(quest, old), true));
+    }
+
+    public static Result setIconScale(Quest quest, double scale) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        double old = quest.iconScale();
+        var id = "q:" + quest.key();
+        return QuestEditQueue.submit("更改图标大小：" + name(quest), List.of(Op.iconScale(id, scale)), List.of(Op.iconScale(id, old)),
+                () -> edited(QuestLive.setIconScale(quest, scale), true), () -> edited(QuestLive.setIconScale(quest, old), true));
+    }
+
+    public static boolean isMainNode(QuestDependency object) {
+        return object instanceof Quest quest ? quest.mainNode() : object instanceof QuestLink link && link.isMainNode();
+    }
+
+    public static Result setMainNode(QuestDependency object, boolean on) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        if (isMainNode(object) == on) return Result.ok("");
+        var id = identity(object);
+        if (id == null) return Result.fail("找不到节点的源码");
+        var label = (on ? "设为主节点：" : "取消主节点：") + (object instanceof Quest quest ? name(quest) : name(((QuestLink) object).target()) + "（镜像）");
+        if (object instanceof Quest quest) {
+            return QuestEditQueue.submit(label, List.of(Op.flag(id, "mainNode", on)), List.of(Op.flag(id, "mainNode", !on)),
+                    () -> edited(QuestLive.setFlag(quest, "mainNode", on), true), () -> edited(QuestLive.setFlag(quest, "mainNode", !on), true));
+        }
+        var link = (QuestLink) object;
+        return QuestEditQueue.submit(label, List.of(Op.linkMain(id, on)), List.of(Op.linkMain(id, !on)),
+                () -> edited(QuestLive.setMainNode(link, on), true), () -> edited(QuestLive.setMainNode(link, !on), true));
+    }
+
+    public static Result setPreset(Quest quest, @Nullable QuestPreset preset) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var old = quest.preset();
+        var next = preset == null ? "" : preset.name();
+        var previous = old == null ? "" : old.name();
+        var id = "q:" + quest.key();
+        return QuestEditQueue.submit((preset == null ? "清除样式预设：" : "更改样式预设：" + preset.id()) + " · " + name(quest),
+                List.of(Op.preset(id, next)), List.of(Op.preset(id, previous)),
+                () -> edited(QuestLive.setPreset(quest, preset), true), () -> edited(QuestLive.setPreset(quest, old), true));
+    }
+
+    public static Result setNodeScale(Quest quest, double scale) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        double old = quest.nodeScale();
+        var id = "q:" + quest.key();
+        return QuestEditQueue.submit("更改节点大小：" + name(quest), List.of(Op.nodeScale(id, scale)), List.of(Op.nodeScale(id, old)),
+                () -> edited(QuestLive.setNodeScale(quest, scale), true), () -> edited(QuestLive.setNodeScale(quest, old), true));
+    }
+
+    public static Result setNodeFill(Quest quest, int rgb) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        int old = quest.nodeFill();
+        var id = "q:" + quest.key();
+        return QuestEditQueue.submit((rgb < 0 ? "清除节点底色：" : "更改节点底色：") + name(quest),
+                List.of(Op.nodeFill(id, rgb)), List.of(Op.nodeFill(id, old)),
+                () -> edited(QuestLive.setNodeFill(quest, rgb), true), () -> edited(QuestLive.setNodeFill(quest, old), true));
+    }
+
+    public static Result setQuestIcon(Quest quest, Item item) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var syntax = QuestItemSyntax.of(source(), item);
+        if (syntax == null) return Result.fail(BuiltInRegistries.ITEM.getKey(item) + " 无可用 Java 写法，请在源码中手写");
+        var decl = source().declOf(quest);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        var iconCalls = decl.calls("icon");
+        var stackCalls = decl.calls("iconStack");
+        String oldGroup = !stackCalls.isEmpty() ? "iconStack" : iconCalls.isEmpty() ? "" : "icon";
+        String oldText = !stackCalls.isEmpty() ? decl.file.text(stackCalls.get(0)) :
+                iconCalls.isEmpty() || iconCalls.get(0).getArguments().isEmpty() ? "" : decl.file.text(iconCalls.get(0).getArguments().get(0));
+        var oldIcon = quest.icon();
+        var id = "q:" + quest.key();
+        return QuestEditQueue.submit("更改任务图标：" + name(quest), List.of(Op.icon(id, syntax.args(), syntax.imports(), false, null)),
+                List.of(Op.icon(id, oldText, List.of(), true, oldGroup)),
+                () -> edited(QuestLive.setIcon(quest, QuestIcon.item(item)), true), () -> edited(QuestLive.setIcon(quest, oldIcon), true));
+    }
+
+    public static Result setRewardTier(Quest quest, int index, QuestTierSet tiers) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var decl = source().declOf(quest);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        var entries = QuestEdits.rewardEntries(decl);
+        if (index < 0 || index >= entries.size()) return Result.fail("奖励位置已变化，请重新打开");
+        var entry = entries.get(index);
+        if (entry.argIndex() < 0) return Result.fail("scaledReward 不能单独设置难度");
+        var next = tiers.name();
+        if (next.equals(QuestEdits.effectiveTier(entry))) return Result.ok("");
+        var expr = decl.file.text(entry.expression());
+        var id = "q:" + quest.key();
+        var oldTiers = QuestTierSet.valueOf(QuestEdits.effectiveTier(entry));
+        return QuestEditQueue.submit("设置奖励难度：" + name(quest), List.of(Op.rewardTier(id, index, next, expr, entry.argIndex(), true, null)),
+                List.of(Op.rewardTier(id, index, entry.group(), expr, entry.argIndex(), false, entry.tier())),
+                () -> edited(QuestLive.setRewardTier(quest, entry.liveIndex(), tiers), true),
+                () -> edited(QuestLive.setRewardTier(quest, entry.liveIndex(), oldTiers), true));
     }
 
     public static Result delete(List<? extends QuestDependency> objects) {
@@ -522,52 +989,82 @@ public final class QuestHot {
             var id = identity(object);
             var decl = id == null ? null : src.find(id);
             if (decl == null) return Result.fail("找不到要删除对象的源码");
+            if (deleting.contains(decl)) continue;
             deleting.add(decl);
             forward.add(Op.delete(id));
             inverse.add(QuestEditQueue.undelete(id));
         }
+        var error = cleanup(src, deleting, forward, inverse);
+        if (error != null) return Result.fail(error);
+        return QuestEditQueue.submit("删除 " + deleting.size() + " 个节点", forward, inverse);
+    }
+
+    private record Allowed(QuestSource.FileModel file, int start, int end) {}
+
+    @Nullable
+    private static String cleanup(QuestSource src, List<QuestSource.Decl> deleting, ObjectArrayList<Op> forward, ObjectArrayList<Op> inverse) {
+        var allowed = new ObjectArrayList<Allowed>();
+        for (var decl : deleting) {
+            var tree = decl.var != null ? decl.var : decl instanceof LinkDecl link ? link.call : null;
+            if (tree != null) allowed.add(new Allowed(decl.file, decl.file.start(tree), decl.file.end(tree)));
+        }
+        for (var file : src.files) {
+            for (var quest : file.quests) {
+                for (var call : quest.calls("dependsOn")) {
+                    for (var arg : call.getArguments()) {
+                        var target = src.resolve(file, arg);
+                        if (!deleting.contains(target)) continue;
+                        forward.add(Op.dependency("q:" + quest.key(), src.identityOf(target), false));
+                        inverse.add(0, Op.dependency("q:" + quest.key(), src.identityOf(target), true));
+                        allowed.add(new Allowed(file, file.start(arg), file.end(arg)));
+                    }
+                }
+            }
+        }
+        var extra = new ObjectArrayList<QuestSource.Decl>();
+        for (var file : src.files) {
+            for (var link : file.links) {
+                if (!deleting.contains(src.resolve(file, link.targetRef))) continue;
+                if (link.field == null) return "有复制的内联装饰引用了要删除的任务，无法自动移除，请先去掉该装饰";
+                if (link.var == null) return "有复制节点引用了要删除的任务，无法自动移除";
+                var id = src.identityOf(link);
+                if (id == null) return "有复制节点引用了要删除的任务，无法自动移除";
+                forward.add(0, Op.delete(id));
+                inverse.add(0, QuestEditQueue.undelete(id));
+                extra.add(link);
+                allowed.add(new Allowed(file, file.start(link.var), file.end(link.var)));
+            }
+        }
+        deleting.addAll(extra);
         for (var decl : deleting) {
             if (decl.field == null) continue;
             for (var ref : src.referencesTo(decl)) {
-                if (!inside(deleting, ref.file(), ref.pos()) && !removedByPending(src, ref)) {
-                    return Result.fail(decl.field + " 被 " + ref.file().name() + ":" + ref.file().line(ref.pos()) + " 引用，请先移除该依赖或复制节点");
+                boolean ok = false;
+                for (var allow : allowed) {
+                    if (allow.file == ref.file() && ref.pos() >= allow.start && ref.pos() < allow.end) {
+                        ok = true;
+                        break;
+                    }
                 }
+                if (!ok) return decl.field + " 被" + ownerOf(ref) + "引用，无法自动移除，请先去掉该引用";
             }
         }
-        return QuestEditQueue.submit("删除 " + objects.size() + " 个节点", forward, inverse);
+        return null;
     }
 
-    private static boolean inside(List<QuestSource.Decl> decls, QuestSource.FileModel file, int pos) {
-        for (var decl : decls) {
-            if (decl.file != file) continue;
-            var tree = decl.var != null ? decl.var : decl instanceof LinkDecl link ? link.call : null;
-            if (tree != null && pos >= file.start(tree) && pos < file.end(tree)) return true;
-        }
-        return false;
-    }
-
-    private static boolean removedByPending(QuestSource src, QuestSource.Ref ref) {
+    private static String ownerOf(QuestSource.Ref ref) {
         var file = ref.file();
         for (var quest : file.quests) {
-            if (ref.pos() < file.start(quest.var) || ref.pos() >= file.end(quest.var)) continue;
-            var id = "q:" + quest.key();
-            if (pending(QuestEdits.DELETE, id, null) != null) return true;
-            for (var call : quest.calls("dependsOn")) {
-                for (var arg : call.getArguments()) {
-                    if (ref.pos() < file.start(arg) || ref.pos() >= file.end(arg)) continue;
-                    var target = src.resolve(file, arg);
-                    var targetId = target == null ? null : src.identityOf(target);
-                    var op = targetId == null ? null : pending(QuestEdits.DEP, id, targetId);
-                    return op != null && !op.on();
+            if (ref.pos() >= file.start(quest.var) && ref.pos() < file.end(quest.var)) {
+                if (QuestBook.byKey(quest.key()) instanceof Quest live) {
+                    return "章节「" + live.chapter().title().getString() + "」的任务「" + live.title().getString() + "」";
                 }
             }
         }
-        for (var link : file.links) {
-            if (link.var == null || ref.pos() < file.start(link.var) || ref.pos() >= file.end(link.var)) continue;
-            var id = src.identityOf(link);
-            return id != null && pending(QuestEdits.DELETE, id, null) != null;
+        if (file.chapterId != null && QuestBook.byKey(file.chapterId) instanceof QuestChapter chapter) {
+            return "章节「" + chapter.title().getString() + "」的章节装饰";
         }
-        return false;
+        return "章节 " + file.name();
     }
 
     public static final List<String> MARKERS = List.of("item", "itemTag", "fluid", "fluidTag");
@@ -657,147 +1154,9 @@ public final class QuestHot {
         return syntax == null ? null : new ItemRef("item(" + syntax.args() + ")", syntax.imports());
     }
 
-    public record MainLineInfo(boolean available, int position, int size, @Nullable Quest previous, @Nullable Quest next) {
-
-        public boolean member() {
-            return position >= 0;
-        }
-    }
-
-    public static MainLineInfo mainLine(Quest quest) {
-        var line = quest.chapter().mainLine();
-        int at = line.indexOf(quest);
-        var file = source().fileOf(quest.chapter());
-        return new MainLineInfo(file != null && file.mainLine != null, at, line.size(), at > 0 ? line.get(at - 1) : null, at >= 0 && at + 1 < line.size() ? line.get(at + 1) : null);
-    }
-
-    @Nullable
-    private static String mainLineText(QuestSource src, QuestSource.FileModel file, List<Quest> line) {
-        var sb = new StringBuilder();
-        for (var quest : line) {
-            var decl = src.declOf(quest);
-            if (decl == null) return null;
-            if (!sb.isEmpty()) sb.append(", ");
-            sb.append(file.mainLine == null ? src.refText(file, decl) : src.refText(file, decl, file.start(file.mainLine)));
-        }
-        return sb.toString();
-    }
-
-    @Nullable
-    private static String currentMainLineText(QuestChapter chapter, QuestSource.FileModel file) {
-        var op = pending(QuestEdits.MAIN_LINE, "chapter:" + chapter.id(), null);
-        if (op != null) return op.text();
-        if (file.mainLine == null) return null;
-        var args = file.mainLine.getArguments();
-        return file.content.substring(file.start(args.get(0)), file.end(args.get(args.size() - 1)));
-    }
-
-    private record DepChange(Quest quest, List<QuestDependency> before, List<QuestDependency> after) {}
-
-    private static void depChange(ObjectArrayList<Op> forward, ObjectArrayList<Op> inverse, ObjectArrayList<DepChange> live, Quest dependent, Quest prerequisite, boolean present) {
-        var id = "q:" + dependent.key();
-        var prereqId = "q:" + prerequisite.key();
-        if (dependsOnDisplayed(dependent, prerequisite) == present) return;
-        forward.add(Op.dependency(id, prereqId, present));
-        inverse.add(0, Op.dependency(id, prereqId, !present));
-        DepChange change = null;
-        for (var c : live) if (c.quest == dependent) change = c;
-        if (change == null) {
-            var before = QuestLive.dependencies(dependent);
-            change = new DepChange(dependent, before, new ObjectArrayList<>(before));
-            live.add(change);
-        }
-        if (present) change.after.add(prerequisite);
-        else change.after.removeIf(dep -> dep == prerequisite || dep instanceof QuestLink link && link.target() == prerequisite);
-    }
-
-    private static Result submitMainLine(String label, Quest quest, QuestChapter chapter, List<Quest> newLine, boolean milestone, ObjectArrayList<Op> forward, ObjectArrayList<Op> inverse,
-                                         ObjectArrayList<DepChange> deps) {
-        var oldLine = new ObjectArrayList<Quest>(chapter.mainLine());
-        boolean wasMilestone = false;
-        for (var flag : FLAGS) if (flag.method().equals("milestone")) wasMilestone = hasFlag(quest, flag);
-        boolean oldMilestone = wasMilestone;
-        var id = "q:" + quest.key();
-        if (oldMilestone != milestone) {
-            forward.add(Op.flag(id, "milestone", milestone));
-            inverse.add(0, Op.flag(id, "milestone", oldMilestone));
-        }
-        return QuestEditQueue.submit(label, forward, inverse, () -> {
-            QuestLive.setMainLine(chapter, newLine);
-            QuestLive.setFlag(quest, "milestone", milestone);
-            for (var change : deps) QuestLive.setDependencies(change.quest, change.after);
-            return edited(true, true);
-        }, () -> {
-            QuestLive.setMainLine(chapter, oldLine);
-            QuestLive.setFlag(quest, "milestone", oldMilestone);
-            for (var change : deps) QuestLive.setDependencies(change.quest, change.before);
-            return edited(true, true);
-        });
-    }
-
-    public static Result joinMainLine(Quest quest, Quest after) {
-        var blocked = guard();
-        if (blocked != null) return blocked;
-        var chapter = quest.chapter();
-        var line = chapter.mainLine();
-        if (line.contains(quest)) return Result.fail("该任务已在主线上");
-        int at = line.indexOf(after);
-        if (at < 0) return Result.fail("须选择本章主线上的任务");
-        var src = source();
-        var file = src.fileOf(chapter);
-        if (file == null || file.mainLine == null) return Result.fail("本章源码缺少 .mainLine(…)，请先设定主线");
-        var newLine = new ObjectArrayList<Quest>(line);
-        newLine.add(at + 1, quest);
-        var text = mainLineText(src, file, newLine);
-        var oldText = currentMainLineText(chapter, file);
-        if (text == null || oldText == null) return Result.fail("主线上有任务找不到源码声明");
-        var next = at + 1 < line.size() ? line.get(at + 1) : null;
-        var forward = new ObjectArrayList<Op>();
-        var inverse = new ObjectArrayList<Op>();
-        var deps = new ObjectArrayList<DepChange>();
-        forward.add(Op.mainLine(chapter.id(), text));
-        inverse.add(Op.mainLine(chapter.id(), oldText));
-        depChange(forward, inverse, deps, quest, after, true);
-        if (next != null) {
-            depChange(forward, inverse, deps, next, quest, true);
-            depChange(forward, inverse, deps, next, after, false);
-        }
-        return submitMainLine("设为主线：" + name(quest), quest, chapter, newLine, true, forward, inverse, deps);
-    }
-
-    public static Result leaveMainLine(Quest quest) {
-        var blocked = guard();
-        if (blocked != null) return blocked;
-        var chapter = quest.chapter();
-        var line = chapter.mainLine();
-        int at = line.indexOf(quest);
-        if (at < 0) return Result.fail("该任务不在主线上");
-        if (line.size() <= 1) return Result.fail("主线至少保留一个任务");
-        var src = source();
-        var file = src.fileOf(chapter);
-        if (file == null || file.mainLine == null) return Result.fail("本章源码缺少 .mainLine(…)");
-        var newLine = new ObjectArrayList<Quest>(line);
-        newLine.remove(at);
-        var text = mainLineText(src, file, newLine);
-        var oldText = currentMainLineText(chapter, file);
-        if (text == null || oldText == null) return Result.fail("主线上有任务找不到源码声明");
-        var previous = at > 0 ? line.get(at - 1) : null;
-        var next = at + 1 < line.size() ? line.get(at + 1) : null;
-        var forward = new ObjectArrayList<Op>();
-        var inverse = new ObjectArrayList<Op>();
-        var deps = new ObjectArrayList<DepChange>();
-        forward.add(Op.mainLine(chapter.id(), text));
-        inverse.add(Op.mainLine(chapter.id(), oldText));
-        if (next != null) {
-            depChange(forward, inverse, deps, next, quest, false);
-            if (previous != null) depChange(forward, inverse, deps, next, previous, true);
-        }
-        return submitMainLine("移出主线：" + name(quest), quest, chapter, newLine, false, forward, inverse, deps);
-    }
-
     public record TaskRow(int index, @Nullable Task live, Component name, long count, int amountIndex, boolean item, boolean consume, boolean optional) {}
 
-    public record RewardRow(int index, int amountIndex, @Nullable Reward live, Component name, long count, boolean scaled, String group) {}
+    public record RewardRow(int index, int amountIndex, @Nullable Reward live, Component name, long count, boolean scaled, String group, String tier) {}
 
     public static boolean structuralPending(Quest quest) {
         var id = "q:" + quest.key();
@@ -867,7 +1226,7 @@ public final class QuestHot {
                     reward instanceof CommandReward command ? Component.empty().append(reward.title()).append("：" + command.command()) :
                             reward instanceof TableReward table ? Component.empty().append(QuestKinds.tableKind(table).label().get()).append("：").append(reward.title()) :
                                     reward != null ? reward.title() : Component.literal(clip(decl.file.text(entry.expression())));
-            out.add(new RewardRow(i, amountIndex, reward, name, amountIndex < 0 ? 0 : amounts.get(amountIndex).value(), scaled, entry.group()));
+            out.add(new RewardRow(i, amountIndex, reward, name, amountIndex < 0 ? 0 : amounts.get(amountIndex).value(), scaled, entry.group(), QuestEdits.effectiveTier(entry)));
         }
         return out;
     }

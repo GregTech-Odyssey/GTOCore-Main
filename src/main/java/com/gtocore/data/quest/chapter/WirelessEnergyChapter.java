@@ -4,19 +4,20 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.common.monitor.MonitorRegistries;
 import com.gtocore.data.quest.QuestTextures;
 
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.task.Task;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.common.data.GTMachines;
-import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
-import com.gregtechceu.gtceu.data.recipe.CustomTags;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import com.hepdd.gtmthings.data.CustomItems;
 import com.hepdd.gtmthings.data.WirelessMachines;
@@ -39,20 +40,19 @@ public final class WirelessEnergyChapter {
                     .line()
                     .line("一个功能完整的无线电网包含以下部分：")
                     .line()
-                    .line("- {电力储存}：{无线能源塔}", AQUA, YELLOW)
-                    .line()
-                    .line("{- }{单仓最大功率限制}：{电池箱 / 蓄能变电站}", YELLOW, AQUA, YELLOW)
+                    .line("- {电力储存与总I/O功率限制}：{无线能源塔}", AQUA, YELLOW)
                     .line()
                     .line("{- }{输入能量}：{无线动力仓 / 无线能源接口}", YELLOW, AQUA, YELLOW)
                     .line()
-                    .line("{- }{输出能量}：{无线能源仓 / 无线能源接收器}", YELLOW, AQUA, YELLOW))
+                    .line("{- }{输出能量}：{无线能源仓 / 无线能源接收器}", YELLOW, AQUA, YELLOW)
+                    .line()
+                    .line("{-} {跨纬度输电}：{无线电网维度中继器}", YELLOW, AQUA, YELLOW))
             .task(
-                    Task.checkmark().title("无线电网"),
-                    Task.item(CustomItems.WIRELESS_ENERGY_TERMINAL).optional())
+                    Task.item(MultiBlockG.WIRELESS_ENERGY_SUBSTATION), Task.item(BuiltInRegistries.ITEM.get(RLUtils.fromNamespaceAndPath("gtmthings", "wireless_energy_terminal"))).optional())
             .dependsOn(MvChapter.Q_2386117F));
 
     public static final Quest Q_1506E8C5 = CHAPTER.quest("q_1506e8c5", q -> q
-            .at(-4.5, -0.75)
+            .at(-2.5, 1.5)
             .desc(d -> d
                     .line("给单方块机器使用的覆盖板，每台机器只能安装一个")
                     .line()
@@ -63,7 +63,7 @@ public final class WirelessEnergyChapter {
             .hideDependencyLines(false));
 
     public static final Quest WIRELESS_ENERGY_INTERFACE = CHAPTER.quest("wireless_energy_interface", q -> q
-            .at(-2.25, 1.5)
+            .at(-3, 0)
             .desc(d -> d
                     .line("{无线能源接口}负责接收发电机器的电力并发送至电网", GOLD)
                     .line()
@@ -71,11 +71,11 @@ public final class WirelessEnergyChapter {
                     .line()
                     .line(" 只有无法使用无线动力仓的发电设施（比如单方块发电机）才需要使用这个"))
             .task(Task.item(WirelessMachines.WIRELESS_ENERGY_INTERFACE))
-            .dependsOn(WIRELESS_ENERGY_BINDING_TOOL)
-            .hideDependencyLines(false));
+            .hideDependencyLines(false)
+            .dependsOn(WIRELESS_ENERGY_BINDING_TOOL));
 
     public static final Quest WIRELESS_ENERGY_MONITOR = CHAPTER.quest("wireless_energy_monitor", q -> q
-            .at(-3, 0).minWidth(250)
+            .at(1, 3).minWidth(250)
             .desc(d -> d
                     .line("顾名思义，用来监控无线电网的运行状态")
                     .line()
@@ -87,10 +87,10 @@ public final class WirelessEnergyChapter {
                     .line("    ·正净功率：表示系统在发电，电能流入电网")
                     .line("    ·负净功率：表示系统在用电，电能流出电网")
                     .line()
-                    .line("{监控器电网组件}和{无线能源终端}也可以用来查看无线电网的状态", GOLD, GOLD))
-            .task(Task.item(WirelessMachines.WIRELESS_ENERGY_MONITOR))
-            .dependsOn(WIRELESS_ENERGY_BINDING_TOOL)
-            .hideDependencyLines(false));
+                    .line("{显示器}和{无线能源终端}也可以用来查看无线电网的状态", GOLD, GOLD))
+            .task(Task.item(WirelessMachines.WIRELESS_ENERGY_MONITOR), Task.item(MonitorRegistries.DISPLAY_PANEL.get()))
+            .hideDependencyLines(false)
+            .dependsOn(WirelessEnergyChapter.LV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest Q_2F9D9F92 = CHAPTER.quest("q_2f9d9f92", q -> q
             .at(-3, 3)
@@ -104,197 +104,163 @@ public final class WirelessEnergyChapter {
             .dependsOn(WIRELESS_ENERGY_BINDING_TOOL)
             .hideDependencyLines(false));
 
-    public static final Quest WIRELESS_ENERGY_SUBSTATION = CHAPTER.quest("wireless_energy_substation", q -> q
-            .at(-1, 3)
-            .desc(d -> d
-                    .line("{无线能源塔}的{结构玻璃等级}决定了其能够生效的{能量单元}，务必使用不低于你安装的{能量单元}等级的{结构玻璃}", GOLD, YELLOW, GOLD, GOLD, GOLD)
-                    .line()
-                    .line("{总容量=}{生效的}{能量单元容量之和*单元数量/2}", YELLOW, GREEN, YELLOW)
-                    .line()
-                    .line("{无线能源塔最高可以容纳30层能量单元}", LIGHT_PURPLE)
-                    .line()
-                    .line("{为了低成本地快速提升你的电网总容量，你可以堆很多的低级能量单元，但是这会使你需要替换大量低级单元才能降低损耗}", GRAY))
-            .task(Task.item(MultiBlockG.WIRELESS_ENERGY_SUBSTATION))
-            .dependsOn(Q_2F9D9F92)
-            .hideDependencyLines(false));
-
     public static final Quest LV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("lv_wireless_energy_unit", q -> q
-            .at(-1, 4.5)
+            .at(-1, 3)
             .task(Task.item(GTOBlocks.LV_WIRELESS_ENERGY_UNIT))
-            .dependsOn(WIRELESS_ENERGY_SUBSTATION)
-            .requireAnyStarted());
+            .requireAnyStarted()
+            .dependsOn(Q_2F9D9F92));
 
     public static final Quest MV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("mv_wireless_energy_unit", q -> q
-            .at(-1, 5.5)
+            .at(-1, 4)
             .task(Task.item(GTOBlocks.MV_WIRELESS_ENERGY_UNIT))
             .dependsOn(LV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest HV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("hv_wireless_energy_unit", q -> q
-            .at(-1, 6.5)
+            .at(-1, 5)
             .task(Task.item(GTOBlocks.HV_WIRELESS_ENERGY_UNIT))
             .dependsOn(MV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest EV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("ev_wireless_energy_unit", q -> q
-            .at(-1, 7.5)
+            .at(-1, 6)
             .task(Task.item(GTOBlocks.EV_WIRELESS_ENERGY_UNIT))
             .dependsOn(HV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest Q_08280145 = CHAPTER.quest("q_08280145", q -> q
             .at(-6, 3)
-            .subtitle("不是整个电网的传输上限！！")
+            .subtitle("是整个电网的传输上限！！")
             .desc(d -> d
-                    .line("{传输控制器}为网络中的{每一个接入点}设定了独立的传输功率上限。", GOLD, YELLOW)
+                    .line("电网内所有{用电设备共用输出上限}，所有{发电设备共用输入上限}", RED, RED)
                     .line()
-                    .line("对于{发电端}（如无线动力仓）是单个接入点的输入功率上限，而对于对{用电端}（如无线能源仓）是单个接入点的输出功率上限。", GOLD, GOLD)
+                    .line("{能量单元}提供{4A}对应电压的输入输出上限", GOLD, GOLD)
                     .line()
-                    .line("提醒：传输控制器{不需要}真的输入电，它只是一个用于确定{当前科技等级}的{载体}，而不是一个用电器", RED, YELLOW, GOLD))
+                    .line("{传输单元}提供{96A}对应电压的输入输出上限", GREEN, GREEN))
             .task(Task.checkmark().title("传输速率上限"))
             .dependsOn(WIRELESS_ENERGY_BINDING_TOOL)
             .hideDependencyLines(false));
 
-    public static final Quest BATTERY_BOX = CHAPTER.quest("battery_box", q -> q
-            .at(-8, 3)
-            .icon(GTMachines.BATTERY_BUFFER_4[GTValues.LV])
-            .title("电池箱")
-            .desc(d -> d
-                    .line("在拥有{蓄能变电站}之前，你只能用{电池箱}作为无线电网的{传输控制器}", GOLD, GOLD, YELLOW)
-                    .line()
-                    .line("电池箱内的{电池数量与等级}决定了单次传输上限，每个电池可提供相当于其电压等级{1A}电流的功率。例如{4x任意LV电池}可提供{4*32=128 EU/t}的单次传输上限", YELLOW, AQUA, YELLOW, DARK_GREEN))
-            .task(
-                    Task.anyOf(1, GTMachines.BATTERY_BUFFER_16[GTValues.EV], GTMachines.BATTERY_BUFFER_4[GTValues.EV], GTMachines.BATTERY_BUFFER_8[GTValues.EV], GTMachines.BATTERY_BUFFER_16[GTValues.HV], GTMachines.BATTERY_BUFFER_4[GTValues.HV], GTMachines.BATTERY_BUFFER_8[GTValues.HV], GTMachines.BATTERY_BUFFER_16[GTValues.IV], GTMachines.BATTERY_BUFFER_4[GTValues.IV], GTMachines.BATTERY_BUFFER_8[GTValues.IV], GTMachines.BATTERY_BUFFER_16[GTValues.LuV], GTMachines.BATTERY_BUFFER_4[GTValues.LuV], GTMachines.BATTERY_BUFFER_8[GTValues.LuV], GTMachines.BATTERY_BUFFER_16[GTValues.LV], GTMachines.BATTERY_BUFFER_4[GTValues.LV], GTMachines.BATTERY_BUFFER_8[GTValues.LV], GTMachines.BATTERY_BUFFER_16[GTValues.MAX], GTMachines.BATTERY_BUFFER_4[GTValues.MAX], GTMachines.BATTERY_BUFFER_8[GTValues.MAX], GTMachines.BATTERY_BUFFER_16[GTValues.MV], GTMachines.BATTERY_BUFFER_4[GTValues.MV], GTMachines.BATTERY_BUFFER_8[GTValues.MV], GTMachines.BATTERY_BUFFER_16[GTValues.OpV], GTMachines.BATTERY_BUFFER_4[GTValues.OpV], GTMachines.BATTERY_BUFFER_8[GTValues.OpV], GTMachines.BATTERY_BUFFER_16[GTValues.UEV], GTMachines.BATTERY_BUFFER_4[GTValues.UEV], GTMachines.BATTERY_BUFFER_8[GTValues.UEV], GTMachines.BATTERY_BUFFER_16[GTValues.UHV], GTMachines.BATTERY_BUFFER_4[GTValues.UHV], GTMachines.BATTERY_BUFFER_8[GTValues.UHV], GTMachines.BATTERY_BUFFER_16[GTValues.UIV], GTMachines.BATTERY_BUFFER_4[GTValues.UIV], GTMachines.BATTERY_BUFFER_8[GTValues.UIV], GTMachines.BATTERY_BUFFER_16[GTValues.ULV], GTMachines.BATTERY_BUFFER_4[GTValues.ULV], GTMachines.BATTERY_BUFFER_8[GTValues.ULV], GTMachines.BATTERY_BUFFER_16[GTValues.UV], GTMachines.BATTERY_BUFFER_4[GTValues.UV], GTMachines.BATTERY_BUFFER_8[GTValues.UV], GTMachines.BATTERY_BUFFER_16[GTValues.UXV], GTMachines.BATTERY_BUFFER_4[GTValues.UXV], GTMachines.BATTERY_BUFFER_8[GTValues.UXV], GTMachines.BATTERY_BUFFER_16[GTValues.ZPM], GTMachines.BATTERY_BUFFER_4[GTValues.ZPM], GTMachines.BATTERY_BUFFER_8[GTValues.ZPM]).title("任意电池箱"))
-            .dependsOn(Q_08280145)
-            .hideDependencyLines(false));
-
-    public static final Quest POWER_SUBSTATION = CHAPTER.quest("power_substation", q -> q
-            .at(-10.5, 3)
-            .icon(GTMultiMachines.POWER_SUBSTATION)
-            .desc(d -> d
-                    .line("{蓄能变电站}是强大的传输控制器，其内部安装的{兰波顿电容数量与等级}决定了单次传输上限", GOLD, YELLOW)
-                    .line()
-                    .line("{蓄能变电站}总传输上限为{电容提供功率上限之和/4096}", GOLD, YELLOW)
-                    .line()
-                    .line("{蓄能变电站最高可以容纳18层电容}", LIGHT_PURPLE))
-            .task(Task.item(GTMultiMachines.POWER_SUBSTATION))
-            .dependsOn(Q_08280145)
-            .hideDependencyLines(false));
-
     public static final Quest IV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("iv_wireless_energy_unit", q -> q
-            .at(-1, 8.5)
+            .at(-1, 7)
             .task(Task.item(GTOBlocks.IV_WIRELESS_ENERGY_UNIT))
             .dependsOn(EV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest LUV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("luv_wireless_energy_unit", q -> q
-            .at(-1, 9.5)
+            .at(-1, 8)
             .task(Task.item(GTOBlocks.LUV_WIRELESS_ENERGY_UNIT))
             .dependsOn(IV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest ZPM_WIRELESS_ENERGY_UNIT = CHAPTER.quest("zpm_wireless_energy_unit", q -> q
-            .at(-1, 10.5)
+            .at(-1, 9)
             .task(Task.item(GTOBlocks.ZPM_WIRELESS_ENERGY_UNIT))
             .dependsOn(LUV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest UV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uv_wireless_energy_unit", q -> q
-            .at(-1, 11.5)
+            .at(-1, 10)
             .task(Task.item(GTOBlocks.UV_WIRELESS_ENERGY_UNIT))
             .dependsOn(ZPM_WIRELESS_ENERGY_UNIT));
 
     public static final Quest UHV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uhv_wireless_energy_unit", q -> q
-            .at(-1, 12.5)
+            .at(-1, 11)
             .task(Task.item(GTOBlocks.UHV_WIRELESS_ENERGY_UNIT))
             .dependsOn(UV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest UEV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uev_wireless_energy_unit", q -> q
-            .at(-1, 13.5)
+            .at(-1, 12)
             .task(Task.item(GTOBlocks.UEV_WIRELESS_ENERGY_UNIT))
             .dependsOn(UHV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest UIV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uiv_wireless_energy_unit", q -> q
-            .at(-1, 14.5)
+            .at(-1, 13)
             .task(Task.item(GTOBlocks.UIV_WIRELESS_ENERGY_UNIT))
             .dependsOn(UEV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest UXV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uxv_wireless_energy_unit", q -> q
-            .at(-1, 15.5)
+            .at(-1, 14)
             .task(Task.item(GTOBlocks.UXV_WIRELESS_ENERGY_UNIT))
             .dependsOn(UIV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest OPV_WIRELESS_ENERGY_UNIT = CHAPTER.quest("opv_wireless_energy_unit", q -> q
-            .at(-1, 16.5)
+            .at(-1, 15)
             .task(Task.item(GTOBlocks.OPV_WIRELESS_ENERGY_UNIT))
             .dependsOn(UXV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest MAX_WIRELESS_ENERGY_UNIT = CHAPTER.quest("max_wireless_energy_unit", q -> q
-            .at(-1, 17.5)
+            .at(-1, 16)
             .task(Task.item(GTOBlocks.MAX_WIRELESS_ENERGY_UNIT))
             .dependsOn(OPV_WIRELESS_ENERGY_UNIT));
 
     public static final Quest TEMPERED_GLASS = CHAPTER.quest("tempered_glass", q -> q
-            .at(0.5, 5.5)
+            .at(-4.5, 4)
+            .title("玻璃等级")
+            .subtitle("何原理")
+            .desc(d -> d
+                    .line("你需要注意升级无线电网的玻璃")
+                    .line()
+                    .line("{超出玻璃等级的单元是不生效的}", RED))
             .task(Task.item(GTBlocks.CASING_TEMPERED_GLASS))
-            .dependsOn(WIRELESS_ENERGY_SUBSTATION));
+            .dependsOn(WIRELESS_ENERGY_BINDING_TOOL));
 
     public static final Quest BOROSILICATE_GLASS = CHAPTER.quest("borosilicate_glass", q -> q
-            .at(0.5, 6.5)
+            .at(-4.5, 5)
             .task(Task.item(GTOBlocks.BOROSILICATE_GLASS))
             .dependsOn(TEMPERED_GLASS));
 
     public static final Quest TITANIUM_BOROSILICATE_GLASS = CHAPTER.quest("titanium_borosilicate_glass", q -> q
-            .at(0.5, 7.5)
+            .at(-4.5, 6)
             .task(Task.item(GTOBlocks.TITANIUM_BOROSILICATE_GLASS))
             .dependsOn(BOROSILICATE_GLASS));
 
     public static final Quest TUNGSTEN_BOROSILICATE_GLASS = CHAPTER.quest("tungsten_borosilicate_glass", q -> q
-            .at(0.5, 8.5)
+            .at(-4.5, 7)
             .task(Task.item(GTOBlocks.TUNGSTEN_BOROSILICATE_GLASS))
             .dependsOn(TITANIUM_BOROSILICATE_GLASS));
 
     public static final Quest HSSS_BOROSILICATE_GLASS = CHAPTER.quest("hsss_borosilicate_glass", q -> q
-            .at(0.5, 9.5)
+            .at(-4.5, 8)
             .task(Task.item(GTOBlocks.HSSS_BOROSILICATE_GLASS))
             .dependsOn(TUNGSTEN_BOROSILICATE_GLASS));
 
     public static final Quest NAQUADAH_BOROSILICATE_GLASS = CHAPTER.quest("naquadah_borosilicate_glass", q -> q
-            .at(0.5, 10.5)
+            .at(-4.5, 9)
             .task(Task.item(GTOBlocks.NAQUADAH_BOROSILICATE_GLASS))
             .dependsOn(HSSS_BOROSILICATE_GLASS));
 
     public static final Quest TRITANIUM_BOROSILICATE_GLASS = CHAPTER.quest("tritanium_borosilicate_glass", q -> q
-            .at(0.5, 11.5)
+            .at(-4.5, 10)
             .task(Task.item(GTOBlocks.TRITANIUM_BOROSILICATE_GLASS))
             .dependsOn(NAQUADAH_BOROSILICATE_GLASS));
 
     public static final Quest AMPROSIUM_BOROSILICATE_GLASS = CHAPTER.quest("amprosium_borosilicate_glass", q -> q
-            .at(0.5, 12.5)
+            .at(-4.5, 11)
             .task(Task.item(GTOBlocks.AMPROSIUM_BOROSILICATE_GLASS))
             .dependsOn(TRITANIUM_BOROSILICATE_GLASS));
 
     public static final Quest ENDERIUM_BOROSILICATE_GLASS = CHAPTER.quest("enderium_borosilicate_glass", q -> q
-            .at(0.5, 13.5)
+            .at(-4.5, 12)
             .task(Task.item(GTOBlocks.ENDERIUM_BOROSILICATE_GLASS))
             .dependsOn(AMPROSIUM_BOROSILICATE_GLASS));
 
     public static final Quest TARANIUM_BOROSILICATE_GLASS = CHAPTER.quest("taranium_borosilicate_glass", q -> q
-            .at(0.5, 14.5)
+            .at(-4.5, 13)
             .task(Task.item(GTOBlocks.TARANIUM_BOROSILICATE_GLASS))
             .dependsOn(ENDERIUM_BOROSILICATE_GLASS));
 
     public static final Quest QUARKS_BOROSILICATE_GLASS = CHAPTER.quest("quarks_borosilicate_glass", q -> q
-            .at(0.5, 15.5)
+            .at(-4.5, 14)
             .task(Task.item(GTOBlocks.QUARKS_BOROSILICATE_GLASS))
             .dependsOn(TARANIUM_BOROSILICATE_GLASS));
 
     public static final Quest DRACONIUM_BOROSILICATE_GLASS = CHAPTER.quest("draconium_borosilicate_glass", q -> q
-            .at(0.5, 16.5)
+            .at(-4.5, 15)
             .task(Task.item(GTOBlocks.DRACONIUM_BOROSILICATE_GLASS))
             .dependsOn(QUARKS_BOROSILICATE_GLASS));
 
     public static final Quest COSMIC_NEUTRONIUM_BOROSILICATE_GLASS = CHAPTER.quest("cosmic_neutronium_borosilicate_glass", q -> q
-            .at(0.5, 17.5)
+            .at(-4.5, 16)
             .task(Task.item(GTOBlocks.COSMIC_NEUTRONIUM_BOROSILICATE_GLASS))
             .dependsOn(DRACONIUM_BOROSILICATE_GLASS));
 
     public static final Quest Q_3D4EDD8B = CHAPTER.quest("q_3d4edd8b", q -> q
-            .at(-4.5, 4.5)
+            .at(-4.5, -1)
             .desc(d -> d
                     .line("得益于新无线电网机制的改动，你可以通过无线电网主动发出的红石信号来控制电网{供给侧/需求侧}机器的{启停}", YELLOW, LIGHT_PURPLE)
                     .line()
@@ -306,21 +272,21 @@ public final class WirelessEnergyChapter {
             .hideDependencyLines(false));
 
     public static final Quest ENERGY_DETECTOR_COVER = CHAPTER.quest("energy_detector_cover", q -> q
-            .at(-5.5, 6)
+            .at(-6, -2)
             .desc(d -> d.line("安装于无线能源塔，根据电网当前电量/总容量百分比发出强度为0-15的红石信号"))
             .task(Task.item(GTItems.COVER_ENERGY_DETECTOR))
             .dependsOn(Q_3D4EDD8B)
             .hideDependencyLines(false));
 
     public static final Quest ADVANCED_ENERGY_DETECTOR_COVER = CHAPTER.quest("advanced_energy_detector_cover", q -> q
-            .at(-4.5, 7.5)
+            .at(-4.5, -3)
             .desc(d -> d.line("安装于无线能源塔，根据电网电量百分比/绝对值和设定的最大、最小阈值发出红石信号，带有RS锁存功能"))
             .task(Task.item(GTItems.COVER_ENERGY_DETECTOR_ADVANCED))
             .dependsOn(ENERGY_DETECTOR_COVER)
             .hideDependencyLines(false));
 
     public static final Quest MACHINE_CONTROLLER_COVER = CHAPTER.quest("machine_controller_cover", q -> q
-            .at(-3.5, 6)
+            .at(-3, -2)
             .desc(d -> d.line("控制机器的启停"))
             .task(Task.item(GTItems.COVER_MACHINE_CONTROLLER))
             .dependsOn(Q_3D4EDD8B)
@@ -351,123 +317,159 @@ public final class WirelessEnergyChapter {
             .dependsOn(WIRELESS_ENERGY_BINDING_TOOL)
             .hideDependencyLines(false));
 
-    public static final Quest EV_LAPOTRONIC_BATTERY = CHAPTER.quest("ev_lapotronic_battery", q -> q
-            .at(-10.5, 7.5)
-            .task(Task.item(GTBlocks.BATTERY_LAPOTRONIC_EV))
-            .dependsOn(POWER_SUBSTATION));
-
-    public static final Quest IV_LAPOTRONIC_BATTERY = CHAPTER.quest("iv_lapotronic_battery", q -> q
-            .at(-10.5, 8.5)
-            .task(Task.item(GTBlocks.BATTERY_LAPOTRONIC_IV))
-            .dependsOn(EV_LAPOTRONIC_BATTERY));
-
-    public static final Quest LUV_LAPOTRONIC_BATTERY = CHAPTER.quest("luv_lapotronic_battery", q -> q
-            .at(-10.5, 9.5)
-            .task(Task.item(GTBlocks.BATTERY_LAPOTRONIC_LuV))
-            .dependsOn(IV_LAPOTRONIC_BATTERY));
-
-    public static final Quest ZPM_LAPOTRONIC_BATTERY = CHAPTER.quest("zpm_lapotronic_battery", q -> q
-            .at(-10.5, 10.5)
-            .task(Task.item(GTBlocks.BATTERY_LAPOTRONIC_ZPM))
-            .dependsOn(LUV_LAPOTRONIC_BATTERY));
-
-    public static final Quest UV_LAPOTRONIC_BATTERY = CHAPTER.quest("uv_lapotronic_battery", q -> q
-            .at(-10.5, 11.5)
-            .task(Task.item(GTBlocks.BATTERY_LAPOTRONIC_UV))
-            .dependsOn(ZPM_LAPOTRONIC_BATTERY));
-
-    public static final Quest ANY_LV = CHAPTER.quest("any_lv", q -> q
-            .at(-8, 4.5)
-            .task(Task.tag(CustomTags.LV_BATTERIES, 1).title("任意LV电池"))
-            .dependsOn(BATTERY_BOX));
-
-    public static final Quest ANY_MV = CHAPTER.quest("any_mv", q -> q
-            .at(-8, 5.5)
-            .task(Task.tag(CustomTags.MV_BATTERIES, 1).title("任意MV电池"))
-            .dependsOn(ANY_LV));
-
-    public static final Quest ANY_HV = CHAPTER.quest("any_hv", q -> q
-            .at(-8, 6.5)
-            .task(Task.tag(CustomTags.HV_BATTERIES, 1).title("任意HV电池"))
-            .dependsOn(ANY_MV));
-
-    public static final Quest ANY_EV = CHAPTER.quest("any_ev", q -> q
-            .at(-8, 7.5)
-            .task(Task.tag(CustomTags.EV_BATTERIES, 1).title("任意EV电池"))
-            .dependsOn(ANY_HV));
-
-    public static final Quest ANY_IV = CHAPTER.quest("any_iv", q -> q
-            .at(-8, 8.5)
-            .task(Task.tag(CustomTags.IV_BATTERIES, 1).title("任意IV电池"))
-            .dependsOn(ANY_EV));
-
-    public static final Quest ANY_LUV = CHAPTER.quest("any_luv", q -> q
-            .at(-8, 9.5)
-            .task(Task.tag(CustomTags.LuV_BATTERIES, 1).title("任意LuV电池"))
-            .dependsOn(ANY_IV));
-
-    public static final Quest ANY_ZPM = CHAPTER.quest("any_zpm", q -> q
-            .at(-8, 10.5)
-            .task(Task.tag(CustomTags.ZPM_BATTERIES, 1).title("任意ZPM电池"))
-            .dependsOn(ANY_LUV));
-
-    public static final Quest ANY_UV = CHAPTER.quest("any_uv", q -> q
-            .at(-8, 11.5)
-            .task(Task.tag(CustomTags.UV_BATTERIES, 1).title("任意UV电池"))
-            .dependsOn(ANY_ZPM));
-
-    public static final Quest ANY_UHV = CHAPTER.quest("any_uhv", q -> q
-            .at(-8, 12.5)
-            .task(Task.tag(CustomTags.UHV_BATTERIES, 1).title("任意UHV电池"))
-            .dependsOn(ANY_UV));
-
-    public static final Quest REALLY_MAX_BATTERY = CHAPTER.quest("really_max_battery", q -> q
-            .at(-8, 13.5)
-            .task(Task.item(GTOItems.REALLY_MAX_BATTERY).weakNbt())
-            .dependsOn(ANY_UHV));
-
-    public static final Quest TRANSCENDENT_MAX_BATTERY = CHAPTER.quest("transcendent_max_battery", q -> q
-            .at(-8, 14.5)
-            .icon(GTOItems.TRANSCENDENT_MAX_BATTERY)
-            .task(Task.item(GTOItems.TRANSCENDENT_MAX_BATTERY).weakNbt())
-            .dependsOn(REALLY_MAX_BATTERY));
-
-    public static final Quest EXTREMELY_MAX_BATTERY = CHAPTER.quest("extremely_max_battery", q -> q
-            .at(-8, 15.5)
-            .task(Task.item(GTOItems.EXTREMELY_MAX_BATTERY))
-            .dependsOn(TRANSCENDENT_MAX_BATTERY));
-
-    public static final Quest INSANELY_MAX_BATTERY = CHAPTER.quest("insanely_max_battery", q -> q
-            .at(-8, 16.5)
-            .task(Task.item(GTOItems.INSANELY_MAX_BATTERY))
-            .dependsOn(EXTREMELY_MAX_BATTERY));
-
-    public static final Quest MEGA_MAX_BATTERY = CHAPTER.quest("mega_max_battery", q -> q
-            .at(-8, 17.5)
-            .task(Task.item(GTOItems.MEGA_MAX_BATTERY))
-            .dependsOn(INSANELY_MAX_BATTERY));
-
-    public static final Quest UHV_ULTIMATE_BATTERY = CHAPTER.quest("uhv_ultimate_battery", q -> q
-            .at(-10.5, 12.5)
-            .task(Task.item(GTBlocks.BATTERY_ULTIMATE_UHV))
-            .dependsOn(UV_LAPOTRONIC_BATTERY));
-
     public static final Quest WIRELESS_DIMENSION_REPEATER = CHAPTER.quest("wireless_dimension_repeater", q -> q
-            .at(1.5, 3)
+            .at(-10, 3)
             .subtitle("终于不需要在外星放发电机了")
             .desc(d -> d
                     .line("跨维度传无线电")
                     .line()
-                    .line("注意搭建时需要在{每个}需要无线电的维度都搭建一个（除了无线能源塔所在的维度），能够使用的{最高电压}取决于其上安装的{整体框架}", YELLOW, YELLOW, GOLD)
+                    .line("{将一个维度的电转接到另一个维度}，能够使用的{最高电压}取决于其上安装的{整体框架}", YELLOW, YELLOW, GOLD)
                     .line()
                     .line("{如果你需要一些哭泣的黑曜石，可以去看看黑曜石的tooltips}", GRAY.italic()))
             .task(Task.item(MultiBlockG.WIRELESS_DIMENSION_REPEATER))
-            .dependsOn(WIRELESS_ENERGY_SUBSTATION));
+            .dependsOn(WirelessEnergyChapter.LV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest LV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("lv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 3)
+            .task(Task.item(GTOBlocks.LV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(Q_08280145));
+
+    public static final Quest MV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("mv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 4)
+            .task(Task.item(GTOBlocks.MV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(LV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest HV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("hv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 5)
+            .task(Task.item(GTOBlocks.HV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(MV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest EV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("ev_wireless_energy_transfer_unit", q -> q
+            .at(-8, 6)
+            .task(Task.item(GTOBlocks.EV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(HV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest IV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("iv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 7)
+            .task(Task.item(GTOBlocks.IV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(EV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest LUV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("luv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 8)
+            .task(Task.item(GTOBlocks.LUV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(IV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest ZPM_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("zpm_wireless_energy_transfer_unit", q -> q
+            .at(-8, 9)
+            .task(Task.item(GTOBlocks.ZPM_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(LUV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 10)
+            .task(Task.item(GTOBlocks.UV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(ZPM_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UHV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uhv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 11)
+            .task(Task.item(GTOBlocks.UHV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UEV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uev_wireless_energy_transfer_unit", q -> q
+            .at(-8, 12)
+            .task(Task.item(GTOBlocks.UEV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UHV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UIV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uiv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 13)
+            .task(Task.item(GTOBlocks.UIV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UEV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UXV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uxv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 14)
+            .task(Task.item(GTOBlocks.UXV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UIV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest OPV_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("opv_wireless_energy_transfer_unit", q -> q
+            .at(-8, 15)
+            .task(Task.item(GTOBlocks.OPV_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UXV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest MAX_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("max_wireless_energy_transfer_unit", q -> q
+            .at(-8, 16)
+            .task(Task.item(GTOBlocks.MAX_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(OPV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UHV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uhv_super_wireless_energy_transfer_unit", q -> q
+            .at(-10, 11)
+            .desc(d -> d
+                    .line("UHV 开始，解锁了为普通单元提供乘数的超级单元。")
+                    .line()
+                    .line("{注意超级单元只提供乘数，不能只放超级单元！}", RED))
+            .task(Task.item(GTOBlocks.UHV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UHV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UEV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uev_super_wireless_energy_transfer_unit", q -> q
+            .at(-10, 12)
+            .task(Task.item(GTOBlocks.UEV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UEV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UIV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uiv_super_wireless_energy_transfer_unit", q -> q
+            .at(-10, 13)
+            .task(Task.item(GTOBlocks.UIV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UIV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UXV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("uxv_super_wireless_energy_transfer_unit", q -> q
+            .at(-10, 14)
+            .task(Task.item(GTOBlocks.UXV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(UXV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest OPV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("opv_super_wireless_energy_transfer_unit", q -> q
+            .at(-10, 15)
+            .task(Task.item(GTOBlocks.OPV_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(OPV_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest MAX_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT = CHAPTER.quest("max_super_wireless_energy_transfer_unit", q -> q
+            .at(-10, 16)
+            .task(Task.item(GTOBlocks.MAX_SUPER_WIRELESS_ENERGY_TRANSFER_UNIT))
+            .dependsOn(MAX_WIRELESS_ENERGY_TRANSFER_UNIT));
+
+    public static final Quest UHV_SUPER_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uhv_super_wireless_energy_unit", q -> q
+            .at(1, 11)
+            .desc(d -> d
+                    .line("UHV 开始，解锁了为普通单元提供乘数的超级单元。")
+                    .line()
+                    .line("{注意超级单元只提供乘数，不能只放超级单元！}", RED))
+            .task(Task.item(GTOBlocks.UHV_SUPER_WIRELESS_ENERGY_UNIT))
+            .dependsOn(UHV_WIRELESS_ENERGY_UNIT));
+
+    public static final Quest UEV_SUPER_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uev_super_wireless_energy_unit", q -> q
+            .at(1, 12)
+            .task(Task.item(GTOBlocks.UEV_SUPER_WIRELESS_ENERGY_UNIT))
+            .dependsOn(UEV_WIRELESS_ENERGY_UNIT));
+
+    public static final Quest UIV_SUPER_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uiv_super_wireless_energy_unit", q -> q
+            .at(1, 13)
+            .task(Task.item(GTOBlocks.UIV_SUPER_WIRELESS_ENERGY_UNIT))
+            .dependsOn(UIV_WIRELESS_ENERGY_UNIT));
+
+    public static final Quest UXV_SUPER_WIRELESS_ENERGY_UNIT = CHAPTER.quest("uxv_super_wireless_energy_unit", q -> q
+            .at(1, 14)
+            .task(Task.item(GTOBlocks.UXV_SUPER_WIRELESS_ENERGY_UNIT))
+            .dependsOn(UXV_WIRELESS_ENERGY_UNIT));
+
+    public static final Quest OPV_SUPER_WIRELESS_ENERGY_UNIT = CHAPTER.quest("opv_super_wireless_energy_unit", q -> q
+            .at(1, 15)
+            .task(Task.item(GTOBlocks.OPV_SUPER_WIRELESS_ENERGY_UNIT))
+            .dependsOn(OPV_WIRELESS_ENERGY_UNIT));
+
+    public static final Quest MAX_SUPER_WIRELESS_ENERGY_UNIT = CHAPTER.quest("max_super_wireless_energy_unit", q -> q
+            .at(1, 16)
+            .task(Task.item(GTOBlocks.MAX_SUPER_WIRELESS_ENERGY_UNIT))
+            .dependsOn(MAX_WIRELESS_ENERGY_UNIT));
 
     static {
         CHAPTER.decorate(d -> d
-                .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_EV, -11, 2.5, 1, 1))
-                .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_IV, 1, 2.5, 1, 1))
+                .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_IV, -10.5, 2.5, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_MV, -4, 3.5, 2, 2))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_HV, -7.25, 1, 1, 1))
                 .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_HV, -6.5, -0.5, 1, 1)));
