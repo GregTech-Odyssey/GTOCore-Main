@@ -10,6 +10,7 @@ import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -84,7 +85,9 @@ final class QuestItemSyntax {
         var map = reflected();
         var found = map.get(item);
         if (found != null) return found;
-        return fromMaterial(item);
+        var material = fromMaterial(item);
+        if (material != null) return material;
+        return fromRegistry(item);
     }
 
     @Nullable
@@ -225,6 +228,15 @@ final class QuestItemSyntax {
         var material = staticField(MATERIAL_HOLDERS, Material.class, entry.material());
         if (prefix == null || material == null) return null;
         return new Syntax(prefix[1] + ", " + material[1], List.of(prefix[0], material[0]), true);
+    }
+
+    @Nullable
+    private static Syntax fromRegistry(Item item) {
+        var id = BuiltInRegistries.ITEM.getKey(item);
+        if (id == null || BuiltInRegistries.ITEM.get(id) != item) return null;
+        return new Syntax("BuiltInRegistries.ITEM.get(RLUtils.fromNamespaceAndPath(" +
+                QuestKinds.javaString(id.getNamespace()) + ", " + QuestKinds.javaString(id.getPath()) + "))",
+                List.of(BuiltInRegistries.class.getName(), "com.gtolib.utils.RLUtils"), false);
     }
 
     @Nullable
