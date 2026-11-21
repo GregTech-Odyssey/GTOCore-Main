@@ -40,6 +40,7 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -63,9 +64,11 @@ import appeng.crafting.pattern.AEProcessingPattern;
 import appeng.crafting.pattern.ProcessingPatternItem;
 
 import com.gto.datasynclib.AbstractDataSerializable;
+import com.gto.datasynclib.LogicalSide;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.annotations.SyncToClient;
 import com.gto.datasynclib.datastream.codec.JavaValueOps;
+import com.gto.datasynclib.datastream.codec.ValueOps;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -74,11 +77,14 @@ import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.mojang.logging.LogUtils;
 import com.suried.gtoutils.schedule.Schedulers;
 import com.suried.gtoutils.schedule.Task;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -150,26 +156,33 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     // ==================== 持久化 ====================
 
+    @Getter
     @SaveToDisk(key = PATTERN_INVENTORY)
     private final StackInventory patternInventory;
 
     @SaveToDisk(key = INTERNAL_INVENTORY)
     private final AbstractInternalSlot[] internalInventory;
 
+    @Getter
     @SyncToClient
     @SaveToDisk(key = "customName", defaultValue = "")
     private String customName = "";
 
     /// 默认不在旅行网络显示（见 {@link #defaultShowInTravel()}），等于默认值时不写盘
+    @Setter
     @SaveToDisk(key = "showInTravelNetwork", defaultValueGetter = "defaultShowInTravel")
     private boolean showInTravelNetwork;
 
     // ==================== 运行时 ====================
 
+    @Getter
     private final int maxPatternCount;
+    @Getter
     private final BiMap<IPatternDetails, T> detailsSlotMap;
+    @Getter
     private final PatternInventory internalPatternInventory = new PatternInventory(this);
     private boolean detailsInit;
+    @Getter
     private List<IPatternDetails> patterns = Collections.emptyList();
     private boolean needPatternSync;
     @Nullable
@@ -185,6 +198,30 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
             @Override
             public int getSlotLimit(int slot) {
                 return 1;
+            }
+
+            @Override
+            public void onContentsChanged(int slot) {
+                internalPatternInventory.updateOccupiedSlot(slot);
+                super.onContentsChanged(slot);
+            }
+
+            @Override
+            public void clear() {
+                internalPatternInventory.invalidateOccupiedSlots();
+                super.clear();
+            }
+
+            @Override
+            public void readBuffer(LogicalSide side, FriendlyByteBuf data) {
+                internalPatternInventory.invalidateOccupiedSlots();
+                super.readBuffer(side, data);
+            }
+
+            @Override
+            public void readValue(Object data, ValueOps ops) {
+                internalPatternInventory.invalidateOccupiedSlots();
+                super.readValue(data, ops);
             }
         };
         this.patternInventory.setFilter(this::patternFilter);
@@ -788,7 +825,10 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     @Override
     public void loadFromItem(CompoundTag tag) {
         var patterns = tag.get(ITEM_PATTERNS);
-        if (patterns != null) patternInventory.deserializeNBT(patterns);
+        if (patterns != null) {
+            internalPatternInventory.invalidateOccupiedSlots();
+            patternInventory.deserializeNBT(patterns);
+        }
         customName = tag.getString(ITEM_NAME);
         if (!(tag.get(ITEM_SLOTS) instanceof ListTag list)) return;
         int dataVersion = tag.contains(ITEM_DATA_VERSION) ? tag.getInt(ITEM_DATA_VERSION) : GTDataFixer.VERSION;
@@ -808,30 +848,6 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     // ==================== 访问器 ====================
 
-    public int getMaxPatternCount() {
-        return maxPatternCount;
-    }
-
-    public StackInventory getPatternInventory() {
-        return patternInventory;
-    }
-
-    public PatternInventory getInternalPatternInventory() {
-        return internalPatternInventory;
-    }
-
-    public BiMap<IPatternDetails, T> getDetailsSlotMap() {
-        return detailsSlotMap;
-    }
-
-    public List<IPatternDetails> getPatterns() {
-        return patterns;
-    }
-
-    public String getCustomName() {
-        return customName;
-    }
-
     public void setCustomName(String customName) {
         if (this.customName.equals(customName)) return;
         this.customName = customName;
@@ -840,10 +856,6 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
     public boolean getShowInTravelNetwork() {
         return showInTravelNetwork;
-    }
-
-    public void setShowInTravelNetwork(boolean showInTravelNetwork) {
-        this.showInTravelNetwork = showInTravelNetwork;
     }
 
     // ==================== 内部类 ====================
@@ -869,19 +881,39 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     /** 给 AE 样板终端看的样板槽视图，写入时同时触发样板变化处理。 */
     public static final class PatternInventory implements InternalInventory {
 
+        @Getter
         private final MEPatternPartMachine<?> machine;
+        @Nullable
+        private BitSet occupiedSlots;
 
         private PatternInventory(MEPatternPartMachine<?> machine) {
             this.machine = machine;
         }
 
-        public MEPatternPartMachine<?> getMachine() {
-            return machine;
-        }
-
         @Override
         public int size() {
             return machine.maxPatternCount;
+        }
+
+        /** Returns the next populated slot, or -1 if none remain. */
+        public int nextOccupiedSlot(int fromIndex) {
+            var occupied = occupiedSlots;
+            if (occupied == null) {
+                occupied = new BitSet(size());
+                for (int i = 0, size = size(); i < size; i++) {
+                    if (!getStackInSlot(i).isEmpty()) occupied.set(i);
+                }
+                occupiedSlots = occupied;
+            }
+            return occupied.nextSetBit(fromIndex);
+        }
+
+        private void updateOccupiedSlot(int slot) {
+            if (occupiedSlots != null) occupiedSlots.set(slot, !getStackInSlot(slot).isEmpty());
+        }
+
+        private void invalidateOccupiedSlots() {
+            occupiedSlots = null;
         }
 
         @Override

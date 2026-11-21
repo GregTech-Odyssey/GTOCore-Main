@@ -1,0 +1,18 @@
+{
+  "type": "gtocore:multiblock_ruin",
+  "config": {
+    "dimension": "gtocore:ancient_world",
+    "required_rule": "resources.ancient_steam_ruins",
+    "machines": [
+      "gtocore:steam_crusher",
+      "gtocore:steam_mixer",
+      "gtocore:steam_ore_washer"
+    ],
+    "casings": [
+      "gtceu:steam_machine_casing",
+      "gtceu:bronze_gearbox",
+      "gtceu:bronze_pipe_casing",
+      "gtceu:bronze_frame"
+    ]
+  }
+}

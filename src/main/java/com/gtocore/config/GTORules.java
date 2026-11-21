@@ -72,6 +72,11 @@ public final class GTORules {
             .name("gtocore.rule.resources.loot", "战利品难度", "Loot Difficulty")
             .desc("gtocore.rule.resources.loot.desc", "更高的难度下，搜刮战利品的质量与数量会降低。", "On higher tiers, the quality and quantity of loot scavenging is reduced.")
             .register();
+    public static final BoolRule ANCIENT_STEAM_RUINS = Rules.boolRule("resources.ancient_steam_ruins").group(RESOURCES)
+            .defaults(true, false, false).customizable()
+            .name("gtocore.rule.resources.ancient_steam_ruins", "远古蒸汽遗迹", "Ancient Steam Ruins")
+            .desc("gtocore.rule.resources.ancient_steam_ruins.desc", "允许远古世界的新区块生成蒸汽遗迹。", "Allows steam ruins to generate in new chunks in the Ancient World.")
+            .register();
     public static final FloatRule GTM_RUBBER_TREE = Rules.floatRule("gtm.rubber_tree_chance").group(RESOURCES)
             .defaults(1.5F, 1.0F, 0.5F).range(0, 10)
             .name("gtocore.rule.gtm.rubber_tree_chance", "橡胶树生成率", "Rubber Tree Spawn Chance")

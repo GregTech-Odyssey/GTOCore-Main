@@ -34,6 +34,6 @@ public abstract class CraftingTerminalHandlerMixin {
     /** GTO tools and player integrations also request the grid directly, without calling inRange. */
     @Inject(method = "getTargetGrid", at = @At("RETURN"), cancellable = true)
     private void gto$blockCachedStormGrid(CallbackInfoReturnable<IGrid> cir) {
-        if (player.isCreative() || SolarStormHandler.isGridBlocked(player.level(), cir.getReturnValue())) cir.setReturnValue(null);
+        if (!player.isCreative() && SolarStormHandler.isGridBlocked(player.level(), cir.getReturnValue())) cir.setReturnValue(null);
     }
 }
