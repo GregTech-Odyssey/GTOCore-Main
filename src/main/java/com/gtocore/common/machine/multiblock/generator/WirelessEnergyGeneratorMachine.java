@@ -4,12 +4,12 @@ import com.gtocore.common.wireless.energy.WirelessIdle;
 
 import com.gtolib.api.machine.impl.part.WirelessEnergyInterfacePartMachine;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.GTORecipeModifiers;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -37,7 +37,7 @@ public final class WirelessEnergyGeneratorMachine extends ElectricMultiblockMach
 
     @Override
     public GTRecipe getRealRecipe(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
-        return RecipeModifier.generatorOverclocking(this, unit, recipe);
+        return GTORecipeModifiers.GENERATOR_OVERCLOCKING.applyModifier(this, unit, recipe);
     }
 
     @Override

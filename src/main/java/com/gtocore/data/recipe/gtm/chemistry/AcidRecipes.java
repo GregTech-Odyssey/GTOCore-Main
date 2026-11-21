@@ -80,7 +80,7 @@ final class AcidRecipes {
                 .inputFluids(Nitrogen, 1000)
                 .inputFluids(Oxygen, 2000)
                 .outputFluids(NitrogenDioxide.getFluid(1000))
-                .duration(160).EUt(VA[LV]).save();
+                .duration(160).EUt(VA[IV]).save();
 
         CHEMICAL_RECIPES.recipeBuilder("nitric_acid_from_dioxide_1")
                 .circuitMeta(1)

@@ -107,8 +107,9 @@ final class ArcGenerator {
 
         ARC_GENERATOR_RECIPES.recipeBuilder("nitric_oxide")
                 .inputFluids(GTMaterials.Air, 10000)
-                .outputFluids(GTMaterials.NitricOxide, 1000)
-                .EUt(120)
+                .outputFluids(GTMaterials.NitricOxide, 250)
+                .outputFluids(GTMaterials.Air, 5000)
+                .EUt(VA[MV])
                 .duration(200)
                 .save();
 

@@ -413,7 +413,7 @@ final class ReactorRecipes {
                 .inputFluids(Ammonia, 2000)
                 .outputFluids(DinitrogenTetroxide.getFluid(1000))
                 .outputFluids(Water.getFluid(3000))
-                .duration(480).EUt(VA[LV]).save();
+                .duration(480).EUt(VA[EV]).save();
 
         CHEMICAL_RECIPES.recipeBuilder("dinitrogen_tetroxide_from_dioxide")
                 .circuitMeta(2)

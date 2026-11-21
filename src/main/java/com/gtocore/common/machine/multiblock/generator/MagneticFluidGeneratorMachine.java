@@ -33,9 +33,7 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
     public static final String EXTENSION_DESC = "gtocore.multiblock.magnetic_fluid_generator.extension.desc";
     public static final ParamKey EXTENSION = ParamKey.of(EXTENSION_NAME, EXTENSION_DESC);
 
-    /** 燃料衰减超频：第 1 级的燃料消耗倍率，输出仍每级 ×4。 */
     public static final int BASE_FUEL_COST = 5;
-    /** 每过这么多级，燃料消耗倍率 +1。 */
     public static final int FUEL_COST_STEP = 2;
 
     private int outputTier = 0;
@@ -87,10 +85,11 @@ public final class MagneticFluidGeneratorMachine extends TierCasingMultiblockMac
             return null;
         }
         boolean extension = getAssembly().has(EXTENSION);
-        long parallel = (extension ? 256 : 64) * (laser ? (long) Math.pow(extension ? 4 : 2, outputTier - 1) : 1);
+        long parallel = (extension ? 64 : 16) * (laser ? (long) Math.pow(extension ? 4 : 2, outputTier - 1) : 1);
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, parallel);
         if (recipe == null) return null;
         recipe.durationMultiplier(efficiency);
-        return GTORecipeModifiers.fuelDecayGeneratorOverclocking(this, unit, recipe, BASE_FUEL_COST, FUEL_COST_STEP);
+        return GTORecipeModifiers.fuelDecayGeneratorOverclocking(
+                this, unit, recipe, BASE_FUEL_COST, FUEL_COST_STEP);
     }
 }
