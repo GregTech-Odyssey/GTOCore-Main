@@ -46,6 +46,7 @@ GTM/AE2/EMI/Botania/Ars Nouveau 等模组均有本项目维护的 fork。修复�
 ## 依赖源码与性能（硬性）
 
 - **只以本仓 fork 的实际源码为准**：GTM 读 `../GregTech-Modern`，AE2 读 GTO 的 AE fork（`ae2_version` 指向的 `appeng:appliedenergistics2-forge-1.20.1:*`，本地解 jar/`javap` 或用仓库里的调用点）。不要读上游 AE/GT 官方源码，不要凭记忆或"看起来是这么回事"写实现；方法是否存在、签名与语义以实际字节码/源码为准（见 [GTM 与 AE2 fork 的修改位置](docs/forked-dependencies.md)）。
+- **仓库维护的 fork 模组发生重大改动时，不必为仓库外调用方保留旧 API**：以本工作区的实际调用方为兼容边界，检索并迁移受影响的内部调用点。
 - **性能优先，不写自造遍历**：能在既有容器/API 上一次查到的，不写 `for` 全扫。典型例：模糊匹配用 GTO AE fork 在 `KeyCounter` 上的 `findFuzzyValue`（只要数量）/ `findFuzzyKey`（要具体 key）/ `containsFuzzy`（先判定再决定是否分配），语义与 `IExpandedStorageService#fuzzyExtract`、`crafting2` 取料一致；精确命中优先，未命中再走模糊。掉耐久物品（GT 工具、桶、流体容器）必须按"同类物品"匹配，`AEKey` 是引用类型，普通物品按引用比较。
 - **魔力、魔源的转移只走标准传输**（2026-10-23，福鲁伊克斯魔力池虚增复制事故后统一）：两个持有者之间搬魔力一律 `ManaEndpoint.transfer(from, to, amount)`（植物魔法 API）；魔源一律 `ISourceTile.transfer(from, to, amount)`（新生魔艺 API）；GT 魔力容器和魔源方块按魔力单位接入用 `ManaUnification.of(container, 速率倍数)` / `ManaUnification.of(sourceTile)`。`transfer` 先模拟目标能收多少，再从来源扣，只把实际扣到的给目标，没给出去的退回来源。禁止手写"先给后扣"（`receiver.receiveMana(x)` 后再 `pool.receiveMana(-x)`）、禁止拿读数（`getCurrentMana`/`getSource`）代替实际变化量记账；单边加减用 `addMana/removeMana(amount, simulate)`、`addSource/removeSource(amount, simulate)`，按返回值记账。机器里的端点对象建一次存字段，不在 tick 里新建。改动这类代码要跑守恒探针（`tools/probe-templates/mana-transfer/2026-10-23/`）。
 - **热路径零无谓分配**：先精确查 `get`/`contains`，需要集合时用仓库既有类型（`AEKeyLongMap`/`KeyCounter`/`ObjectArrayList`/`ReferenceOpenHashSet`），不要 streams、`Optional`、临时 `List` 装箱。
@@ -88,6 +89,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 ## 生成资源
 
 - `src/generated/resources` 是 data generator 输出。修改生成内容时必须改真实生成源并运行 `runData`；手工编辑或脚本改写生成文件只能用于诊断，不能作为最终结果。
+- 新增或修改文案时不补充日文翻译。
 - 语言文件的来源、简繁转换与 HashCache 强制回写方法见 [生成资源](docs/generated-resources.md)。
 - 用 `git reset` / `git checkout --` / 合并 / 手工改写动过生成文件后再跑 `runData` 可能空转（成功但文件没变）：按 `docs/generated-resources.md` 删掉含 `Registrate Provider for gtocore` 的 `.cache` 清单并加 `--rerun-tasks`；跑完对比文件 mtime 确认真的写了。
 
@@ -111,6 +113,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 保留用户已有和无关改动，只处理当前任务范围内的文件。
 - 提交只带自己的路径（`git commit --only <paths>` 或 `git commit -F msg -- <paths>`）：同一工作区里可能有别人并行 `git add`，不带路径的 `git commit` 与 `git commit --amend` 会把对方的暂存一起提交。误提交后用 `git reset --mixed <上一个好提交>` 重做，再把对方原本暂存的文件原样 `git add` 回去。
 - 推送前先 `git fetch` 并用 `git rev-list --left-right --count origin/<branch>...HEAD` 看差距：远端可能已有内容等价的提交，这种情况不要 force，reset 到远端后只补真正的增量。详细流程与其它坑见 [Agent 常见坑与协作约定](docs/agent-pitfalls.md)。
+- **PR 不上传测试文件**：测试文件仅用于本地验证，提交 PR 前从改动中移除。
 - **PR、issue、评论不靠提交仓库文件配图**：`gh` CLI 不能上传到 `user-attachments`，禁止为了配图把截图提交进仓库（如 `docs/images/`、`.github/assets/`），再用 `raw.githubusercontent.com` 或 `blob/...?raw=true` 链接引用。截图交给用户在网页上拖进 PR 或评论，或改用文字说明。
 - 报告实际执行的验证；若某项必要检查不可运行，说明具体原因，不用无关检查代替。
 - 若本次修改新增了可长期复用的仓库约束，将简短触发条件放在本文件，将详细流程放进 `docs/`，避免再次把全部背景塞回常驻上下文。
