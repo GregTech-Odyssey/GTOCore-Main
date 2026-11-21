@@ -54,7 +54,7 @@ public final class AeChapter {
 
     public static final Quest GETTING_STARTED_WITH_AE = CHAPTER.quest("getting_started_with_ae", q -> q
             .at(-9, 1.5)
-            .nodeScale(1.4)
+            .nodeScale(1)
             .shape(QuestShape.DIAMOND)
             .nodeFill(0x4F86C6)
             .icon(AEBlocks.ENERGY_ACCEPTOR)
@@ -78,6 +78,7 @@ public final class AeChapter {
 
     public static final Quest ALIEN_TECHNOLOGY = CHAPTER.quest("alien_technology", q -> q
             .at(-13, 3.5)
+            .nodeScale(1)
             .icon(AEBlocks.MYSTERIOUS_CUBE)
             .title("外星科技")
             .subtitle("小小的压印模板铸造宏大的自动化网络")
@@ -93,6 +94,7 @@ public final class AeChapter {
 
     public static final Quest CERTUS_QUARTZ_CRYSTAL = CHAPTER.quest("certus_quartz_crystal", q -> q
             .at(-13, 9.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("{赛特斯石英水晶}有多种来源，最简便的方法就是直接熔炼{赛特斯石英矿}，不过这会损失一些副产物", GOLD, GOLD)
                     .line()
@@ -108,6 +110,7 @@ public final class AeChapter {
 
     public static final Quest INSCRIBER_NORMAL_EXPERT = CHAPTER.quest("inscriber_normal_expert", q -> q
             .at(-13, 5.5)
+            .nodeScale(1)
             .title("压印器（{普通} & {专家}）", YELLOW, LIGHT_PURPLE)
             .desc(d -> d.line("这个机器不能压印模板，你需要使用激光蚀刻机"))
             .task(Task.item(AEBlocks.INSCRIBER))
@@ -116,6 +119,7 @@ public final class AeChapter {
 
     public static final Quest VIBRATION_CHAMBER = CHAPTER.quest("vibration_chamber", q -> q
             .at(-11, 1.5)
+            .nodeScale(1)
             .desc(d -> d.line("火力发电机，只不过发出的是AE能量，你基本用不到它——毕竟你都有能源接收器了！"))
             .task(Task.item(AEBlocks.VIBRATION_CHAMBER))
             .dependsOn(GETTING_STARTED_WITH_AE)
@@ -123,6 +127,7 @@ public final class AeChapter {
 
     public static final Quest CERTUS_QUARTZ_DUST = CHAPTER.quest("certus_quartz_dust", q -> q
             .at(-11, 9.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("{赛特斯石英粉}同样有很多来源，你可以选择不处理石英矿，直接将{粗赛特斯石英}投入{熔炉}并{磨粉}是不错的选择", GOLD, YELLOW, YELLOW, YELLOW)
                     .line()
@@ -132,17 +137,20 @@ public final class AeChapter {
 
     public static final Quest QUARTZ_FIBER = CHAPTER.quest("quartz_fiber", q -> q
             .at(-11, 11.5)
+            .nodeScale(1)
             .desc(d -> d.line("它传输AE能量，但不传输AE频道，常用于隔开两个网络"))
             .task(Task.item(AEParts.QUARTZ_FIBER))
             .dependsOn(CERTUS_QUARTZ_DUST));
 
     public static final Quest CHARGED_CERTUS_QUARTZ_CRYSTAL = CHAPTER.quest("charged_certus_quartz_crystal", q -> q
             .at(-13, 11.5)
+            .nodeScale(1)
             .task(Task.item(AEItems.CERTUS_QUARTZ_CRYSTAL_CHARGED))
             .dependsOn(CERTUS_QUARTZ_CRYSTAL));
 
     public static final Quest FLUIX_CRYSTAL = CHAPTER.quest("fluix_crystal", q -> q
             .at(-15, 11.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("你会需要很多福鲁伊克斯水晶来搭建你的ME网络，和赛特斯水晶（粉）类似，同样有多种来源：")
                     .line()
@@ -155,6 +163,7 @@ public final class AeChapter {
 
     public static final Quest FLUIX_GLASS_CABLE = CHAPTER.quest("fluix_glass_cable", q -> q
             .at(-11, 13.5)
+            .nodeScale(1)
             .desc(d -> d.line("ME网络使用的线缆，如果你不是专家模式，只使用这种线缆就足够了"))
             .task(Task.item(AEParts.GLASS_CABLE.item(AEColor.TRANSPARENT)))
             .dependsOn(QUARTZ_FIBER, FLUIX_CRYSTAL));
@@ -162,7 +171,7 @@ public final class AeChapter {
     public static final Quest DRIVE = CHAPTER.quest("drive", q -> q
             .at(-9, 11.5)
             .nodeFill(0x4F86C6)
-            .nodeScale(1.4)
+            .nodeScale(1)
             .shape(QuestShape.DIAMOND)
             .icon(AEBlocks.DRIVE)
             .subtitle("你的网络存储~扩容区")
@@ -177,6 +186,7 @@ public final class AeChapter {
 
     public static final Quest ME_P2P_TUNNEL = CHAPTER.quest("me_p2p_tunnel", q -> q
             .at(-15, 15.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("{P2P通道}是一种模拟面对面传输的面板，可以通过{P2P通道调谐}来传输不同种类的信号，并且需要进行输入输出端的绑定才能正常使用", GOLD, YELLOW)
                     .line()
@@ -190,17 +200,21 @@ public final class AeChapter {
 
     public static final Quest IO_PORT = CHAPTER.quest("io_port", q -> q
             .at(-5, 13.5)
+            .nodeScale(1)
             .desc(d -> d.line("可以快速将元件的内容导入ME网络，或将ME网络的内容导入元件"))
             .task(Task.item(AEBlocks.IO_PORT))
-            .dependsOn(DRIVE, FLUIX_GLASS_CABLE));
+            .dependsOn(FLUIX_GLASS_CABLE, DRIVE)
+            .hideDependencyLines());
 
     public static final Quest EX_DRIVE = CHAPTER.quest("ex_drive", q -> q
             .at(-7, 11.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.EX_DRIVE))
             .dependsOn(DRIVE));
 
     public static final Quest ME_STORAGE = CHAPTER.quest("me_storage", q -> q
             .at(-5, 11.5)
+            .nodeScale(1)
             .icon(MultiBlockG.ME_STORAGE)
             .subtitle("格雷科技™信息园数据中心")
             .desc(d -> d
@@ -224,27 +238,32 @@ public final class AeChapter {
 
     public static final Quest FLUIX_COVERED_CABLE = CHAPTER.quest("fluix_covered_cable", q -> q
             .at(-11, 15.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.COVERED_CABLE.item(AEColor.TRANSPARENT)))
             .dependsOn(FLUIX_GLASS_CABLE));
 
     public static final Quest FLUIX_SMART_CABLE = CHAPTER.quest("fluix_smart_cable", q -> q
             .at(-11, 17.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.SMART_CABLE.item(AEColor.TRANSPARENT)))
             .dependsOn(FLUIX_COVERED_CABLE)
             .hideDependentLines());
 
     public static final Quest FLUIX_COVERED_DENSE_CABLE = CHAPTER.quest("fluix_covered_dense_cable", q -> q
             .at(-13, 15.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.COVERED_DENSE_CABLE.item(AEColor.TRANSPARENT)))
             .dependsOn(FLUIX_COVERED_CABLE));
 
     public static final Quest FLUIX_DUST = CHAPTER.quest("fluix_dust", q -> q
             .at(-15, 9.5)
+            .nodeScale(1)
             .task(Task.item(AEItems.FLUIX_DUST))
             .dependsOn(FLUIX_CRYSTAL));
 
     public static final Quest TRANSPORTABLE_AE = CHAPTER.quest("transportable_ae", q -> q
             .at(-13, 1.5)
+            .nodeScale(1)
             .title("可以搬运的AE")
             .desc(d -> d
                     .line("可以用来搬运ME接口和ME样板供应器，同时保存内部配置和样板")
@@ -256,16 +275,19 @@ public final class AeChapter {
 
     public static final Quest ENERGY_CELL = CHAPTER.quest("energy_cell", q -> q
             .at(-15, 7.5)
+            .nodeScale(1)
             .task(Task.item(AEBlocks.ENERGY_CELL))
             .dependsOn(FLUIX_DUST));
 
     public static final Quest DENSE_ENERGY_CELL = CHAPTER.quest("dense_energy_cell", q -> q
             .at(-15, 5.5)
+            .nodeScale(1)
             .task(Task.item(AEBlocks.DENSE_ENERGY_CELL))
             .dependsOn(ENERGY_CELL));
 
     public static final Quest CREATIVE_ENERGY_CELL = CHAPTER.quest("creative_energy_cell", q -> q
             .at(-15, 3.5)
+            .nodeScale(1)
             .task(Task.item(AEBlocks.CREATIVE_ENERGY_CELL))
             .dependsOn(DENSE_ENERGY_CELL));
 
@@ -317,11 +339,13 @@ public final class AeChapter {
 
     public static final Quest FLUIX_PEARL = CHAPTER.quest("fluix_pearl", q -> q
             .at(-17, 11.5)
+            .nodeScale(1)
             .task(Task.item(AEItems.FLUIX_PEARL))
             .dependsOn(FLUIX_CRYSTAL));
 
     public static final Quest WIRELESS_RECEIVER = CHAPTER.quest("wireless_receiver", q -> q
             .at(-19, 11.5)
+            .nodeScale(1)
             .desc(d -> d.line("没有什么实际用处，只作为合成材料使用"))
             .task(Task.item(AEItems.WIRELESS_RECEIVER))
             .dependsOn(FLUIX_PEARL, HvChapter.MICROPROCESSOR_SUPERCOMPUTER, UtilChapter.Q_056EC4E6)
@@ -330,6 +354,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_CONNECTION = CHAPTER.quest("wireless_connection", q -> q
             .at(-19, 9.5)
+            .nodeScale(1)
             .icon(EPPItemAndBlock.WIRELESS_CONNECTOR)
             .title("无线连接")
             .subtitle("Wifi到处飞")
@@ -339,6 +364,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_TERMINAL_ACCESS_POINT = CHAPTER.quest("wireless_terminal_access_point", q -> q
             .at(-21, 11.5)
+            .nodeScale(1)
             .icon(AEBlocks.WIRELESS_ACCESS_POINT)
             .title(" 无线终端的访问入口")
             .subtitle("终于可以随时随地访问了")
@@ -348,17 +374,20 @@ public final class AeChapter {
 
     public static final Quest QUANTUM_RING = CHAPTER.quest("quantum_ring", q -> q
             .at(-17, 7.5)
+            .nodeScale(1)
             .icon(AEBlocks.QUANTUM_RING)
             .task(Task.item(AEBlocks.QUANTUM_RING))
             .dependsOn(ENERGY_CELL, FLUIX_SMART_CABLE));
 
     public static final Quest QUANTUM_LINK = CHAPTER.quest("quantum_link", q -> q
             .at(-17, 9.5)
+            .nodeScale(1)
             .task(Task.item(AEBlocks.QUANTUM_LINK))
             .dependsOn(FLUIX_PEARL));
 
     public static final Quest SEMI_DARK_MONITOR = CHAPTER.quest("semi_dark_monitor", q -> q
             .at(-9, 17.5)
+            .nodeScale(1)
             .subtitle("AE学——照亮世界！")
             .task(Task.item(AEParts.SEMI_DARK_MONITOR), Task.item(AEParts.MONITOR).optional(), Task.item(AEParts.DARK_MONITOR).optional())
             .dependsOn(CERTUS_QUARTZ_DUST)
@@ -366,17 +395,20 @@ public final class AeChapter {
 
     public static final Quest TERMINAL = CHAPTER.quest("terminal", q -> q
             .at(-7, 17.5)
+            .nodeScale(1)
             .subtitle("访问网络")
             .task(Task.item(AEParts.TERMINAL))
             .dependsOn(SEMI_DARK_MONITOR));
 
     public static final Quest CRAFTING_TERMINAL = CHAPTER.quest("crafting_terminal", q -> q
             .at(-5, 17.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.CRAFTING_TERMINAL))
             .dependsOn(TERMINAL));
 
     public static final Quest PATTERN_ENCODING_TERMINAL = CHAPTER.quest("pattern_encoding_terminal", q -> q
             .at(-3, 17.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("用于编写样板，在样板编码终端页面中呼出EMI时，可通过配方右下角的{加号}来直接填充样板。", AQUA)
                     .line()
@@ -388,6 +420,7 @@ public final class AeChapter {
 
     public static final Quest PATTERN_ACCESS_TERMINAL = CHAPTER.quest("pattern_access_terminal", q -> q
             .at(-7, 21.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("用于管理所有连接至ME网络的样板供应器和样板总成")
                     .line()
@@ -397,6 +430,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_TERMINAL = CHAPTER.quest("wireless_terminal", q -> q
             .at(-7, 19.5)
+            .nodeScale(1)
             .subtitle("掌上网络")
             .desc(d -> d
                     .line("ME终端的无线版本，可以让你随时随地访问终端")
@@ -408,6 +442,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_CRAFTING_TERMINAL = CHAPTER.quest("wireless_crafting_terminal", q -> q
             .at(-5, 19.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("无线合成终端多了一个设置按钮，进入可以看到5个选框，功能依次是：")
                     .line()
@@ -423,6 +458,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_PATTERN_ACCESS_TERMINAL = CHAPTER.quest("wireless_pattern_access_terminal", q -> q
             .at(-7, 23.5)
+            .nodeScale(1)
             .desc(d -> d.line("样板管理终端的无线版本"))
             .task(Task.item(AE2wtlib.PATTERN_ACCESS_TERMINAL))
             .dependsOn(PATTERN_ACCESS_TERMINAL, WIRELESS_RECEIVER, DENSE_ENERGY_CELL)
@@ -430,6 +466,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_PATTERN_ENCODING_TERMINAL = CHAPTER.quest("wireless_pattern_encoding_terminal", q -> q
             .at(-3, 19.5)
+            .nodeScale(1)
             .task(Task.item(AE2wtlib.PATTERN_ENCODING_TERMINAL))
             .dependsOn(PATTERN_ENCODING_TERMINAL, WIRELESS_RECEIVER, DENSE_ENERGY_CELL)
             .hideDependencyLines());
@@ -484,6 +521,7 @@ public final class AeChapter {
 
     public static final Quest CHARGER = CHAPTER.quest("charger", q -> q
             .at(-17, 21.5)
+            .nodeScale(1)
             .desc(d -> d.line("我们有{电弧发生器}，真的还需要这玩意吗？", GOLD))
             .task(Task.item(AEBlocks.CHARGER))
             .optional());
@@ -529,6 +567,7 @@ public final class AeChapter {
 
     public static final Quest CONDENSER = CHAPTER.quest("condenser", q -> q
             .at(-17, 13.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("用于合成{奇点}和小批量合成{物质球}，也可以当作{垃圾桶}用", GOLD, GOLD, YELLOW)
                     .line()
@@ -540,17 +579,20 @@ public final class AeChapter {
 
     public static final Quest SINGULARITY = CHAPTER.quest("singularity", q -> q
             .at(-17, 15.5)
+            .nodeScale(1)
             .task(Task.item(AEItems.SINGULARITY))
             .reward(Reward.item(Items.ENDER_PEARL))
             .dependsOn(CONDENSER));
 
     public static final Quest MATTER_BALL = CHAPTER.quest("matter_ball", q -> q
             .at(-19, 15.5)
+            .nodeScale(1)
             .task(Task.item(AEItems.MATTER_BALL))
             .dependsOn(CONDENSER));
 
     public static final Quest CROSS_DIMENSIONAL_TRANSMISSION = CHAPTER.quest("cross_dimensional_transmission", q -> q
             .at(-17, 17.5)
+            .nodeScale(1)
             .title("跨维度传输")
             .subtitle("{[-(ħ^2/2m)∇^2 + V(r,t)]ψ(r,t) = iħψ_t(r,t)}", BOLD)
             .desc(d -> d.line("可以放置在{量子网桥}和{无线终端}中进行跨维度通信", GOLD, GOLD))
@@ -581,11 +623,13 @@ public final class AeChapter {
 
     public static final Quest ENTANGLED_SINGULARITY = CHAPTER.quest("entangled_singularity", q -> q
             .at(-19, 17.5)
+            .nodeScale(1)
             .task(Task.item(GTOItems.ENTANGLED_SINGULARITY))
             .dependsOn(SINGULARITY));
 
     public static final Quest P2P_SAMPLE = CHAPTER.quest("p2p_sample", q -> q
             .at(-19, 19.5)
+            .nodeScale(1)
             .icon(GTOMachines.TESSERACT_GENERATOR)
             .title("超立方效应的应用")
             .subtitle("比镜像更好")
@@ -599,12 +643,14 @@ public final class AeChapter {
 
     public static final Quest PAINT = CHAPTER.quest("paint", q -> q
             .at(-21, 15.5)
+            .nodeScale(1)
             .title("染色球")
             .task(Task.tag(ConventionTags.PAINT_BALLS, 1).title("任意染色球"))
             .dependsOn(MATTER_BALL));
 
     public static final Quest LIGHT_TRANSMISSION_PAINT = CHAPTER.quest("light_transmission_paint", q -> q
             .at(-23, 15.5)
+            .nodeScale(1)
             .icon(AEItems.COLORED_LUMEN_PAINT_BALL.item(AEColor.BLACK))
             .title("光通染色球")
             .task(
@@ -612,7 +658,8 @@ public final class AeChapter {
             .dependsOn(PAINT));
 
     public static final Quest ME_CPU = CHAPTER.quest("me_cpu", q -> q
-            .at(-3, 11.5).minWidth(225)
+            .at(-3, 11.5)
+            .nodeScale(1).minWidth(225)
             .icon(MultiBlockG.ME_CPU)
             .subtitle("格雷科技™信息园算力中心")
             .desc(d -> d
@@ -628,6 +675,7 @@ public final class AeChapter {
 
     public static final Quest CRYSTAL_FIXER = CHAPTER.quest("crystal_fixer", q -> q
             .at(-15, 13.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("用于修复{赛特斯石英母岩}（包括{赛特斯石英块}），每次修复都会使母岩等级{提升一级}", GOLD, GOLD, YELLOW)
                     .line()
@@ -643,6 +691,7 @@ public final class AeChapter {
 
     public static final Quest OBTAIN_SET_QUARTZ_USING_VANILLA_METHODS = CHAPTER.quest("obtain_set_quartz_using_vanilla_methods", q -> q
             .at(-13, 13.5)
+            .nodeScale(1)
             .icon(AEBlocks.FLAWLESS_BUDDING_QUARTZ)
             .title("原版的赛特斯石英水晶获取方式")
             .subtitle("无限的赛特斯石英水晶")
@@ -662,6 +711,7 @@ public final class AeChapter {
 
     public static final Quest THE_THIRD_PIECE_OF_THE_AUTO = CHAPTER.quest("the_third_piece_of_the_auto", q -> q
             .at(-7, 3.5)
+            .nodeScale(1)
             .title("自动合成系统的第三块拼图")
             .desc(d -> d
                     .line("有了它你才可以开始自动合成")
@@ -674,11 +724,13 @@ public final class AeChapter {
 
     public static final Quest PATTERN_MODIFIER = CHAPTER.quest("pattern_modifier", q -> q
             .at(-5, 3.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.PATTERN_MODIFIER), Task.item(GTOItems.PATTERN_MODIFIER_PRO))
             .dependsOn(THE_THIRD_PIECE_OF_THE_AUTO));
 
     public static final Quest ORDER = CHAPTER.quest("order", q -> q
             .at(-17, 1.5)
+            .nodeScale(1)
             .subtitle("妙妙工具系列#1")
             .desc(d -> d
                     .line("{订单}是一种用来完成一次{“伪合成请求”}的{编码样板}，你可以用它来直接请求合成{一台或多台多方块机器的所有方块}，或自定义一个你想要的{“套餐”}，比如{一座建筑的所有建筑材料}！", GOLD, YELLOW, GOLD, AQUA, YELLOW, AQUA)
@@ -690,6 +742,7 @@ public final class AeChapter {
 
     public static final Quest PATTERN_CONTENT_ACCESS_TERMINAL = CHAPTER.quest("pattern_content_access_terminal", q -> q
             .at(-3, 3.5)
+            .nodeScale(1)
             .subtitle("妙妙工具系列#3")
             .desc(d -> d
                     .line("你是否遇到了下列问题：")
@@ -702,6 +755,7 @@ public final class AeChapter {
 
     public static final Quest ME_WIRELESS_CONNECTION_MACHINE = CHAPTER.quest("me_wireless_connection_machine", q -> q
             .at(-21, 9.5)
+            .nodeScale(1)
             .subtitle("妙妙工具系列#2")
             .desc(d -> d
                     .line("真正的无线ME网络，能够{跨维度传输}", YELLOW)
@@ -712,6 +766,7 @@ public final class AeChapter {
 
     public static final Quest BUILD_QUANTUM_BRIDGE = CHAPTER.quest("build_quantum_bridge", q -> q
             .at(-19, 7.5)
+            .nodeScale(1)
             .icon(GTOItems.QUANTUM_ANOMALY)
             .title("搭建量子网桥")
             .desc(d -> d
@@ -723,12 +778,14 @@ public final class AeChapter {
 
     public static final Quest QUANTUM_BRIDGE_CARD = CHAPTER.quest("quantum_bridge_card", q -> q
             .at(-19, 13.5)
+            .nodeScale(1)
             .desc(d -> d.line("给无线终端装上{量子桥卡}，然后将一对{量子缠绕态奇点}的一个放在{无线终端}中，一个放在链接ME网络的{量子网桥}中，即可让无线终端{无视距离，跨维度通信}ME网络", GOLD, GOLD, GREEN, GREEN, YELLOW))
             .task(Task.item(AE2wtlib.QUANTUM_BRIDGE_CARD))
             .dependsOn(WIRELESS_RECEIVER, BUILD_QUANTUM_BRIDGE));
 
     public static final Quest SPRAY_CAN = CHAPTER.quest("spray_can", q -> q
             .at(-19, 1.5)
+            .nodeScale(1)
             .title("喷漆罐")
             .desc(d -> d
                     .line("你可以用这个工具染色任意的{输入/输出仓室}，包括{样板总成}！", GOLD, GOLD)
@@ -744,6 +801,7 @@ public final class AeChapter {
 
     public static final Quest NO_AE_TWEAKS_EASY = CHAPTER.quest("no_ae_tweaks_easy", q -> q
             .at(-7, -0.5)
+            .nodeScale(1)
             .icon(AEItems.WIRELESS_TERMINAL)
             .title("无AE魔改{（简单）}", GREEN)
             .subtitle("简单模式下，AE配方未经魔改！")
@@ -759,6 +817,7 @@ public final class AeChapter {
 
     public static final Quest AE_CIRCUIT_BOARD = CHAPTER.quest("ae_circuit_board", q -> q
             .at(-11, 3.5)
+            .nodeScale(1)
             .title("AE电路板")
             .task(
                     Task.item(AEItems.SILICON_PRINT),
@@ -772,6 +831,7 @@ public final class AeChapter {
 
     public static final Quest ME_ENERGY_SUBSTATION = CHAPTER.quest("me_energy_substation", q -> q
             .at(-1, 11.5)
+            .nodeScale(1)
             .icon(MultiBlockG.ME_ENERGY_SUBSTATION)
             .subtitle("格雷科技™信息园能源中心")
             .desc(d -> d
@@ -783,17 +843,20 @@ public final class AeChapter {
 
     public static final Quest ME_MUFFLER_HATCH = CHAPTER.quest("me_muffler_hatch", q -> q
             .at(1.5, 19.5)
+            .nodeScale(1)
             .desc(d -> d.line("解除消声仓前必须空三格的限制，且将灰烬自动收集进ME网络"))
             .task(Task.item(GTAEMachines.MUFFLER_HATCH_ME))
             .dependsOn(LuvChapter.LUV_FIELD_GENERATOR, LuvChapter.IV_DRONE));
 
     public static final Quest FLUIX_SMART_DENSE_CABLE = CHAPTER.quest("fluix_smart_dense_cable", q -> q
             .at(-13, 17.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.SMART_DENSE_CABLE.item(AEColor.TRANSPARENT)))
             .dependsOn(FLUIX_SMART_CABLE));
 
     public static final Quest ANY_CERTUS_QUARTZ_CUTTING_KNIFE = CHAPTER.quest("any_certus_quartz_cutting_knife", q -> q
             .at(-23, 1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("Shift+右键可以获取任何方块的原始名称，右键属于AE的方块可以直接打开重命名页面")
                     .line()
@@ -802,12 +865,14 @@ public final class AeChapter {
 
     public static final Quest EX_PATTERN_ACCESS_PART = CHAPTER.quest("ex_pattern_access_part", q -> q
             .at(-5, 21.5)
+            .nodeScale(1)
             .desc(d -> d.line("用于管理所有连接至ME网络的样板供应器和样板总成，附带搜索和定位功能"))
             .task(Task.item(EPPItemAndBlock.EX_PATTERN_TERMINAL))
             .dependsOn(PATTERN_ACCESS_TERMINAL));
 
     public static final Quest ME_2IN1_TERMINAL = CHAPTER.quest("me_2in1_terminal", q -> q
             .at(-3, 21.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("2合1终端整合了样板管理和样板编码的功能，能够批量编码一系列同种类的样板，支持一键填充配方！")
                     .line()
@@ -825,6 +890,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_ME2IN1_TERMINAL = CHAPTER.quest("wireless_me2in1_terminal", q -> q
             .at(-3, 23.5)
+            .nodeScale(1)
             .desc(d -> d.line("2合1终端的无线版本"))
             .task(Task.item(GTOItems.WIRELESS_ME2IN1))
             .dependsOn(ME_2IN1_TERMINAL, WIRELESS_RECEIVER, DENSE_ENERGY_CELL)
@@ -832,6 +898,7 @@ public final class AeChapter {
 
     public static final Quest WIRELESS_EX_PAT = CHAPTER.quest("wireless_ex_pat", q -> q
             .at(-5, 23.5)
+            .nodeScale(1)
             .desc(d -> d.line("样板管理终端的无线版本"))
             .task(Task.item(EPPItemAndBlock.WIRELESS_EX_PAT))
             .dependsOn(EX_PATTERN_ACCESS_PART, WIRELESS_RECEIVER, DENSE_ENERGY_CELL)
@@ -839,6 +906,7 @@ public final class AeChapter {
 
     public static final Quest FACILITY_TERMINAL = CHAPTER.quest("facility_terminal", q -> q
             .at(-1, 21.5)
+            .nodeScale(1)
             .icon(AEParts.FACILITY_MANAGEMENT)
             .desc(d -> d.line("用于管理各类ME输入和输出仓室，附带流量监控、搜索和定位功能"))
             .task(Task.item(AEParts.FACILITY_MANAGEMENT))
@@ -847,12 +915,14 @@ public final class AeChapter {
 
     public static final Quest EX_CRAFTING_TERMINAL = CHAPTER.quest("ex_crafting_terminal", q -> q
             .at(-9, 23.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.EX_CRAFTING_TERMINAL))
             .dependsOn(CRAFTING_TERMINAL)
             .hideDependencyLines());
 
     public static final Quest SOURCE_NODE_AND_CHILD_NODE = CHAPTER.quest("source_node_and_child_node", q -> q
             .at(-21, 7.5)
+            .nodeScale(1)
             .icon(AEItems.NETWORK_TOOL)
             .title("源节点和子节点")
             .desc(d -> d
@@ -873,29 +943,35 @@ public final class AeChapter {
 
     public static final Quest ME_INPUT_BUFFER_PART_MACHINE = CHAPTER.quest("me_input_buffer_part_machine", q -> q
             .at(9.5, 19.5)
+            .nodeScale(1)
             .task(Task.item(GTAEMachines.ME_INPUT_BUFFER_PART_MACHINE)));
 
     public static final Quest ME_REQUESTABLE_INPUT_BUS_MACHINE = CHAPTER.quest("me_requestable_input_bus_machine", q -> q
             .at(5.5, 19.5)
+            .nodeScale(1)
             .task(Task.item(GTAEMachines.ME_REQUESTABLE_INPUT_BUS_MACHINE)));
 
     public static final Quest ME_REQUESTABLE_INPUT_HATCH_MACHINE = CHAPTER.quest("me_requestable_input_hatch_machine", q -> q
             .at(7.5, 19.5)
+            .nodeScale(1)
             .task(Task.item(GTAEMachines.ME_REQUESTABLE_INPUT_HATCH_MACHINE)));
 
     public static final Quest Q_40FDBD03 = CHAPTER.quest("q_40fdbd03", q -> q
             .at(3.5, 19.5)
+            .nodeScale(1)
             .desc(d -> d.line("0.5.5新加入的仓室"))
             .task(Task.checkmark().title("新加入的仓室→")));
 
     public static final Quest LOGIC_PROCESSOR = CHAPTER.quest("logic_processor", q -> q
             .at(-9, 4.5)
+            .nodeScale(1)
             .subtitle("AE的科技起步")
             .task(Task.item(AEItems.LOGIC_PROCESSOR), Task.item(AEItems.CALCULATION_PROCESSOR), Task.item(AEItems.ENGINEERING_PROCESSOR))
             .dependsOn(GETTING_STARTED_WITH_AE, AE_CIRCUIT_BOARD));
 
     public static final Quest TOOL_FOR_CHECKING_NETWORKS = CHAPTER.quest("tool_for_checking_networks", q -> q
             .at(-15, 1.5)
+            .nodeScale(1)
             .title("检查网络的工具")
             .subtitle("好家伙！")
             .task(Task.item(AEAItems.ANALYSER))
@@ -904,6 +980,7 @@ public final class AeChapter {
 
     public static final Quest ANNIHILATION_CORE = CHAPTER.quest("annihilation_core", q -> q
             .at(-9, 7.5)
+            .nodeScale(1)
             .subtitle("AE的工业起步")
             .task(Task.item(AEItems.ANNIHILATION_CORE), Task.item(AEItems.FORMATION_CORE))
             .dependsOn(CERTUS_QUARTZ_DUST, LOGIC_PROCESSOR)
@@ -911,6 +988,7 @@ public final class AeChapter {
 
     public static final Quest IMPORT_BUS = CHAPTER.quest("import_bus", q -> q
             .at(-9, 13.5)
+            .nodeScale(1)
             .icon(AEParts.IMPORT_BUS)
             .subtitle("ME网络的交互节点")
             .desc(d -> d
@@ -922,6 +1000,7 @@ public final class AeChapter {
 
     public static final Quest INTERFACE = CHAPTER.quest("interface", q -> q
             .at(-11, 7.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("可以自动接收其他相邻方块主动传输过来的物品并送入ME网络")
                     .line()
@@ -935,6 +1014,7 @@ public final class AeChapter {
 
     public static final Quest STORAGE_BUS = CHAPTER.quest("storage_bus", q -> q
             .at(-15, 17.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("字面意义，会将ME网络中{无处可去的}物品存入贴着的方块，也可以读取贴着的方块的内容物显示在ME网络中", YELLOW)
                     .line()
@@ -953,11 +1033,13 @@ public final class AeChapter {
 
     public static final Quest PRECISE_STORAGE_BUS = CHAPTER.quest("precise_storage_bus", q -> q
             .at(-15, 19.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.PRECISE_STORAGE_BUS))
             .dependsOn(STORAGE_BUS));
 
     public static final Quest THE_FIRST_PIECE_OF_THE_AUTO = CHAPTER.quest("the_first_piece_of_the_auto", q -> q
             .at(-7, 5.5)
+            .nodeScale(1)
             .title("自动合成系统的第一块拼图")
             .subtitle("自动合成起步")
             .desc(d -> d
@@ -973,6 +1055,7 @@ public final class AeChapter {
 
     public static final Quest ME_SIMPLE_PATTERN_BUFFER_EASY = CHAPTER.quest("me_simple_pattern_buffer_easy", q -> q
             .at(-5, -0.5)
+            .nodeScale(1)
             .title("ME简单样板总成{（简单）}", GREEN)
             .subtitle("超前期的样板总成")
             .desc(d -> d
@@ -987,12 +1070,14 @@ public final class AeChapter {
 
     public static final Quest EX_INTERFACE = CHAPTER.quest("ex_interface", q -> q
             .at(-13, 7.5)
+            .nodeScale(1)
             .icon(TieredInterfaces.block(1))
             .task(Task.item(TieredInterfaces.block(1)), Task.item(TieredInterfaces.part(1)).optional())
             .dependsOn(INTERFACE));
 
     public static final Quest EX_IMPORT_BUS_PART = CHAPTER.quest("ex_import_bus_part", q -> q
             .at(-7, 13.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.EX_IMPORT_BUS))
             .dependsOn(IMPORT_BUS));
 
@@ -1042,6 +1127,7 @@ public final class AeChapter {
 
     public static final Quest ME_IMPORT_BUS_AND_ME_IMPORT = CHAPTER.quest("me_import_bus_and_me_import", q -> q
             .at(-7, 9.5)
+            .nodeScale(1)
             .icon(GTAEMachines.ITEM_IMPORT_BUS_ME)
             .title("ME输入总线和ME输入仓")
             .subtitle("好用，爱用，多用")
@@ -1051,6 +1137,7 @@ public final class AeChapter {
 
     public static final Quest ME_EXPORT_BUS_AND_ME_EXPORT = CHAPTER.quest("me_export_bus_and_me_export", q -> q
             .at(-7, 7.5)
+            .nodeScale(1)
             .title("ME输出总线和ME输出仓")
             .desc(d -> d
                     .line("将多方块机器的产物直接输出到ME网络！")
@@ -1061,12 +1148,14 @@ public final class AeChapter {
 
     public static final Quest ME_EXPORT_BUFFER = CHAPTER.quest("me_export_buffer", q -> q
             .at(-5, 7.5)
+            .nodeScale(1)
             .desc(d -> d.line("和普通输出总成类似，能够同时输出物品和流体"))
             .task(Task.item(CustomMachines.ME_EXPORT_BUFFER))
             .dependsOn(ME_EXPORT_BUS_AND_ME_EXPORT, LuvChapter.LUV_ASSEMBLER, ME_IMPORT_BUS_AND_ME_IMPORT));
 
     public static final Quest ME_IMPORT_BUS_AND_ME_IMPORT_2 = CHAPTER.quest("me_import_bus_and_me_import_2", q -> q
             .at(-5, 9.5)
+            .nodeScale(1)
             .title("ME库存输入总线和ME库存输入仓")
             .desc(d -> d
                     .line("开启自动拉取会直接拉取网络前16的物品，流体，建议做个子网络进行自动拉取")
@@ -1077,6 +1166,7 @@ public final class AeChapter {
 
     public static final Quest EX_IO_PORT = CHAPTER.quest("ex_io_port", q -> q
             .at(-3, 13.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.EX_IO_PORT))
             .dependsOn(IO_PORT, SPEED_CARD));
 
@@ -1121,6 +1211,7 @@ public final class AeChapter {
 
     public static final Quest LEVEL_EMITTER = CHAPTER.quest("level_emitter", q -> q
             .at(-11, 19.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("大化反的好朋友，被动产线的控制器，强烈建议与{机器覆盖版}搭配使用，{而不是触发总线}", GOLD, GRAY)
                     .line()
@@ -1131,6 +1222,7 @@ public final class AeChapter {
 
     public static final Quest HOW_TO_USE_ME_NETWORK_FOR = CHAPTER.quest("how_to_use_me_network_for", q -> q
             .at(-13, 19.5)
+            .nodeScale(1)
             .icon(GTMultiMachines.LARGE_CHEMICAL_REACTOR)
             .title("如何使用ME网络进行简单的缓存")
             .subtitle("不要总使用样板下单，你的时间很宝贵")
@@ -1150,16 +1242,19 @@ public final class AeChapter {
 
     public static final Quest STORAGE_MONITOR = CHAPTER.quest("storage_monitor", q -> q
             .at(-9, 19.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.STORAGE_MONITOR))
             .dependsOn(LEVEL_EMITTER, SEMI_DARK_MONITOR));
 
     public static final Quest ENERGY_LEVEL_EMITTER = CHAPTER.quest("energy_level_emitter", q -> q
             .at(-11, 23.5)
+            .nodeScale(1)
             .task(Task.item(AEParts.ENERGY_LEVEL_EMITTER))
             .dependsOn(LEVEL_EMITTER));
 
     public static final Quest THRESHOLD_LEVEL_EMITTER = CHAPTER.quest("threshold_level_emitter", q -> q
             .at(-11, 21.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.THRESHOLD_LEVEL_EMITTER))
             .dependsOn(LEVEL_EMITTER));
 
@@ -1411,6 +1506,7 @@ public final class AeChapter {
 
     public static final Quest TAG_STORAGE_BUS = CHAPTER.quest("tag_storage_bus", q -> q
             .at(-15, 21.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("多用于矿物处理产线设计、热锭的自动输出")
                     .line()
@@ -1420,6 +1516,7 @@ public final class AeChapter {
 
     public static final Quest EXPORT_BUS = CHAPTER.quest("export_bus", q -> q
             .at(-9, 15.5)
+            .nodeScale(1)
             .subtitle("ME网络的交互节点")
             .desc(d -> d
                     .line("将ME网络中的物品主动输出至贴着的方块，没有过滤时不输出任何东西")
@@ -1430,32 +1527,38 @@ public final class AeChapter {
 
     public static final Quest THRESHOLD_EXPORT_BUS = CHAPTER.quest("threshold_export_bus", q -> q
             .at(-5, 15.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.THRESHOLD_EXPORT_BUS))
             .dependsOn(EXPORT_BUS, LEVEL_EMITTER)
             .hideDependencyLines());
 
     public static final Quest MOD_EXPORT_BUS = CHAPTER.quest("mod_export_bus", q -> q
             .at(-3, 15.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.MOD_EXPORT_BUS))
             .dependsOn(EXPORT_BUS));
 
     public static final Quest EX_EXPORT_BUS_PART = CHAPTER.quest("ex_export_bus_part", q -> q
             .at(-7, 15.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.EX_EXPORT_BUS))
             .dependsOn(EXPORT_BUS));
 
     public static final Quest TAG_EXPORT_BUS = CHAPTER.quest("tag_export_bus", q -> q
             .at(-1, 15.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.TAG_EXPORT_BUS))
             .dependsOn(EXPORT_BUS));
 
     public static final Quest MOD_STORAGE_BUS = CHAPTER.quest("mod_storage_bus", q -> q
             .at(-15, 23.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.MOD_STORAGE_BUS))
             .dependsOn(STORAGE_BUS));
 
     public static final Quest EX_CHARGER = CHAPTER.quest("ex_charger", q -> q
             .at(-17, 19.5)
+            .nodeScale(1)
             .desc(d -> d.line("我们有{电弧发生器}，真的还需要这玩意吗？", GOLD))
             .task(Task.item(EPPItemAndBlock.EX_CHARGER))
             .dependsOn(STORAGE_BUS, CHARGER)
@@ -1463,6 +1566,7 @@ public final class AeChapter {
 
     public static final Quest EXCHANGE_STORAGE_MONITOR = CHAPTER.quest("exchange_storage_monitor", q -> q
             .at(-9, 21.5)
+            .nodeScale(1)
             .task(Task.item(GTOAEParts.EXCHANGE_STORAGE_MONITOR.get()))
             .dependsOn(STORAGE_MONITOR));
 
@@ -1480,12 +1584,14 @@ public final class AeChapter {
 
     public static final Quest CANER = CHAPTER.quest("caner", q -> q
             .at(-17, 23.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.CANER))
             .dependsOn(IMPORT_BUS, EXPORT_BUS, INGREDIENT_BUFFER)
             .optional().hideDependencyLines());
 
     public static final Quest WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES = CHAPTER.quest("work_block_for_original_synthesis_recipes", q -> q
             .at(-7, 1.5)
+            .nodeScale(1)
             .icon(AEBlocks.MOLECULAR_ASSEMBLER)
             .title("原版合成配方的工作方块")
             .subtitle("记得插加速卡")
@@ -1498,6 +1604,7 @@ public final class AeChapter {
 
     public static final Quest ASSEMBLY_MATRIX = CHAPTER.quest("assembly_matrix", q -> q
             .at(-3, 1.5)
+            .nodeScale(1)
             .icon(EPPItemAndBlock.ASSEMBLER_MATRIX_PATTERN)
             .title("装配矩阵")
             .subtitle("分子装配室是你吗？")
@@ -1526,6 +1633,7 @@ public final class AeChapter {
 
     public static final Quest SUPER_MOLECULAR_ASSEMBLER = CHAPTER.quest("super_molecular_assembler", q -> q
             .at(-1, 1.5)
+            .nodeScale(1)
             .icon(MultiBlockG.SUPER_MOLECULAR_ASSEMBLER)
             .subtitle("比装配矩阵更快，性能更好")
             .desc(d -> d
@@ -1536,12 +1644,14 @@ public final class AeChapter {
 
     public static final Quest EX_MOLECULAR_ASSEMBLER = CHAPTER.quest("ex_molecular_assembler", q -> q
             .at(-5, 1.5)
+            .nodeScale(1)
             .desc(d -> d.line("分子装配室的高级版本"))
             .task(Task.item(EPPItemAndBlock.EX_ASSEMBLER))
             .dependsOn(WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES));
 
     public static final Quest MEMORY_CARD = CHAPTER.quest("memory_card", q -> q
             .at(-21, 1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("用于复制粘贴各种接口的配置")
                     .line()
@@ -1552,6 +1662,7 @@ public final class AeChapter {
 
     public static final Quest ME_IO_STORAGE_ACCESS_HATCH = CHAPTER.quest("me_io_storage_access_hatch", q -> q
             .at(-1, 13.5)
+            .nodeScale(1)
             .icon(GTAEMachines.ME_IO_STORAGE_ACCESS_HATCH)
             .desc(d -> d.line("存储器专供版本，将物品从ME存储器导入或导出"))
             .task(Task.item(GTAEMachines.ME_IO_STORAGE_ACCESS_HATCH), Task.item(GTOItems.STORAGE_ACCESSOR_REPLACER2).optional())
@@ -1559,6 +1670,7 @@ public final class AeChapter {
 
     public static final Quest CONTROLLER = CHAPTER.quest("controller", q -> q
             .at(-11, 5.5)
+            .nodeScale(1)
             .icon(AEBlocks.CONTROLLER)
             .desc(d -> d.line("因为AE已经无限频道了，这个东西只是一个装饰品"))
             .task(Task.item(AEBlocks.CONTROLLER))
@@ -1567,6 +1679,7 @@ public final class AeChapter {
 
     public static final Quest REQUESTER_TERMINAL = CHAPTER.quest("requester_terminal", q -> q
             .at(-1, 17.5)
+            .nodeScale(1)
             .icon(Registration.TERMINAL)
             .desc(d -> d.line("管理连接至ME网络的ME请求器，附带搜索功能"))
             .task(Task.item(Registration.TERMINAL))
@@ -1574,6 +1687,7 @@ public final class AeChapter {
 
     public static final Quest FORMATION_PLANE = CHAPTER.quest("formation_plane", q -> q
             .at(-13, 21.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("{ME成型面板}会将正在输入ME网络的物品以方块的形式摆放到面前", GOLD)
                     .line()
@@ -1586,11 +1700,13 @@ public final class AeChapter {
 
     public static final Quest EX_PATTERN_PROVIDER = CHAPTER.quest("ex_pattern_provider", q -> q
             .at(-5, 5.5)
+            .nodeScale(1)
             .task(Task.item(EPPItemAndBlock.EX_PATTERN_PROVIDER))
             .dependsOn(THE_FIRST_PIECE_OF_THE_AUTO));
 
     public static final Quest ME_PATTERN_BUFFER = CHAPTER.quest("me_pattern_buffer", q -> q
             .at(-3, 5.5)
+            .nodeScale(1)
             .icon(GTAEMachines.ME_PATTERN_BUFFER)
             .subtitle("更好的下单")
             .desc(d -> d
@@ -1612,6 +1728,7 @@ public final class AeChapter {
 
     public static final Quest ME_CATALYST_PATTERN_BUFFER = CHAPTER.quest("me_catalyst_pattern_buffer", q -> q
             .at(-1, 7.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("不会消耗催化剂的耐久")
                     .line()
@@ -1621,6 +1738,7 @@ public final class AeChapter {
 
     public static final Quest ME_EXTEND_PATTERN_BUFFER = CHAPTER.quest("me_extend_pattern_buffer", q -> q
             .at(-3, 7.5)
+            .nodeScale(1)
             .icon(GTAEMachines.ME_EXTEND_PATTERN_BUFFER)
             .desc(d -> d.line("三种样板总成都有其对应的升级器"))
             .task(Task.item(GTAEMachines.ME_EXTEND_PATTERN_BUFFER), Task.item(GTOItems.PATTERN_BUFFER_UPGRADER1).optional())
@@ -1628,26 +1746,31 @@ public final class AeChapter {
 
     public static final Quest ME_EXTEND_PATTERN_BUFFER_ULTRA = CHAPTER.quest("me_extend_pattern_buffer_ultra", q -> q
             .at(-3, 9.5)
+            .nodeScale(1)
             .subtitle("样板总成再次升级！")
             .task(Task.item(GTAEMachines.ME_EXTEND_PATTERN_BUFFER_ULTRA))
             .dependsOn(ME_EXTEND_PATTERN_BUFFER, UhvChapter.WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE));
 
     public static final Quest ME_PATTERN_BUFFER_PROXY = CHAPTER.quest("me_pattern_buffer_proxy", q -> q
             .at(-1, 5.5)
+            .nodeScale(1)
             .desc(d -> d.line("和样板总成配合使用，与样板总成绑定后被视作同一个方块，下单发配的时候会同时发配到总成和镜像中"))
             .task(Task.item(GTAEMachines.ME_PATTERN_BUFFER_PROXY))
             .dependsOn(EX_PATTERN_PROVIDER, LuvChapter.HPCA_ADVANCED_COMPUTATION_COMPONENT));
 
     public static final Quest WIRELESS_FACILITY_MANAGEMENT_TERMINAL = CHAPTER.quest("wireless_facility_management_terminal", q -> q
             .at(-1, 23.5)
+            .nodeScale(1)
             .task(Task.item(GTOItems.WIRELESS_WFT)));
 
     public static final Quest WIRELESS_REQUESTER_TERMINAL = CHAPTER.quest("wireless_requester_terminal", q -> q
             .at(-1, 19.5)
+            .nodeScale(1)
             .task(Task.item(GTOItems.WIRELESS_WRT)));
 
     public static final Quest WIRELESS_UNIVERSAL_TERMINAL = CHAPTER.quest("wireless_universal_terminal", q -> q
             .at(1.5, 21.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("将两个无线终端拼合在一起获得")
                     .line()

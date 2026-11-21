@@ -361,7 +361,7 @@ public final class LuvChapter {
                     .line()
                     .line("{如果不成型看看支架的方向}", GRAY.italic()))
             .task(Task.item(GTResearchMachines.RESEARCH_STATION), Task.item(GTResearchMachines.OBJECT_HOLDER))
-            .dependsOn(HIGH_PERFORMANCE_COMPUTATION_ARRAY, DATA_BANK, URANIUM_RHODIUM_DINAQUADIDE_INGOT)
+            .dependsOn(HIGH_PERFORMANCE_COMPUTATION_ARRAY, DATA_BANK, URANIUM_RHODIUM_DINAQUADIDE_INGOT, ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
             .mainNode());
 
     public static final Quest COMPUTATIONAL_DATA_HATCH = CHAPTER.quest("computational_data_hatch", q -> q

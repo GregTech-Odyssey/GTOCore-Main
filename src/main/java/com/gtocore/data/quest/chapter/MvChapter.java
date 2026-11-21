@@ -78,13 +78,14 @@ public final class MvChapter {
 
     public static final Quest ALUMINIUM_HYDROXIDE_DUST = CHAPTER.quest("aluminium_hydroxide_dust", q -> q
             .at(-3, -4.5)
+            .title("氢氧化铝粉")
             .desc(d -> d
                     .line("陶瓷材料，是用天然或合成化合物经过成形和高温烧结制成的一类无机非金属材料。具有高熔点、高硬度、高耐磨性、耐氧化等优点。")
                     .line()
                     .line("在现阶段，它能作为不错的{集成电路基板}为我们所用", YELLOW)
                     .line()
                     .line("为了烧制一炉最简单的{氧化铝陶瓷}，你需要制备一些{氢氧化铝粉}，不过仅仅一炉是不够你发展太远的，你应该尽早搭建起{陶瓷产线}", YELLOW, GOLD, YELLOW))
-            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminiumHydroxide, 70L))
+            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminiumHydroxide, 1))
             .dependsOn(WELCOME_TO_THE_MEDIUM_VOLTAGE_STAGE)
             .hideDependencyLines());
 
@@ -262,12 +263,14 @@ public final class MvChapter {
 
     public static final Quest ALUMINA_CERAMIC_DUST = CHAPTER.quest("alumina_ceramic_dust", q -> q
             .at(-1.5, -4.5)
+            .title("氧化铝陶瓷粉")
             .subtitle("高温反应")
-            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminaCeramic, 10))
+            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminaCeramic, 1))
             .dependsOn(REACTION_FURNACE, ALUMINIUM_HYDROXIDE_DUST));
 
     public static final Quest ELECTRONIC_GRADE_SILICON_DUST = CHAPTER.quest("electronic_grade_silicon_dust", q -> q
             .at(-3.5, 0)
+            .title("电子级硅粉")
             .desc(d -> d
                     .line("普通的{硅粉}纯度不足以制造单晶硅，你需要{电子级硅粉}", GOLD, GOLD)
                     .line()
@@ -676,15 +679,17 @@ public final class MvChapter {
 
     public static final Quest ALUMINA_CERAMIC_BRICK = CHAPTER.quest("alumina_ceramic_brick", q -> q
             .at(3, -4.5)
+            .title("氧化铝陶瓷砖")
             .subtitle("切块")
-            .task(Task.item(GTOTagPrefix.BRICK, GTOMaterials.AluminaCeramic, 9))
+            .task(Task.item(GTOTagPrefix.BRICK, GTOMaterials.AluminaCeramic, 1))
             .dependsOn(ALUMINA_CERAMIC_BLOCK));
 
     public static final Quest ALUMINA_CERAMIC_FLAKE = CHAPTER.quest("alumina_ceramic_flake", q -> q
             .at(5.25, -4.5)
+            .title("氧化铝陶瓷薄片")
             .subtitle("切片")
             .desc(d -> d.line("36片具有优秀电学性能的基板，对于{进阶集成电路}是必需的", GOLD))
-            .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.AluminaCeramic, 36))
+            .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.AluminaCeramic, 1))
             .dependsOn(ALUMINA_CERAMIC_BRICK));
 
     public static final Quest ADVANCED_INTEGRATED_CIRCUIT = CHAPTER.quest("advanced_integrated_circuit", q -> q
@@ -798,5 +803,9 @@ public final class MvChapter {
                 .link(QuestLink.of(AeChapter.ME_SIMPLE_PATTERN_BUFFER_EASY, -6.5, 6))
                 .link(QuestLink.of(LvChapter.LARGE_STEAM_CIRCUIT_ASSEMBLER, -5, 7.5))
                 .link(QuestLink.of(AeChapter.WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES, -5, 6)));
+    }
+
+    static {
+        CHAPTER.decorate(d -> {});
     }
 }

@@ -479,6 +479,7 @@ public final class LvChapter {
 
     public static final Quest SMALL_GALLIUM_ARSENIDE_DUST = CHAPTER.quest("small_gallium_arsenide_dust", q -> q
             .at(-4, -5)
+            .title("小堆砷化镓粉")
             .desc(d -> d
                     .line("{砷粉}来自于{离心}{雄黄粉}", GOLD, YELLOW, GOLD)
                     .line()
@@ -488,9 +489,10 @@ public final class LvChapter {
 
     public static final Quest DIODE = CHAPTER.quest("diode", q -> q
             .at(-4, -3.5)
+            .title("二极管")
             .subtitle("其貌不扬")
             .desc(d -> d.line("如果你的砷化镓少得可怜，你也可以先做出{电弧炉}降低你的砷化镓用量，注意查看配方", GOLD))
-            .task(Task.item(GTItems.DIODE, 2))
+            .task(Task.item(GTItems.DIODE, 1))
             .dependsOn(ASSEMBLE_EVERYTHING, SMALL_GALLIUM_ARSENIDE_DUST));
 
     public static final Quest LV_WIREMILL = CHAPTER.quest("lv_wiremill", q -> q
@@ -744,6 +746,7 @@ public final class LvChapter {
 
     public static final Quest DARK_STEEL_INGOT = CHAPTER.quest("dark_steel_ingot", q -> q
             .at(3, 2)
+            .title("玄钢锭")
             .subtitle("爱来自EIO")
             .desc(d -> d.line("有了它之后就可以制作精密蒸汽构件了。"))
             .task(Task.item(TagPrefix.ingot, GTOMaterials.DarkSteel, 8))
@@ -766,11 +769,15 @@ public final class LvChapter {
             .at(-5.5, -6)
             .subtitle("解放电路生产力")
             .desc(d -> d
-                    .line("这个大家伙可以做到{两倍}（简单模式四倍）的产出，但它{只能执行一种配方}", DARK_GREEN, YELLOW)
+                    .line("这个大家伙可以做到{翻倍配方产出}，但它{只能生产一种产物}", GREEN, YELLOW)
                     .line()
-                    .line("使用前需要{铭刻}电路，即在它的输入总线里面放置需求数量的{电路板}，然后打开主方块的GUI并且按下铭刻电路即可。", YELLOW, GOLD)
+                    .line("使用前往输入总线中{输入一些电路板}用于{铭刻}电路，在主方块GUI中点击{铭刻}即可。", GOLD, YELLOW, YELLOW)
                     .line()
-                    .line("你需要到达{MV}阶段才能制作它", MV))
+                    .line("{铭刻}之后才能运行该{电路板}对应的配方，不过其对应的多种配方都能运行。", YELLOW, GOLD)
+                    .line()
+                    .line("你需要到达{MV}阶段才能制作它", MV)
+                    .line()
+                    .line("{无法通过超净间获取超净环境！必须使用超净维护仓！}", RED))
             .task(Task.item(MultiBlockA.LARGE_STEAM_CIRCUIT_ASSEMBLER))
             .dependsOn(PRECISION_STEAM_MECHANISM, AeChapter.WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES));
 

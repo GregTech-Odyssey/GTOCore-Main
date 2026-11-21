@@ -58,14 +58,13 @@ public final class QuestBookContents {
             .showLockIcons(false));
 
     public static final QuestGroup ROOT = QuestGroup.root(g -> g
-            .chapters(TipsChapter.CHAPTER)
+            .chapters(GregtechOdysseyChapter.CHAPTER, TipsChapter.CHAPTER)
             .devChapters(SopDatabaseChapter.CHAPTER, UtilChapter.CHAPTER)
             .chapters(ShopChapter.CHAPTER));
 
     public static final QuestGroup MAIN = QuestGroup.of("main", g -> g
             .title("主线")
             .chapters(
-                    GregtechOdysseyChapter.CHAPTER,
                     StoneageChapter.CHAPTER,
                     SteamChapter.CHAPTER,
                     UlvChapter.CHAPTER,

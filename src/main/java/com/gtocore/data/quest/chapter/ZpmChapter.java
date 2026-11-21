@@ -173,7 +173,8 @@ public final class ZpmChapter {
             .at(-11, -2)
             .desc(d -> d.line("尽管你可能没有做过小型的，但我依然建议你直接做大型的"))
             .task(Task.item(MultiBlockD.LARGE_INCUBATOR))
-            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE));
+            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
+            .hideDependentLines());
 
     public static final Quest RADIATION_HATCH = CHAPTER.quest("radiation_hatch", q -> q
             .at(-11, -4)
@@ -358,8 +359,7 @@ public final class ZpmChapter {
                     Task.checkmark(),
                     Task.item(GTMaterials.Bacteria.getBucket()).optional(),
                     Task.item(GTOMaterials.RapidlyReplicatingAnimalCells.getBucket()).optional())
-            .dependsOn(I_NEED_DNA_3, LARGE_INCUBATOR, Q_6742F9E1)
-            .hideDependencyLines());
+            .dependsOn(I_NEED_DNA_3, LARGE_INCUBATOR, Q_6742F9E1));
 
     public static final Quest PLURIPOTENCY_INDUCTION_GENE_THERAPY_FLUID_BUCKET = CHAPTER.quest("pluripotency_induction_gene_therapy_fluid_bucket", q -> q
             .at(-4, 4)
@@ -387,6 +387,7 @@ public final class ZpmChapter {
 
     public static final Quest STEM_CELLS = CHAPTER.quest("stem_cells", q -> q
             .at(-2, 6)
+            .title("干细胞")
             .subtitle("生命自此繁衍")
             .desc(d -> d
                     .line("终于！现在你可以走向{湿件}处理器了！", DARK_RED)

@@ -505,6 +505,7 @@ public final class HvChapter {
 
     public static final Quest POLYTETRAFLUOROETHYLENE_INGOT = CHAPTER.quest("polytetrafluoroethylene_ingot", q -> q
             .at(7.5, -6)
+            .title("聚四氟乙烯条")
             .desc(d -> d
                     .line("{聚四氟乙烯}是{聚乙烯}的进阶版本，它能用在许多用得到{聚乙烯}的地方并且消耗减半", GOLD, YELLOW, YELLOW)
                     .line()
@@ -562,7 +563,8 @@ public final class HvChapter {
             .dependsOn(ENDER_EYE, MV_FIELD_GENERATOR));
 
     public static final Quest PROGRAMMABLE_CHAMBER_ROOM = CHAPTER.quest("programmable_chamber_room", q -> q
-            .at(4.5, -4.5).minWidth(250)
+            .at(4.5, -4.5)
+            .nodeScale(1.25).minWidth(250)
             .icon(GTAEMachines.VIRTUAL_ITEM_SUPPLY_MACHINE)
             .title("{可编程仓室}", YELLOW)
             .subtitle("可编程仓室")

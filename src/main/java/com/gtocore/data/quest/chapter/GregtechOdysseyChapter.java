@@ -29,7 +29,7 @@ import static com.gtolib.api.quest.QuestStyle.*;
 public final class GregtechOdysseyChapter {
 
     public static final QuestChapter CHAPTER = QuestChapter.of("gregtech_odyssey", c -> c
-            .title("0. 欢迎入职格雷科技有限公司™")
+            .title("欢迎入职格雷科技有限公司™")
             .subtitle("Hello World!")
             .iconStack(
                     () -> QuestStacks.unbreakable(QuestStacks.enchanted(QuestStacks.enchanted(ToolHelper.get(GTOToolType.VAJRA_IV, GTOMaterials.Enderium), Enchantments.BLOCK_FORTUNE, 8), Enchantments.MOB_LOOTING, 8))));

@@ -221,7 +221,8 @@ public final class EvChapter {
                     .line()
                     .line("随即解锁的极其有用的三种合金都需要钨元素"))
             .task(Task.item(TagPrefix.dust, GTMaterials.Tungsten))
-            .dependsOn(RAW_SCHEELITE));
+            .dependsOn(RAW_SCHEELITE)
+            .mainNode());
 
     public static final Quest TUNGSTEN_STEEL_INGOT = CHAPTER.quest("tungsten_steel_ingot", q -> q
             .at(5, -2)
@@ -317,8 +318,7 @@ public final class EvChapter {
             .at(9, -4.5)
             .desc(d -> d.line("T4级别的线圈方块，集合了你至今为止所有的矿处产线成果"))
             .task(Task.item(GTBlocks.COIL_RTMALLOY))
-            .dependsOn(RTM_ALLOY_INGOT)
-            .hideDependentLines());
+            .dependsOn(RTM_ALLOY_INGOT));
 
     public static final Quest URANIUM_TRIPLATINUM_INGOT = CHAPTER.quest("uranium_triplatinum_ingot", q -> q
             .at(5.5, -13)
