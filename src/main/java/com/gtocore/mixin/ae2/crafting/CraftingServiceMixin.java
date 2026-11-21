@@ -4,6 +4,7 @@ import com.gtocore.integration.ae.hooks.ITemporaryCraftableService;
 
 import com.gtolib.api.ae2.crafting.OptimizedCalculation;
 import com.gtolib.api.machine.impl.part.CraftingInterfacePartMachine;
+import com.gtolib.api.wireless.energy.MachineMapCrafting;
 import com.gtolib.utils.GTOUtils;
 
 import net.minecraft.nbt.CompoundTag;
@@ -37,7 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 @Mixin(CraftingService.class)
-public abstract class CraftingServiceMixin implements ITemporaryCraftableService {
+public abstract class CraftingServiceMixin implements ITemporaryCraftableService, MachineMapCrafting.Updates {
 
     @Shadow(remap = false)
     @Final
@@ -61,6 +62,18 @@ public abstract class CraftingServiceMixin implements ITemporaryCraftableService
     private NetworkCraftingProviders craftingProviders;
     @Unique
     private IPatternDetails gto$tempPatternDetails = null;
+    @Unique
+    private long gto$mapCraftingRevision;
+
+    @Override
+    public long gto$getMapCraftingRevision() {
+        return gto$mapCraftingRevision;
+    }
+
+    @Override
+    public void gto$markMapCraftingChanged() {
+        gto$mapCraftingRevision++;
+    }
 
     @Inject(method = "onServerEndTick", at = @At(value = "INVOKE", target = "Ljava/util/Map;values()Ljava/util/Collection;"), remap = false, cancellable = true)
     private void onServerEndTick(CallbackInfo ci) {
@@ -102,6 +115,7 @@ public abstract class CraftingServiceMixin implements ITemporaryCraftableService
                 }
             }
         }
+        gto$markMapCraftingChanged();
     }
 
     /**

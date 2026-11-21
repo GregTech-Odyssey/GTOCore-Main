@@ -11,6 +11,7 @@ import com.gtolib.api.ae2.IPatternProviderLogic;
 import com.gtolib.api.ae2.PushBatch;
 import com.gtolib.api.ae2.pattern.IDetails;
 import com.gtolib.api.ae2.pattern.IParallelPatternDetails;
+import com.gtolib.api.wireless.energy.MachineMapCrafting;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 
@@ -61,6 +62,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
     private ExecutingCraftingJob job = null;
 
     private Consumer<AEKey> listener = null;
+    private boolean mapCpuActive;
 
     private final TaskBatch batch = new TaskBatch();
 
@@ -103,6 +105,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         var craftId = UUID.randomUUID();
         var linkCpu = new CraftingLink(CraftingCpuHelper.generateLinkData(craftId, requester == null, false), cluster);
         this.job = new ExecutingCraftingJob(plan, this::postChange, linkCpu, playerId, missingIng);
+        MachineMapCrafting.markChanged(grid);
         this.job.followJob = src instanceof CraftingJobSource craftingSource && craftingSource.isFollowing();
         cluster.updateOutput(plan.finalOutput());
         cluster.markDirty();
@@ -123,7 +126,12 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
 
     @Override
     public void tickCraftingLogic(IEnergyService eg, CraftingService cc) {
-        if (!cluster.isActive()) return;
+        boolean active = cluster.isActive();
+        if (this.job != null && mapCpuActive != active) {
+            mapCpuActive = active;
+            ((MachineMapCrafting.Updates) cc).gto$markMapCraftingChanged();
+        }
+        if (!active) return;
         cantStoreItems = false;
         if (this.job == null) {
             this.storeItems();
@@ -137,7 +145,9 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
             return;
         }
 
-        if (executeCrafting(cluster.getCoProcessors(), cc, eg, cluster.getLevel()) == 0) {
+        if (executeCrafting(cluster.getCoProcessors(), cc, eg, cluster.getLevel()) != 0) {
+            ((MachineMapCrafting.Updates) cc).gto$markMapCraftingChanged();
+        } else {
             GenericStack stack = getFinalJobOutput();
             if (job != null && job.isOrder && stack != null) {
                 // the job is crafting an order and is waiting for an order, which means its dependencies have been
@@ -254,6 +264,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
                 }
                 if (!batch.powered(CraftingCpuHelper.calculatePatternPower(inputs))) break;
 
+                long remainingBeforePush = progress.value;
                 if (iCraftingProvider instanceof IPatternProviderLogic logic) {
                     var result = logic.gtolib$pushPattern(batch);
                     if (result != IPatternProviderLogic.PushResult.PATTERN_DOES_NOT_EXIST) {
@@ -279,6 +290,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
                 } else {
                     continue;
                 }
+                job.recordSubmission(iCraftingProvider, pattern, remainingBeforePush - progress.value);
                 if (batch.stop == TaskBatch.STOP_ALL) break taskLoop;
                 if (batch.stop == TaskBatch.STOP_TASK) continue taskLoop;
                 if (batch.inputs() == null) break;
@@ -502,6 +514,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
             }
             job.tt.gtolib$decrementItems(amount, what.getType());
             cluster.markDirty();
+            MachineMapCrafting.markChanged(cluster.getGrid());
         }
 
         long inserted = amount;
@@ -536,9 +549,10 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
     }
 
     public void setPaused(boolean paused) {
-        if (this.job != null) {
+        if (this.job != null && this.job.paused != paused) {
             this.job.paused = paused;
             cluster.markDirty();
+            MachineMapCrafting.markChanged(cluster.getGrid());
         }
     }
 
@@ -666,6 +680,33 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         return this.pendingRequests.get(template);
     }
 
+    @FunctionalInterface
+    public interface ProviderTaskConsumer {
+
+        void accept(IPatternDetails pattern, long remaining, long submitted);
+    }
+
+    public void forEachProviderTask(ICraftingProvider provider, OpenCacheHashSet<IPatternDetails> mountedPatterns, ProviderTaskConsumer consumer) {
+        var currentJob = job;
+        if (currentJob == null) return;
+        var submitted = currentJob.submitted == null ? null : currentJob.submitted.get(provider);
+        for (var pattern : mountedPatterns) {
+            var task = currentJob.tasks.get(pattern);
+            if (task != null && task.value > 0) {
+                consumer.accept(pattern, task.value, submitted == null ? 0 : submitted.getLong(pattern));
+            }
+        }
+        if (submitted == null) return;
+        for (var it = submitted.object2LongEntrySet().fastIterator(); it.hasNext();) {
+            var entry = it.next();
+            var pattern = entry.getKey();
+            var task = currentJob.tasks.get(pattern);
+            if (task == null || task.value <= 0 || !mountedPatterns.contains(pattern)) {
+                consumer.accept(pattern, 0, entry.getLongValue());
+            }
+        }
+    }
+
     @Override
     public void getAllItems(KeyCounter out) {
         out.addAll(this.inventory.list);
@@ -697,6 +738,7 @@ public class OptimizedCraftingCpuLogic extends CraftingCpuLogic {
         notifyJobOwner(job, success ? CraftingJobStatusPacket.Status.FINISHED : CraftingJobStatusPacket.Status.CANCELLED);
 
         this.job = null;
+        MachineMapCrafting.markChanged(cluster.getGrid());
 
         this.pendingRequests.clear();
         this.craftingResults.clear();

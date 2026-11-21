@@ -1,9 +1,14 @@
 package com.gtocore.gametest.crafting;
 
+import com.gtocore.mixin.ae2.crafting.NetworkCraftingProvidersAccessor;
+
+import com.gtolib.api.wireless.energy.MachineMapCrafting;
+
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.common.crafting.IShapedRecipe;
@@ -12,9 +17,17 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.PatternDetailsHelper;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
 import appeng.api.networking.crafting.CalculationStrategy;
+import appeng.api.networking.crafting.ICraftingProvider;
+import appeng.api.networking.energy.IEnergyService;
+import appeng.api.networking.storage.IStorageService;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.GenericStack;
+import appeng.me.service.CraftingService;
+import appeng.me.service.helpers.NetworkCraftingProviders;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import org.slf4j.Logger;
@@ -22,11 +35,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 在真实服务端里用整合包的真实配方编码合成/切石样板，经 GTO 的解码路径后交给 V2 计算，锚定合成样板相关的行为。
@@ -37,6 +52,73 @@ public final class CraftingV2GameTests {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("gtocore-gametest");
     private static final long REQUEST = 1000;
+
+    @GameTest(template = "empty")
+    public static void mapCraftingRevisionIsGridLocal(GameTestHelper helper) {
+        var storage = GameCraftEnv.proxy(IStorageService.class, (p, m, a) -> null);
+        var energy = GameCraftEnv.proxy(IEnergyService.class, (p, m, a) -> null);
+        var services = new CraftingService[2];
+        var firstGrid = GameCraftEnv.proxy(IGrid.class, (p, m, a) -> services[0]);
+        var secondGrid = GameCraftEnv.proxy(IGrid.class, (p, m, a) -> services[1]);
+        services[0] = new CraftingService(firstGrid, storage, energy);
+        services[1] = new CraftingService(secondGrid, storage, energy);
+
+        var first = (MachineMapCrafting.Updates) services[0];
+        var second = (MachineMapCrafting.Updates) services[1];
+        long initialFirst = first.gto$getMapCraftingRevision();
+        long initialSecond = second.gto$getMapCraftingRevision();
+        MachineMapCrafting.markChanged(firstGrid);
+        MachineMapCrafting.markChanged(firstGrid);
+        if (first.gto$getMapCraftingRevision() != initialFirst + 2 || second.gto$getMapCraftingRevision() != initialSecond) {
+            helper.fail("crafting changes must advance only the revision of their own grid");
+            return;
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void mapPatternLookupPreservesProviderRotation(GameTestHelper helper) {
+        var encoded = PatternDetailsHelper.encodeProcessingPattern(
+                new GenericStack[] { new GenericStack(AEItemKey.of(Items.IRON_ORE), 1) },
+                new GenericStack[] { new GenericStack(AEItemKey.of(Items.IRON_INGOT), 1) });
+        var pattern = decode(encoded, helper.getLevel());
+        if (pattern == null) {
+            helper.fail("could not decode processing pattern");
+            return;
+        }
+        var patterns = List.of(pattern);
+        InvocationHandler offerPattern = (p, m, a) -> switch (m.getName()) {
+            case "getAvailablePatterns" -> patterns;
+            case "getEmitableItems" -> Set.of();
+            case "getPatternPriority" -> 0;
+            default -> throw new UnsupportedOperationException(m.getName());
+        };
+        var first = GameCraftEnv.proxy(ICraftingProvider.class, offerPattern);
+        var second = GameCraftEnv.proxy(ICraftingProvider.class, offerPattern);
+        var firstNode = GameCraftEnv.proxy(IGridNode.class, (p, m, a) -> first);
+        var secondNode = GameCraftEnv.proxy(IGridNode.class, (p, m, a) -> second);
+        var registry = new NetworkCraftingProviders();
+        registry.addProvider(firstNode);
+        registry.addProvider(secondNode);
+
+        var states = ((NetworkCraftingProvidersAccessor) registry).gto$getProviderStates();
+        var state = (NetworkCraftingProvidersAccessor.ProviderStateAccessor) states.get(secondNode);
+        if (state == null || !patterns.equals(state.gto$getMountedPatterns()) || registry.getMediums(pattern).iterator().next() != first) {
+            helper.fail("reading mounted patterns changed which provider is selected first");
+            return;
+        }
+        state.gto$getMountedPatterns();
+        if (registry.getMediums(pattern).iterator().next() != second) {
+            helper.fail("reading mounted patterns advanced the round-robin cursor");
+            return;
+        }
+        registry.removeProvider(secondNode);
+        if (states.containsKey(secondNode)) {
+            helper.fail("removed provider is still present in the mounted pattern lookup");
+            return;
+        }
+        helper.succeed();
+    }
 
     /**
      * 场景：整合包里每一张工作台配方，按"不允许替换"和"允许替换＋流体替换"各编码一次样板并解码。

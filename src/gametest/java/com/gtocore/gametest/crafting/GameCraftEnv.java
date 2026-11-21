@@ -116,7 +116,7 @@ final class GameCraftEnv {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T proxy(Class<T> type, InvocationHandler handler) {
+    static <T> T proxy(Class<T> type, InvocationHandler handler) {
         return (T) Proxy.newProxyInstance(GameCraftEnv.class.getClassLoader(), new Class<?>[] { type }, (p, m, a) -> {
             if (m.getDeclaringClass() == Object.class) {
                 return switch (m.getName()) {
