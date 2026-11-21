@@ -219,6 +219,15 @@ public final class QuestEditQueue {
                     }
                 }
             }
+            case QuestEdits.DECO_LINE_DELETE -> {
+                for (int i = 0; i < PENDING.size(); i++) {
+                    var p = PENDING.get(i);
+                    if (p.type().equals(QuestEdits.DECO_LINE_DELETE) && p.target().equals(op.target())) {
+                        PENDING.set(i, mergeDelete(p, op));
+                        return;
+                    }
+                }
+            }
             default -> {}
         }
         var key = op.key();
@@ -325,7 +334,7 @@ public final class QuestEditQueue {
     }
 
     private static int order(Op op) {
-        if (op.type().equals(QuestEdits.IMAGE_DELETE)) return 3;
+        if (op.type().equals(QuestEdits.IMAGE_DELETE) || op.type().equals(QuestEdits.DECO_LINE_DELETE)) return 3;
         if (!op.type().equals(QuestEdits.DELETE)) return 0;
         return op.target().startsWith("q:") ? 2 : 1;
     }

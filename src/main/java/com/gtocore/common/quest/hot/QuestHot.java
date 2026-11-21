@@ -1,6 +1,7 @@
 package com.gtocore.common.quest.hot;
 
 import com.gtocore.common.quest.hot.QuestEdits.Op;
+import com.gtocore.common.quest.hot.QuestSource.DecoLineDecl;
 import com.gtocore.common.quest.hot.QuestSource.ImageDecl;
 import com.gtocore.common.quest.hot.QuestSource.LinkDecl;
 import com.gtocore.common.quest.hot.QuestSource.QuestDecl;
@@ -10,6 +11,7 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestBook;
 import com.gtolib.api.quest.QuestChapter;
+import com.gtolib.api.quest.QuestDecoLine;
 import com.gtolib.api.quest.QuestDependency;
 import com.gtolib.api.quest.QuestIcon;
 import com.gtolib.api.quest.QuestLang;
@@ -357,6 +359,92 @@ public final class QuestHot {
         }
         var forward = List.of(Op.imageDelete(chapter.id(), chapter.id(), merged.toString()));
         return QuestEditQueue.submit("删除 " + identities.size() + " 张图片", forward, inverse);
+    }
+
+    public record DecoLineCheck(boolean present, String error) {
+
+        public boolean allowed() {
+            return error.isEmpty();
+        }
+    }
+
+    public static DecoLineCheck checkDecoLine(QuestChapter chapter, QuestDependency from, QuestDependency to) {
+        var blocked = guard();
+        if (blocked != null) return new DecoLineCheck(false, blocked.message());
+        var fromQuest = questOf(from);
+        var toQuest = questOf(to);
+        if (fromQuest == null || toQuest == null) return new DecoLineCheck(false, "找不到装饰线端点的任务");
+        if (!inChapter(chapter, from) || !inChapter(chapter, to)) return new DecoLineCheck(false, "装饰线端点必须在当前章节");
+        if (from == to || fromQuest == toQuest) return new DecoLineCheck(false, "装饰线不能连到自己");
+        for (var line : chapter.lines()) {
+            var otherFrom = questOf(line.from());
+            var otherTo = questOf(line.to());
+            if (otherFrom == fromQuest && otherTo == toQuest || otherFrom == toQuest && otherTo == fromQuest) {
+                return new DecoLineCheck(true, "这条装饰线已经存在");
+            }
+        }
+        if (dependsOnQuest(fromQuest, toQuest)) return new DecoLineCheck(false, "装饰线与真实依赖方向相反，请改画真实依赖方向");
+        return new DecoLineCheck(false, "");
+    }
+
+    public static Result addDecoLine(QuestChapter chapter, QuestDependency from, QuestDependency to) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var check = checkDecoLine(chapter, from, to);
+        if (!check.allowed()) return Result.fail(check.error());
+        var src = source();
+        var fromDecl = from instanceof QuestLink link ? src.declOf(link) : src.declOf((Quest) from);
+        var toDecl = to instanceof QuestLink link ? src.declOf(link) : src.declOf((Quest) to);
+        if (fromDecl == null || toDecl == null) return Result.fail("找不到装饰线端点的源码字段");
+        if (fromDecl.field == null || toDecl.field == null) return Result.fail("装饰线端点必须是任务或镜像字段，内联镜像请先改成字段");
+        if (from instanceof QuestLink link && link.chapter() != chapter) return Result.fail("装饰线端点必须在当前章节");
+        if (to instanceof QuestLink link && link.chapter() != chapter) return Result.fail("装饰线端点必须在当前章节");
+        var identity = "l:" + chapter.id() + ":add:" + System.nanoTime();
+        var fromText = src.refText(fromDecl.file, fromDecl);
+        var toText = src.refText(toDecl.file, toDecl);
+        var forward = List.of(Op.decoLineAdd(chapter.id(), identity, fromText, toText, null, -1));
+        var inverse = List.of(Op.decoLineDelete(chapter.id(), chapter.id(), identity));
+        return QuestEditQueue.submit("添加装饰线", forward, inverse);
+    }
+
+    public static Result deleteDecoLine(QuestChapter chapter, QuestDecoLine line) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        int index = chapter.declaredLines().indexOf(line);
+        if (index < 0) return Result.fail("找不到装饰线");
+        var identity = "l:" + chapter.id() + ":" + index;
+        var decl = source().find(identity);
+        if (!(decl instanceof DecoLineDecl deco) || !deco.valid) return Result.fail("找不到装饰线源码");
+        var src = source();
+        var fromText = deco.fromRef == null ? "" : deco.file.text(deco.fromRef);
+        var toText = deco.toRef == null ? "" : deco.file.text(deco.toRef);
+        var text = deco.file.text(deco.call);
+        var forward = List.of(Op.decoLineDelete(chapter.id(), chapter.id(), identity));
+        var inverse = List.of(Op.decoLineAdd(chapter.id(), identity, fromText, toText, text, deco.declarationIndex));
+        return QuestEditQueue.submit("删除装饰线", forward, inverse);
+    }
+
+    private static boolean inChapter(QuestChapter chapter, QuestDependency object) {
+        if (object instanceof Quest quest) return quest.chapter() == chapter;
+        if (object instanceof QuestLink link) return link.chapter() == chapter;
+        return false;
+    }
+
+    @Nullable
+    private static Quest questOf(QuestDependency object) {
+        if (object instanceof Quest quest) return quest;
+        if (object instanceof QuestLink link) return link.target();
+        return null;
+    }
+
+    private static boolean dependsOnQuest(Quest dependent, Quest prerequisite) {
+        var dependencies = dependent.dependencies();
+        for (int i = 0; i < dependencies.size(); i++) {
+            Object dependency = dependencies.get(i);
+            var quest = dependency instanceof QuestLink link ? link.target() : dependency instanceof Quest value ? value : null;
+            if (quest == prerequisite) return true;
+        }
+        return false;
     }
 
     @Nullable
@@ -1138,6 +1226,23 @@ public final class QuestHot {
             }
         }
         deleting.addAll(extra);
+        var extraLines = new ObjectArrayList<DecoLineDecl>();
+        for (var file : src.files) {
+            for (var line : file.decoLines) {
+                if (extraLines.contains(line) || file.chapterId == null) continue;
+                var from = src.resolve(file, line.fromRef);
+                var to = src.resolve(file, line.toRef);
+                if (!deleting.contains(from) && !deleting.contains(to)) continue;
+                var id = src.identityOf(line);
+                if (id == null) return "有装饰线引用了要删除的节点，无法自动移除";
+                forward.add(Op.decoLineDelete(file.chapterId, file.chapterId, id));
+                var fromText = line.fromRef == null ? "" : line.file.text(line.fromRef);
+                var toText = line.toRef == null ? "" : line.file.text(line.toRef);
+                inverse.add(0, Op.decoLineAdd(file.chapterId, id, fromText, toText, line.file.text(line.call), line.declarationIndex));
+                allowed.add(new Allowed(file, file.start(line.call), file.end(line.call)));
+                extraLines.add(line);
+            }
+        }
         for (var decl : deleting) {
             if (decl.field == null) continue;
             for (var ref : src.referencesTo(decl)) {
@@ -1598,6 +1703,14 @@ public final class QuestHot {
         var decl = source().find(identity);
         if (!(decl instanceof ImageDecl image)) return Result.fail("找不到图片源码");
         return open(image.file.path + ":" + image.file.line(image.charStart));
+    }
+
+    public static Result openDecoLineInEditor(QuestDecoLine line) {
+        int index = line.chapter().declaredLines().indexOf(line);
+        if (index < 0) return Result.fail("找不到装饰线源码");
+        var decl = source().find("l:" + line.chapter().id() + ":" + index);
+        if (!(decl instanceof DecoLineDecl deco)) return Result.fail("找不到装饰线源码");
+        return open(deco.file.path + ":" + deco.file.line(deco.charStart));
     }
 
     private static Result open(String location) {

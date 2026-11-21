@@ -2,6 +2,7 @@ package com.gtocore.common.quest.hot;
 
 import com.gtocore.common.quest.hot.QuestSource.ChainDecl;
 import com.gtocore.common.quest.hot.QuestSource.Decl;
+import com.gtocore.common.quest.hot.QuestSource.DecoLineDecl;
 import com.gtocore.common.quest.hot.QuestSource.FileModel;
 import com.gtocore.common.quest.hot.QuestSource.ImageDecl;
 import com.gtocore.common.quest.hot.QuestSource.LinkDecl;
@@ -66,6 +67,8 @@ public final class QuestEdits {
     public static final String IMAGE_GEOM = "imageGeom";
     public static final String IMAGE_ADD = "imageAdd";
     public static final String IMAGE_DELETE = "imageDelete";
+    public static final String DECO_LINE_ADD = "decoLineAdd";
+    public static final String DECO_LINE_DELETE = "decoLineDelete";
     public static final String STYLE_IMPORT = "static com.gtolib.api.quest.QuestStyle.*";
     private static final com.google.gson.Gson GSON = new com.google.gson.Gson();
     private static final java.lang.reflect.Type ENTRIES = new com.google.gson.reflect.TypeToken<List<TextEntry>>() {}.getType();
@@ -276,6 +279,14 @@ public final class QuestEdits {
             return new Op(0, IMAGE_DELETE, target, chapter, identities, null, 0, 0, 0, 0, false, null, false, 0, 0);
         }
 
+        public static Op decoLineAdd(String chapter, String target, String fromText, String toText, @Nullable String text, int index) {
+            return new Op(0, DECO_LINE_ADD, target, chapter, fromText + "|" + toText, text, 0, 0, index, 0, false, null, false);
+        }
+
+        public static Op decoLineDelete(String chapter, String target, String identities) {
+            return new Op(0, DECO_LINE_DELETE, target, chapter, identities, null, 0, 0, 0, 0, false, null, false, 0, 0);
+        }
+
         Op withSeq(long seq) {
             return new Op(seq, type, target, chapter, arg, text, x, y, index, value, on, imports, live, w, h);
         }
@@ -302,6 +313,8 @@ public final class QuestEdits {
                 case TASK_ADD, TASK_REMOVE, REWARD_ADD, REWARD_REMOVE, REWARD_ARG_ADD -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case CREATE, COPY, DUPLICATE -> "node|" + target;
                 case IMAGE_GEOM, IMAGE_ADD, IMAGE_DELETE -> type + "|" + target;
+                case DECO_LINE_ADD -> type + "|" + target + "|" + arg;
+                case DECO_LINE_DELETE -> type + "|" + target;
                 default -> type + "|" + target;
             };
         }
@@ -342,6 +355,8 @@ public final class QuestEdits {
             case IMAGE_GEOM -> imageGeom(src, op, edit);
             case IMAGE_ADD -> imageAdd(src, op, edit);
             case IMAGE_DELETE -> imageDelete(src, op, edit);
+            case DECO_LINE_ADD -> decoLineAdd(src, op, edit);
+            case DECO_LINE_DELETE -> decoLineDelete(src, op, edit);
             default -> "未知操作 " + op.type;
         };
         if (error != null || edit.isEmpty()) return error;
@@ -970,7 +985,7 @@ public final class QuestEdits {
             if (total == 0 || total != deleted) continue;
             var argument = image.decorate.getArguments().get(0);
             if (!(argument instanceof LambdaExpressionTree lambda) || !(lambda.getBody() instanceof ExpressionTree body)) continue;
-            if (decorationHasOtherCalls(lambda)) continue;
+            if (decorationHasOtherCalls(lambda, "image")) continue;
             edit.replaceRange(file, file.start(body), file.end(body), "{}");
             replacedBodies.add(image.decorate);
         }
@@ -991,10 +1006,88 @@ public final class QuestEdits {
         return null;
     }
 
-    private static boolean decorationHasOtherCalls(LambdaExpressionTree lambda) {
+    @Nullable
+    private static String decoLineAdd(QuestSource src, Op op, Edit edit) {
+        var file = src.byChapter.get(op.chapter);
+        if (file == null || file.chapterField == null || file.classBodyEnd < 0) return "找不到章节 " + op.chapter + " 的源码";
+        var call = op.text;
+        if (call == null || call.isEmpty()) {
+            var refs = op.arg == null ? new String[0] : op.arg.split("\\|", 2);
+            if (refs.length != 2) return "装饰线端点缺失";
+            call = ".line(" + refs[0] + ", " + refs[1] + ")";
+        }
+        if (!file.decorateCalls.isEmpty()) {
+            var last = file.decorateCalls.get(file.decorateCalls.size() - 1);
+            var argument = last.getArguments().get(0);
+            if (argument instanceof LambdaExpressionTree lambda && lambda.getBody() instanceof ExpressionTree body) {
+                int lineStart = file.content.lastIndexOf('\n', file.start(body) - 1) + 1;
+                var indent = file.content.substring(lineStart, file.start(body)).isBlank() ? file.indentAt(file.start(body)) : file.indentAt(file.start(body)) + "        ";
+                edit.insert(file, file.end(body), "\n" + indent + call);
+                return null;
+            }
+        }
+        var indent = file.chapter == null ? "    " : file.indentAt(file.start(file.chapter.var));
+        edit.insert(file, file.classBodyEnd, "\n\n" + indent + "static {\n" + indent + "    " + file.chapterField + ".decorate(d -> d\n" +
+                indent + "        " + call + ");\n" + indent + "}");
+        return null;
+    }
+
+    @Nullable
+    private static String decoLineDelete(QuestSource src, Op op, Edit edit) {
+        var file = src.byChapter.get(op.chapter);
+        if (file == null) return "找不到章节 " + op.chapter + " 的源码";
+        if (op.arg == null || op.arg.isEmpty()) return "没有要删除的装饰线";
+        var decls = new ObjectArrayList<DecoLineDecl>(4);
+        for (var identity : op.arg.split(",")) {
+            if (identity.isEmpty()) continue;
+            if (identity.startsWith("l:" + op.chapter + ":add:")) {
+                if (file.decoLines.isEmpty()) return "找不到装饰线源码 " + identity;
+                decls.add(file.decoLines.get(file.decoLines.size() - 1));
+                continue;
+            }
+            var decl = src.find(identity);
+            if (!(decl instanceof DecoLineDecl line) || !line.valid) return "找不到装饰线源码 " + identity;
+            decls.add(line);
+        }
+        decls.sort((a, b) -> Integer.compare(b.charStart, a.charStart));
+        var replacedBodies = new ObjectArrayList<MethodInvocationTree>(2);
+        for (var line : decls) {
+            if (replacedBodies.contains(line.decorate)) continue;
+            int total = 0, deleted = 0;
+            for (var other : file.decoLines) {
+                if (other.decorate != line.decorate) continue;
+                total++;
+                if (decls.contains(other)) deleted++;
+            }
+            if (total == 0 || total != deleted) continue;
+            var argument = line.decorate.getArguments().get(0);
+            if (decorationHasOtherCalls(argument, "line")) continue;
+            if (!(argument instanceof LambdaExpressionTree lambda) || !(lambda.getBody() instanceof ExpressionTree body)) continue;
+            edit.replaceRange(file, file.start(body), file.end(body), "{}");
+            replacedBodies.add(line.decorate);
+        }
+        for (var line : decls) {
+            if (replacedBodies.contains(line.decorate)) continue;
+            var content = line.file.content;
+            int start = line.file.end(((MemberSelectTree) line.call.getMethodSelect()).getExpression());
+            int end = line.chainEnd;
+            int lineStart = content.lastIndexOf('\n', start - 1) + 1;
+            int lineEnd = content.indexOf('\n', end);
+            if (lineEnd < 0) lineEnd = content.length();
+            if (content.substring(lineStart, start).isBlank() && content.substring(end, lineEnd).isBlank()) {
+                start = lineStart;
+                end = lineEnd < content.length() ? lineEnd + 1 : lineEnd;
+            }
+            edit.replaceRange(line.file, start, end, "");
+        }
+        return null;
+    }
+
+    private static boolean decorationHasOtherCalls(ExpressionTree argument, String skip) {
+        if (!(argument instanceof LambdaExpressionTree lambda)) return true;
         Tree e = lambda.getBody();
         while (e instanceof MethodInvocationTree call && call.getMethodSelect() instanceof MemberSelectTree select) {
-            if (!select.getIdentifier().contentEquals("image")) return true;
+            if (!select.getIdentifier().contentEquals(skip)) return true;
             e = select.getExpression();
         }
         return false;

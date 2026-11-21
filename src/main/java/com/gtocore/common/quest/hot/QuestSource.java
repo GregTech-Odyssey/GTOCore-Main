@@ -5,6 +5,7 @@ import com.gtocore.data.quest.QuestTextures;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestBook;
 import com.gtolib.api.quest.QuestChapter;
+import com.gtolib.api.quest.QuestDependency;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestObject;
 import com.gtolib.api.quest.QuestTexture;
@@ -220,6 +221,19 @@ public final class QuestSource {
                 }
                 return null;
             }
+            case 'l' -> {
+                var parts = body.split(":", 2);
+                if (parts.length != 2) return null;
+                var file = byChapter.get(parts[0]);
+                if (file == null) return null;
+                int index;
+                try {
+                    index = Integer.parseInt(parts[1]);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+                return index >= 0 && index < file.decoLines.size() ? file.decoLines.get(index) : null;
+            }
             default -> {
                 return null;
             }
@@ -230,6 +244,7 @@ public final class QuestSource {
     String identityOf(Decl decl) {
         if (decl instanceof QuestDecl quest) return "q:" + quest.key();
         if (decl instanceof ImageDecl image) return "i:" + image.file.chapterId + ":" + image.charStart + ":" + image.declarationIndex;
+        if (decl instanceof DecoLineDecl line) return "l:" + line.file.chapterId + ":" + line.declarationIndex;
         if (!(decl instanceof LinkDecl link)) return null;
         if (link.field != null) return "c:" + link.file.chapterId + ":" + link.field;
         if (!(resolve(link.file, link.targetRef) instanceof QuestDecl target)) return null;
@@ -437,25 +452,47 @@ public final class QuestSource {
             var declared = chapter.declaredImages();
             if (images.size() != declared.size()) {
                 errors.add(file.name() + "：章节 " + chapter.id() + " 的 decorate 图片 " + images.size() + " 张，任务书构建出 " + declared.size() + " 张");
-                continue;
+            } else {
+                for (int i = 0; i < images.size(); i++) {
+                    var decl = images.get(i);
+                    var image = declared.get(i);
+                    if (!decl.valid) {
+                        errors.add(decl.where() + "：图片必须写成 .image(QuestImage.of(QuestTextures.字段, x, y, w, h))");
+                        continue;
+                    }
+                    var field = textureField(image.texture());
+                    if (field == null) {
+                        errors.add(decl.where() + "：纹理未在 QuestTextures 登记");
+                        continue;
+                    }
+                    if (!field.equals(decl.textureField)) errors.add(decl.where() + "：纹理 " + decl.textureField + " 与任务书 " + field + " 不一致");
+                    if (Math.abs(decl.x - image.x()) >= 1e-9) errors.add(decl.where() + "：x " + decl.x + " 与任务书 " + image.x() + " 不一致");
+                    if (Math.abs(decl.y - image.y()) >= 1e-9) errors.add(decl.where() + "：y " + decl.y + " 与任务书 " + image.y() + " 不一致");
+                    if (Math.abs(decl.width - image.width()) >= 1e-9) errors.add(decl.where() + "：宽 " + decl.width + " 与任务书 " + image.width() + " 不一致");
+                    if (Math.abs(decl.height - image.height()) >= 1e-9) errors.add(decl.where() + "：高 " + decl.height + " 与任务书 " + image.height() + " 不一致");
+                }
             }
-            for (int i = 0; i < images.size(); i++) {
-                var decl = images.get(i);
-                var image = declared.get(i);
-                if (!decl.valid) {
-                    errors.add(decl.where() + "：图片必须写成 .image(QuestImage.of(QuestTextures.字段, x, y, w, h))");
-                    continue;
+            var decoLines = file.decoLines;
+            var declaredLines = chapter.declaredLines();
+            if (decoLines.size() != declaredLines.size()) {
+                errors.add(file.name() + "：章节 " + chapter.id() + " 的 decorate 装饰线 " + decoLines.size() + " 条，任务书构建出 " + declaredLines.size() + " 条");
+            } else {
+                for (int i = 0; i < decoLines.size(); i++) {
+                    var decl = decoLines.get(i);
+                    var line = declaredLines.get(i);
+                    if (!decl.valid) {
+                        errors.add(decl.where() + "：装饰线必须写成 .line(起点, 终点)");
+                        continue;
+                    }
+                    var from = resolve(file, decl.fromRef);
+                    var to = resolve(file, decl.toRef);
+                    if (!(from instanceof QuestDecl) && !(from instanceof LinkDecl)) errors.add(decl.where() + "：装饰线起点必须是任务或复制节点字段");
+                    if (!(to instanceof QuestDecl) && !(to instanceof LinkDecl)) errors.add(decl.where() + "：装饰线终点必须是任务或复制节点字段");
+                    var expectedFrom = endpointDecl(line.from());
+                    var expectedTo = endpointDecl(line.to());
+                    if (from != null && expectedFrom != null && from != expectedFrom) errors.add(decl.where() + "：装饰线起点与任务书不一致");
+                    if (to != null && expectedTo != null && to != expectedTo) errors.add(decl.where() + "：装饰线终点与任务书不一致");
                 }
-                var field = textureField(image.texture());
-                if (field == null) {
-                    errors.add(decl.where() + "：纹理未在 QuestTextures 登记");
-                    continue;
-                }
-                if (!field.equals(decl.textureField)) errors.add(decl.where() + "：纹理 " + decl.textureField + " 与任务书 " + field + " 不一致");
-                if (Math.abs(decl.x - image.x()) >= 1e-9) errors.add(decl.where() + "：x " + decl.x + " 与任务书 " + image.x() + " 不一致");
-                if (Math.abs(decl.y - image.y()) >= 1e-9) errors.add(decl.where() + "：y " + decl.y + " 与任务书 " + image.y() + " 不一致");
-                if (Math.abs(decl.width - image.width()) >= 1e-9) errors.add(decl.where() + "：宽 " + decl.width + " 与任务书 " + image.width() + " 不一致");
-                if (Math.abs(decl.height - image.height()) >= 1e-9) errors.add(decl.where() + "：高 " + decl.height + " 与任务书 " + image.height() + " 不一致");
             }
         }
         return errors;
@@ -468,6 +505,13 @@ public final class QuestSource {
         for (var entry : QuestTextures.ALL) {
             if (entry.texture().toString().equals(key)) return entry.field();
         }
+        return null;
+    }
+
+    @Nullable
+    private Decl endpointDecl(QuestDependency endpoint) {
+        if (endpoint instanceof Quest quest) return declOf(quest);
+        if (endpoint instanceof QuestLink link) return declOf(link);
         return null;
     }
 
@@ -521,6 +565,8 @@ public final class QuestSource {
         final ObjectArrayList<QuestDecl> quests = new ObjectArrayList<>();
         final ObjectArrayList<LinkDecl> links = new ObjectArrayList<>();
         final ObjectArrayList<ImageDecl> images = new ObjectArrayList<>();
+        final ObjectArrayList<DecoLineDecl> decoLines = new ObjectArrayList<>();
+        final ObjectArrayList<MethodInvocationTree> decorateCalls = new ObjectArrayList<>();
         final ObjectArrayList<TableDecl> tables = new ObjectArrayList<>();
         final ObjectOpenHashSet<MethodInvocationTree> mainNodeCalls = new ObjectOpenHashSet<>();
         final ObjectArrayList<String> imports = new ObjectArrayList<>();
@@ -648,6 +694,7 @@ public final class QuestSource {
                     if (node.getMethodSelect() instanceof MemberSelectTree select && select.getIdentifier().contentEquals("decorate") &&
                             node.getArguments().size() == 1 && node.getArguments().get(0) instanceof LambdaExpressionTree lambda &&
                             lambda.getBody() instanceof ExpressionTree body) {
+                        decorateCalls.add(node);
                         collectDecorations(node, body);
                     }
                     return super.visitMethodInvocation(node, v);
@@ -660,13 +707,24 @@ public final class QuestSource {
             var chain = new ObjectArrayList<MethodInvocationTree>(4);
             ExpressionTree e = body;
             while (e instanceof MethodInvocationTree call && call.getMethodSelect() instanceof MemberSelectTree select) {
-                if (select.getIdentifier().contentEquals("image")) chain.add(call);
+                var name = select.getIdentifier().toString();
+                if (name.equals("image") || name.equals("line")) chain.add(call);
                 e = select.getExpression();
             }
             int indexInBlock = 0;
             for (int i = chain.size() - 1; i >= 0; i--) {
-                addImage(decorate, chain.get(i), block, indexInBlock++);
+                var call = chain.get(i);
+                var name = ((MemberSelectTree) call.getMethodSelect()).getIdentifier().toString();
+                if (name.equals("image")) addImage(decorate, call, block, indexInBlock++);
+                else addLine(decorate, call, block, indexInBlock++);
             }
+        }
+
+        private void addLine(MethodInvocationTree decorate, MethodInvocationTree call, int block, int indexInBlock) {
+            var args = call.getArguments();
+            boolean valid = args.size() == 2;
+            decoLines.add(new DecoLineDecl(this, call, decorate, block, indexInBlock, decoLines.size(), valid,
+                    valid ? args.get(0) : null, valid ? args.get(1) : null));
         }
 
         private void addImage(MethodInvocationTree decorate, MethodInvocationTree call, int block, int indexInBlock) {
@@ -737,7 +795,7 @@ public final class QuestSource {
         }
     }
 
-    abstract static sealed class Decl permits ChapterDecl, ChainDecl, LinkDecl, ImageDecl {
+    abstract static sealed class Decl permits ChapterDecl, ChainDecl, LinkDecl, ImageDecl, DecoLineDecl {
 
         final FileModel file;
         @Nullable
@@ -970,6 +1028,42 @@ public final class QuestSource {
             this.y = y;
             this.width = width;
             this.height = height;
+        }
+
+        @Override
+        String where() {
+            return file.name() + ":" + file.line(charStart);
+        }
+    }
+
+    static final class DecoLineDecl extends Decl {
+
+        final int charStart;
+        final int declarationIndex;
+        final int block;
+        final int indexInBlock;
+        final MethodInvocationTree call;
+        final MethodInvocationTree decorate;
+        final int chainEnd;
+        final boolean valid;
+        @Nullable
+        final ExpressionTree fromRef;
+        @Nullable
+        final ExpressionTree toRef;
+
+        DecoLineDecl(FileModel file, MethodInvocationTree call, MethodInvocationTree decorate, int block, int indexInBlock,
+                     int declarationIndex, boolean valid, @Nullable ExpressionTree fromRef, @Nullable ExpressionTree toRef) {
+            super(file, null, null);
+            this.call = call;
+            this.decorate = decorate;
+            this.charStart = file.start(call);
+            this.chainEnd = file.end(call);
+            this.block = block;
+            this.indexInBlock = indexInBlock;
+            this.declarationIndex = declarationIndex;
+            this.valid = valid;
+            this.fromRef = fromRef;
+            this.toRef = toRef;
         }
 
         @Override
