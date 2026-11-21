@@ -3,6 +3,7 @@ package com.gtocore.common.quest.hot;
 import com.gtocore.common.quest.hot.QuestSource.ChainDecl;
 import com.gtocore.common.quest.hot.QuestSource.Decl;
 import com.gtocore.common.quest.hot.QuestSource.FileModel;
+import com.gtocore.common.quest.hot.QuestSource.ImageDecl;
 import com.gtocore.common.quest.hot.QuestSource.LinkDecl;
 import com.gtocore.common.quest.hot.QuestSource.QuestDecl;
 import com.gtocore.common.quest.hot.QuestSource.TableDecl;
@@ -12,6 +13,7 @@ import com.gto.fastcollection.fastutil.OpenCacheHashSet;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -61,6 +63,9 @@ public final class QuestEdits {
     public static final String ICON = "icon";
     public static final String LINK_MAIN = "linkMain";
     public static final String REWARD_TIER = "rewardTier";
+    public static final String IMAGE_GEOM = "imageGeom";
+    public static final String IMAGE_ADD = "imageAdd";
+    public static final String IMAGE_DELETE = "imageDelete";
     public static final String STYLE_IMPORT = "static com.gtolib.api.quest.QuestStyle.*";
     private static final com.google.gson.Gson GSON = new com.google.gson.Gson();
     private static final java.lang.reflect.Type ENTRIES = new com.google.gson.reflect.TypeToken<List<TextEntry>>() {}.getType();
@@ -123,7 +128,13 @@ public final class QuestEdits {
     }
 
     public record Op(long seq, String type, String target, @Nullable String chapter, @Nullable String arg, @Nullable String text,
-                     double x, double y, int index, long value, boolean on, @Nullable List<String> imports, boolean live) {
+                     double x, double y, int index, long value, boolean on, @Nullable List<String> imports, boolean live,
+                     double w, double h) {
+
+        public Op(long seq, String type, String target, @Nullable String chapter, @Nullable String arg, @Nullable String text,
+                  double x, double y, int index, long value, boolean on, @Nullable List<String> imports, boolean live) {
+            this(seq, type, target, chapter, arg, text, x, y, index, value, on, imports, live, 0, 0);
+        }
 
         public static Op move(String target, double x, double y) {
             return new Op(0, MOVE, target, null, null, null, x, y, 0, 0, false, null, false);
@@ -253,16 +264,28 @@ public final class QuestEdits {
             return new Op(0, DELETE, target, null, null, null, 0, 0, 0, 0, false, null, false);
         }
 
+        public static Op imageGeom(String target, double x, double y, double w, double h) {
+            return new Op(0, IMAGE_GEOM, target, null, null, null, x, y, 0, 0, false, null, false, w, h);
+        }
+
+        public static Op imageAdd(String chapter, String target, String textureField, double x, double y, double w, double h, @Nullable String text, int index) {
+            return new Op(0, IMAGE_ADD, target, chapter, textureField, text, x, y, index, 0, false, null, false, w, h);
+        }
+
+        public static Op imageDelete(String chapter, String target, String identities) {
+            return new Op(0, IMAGE_DELETE, target, chapter, identities, null, 0, 0, 0, 0, false, null, false, 0, 0);
+        }
+
         Op withSeq(long seq) {
-            return new Op(seq, type, target, chapter, arg, text, x, y, index, value, on, imports, live);
+            return new Op(seq, type, target, chapter, arg, text, x, y, index, value, on, imports, live, w, h);
         }
 
         Op movedTo(double nx, double ny) {
-            return new Op(seq, type, target, chapter, arg, text, nx, ny, index, value, on, imports, live);
+            return new Op(seq, type, target, chapter, arg, text, nx, ny, index, value, on, imports, live, w, h);
         }
 
         Op withLive(boolean applied) {
-            return new Op(seq, type, target, chapter, arg, text, x, y, index, value, on, imports, applied);
+            return new Op(seq, type, target, chapter, arg, text, x, y, index, value, on, imports, applied, w, h);
         }
 
         public String key() {
@@ -278,6 +301,7 @@ public final class QuestEdits {
                 case TASK_OPT -> type + "|" + target + "|" + arg + "|" + index;
                 case TASK_ADD, TASK_REMOVE, REWARD_ADD, REWARD_REMOVE, REWARD_ARG_ADD -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case CREATE, COPY, DUPLICATE -> "node|" + target;
+                case IMAGE_GEOM, IMAGE_ADD, IMAGE_DELETE -> type + "|" + target;
                 default -> type + "|" + target;
             };
         }
@@ -315,6 +339,9 @@ public final class QuestEdits {
             case REWARD_ARG_ADD -> rewardArgAdd(src, op, edit);
             case TABLE_ENTRY_ADD, TABLE_ENTRY_REMOVE, TABLE_WEIGHT, TABLE_AMOUNT, TABLE_TITLE, TABLE_NUMBER, TABLE_DELETE -> table(src, op, edit);
             case TABLE_CREATE -> tableCreate(src, op, edit);
+            case IMAGE_GEOM -> imageGeom(src, op, edit);
+            case IMAGE_ADD -> imageAdd(src, op, edit);
+            case IMAGE_DELETE -> imageDelete(src, op, edit);
             default -> "未知操作 " + op.type;
         };
         if (error != null || edit.isEmpty()) return error;
@@ -872,6 +899,105 @@ public final class QuestEdits {
         edit.insert(file, file.membersEnd, "\n\n" + indent + "public static final RewardTable " + op.arg + " = RewardTable.of(" + literal(op.target.substring(2)) + ", t -> t\n" +
                 indent + "        .title(" + literal(op.text) + "));");
         return null;
+    }
+
+    @Nullable
+    private static String imageGeom(QuestSource src, Op op, Edit edit) {
+        var decl = src.find(op.target);
+        if (!(decl instanceof ImageDecl image) || !image.valid || image.of == null) return "找不到图片源码 " + op.target;
+        var args = image.of.getArguments();
+        edit.replace(image.file, args.get(1), number(op.x));
+        edit.replace(image.file, args.get(2), number(op.y));
+        edit.replace(image.file, args.get(3), number(op.w));
+        edit.replace(image.file, args.get(4), number(op.h));
+        return null;
+    }
+
+    @Nullable
+    private static String imageAdd(QuestSource src, Op op, Edit edit) {
+        var file = src.byChapter.get(op.chapter);
+        if (file == null || file.chapterField == null || file.classBodyEnd < 0) return "找不到章节 " + op.chapter + " 的源码";
+        var call = op.text;
+        if (call == null || call.isEmpty()) {
+            call = ".image(QuestImage.of(QuestTextures." + op.arg + ", " + number(op.x) + ", " + number(op.y) + ", " + number(op.w) + ", " + number(op.h) + "))";
+        }
+        if (file.images.isEmpty()) {
+            var indent = file.chapter == null ? "    " : file.indentAt(file.start(file.chapter.var));
+            edit.insert(file, file.classBodyEnd, "\n\n" + indent + "static {\n" + indent + "    " + file.chapterField + ".decorate(d -> d\n" +
+                    indent + "        " + call + ");\n" + indent + "}");
+        } else {
+            var last = file.images.get(file.images.size() - 1);
+            int lineStart = file.content.lastIndexOf('\n', last.charStart - 1) + 1;
+            var indent = file.content.substring(lineStart, last.charStart).isBlank() ? file.indentAt(last.charStart) : file.indentAt(last.charStart) + "        ";
+            edit.insert(file, last.chainEnd, "\n" + indent + call);
+        }
+        edit.imports(file, List.of("com.gtocore.data.quest.QuestTextures", "com.gtolib.api.quest.QuestImage"));
+        return null;
+    }
+
+    @Nullable
+    private static String imageDelete(QuestSource src, Op op, Edit edit) {
+        var file = src.byChapter.get(op.chapter);
+        if (file == null) return "找不到章节 " + op.chapter + " 的源码";
+        if (op.arg == null || op.arg.isEmpty()) return "没有要删除的图片";
+        var decls = new ObjectArrayList<ImageDecl>(4);
+        for (var identity : op.arg.split(",")) {
+            if (identity.isEmpty()) continue;
+            var decl = src.find(identity);
+            ImageDecl image = decl instanceof ImageDecl found && found.valid ? found : null;
+            if (image == null && identity.startsWith("i:" + op.chapter + ":add:")) {
+                for (int i = file.images.size() - 1; i >= 0; i--) {
+                    var candidate = file.images.get(i);
+                    if (candidate.valid && candidate.textureField != null) {
+                        image = candidate;
+                        break;
+                    }
+                }
+            }
+            if (image == null) return "找不到图片源码 " + identity;
+            decls.add(image);
+        }
+        decls.sort((a, b) -> Integer.compare(b.charStart, a.charStart));
+        var replacedBodies = new ObjectArrayList<MethodInvocationTree>(2);
+        for (var image : decls) {
+            if (replacedBodies.contains(image.decorate)) continue;
+            int total = 0, deleted = 0;
+            for (var other : file.images) {
+                if (other.decorate != image.decorate) continue;
+                total++;
+                if (decls.contains(other)) deleted++;
+            }
+            if (total == 0 || total != deleted) continue;
+            var argument = image.decorate.getArguments().get(0);
+            if (!(argument instanceof LambdaExpressionTree lambda) || !(lambda.getBody() instanceof ExpressionTree body)) continue;
+            if (decorationHasOtherCalls(lambda)) continue;
+            edit.replaceRange(file, file.start(body), file.end(body), "{}");
+            replacedBodies.add(image.decorate);
+        }
+        for (var image : decls) {
+            if (replacedBodies.contains(image.decorate)) continue;
+            var content = image.file.content;
+            int start = image.file.end(((MemberSelectTree) image.call.getMethodSelect()).getExpression());
+            int end = image.chainEnd;
+            int lineStart = content.lastIndexOf('\n', start - 1) + 1;
+            int lineEnd = content.indexOf('\n', end);
+            if (lineEnd < 0) lineEnd = content.length();
+            if (content.substring(lineStart, start).isBlank() && content.substring(end, lineEnd).isBlank()) {
+                start = lineStart;
+                end = lineEnd < content.length() ? lineEnd + 1 : lineEnd;
+            }
+            edit.replaceRange(image.file, start, end, "");
+        }
+        return null;
+    }
+
+    private static boolean decorationHasOtherCalls(LambdaExpressionTree lambda) {
+        Tree e = lambda.getBody();
+        while (e instanceof MethodInvocationTree call && call.getMethodSelect() instanceof MemberSelectTree select) {
+            if (!select.getIdentifier().contentEquals("image")) return true;
+            e = select.getExpression();
+        }
+        return false;
     }
 
     @Nullable

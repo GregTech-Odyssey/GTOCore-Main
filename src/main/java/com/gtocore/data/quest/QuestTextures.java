@@ -4,6 +4,8 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.quest.QuestTexture;
 import com.gtolib.utils.RLUtils;
 
+import java.util.List;
+
 public final class QuestTextures {
 
     public static final QuestTexture AGON_BLOCK_13_BLACK = QuestTexture.sprite(RLUtils.fromNamespaceAndPath("xtonesreworked", "block/agon/agon_block_13_black"));
@@ -57,6 +59,65 @@ public final class QuestTextures {
     public static final QuestTexture TIER_T6 = QuestTexture.sprite(GTOCore.id("item/tier/t6"));
     public static final QuestTexture TIER_T7 = QuestTexture.sprite(GTOCore.id("item/tier/t7"));
     public static final QuestTexture TIER_T8 = QuestTexture.sprite(GTOCore.id("item/tier/t8"));
+
+    public record Entry(String field, QuestTexture texture) {}
+
+    public static final List<Entry> ALL = List.of(
+            new Entry("AGON_BLOCK_13_BLACK", AGON_BLOCK_13_BLACK),
+            new Entry("AGON_BLOCK_1_YELLOW", AGON_BLOCK_1_YELLOW),
+            new Entry("ALFHEIM_PORTAL_SWIRL", ALFHEIM_PORTAL_SWIRL),
+            new Entry("BEYONDSTARS", BEYONDSTARS),
+            new Entry("BIPLANE", BIPLANE),
+            new Entry("BITT_10", BITT_10),
+            new Entry("BITT_12", BITT_12),
+            new Entry("BITT_4", BITT_4),
+            new Entry("BLAZE_BLOCK", BLAZE_BLOCK),
+            new Entry("CASINGS_STEAM_BRICKED_STEEL_TOP", CASINGS_STEAM_BRICKED_STEEL_TOP),
+            new Entry("CIRCUIT_SUPRACHRONAL_EV", CIRCUIT_SUPRACHRONAL_EV),
+            new Entry("CIRCUIT_SUPRACHRONAL_HV", CIRCUIT_SUPRACHRONAL_HV),
+            new Entry("CIRCUIT_SUPRACHRONAL_IV", CIRCUIT_SUPRACHRONAL_IV),
+            new Entry("CIRCUIT_SUPRACHRONAL_LUV", CIRCUIT_SUPRACHRONAL_LUV),
+            new Entry("CIRCUIT_SUPRACHRONAL_LV", CIRCUIT_SUPRACHRONAL_LV),
+            new Entry("CIRCUIT_SUPRACHRONAL_MAX", CIRCUIT_SUPRACHRONAL_MAX),
+            new Entry("CIRCUIT_SUPRACHRONAL_MV", CIRCUIT_SUPRACHRONAL_MV),
+            new Entry("CIRCUIT_SUPRACHRONAL_OPV", CIRCUIT_SUPRACHRONAL_OPV),
+            new Entry("CIRCUIT_SUPRACHRONAL_UEV", CIRCUIT_SUPRACHRONAL_UEV),
+            new Entry("CIRCUIT_SUPRACHRONAL_UHV", CIRCUIT_SUPRACHRONAL_UHV),
+            new Entry("CIRCUIT_SUPRACHRONAL_UIV", CIRCUIT_SUPRACHRONAL_UIV),
+            new Entry("CIRCUIT_SUPRACHRONAL_ULV", CIRCUIT_SUPRACHRONAL_ULV),
+            new Entry("CIRCUIT_SUPRACHRONAL_UV", CIRCUIT_SUPRACHRONAL_UV),
+            new Entry("CIRCUIT_SUPRACHRONAL_UXV", CIRCUIT_SUPRACHRONAL_UXV),
+            new Entry("CIRCUIT_SUPRACHRONAL_ZPM", CIRCUIT_SUPRACHRONAL_ZPM),
+            new Entry("COVER_OVERLAY_DISPLAY_EMISSIVE", COVER_OVERLAY_DISPLAY_EMISSIVE),
+            new Entry("CRAY_0", CRAY_0),
+            new Entry("DIAMOND_BLOCK", DIAMOND_BLOCK),
+            new Entry("END_PORTAL_FRAME_TOP", END_PORTAL_FRAME_TOP),
+            new Entry("GUI_DIRECTION", GUI_DIRECTION),
+            new Entry("GUI_OVERLAY_IN_SLOT_OVERLAY", GUI_OVERLAY_IN_SLOT_OVERLAY),
+            new Entry("GUI_OVERLAY_OUT_SLOT_OVERLAY", GUI_OVERLAY_OUT_SLOT_OVERLAY),
+            new Entry("GUI_RGBCOLORWHEEL", GUI_RGBCOLORWHEEL),
+            new Entry("LOGO_APPIED_ENERGISTICS", LOGO_APPIED_ENERGISTICS),
+            new Entry("MULTIBLOCK_ANCIENT_REACTOR_CORE_OVERLAY_TOP", MULTIBLOCK_ANCIENT_REACTOR_CORE_OVERLAY_TOP),
+            new Entry("MULTIBLOCK_DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_OVERLAY_TOP", MULTIBLOCK_DIMENSIONALLY_TRANSCENDENT_PLASMA_FORGE_OVERLAY_TOP),
+            new Entry("NETHER_PORTAL", NETHER_PORTAL),
+            new Entry("OVERLAY_INVENTORY_CONFIGURATOR", OVERLAY_INVENTORY_CONFIGURATOR),
+            new Entry("QUANTUM_RING", QUANTUM_RING),
+            new Entry("SPACE", SPACE),
+            new Entry("SPACETIME_ASSEMBLY_LINE_CASING", SPACETIME_ASSEMBLY_LINE_CASING),
+            new Entry("STATION_1", STATION_1),
+            new Entry("TECHTREE_NODE", TECHTREE_NODE),
+            new Entry("TIER_T1", TIER_T1),
+            new Entry("TIER_T2", TIER_T2),
+            new Entry("TIER_T3", TIER_T3),
+            new Entry("TIER_T4", TIER_T4),
+            new Entry("TIER_T5", TIER_T5),
+            new Entry("TIER_T6", TIER_T6),
+            new Entry("TIER_T7", TIER_T7),
+            new Entry("TIER_T8", TIER_T8));
+
+    public static List<Entry> all() {
+        return ALL;
+    }
 
     private QuestTextures() {}
 }

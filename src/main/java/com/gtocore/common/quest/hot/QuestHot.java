@@ -1,8 +1,10 @@
 package com.gtocore.common.quest.hot;
 
 import com.gtocore.common.quest.hot.QuestEdits.Op;
+import com.gtocore.common.quest.hot.QuestSource.ImageDecl;
 import com.gtocore.common.quest.hot.QuestSource.LinkDecl;
 import com.gtocore.common.quest.hot.QuestSource.QuestDecl;
+import com.gtocore.data.quest.QuestTextures;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.quest.Quest;
@@ -255,6 +257,106 @@ public final class QuestHot {
         var op = id == null ? null : pending(QuestEdits.MOVE, id, null);
         if (op != null) return new double[] { op.x(), op.y() };
         return object instanceof QuestLink link ? new double[] { link.x(), link.y() } : new double[] { ((Quest) object).x(), ((Quest) object).y() };
+    }
+
+    public record ImageRef(String identity, String texture, double x, double y, double width, double height) {}
+
+    public record ImagePlacement(String identity, double x, double y, double width, double height) {}
+
+    public static List<ImageRef> images(QuestChapter chapter) {
+        if (!QuestHotConfig.enabled() || !editable) return List.of();
+        var src = source();
+        var file = src.fileOf(chapter);
+        if (file == null || file.images.size() != chapter.declaredImages().size()) return List.of();
+        var out = new ObjectArrayList<ImageRef>(file.images.size());
+        for (var decl : file.images) {
+            var identity = src.identityOf(decl);
+            if (identity == null || !decl.valid || decl.textureField == null) return List.of();
+            double x = decl.x, y = decl.y, width = decl.width, height = decl.height;
+            var op = pending(QuestEdits.IMAGE_GEOM, identity, null);
+            if (op != null) {
+                x = op.x();
+                y = op.y();
+                width = op.w();
+                height = op.h();
+            }
+            out.add(new ImageRef(identity, decl.textureField, x, y, width, height));
+        }
+        return out;
+    }
+
+    public static Result moveImages(List<ImagePlacement> placements) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var src = source();
+        var forward = new ObjectArrayList<Op>(placements.size());
+        var inverse = new ObjectArrayList<Op>(placements.size());
+        for (var placement : placements) {
+            var decl = src.find(placement.identity());
+            if (!(decl instanceof ImageDecl image) || !image.valid) return Result.fail("找不到图片源码 " + placement.identity());
+            double x = image.x, y = image.y, width = image.width, height = image.height;
+            var op = pending(QuestEdits.IMAGE_GEOM, placement.identity(), null);
+            if (op != null) {
+                x = op.x();
+                y = op.y();
+                width = op.w();
+                height = op.h();
+            }
+            forward.add(Op.imageGeom(placement.identity(), placement.x(), placement.y(), placement.width(), placement.height()));
+            inverse.add(Op.imageGeom(placement.identity(), x, y, width, height));
+        }
+        return QuestEditQueue.submit("移动 " + placements.size() + " 张图片", forward, inverse,
+                () -> applyGeometry(forward), () -> applyGeometry(inverse));
+    }
+
+    private static boolean applyGeometry(List<Op> ops) {
+        var src = source();
+        for (var op : ops) {
+            var decl = src.find(op.target());
+            if (!(decl instanceof ImageDecl image) || image.declarationIndex < 0) return false;
+            if (!(QuestBook.byKey(image.file.chapterId) instanceof QuestChapter chapter)) return false;
+            var declared = chapter.declaredImages();
+            if (image.declarationIndex >= declared.size()) return false;
+            declared.get(image.declarationIndex).setGeometry(op.x(), op.y(), op.w(), op.h());
+        }
+        return !ops.isEmpty();
+    }
+
+    public static Result addImage(QuestChapter chapter, String textureField, double x, double y, double width, double height) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        boolean known = false;
+        for (var entry : QuestTextures.ALL) {
+            if (entry.field().equals(textureField)) {
+                known = true;
+                break;
+            }
+        }
+        if (!known) return Result.fail("未登记的纹理 " + textureField);
+        var identity = "i:" + chapter.id() + ":add:" + System.nanoTime();
+        var forward = List.of(Op.imageAdd(chapter.id(), identity, textureField, x, y, width, height, null, -1));
+        var inverse = List.of(Op.imageDelete(chapter.id(), chapter.id(), identity));
+        return QuestEditQueue.submit("插入图片", forward, inverse);
+    }
+
+    public static Result deleteImages(QuestChapter chapter, List<String> identities) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        if (identities.isEmpty()) return Result.fail("没有选中图片");
+        var src = source();
+        var merged = new StringBuilder();
+        var inverse = new ObjectArrayList<Op>(identities.size());
+        for (var identity : identities) {
+            var decl = src.find(identity);
+            if (!(decl instanceof ImageDecl image) || !image.valid || image.textureField == null) return Result.fail("找不到图片源码 " + identity);
+            int start = image.file.end(((MemberSelectTree) image.call.getMethodSelect()).getExpression());
+            var text = image.file.content.substring(start, image.chainEnd);
+            if (!merged.isEmpty()) merged.append(',');
+            merged.append(identity);
+            inverse.add(Op.imageAdd(chapter.id(), identity, image.textureField, image.x, image.y, image.width, image.height, text, image.declarationIndex));
+        }
+        var forward = List.of(Op.imageDelete(chapter.id(), chapter.id(), merged.toString()));
+        return QuestEditQueue.submit("删除 " + identities.size() + " 张图片", forward, inverse);
     }
 
     @Nullable
@@ -1489,6 +1591,16 @@ public final class QuestHot {
     public static Result openInEditor(QuestDependency object) {
         var location = location(object);
         if (location == null) return Result.fail("找不到源码位置");
+        return open(location);
+    }
+
+    public static Result openImageInEditor(String identity) {
+        var decl = source().find(identity);
+        if (!(decl instanceof ImageDecl image)) return Result.fail("找不到图片源码");
+        return open(image.file.path + ":" + image.file.line(image.charStart));
+    }
+
+    private static Result open(String location) {
         try {
             new ProcessBuilder("cmd", "/c", "code", "-g", location).start();
         } catch (IOException e) {

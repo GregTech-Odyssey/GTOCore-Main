@@ -210,6 +210,15 @@ public final class QuestEditQueue {
                     }
                 }
             }
+            case QuestEdits.IMAGE_DELETE -> {
+                for (int i = 0; i < PENDING.size(); i++) {
+                    var p = PENDING.get(i);
+                    if (p.type().equals(QuestEdits.IMAGE_DELETE) && p.target().equals(op.target())) {
+                        PENDING.set(i, mergeDelete(p, op));
+                        return;
+                    }
+                }
+            }
             default -> {}
         }
         var key = op.key();
@@ -218,7 +227,26 @@ public final class QuestEditQueue {
     }
 
     static Op undelete(String target) {
-        return new Op(0, UNDELETE, target, null, null, null, 0, 0, 0, 0, false, null, false);
+        return new Op(0, UNDELETE, target, null, null, null, 0, 0, 0, 0, false, null, false, 0, 0);
+    }
+
+    private static Op mergeDelete(Op existing, Op incoming) {
+        var seen = new OpenCacheHashSet<String>();
+        var sb = new StringBuilder();
+        mergeIdentities(sb, seen, existing.arg());
+        mergeIdentities(sb, seen, incoming.arg());
+        return new Op(existing.seq(), existing.type(), existing.target(), existing.chapter(), sb.toString(), existing.text(),
+                existing.x(), existing.y(), existing.index(), existing.value(), existing.on(), existing.imports(), existing.live(),
+                existing.w(), existing.h());
+    }
+
+    private static void mergeIdentities(StringBuilder sb, OpenCacheHashSet<String> seen, @Nullable String identities) {
+        if (identities == null || identities.isEmpty()) return;
+        for (var identity : identities.split(",")) {
+            if (identity.isEmpty() || !seen.add(identity)) continue;
+            if (!sb.isEmpty()) sb.append(',');
+            sb.append(identity);
+        }
     }
 
     private static boolean deletePending(String target) {
@@ -297,6 +325,7 @@ public final class QuestEditQueue {
     }
 
     private static int order(Op op) {
+        if (op.type().equals(QuestEdits.IMAGE_DELETE)) return 3;
         if (!op.type().equals(QuestEdits.DELETE)) return 0;
         return op.target().startsWith("q:") ? 2 : 1;
     }
