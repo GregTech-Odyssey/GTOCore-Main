@@ -85,7 +85,7 @@ git add GTOLib
 | 修改了 `GTOLib/` | GTOLib 与主仓使用同名分支并都推送；主仓提交只包含子模块指针 |
 | 只修改主仓 | 仅主仓开分支，不必动 GTOLib |
 
-默认走加密流水线，产物只在 `build/gtolib/`。缓存是否有效只看源码指纹（`GTOLib/src` 与 `GTOLib/protect`）与 `build/gtolib/inputs.stamp` 记录的指纹和 jar 哈希；指纹变化、产物缺失或本次调用含 `clean` 时，`build`、`runClient`、`runData` 会自动完整重建。也可显式执行：
+默认走加密流水线，产物只在 `build/gtolib/`。缓存是否有效只看源码与流水线指纹（`GTOLib/src`、`GTOLib/protect` 与 `gradle/scripts/gtolib-pipeline.gradle.kts`）及 `build/gtolib/inputs.stamp` 记录的指纹和 jar 哈希；指纹变化、产物缺失或本次调用含 `clean` 时，`build`、`runClient`、`runData` 会自动完整重建。也可显式执行：
 
 ```powershell
 .\gradlew.bat buildGtolibProtected
@@ -107,6 +107,8 @@ git add GTOLib
 
 - dev 轨：named 明文（`packageGtolibJar`）→ ProGuard `GTOLib/protect/proguard-rules.pro`（`proguardGtolibDev`）→ Seal（`sealGtolibDev`）。
 - 发行轨：named 明文 → ART reobf 成 SRG（`reobfGtolib`）→ ProGuard `GTOLib/protect/proguard-release-rules.pro` + gtocore 引用面（`proguardGtolibRelease`）→ Seal，剥除 `.dev.bin` 并压缩空壳（`sealGtolibRelease`）。
+
+ART 的继承库必须包含编译与运行依赖，客户端专属模组同样参与。`reobfGtolib` 会沿自身及第三方类的继承链检查 Minecraft 字段与方法，阻止未转换的 named 引用进入发行轨。
 
 dev 轨的 `proguard-rules.pro` 保留全部类名/包名（Seal 路径键与 `SecureJar` 资源路径依赖这个约定），只有发行轨参与改名。发行轨的代码保护字典是 `GTOLib/protect/my_dict.txt`（`U+3164` 加 28 个组合符的 `28³ = 21952` 个全枚举名），每个任务用 `SecureRandom` 重新洗牌，所以同一份源码两次构建的名字都不同，构建不可复现。
 

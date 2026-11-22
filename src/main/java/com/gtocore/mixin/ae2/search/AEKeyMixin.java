@@ -4,6 +4,7 @@ import com.gtocore.integration.ae.hooks.IAEKeyExtension;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import appeng.api.stacks.AEKey;
@@ -30,7 +31,7 @@ public abstract class AEKeyMixin implements IAEKeyExtension {
     public String gtocore$getTranslatedLower(String langCode) {
         return gtocore$translationCache.computeIfAbsent(langCode, (code) -> {
             Component base = this.getDisplayName();
-            return ComponentTranslator.translateComponent(base, code).getString().toLowerCase();
+            return ChatFormatting.stripFormatting(ComponentTranslator.translateComponent(base, code).getString()).toLowerCase();
         });
     }
 
