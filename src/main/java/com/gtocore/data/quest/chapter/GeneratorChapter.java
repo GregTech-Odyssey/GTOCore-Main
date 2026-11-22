@@ -62,6 +62,7 @@ public final class GeneratorChapter {
 
     public static final Quest LARGE_SEMI_FLUID_GENERATOR = CHAPTER.quest("large_semi_fluid_generator", q -> q
             .at(-7, -6.5)
+            .nodeScale(1.5)
             .task(Task.item(GeneratorMultiblock.LARGE_SEMI_FLUID_GENERATOR))
             .dependsOn(HV_SEMI_FLUID));
 
@@ -119,6 +120,7 @@ public final class GeneratorChapter {
 
     public static final Quest EXTREME_COMBUSTION_ENGINE = CHAPTER.quest("extreme_combustion_engine", q -> q
             .at(-7, -3.5)
+            .nodeScale(1.5)
             .task(Task.item(GTMultiMachines.EXTREME_COMBUSTION_ENGINE))
             .dependsOn(LARGE_COMBUSTION_ENGINE));
 
@@ -166,6 +168,7 @@ public final class GeneratorChapter {
 
     public static final Quest GAS_MEGA_TURBINE = CHAPTER.quest("gas_mega_turbine", q -> q
             .at(-7, -5)
+            .nodeScale(1.5)
             .task(Task.item(GeneratorMultiblock.GAS_MEGA_TURBINE))
             .dependsOn(GAS_LARGE_TURBINE));
 
@@ -194,11 +197,13 @@ public final class GeneratorChapter {
 
     public static final Quest ROCKET_MEGA_TURBINE = CHAPTER.quest("rocket_mega_turbine", q -> q
             .at(-7, -2)
+            .nodeScale(1.5)
             .task(Task.item(GeneratorMultiblock.ROCKET_MEGA_TURBINE))
             .dependsOn(ROCKET_LARGE_TURBINE));
 
     public static final Quest CHEMICAL_ENERGY_DEVOURER = CHAPTER.quest("chemical_energy_devourer", q -> q
             .at(-5, -3.5)
+            .nodeScale(1.5)
             .desc(d -> d
                     .line("做好充足准备和产线去维持该机器发电.")
                     .line("尽量采取热值更高，更方便生产的燃料，比如，火箭燃料.")
@@ -277,6 +282,7 @@ public final class GeneratorChapter {
 
     public static final Quest STEAM_MEGA_TURBINE = CHAPTER.quest("steam_mega_turbine", q -> q
             .at(-7, -8)
+            .nodeScale(1.5)
             .task(Task.item(GeneratorMultiblock.STEAM_MEGA_TURBINE))
             .dependsOn(STEAM_LARGE_TURBINE));
 
@@ -333,6 +339,7 @@ public final class GeneratorChapter {
 
     public static final Quest GENERATE_POWER_DIRECTLY_USING_PLASMA_GOODBYE = CHAPTER.quest("generate_power_directly_using_plasma_goodbye", q -> q
             .at(-3.5, -8)
+            .nodeScale(1.5)
             .title("直接使用等离子发电,告别中间商赚差价.")
             .desc(d -> d
                     .line()
@@ -353,11 +360,13 @@ public final class GeneratorChapter {
 
     public static final Quest SUPERCRITICAL_STEAM_TURBINE = CHAPTER.quest("supercritical_steam_turbine", q -> q
             .at(-2, -9.5)
+            .nodeScale(1.25)
             .task(Task.item(GeneratorMultiblock.SUPERCRITICAL_STEAM_TURBINE))
             .dependsOn(HEAT_EXCHANGER));
 
     public static final Quest SUPERCRITICAL_MEGA_STEAM_TURBINE = CHAPTER.quest("supercritical_mega_steam_turbine", q -> q
             .at(-0.5, -9.5)
+            .nodeScale(1.5)
             .desc(d -> d.line("最强的涡轮"))
             .task(Task.item(GeneratorMultiblock.SUPERCRITICAL_MEGA_STEAM_TURBINE))
             .dependsOn(HEAT_EXCHANGER));
@@ -393,6 +402,7 @@ public final class GeneratorChapter {
 
     public static final Quest FUEL_CELL_GENERATOR = CHAPTER.quest("fuel_cell_generator", q -> q
             .at(-5, -1)
+            .nodeScale(2)
             .desc(d -> d.line("新时代发电机，榨干燃料中的所有能量"))
             .task(Task.item(GeneratorMultiblock.FUEL_CELL_GENERATOR))
             .dependsOn(CHEMICAL_ENERGY_DEVOURER));

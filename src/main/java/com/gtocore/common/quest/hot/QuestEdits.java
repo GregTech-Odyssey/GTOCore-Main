@@ -940,6 +940,12 @@ public final class QuestEdits {
             var indent = file.chapter == null ? "    " : file.indentAt(file.start(file.chapter.var));
             edit.insert(file, file.classBodyEnd, "\n\n" + indent + "static {\n" + indent + "    " + file.chapterField + ".decorate(d -> d\n" +
                     indent + "        " + call + ");\n" + indent + "}");
+        } else if (op.index >= 0 && op.index < file.images.size()) {
+            var at = file.images.get(op.index);
+            int receiverEnd = file.end(((MemberSelectTree) at.call.getMethodSelect()).getExpression());
+            int lineStart = file.content.lastIndexOf('\n', receiverEnd - 1) + 1;
+            var indent = file.content.substring(lineStart, receiverEnd).isBlank() ? file.indentAt(receiverEnd) : file.indentAt(receiverEnd) + "        ";
+            edit.insert(file, receiverEnd, "\n" + indent + call);
         } else {
             var last = file.images.get(file.images.size() - 1);
             int lineStart = file.content.lastIndexOf('\n', last.charStart - 1) + 1;
@@ -948,6 +954,16 @@ public final class QuestEdits {
         }
         edit.imports(file, List.of("com.gtocore.data.quest.QuestTextures", "com.gtolib.api.quest.QuestImage"));
         return null;
+    }
+
+    private static int addIndex(String identity) {
+        int at = identity.lastIndexOf(':');
+        if (at < 0 || at + 1 >= identity.length()) return -1;
+        try {
+            return Integer.parseInt(identity.substring(at + 1));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     @Nullable
@@ -961,12 +977,10 @@ public final class QuestEdits {
             var decl = src.find(identity);
             ImageDecl image = decl instanceof ImageDecl found && found.valid ? found : null;
             if (image == null && identity.startsWith("i:" + op.chapter + ":add:")) {
-                for (int i = file.images.size() - 1; i >= 0; i--) {
-                    var candidate = file.images.get(i);
-                    if (candidate.valid && candidate.textureField != null) {
-                        image = candidate;
-                        break;
-                    }
+                int index = addIndex(identity);
+                if (index >= 0 && index < file.images.size()) {
+                    var candidate = file.images.get(index);
+                    if (candidate.valid && candidate.textureField != null) image = candidate;
                 }
             }
             if (image == null) return "找不到图片源码 " + identity;
@@ -1016,6 +1030,14 @@ public final class QuestEdits {
             if (refs.length != 2) return "装饰线端点缺失";
             call = ".line(" + refs[0] + ", " + refs[1] + ")";
         }
+        if (op.index >= 0 && op.index < file.decoLines.size()) {
+            var at = file.decoLines.get(op.index);
+            int receiverEnd = file.end(((MemberSelectTree) at.call.getMethodSelect()).getExpression());
+            int lineStart = file.content.lastIndexOf('\n', receiverEnd - 1) + 1;
+            var indent = file.content.substring(lineStart, receiverEnd).isBlank() ? file.indentAt(receiverEnd) : file.indentAt(receiverEnd) + "        ";
+            edit.insert(file, receiverEnd, "\n" + indent + call);
+            return null;
+        }
         if (!file.decorateCalls.isEmpty()) {
             var last = file.decorateCalls.get(file.decorateCalls.size() - 1);
             var argument = last.getArguments().get(0);
@@ -1041,8 +1063,9 @@ public final class QuestEdits {
         for (var identity : op.arg.split(",")) {
             if (identity.isEmpty()) continue;
             if (identity.startsWith("l:" + op.chapter + ":add:")) {
-                if (file.decoLines.isEmpty()) return "找不到装饰线源码 " + identity;
-                decls.add(file.decoLines.get(file.decoLines.size() - 1));
+                int index = addIndex(identity);
+                if (index < 0 || index >= file.decoLines.size()) return "找不到装饰线源码 " + identity;
+                decls.add(file.decoLines.get(index));
                 continue;
             }
             var decl = src.find(identity);

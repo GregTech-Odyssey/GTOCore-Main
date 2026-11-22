@@ -499,6 +499,7 @@ public final class UhvChapter {
                 .link(QuestLink.of(UvChapter.PCB_FACTORY, 10.5, 4.5).mainNode())
                 .link(QuestLink.of(UevChapter.WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, 10.5, -1).mainNode())
                 .link(QuestLink.of(UtilChapter.ME_WILDCARD_PATTERN_BUFFER_2, 1.5, -3))
-                .link(QuestLink.of(SpaceStationChapter.SPACE_DRONE_DOCK, -5.5, 6.5)));
+                .link(QuestLink.of(SpaceStationChapter.SPACE_DRONE_DOCK, -5.5, 6.5))
+                .line(SPACE_DRONE_MK3, COMPONENT_ASSEMBLY_LINE));
     }
 }

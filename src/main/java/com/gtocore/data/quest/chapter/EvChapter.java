@@ -323,7 +323,8 @@ public final class EvChapter {
     public static final Quest URANIUM_TRIPLATINUM_INGOT = CHAPTER.quest("uranium_triplatinum_ingot", q -> q
             .at(5.5, -13)
             .task(Task.item(TagPrefix.ingot, GTMaterials.UraniumTriplatinum))
-            .dependsOn(RTM_ALLOY_COIL_BLOCK, URANIUM_DUST));
+            .dependsOn(RTM_ALLOY_COIL_BLOCK, URANIUM_DUST)
+            .hideDependencyLines());
 
     public static final Quest IRIDIUM_DUST = CHAPTER.quest("iridium_dust", q -> q
             .at(12.5, -2)
@@ -652,6 +653,7 @@ public final class EvChapter {
                 .link(QuestLink.of(SpaceStationChapter.WE_NEED_A_HOUSE_IN_SPACE, -2, 2))
                 .link(QuestLink.of(IvChapter.WELCOME_TO_THE_HIGH_PRESSURE_STAGE, 7, -2).mainNode())
                 .link(QuestLink.of(BeyondTheStarsChapter.SPACE_ADVANCED_NANOMUSCLE_CHESTPLATE, 7, 3.5))
-                .link(QuestLink.of(BeyondTheStarsChapter.MORTAL_FLESH_DECAYS_GENES_REFORGED, 3.5, -8)));
+                .link(QuestLink.of(BeyondTheStarsChapter.MORTAL_FLESH_DECAYS_GENES_REFORGED, 3.5, -8))
+                .line(URANIUM_DUST, URANIUM_TRIPLATINUM_INGOT));
     }
 }

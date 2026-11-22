@@ -44,6 +44,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
@@ -261,19 +262,34 @@ public final class QuestHot {
         return object instanceof QuestLink link ? new double[] { link.x(), link.y() } : new double[] { ((Quest) object).x(), ((Quest) object).y() };
     }
 
-    public record ImageRef(String identity, String texture, double x, double y, double width, double height) {}
+    public record ImageRef(String identity, String texture, double x, double y, double width, double height, int declarationIndex) {}
 
     public record ImagePlacement(String identity, double x, double y, double width, double height) {}
+
+    @Nullable
+    private static QuestSource imageSource;
+    @Nullable
+    private static QuestChapter imageChapter;
+    private static int imageVersion = Integer.MIN_VALUE;
+    private static List<ImageRef> imageCache = List.of();
 
     public static List<ImageRef> images(QuestChapter chapter) {
         if (!QuestHotConfig.enabled() || !editable) return List.of();
         var src = source();
+        int version = QuestEditQueue.version();
+        if (src == imageSource && chapter == imageChapter && version == imageVersion) return imageCache;
         var file = src.fileOf(chapter);
-        if (file == null || file.images.size() != chapter.declaredImages().size()) return List.of();
+        if (file == null) {
+            imageSource = src;
+            imageChapter = chapter;
+            imageVersion = version;
+            imageCache = List.of();
+            return imageCache;
+        }
         var out = new ObjectArrayList<ImageRef>(file.images.size());
         for (var decl : file.images) {
             var identity = src.identityOf(decl);
-            if (identity == null || !decl.valid || decl.textureField == null) return List.of();
+            if (identity == null || !decl.valid || decl.textureField == null) continue;
             double x = decl.x, y = decl.y, width = decl.width, height = decl.height;
             var op = pending(QuestEdits.IMAGE_GEOM, identity, null);
             if (op != null) {
@@ -282,9 +298,13 @@ public final class QuestHot {
                 width = op.w();
                 height = op.h();
             }
-            out.add(new ImageRef(identity, decl.textureField, x, y, width, height));
+            out.add(new ImageRef(identity, decl.textureField, x, y, width, height, decl.declarationIndex));
         }
-        return out;
+        imageSource = src;
+        imageChapter = chapter;
+        imageVersion = version;
+        imageCache = out.isEmpty() ? List.of() : List.copyOf(out);
+        return imageCache;
     }
 
     public static Result moveImages(List<ImagePlacement> placements) {
@@ -327,16 +347,18 @@ public final class QuestHot {
     public static Result addImage(QuestChapter chapter, String textureField, double x, double y, double width, double height) {
         var blocked = guard();
         if (blocked != null) return blocked;
-        boolean known = false;
-        for (var entry : QuestTextures.ALL) {
-            if (entry.field().equals(textureField)) {
-                known = true;
-                break;
+        if (!QuestTextures.hasField(textureField)) return Result.fail("未登记的纹理 " + textureField);
+        for (var op : QuestEditQueue.pending()) {
+            if (!op.type().equals(QuestEdits.IMAGE_ADD) || !chapter.id().equals(op.chapter()) || !textureField.equals(op.arg())) continue;
+            if (Math.abs(op.x() - x) < 1e-9 && Math.abs(op.y() - y) < 1e-9 &&
+                    Math.abs(op.w() - width) < 1e-9 && Math.abs(op.h() - height) < 1e-9) {
+                return Result.fail("这张图片已经添加");
             }
         }
-        if (!known) return Result.fail("未登记的纹理 " + textureField);
-        var identity = "i:" + chapter.id() + ":add:" + System.nanoTime();
-        var forward = List.of(Op.imageAdd(chapter.id(), identity, textureField, x, y, width, height, null, -1));
+        var file = source().fileOf(chapter);
+        int index = file == null ? 0 : file.images.size();
+        var identity = "i:" + chapter.id() + ":add:" + index;
+        var forward = List.of(Op.imageAdd(chapter.id(), identity, textureField, x, y, width, height, null, index));
         var inverse = List.of(Op.imageDelete(chapter.id(), chapter.id(), identity));
         return QuestEditQueue.submit("插入图片", forward, inverse);
     }
@@ -346,19 +368,30 @@ public final class QuestHot {
         if (blocked != null) return blocked;
         if (identities.isEmpty()) return Result.fail("没有选中图片");
         var src = source();
-        var merged = new StringBuilder();
-        var inverse = new ObjectArrayList<Op>(identities.size());
+        var unique = new ObjectOpenHashSet<String>();
+        var decls = new ObjectArrayList<ImageDecl>(identities.size());
         for (var identity : identities) {
+            if (!unique.add(identity)) continue;
             var decl = src.find(identity);
             if (!(decl instanceof ImageDecl image) || !image.valid || image.textureField == null) return Result.fail("找不到图片源码 " + identity);
+            decls.add(image);
+        }
+        if (decls.isEmpty()) return Result.fail("没有选中图片");
+        var merged = new StringBuilder();
+        var inverse = new ObjectArrayList<Op>(decls.size());
+        for (var image : decls) {
+            var id = src.identityOf(image);
+            if (id == null) continue;
+            if (!merged.isEmpty()) merged.append(',');
+            merged.append(id);
             int start = image.file.end(((MemberSelectTree) image.call.getMethodSelect()).getExpression());
             var text = image.file.content.substring(start, image.chainEnd);
-            if (!merged.isEmpty()) merged.append(',');
-            merged.append(identity);
-            inverse.add(Op.imageAdd(chapter.id(), identity, image.textureField, image.x, image.y, image.width, image.height, text, image.declarationIndex));
+            inverse.add(Op.imageAdd(chapter.id(), id, image.textureField, image.x, image.y, image.width, image.height, text,
+                    decls.size() == 1 ? image.declarationIndex : -1));
         }
+        if (merged.isEmpty()) return Result.fail("没有选中图片");
         var forward = List.of(Op.imageDelete(chapter.id(), chapter.id(), merged.toString()));
-        return QuestEditQueue.submit("删除 " + identities.size() + " 张图片", forward, inverse);
+        return QuestEditQueue.submit("删除 " + decls.size() + " 张图片", forward, inverse);
     }
 
     public record DecoLineCheck(boolean present, String error) {
@@ -383,6 +416,21 @@ public final class QuestHot {
                 return new DecoLineCheck(true, "这条装饰线已经存在");
             }
         }
+        var src = source();
+        var fromDecl = from instanceof QuestLink link ? src.declOf(link) : src.declOf((Quest) from);
+        var toDecl = to instanceof QuestLink link ? src.declOf(link) : src.declOf((Quest) to);
+        if (fromDecl != null && toDecl != null && fromDecl.field != null && toDecl.field != null) {
+            var fromText = src.refText(fromDecl.file, fromDecl);
+            var toText = src.refText(toDecl.file, toDecl);
+            for (var op : QuestEditQueue.pending()) {
+                if (!op.type().equals(QuestEdits.DECO_LINE_ADD) || !chapter.id().equals(op.chapter()) || op.arg() == null) continue;
+                var parts = op.arg().split("\\|", 2);
+                if (parts.length == 2 && (parts[0].equals(fromText) && parts[1].equals(toText) ||
+                        parts[0].equals(toText) && parts[1].equals(fromText))) {
+                    return new DecoLineCheck(true, "这条装饰线已经存在");
+                }
+            }
+        }
         if (dependsOnQuest(fromQuest, toQuest)) return new DecoLineCheck(false, "装饰线与真实依赖方向相反，请改画真实依赖方向");
         return new DecoLineCheck(false, "");
     }
@@ -399,10 +447,12 @@ public final class QuestHot {
         if (fromDecl.field == null || toDecl.field == null) return Result.fail("装饰线端点必须是任务或镜像字段，内联镜像请先改成字段");
         if (from instanceof QuestLink link && link.chapter() != chapter) return Result.fail("装饰线端点必须在当前章节");
         if (to instanceof QuestLink link && link.chapter() != chapter) return Result.fail("装饰线端点必须在当前章节");
-        var identity = "l:" + chapter.id() + ":add:" + System.nanoTime();
+        var file = src.byChapter.get(chapter.id());
+        int index = file == null ? 0 : file.decoLines.size();
+        var identity = "l:" + chapter.id() + ":add:" + index;
         var fromText = src.refText(fromDecl.file, fromDecl);
         var toText = src.refText(toDecl.file, toDecl);
-        var forward = List.of(Op.decoLineAdd(chapter.id(), identity, fromText, toText, null, -1));
+        var forward = List.of(Op.decoLineAdd(chapter.id(), identity, fromText, toText, null, index));
         var inverse = List.of(Op.decoLineDelete(chapter.id(), chapter.id(), identity));
         return QuestEditQueue.submit("添加装饰线", forward, inverse);
     }
@@ -939,6 +989,26 @@ public final class QuestHot {
             inverse.add(0, Op.delete("c:" + chapter.id() + ":" + field));
         }
         return QuestEditQueue.submit("粘贴 " + (ordered.size() + LINK_CLIPBOARD.size()) + " 个节点", forward, inverse);
+    }
+
+    public static Result duplicateToChapter(List<? extends QuestDependency> objects, QuestChapter chapter, double x, double y) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var clipBackup = new ObjectArrayList<Clip>(CLIPBOARD);
+        var linkBackup = new ObjectArrayList<LinkClip>(LINK_CLIPBOARD);
+        double anchorX = clipAnchorX, anchorY = clipAnchorY;
+        try {
+            var captured = capture(objects);
+            if (!captured.ok()) return captured;
+            return paste(chapter, x, y);
+        } finally {
+            CLIPBOARD.clear();
+            CLIPBOARD.addAll(clipBackup);
+            LINK_CLIPBOARD.clear();
+            LINK_CLIPBOARD.addAll(linkBackup);
+            clipAnchorX = anchorX;
+            clipAnchorY = anchorY;
+        }
     }
 
     @Nullable
@@ -1715,7 +1785,15 @@ public final class QuestHot {
 
     private static Result open(String location) {
         try {
-            new ProcessBuilder("cmd", "/c", "code", "-g", location).start();
+            var command = new ObjectArrayList<String>(4);
+            if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win")) {
+                command.add("cmd");
+                command.add("/c");
+            }
+            command.add("code");
+            command.add("-g");
+            command.add(location);
+            new ProcessBuilder(command).start();
         } catch (IOException e) {
             return Result.fail("无法打开 VS Code：" + e.getMessage());
         }

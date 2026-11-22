@@ -4,7 +4,13 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.quest.QuestTexture;
 import com.gtolib.utils.RLUtils;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class QuestTextures {
 
@@ -115,8 +121,27 @@ public final class QuestTextures {
             new Entry("TIER_T7", TIER_T7),
             new Entry("TIER_T8", TIER_T8));
 
+    private static final Map<String, String> FIELD_BY_TEXTURE = new Object2ObjectOpenHashMap<>(ALL.size());
+    private static final Set<String> FIELDS = new ObjectOpenHashSet<>(ALL.size());
+
+    static {
+        for (var entry : ALL) {
+            FIELD_BY_TEXTURE.put(entry.texture().toString(), entry.field());
+            FIELDS.add(entry.field());
+        }
+    }
+
     public static List<Entry> all() {
         return ALL;
+    }
+
+    @Nullable
+    public static String fieldOf(QuestTexture texture) {
+        return FIELD_BY_TEXTURE.get(texture.toString());
+    }
+
+    public static boolean hasField(String field) {
+        return FIELDS.contains(field);
     }
 
     private QuestTextures() {}

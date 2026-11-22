@@ -342,7 +342,8 @@ public final class UvChapter {
             .subtitle("布满了脑细胞")
             .desc(d -> d.line("更便宜的制作{湿件处理器}的原材料", GOLD))
             .task(Task.item(GTOItems.WETWARE_SOC))
-            .dependsOn(CEREBRUM));
+            .dependsOn(CEREBRUM)
+            .hideDependencyLines());
 
     public static final Quest SUPERCOMPUTING_CENTER = CHAPTER.quest("supercomputing_center", q -> q
             .at(3, 12.5)
@@ -590,6 +591,7 @@ public final class UvChapter {
                 .link(QuestLink.of(UhvChapter.WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, 11, 1.5).mainNode())
                 .link(QuestLink.of(BeyondTheStarsChapter.TRANSCEND_THE_FLESH_BIRTH_OF_A, -4, 4))
                 .link(QuestLink.of(SpaceStationChapter.SPACE_STATION_ENVIRONMENTAL_MAINTENANCE_MODULE, -7.5, 5))
-                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, -7, 3.5).mainNode()));
+                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, -7, 3.5).mainNode())
+                .line(CEREBRUM, WETWARE_SOC));
     }
 }

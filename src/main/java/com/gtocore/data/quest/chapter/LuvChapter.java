@@ -604,6 +604,8 @@ public final class LuvChapter {
                     .line("如采纳，我们将会把您一并加入co-author"))
             .task(Task.checkmark()));
 
+    public static final QuestLink ME_WILDCARD_PATTERN_BUFFER_COPY_1 = CHAPTER.copy(UtilChapter.ME_WILDCARD_PATTERN_BUFFER, 25.5, 0.5);
+
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(AeChapter.ME_PATTERN_BUFFER, 15, -5))
@@ -618,6 +620,6 @@ public final class LuvChapter {
                 .link(QuestLink.of(Magic2Chapter.ELVEN_TRADE, 18.5, -5))
                 .link(QuestLink.of(IvChapter.FISSION_REACTOR, 7, -2.5))
                 .link(QuestLink.of(AeChapter.ME_MUFFLER_HATCH, 3.5, 5.5))
-                .link(QuestLink.of(UtilChapter.ME_WILDCARD_PATTERN_BUFFER, 25.5, 0.5)));
+                .line(HPCA_ADVANCED_COMPUTATION_COMPONENT, ME_WILDCARD_PATTERN_BUFFER_COPY_1));
     }
 }

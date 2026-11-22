@@ -500,12 +500,7 @@ public final class QuestSource {
 
     @Nullable
     private static String textureField(@Nullable QuestTexture texture) {
-        if (texture == null) return null;
-        var key = texture.toString();
-        for (var entry : QuestTextures.ALL) {
-            if (entry.texture().toString().equals(key)) return entry.field();
-        }
-        return null;
+        return texture == null ? null : QuestTextures.fieldOf(texture);
     }
 
     @Nullable
@@ -575,7 +570,6 @@ public final class QuestSource {
         int importsEnd = -1;
         int membersEnd = -1;
         int classBodyEnd = -1;
-        int decorations;
         long modified = -1;
         long size = -1;
 
@@ -703,7 +697,6 @@ public final class QuestSource {
         }
 
         private void collectDecorations(MethodInvocationTree decorate, ExpressionTree body) {
-            int block = decorations++;
             var chain = new ObjectArrayList<MethodInvocationTree>(4);
             ExpressionTree e = body;
             while (e instanceof MethodInvocationTree call && call.getMethodSelect() instanceof MemberSelectTree select) {
@@ -711,23 +704,22 @@ public final class QuestSource {
                 if (name.equals("image") || name.equals("line")) chain.add(call);
                 e = select.getExpression();
             }
-            int indexInBlock = 0;
             for (int i = chain.size() - 1; i >= 0; i--) {
                 var call = chain.get(i);
                 var name = ((MemberSelectTree) call.getMethodSelect()).getIdentifier().toString();
-                if (name.equals("image")) addImage(decorate, call, block, indexInBlock++);
-                else addLine(decorate, call, block, indexInBlock++);
+                if (name.equals("image")) addImage(decorate, call);
+                else addLine(decorate, call);
             }
         }
 
-        private void addLine(MethodInvocationTree decorate, MethodInvocationTree call, int block, int indexInBlock) {
+        private void addLine(MethodInvocationTree decorate, MethodInvocationTree call) {
             var args = call.getArguments();
             boolean valid = args.size() == 2;
-            decoLines.add(new DecoLineDecl(this, call, decorate, block, indexInBlock, decoLines.size(), valid,
+            decoLines.add(new DecoLineDecl(this, call, decorate, decoLines.size(), valid,
                     valid ? args.get(0) : null, valid ? args.get(1) : null));
         }
 
-        private void addImage(MethodInvocationTree decorate, MethodInvocationTree call, int block, int indexInBlock) {
+        private void addImage(MethodInvocationTree decorate, MethodInvocationTree call) {
             var args = call.getArguments();
             MethodInvocationTree of = args.size() == 1 ? findOf(args.get(0)) : null;
             String textureField = null;
@@ -751,7 +743,7 @@ public final class QuestSource {
                     valid = true;
                 }
             }
-            images.add(new ImageDecl(this, call, decorate, of, block, indexInBlock, images.size(), valid, textureField, x, y, width, height));
+            images.add(new ImageDecl(this, call, decorate, of, images.size(), valid, textureField, x, y, width, height));
         }
 
         @Nullable
@@ -996,8 +988,6 @@ public final class QuestSource {
 
         final int charStart;
         final int declarationIndex;
-        final int block;
-        final int indexInBlock;
         final MethodInvocationTree call;
         final MethodInvocationTree decorate;
         final int chainEnd;
@@ -1011,7 +1001,7 @@ public final class QuestSource {
         final double height;
         final boolean valid;
 
-        ImageDecl(FileModel file, MethodInvocationTree call, MethodInvocationTree decorate, @Nullable MethodInvocationTree of, int block, int indexInBlock,
+        ImageDecl(FileModel file, MethodInvocationTree call, MethodInvocationTree decorate, @Nullable MethodInvocationTree of,
                   int declarationIndex, boolean valid, @Nullable String textureField, double x, double y, double width, double height) {
             super(file, null, null);
             this.call = call;
@@ -1019,8 +1009,6 @@ public final class QuestSource {
             this.charStart = file.start(call);
             this.chainEnd = file.end(call);
             this.of = of;
-            this.block = block;
-            this.indexInBlock = indexInBlock;
             this.declarationIndex = declarationIndex;
             this.valid = valid;
             this.textureField = textureField;
@@ -1040,8 +1028,6 @@ public final class QuestSource {
 
         final int charStart;
         final int declarationIndex;
-        final int block;
-        final int indexInBlock;
         final MethodInvocationTree call;
         final MethodInvocationTree decorate;
         final int chainEnd;
@@ -1051,15 +1037,13 @@ public final class QuestSource {
         @Nullable
         final ExpressionTree toRef;
 
-        DecoLineDecl(FileModel file, MethodInvocationTree call, MethodInvocationTree decorate, int block, int indexInBlock,
+        DecoLineDecl(FileModel file, MethodInvocationTree call, MethodInvocationTree decorate,
                      int declarationIndex, boolean valid, @Nullable ExpressionTree fromRef, @Nullable ExpressionTree toRef) {
             super(file, null, null);
             this.call = call;
             this.decorate = decorate;
             this.charStart = file.start(call);
             this.chainEnd = file.end(call);
-            this.block = block;
-            this.indexInBlock = indexInBlock;
             this.declarationIndex = declarationIndex;
             this.valid = valid;
             this.fromRef = fromRef;

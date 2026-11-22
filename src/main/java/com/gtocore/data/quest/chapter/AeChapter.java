@@ -794,7 +794,9 @@ public final class AeChapter {
                     .line()
                     .line("同色仓室与无色/异色仓室之间会被{隔离}。", YELLOW)
                     .line()
-                    .line("{再说明两种情况：1）如果输入染色，输出不染色，仍然能够正常输出；2）在染色的输入仓室中打开仓室隔离仍然会隔离其他同色仓室}", GRAY.italic()))
+                    .line("{再说明两种情况：1）如果输入染色，输出不染色，仍然能够正常输出；2）在染色的输入仓室中打开仓室隔离仍然会隔离其他同色仓室}", GRAY.italic())
+                    .line()
+                    .line("{无}{尽}{喷}{漆}{罐}能改变颜色且永远用不完", DARK_RED, GOLD, DARK_GREEN, DARK_BLUE, DARK_PURPLE))
             .task(
                     Task.anyOf(1, GTItems.SPRAY_CAN_DYES[15], GTItems.SPRAY_CAN_DYES[11], GTItems.SPRAY_CAN_DYES[12], GTItems.SPRAY_CAN_DYES[9], GTItems.SPRAY_EMPTY, GTItems.SPRAY_CAN_DYES[7], GTItems.SPRAY_CAN_DYES[13], GTItems.INFINITE_SPRAY_CAN, GTItems.SPRAY_CAN_DYES[3], GTItems.SPRAY_CAN_DYES[8], GTItems.SPRAY_CAN_DYES[5], GTItems.SPRAY_CAN_DYES[2], GTItems.SPRAY_CAN_DYES[1], GTItems.SPRAY_CAN_DYES[6], GTItems.SPRAY_CAN_DYES[10], GTItems.SPRAY_CAN_DYES[14], GTItems.SPRAY_SOLVENT, GTItems.SPRAY_CAN_DYES[0], GTItems.SPRAY_CAN_DYES[4]).title("任意喷漆罐"))
             .dependsOn(SteamChapter.PREPARING_GLASS_STEP_THREE));
