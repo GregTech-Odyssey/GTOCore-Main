@@ -29,9 +29,11 @@ import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.klotski.KlotskiMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
+import com.gtocore.common.machine.noenergy.game.slidey.SlideyMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuMachine;
+import com.gtocore.common.machine.noenergy.game.tetris.TetrisMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
 import com.gtocore.common.machine.noenergy.tradingstation.TradingStationMachine;
 import com.gtocore.common.machine.steam.SteamVacuumPumpMachine;
@@ -1288,6 +1290,26 @@ public final class GTOMachines {
             .nonYAxisRotation()
             .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
                     GTOCore.id("block/machine/game/klotski")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition TETRIS = machine("tetris_machine", "俄罗斯方块游戏机", TetrisMachine::new)
+            .langValue("Tetris Game Machine")
+            .tips(GTOMachineTooltips.TetrisTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/tetris")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition SLIDEY = machine("slidey_machine", "土耳其方块游戏机", SlideyMachine::new)
+            .langValue("Turkish Blocks Game Machine")
+            .tips(GTOMachineTooltips.SlideyTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/slidey")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

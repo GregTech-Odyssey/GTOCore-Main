@@ -8,10 +8,13 @@ import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game2048.Game2048Rules;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Rules;
+import com.gtocore.common.machine.noenergy.game.slidey.SlideyMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotSymbol;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
+import com.gtocore.common.machine.noenergy.game.tetris.TetrisMachine;
+import com.gtocore.common.machine.noenergy.game.tetris.TetrisRules;
 import com.gtocore.config.GTORules;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
@@ -233,6 +236,30 @@ public final class GTOMachineTooltips {
                 "Points above %s pay 1 Game Coin per %s points",
                 FormattingUtil.formatNumbers(Game2048Machine.REDEMPTION_BASELINE),
                 FormattingUtil.formatNumbers(Game2048Rules.POINTS_PER_COIN)));
+    });
+
+    // 俄罗斯方块 - 只保留盘面规则与计分公式；按钮与操作提示以机器界面为准
+    public static final TipSpec TetrisTooltips = GTOTips.of("tetris", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("俄罗斯方块", "Tetris")));
+        t.feature(t.tr("10×20 盘面：方向键左右移动、下软降，↑ 或 X 顺时针旋转、Z 逆时针旋转，空格直接落底",
+                "10×20 board: Left/Right move, Down soft-drops, Up or X rotates clockwise, Z counter-clockwise, Space hard-drops"));
+        t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币；最高分记入排行榜",
+                "Points above %s pay 1 Game Coin per %s points; the best score is recorded on the leaderboard",
+                FormattingUtil.formatNumbers(TetrisMachine.REDEMPTION_BASELINE),
+                FormattingUtil.formatNumbers(TetrisRules.POINTS_PER_COIN)));
+    });
+
+    // 土耳其方块 - 只保留玩法与计分规则；按钮与操作提示以机器界面为准
+    public static final TipSpec SlideyTooltips = GTOTips.of("slidey", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("土耳其方块", "Turkish Blocks")));
+        t.feature(t.tr("9×10 盘面：按住任意一块横条（1~4 格）在本行内左右拖动，不能越过别的方块；颜色不影响消除",
+                "9×10 board: press any horizontal bar (1-4 cells) and drag it along its row; it cannot pass other blocks, and colors do not matter"));
+        t.feature(t.tr("没有支撑的方块会掉落到下方；填满一整行即消除，上方方块继续下落",
+                "Unsupported blocks drop down; filling a whole row clears it and the blocks above fall again"));
+        t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币；最高分与消除行数记入排行榜",
+                "Points above %s pay 1 Game Coin per %s points; the best score and lines are recorded on the leaderboard",
+                FormattingUtil.formatNumbers(SlideyMachine.REDEMPTION_BASELINE),
+                FormattingUtil.formatNumbers(SlideyMachine.POINTS_PER_COIN)));
     });
 
     // 24点 - 只保留表达式规则；按钮、牌范围、奖励进度以机器界面为准

@@ -108,6 +108,8 @@ public final class WelcomeGroup {
                 NUMBER_PUZZLE.asStack(),
                 KLOTSKI.asStack(),
                 SUDOKU.asStack(),
+                TETRIS.asStack(),
+                SLIDEY.asStack(),
                 MINESWEEPER_CORE.asStack()
         };
 

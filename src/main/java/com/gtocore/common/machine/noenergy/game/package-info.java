@@ -4,7 +4,9 @@
  * <p>
  * 玩法：{@code game2048}（4×4 推格合并）、{@code justGet10}（5×5 合成十）、{@code game24}（四则运算凑 24）、
  * {@code minesweeper}（五档预设难度 + 自定义 + 60 关战役）、{@code numberPuzzle}（3×3~8×8 华容道）、
- * {@code sudoku}（9×9 六档难度 + 可选一条变体）、{@code slotMachine}（按下注滚动结算）。
+ * {@code sudoku}（9×9 六档难度 + 可选一条变体）、{@code slotMachine}（按下注滚动结算）、
+ * {@code tetris}（10×20 标准俄罗斯方块，7-bag 抽块与 SRS 旋转）、
+ * {@code slidey}（8×10 土耳其方块，横移整行、悬空下落、满行消除）。
  *
  * <p>
  * {@link AbstractGameMachine} 提供余额与取出、界面快照通道、游玩权限、单局发起者与多人局判定，以及里程碑表格、

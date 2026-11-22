@@ -9,8 +9,10 @@ import com.gtocore.common.machine.noenergy.game.klotski.KlotskiMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperCoreMachine;
 import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperRules;
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
+import com.gtocore.common.machine.noenergy.game.slidey.SlideyMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuMachine;
+import com.gtocore.common.machine.noenergy.game.tetris.TetrisMachine;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
@@ -64,11 +66,15 @@ public final class GameBoardCatalog {
     private static final Component GAME_SUDOKU = Component.translatable("gtocore.machine.game.catalog.game.sudoku");
     @RegisterLanguage(cn = "经典华容道", en = "Klotski")
     private static final Component GAME_KLOTSKI = Component.translatable("gtocore.machine.game.catalog.game.klotski");
+    @RegisterLanguage(cn = "俄罗斯方块", en = "Tetris")
+    private static final Component GAME_TETRIS = Component.translatable("gtocore.machine.game.catalog.game.tetris");
+    @RegisterLanguage(cn = "土耳其方块", en = "Turkish Blocks")
+    private static final Component GAME_SLIDEY = Component.translatable("gtocore.machine.game.catalog.game.slidey");
 
     /** 游戏下拉栏：下标与 {@link #ALL} 的顺序一一对应。 */
     public static final Level GAMES = new Level(TITLE_GAME, new Component[] { GAME_SLOT, GAME_JUST_GET_10,
             GAME_2048, GAME_24, GAME_NUMBER_PUZZLE, GAME_MINESWEEPER_BASE, GAME_MINESWEEPER_CAMPAIGN, GAME_SUDOKU,
-            GAME_KLOTSKI });
+            GAME_KLOTSKI, GAME_TETRIS, GAME_SLIDEY });
 
     // ==================== 目录 ====================
 
@@ -89,7 +95,9 @@ public final class GameBoardCatalog {
                     new Level(SudokuMachine.PAGE_VARIANT, SudokuMachine.VARIANT_NAMES),
                     SudokuMachine.leaderboardBoard()),
             new Group(GAME_KLOTSKI, new Level(KlotskiMachine.COLUMN_MODE, klotskiModeNames()),
-                    null, KlotskiMachine.leaderboardBoard()) };
+                    null, KlotskiMachine.leaderboardBoard()),
+            new Group(GAME_TETRIS, null, null, TetrisMachine.leaderboardBoard()),
+            new Group(GAME_SLIDEY, null, null, SlideyMachine.leaderboardBoard()) };
 
     private GameBoardCatalog() {}
 

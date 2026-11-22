@@ -46,12 +46,14 @@ public final class GameMilestones extends SavedData {
     public static final String GAME_2048 = "game_2048";
     public static final String GAME_24 = "game_24";
     public static final String NUMBER_PUZZLE = "number_puzzle";
+    public static final String TETRIS = "tetris";
+    public static final String SLIDEY = "slidey";
 
     /** 载荷所在键：整份数据编码后的字节数组。 */
     private static final String NBT_DATA = "data";
     /** 载荷的格式版本，读档时交给 {@link JavaValueOps#create(int)}，codec 里用 {@code ops.dataVersion()} 取。 */
     private static final String NBT_VERSION = "data_version";
-    private static final int DATA_VERSION = 2;
+    private static final int DATA_VERSION = 4;
 
     /** 华容道尺寸档数。 */
     private static final int FIXED_SLOTS = 6;
@@ -138,7 +140,36 @@ public final class GameMilestones extends SavedData {
     /** 经典华容道：两种模式各一张 2 位/关的星级表。 */
     private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, long[]>> KLOTSKI_STARS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, DataSyncCodec.LONGS_CODEC);
 
-    /** 整份数据：五张旧表 + 经典华容道两张星级表，按声明顺序串成一个 carrier。 */
+    /** 俄罗斯方块：最高分与达成时间，和合成十/2048 共用 {@link ScoreStat}。 */
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, ScoreStat>> TETRIS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, SCORE_CODEC);
+
+    /** 土耳其方块：最高分与最多消除行数，复用 {@link ScoreStat} 的两个成绩槽。 */
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, ScoreStat>> SLIDEY_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, SCORE_CODEC);
+
+    /** v2 载荷：五张旧表 + 经典华容道两张星级表；读旧档用，字段顺序不能动。 */
+    private static final DataSyncCodec<GameMilestones> DATA_CODEC_V2 = CombinedCodec.composite(
+            SLOTS_CODEC, GameMilestones::slots,
+            JUST_GET_10_CODEC, GameMilestones::justGet10,
+            GAME_2048_CODEC, GameMilestones::game2048,
+            PUZZLES_CODEC, GameMilestones::puzzles,
+            NUMBER_PUZZLES_CODEC, GameMilestones::numberPuzzles,
+            KLOTSKI_STARS_CODEC, GameMilestones::klotskiCampaign,
+            KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
+            GameMilestones::ofAllV2);
+
+    /** v3 载荷：v2 的全部表 + 俄罗斯方块最高分表；读旧档用。 */
+    private static final DataSyncCodec<GameMilestones> DATA_CODEC_V3 = CombinedCodec.composite(
+            SLOTS_CODEC, GameMilestones::slots,
+            JUST_GET_10_CODEC, GameMilestones::justGet10,
+            GAME_2048_CODEC, GameMilestones::game2048,
+            PUZZLES_CODEC, GameMilestones::puzzles,
+            NUMBER_PUZZLES_CODEC, GameMilestones::numberPuzzles,
+            KLOTSKI_STARS_CODEC, GameMilestones::klotskiCampaign,
+            KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
+            TETRIS_CODEC, GameMilestones::tetris,
+            GameMilestones::ofAllV3);
+
+    /** 当前载荷：v3 的全部表 + 土耳其方块成绩表，按声明顺序串成一个 carrier。 */
     private static final DataSyncCodec<GameMilestones> DATA_CODEC = CombinedCodec.composite(
             SLOTS_CODEC, GameMilestones::slots,
             JUST_GET_10_CODEC, GameMilestones::justGet10,
@@ -147,6 +178,8 @@ public final class GameMilestones extends SavedData {
             NUMBER_PUZZLES_CODEC, GameMilestones::numberPuzzles,
             KLOTSKI_STARS_CODEC, GameMilestones::klotskiCampaign,
             KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
+            TETRIS_CODEC, GameMilestones::tetris,
+            SLIDEY_CODEC, GameMilestones::slidey,
             GameMilestones::ofAll);
 
     // ==================== 数据 ====================
@@ -158,6 +191,8 @@ public final class GameMilestones extends SavedData {
     private final O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, ScoreStat> tetris = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, ScoreStat> slidey = new O2OOpenCacheHashMap<>();
 
     /** 写一次加一：界面靠它判断里程碑文字要不要重建（不存盘）。 */
     private int modCount;
@@ -194,6 +229,14 @@ public final class GameMilestones extends SavedData {
         return klotskiChallenge;
     }
 
+    private O2OOpenCacheHashMap<UUID, ScoreStat> tetris() {
+        return tetris;
+    }
+
+    private O2OOpenCacheHashMap<UUID, ScoreStat> slidey() {
+        return slidey;
+    }
+
     /**
      * 解码构造：装回五张表，并把华容道的定长数组补齐到固定档数。
      *
@@ -219,13 +262,13 @@ public final class GameMilestones extends SavedData {
     }
 
     /** 新格式（v2）解码：先装回五张旧表，再补上经典华容道的两张星级表（位图长度补齐）。 */
-    private static GameMilestones ofAll(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
-                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
-                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
-                                        @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
-                                        @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
-                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
-                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge) {
+    private static GameMilestones ofAllV2(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
+                                          @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
+                                          @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
+                                          @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
+                                          @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge) {
         var data = of(slots, justGet10, game2048, puzzles, numberPuzzles);
         if (klotskiCampaign != null) {
             klotskiCampaign.forEach((player, bits) -> data.klotskiCampaign.put(player, normalizeTimes(bits, KLOTSKI_WORDS)));
@@ -236,13 +279,47 @@ public final class GameMilestones extends SavedData {
         return data;
     }
 
+    /** v3 解码：v2 的全部表之上再加俄罗斯方块最高分表。 */
+    private static GameMilestones ofAllV3(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
+                                          @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
+                                          @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
+                                          @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
+                                          @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge,
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> tetris) {
+        var data = ofAllV2(slots, justGet10, game2048, puzzles, numberPuzzles, klotskiCampaign, klotskiChallenge);
+        if (tetris != null) data.tetris.putAll(tetris);
+        return data;
+    }
+
+    /** 当前格式（v4）解码：v3 的全部表之上再加土耳其方块成绩表。 */
+    private static GameMilestones ofAll(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
+                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
+                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
+                                        @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
+                                        @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
+                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
+                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge,
+                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> tetris,
+                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> slidey) {
+        var data = ofAllV3(slots, justGet10, game2048, puzzles, numberPuzzles, klotskiCampaign, klotskiChallenge,
+                tetris);
+        if (slidey != null) data.slidey.putAll(slidey);
+        return data;
+    }
+
     // ==================== 读档 / 取实例 ====================
 
-    /** 读档：{@code data} 是整份载荷，{@code data_version} 交回 codec；旧版本存档直接丢弃。 */
+    /** 读档：更早的 v1 直接丢弃，v2/v3 按当时的表结构读。 */
     public static GameMilestones fromNBT(CompoundTag tag) {
-        if (tag.getInt(NBT_VERSION) < DATA_VERSION) return new GameMilestones();
-        var ops = JavaValueOps.create(DATA_VERSION);
-        return DATA_CODEC.decode(ops, ops.fromBytes(tag.getByteArray(NBT_DATA)));
+        int version = tag.getInt(NBT_VERSION);
+        if (version < 2) return new GameMilestones();
+        var ops = JavaValueOps.create(version);
+        var payload = ops.fromBytes(tag.getByteArray(NBT_DATA));
+        if (version < 3) return DATA_CODEC_V2.decode(ops, payload);
+        if (version < 4) return DATA_CODEC_V3.decode(ops, payload);
+        return DATA_CODEC.decode(ops, payload);
     }
 
     /** 主世界的数据存储里拿这一份（与钱包同一套取法，保证全局唯一）。 */
@@ -268,10 +345,10 @@ public final class GameMilestones extends SavedData {
         touch();
     }
 
-    /** 合成十 / 2048：一局结账 —— 分数与最大合成数字各取更优值，各自记住达成时间；不超过 {@link #MIN_MILESTONE_SCORE} 的局不记录。 */
+    /** 合成十 / 2048 / 俄罗斯方块：一局结账 —— 分数与最大合成数字各取更优值，各自记住达成时间；低分局不记录（门槛见 {@link #minScoreFor}）。 */
     public void recordScore(String game, @Nullable UUID player, int score, int merged, long gameTime) {
         var stats = scoreStats(game);
-        if (stats == null || player == null || score <= MIN_MILESTONE_SCORE) return;
+        if (stats == null || player == null || score <= minScoreFor(game)) return;
         var old = stats.get(player);
         int bestScore = old == null ? 0 : old.bestScore();
         long bestScoreTime = old == null ? 0L : old.bestScoreTime();
@@ -431,6 +508,37 @@ public final class GameMilestones extends SavedData {
         return scoreBoard(game2048);
     }
 
+    /** 俄罗斯方块：最高分降序。 */
+    public List<ScoreStat> tetrisBoard() {
+        return scoreBoard(tetris);
+    }
+
+    /** 土耳其方块：最高分降序。 */
+    public List<ScoreStat> slideyBoard() {
+        return scoreBoard(slidey);
+    }
+
+    /** 某位玩家的土耳其方块最高分；没有记录时为 0。 */
+    public int slideyBest(@Nullable UUID player) {
+        if (player == null) return 0;
+        var stat = slidey.get(player);
+        return stat == null ? 0 : stat.bestScore();
+    }
+
+    /** 某位玩家单局最多消除的行数；没有记录时为 0。 */
+    public int slideyBestLines(@Nullable UUID player) {
+        if (player == null) return 0;
+        var stat = slidey.get(player);
+        return stat == null ? 0 : stat.bestMerged();
+    }
+
+    /** 某位玩家的俄罗斯方块最高分；没有记录时为 0。 */
+    public int tetrisBest(@Nullable UUID player) {
+        if (player == null) return 0;
+        var stat = tetris.get(player);
+        return stat == null ? 0 : stat.bestScore();
+    }
+
     public List<NumberPuzzleStat> numberPuzzleBoard() {
         var board = new ObjectArrayList<NumberPuzzleStat>(numberPuzzles.size());
         board.addAll(numberPuzzles.values());
@@ -513,7 +621,14 @@ public final class GameMilestones extends SavedData {
 
     @Nullable
     private O2OOpenCacheHashMap<UUID, ScoreStat> scoreStats(String game) {
-        return JUST_GET_10.equals(game) ? justGet10 : GAME_2048.equals(game) ? game2048 : null;
+        return JUST_GET_10.equals(game) ? justGet10 :
+                GAME_2048.equals(game) ? game2048 :
+                        TETRIS.equals(game) ? tetris : SLIDEY.equals(game) ? slidey : null;
+    }
+
+    /** 各游戏进入榜单的最低分：俄罗斯方块与土耳其方块只要不是 0 分就记，其余沿用里程碑门槛。 */
+    private static int minScoreFor(String game) {
+        return TETRIS.equals(game) || SLIDEY.equals(game) ? 0 : MIN_MILESTONE_SCORE;
     }
 
     private static int numberPuzzleCompleted(NumberPuzzleStat stat) {
