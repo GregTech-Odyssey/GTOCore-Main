@@ -2,6 +2,7 @@ package com.gtocore.common.data;
 
 import com.gtolib.GTOCore;
 import com.gtolib.utils.StringIndex;
+import com.gtolib.worldgen.CertusQuartzVeinGenerator;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -20,6 +21,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.Level;
+
+import appeng.core.definitions.AEBlocks;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
 import com.gto.fastcollection.fastutil.OpenCacheHashSet;
@@ -222,7 +225,7 @@ public final class GTOOres {
             .layer(ALL_LAYER)
             .dimensionFilter(dimensions(ANCIENT_WORLD, PLUTO, THE_NETHER, OTHERSIDE))
             .heightRangeUniform(20, 120)
-            .layeredVeinGenerator(generator -> generator
+            .veinGenerator(new CertusQuartzVeinGenerator(vein)
                     .buildLayerPattern(config -> config
                             .layer(l -> l.weight(3).mat(Quartzite).size(2, 4))
                             .layer(l -> l.weight(2).mat(CertusQuartz).size(1, 1))
@@ -231,6 +234,16 @@ public final class GTOOres {
             .surfaceIndicatorGenerator(indicator -> indicator
                     .surfaceRock(CertusQuartz)
                     .placement(SurfaceIndicatorGenerator.IndicatorPlacement.BELOW)));
+
+    private static final GTOreDefinition SKY_STONE_VEIN = create("sky_stone_vein", vein -> vein
+            .clusterSize(UniformInt.of(32, 40)).density(0.8f).weight(20)
+            .layer(ALL_LAYER)
+            .dimensionFilter(dimensions(ANCIENT_WORLD))
+            .heightRangeUniform(20, 120)
+            .standardVeinGenerator(generator -> generator
+                    .withBlock(() -> AEBlocks.SKY_STONE_BLOCK.block())
+                    .withNetherBlock(() -> AEBlocks.SKY_STONE_BLOCK.block())
+                    .build()));
 
     private static final GTOreDefinition MANGANESE_VEIN = create("manganese_vein", vein -> vein
             .clusterSize(UniformInt.of(50, 64)).density(0.75f).weight(20)
@@ -915,7 +928,9 @@ public final class GTOOres {
             materialMap.forEach((material, amount) -> materialIntegerMap.mergeInt(material, amount, Math::max));
             ALL_ORES.put(dimension, materialIntegerMap);
         }
-        BedrockOreDefinition.builder(id).nameKey("gtceu.jei.ore_vein." + name).size(9).dimensions(definition.dimensionFilter()).weight(definition.weight()).materials(materials).yield(2, 8).depletedYield(1).depletionAmount(1).depletionChance(100).register();
+        if (!materials.isEmpty()) {
+            BedrockOreDefinition.builder(id).nameKey("gtceu.jei.ore_vein." + name).size(9).dimensions(definition.dimensionFilter()).weight(definition.weight()).materials(materials).yield(2, 8).depletedYield(1).depletionAmount(1).depletionChance(100).register();
+        }
         definition.register(GTOCore.id("ores/" + name));
         return definition;
     }
