@@ -118,6 +118,6 @@ public class SuperStorageAdditionalRecipe {
 
     private static void superChestReplacer(ItemEntry<ComponentItem> item, MachineDefinition machine) {
         if (item != null) VanillaRecipeHelper.addShapelessRecipe(item.getId(), item.asStack(), StrictNBTIngredient.of(machine.asStack()),
-                TagUtils.createTGItemTag("ingots"));
+                TagUtils.createCItemTag("ingots"));
     }
 }
