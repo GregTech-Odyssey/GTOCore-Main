@@ -52,6 +52,7 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.DataAccessHatchMachi
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
 import com.gregtechceu.gtceu.uipro.UIElement;
+import com.gregtechceu.gtceu.uipro.UIIngredient;
 import com.gregtechceu.gtceu.uipro.data.SyncValue;
 import com.gregtechceu.gtceu.uipro.elements.Button;
 import com.gregtechceu.gtceu.uipro.elements.Form;
@@ -68,6 +69,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -473,7 +475,9 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             // 数据物品区块：先隐藏，槽建好后有槽才显示（两端都在得知槽数后执行）
             var dataBlock = UIElement.column(LayoutStyle.AUTO).layout(l -> l.gapAll(UISizes.GAP));
             dataBlock.setDisplay(false);
-            var slots = new DataSlotGrid(machine, remote, count -> dataBlock.setDisplay(count > 0));
+            var scroller = new ScrollerView("research.data_access", UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE)
+                    .adaptiveWidth().setAdaptiveHeight(DATA_MAX_ROWS * UISizes.SLOT_SIZE);
+            var slots = new DataSlotGrid(machine, remote, scroller, count -> dataBlock.setDisplay(count > 0));
 
             var status = new StatusPanel();
             status.addLine(LANG_LINE_STATE, () -> Component.translatable(switch (stats.state(slots.count())) {
@@ -528,8 +532,6 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             research.addSyncValue(SyncValue.ofBool(() -> machine.selectedNode != null, researching).onChanged(progress::setDisplay));
             page.addChild(research);
 
-            var scroller = new ScrollerView("research.data_access", UISizes.SLOT_ROW_WIDTH, UISizes.SLOT_SIZE)
-                    .adaptiveWidth().setAdaptiveHeight(DATA_MAX_ROWS * UISizes.SLOT_SIZE);
             scroller.addScrollViewChild(slots);
             dataBlock.addChildren(TextLine.constant(LayoutStyle.AUTO, LANG_DATA_ITEMS), scroller);
             page.addChild(dataBlock);
@@ -634,7 +636,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
      * <li>服务端的槽直接读写各数据访问仓（{@link CombinedDataAccessHatchHandler}）；客户端的槽用本地镜像
      * （{@link ClientMirror}），内容只由原版容器同步写入，不依赖客户端自己的部件列表。</li>
      * <li>槽里的数据物品显示为其配方主产物（原实现如此）。</li>
-     * <li>槽可能上百个：一次建完再排一次布局；只画落在滚动区视口里的槽。</li>
+     * <li>槽可能上百个：一次建完再排一次布局；绘制按视口算行范围，悬停按坐标直接查槽。</li>
      * </ul>
      */
     private static final class DataSlotGrid extends UIElement {
@@ -642,15 +644,17 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         private final DataCenter machine;
         private final CombinedDataAccessHatchHandler handler;
         private final boolean remote;
+        private final ScrollerView scroller;
         private final IntConsumer onBuilt;
         private int count = -1;
         /// 正在批量建槽：暂不因每次加槽重排整棵布局树，建完统一排一次
         private boolean building;
 
-        private DataSlotGrid(DataCenter machine, boolean remote, IntConsumer onBuilt) {
+        private DataSlotGrid(DataCenter machine, boolean remote, ScrollerView scroller, IntConsumer onBuilt) {
             this.machine = machine;
             this.handler = new CombinedDataAccessHatchHandler(machine);
             this.remote = remote;
+            this.scroller = scroller;
             this.onBuilt = onBuilt;
             layout(l -> l.row().flexWrap(FlexWrap.WRAP).width(UISizes.SLOT_ROW_WIDTH));
         }
@@ -701,31 +705,74 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             super.readInitialData(buffer);
         }
 
-        /** 只画落在所在滚动区视口里的槽（滚动区只做裁剪，不剔除）。 */
         @Override
         @OnlyIn(Dist.CLIENT)
         protected void drawWidgetsBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-            ScrollerView scroller = null;
-            for (Widget w = getParent(); w != null; w = w.getParent()) {
-                if (w instanceof ScrollerView found) {
-                    scroller = found;
-                    break;
-                }
-            }
-            if (scroller == null) {
-                super.drawWidgetsBackground(graphics, mouseX, mouseY, partialTicks);
-                return;
-            }
-            int top = scroller.getPositionY(), bottom = top + scroller.getSizeHeight();
-            for (var widget : widgets) {
+            drawVisibleSlots(graphics, mouseX, mouseY, partialTicks, false);
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        protected void drawWidgetsForeground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+            drawVisibleSlots(graphics, mouseX, mouseY, partialTicks, true);
+        }
+
+        @OnlyIn(Dist.CLIENT)
+        private void drawVisibleSlots(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, boolean foreground) {
+            int height = scroller.getSizeHeight();
+            if (height <= 0) return;
+            int top = scroller.getPositionY() - getPositionY();
+            int first = Math.max(0, top / UISizes.SLOT_SIZE) * UISizes.SLOTS_PER_ROW;
+            int end = Math.min(widgets.size(), Math.ceilDiv(top + height, UISizes.SLOT_SIZE) * UISizes.SLOTS_PER_ROW);
+            for (int i = first; i < end; i++) {
+                var widget = widgets.get(i);
                 if (!widget.isVisible()) continue;
-                int y = widget.getPositionY();
-                if (y + widget.getSizeHeight() <= top || y >= bottom) continue;
                 RenderSystem.setShaderColor(1, 1, 1, 1);
                 RenderSystem.enableBlend();
-                if (widget.inAnimate()) widget.getAnimation().drawInBackground(graphics, mouseX, mouseY, partialTicks);
-                else widget.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                if (foreground) {
+                    if (widget.inAnimate()) widget.getAnimation().drawInForeground(graphics, mouseX, mouseY, partialTicks);
+                    else widget.drawInForeground(graphics, mouseX, mouseY, partialTicks);
+                } else {
+                    if (widget.inAnimate()) widget.getAnimation().drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                    else widget.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                }
             }
+        }
+
+        @Override
+        public boolean isMouseOverElement(double mouseX, double mouseY) {
+            return isMouseOver(getPositionX(), getPositionY(), getSizeWidth(), getSizeHeight(), mouseX, mouseY);
+        }
+
+        private @Nullable ItemSlot slotAt(double mouseX, double mouseY) {
+            if (!isMouseOverElement(mouseX, mouseY)) return null;
+            int column = (int) (mouseX - getPositionX()) / UISizes.SLOT_SIZE;
+            int row = (int) (mouseY - getPositionY()) / UISizes.SLOT_SIZE;
+            int index = row * UISizes.SLOTS_PER_ROW + column;
+            if (column >= UISizes.SLOTS_PER_ROW || index >= widgets.size()) return null;
+            var slot = (ItemSlot) widgets.get(index);
+            return slot.isVisible() ? slot : null;
+        }
+
+        @Override
+        public @Nullable Widget getHoverElement(double mouseX, double mouseY) {
+            var slot = slotAt(mouseX, mouseY);
+            if (slot != null) return slot;
+            return isMouseOverElement(mouseX, mouseY) ? this : null;
+        }
+
+        @Override
+        public @Nullable Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
+            if (!isVisible() || !isAllowXEIIngredientOverMouse()) return null;
+            var slot = slotAt(mouseX, mouseY);
+            return slot == null ? null : UIIngredient.of(slot.getXEIIngredientOverMouse(mouseX, mouseY));
+        }
+
+        @Override
+        @OnlyIn(Dist.CLIENT)
+        public List<Rect2i> getGuiExtraAreas(Rect2i guiRect, List<Rect2i> areas) {
+            // 槽位由滚动区裁剪，视口外的槽位不占用 EMI 空间。
+            return areas;
         }
     }
 

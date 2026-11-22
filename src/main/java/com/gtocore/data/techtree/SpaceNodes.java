@@ -8,6 +8,7 @@ import com.gtolib.utils.RegistriesUtils;
 
 import static com.gtocore.api.research.ResearchTag.INTERSTELLAR_ENGINEERING;
 import static com.gtocore.api.research.ResearchTag.MECHANICS;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate1;
 
 public final class SpaceNodes {
 
@@ -17,7 +18,7 @@ public final class SpaceNodes {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 120L)
-                            .setEurekaFluid(GTOMaterials.StellarEnergyRocketFuel.getFluid(), 0.8F)
+                            .setEurekaFluid(GTOMaterials.StellarEnergyRocketFuel.getFluid(), eurekaRate1)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 180)
                             .build())
             .tier(2)
@@ -31,7 +32,7 @@ public final class SpaceNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 400)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:gravitation_engine_unit"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:gravitation_engine_unit"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -44,7 +45,7 @@ public final class SpaceNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 1200L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 1920)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_1"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_1"), eurekaRate1)
                             .build())
             .tier(3)
             .build();
@@ -57,7 +58,7 @@ public final class SpaceNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 2400L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 7680)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_2"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_2"), eurekaRate1)
                             .build())
             .tier(3)
             .build();
@@ -70,7 +71,7 @@ public final class SpaceNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 15360)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_3"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -83,7 +84,7 @@ public final class SpaceNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 9600L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 25600)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:space_elevator_power_module_4"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -97,7 +98,7 @@ public final class SpaceNodes {
                             .setCWUNeeded(1024 * 20 * 4800L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 16000)
                             .addMaterialNeeded(MECHANICS, 128)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:cosmic_detection_receiver_material_ray_absorbing_array"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:cosmic_detection_receiver_material_ray_absorbing_array"), eurekaRate1)
                             .build())
             .tier(4)
             .build();

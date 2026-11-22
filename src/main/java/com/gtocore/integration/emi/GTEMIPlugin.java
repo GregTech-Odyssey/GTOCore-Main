@@ -176,8 +176,15 @@ public final class GTEMIPlugin implements EmiPlugin {
     }
 
     @Nullable
+    private static MachineWindow getMachineWindow(ModularUIGuiContainer screen) {
+        var widgets = screen.modularUI.mainGroup.widgets;
+        if (!widgets.isEmpty() && widgets.getFirst() instanceof MachineWindow window) return window;
+        return MachineWindow.find(screen.modularUI);
+    }
+
+    @Nullable
     private static Bounds modularWindowBounds(ModularUIGuiContainer screen) {
-        var window = MachineWindow.find(screen.modularUI);
+        var window = getMachineWindow(screen);
         if (window != null) {
             var bounds = window.getMainPanelBounds();
             return new Bounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
@@ -188,7 +195,7 @@ public final class GTEMIPlugin implements EmiPlugin {
     }
 
     private static void addModularWindowExclusionAreas(ModularUIGuiContainer screen, Consumer<Bounds> exclusion) {
-        var window = MachineWindow.find(screen.modularUI);
+        var window = getMachineWindow(screen);
         if (window != null) window.forEachSidePanelBounds(bounds -> exclusion.accept(new Bounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight())));
     }
 

@@ -25,6 +25,8 @@ import static com.gtocore.api.research.ResearchTag.MATERIAL;
 import static com.gtocore.api.research.ResearchTag.MECHANICS;
 import static com.gtocore.api.research.ResearchTag.THERMODYNAMICS;
 import static com.gtocore.common.data.machines.MultiBlockA.CHEMICAL_PLANT;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate1;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate2;
 import static com.gtocore.data.techtree.ComponentNodes.ComponentInAssemblyLineluv;
 
 public final class MachinesNode {
@@ -46,7 +48,7 @@ public final class MachinesNode {
                             .addMaterialNeeded(THERMODYNAMICS, 256)
                             .addMaterialNeeded(MECHANICS, 32)
                             .addMaterialNeeded(ASSEMBLY, 192)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:molecular_casing"), 0.7F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:molecular_casing"), eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -59,7 +61,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(MECHANICS, 64)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:spacetime_assembly_line_casing"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:spacetime_assembly_line_casing"), eurekaRate1)
                             .build())
             .tier(3)
             .build();
@@ -72,7 +74,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 7200L)
                             .addMaterialNeeded(MECHANICS, 128)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:dyson_control_casing"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:dyson_control_casing"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -85,7 +87,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(2048 * 20 * 7200L)
                             .addMaterialNeeded(MECHANICS, 256)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:manipulator"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:manipulator"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -98,7 +100,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(2048 * 20 * 7200L)
                             .addMaterialNeeded(MECHANICS, 256)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:dimensional_bridge_casing"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:dimensional_bridge_casing"), eurekaRate1)
                             .build())
             .tier(5)
             .build();
@@ -128,7 +130,7 @@ public final class MachinesNode {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(32 * 20 * 240L)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:large_assembler"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:large_assembler"), eurekaRate1)
                             .build())
             .tier(1)
             .build();
@@ -138,7 +140,7 @@ public final class MachinesNode {
             .prerequisites(ComponentInAssemblyLineluv)
             .requirements(
                     new ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 60L)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:iv_macerator"), 0.8f)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:iv_macerator"), eurekaRate1)
                             .addMaterialNeeded(MATERIAL, 256)
                             .build())
             .icon(RegistriesUtils.getItem("gtocore:milled_nickel"))
@@ -152,7 +154,7 @@ public final class MachinesNode {
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 240L)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:large_cracker"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:large_cracker"), eurekaRate1)
                             .addMaterialNeeded(MATERIAL, 1024)
                             .addMaterialNeeded(ENERGY, 64)
                             .build())
@@ -167,7 +169,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MECHANICS, 32)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:assembly_line"), 0.9F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:assembly_line"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -181,7 +183,7 @@ public final class MachinesNode {
                             .setCWUNeeded(256 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 32)
                             .addMaterialNeeded(ASSEMBLY, 192)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:energy_control_module_mk2"), 0.6F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:energy_control_module_mk2"), eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -195,7 +197,7 @@ public final class MachinesNode {
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
                             .addMaterialNeeded(THERMODYNAMICS, 640)
-                            .setEurekaItem(GTMultiMachines.ELECTRIC_BLAST_FURNACE, 0.75F)
+                            .setEurekaItem(GTMultiMachines.ELECTRIC_BLAST_FURNACE, eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -209,7 +211,7 @@ public final class MachinesNode {
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
                             .addMaterialNeeded(ASSEMBLY, 640)
-                            .setEurekaItem(GTMachines.PACKER[UHV], 0.75F)
+                            .setEurekaItem(GTMachines.PACKER[UHV], eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -223,7 +225,7 @@ public final class MachinesNode {
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
                             .addMaterialNeeded(CATALYSIS, 640)
-                            .setEurekaItem(LARGE_CHEMICAL_REACTOR, 0.75F)
+                            .setEurekaItem(LARGE_CHEMICAL_REACTOR, eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -236,7 +238,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
-                            .setEurekaItem(GTMachines.LATHE[UHV], 0.75F)
+                            .setEurekaItem(GTMachines.LATHE[UHV], eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -249,7 +251,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
-                            .setEurekaItem(GTMachines.LATHE[UHV], 0.75F)
+                            .setEurekaItem(GTMachines.LATHE[UHV], eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -262,7 +264,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
-                            .setEurekaItem(GTMachines.CENTRIFUGE[UHV], 0.75F)
+                            .setEurekaItem(GTMachines.CENTRIFUGE[UHV], eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -275,7 +277,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(384 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
-                            .setEurekaItem(GTMachines.POLARIZER[UHV], 0.75F)
+                            .setEurekaItem(GTMachines.POLARIZER[UHV], eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -288,7 +290,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 2400L)
                             .addMaterialNeeded(MECHANICS, 108)
-                            .setEurekaItem(GTMachines.ASSEMBLER[UHV], 0.75F)
+                            .setEurekaItem(GTMachines.ASSEMBLER[UHV], eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -302,7 +304,7 @@ public final class MachinesNode {
                             .setCWUNeeded(512 * 20 * 3600L)
                             .addMaterialNeeded(MECHANICS, 108)
                             .addMaterialNeeded(BIOLOGY, 128)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:law_filter_casing"), 0.75F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:law_filter_casing"), eurekaRate2)
                             .build())
             .tier(3)
             .build();
@@ -316,7 +318,7 @@ public final class MachinesNode {
                             .setCWUNeeded(512 * 20 * 3600L)
                             .addMaterialNeeded(MECHANICS, 108)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 2048)
-                            .setEurekaItem(SpaceMultiblock.LARGE_EXPANDABLE_SPACE_STATION_CORE_MODULE.asItem(), 0.75F)
+                            .setEurekaItem(SpaceMultiblock.LARGE_EXPANDABLE_SPACE_STATION_CORE_MODULE.asItem(), eurekaRate2)
                             .build())
             .tier(3)
             .build(), "解锁空间站超高安仓及其他高级仓室的使用", "Unlock the use of High-Amp Hatches and other advanced modules in space stations");
@@ -330,7 +332,7 @@ public final class MachinesNode {
                             .setCWUNeeded(512 * 20 * 9900L)
                             .addMaterialNeeded(MECHANICS, 144)
                             .addMaterialNeeded(ASSEMBLY, 384)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:component_assembler"), 0.75F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:component_assembler"), eurekaRate2)
                             .build())
             .tier(3)
             .build();
@@ -343,7 +345,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(MECHANICS, 64)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:machining_control_module_mk3"), 0.6F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:machining_control_module_mk3"), eurekaRate2)
                             .build())
             .tier(3)
             .build();
@@ -356,7 +358,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(THERMODYNAMICS, 1280)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:laser_cooling_casing"), 0.75F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:laser_cooling_casing"), eurekaRate2)
                             .build())
             .tier(3)
             .build();
@@ -369,7 +371,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(THERMODYNAMICS, 2048)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:vacuum_freezer"), 0.75F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:vacuum_freezer"), eurekaRate2)
                             .build())
             .tier(3)
             .build();
@@ -382,7 +384,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 7200L)
                             .addMaterialNeeded(MATERIAL, 1280)
-                            .setEurekaFluid(GTOMaterials.RareEarthChlorides.getFluid(), 0.8F)
+                            .setEurekaFluid(GTOMaterials.RareEarthChlorides.getFluid(), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -395,7 +397,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 29900L)
                             .addMaterialNeeded(ASSEMBLY, 512)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:magneto_resonatic_circuit_uhv"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:magneto_resonatic_circuit_uhv"), eurekaRate1)
                             .build())
             .tier(3)
             .build(), "所有磁共振电路的产量提升1", "Increase the yield of all magneto resonatic circuits by 1");
@@ -408,7 +410,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 4800L)
                             .addMaterialNeeded(MECHANICS, 160)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:circuit_assembly_line"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:circuit_assembly_line"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -421,7 +423,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 4800L)
                             .addMaterialNeeded(MATERIAL, 2560)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:kerr_newman_homogenizer"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:kerr_newman_homogenizer"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -434,7 +436,7 @@ public final class MachinesNode {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(2048 * 20 * 7200L)
                             .addMaterialNeeded(MECHANICS, 256)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:quantum_force_transformer_coil"), 0.7F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:quantum_force_transformer_coil"), eurekaRate2)
                             .build())
             .tier(4)
             .build();
