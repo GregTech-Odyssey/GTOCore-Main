@@ -12,6 +12,8 @@ import com.gregtechceu.gtceu.common.data.GTItems;
 import static com.gtocore.api.research.ResearchTag.BIOLOGY;
 import static com.gtocore.api.research.ResearchTag.ENERGY;
 import static com.gtocore.api.research.ResearchTag.INTERSTELLAR_ENGINEERING;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate1;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate2;
 import static com.gtocore.data.techtree.MachinesNode.DysonSphereSeriesCasing;
 
 public final class EnergyNodes {
@@ -30,7 +32,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(48 * 20 * 300L)
                             .addMaterialNeeded(ENERGY, 20)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:engraved_lapotron_crystal_chip"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:engraved_lapotron_crystal_chip"), eurekaRate1)
                             .build())
             .tier(1)
             .build();
@@ -43,7 +45,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(ENERGY, 128)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:energy_cluster"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:energy_cluster"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -56,7 +58,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(ENERGY, 512)
-                            .setEurekaItem(GTItems.ULTIMATE_BATTERY, 0.8F)
+                            .setEurekaItem(GTItems.ULTIMATE_BATTERY, eurekaRate1)
                             .build())
             .tier(3)
             .build();
@@ -69,7 +71,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 4800L)
                             .addMaterialNeeded(ENERGY, 1024)
-                            .setEurekaItem(GTOItems.REALLY_MAX_BATTERY, 0.8F)
+                            .setEurekaItem(GTOItems.REALLY_MAX_BATTERY, eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -82,7 +84,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 8000L)
                             .addMaterialNeeded(ENERGY, 4096)
-                            .setEurekaItem(GTOItems.TRANSCENDENT_MAX_BATTERY, 0.8F)
+                            .setEurekaItem(GTOItems.TRANSCENDENT_MAX_BATTERY, eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -95,7 +97,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(8192 * 20 * 7200L)
                             .addMaterialNeeded(ENERGY, 12288)
-                            .setEurekaItem(GTOItems.EXTREMELY_MAX_BATTERY, 0.8F)
+                            .setEurekaItem(GTOItems.EXTREMELY_MAX_BATTERY, eurekaRate1)
                             .build())
             .tier(6)
             .build();
@@ -108,7 +110,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(8192 * 20 * 28800L)
                             .addMaterialNeeded(ENERGY, 16384)
-                            .setEurekaItem(GTOItems.INSANELY_MAX_BATTERY, 0.8F)
+                            .setEurekaItem(GTOItems.INSANELY_MAX_BATTERY, eurekaRate1)
                             .build())
             .tier(6)
             .build();
@@ -120,7 +122,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1500L)
                             .addMaterialNeeded(ENERGY, 128)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:zpm_naquadah_reactor"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:zpm_naquadah_reactor"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -133,7 +135,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(512 * 20 * 4800L)
                             .addMaterialNeeded(ENERGY, 512)
-                            .setEurekaItem(GeneratorMultiblock.LARGE_NAQUADAH_REACTOR.asItem(), 0.8F)
+                            .setEurekaItem(GeneratorMultiblock.LARGE_NAQUADAH_REACTOR.asItem(), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -146,7 +148,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 4800L)
                             .addMaterialNeeded(ENERGY, 4096)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:hyper_reactor"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:hyper_reactor"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -159,7 +161,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(1024 * 20 * 7200L)
                             .addMaterialNeeded(INTERSTELLAR_ENGINEERING, 256)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:dyson_swarm_module"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:dyson_swarm_module"), eurekaRate1)
                             .build())
             .tier(4)
             .build();
@@ -173,7 +175,7 @@ public final class EnergyNodes {
                             .setCWUNeeded(256 * 20 * 2400L)
                             .addMaterialNeeded(BIOLOGY, 128)
                             .addMaterialNeeded(ENERGY, 300)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"), 0.7F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:bio_cardiomyocyte_cluster"), eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -186,7 +188,7 @@ public final class EnergyNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(8192 * 20 * 7200L)
                             .addMaterialNeeded(ENERGY, 16384)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:annihilation_constrainer"), 0.7F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:annihilation_constrainer"), eurekaRate2)
                             .build())
             .tier(5)
             .build();

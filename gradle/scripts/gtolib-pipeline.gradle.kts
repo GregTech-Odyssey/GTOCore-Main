@@ -557,6 +557,16 @@ fun JavaExec.art(vararg args: String) {
     setArgs(args.toList())
 }
 
+/** 在隔离的类加载器中直接调用 ART，避免 Windows 下大量 `--lib` 触发 CreateProcess error=206 命令行长度限制。 */
+fun runArtInProcess(args: List<String>) {
+    val urls = artTool.files.map { it.toURI().toURL() }.toTypedArray()
+    java.net.URLClassLoader(urls, ClassLoader.getPlatformClassLoader()).use { cl ->
+        val mainClass = Class.forName("net.neoforged.art.Main", true, cl)
+        val mainMethod = mainClass.getMethod("main", Array<String>::class.java)
+        mainMethod.invoke(null, args.toTypedArray())
+    }
+}
+
 /** ART 继承库：Forge named + 编译和运行时依赖的全部 jar（includeOwnClasses 时含主工程自己的 class 输出）。客户端专属依赖也必须参与。 */
 fun artInheritanceLibs(includeOwnClasses: Boolean): List<File> {
     val libs = mutableListOf(namedForgeJar)
@@ -663,17 +673,15 @@ fun verifyInheritedMinecraftMembersReobfed(jar: File) {
 }
 
 /** ART 把 named 明文 reobf 成 SRG（发行轨 ProGuard/Seal 的输入） */
-val reobfGtolib = tasks.register<JavaExec>("reobfGtolib") {
+val reobfGtolib = tasks.register("reobfGtolib") {
     group = "gtolib"
     description = "ART 把 named 明文 reobf 成 SRG（发行轨 ProGuard/Seal 的输入）"
     onlyIf { rebuildGtolib }
     dependsOn(packageGtolibJar, "classes", "createMinecraftArtifacts")
+    inputs.files(artTool)
     outputs.file(srgJar)
     outputs.upToDateWhen { false }
-    classpath = artTool
-    mainClass = "net.neoforged.art.Main"
-    val toolOutput = captureToolOutput()
-    doFirst {
+    doLast {
         requireJar(namedToIntermediate, "reobfGtolib: named→SRG 映射（先运行 createMinecraftArtifacts）")
         val mixinTsrg = mixinOut.resolve("gtolib.refmap.json.mappings.tsrg")
         val repoTsrg = file("src/main/resources/gtolib.refmap.json.mappings.tsrg")
@@ -682,13 +690,10 @@ val reobfGtolib = tasks.register<JavaExec>("reobfGtolib") {
         srgJar.delete()
         // 必须带上继承库，否则 gtocore 里重写的 Minecraft 方法（如 getSerializedName → m_7912_）不会被改名
         val libs = artInheritanceLibs(includeOwnClasses = true)
-        setArgs(
+        runArtInProcess(
             listOf("--input", unprotectedJar.absolutePath, "--output", srgJar.absolutePath, "--names", namedToIntermediate.absolutePath, "--names", mixinTsrg.absolutePath) +
                 libs.flatMap { listOf("--lib", it.absolutePath) }
         )
-    }
-    doLast {
-        finishToolOutput(name, executionResult.get().exitValue, toolOutput)
         requireJar(srgJar, "reobfGtolib: ART 输出", 1024)
         val rlm = latin1(readJarEntry(srgJar, "$resourceLocationMixnKey.class") ?: throw GradleException("reobfGtolib: 缺 ResourceLocationMixn.class"))
         if ("f_135804_" !in rlm || "m_245413_" !in rlm || "assertValidNamespace" in rlm) {
@@ -736,24 +741,19 @@ val prepareGtocoreNamedLibrary = tasks.register<Jar>("prepareGtocoreNamedLibrary
     from(classesKotlin) { exclude("com/gtolib/**") }
 }
 
-val prepareGtocoreSrgLibrary = tasks.register<JavaExec>("prepareGtocoreSrgLibrary") {
+val prepareGtocoreSrgLibrary = tasks.register("prepareGtocoreSrgLibrary") {
     group = "gtolib"
     description = "主工程库转成 SRG，供发行 ProGuard 使用"
     onlyIf { rebuildGtolib }
     dependsOn(prepareGtocoreNamedLibrary, packageGtolibJar, "createMinecraftArtifacts")
-    classpath = artTool
-    mainClass = "net.neoforged.art.Main"
-    val toolOutput = captureToolOutput()
-    doFirst {
+    inputs.files(artTool)
+    doLast {
         requireJar(gtocoreNamedLibraryJar, "prepareGtocoreSrgLibrary: 主工程 named 库", 1024)
         gtocoreSrgLibraryJar.delete()
-        setArgs(
+        runArtInProcess(
             listOf("--input", gtocoreNamedLibraryJar.absolutePath, "--output", gtocoreSrgLibraryJar.absolutePath, "--names", namedToIntermediate.absolutePath) +
                 (listOf(unprotectedJar) + artInheritanceLibs(includeOwnClasses = false)).flatMap { listOf("--lib", it.absolutePath) }
         )
-    }
-    doLast {
-        finishToolOutput(name, executionResult.get().exitValue, toolOutput)
         val converted = ZipFile(gtocoreSrgLibraryJar).use { zf ->
             zf.entries().asSequence().any { it.name.endsWith(".class") && Regex("m_\\d+_").containsMatchIn(latin1(zf.getInputStream(it).readBytes())) }
         }

@@ -13,6 +13,7 @@ import static com.gtocore.api.research.ResearchTag.CATALYSIS;
 import static com.gtocore.api.research.ResearchTag.DATA_STORAGE;
 import static com.gtocore.api.research.ResearchTag.MATERIAL;
 import static com.gtocore.api.research.ResearchTag.MECHANICS;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate1;
 
 public final class AENodes {
 
@@ -34,7 +35,7 @@ public final class AENodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(DATA_STORAGE, 250)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy_v2"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy_v2"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -48,7 +49,7 @@ public final class AENodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(DATA_STORAGE, 150)
                             .addMaterialNeeded(ASSEMBLY, 150)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_v2"), 0.9F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_v2"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -62,7 +63,7 @@ public final class AENodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MATERIAL, 640)
                             .addMaterialNeeded(CATALYSIS, 256)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_catalyst_hatch"), GTORules.TECH_TREE_TIER.isEasy() ? 1f : 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:advanced_catalyst_hatch"), GTORules.TECH_TREE_TIER.isEasy() ? 1f : eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -76,7 +77,7 @@ public final class AENodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(DATA_STORAGE, 25L << (GTORules.TECH_TREE_TIER.level() * 2))
                             .addMaterialNeeded(MECHANICS, 12L * GTORules.TECH_TREE_TIER.level())
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), GTORules.TECH_TREE_TIER.isEasy() ? 1f : 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:pattern_content_access_terminal"), GTORules.TECH_TREE_TIER.isEasy() ? 1f : eurekaRate1)
                             .build())
             .tier(GTORules.TECH_TREE_TIER.level())
             .build();
@@ -90,7 +91,7 @@ public final class AENodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MATERIAL, 640)
                             .addMaterialNeeded(CATALYSIS, 128)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:iv_drone"), GTORules.TECH_TREE_TIER.isEasy() ? 1f : 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:iv_drone"), GTORules.TECH_TREE_TIER.isEasy() ? 1f : eurekaRate1)
                             .build())
             .tier(GTORules.TECH_TREE_TIER.isEasy() ? 1 : 2)
             .build();

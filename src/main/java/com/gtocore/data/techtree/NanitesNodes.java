@@ -15,6 +15,8 @@ import static com.gtocore.api.research.ResearchTag.BIOLOGY;
 import static com.gtocore.api.research.ResearchTag.CATALYSIS;
 import static com.gtocore.api.research.ResearchTag.MATERIAL;
 import static com.gtocore.api.research.ResearchTag.MECHANICS;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate1;
+import static com.gtocore.data.techtree.BaseNodes.eurekaRate2;
 import static com.gtocore.data.techtree.MachinesNode.ChemicalPlantEnvironmentControl;
 
 public final class NanitesNodes {
@@ -28,7 +30,7 @@ public final class NanitesNodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MATERIAL, 1024)
                             .addMaterialNeeded(ASSEMBLY, 64)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:activated_carbon_dust"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:activated_carbon_dust"), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -42,7 +44,7 @@ public final class NanitesNodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(CATALYSIS, 960)
                             .addMaterialNeeded(BIOLOGY, 35)
-                            .setEurekaItem(NANITES, GTMaterials.Copper, 0.8F)
+                            .setEurekaItem(NANITES, GTMaterials.Copper, eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -56,7 +58,7 @@ public final class NanitesNodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MECHANICS, 32)
                             .addMaterialNeeded(ASSEMBLY, 96)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:precision_circuit_assembly_robot_mk1"), 0.75F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:precision_circuit_assembly_robot_mk1"), eurekaRate2)
                             .build())
             .tier(2)
             .build();
@@ -69,7 +71,7 @@ public final class NanitesNodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 7200L)
                             .addMaterialNeeded(MATERIAL, 3840)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:nano_forge"), 0.7F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtocore:nano_forge"), eurekaRate2)
                             .build())
             .tier(5)
             .build();

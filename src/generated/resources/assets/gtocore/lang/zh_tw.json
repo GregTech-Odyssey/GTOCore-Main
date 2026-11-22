@@ -106,6 +106,7 @@
   "ae2.gto_extension.open_gui_of_this_facility": "打開該設施的GUI介面",
   "ae2.gto_extension.open_gui_of_this_facility_tooltip": "打開該設施的GUI介面以查看其詳細資訊或進行交互",
   "ae2.gto_extension.pattern_content_access_terminal": "樣板內容管理終端",
+  "ae2.gto_extension.pattern_ingredients": "材料：",
   "ae2.gto_extension.pick_craft_all_right": "已啟動合成！",
   "ae2.gto_extension.pick_craft_error1": "計算合成路徑時發生錯誤。",
   "ae2.gto_extension.pick_craft_error2": "沒有足夠的材料/CPU來合成所需物品。",
