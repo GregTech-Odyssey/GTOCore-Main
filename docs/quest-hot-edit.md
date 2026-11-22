@@ -70,7 +70,7 @@
 - 标题、副标题、描述行的第一个参数必须是字符串字面量；描述用 `.desc(d -> d.line(…).line().page()…)` 链式写法。
 - 复制节点：`public static final QuestLink X = CHAPTER.copy(目标, x, y)`，或章节装饰里的 `.link(QuestLink.of(目标, x, y))`，坐标直接写数字。
 - 依赖：`dependsOn` 的每个参数是同文件字段名或 `XxxChapter.FIELD`。
-- 章节隐藏：空章节用 `.alwaysInvisible()` 在玩家模式隐藏、编辑模式仍可见；需要按前置逐任务显示时用 `.hideQuestsUntilDepsComplete()`。
+- 章节隐藏：空章节用 `.alwaysInvisible()` 在玩家模式隐藏、编辑模式仍可见；章节级 `.hideQuestsUntilDepsVisible()` / `.hideQuestsUntilDepsComplete()` 是**整章门槛**——章内入口任务的外部前置可见/完成后整章一起显示，不再逐任务传播；需要逐任务控制时在任务上写 `.hideUntilDepsVisible()` / `.hideUntilDepsComplete()`。
 - 柔性章节：章节加 `.flexible()` 后，前置未完成时任务节点仍按前置锁定，但允许提前累积任务进度；前置完成后自动结算已满任务并显示完成与淡色对勾。
 
 ### 章节装饰图片
