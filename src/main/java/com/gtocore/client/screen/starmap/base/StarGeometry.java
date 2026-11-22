@@ -5,6 +5,8 @@ import com.gregtechceu.gtceu.uipro.canvas.CanvasRect;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.util.function.IntPredicate;
+
 /**
  * 天体在画布上的位置与尺寸：只在缩放或目录修订号改变时重算并写入预分配数组，绘制与命中测试只读数组。
  */
@@ -203,5 +205,30 @@ public final class StarGeometry {
         var out = new float[4];
         anchorBounds(anchor, out);
         return CanvasRect.of(out[0], out[1], out[2], out[3]);
+    }
+
+    /** Picks the closest visible system ring. Bodies on the same ring are resolved by proximity to their sprite. */
+    public int orbitAt(float x, float y, float scale, IntPredicate available) {
+        update(scale);
+        double closest = 5 / (double) scale;
+        double closestBody = Double.POSITIVE_INFINITY;
+        int result = -1;
+        for (int body = 0; body < catalog.bodyCount(); body++) {
+            if (catalog.isStellar(body) || catalog.isMoon(body) || !available.test(body)) continue;
+            int system = catalog.system(body);
+            double dx = x - catalog.systemX(system), dy = (y - catalog.systemY(system)) / TILT;
+            double radius = Math.sqrt(dx * dx + dy * dy);
+            if (radius == 0) continue;
+            double normal = Math.sqrt(dx * dx + dy * dy / (TILT * TILT)) / radius;
+            double distance = Math.abs(radius - catalog.ringRadius(system, catalog.order(body))) / normal;
+            if (distance > closest) continue;
+            double bx = x - xs[body], by = y - ys[body];
+            double bodyDistance = bx * bx + by * by;
+            if (distance == closest && bodyDistance >= closestBody) continue;
+            closest = distance;
+            closestBody = bodyDistance;
+            result = body;
+        }
+        return result;
     }
 }

@@ -41,11 +41,7 @@ public class TravelNetworks {
 
     private static final NetworkPack SYNC_TRAVEL = NetworkPack.registerS2C(
             "eio_travel:sync_travel",
-            (player, buf) -> {
-                CompoundTag nbt = buf.readNbt();
-                TravelSavedData travelData = TravelSavedData.getTravelData(GTUtil.getClientLevel());
-                travelData.loadNBT(nbt);
-            });
+            (player, buf) -> TravelSavedData.syncClient(GTUtil.getClientLevel(), buf.readNbt()));
 
     private static final NetworkPack REMOVE_TRAVEL = NetworkPack.registerS2C(
             "eio_travel:remove_travel",

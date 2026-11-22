@@ -3,10 +3,12 @@ package com.gtocore.common.data.machines;
 import com.gtocore.api.pattern.GTOPredicates;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.multiblock.electric.ChiselMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.Mods;
 
+import com.gtolib.api.data.storage.MEHatchMigration;
 import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.utils.MultiBlockFileReader;
 
@@ -31,14 +33,27 @@ public final class OptionalMachine {
 
     public static void init() {}
 
+    @Deprecated
+    public static final MachineDefinition LEGACY_ME_SIMPLE_PATTERN_BUFFER = GTCEu.isDev() || GTORules.SIMPLE_PATTERN_BUFFER_SLOTS.get() > 0 ?
+
+            MEHatchMigration.registerLegacy(GTO, "me_simple_pattern_buffer", name -> PatternBufferType.builder(GTO, name)
+                    .name("ME简单样板总成", "ME Simple Pattern Buffer")
+                    .slots(GTORules.SIMPLE_PATTERN_BUFFER_SLOTS::get)
+                    .tier(MV)
+                    .noWireless()
+                    .machine(MEPatternBufferPartMachine::new)
+                    .registerDeprecated()) :
+            null;
+
     public static final MachineDefinition ME_SIMPLE_PATTERN_BUFFER = GTCEu.isDev() || GTORules.SIMPLE_PATTERN_BUFFER_SLOTS.get() > 0 ?
 
-            PatternBufferType.builder(GTO, "me_simple_pattern_buffer")
+            PatternBufferType.builder(GTO, "me_simple_pattern_buffer_v2")
                     .name("ME简单样板总成", "ME Simple Pattern Buffer")
                     .slots(GTORules.SIMPLE_PATTERN_BUFFER_SLOTS::get)
                     .tier(MV)
                     .noWireless()
                     .upgradable()
+                    .tips(GTOMachineTooltips.mePatternCapacityTooltips)
                     .register() :
             null;
 

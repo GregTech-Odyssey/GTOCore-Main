@@ -38,6 +38,7 @@ public enum Mods {
     BALM("balm"),
     XAERO_WORLDMAP("xaeroworldmap"),
     XAERO_MINIMAP("xaerominimap"),
+    OPEN_PARTIES_AND_CLAIMS("openpartiesandclaims"),
     TOOLBELT("toolbelt"),
     CORPSE("corpse");
 

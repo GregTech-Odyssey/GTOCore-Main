@@ -1,7 +1,10 @@
 package com.gtocore.common.machine.multiblock.part;
 
+import com.gtocore.config.GTORules;
+
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.machine.trait.MEStorageCapacity;
 import com.gtolib.utils.LegacyIO;
 
 import com.gregtechceu.gtceu.api.GTValues;
@@ -10,6 +13,8 @@ import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gregtechceu.gtceu.api.gui.fancy.ConfiguratorPanel;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IDropSaveMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableInventory;
 import com.gregtechceu.gtceu.api.misc.TickTimeMonitor;
@@ -34,14 +39,23 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.items.ItemStackHandler;
 
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKeyTypes;
 import appeng.api.storage.StorageAccess;
 
+import com.gto.datasynclib.annotations.AdditionalHolder;
 import com.gto.datasynclib.annotations.SaveToDisk;
 import com.gto.datasynclib.datastream.codec.ValueOps;
 
@@ -64,7 +78,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @DataGeneratorScanned
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implements IDropSaveMachine {
+public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implements IDropSaveMachine, IMachineLife, IInteractedMachine {
 
     @RegisterLanguage(cn = "物品", en = "Item")
     private static final String LANG_ITEM = "gtocore.machine.huge_bus.item";
@@ -75,6 +89,8 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
 
     @SaveToDisk
     private final HugeInventory inventory;
+    @AdditionalHolder
+    private final MEStorageCapacity capacity;
     @Nullable
     private Task autoIOSubs;
 
@@ -86,6 +102,7 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
     public HugeBusPartMachine(MetaMachineBlockEntity holder) {
         super(holder, GTValues.IV, IO.IN);
         this.inventory = new HugeInventory(this);
+        this.capacity = new MEStorageCapacity(this, GTORules.ME_CAPACITY_LIMIT::get, false);
         workingEnabled = false;
     }
 
@@ -105,6 +122,16 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
             inventorySubs.unsubscribe();
             inventorySubs = null;
         }
+    }
+
+    @Override
+    public void onMachinePlaced(@Nullable LivingEntity player, ItemStack stack) {
+        if (player instanceof ServerPlayer placer && capacity.isEnabled()) capacity.installDefault(placer);
+    }
+
+    @Override
+    public InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return MEStorageCapacity.useOn(this, player, hand);
     }
 
     private void refundAll(ClickData clickData) {
@@ -163,9 +190,14 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void autoIO() {
-        if (isWorkingEnabled()) {
-            inventory.importFromNearby(getFrontFacing());
+        if (isWorkingEnabled() && inventory.remainingCapacity() > 0 && getLevel() instanceof ServerLevel level) {
+            var facing = getFrontFacing();
+            var source = holder.blockEntityDirectionCache.getAdjacentKeyHandler(level, getPos(), facing, AEKeyTypes.ITEMS, StorageAccess.EXTRACT);
+            if (source != null) {
+                KeyTransfer.transfer((IKeyHandler<AEItemKey>) source, inventory, Long.MAX_VALUE, getKeyCapFilter(facing, IO.IN, AEKeyTypes.ITEMS));
+            }
         }
         updateInventorySubscription();
     }
@@ -259,23 +291,53 @@ public final class HugeBusPartMachine extends WorkableTieredIOPartMachine implem
         }
     }
 
-    private KeyInventory<AEItemKey> createImportItems() {
-        var importItems = KeyInventory.items(1);
-        importItems.setFilter(key -> key instanceof AEItemKey itemKey && inventory.canCapInput() && inventory.storage.insert(0, itemKey, 1, true) > 0);
-        importItems.setOnChanged(() -> {
-            var key = importItems.keyAt(0);
-            if (key == null) return;
-            long amount = importItems.amountAt(0);
-            importItems.set(0, null, 0);
-            inventory.storage.insert(0, key, amount, false);
-        });
-        return importItems;
+    private ItemStackHandler createImportItems() {
+        // 素材直接进入长整型库存，菜单槽只接收库存有空间的数量。
+        return new ItemStackHandler(1) {
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return isRemote() ? 64 : (int) Math.min(64, inventory.remainingCapacity());
+            }
+
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                var key = AEItemKey.of(stack);
+                return key != null && (isRemote() || inventory.insert(slot, key, 1, true) > 0);
+            }
+
+            @Override
+            public void setStackInSlot(int slot, ItemStack stack) {
+                if (isRemote()) return;
+                var key = AEItemKey.of(stack);
+                if (key != null) inventory.insert(slot, key, stack.getCount(), false);
+            }
+        };
     }
 
-    private static final class HugeInventory extends NotifiableInventory<AEItemKey> {
+    private final class HugeInventory extends NotifiableInventory<AEItemKey> {
 
         private HugeInventory(MetaMachine machine) {
             super(machine, KeyInventory.items(1, Long.MAX_VALUE, false), IO.IN, IO.BOTH);
+        }
+
+        private long remainingCapacity() {
+            return Math.max(0, slotLimit(0) - storage.amountAt(0));
+        }
+
+        @Override
+        public long slotLimit(int slot) {
+            return capacity.items();
+        }
+
+        @Override
+        public long insert(int slot, AEItemKey key, long amount, boolean simulate) {
+            return super.insert(slot, key, Math.min(amount, remainingCapacity()), simulate);
+        }
+
+        @Override
+        public long insert(AEItemKey key, long amount, boolean simulate) {
+            return insert(0, key, amount, simulate);
         }
 
         @Override

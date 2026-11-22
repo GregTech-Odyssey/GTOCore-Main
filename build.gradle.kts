@@ -380,7 +380,7 @@ dependencies {
     modRuntimeOnly("curse.maven:geckolib-388172:8285794")
     modImplementation("curse.maven:ars-meteorites-1278083:7125271")
 
-    runtimeMod("curse.maven:open-parties-and-claims-636608:8690609")
+    runtimeMod("curse.maven:open-parties-and-claims-636608:9221982")
     runtimeMod("curse.maven:modular-routers-250294:5056687")
 
     // 只在运行时需要（无源码引用）
@@ -405,9 +405,9 @@ dependencies {
     }
 
     // 只进客户端
-    clientMod("xaero.lib:xaerolib-forge-1.20.1:1.1.15")
-    clientMod("xaero.map:xaeroworldmap-forge-1.20.1:1.41.2")
-    clientMod("xaero.minimap:xaerominimap-forge-1.20.1:26.1.0")
+    clientMod("xaero.lib:xaerolib-forge-1.20.1:1.7.3")
+    clientMod("xaero.map:xaeroworldmap-forge-1.20.1:1.47.0")
+    clientMod("xaero.minimap:xaerominimap-forge-1.20.1:26.6.0")
     clientMod("curse.maven:emi-loot-681783:6449092")
     clientMod("curse.maven:mouse-tweaks-60089:5338457")
     clientMod("dev:jecharacters:1.20.1-forge-4.5.11-dev-shadow")

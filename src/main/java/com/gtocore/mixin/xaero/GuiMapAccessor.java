@@ -4,9 +4,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import xaero.map.animation.Animation;
 import xaero.map.gui.GuiMap;
+import xaero.map.gui.dropdown.rightclick.GuiRightClickMenu;
 
 @Mixin(value = GuiMap.class, remap = false)
 public interface GuiMapAccessor {
+
+    @Accessor("rightClickMenu")
+    GuiRightClickMenu gtocore$rightClickMenu();
 
     @Accessor("cameraX")
     double gtocore$cameraX();

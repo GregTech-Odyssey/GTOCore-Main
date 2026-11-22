@@ -131,7 +131,7 @@ public final class PatternEditor extends UIElement {
         });
         amount.disabled(() -> selectedStack() == null, SELECT_SLOT);
         addChild(amount);
-        if (machine instanceof MEWildcardPatternBufferPartMachine) {
+        if (machine instanceof MEWildcardPatternBufferPartMachineV2) {
             var wildcard = UIElement.column(LayoutStyle.AUTO)
                     .addChild(Button.text(LayoutStyle.AUTO, CONVERT_TO_WILDCARD).setOnServerClick(this::convertSelectedToWildcard))
                     .setDisplay(false);
@@ -154,7 +154,7 @@ public final class PatternEditor extends UIElement {
     }
 
     static void buildSection(MEPatternPartMachine<?> machine, int patternIndex, UIElement column) {
-        if (machine instanceof MEWildcardPatternBufferPartMachine) {
+        if (machine instanceof MEWildcardPatternBufferPartMachineV2) {
             build(machine, patternIndex, MEPatternPartUI.section(column, TITLE));
             return;
         }

@@ -2,7 +2,7 @@ package com.gtocore.common.machine.trait;
 
 import com.gtocore.api.machine.RecipeTypeOverrideUnit;
 import com.gtocore.common.machine.multiblock.part.ae.AbstractRecipeInternalSlot;
-import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2;
 
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiPart;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableRecipeHandlerTrait;
@@ -35,9 +35,9 @@ public final class InternalSlotRecipeHandler {
 
     private final List<RecipeHandlerUnit> slotHandlers;
 
-    public InternalSlotRecipeHandler(MEPatternBufferPartMachine buffer, MEPatternBufferPartMachine.InternalSlot[] slots) {
+    public InternalSlotRecipeHandler(MEPatternBufferPartMachineV2 buffer, MEPatternBufferPartMachineV2.InternalSlot[] slots) {
         this.slotHandlers = new ArrayList<>(slots.length);
-        for (MEPatternBufferPartMachine.InternalSlot slot : slots) {
+        for (MEPatternBufferPartMachineV2.InternalSlot slot : slots) {
             slotHandlers.add(PatternBufferRHL.of(slot, buffer));
         }
     }
@@ -115,13 +115,13 @@ public final class InternalSlotRecipeHandler {
         }
     }
 
-    static class PatternSlotRHL extends AbstractRHL<MEPatternBufferPartMachine.InternalSlot> {
+    static class PatternSlotRHL extends AbstractRHL<MEPatternBufferPartMachineV2.InternalSlot> {
 
-        PatternSlotRHL(MEPatternBufferPartMachine.InternalSlot slot, IMultiPart part, IRecipeHandler... handlers) {
+        PatternSlotRHL(MEPatternBufferPartMachineV2.InternalSlot slot, IMultiPart part, IRecipeHandler... handlers) {
             super(slot, part, handlers);
         }
 
-        private PatternSlotRHL(IRecipeHandler handler, MEPatternBufferPartMachine.InternalSlot slot, MEPatternBufferPartMachine buffer) {
+        private PatternSlotRHL(IRecipeHandler handler, MEPatternBufferPartMachineV2.InternalSlot slot, MEPatternBufferPartMachineV2 buffer) {
             super(slot, buffer, handler, slot.circuitInventory, slot.shareInventory, slot.shareTank, buffer.circuitInventorySimulated, buffer.shareInventory, buffer.shareTank);
         }
 
@@ -165,11 +165,11 @@ public final class InternalSlotRecipeHandler {
 
         final SlotRecipeHandler recipeHandler;
 
-        private static PatternBufferRHL of(MEPatternBufferPartMachine.InternalSlot slot, MEPatternBufferPartMachine buffer) {
+        private static PatternBufferRHL of(MEPatternBufferPartMachineV2.InternalSlot slot, MEPatternBufferPartMachineV2 buffer) {
             return new PatternBufferRHL(new SlotRecipeHandler(buffer, slot), slot, buffer);
         }
 
-        private PatternBufferRHL(SlotRecipeHandler handler, MEPatternBufferPartMachine.InternalSlot slot, MEPatternBufferPartMachine buffer) {
+        private PatternBufferRHL(SlotRecipeHandler handler, MEPatternBufferPartMachineV2.InternalSlot slot, MEPatternBufferPartMachineV2 buffer) {
             super(handler, slot, buffer);
             recipeHandler = handler;
         }
@@ -177,12 +177,12 @@ public final class InternalSlotRecipeHandler {
 
     final static class SlotRecipeHandler extends NotifiableRecipeHandlerTrait {
 
-        final MEPatternBufferPartMachine.InternalSlot slot;
+        final MEPatternBufferPartMachineV2.InternalSlot slot;
         @Nullable
         private GTRecipeType searchType;
         private int searchGeneration;
 
-        private SlotRecipeHandler(MEPatternBufferPartMachine buffer, MEPatternBufferPartMachine.InternalSlot slot) {
+        private SlotRecipeHandler(MEPatternBufferPartMachineV2 buffer, MEPatternBufferPartMachineV2.InternalSlot slot) {
             super(buffer);
             this.slot = slot;
             slot.setOnContentsChanged(this::notifyListeners);

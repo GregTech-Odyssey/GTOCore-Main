@@ -1,24 +1,14 @@
 package com.gtocore.data.recipe.gtm.misc;
 
-import com.gtocore.common.data.GTOBlocks;
-import com.gtocore.common.data.GTOItems;
-import com.gtocore.common.data.machines.GTAEMachines;
+import com.gtocore.data.recipe.MEHatchRecipes;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.chemical.material.stack.MaterialEntry;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
-import com.gregtechceu.gtceu.common.data.GTItems;
-import com.gregtechceu.gtceu.common.data.GTMachines;
-import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.machines.GTMultiMachines;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 import com.gregtechceu.gtceu.data.recipe.GTCraftingComponents;
 import com.gregtechceu.gtceu.data.recipe.VanillaRecipeHelper;
-
-import net.minecraft.world.item.Item;
-
-import appeng.core.definitions.AEItems;
-import appeng.core.definitions.AEParts;
 
 import java.util.Locale;
 
@@ -28,9 +18,6 @@ import static com.gregtechceu.gtceu.common.data.GTItems.*;
 import static com.gregtechceu.gtceu.common.data.GTMachines.*;
 import static com.gregtechceu.gtceu.common.data.GTMaterials.*;
 import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLER_RECIPES;
-import static com.gtocore.common.data.GTORecipeTypes.ASSEMBLY_LINE_RECIPES;
-import static com.gtocore.common.data.machines.GTAEMachines.MUFFLER_HATCH_ME;
-import static com.gtocore.data.techtree.AENodes.MEWasteRecycling;
 
 public final class MetaTileEntityMachineRecipeLoader {
 
@@ -418,79 +405,7 @@ public final class MetaTileEntityMachineRecipeLoader {
                 .duration(400).EUt(VA[LuV])
                 .save();
 
-        // ME Parts
-
-        Item meInterface = AEParts.INTERFACE.asItem();
-        Item accelerationCard = AEItems.SPEED_CARD.asItem();
-
-        ASSEMBLER_RECIPES.recipeBuilder("me_import_bus")
-                .inputItems(ITEM_IMPORT_BUS[EV])
-                .inputItems(meInterface)
-                .inputItems(accelerationCard)
-                .outputItems(GTAEMachines.ITEM_IMPORT_BUS_ME)
-                .duration(300).EUt(VA[HV])
-                .save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("me_import_hatch")
-                .inputItems(FLUID_IMPORT_HATCH[EV])
-                .inputItems(meInterface)
-                .inputItems(accelerationCard)
-                .outputItems(GTAEMachines.FLUID_IMPORT_HATCH_ME)
-                .duration(300).EUt(VA[HV])
-                .save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("me_export_bus")
-                .inputItems(ITEM_EXPORT_BUS[EV])
-                .inputItems(meInterface)
-                .inputItems(accelerationCard)
-                .outputItems(GTAEMachines.ITEM_EXPORT_BUS_ME)
-                .duration(300).EUt(VA[HV])
-                .save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("me_export_hatch")
-                .inputItems(FLUID_EXPORT_HATCH[EV])
-                .inputItems(meInterface)
-                .inputItems(accelerationCard)
-                .outputItems(GTAEMachines.FLUID_EXPORT_HATCH_ME)
-                .duration(300).EUt(VA[HV])
-                .save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("me_stocking_import_bus")
-                .inputItems(ITEM_IMPORT_BUS[LuV])
-                .inputItems(GTAEMachines.ITEM_IMPORT_BUS_ME)
-                .inputItems(meInterface, 4)
-                .inputItems(CONVEYOR_MODULE_LuV)
-                .inputItems(SENSOR_LuV)
-                .inputItems(accelerationCard, 4)
-                .outputItems(GTAEMachines.STOCKING_IMPORT_BUS_ME)
-                .duration(300).EUt(VA[LuV])
-                .save();
-
-        ASSEMBLER_RECIPES.recipeBuilder("me_stocking_import_hatch")
-                .inputItems(FLUID_IMPORT_HATCH[LuV])
-                .inputItems(GTAEMachines.FLUID_IMPORT_HATCH_ME)
-                .inputItems(meInterface, 4)
-                .inputItems(ELECTRIC_PUMP_LuV)
-                .inputItems(SENSOR_LuV)
-                .inputItems(accelerationCard, 4)
-                .outputItems(GTAEMachines.STOCKING_IMPORT_HATCH_ME)
-                .duration(300).EUt(VA[LuV])
-                .save();
-
-        ASSEMBLY_LINE_RECIPES.builder("me_muffler_hatch")
-                .inputItems(GTMachines.MUFFLER_HATCH[GTValues.LuV].asItem())
-                .inputItems(GTOBlocks.INTEGRAL_FRAMEWORK_LUV.asItem())
-                .inputItems("gtceu:me_output_bus")
-                .inputItems(GTItems.FIELD_GENERATOR_LuV, 16)
-                .inputItems(GTItems.ROBOT_ARM_LuV, 16)
-                .inputItems("ae2:annihilation_plane", 8)
-                .inputItems(GTOItems.IV_DRONE)
-                .outputItems(MUFFLER_HATCH_ME)
-                .inputFluids(GTMaterials.SolderingAlloy, 9216)
-                .EUt(GTValues.VA[LuV])
-                .researchNode(MEWasteRecycling)
-                .duration(400)
-                .save();
+        MEHatchRecipes.registerInputOutputAndMuffler();
     }
 
     private static void registerLaserRecipes() {

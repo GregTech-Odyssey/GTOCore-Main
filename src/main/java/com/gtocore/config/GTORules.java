@@ -72,6 +72,11 @@ public final class GTORules {
             .name("gtocore.rule.resources.loot", "战利品难度", "Loot Difficulty")
             .desc("gtocore.rule.resources.loot.desc", "更高的难度下，搜刮战利品的质量与数量会降低。", "On higher tiers, the quality and quantity of loot scavenging is reduced.")
             .register();
+    public static final BoolRule ANCIENT_STEAM_RUINS = Rules.boolRule("resources.ancient_steam_ruins").group(RESOURCES)
+            .defaults(true, false, false).customizable()
+            .name("gtocore.rule.resources.ancient_steam_ruins", "远古蒸汽遗迹", "Ancient Steam Ruins")
+            .desc("gtocore.rule.resources.ancient_steam_ruins.desc", "允许远古世界的新区块生成蒸汽遗迹。", "Allows steam ruins to generate in new chunks in the Ancient World.")
+            .register();
     public static final FloatRule GTM_RUBBER_TREE = Rules.floatRule("gtm.rubber_tree_chance").group(RESOURCES)
             .defaults(1.5F, 1.0F, 0.5F).range(0, 10)
             .name("gtocore.rule.gtm.rubber_tree_chance", "橡胶树生成率", "Rubber Tree Spawn Chance")
@@ -301,6 +306,12 @@ public final class GTORules {
             .name("gtocore.rule.me.simple_pattern_buffer_slots", "ME简单样板总成插槽数", "ME Simple Pattern Buffer Slots")
             .desc("gtocore.rule.me.simple_pattern_buffer_slots.desc", "为 0 时不提供 ME 简单样板总成。", "The ME Simple Pattern Buffer is unavailable when this is 0.")
             .register();
+    public static final BoolRule ME_CAPACITY_LIMIT = Rules.boolRule("me.capacity_limit").group(ME)
+            .defaults(false, true, true)
+            .name("gtocore.rule.me.capacity_limit", "ME仓容量限制", "ME Hatch Capacity Limit")
+            .desc("gtocore.rule.me.capacity_limit.desc", "基础容量取决于难度。存储组件为每种资源增加容量。各样板槽独立计算容量。", "Difficulty determines base capacity. Storage components add capacity per type. Each pattern slot has its own limit.")
+            .register();
+
     public static final IntRule ME_MUFFLER_MAX = Rules.intRule("me.muffler_amplifier_max").group(ME)
             .defaults(4, 16, 64).range(1, 64)
             .name("gtocore.rule.me.muffler_amplifier_max", "ME消声仓集控核心最大数量", "ME Muffler Hatch Amplifier Maximum")

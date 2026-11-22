@@ -22,7 +22,10 @@ import com.gregtechceu.gtceu.uipro.elements.ScrollerView;
 import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -116,8 +119,7 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
             player.displayClientMessage(BOOKMARK_FAILED_C, true);
             return false;
         }
-        if (!isCreative) consumeResources(stack);
-        addCooldown(player, stack);
+        finishTeleport(player, stack);
         return true;
     }
 
@@ -138,9 +140,43 @@ public class DimensionScepterBehavior extends ElectricStats implements IItemUIFa
             player.displayClientMessage(BOOKMARK_FAILED_C, true);
             return false;
         }
+        finishTeleport(player, stack);
+        return true;
+    }
+
+    /** Prefer a charged scepter, but return a depleted one so the map can still show its control. */
+    public static ItemStack findCarriedScepter(Player player) {
+        var item = GTOItems.DIMENSION_SCEPTER.asItem();
+        var items = player.getInventory().items;
+        boolean creative = player.isCreative();
+        ItemStack first = ItemStack.EMPTY;
+        for (int i = 0, size = items.size(); i < size; i++) {
+            var stack = items.get(i);
+            if (!stack.is(item)) continue;
+            if (creative || hasResources(stack)) return stack;
+            if (first.isEmpty()) first = stack;
+        }
+        var offhand = player.getOffhandItem();
+        if (offhand.is(item) && (first.isEmpty() || hasResources(offhand))) return offhand;
+        return first;
+    }
+
+    public static boolean canUseCarriedScepter(Player player, ItemStack stack) {
+        return !stack.isEmpty() && !player.isSpectator() && !player.getCooldowns().isOnCooldown(stack.getItem()) &&
+                (player.isCreative() || hasResources(stack));
+    }
+
+    /** The caller validates the machine target. Check the player's current scepter before moving them. */
+    public static void teleportFromMap(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        var stack = findCarriedScepter(player);
+        if (canUseCarriedScepter(player, stack) && TravelHandler.teleportAround(player, level, pos)) {
+            finishTeleport(player, stack);
+        }
+    }
+
+    private static void finishTeleport(Player player, ItemStack stack) {
         if (!player.isCreative()) consumeResources(stack);
         addCooldown(player, stack);
-        return true;
     }
 
     private static void addCooldown(Player player, ItemStack stack) {

@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.part.ae.slots;
 
-import com.gtocore.common.machine.multiblock.part.ae.MEStockingBusPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MEStockingBusPartMachineV2;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEItemKey;
@@ -13,9 +13,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
 
-    private final MEStockingBusPartMachine machine;
+    private final MEStockingBusPartMachineV2 machine;
 
-    public ExportOnlyAEStockingItemList(MEStockingBusPartMachine holder, int slots) {
+    public ExportOnlyAEStockingItemList(MEStockingBusPartMachineV2 holder, int slots) {
         super(holder, slots, () -> new ExportOnlyAEStockingItemSlot(holder));
         this.machine = holder;
     }
@@ -68,23 +68,32 @@ public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
 
     private static final class ExportOnlyAEStockingItemSlot extends ExportOnlyAEItemSlot {
 
-        private final MEStockingBusPartMachine machine;
+        private final MEStockingBusPartMachineV2 machine;
         private long refreshTime;
 
-        private ExportOnlyAEStockingItemSlot(MEStockingBusPartMachine machine) {
+        private ExportOnlyAEStockingItemSlot(MEStockingBusPartMachineV2 machine) {
             super();
             this.machine = machine;
         }
 
-        private ExportOnlyAEStockingItemSlot(MEStockingBusPartMachine machine, @Nullable GenericStack config, @Nullable GenericStack stock) {
+        private ExportOnlyAEStockingItemSlot(MEStockingBusPartMachineV2 machine, @Nullable GenericStack config, @Nullable GenericStack stock) {
             super(config, stock);
             this.machine = machine;
+        }
+
+        @Override
+        public void setStock(@Nullable GenericStack stack) {
+            if (stack != null) {
+                long capacity = getCapacity();
+                if (stack.amount() > capacity) stack = new GenericStack(stack.what(), capacity);
+            }
+            super.setStock(stack);
         }
 
         private long refresh(AEKeyLongMap<AEKey> map, long amount, AEKey request, int time) {
             if (refreshTime != time) {
                 refreshTime = time;
-                var storage = map.getAmount(request);
+                var storage = Math.min(map.getAmount(request), getCapacity());
                 if (storage > 0) {
                     if (amount != storage) {
                         this.stock = new GenericStack(request, storage);
@@ -94,7 +103,9 @@ public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
                 }
                 return storage;
             }
-            return amount;
+            long capped = Math.min(amount, getCapacity());
+            if (capped != amount) stock = new GenericStack(request, capped);
+            return capped;
         }
 
         @Override
@@ -103,7 +114,7 @@ public class ExportOnlyAEStockingItemList extends ExportOnlyAEItemList {
                 if (!machine.isOnline()) return 0;
                 var grid = machine.getMainNode().getGrid();
                 if (grid == null) return 0;
-                long extracted = simulate ? Math.min(amount, stock.amount()) : grid.getStorageService().getInventory().extract(stock.what(), amount, Actionable.MODULATE, machine.getActionSource());
+                long extracted = simulate ? Math.min(amount, Math.min(stock.amount(), getCapacity())) : grid.getStorageService().getInventory().extract(stock.what(), amount, Actionable.MODULATE, machine.getActionSource());
                 if (extracted > 0) {
                     if (!simulate) {
                         machine.getThroughputCounter().remove(stock.what(), extracted);

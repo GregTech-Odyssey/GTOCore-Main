@@ -4,7 +4,6 @@ import com.gtocore.api.data.tag.GTOTagPrefix;
 import com.gtocore.common.data.*;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockD;
-import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
@@ -570,18 +569,6 @@ final class PrecisionAssembler {
                 .EUt(GTValues.VA[GTValues.UV])
                 .duration(200)
                 .cleanroom(2)
-                .save();
-
-        PRECISION_ASSEMBLER_RECIPES.builder("huge_item_import_bus")
-                .inputItems(GTMachines.ITEM_IMPORT_BUS[GTValues.ZPM].asItem())
-                .inputItems(GTItems.ROBOT_ARM_ZPM, 4)
-                .inputItems(GTMachines.QUANTUM_CHEST[GTValues.LuV].asItem(), 4)
-                .inputItems(GTORules.RECIPE_TIER.isExpert() ? GTOItems.CELL_COMPONENT_256M : GTOItems.CELL_COMPONENT_64M)
-                .inputFluids(GTMaterials.SolderingAlloy, 144 * 16)
-                .inputFluids(GTMaterials.Duranium, 144 * (GTORules.RECIPE_TIER.isExpert() ? 5 : 2))
-                .outputItems(GTOMachines.HUGE_ITEM_IMPORT_BUS.asItem())
-                .EUt(122880)
-                .duration(300)
                 .save();
 
         PRECISION_ASSEMBLER_RECIPES.builder("energy_control_module_mk1")

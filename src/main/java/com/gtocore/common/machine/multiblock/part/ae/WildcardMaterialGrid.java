@@ -127,14 +127,14 @@ final class WildcardMaterialGrid extends UIElement {
     private static final PatternPreview EMPTY_PREVIEW = new PatternPreview(null, NO_RECIPES);
     private static final StreamCodec<FriendlyByteBuf, BitSet> BITSET = StreamCodec.convert(ByteBufCodecs.LONG_ARRAY, BitSet::toLongArray, BitSet::valueOf);
     // 网络只传材料注册整数 id，实际产物留在服务端供机器搜索使用。
-    private static final StreamCodec<FriendlyByteBuf, ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial>> MATERIALS = StreamCodec.of((buf, entries) -> {
+    private static final StreamCodec<FriendlyByteBuf, ArrayList<MEWildcardPatternBufferPartMachineV2.ScannedMaterial>> MATERIALS = StreamCodec.of((buf, entries) -> {
         buf.writeVarInt(entries.size());
         for (var entry : entries) GTRegistries.MATERIALS.streamCodec().encode(buf, entry.material());
     }, buf -> {
         int size = buf.readVarInt();
-        var entries = new ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial>(size);
+        var entries = new ArrayList<MEWildcardPatternBufferPartMachineV2.ScannedMaterial>(size);
         for (int i = 0; i < size; i++) {
-            entries.add(new MEWildcardPatternBufferPartMachine.ScannedMaterial(GTRegistries.MATERIALS.streamCodec().decode(buf), NO_OUTPUTS, NO_RECIPES));
+            entries.add(new MEWildcardPatternBufferPartMachineV2.ScannedMaterial(GTRegistries.MATERIALS.streamCodec().decode(buf), NO_OUTPUTS, NO_RECIPES));
         }
         return entries;
     });
@@ -156,7 +156,7 @@ final class WildcardMaterialGrid extends UIElement {
 
     private record PageSelection(List<Material> materials, boolean disabled) {}
 
-    private final MEWildcardPatternBufferPartMachine machine;
+    private final MEWildcardPatternBufferPartMachineV2 machine;
     private final boolean remote;
     private final SyncValue<BitSet> disabled;
     private final SyncValue<BitSet> matches;
@@ -166,8 +166,8 @@ final class WildcardMaterialGrid extends UIElement {
     private final Button pageSelectionButton;
 
     // 服务端快照只在扫描结果、黑名单或搜索槽变化时重算。
-    private ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial> flagMaterials;
-    private ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial> matchMaterials;
+    private ArrayList<MEWildcardPatternBufferPartMachineV2.ScannedMaterial> flagMaterials;
+    private ArrayList<MEWildcardPatternBufferPartMachineV2.ScannedMaterial> matchMaterials;
     private int flagRevision = -1;
     private BitSet serverDisabled = new BitSet();
     private BitSet serverMatches = new BitSet();
@@ -177,7 +177,7 @@ final class WildcardMaterialGrid extends UIElement {
     private AEKey matchedKey;
     @Nullable
     private Material previewMaterial;
-    private ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial> previewMaterials;
+    private ArrayList<MEWildcardPatternBufferPartMachineV2.ScannedMaterial> previewMaterials;
     private PatternPreview serverPreview = EMPTY_PREVIEW;
 
     // 客户端只为条目缓存名称、图标、提示，不给每个材料建立独立控件。
@@ -199,7 +199,7 @@ final class WildcardMaterialGrid extends UIElement {
     @Nullable
     private Material lastPreviewRequest;
 
-    private WildcardMaterialGrid(MEWildcardPatternBufferPartMachine machine) {
+    private WildcardMaterialGrid(MEWildcardPatternBufferPartMachineV2 machine) {
         this.machine = machine;
         remote = machine.isRemote();
         if (remote) {
@@ -271,7 +271,7 @@ final class WildcardMaterialGrid extends UIElement {
         }
     }
 
-    static void build(MEWildcardPatternBufferPartMachine machine, UIElement column) {
+    static void build(MEWildcardPatternBufferPartMachineV2 machine, UIElement column) {
         var grid = new WildcardMaterialGrid(machine);
         var field = TextField.of(LayoutStyle.AUTO, () -> grid.search, text -> {
             grid.search = text;
@@ -387,7 +387,7 @@ final class WildcardMaterialGrid extends UIElement {
         return serverMatches;
     }
 
-    private void collectEntries(ArrayList<MEWildcardPatternBufferPartMachine.ScannedMaterial> materials) {
+    private void collectEntries(ArrayList<MEWildcardPatternBufferPartMachineV2.ScannedMaterial> materials) {
         if (!remote) return;
         entries.clear();
         lastPreviewRequest = null;

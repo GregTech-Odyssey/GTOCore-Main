@@ -4,6 +4,8 @@ import com.gtocore.common.worldgen.feature.MeteoriteFeature;
 import com.gtocore.common.worldgen.feature.SolarSurfaceBlobFeature;
 
 import com.gtolib.GTOCore;
+import com.gtolib.mc.world.HangingColumnClusterFeature;
+import com.gtolib.mc.world.MultiblockRuinFeature;
 
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -17,6 +19,8 @@ public final class GTOFeatures {
 
     public static final RegistryObject<MeteoriteFeature> METEORITE = FEATURES.register("meteorite", MeteoriteFeature::new);
     public static final RegistryObject<SolarSurfaceBlobFeature> SOLAR_SURFACE_BLOB = FEATURES.register("solar_surface_blob", SolarSurfaceBlobFeature::new);
+    public static final RegistryObject<HangingColumnClusterFeature> HANGING_COLUMN_CLUSTER = FEATURES.register("hanging_column_cluster", HangingColumnClusterFeature::new);
+    public static final RegistryObject<MultiblockRuinFeature> MULTIBLOCK_RUIN = FEATURES.register("multiblock_ruin", MultiblockRuinFeature::new);
 
     private GTOFeatures() {}
 

@@ -1027,13 +1027,13 @@ public final class GTOMachines {
             .register();
 
     public static final MachineDefinition HUGE_ITEM_IMPORT_BUS = machine("huge_item_import_bus", "巨型输入总线", HugeBusPartMachine::new)
-            .tier(ZPM)
+            .tier(MV)
             .langValue("Huge Input Bus")
             .allRotation()
             .abilities(PartAbility.IMPORT_ITEMS, GTOPartAbility.ITEMS_INPUT_BUS)
             .tips(Tips.stat(Component.translatable("gtceu.part_sharing.enabled")))
             .tooltipBuilder(GTMachineUtils.CHEST_TOOLTIPS)
-            .renderer(() -> new OverlayTieredMachineRenderer(ZPM, GTCEu.id("block/machine/part/item_bus.import")))
+            .renderer(() -> new OverlayTieredMachineRenderer(MV, GTCEu.id("block/machine/part/item_bus.import")))
             .register();
 
     public static final MachineDefinition VOID_OUTPUT_BUS = machine("void_output_bus", "虚空输出总线", VoidOutputBusPartMachine::new)

@@ -14,6 +14,10 @@ import com.gtocore.common.machine.noenergy.game.slotMachine.SlotSymbol;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
 import com.gtocore.config.GTORules;
 
+import com.gtolib.api.annotation.DataGeneratorScanned;
+import com.gtolib.api.annotation.language.RegisterLanguage;
+import com.gtolib.api.rule.RuleManager;
+import com.gtolib.api.rule.RulePreset;
 import com.gtolib.utils.NumberUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
@@ -31,9 +35,47 @@ import com.lowdragmc.lowdraglib.side.fluid.FluidHelper;
 
 import java.util.List;
 
+@DataGeneratorScanned
 public final class GTOMachineTooltips {
 
+    @RegisterLanguage(cn = "容量组件", en = "Capacity Component")
+    public static final String ME_CAPACITY_COMPONENT = "gtocore.machine.me.capacity_component";
+    @RegisterLanguage(cn = "缓冲容量", en = "Buffer Capacity")
+    private static final String ME_CAPACITY_HEADING = "gtocore.machine.me.capacity_heading";
+    @RegisterLanguage(cn = "每种物品默认1000个，每种流体默认1000桶", en = "Default capacity: 1,000 items or 1,000 buckets per type")
+    public static final String ME_CAPACITY_DEFAULT = "gtocore.machine.me.capacity_default";
+    @RegisterLanguage(cn = "基础容量为0。使用前请装入存储组件。", en = "Base capacity is zero. Install a storage component before use.")
+    private static final String ME_CAPACITY_EXPERT = "gtocore.machine.me.capacity_expert";
+    @RegisterLanguage(cn = "存储组件可增加容量：1k增加1024，4k增加4096。无限组件取消上限", en = "Storage components add capacity: +1,024 with 1k or +4,096 with 4k. An infinite component removes the limit")
+    public static final String ME_CAPACITY_UPGRADE = "gtocore.machine.me.capacity_upgrade";
+    @RegisterLanguage(cn = "各样板槽独立计算容量", en = "Each pattern slot has its own capacity")
+    public static final String ME_CAPACITY_PATTERN = "gtocore.machine.me.capacity_pattern";
+
+    private static final Component ME_CAPACITY_DEFAULT_TEXT = Component.translatable(ME_CAPACITY_DEFAULT);
+    private static final Component ME_CAPACITY_EXPERT_TEXT = Component.translatable(ME_CAPACITY_EXPERT);
+
     private GTOMachineTooltips() {}
+
+    private static Component meBaseCapacityTooltip() {
+        return RuleManager.current().base() == RulePreset.EXPERT ? ME_CAPACITY_EXPERT_TEXT : ME_CAPACITY_DEFAULT_TEXT;
+    }
+
+    public static final TipSpec deprecatedMachineTooltips = GTOTips.of(t -> t.attention(Component.translatable("gtocore.item.deprecated")));
+    public static final TipSpec meCapacityTooltips = GTOTips.of(t -> {
+        if (GTORules.ME_CAPACITY_LIMIT.get()) {
+            t.heading(Component.translatable(ME_CAPACITY_HEADING));
+            t.dynamic(TipRole.FEATURE, GTOMachineTooltips::meBaseCapacityTooltip);
+            t.feature(Component.translatable(ME_CAPACITY_UPGRADE));
+        }
+    });
+    public static final TipSpec mePatternCapacityTooltips = GTOTips.of(t -> {
+        if (GTORules.ME_CAPACITY_LIMIT.get()) {
+            t.heading(Component.translatable(ME_CAPACITY_HEADING));
+            t.dynamic(TipRole.FEATURE, GTOMachineTooltips::meBaseCapacityTooltip);
+            t.feature(Component.translatable(ME_CAPACITY_UPGRADE));
+            t.feature(Component.translatable(ME_CAPACITY_PATTERN));
+        }
+    });
 
     public static final TipSpec deprecatedStructureTooltips = GTOTips.of(t -> t.warning(Component.translatable("gtocore.structure.deprecated")));
 

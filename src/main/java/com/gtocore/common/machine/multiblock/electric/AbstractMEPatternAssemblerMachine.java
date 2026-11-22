@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric;
 
-import com.gtocore.common.machine.multiblock.part.ae.MECraftPatternPartMachine;
+import com.gtocore.common.machine.multiblock.part.ae.MECraftPatternPartMachineV2;
 import com.gtocore.integration.jade.AEKeyTooltip;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
@@ -34,7 +34,7 @@ import java.util.List;
 
 public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblockMachine implements ICustomRecipeLogicHolder, IWailaDisplayProvider {
 
-    protected final List<MECraftPatternPartMachine> partMachines = new ArrayList<>();
+    protected final List<MECraftPatternPartMachineV2> partMachines = new ArrayList<>();
 
     @SaveToDisk
     private final AEKeyLongMap<AEItemKey> plannedOutputs = new AEKeyLongMap<>();
@@ -52,7 +52,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
     @Override
     public void onPartScan(@NotNull IMultiPart part) {
         super.onPartScan(part);
-        if (part instanceof MECraftPatternPartMachine machine) {
+        if (part instanceof MECraftPatternPartMachineV2 machine) {
             partMachines.add(machine);
             machine.setOnContentsChanged(getRecipeLogic()::updateTickSubscription);
         }
@@ -80,7 +80,7 @@ public abstract class AbstractMEPatternAssemblerMachine extends ElectricMultiblo
 
     protected abstract boolean planOutputs();
 
-    protected final void plan(MECraftPatternPartMachine machine, MECraftPatternPartMachine.InternalSlot slot, long amount) {
+    protected final void plan(MECraftPatternPartMachineV2 machine, MECraftPatternPartMachineV2.InternalSlot slot, long amount) {
         var key = slot.getOutput();
         if (key == null) return;
         plannedOutputs.insert(key, amount);

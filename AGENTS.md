@@ -84,6 +84,7 @@ if (-not (Test-Path -LiteralPath "$env:JAVA_HOME\bin\java.exe")) { throw 'Valid 
 - 新增或修改游戏内文案时，避免过多限定定语和繁琐的说明，约定俗成的规则无需解释。
 - 不能出现长句、多层嵌套的从句、过多的括号或破折号、过多的逗号或分号。
 - 生成的文案须展示给用户检查。
+- 除英语和中文外，其他语言的译文迁移到 ParaTranz，由 [GTO-Translations](https://github.com/GregTech-Odyssey/GTO-Translations) 同步和分发，本仓不再内置这些译文。API 密钥的本地配置和用法见 [ParaTranz API](docs/paratranz.md)。GTOQuest 例外，任务书译文继续按[官网数据集导入流程](docs/quest-text.md)维护。
 
 ## 生成资源
 

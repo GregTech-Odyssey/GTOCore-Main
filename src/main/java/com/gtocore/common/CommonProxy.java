@@ -48,8 +48,10 @@ import com.gtolib.api.ae2.me2in1.Me2in1Menu;
 import com.gtolib.api.ae2.me2in1.Wireless;
 import com.gtolib.api.ae2.me2in1.emi.CategoryMappingSubMenu;
 import com.gtolib.api.ae2.stacks.TagPrefixKeyType;
+import com.gtolib.api.data.storage.MEHatchMigration;
 import com.gtolib.api.data.storage.SuperStorageMigration;
 import com.gtolib.api.item.IItem;
+import com.gtolib.api.machine.trait.MEStorageCapacityPanel;
 import com.gtolib.api.player.IEnhancedPlayer;
 import com.gtolib.api.player.attribute.PlayerAttributes;
 import com.gtolib.api.scope.GTOScopes;
@@ -120,6 +122,7 @@ public class CommonProxy {
         eventBus.addListener(EventPriority.HIGHEST, CommonProxy::commonSetup);
         eventBus.addListener(CommonProxy::initMenu);
         eventBus.addListener(SuperStorageMigration::aliases);
+        eventBus.addListener(MEHatchMigration::aliases);
         eventBus.addListener(Datagen::onGatherData);
         eventBus.addListener(CommonProxy::modConstruct);
         ForgeCommonEvent.init();
@@ -172,7 +175,10 @@ public class CommonProxy {
         PlayerAttributes.init();
         // 调节器（数值输入）的简写与算式：两端都要注册，解析在服务端做（解析器自带位数、指数、位移上限）
         NumberExpressions.setEvaluator(AdvMathExpParser::parse);
-        event.enqueueWork(() -> MachineWindow.registerRightAccessory(GTOCore.id("heat_thermometer"), HeatThermometer::new));
+        event.enqueueWork(() -> {
+            MachineWindow.registerRightAccessory(GTOCore.id("heat_thermometer"), HeatThermometer::new);
+            MEStorageCapacityPanel.init();
+        });
 
         FusionReactorMachine.registerFusionTier(GTValues.UHV, " (MKIV)");
         FusionReactorMachine.registerFusionTier(GTValues.UEV, " (MKV)");

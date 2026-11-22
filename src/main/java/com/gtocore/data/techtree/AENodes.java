@@ -34,7 +34,7 @@ public final class AENodes {
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(DATA_STORAGE, 250)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy"), 0.8F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_proxy_v2"), 0.8F)
                             .build())
             .tier(2)
             .build();
@@ -48,14 +48,14 @@ public final class AENodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(DATA_STORAGE, 150)
                             .addMaterialNeeded(ASSEMBLY, 150)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer"), 0.9F)
+                            .setEurekaItem(RegistriesUtils.getItem("gtceu:me_pattern_buffer_v2"), 0.9F)
                             .build())
             .tier(2)
             .build();
 
     public static final TechNode MECatalystSupplying = BaseNodes.AETree.builder("me_catalyst_supplying", "ME催化剂供应", "ME Catalyst Supplying")
             .description("将催化剂的损耗降低到零点，并与ME设备深度交互，使得带有催化剂的生产线被更方便的管理", "Reduce the loss of catalysts to zero and interact deeply with ME devices, making production lines with catalysts easier to manage")
-            .icon(RegistriesUtils.getItem("gtocore:me_catalyst_pattern_buffer"))
+            .icon(RegistriesUtils.getItem("gtocore:me_catalyst_pattern_buffer_v2"))
             .prerequisites(BaseMEMachines)
             .requirements(
                     new ResearchRequirements.Builder()
@@ -69,7 +69,7 @@ public final class AENodes {
 
     public static final TechNode MESmartGatingClustering = BaseNodes.AETree.builder("me_smart_gating_clustering", "ME智能分流集群", "ME Smart Gating Clustering")
             .description("将ME设备的物质信息进行智能分流与集群化管理，实现更高效的生产线调度与资源利用", "Intelligently divert and cluster the matter information of ME devices, achieving more efficient production line scheduling and resource utilization")
-            .icon(RegistriesUtils.getItem("gtocore:me_wildcard_pattern_buffer"))
+            .icon(RegistriesUtils.getItem("gtocore:me_wildcard_pattern_buffer_v2"))
             .prerequisites(BaseMEMachines)
             .requirements(
                     new ResearchRequirements.Builder()
@@ -83,7 +83,7 @@ public final class AENodes {
 
     public static final TechNode MEWasteRecycling = BaseNodes.AETree.builder("me_waste_recycling", "ME废料回收", "ME Waste Recycling")
             .description("通过回收和再利用生产设备的废料，减少环境污染并提高资源利用率", "By recycling and reusing waste from production equipment, reduce environmental pollution and improve resource utilization")
-            .icon(RegistriesUtils.getItem("gtocore:me_muffler_hatch"))
+            .icon(RegistriesUtils.getItem("gtocore:me_muffler_hatch_v2"))
             .prerequisites(BaseMEMachines)
             .requirements(
                     new ResearchRequirements.Builder()

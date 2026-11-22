@@ -1,0 +1,23 @@
+{
+  "feature": "gtocore:ancient_world_stalactites",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 3
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "min_inclusive": { "above_bottom": 5 },
+        "max_inclusive": { "absolute": 64 }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

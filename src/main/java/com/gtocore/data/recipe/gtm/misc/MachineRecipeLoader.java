@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.common.machine.multiblock.part.ae.PatternBufferType;
 import com.gtocore.config.GTORules;
+import com.gtocore.data.recipe.MEHatchRecipes;
 
 import com.gtolib.api.data.storage.CompartmentStorageRegistration;
 import com.gtolib.api.data.storage.WoodenSuperStorageRegistration;
@@ -1323,17 +1324,6 @@ public final class MachineRecipeLoader {
                 GTOMachines.STEAM_FLUID_OUTPUT_HATCH.asItem(), "d", "B", 'B',
                 GTOMachines.STEAM_FLUID_INPUT_HATCH.asItem());
 
-        VanillaRecipeHelper.addShapedRecipe("me_fluid_hatch_output_to_input",
-                GTAEMachines.FLUID_IMPORT_HATCH_ME.asItem(), "d", "B", 'B',
-                GTAEMachines.FLUID_EXPORT_HATCH_ME.asItem());
-        VanillaRecipeHelper.addShapedRecipe("me_fluid_hatch_input_to_output",
-                GTAEMachines.FLUID_EXPORT_HATCH_ME.asItem(), "d", "B", 'B',
-                GTAEMachines.FLUID_IMPORT_HATCH_ME.asItem());
-        VanillaRecipeHelper.addShapedRecipe("me_item_bus_output_to_input",
-                GTAEMachines.ITEM_IMPORT_BUS_ME.asItem(), "d", "B", 'B',
-                GTAEMachines.ITEM_EXPORT_BUS_ME.asItem());
-        VanillaRecipeHelper.addShapedRecipe("me_item_bus_input_to_output",
-                GTAEMachines.ITEM_EXPORT_BUS_ME.asItem(), "d", "B", 'B',
-                GTAEMachines.ITEM_IMPORT_BUS_ME.asItem());
+        MEHatchRecipes.registerInputOutputConversions();
     }
 }

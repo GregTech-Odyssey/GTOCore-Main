@@ -102,7 +102,7 @@ public final class PatternBufferType {
         private int tier = -1;
         private ResourceLocation texture = GTCEu.id("block/machine/part/me_pattern_buffer");
         private final ObjectArrayList<TipSpec> tips = new ObjectArrayList<>();
-        private BiFunction<MetaMachineBlockEntity, PatternBufferType, MEPatternBufferPartMachine> machine = MEPatternBufferPartMachine::new;
+        private BiFunction<MetaMachineBlockEntity, PatternBufferType, MEPatternBufferPartMachineV2> machine = MEPatternBufferPartMachineV2::new;
         private boolean wireless = true;
         private boolean upgradable;
         private boolean recipeCacheButtons = true;
@@ -143,7 +143,7 @@ public final class PatternBufferType {
             return this;
         }
 
-        public Builder machine(BiFunction<MetaMachineBlockEntity, PatternBufferType, MEPatternBufferPartMachine> machine) {
+        public Builder machine(BiFunction<MetaMachineBlockEntity, PatternBufferType, MEPatternBufferPartMachineV2> machine) {
             this.machine = machine;
             return this;
         }
@@ -164,6 +164,14 @@ public final class PatternBufferType {
         }
 
         public MachineDefinition register() {
+            return register(false);
+        }
+
+        public MachineDefinition registerDeprecated() {
+            return register(true);
+        }
+
+        private MachineDefinition register(boolean deprecated) {
             Objects.requireNonNull(cn, id);
             Objects.requireNonNull(en, id);
             if (tier < 0) throw new IllegalStateException("Pattern buffer " + id + " has no tier");
@@ -184,9 +192,13 @@ public final class PatternBufferType {
                     .allRotation()
                     .abilities(PartAbility.IMPORT_ITEMS, PartAbility.IMPORT_FLUIDS, PartAbility.DUAL_INPUT)
                     .renderer(() -> new OverlayTieredMachineRenderer(machineTier, model));
-            for (var tip : tips) builder.tips(tip);
-            builder.tips(GTOMachineTooltips.MePatternHatchTooltips(type.getSlots()));
-            if (wireless) builder.tips(GTOMachineTooltips.AutoConnectMETooltips);
+            if (deprecated) {
+                builder.tips(GTOMachineTooltips.deprecatedMachineTooltips);
+            } else {
+                for (var tip : tips) builder.tips(tip);
+                builder.tips(GTOMachineTooltips.MePatternHatchTooltips(type.getSlots()));
+                if (wireless) builder.tips(GTOMachineTooltips.AutoConnectMETooltips);
+            }
             var definition = builder.register();
             type.definition = definition;
             BY_DEFINITION.put(definition, type);

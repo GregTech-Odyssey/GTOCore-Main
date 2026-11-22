@@ -1,0 +1,305 @@
+package com.gtocore.common.machine.multiblock.part.ae;
+
+import com.gtocore.common.machine.trait.ProxySlotRecipeHandler;
+
+import com.gtolib.api.scope.MachineScopeTrait;
+import com.gtolib.api.wireless.PartProxyConnections;
+
+import com.gregtechceu.gtceu.api.GTValues;
+import com.gregtechceu.gtceu.api.blockentity.BlockEntityWatch;
+import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
+import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
+import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gregtechceu.gtceu.api.machine.feature.IDataStickInteractable;
+import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IWorkableMultiController;
+import com.gregtechceu.gtceu.api.machine.multiblock.part.WorkableTieredIOPartMachine;
+import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.recipe.handler.RecipeHandlerUnit;
+import com.gregtechceu.gtceu.client.util.TooltipHelper;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+
+import com.gto.datasynclib.annotations.SaveToDisk;
+import com.gto.datasynclib.annotations.SyncToClient;
+
+import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import com.suried.gtoutils.level.LoadedChunks;
+import com.suried.gtoutils.schedule.CoalescedTask;
+import com.suried.gtoutils.schedule.Schedulers;
+import com.suried.gtoutils.schedule.Scope;
+import org.jetbrains.annotations.Nullable;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.ITooltip;
+import snownee.jade.api.config.IPluginConfig;
+
+import java.util.List;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2.readBufferTag;
+import static com.gtocore.common.machine.multiblock.part.ae.MEPatternBufferPartMachineV2.writeBufferTag;
+
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
+public class MEPatternBufferProxyPartMachineV2 extends WorkableTieredIOPartMachine implements IMachineLife, IDataStickInteractable, IWailaDisplayProvider {
+
+    private static final String JADE_BOUND = "bound";
+    private static final String JADE_POS = "pos";
+
+    private ProxySlotRecipeHandler proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+    @SaveToDisk
+    @SyncToClient
+    @Nullable
+    private BlockPos bufferPos;
+    @Nullable
+    private MEPatternBufferPartMachineV2 buffer = null;
+    private boolean bufferResolved = false;
+    @Nullable
+    private CoalescedTask resolveTask;
+
+    public MEPatternBufferProxyPartMachineV2(MetaMachineBlockEntity holder) {
+        super(holder, GTValues.LuV, IO.IN);
+        new MachineScopeTrait<>(this, this::mount);
+    }
+
+    private void mount(Scope opened, MachineScopeTrait<MEPatternBufferProxyPartMachineV2> self) {
+        opened.select(() -> self.get(MEPatternBufferProxyPartMachineV2::getBufferPos), (bound, pos) -> {
+            var level = getLevel();
+            if (level == null || pos == null) return;
+            BlockEntityWatch.listen(bound, level, pos, this::onBufferChanged);
+            var buf = buffer;
+            if (buf != null && buf.holder.isRemoved()) {
+                onBufferUnloaded(buf);
+                buf = null;
+            }
+            var present = BlockEntityWatch.at(level, pos);
+            if (present != null && (buf == null || present != buf.holder)) resolveLater();
+        });
+    }
+
+    @Override
+    public int tintColor(int index) {
+        if (index == 9) return getRealColor();
+        return -1;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        resolveLater();
+    }
+
+    @Override
+    public void onUnload() {
+        PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(getLevel(), getPos());
+        super.onUnload();
+        bufferResolved = false;
+        var buf = buffer;
+        if (buf == null) return;
+        buffer = null;
+        buf.unloadProxy(this);
+        proxySlotRecipeHandler.release();
+        proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+    }
+
+    @Override
+    public List<RecipeHandlerUnit> getRecipeHandlers() {
+        return proxySlotRecipeHandler.getProxySlotHandlers();
+    }
+
+    public void setBuffer(@Nullable BlockPos pos) {
+        bufferResolved = true;
+        bind(findBuffer(pos, false));
+    }
+
+    @Nullable
+    private MEPatternBufferPartMachineV2 findBuffer(@Nullable BlockPos pos, boolean load) {
+        var level = getLevel();
+        if (level == null || pos == null) return null;
+        var found = load ? MetaMachine.getMachine(level, pos) : MetaMachine.getMachine(LoadedChunks.blockEntity(level, pos));
+        return found instanceof MEPatternBufferPartMachineV2 machine ? machine : null;
+    }
+
+    private void bind(@Nullable MEPatternBufferPartMachineV2 target) {
+        var previous = buffer;
+        if (target != null && previous == target) return;
+        if (previous != null && previous != target) previous.removeProxy(this);
+        buffer = target;
+        if (target != null) bufferPos = target.getPos();
+        MachineScopeTrait.changed(this);
+        var old = proxySlotRecipeHandler;
+        old.release();
+        if (target == null) {
+            proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+            if (old == ProxySlotRecipeHandler.DEFAULT) return;
+        } else {
+            proxySlotRecipeHandler = new ProxySlotRecipeHandler(this, target);
+            target.addProxy(this);
+        }
+        if (target == null) {
+            PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(getLevel(), getPos());
+        } else {
+            Level level = getLevel();
+            BlockPos bufferPos1 = target.getPos();
+            PartProxyConnections.PATTERN_BUFFERS.register(level, bufferPos1, getPos());
+        }
+        refreshControllers();
+    }
+
+    private void refreshControllers() {
+        if (isRemote()) return;
+        IMultiController[] snapshot;
+        var controllers = getControllers();
+        synchronized (controllers) {
+            snapshot = controllers.toArray(new IMultiController[0]);
+        }
+        for (var controller : snapshot) {
+            if (controller.self().isRemoved()) continue;
+            if (controller instanceof IWorkableMultiController workable) workable.refreshPartHandlers(this);
+            else controller.requestCheck();
+        }
+    }
+
+    private void onBufferChanged(BlockEntity blockEntity) {
+        if (isRemoved()) return;
+        var buf = buffer;
+        if (buf != null && blockEntity == buf.holder) {
+            if (blockEntity.isRemoved()) onBufferUnloaded(buf);
+        } else if (!blockEntity.isRemoved()) {
+            resolveLater();
+        }
+    }
+
+    private void onBufferUnloaded(MEPatternBufferPartMachineV2 target) {
+        Level level1 = getLevel();
+        PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(level1, getPos());
+        buffer = null;
+        target.unloadProxy(this);
+        proxySlotRecipeHandler.release();
+        proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+        if (getLevel() instanceof ServerLevel level) {
+            Schedulers.of(level).schedule(this::recheckAfterBufferLost);
+        } else {
+            bufferResolved = false;
+        }
+    }
+
+    private void recheckAfterBufferLost() {
+        if (buffer != null || isRemoved()) return;
+        refreshControllers();
+    }
+
+    private void resolveLater() {
+        if (!(getLevel() instanceof ServerLevel level)) return;
+        var task = resolveTask;
+        if (task == null) resolveTask = task = new CoalescedTask(this::resolveBuffer);
+        Schedulers.of(level).submit(task);
+    }
+
+    private void resolveBuffer() {
+        if (isRemoved()) return;
+        var buf = buffer;
+        if (!bufferResolved || buf == null || buf.isRemoved()) setBuffer(bufferPos);
+    }
+
+    @Nullable
+    public BlockPos getBufferPos() {
+        return bufferPos;
+    }
+
+    @Nullable
+    public MEPatternBufferPartMachineV2 getBuffer() {
+        var buf = buffer;
+        if (!bufferResolved || buf != null && buf.isRemoved()) {
+            setBuffer(bufferPos);
+            return buffer;
+        }
+        return buf;
+    }
+
+    @Override
+    public boolean shouldOpenUI(Player player, InteractionHand hand, BlockHitResult hit) {
+        return getBuffer() != null;
+    }
+
+    @Override
+    public @Nullable ModularUI createUI(Player entityPlayer) {
+        assert getBuffer() != null;
+        return getBuffer().createUI(entityPlayer);
+    }
+
+    @Override
+    public void onMachineRemoved() {
+        var buf = getBuffer();
+        if (buf != null) {
+            buf.removeProxy(this);
+            proxySlotRecipeHandler.release();
+            proxySlotRecipeHandler = ProxySlotRecipeHandler.DEFAULT;
+        }
+        Level level = getLevel();
+        PartProxyConnections.PATTERN_BUFFERS.unregisterProxy(level, getPos());
+    }
+
+    @Override
+    public InteractionResult onDataStickUse(Player player, ItemStack dataStick) {
+        var tag = dataStick.getTag();
+        if (tag == null || !tag.contains(MEPatternBufferPartMachineV2.DATA_STICK_POS, Tag.TAG_INT_ARRAY)) return InteractionResult.PASS;
+        var posArray = tag.getIntArray(MEPatternBufferPartMachineV2.DATA_STICK_POS);
+        if (posArray.length < 3) return InteractionResult.PASS;
+        var target = findBuffer(new BlockPos(posArray[0], posArray[1], posArray[2]), true);
+        if (target == null) return InteractionResult.PASS;
+        bufferResolved = true;
+        if (target == buffer) refreshControllers();
+        else bind(target);
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void appendWailaTooltip(CompoundTag data, ITooltip iTooltip, BlockAccessor blockAccessor, IPluginConfig iPluginConfig) {
+        if (!data.getBoolean(MEPatternBufferPartMachineV2.JADE_FORMED)) return;
+        if (!data.getBoolean(JADE_BOUND)) {
+            iTooltip.add(Component.translatable("gtceu.top.buffer_not_bound").withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        int[] pos = data.getIntArray(JADE_POS);
+        iTooltip.add(Component.translatable("gtceu.top.buffer_bound_pos", pos[0], pos[1], pos[2])
+                .withStyle(TooltipHelper.RAINBOW_HSL_SLOW));
+
+        readBufferTag(iTooltip, data);
+    }
+
+    @Override
+    public void appendWailaData(CompoundTag data, BlockAccessor blockAccessor) {
+        if (!isFormed()) {
+            data.putBoolean(MEPatternBufferPartMachineV2.JADE_FORMED, false);
+            return;
+        }
+        data.putBoolean(MEPatternBufferPartMachineV2.JADE_FORMED, true);
+        var buffer = getBuffer();
+        if (buffer == null) {
+            data.putBoolean(JADE_BOUND, false);
+            return;
+        }
+        data.putBoolean(JADE_BOUND, true);
+
+        var pos = buffer.getPos();
+        data.putIntArray(JADE_POS, new int[] { pos.getX(), pos.getY(), pos.getZ() });
+        writeBufferTag(data, buffer);
+    }
+}
