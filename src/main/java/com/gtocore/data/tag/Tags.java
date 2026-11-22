@@ -32,7 +32,7 @@ public final class Tags {
     public static final TagKey<Item> AFFIX_ESSENCE = TagUtils.createItemTag(GTOCore.id("affix_essence"));
 
     public static final TagKey<Item> SIFTABLES = TagUtil.createItemTag("siftables");
-    public static final TagKey<Item> LENSES = TagUtil.createItemTag("lenses");
+    public static final TagKey<Item> LENSES = TagUtils.createTGItemTag("lenses");
     public static final TagKey<Item> CROPS_ONION = TagUtil.createItemTag("crops/onion");
     public static final TagKey<Item> RAW_SIFTABLE = TagUtils.createItemTag(GTOCore.id("raw_siftable"));
     public static final TagKey<Item> RAW_CHEMICAL_BATH_WASHABLE = TagUtils.createItemTag(GTOCore.id("raw_chemical_bath_washable"));
