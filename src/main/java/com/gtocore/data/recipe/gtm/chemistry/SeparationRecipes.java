@@ -58,7 +58,7 @@ final class SeparationRecipes {
         CENTRIFUGE_RECIPES.recipeBuilder("oilsands_dust_separation")
                 .inputItems(dust, Oilsands)
                 .chancedOutput(new ItemStack(Blocks.SAND), Chance.of(5000).risePerOverclock(5000))
-                .outputFluids((GTORules.FLUID_TIER.isExpert() ? HeavyOilWithSand : OilHeavy).getFluid(2000))
+                .outputFluids((GTORules.FLUID_TIER.isExpert() ? HeavyOilWithSand : OilHeavy).getFluid(50))
                 .duration(200).EUt(30).save();
 
         CENTRIFUGE_RECIPES.recipeBuilder("nether_wart_separation").duration(144).EUt(5)
