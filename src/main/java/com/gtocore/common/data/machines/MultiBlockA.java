@@ -150,7 +150,7 @@ public final class MultiBlockA {
 
     public static final MultiblockMachineDefinition PLASMA_CONDENSER = multiblock("plasma_condenser", "等离子冷凝器",
             TierCasingMultiblockMachine.createMachine(GTORecipeDataKeys.GLASS_TIER))
-            .recipeModifier((m, u, r) -> RecipeModifier.overclocking(m, u, r, false, 1, Math.pow(1 / 1.1d, ((ITierCasingMachine) m).getCasingTier(GTORecipeDataKeys.GLASS_TIER)), 0.25))
+            .recipeModifier((m, u, r) -> RecipeModifier.overclocking(m, u, r, 1, Math.pow(1 / 1.1d, ((ITierCasingMachine) m).getCasingTier(GTORecipeDataKeys.GLASS_TIER)), 0.25))
             .allRotation()
             .recipeTypes(GTORecipeTypes.PLASMA_CONDENSER_RECIPES)
             .tips(GTOMachineStories.PlasmaCondenserTooltips)

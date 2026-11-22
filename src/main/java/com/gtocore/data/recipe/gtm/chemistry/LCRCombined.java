@@ -73,14 +73,5 @@ final class LCRCombined {
                 .outputFluids(Acetone.getFluid(2000))
                 .outputFluids(Oxygen.getFluid(1000))
                 .duration(400).EUt(VA[HV]).save();
-
-        LARGE_CHEMICAL_RECIPES.recipeBuilder("dinitrogen_tetroxide_shortcut")
-                .circuitMeta(5)
-                .inputFluids(Oxygen, 7000)
-                .inputFluids(Nitrogen, 2000)
-                .inputFluids(Hydrogen, 6000)
-                .outputFluids(DinitrogenTetroxide.getFluid(1000))
-                .outputFluids(Water.getFluid(3000))
-                .duration(1100).EUt(VA[HV]).save();
     }
 }

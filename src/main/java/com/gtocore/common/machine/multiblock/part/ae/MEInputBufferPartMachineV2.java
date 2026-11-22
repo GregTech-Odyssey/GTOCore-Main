@@ -130,6 +130,11 @@ public class MEInputBufferPartMachineV2 extends MEPatternPartMachine<MEInputBuff
 
     public MEInputBufferPartMachineV2(MetaMachineBlockEntity holder) {
         super(holder, 9);
+        // The superclass creates the slots before this machine initializes its capacity trait.
+        for (InternalSlot slot : getInternalInventory()) {
+            MEStorageCapacity.bind(slot.exportOnlyItemList.getInventory(), capacity::items);
+            MEStorageCapacity.bind(slot.exportOnlyFluidList.getInventory(), capacity::fluids);
+        }
         getMainNode().addService(ICraftingWatcherNode.class, craftingWatcherNode);
         this.recipeHandlers = Arrays.stream(getInternalInventory())
                 .map(s -> (RecipeHandlerUnit) new SlotRHL(s, this)).toList();
@@ -403,8 +408,6 @@ public class MEInputBufferPartMachineV2 extends MEPatternPartMachine<MEInputBuff
                 }
             };
 
-            MEStorageCapacity.bind(exportOnlyItemList.getInventory(), machine.capacity::items);
-            MEStorageCapacity.bind(exportOnlyFluidList.getInventory(), machine.capacity::fluids);
             this.circuitInventory = CircuitHandler.create(machine);
             this.virtualInputState = new MEVirtualInputState(notConsumableItem.storage, notConsumableFluid.storage, circuitInventory.storage);
             this.itemUiHandlers = virtualInputState.getItemUiHandlers();

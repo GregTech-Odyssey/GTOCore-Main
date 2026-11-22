@@ -3,7 +3,6 @@ package com.gtocore.common.data.translation;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
-import com.gtocore.common.machine.multiblock.generator.MagneticFluidGeneratorMachine;
 import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.tooltip.TipSlot;
@@ -447,8 +446,7 @@ public final class GTOMachineTooltipsA {
         t.bonus(t.tr("激光源仓的并行加成提升为 x 4", "The Laser Source Hatch parallel bonus is increased to x 4"));
 
         t.heading(Overclock);
-        t.feature(t.tr("超频输出每级 ×4，燃料消耗倍率从 %s 起每 %s 级 +1", "Output x4 per overclock level; fuel cost starts at %s and rises by 1 every %s levels",
-                MagneticFluidGeneratorMachine.BASE_FUEL_COST, MagneticFluidGeneratorMachine.FUEL_COST_STEP));
+        t.feature(t.tr("超频输出每级 ×4，不额外增加燃料并行", "Output x4 per overclock level without adding fuel parallel"));
         t.feature(t.tr("超频级数越高，单位燃料换到的能量越少", "Higher overclock levels yield less energy per unit of fuel"));
     });
 

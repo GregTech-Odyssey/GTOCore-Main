@@ -66,9 +66,8 @@ public abstract class WorkableElectricMultiblockMachineMixin extends WorkableMul
         gtolib$speed = 1;
         gtolib$energy = 1;
         gtolib$ocLimit = GTOConfig.INSTANCE.gamePlay.defaultMinOverclockDuration;
-        // 无损超频的机器没有能量损耗，时长下限直接取 1 tick
         RecipeModifier recipeModifier = definition.getRecipeModifier();
-        if (recipeModifier != null && recipeModifier.has(RecipeModifier.PERFECT_OVERCLOCKING)) {
+        if (isGenerator() || (recipeModifier != null && recipeModifier.has(RecipeModifier.PERFECT_OVERCLOCKING))) {
             gtolib$ocLimit = 1;
         }
     }

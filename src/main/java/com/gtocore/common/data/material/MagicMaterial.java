@@ -352,7 +352,7 @@ public final class MagicMaterial {
                 .buildAndRegister()
                 .setFormula("?Fe", false);
 
-        WhiteWax = magicMaterial("white_wax", "白腊")
+        WhiteWax = magicMaterial("white_wax", "白蜡")
                 .ingot()
                 .fluid()
                 .color(0xd4d4d4)

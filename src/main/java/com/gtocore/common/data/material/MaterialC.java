@@ -492,7 +492,7 @@ public final class MaterialC {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        HollowCeramicMicrosphereRoughEmbryo = material("hollow_ceramic_microsphere_rough_embryo", "中空陶瓷微珠粗胚")
+        HollowCeramicMicrosphereRoughEmbryo = material("hollow_ceramic_microsphere_rough_embryo", "中空陶瓷微珠粗坯")
                 .dust()
                 .color(0x2b2d30)
                 .iconSet(SAND)

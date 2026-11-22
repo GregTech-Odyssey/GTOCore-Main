@@ -623,7 +623,7 @@ public final class FuelRecipe {
 
         ROCKET_ENGINE_FUELS.recipeBuilder("rocket_engine_fuel_5")
                 .inputFluids(GTOMaterials.RocketFuelH8n4c2o4, 10)
-                .duration(160)
+                .duration(120)
                 .EUt(-512)
                 .save();
 

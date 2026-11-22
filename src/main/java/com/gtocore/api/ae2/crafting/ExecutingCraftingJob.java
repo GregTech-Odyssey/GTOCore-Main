@@ -13,6 +13,7 @@ import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.crafting.ICraftingPlan;
+import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.*;
 import appeng.crafting.CraftingLink;
 import appeng.crafting.CraftingPlan;
@@ -44,6 +45,8 @@ class ExecutingCraftingJob {
     final CraftingLink link;
     final ListCraftingInventory waitingFor;
     final Object2ObjectOpenHashMap<IPatternDetails, LongHolder> tasks = new O2OOpenCacheHashMap<>();
+    @Nullable
+    Reference2ObjectOpenHashMap<ICraftingProvider, Object2LongOpenHashMap<IPatternDetails>> submitted;
     final ElapsedTimeTracker timeTracker;
     final IElapsedTimeTracker tt;
     GenericStack finalOutput;
@@ -59,6 +62,12 @@ class ExecutingCraftingJob {
     final AEKeySet<AEKey> defsToPurge = new AEKeySet<>();
     final AEKeyLongMap<AEKey> totalConsumed = new AEKeyLongMap<>();
     final AEKeyLongMap<AEKey> currentConsumed = new AEKeyLongMap<>();
+
+    void recordSubmission(ICraftingProvider provider, IPatternDetails pattern, long executions) {
+        if (submitted == null) submitted = new Reference2ObjectOpenHashMap<>(1);
+        submitted.computeIfAbsent(provider, ignored -> new Object2LongOpenHashMap<>(1)).addTo(pattern, executions);
+    }
+
     final AEKeySet<AEKey> purgeDefsLocal = new AEKeySet<>();
 
     final AEKeyObjectMap<AEKey, Object2LongOpenHashMap<IPatternDetails>> allocations = new AEKeyObjectMap<>();

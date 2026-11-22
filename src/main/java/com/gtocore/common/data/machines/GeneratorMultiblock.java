@@ -18,6 +18,7 @@ import com.gtocore.config.GTORules;
 import com.gtolib.GTOCore;
 import com.gtolib.api.lang.GTOAttributes;
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
+import com.gtolib.api.recipe.GTORecipeModifiers;
 import com.gtolib.utils.MultiBlockFileReader;
 import com.gtolib.utils.RegistriesUtils;
 
@@ -32,7 +33,6 @@ import com.gregtechceu.gtceu.api.machine.multiblockpro.Slot;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Structure;
 import com.gregtechceu.gtceu.api.machine.multiblockpro.Symbols;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gregtechceu.gtceu.api.recipe.modifier.RecipeModifier;
 import com.gregtechceu.gtceu.api.tooltip.StatKind;
 import com.gregtechceu.gtceu.api.tooltip.TipRole;
 import com.gregtechceu.gtceu.api.tooltip.Tips;
@@ -398,7 +398,7 @@ public final class GeneratorMultiblock {
             .recipeTypes(GTORecipeTypes.LARGE_NAQUADAH_REACTOR_RECIPES)
             .generator()
             .block(GTOBlocks.HYPER_MECHANICAL_CASING)
-            .recipeModifier(RecipeModifier.GENERATOR_OVERCLOCKING)
+            .recipeModifier(GTORecipeModifiers.GENERATOR_OVERCLOCKING)
             .structure(definition -> Structure
                     .root(Piece.start(RIGHT, UP, BACK)
                             .aisle("                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "           a~a           ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ", "                         ")
@@ -444,7 +444,7 @@ public final class GeneratorMultiblock {
                 }
                 r = ParallelLogic.accurateParallel(m, u, r, p);
                 if (r == null) return null;
-                return RecipeModifier.generatorOverclocking(m, u, r);
+                return GTORecipeModifiers.GENERATOR_OVERCLOCKING.applyModifier(m, u, r);
             })
             .block(GTOBlocks.ENHANCE_HYPER_MECHANICAL_CASING)
             .structure(definition -> Structure
@@ -499,7 +499,7 @@ public final class GeneratorMultiblock {
                 }
                 r = ParallelLogic.accurateParallel(m, u, r, p);
                 if (r == null) return null;
-                return RecipeModifier.generatorOverclocking(m, u, r);
+                return GTORecipeModifiers.GENERATOR_OVERCLOCKING.applyModifier(m, u, r);
             })
             .block(GTOBlocks.ENHANCE_HYPER_MECHANICAL_CASING)
             .structure(definition -> Structure
@@ -623,7 +623,7 @@ public final class GeneratorMultiblock {
             .block(GTOBlocks.IRIDIUM_CASING)
             .recipeModifier((m, u, r) -> {
                 if (m instanceof FlowFuelCellGenerator f && f.isGenerator())
-                    return RecipeModifier.GENERATOR_OVERCLOCKING.applyModifier(m, u, r);
+                    return GTORecipeModifiers.GENERATOR_OVERCLOCKING.applyModifier(m, u, r);
                 else return r;
             })
             .structure(definition -> Structure

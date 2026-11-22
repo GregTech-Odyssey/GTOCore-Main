@@ -2,6 +2,8 @@ package com.gtocore.integration.ae;
 
 import com.gtocore.integration.ae.hooks.IAEKeyExtension;
 
+import net.minecraft.ChatFormatting;
+
 import appeng.api.stacks.AEKey;
 import appeng.menu.me.common.GridInventoryEntry;
 
@@ -40,7 +42,7 @@ public class MultiLangNameSearchPredicate implements Predicate<GridInventoryEntr
             // 手动 fallback 逻辑 (如果你担心反射失败)
             AEKey entryInfo = gridInventoryEntry.getWhat();
             if (entryInfo != null) {
-                String displayName = entryInfo.getDisplayName().getString().toLowerCase();
+                String displayName = ChatFormatting.stripFormatting(entryInfo.getDisplayName().getString()).toLowerCase();
                 if (displayName.contains(this.term)) return true;
             }
         }

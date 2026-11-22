@@ -41,6 +41,9 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
     @Shadow(remap = false)
     private int currentTemperature;
 
+    @Shadow(remap = false)
+    private boolean hasNoWater;
+
     @org.spongepowered.asm.mixin.Unique
     @SaveToDisk
     private HeatHandler gto$heatContainer;
@@ -70,6 +73,9 @@ public abstract class LargeBoilerMachineMixin extends WorkableMultiblockMachine 
 
     @Inject(method = "updateCurrentTemperature", at = @org.spongepowered.asm.mixin.injection.At("RETURN"), remap = false)
     private void updateCurrentTemperature(CallbackInfo ci) {
+        if (currentTemperature <= 100) {
+            hasNoWater = false;
+        }
         if (gto$heatContainer != null) {
             double target = Math.max(currentTemperature + 274, gto$heatContainer.ambientTemperature);
             var heatDelta = gto$heatContainer.currentHeat - target * gto$heatContainer.heatCapacity;

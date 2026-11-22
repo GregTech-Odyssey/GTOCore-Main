@@ -106,7 +106,7 @@ public final class NanoForgeMachine extends StorageMultiblockMachine implements 
         }
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallel() * (1L << (tier - recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER))));
         if (recipe == null) return null;
-        return RecipeModifier.overclocking(this, unit, recipe, false, 1, 1, tier > recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER) ? 0.25 : 0.5);
+        return RecipeModifier.overclocking(this, unit, recipe, 1, 1, tier > recipe.data.getInt(GTORecipeDataKeys.NANO_FORGE_TIER) ? 0.25 : 0.5);
     }
 
     @Override

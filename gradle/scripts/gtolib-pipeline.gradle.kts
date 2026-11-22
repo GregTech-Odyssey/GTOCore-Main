@@ -17,6 +17,7 @@ import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.commons.Remapper
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldInsnNode
 import org.objectweb.asm.tree.InvokeDynamicInsnNode
 import org.objectweb.asm.tree.MethodInsnNode
 import java.nio.file.Files
@@ -106,7 +107,7 @@ fun sha256(f: File): String {
 
 fun computeGtolibFingerprint(): String {
     val md = MessageDigest.getInstance("SHA-256")
-    listOf(file("GTOLib/src"), protectDir).filter { it.exists() }
+    listOf(file("GTOLib/src"), protectDir, file("gradle/scripts/gtolib-pipeline.gradle.kts")).filter { it.exists() }
         .flatMap { root -> root.walkTopDown().filter { it.isFile }.toList() }
         .filterNot { it.name.endsWith(".jks") || it.name.endsWith(".cert") || it.name.endsWith(".jar") && it.name.contains("seal") }
         .sortedBy { it.absolutePath }
@@ -556,14 +557,14 @@ fun JavaExec.art(vararg args: String) {
     setArgs(args.toList())
 }
 
-/** ART 继承库：Forge named + 运行时依赖的全部 jar（useOwnClasses 时含主工程自己的 class 输出）。按名字挑会漏掉改了坐标的模组。 */
+/** ART 继承库：Forge named + 编译和运行时依赖的全部 jar（includeOwnClasses 时含主工程自己的 class 输出）。客户端专属依赖也必须参与。 */
 fun artInheritanceLibs(includeOwnClasses: Boolean): List<File> {
     val libs = mutableListOf(namedForgeJar)
     if (includeOwnClasses) {
         libs += classesJava
         libs += classesKotlin
     }
-    configurations["runtimeClasspath"].files
+    (configurations["compileClasspath"].files + configurations["runtimeClasspath"].files)
         .filter { it.name.lowercase().endsWith(".jar") }
         .sortedBy { it.name }
         .forEach { libs += it }
@@ -571,34 +572,50 @@ fun artInheritanceLibs(includeOwnClasses: Boolean): List<File> {
 }
 
 /**
- * ART 解析不到某个父类时，经该父类继承的 Minecraft 方法调用保持 named 名，生产环境 NoSuchMethodError。
- * 用完整 classpath 沿继承链解析本 jar 里每个调用：最先声明它的是 Minecraft 类且该方法有 SRG 名就是漏改；链上有类解析不到也报出。
+ * ART 解析不到某个父类时，经该父类继承的 Minecraft 字段/方法仍是 named 名，生产环境出现链接错误。
+ * 检查本 jar 对自身及第三方类的成员引用；首次声明在 Minecraft 且有 SRG 名就是漏改，继承链缺类也报出。
  */
-fun verifyInheritedMinecraftMethodsReobfed(jar: File) {
+fun verifyInheritedMinecraftMembersReobfed(jar: File) {
     val minecraftNamed = HashMap<String, MutableSet<String>>()
+    val namedMemberNames = HashSet<String>()
     var current: MutableSet<String>? = null
     namedToIntermediate.forEachLine { line ->
         if (!line.startsWith("\t")) {
             current = HashSet<String>().also { minecraftNamed[line.substringBefore(' ')] = it }
         } else if (!line.startsWith("\t\t")) {
             val p = line.substring(1).split(' ')
-            if (p.size == 3 && p[0] != p[2]) current?.add(p[0] + p[1])
+            if (p.size == 2 && p[0] != p[1]) {
+                current?.add(p[0] + ":")
+                namedMemberNames += p[0]
+            } else if (p.size == 3 && p[0] != p[2]) {
+                current?.add(p[0] + p[1])
+                namedMemberNames += p[0]
+            }
         }
     }
-    class Info(val superName: String?, val interfaces: List<String>, val methods: Set<String>)
-    fun info(bytes: ByteArray): Pair<String, Info> {
-        val node = ClassNode(Opcodes.ASM9).also { ClassReader(bytes).accept(it, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES) }
-        return node.name to Info(node.superName, node.interfaces, node.methods.mapTo(HashSet()) { it.name + it.desc })
+    class Info(val superName: String?, val interfaces: List<String>, val members: Set<String>)
+    class Reference(val caller: String, val owner: String, val name: String, val desc: String, val field: Boolean) {
+        val key = name + (if (field) ":" else "") + desc
+        val mappingKey = if (field) "$name:" else key
     }
+    fun info(node: ClassNode) = Info(node.superName, node.interfaces, HashSet<String>().apply {
+        node.fields.forEach { add(it.name + ":" + it.desc) }
+        node.methods.forEach { add(it.name + it.desc) }
+    })
     val own = HashMap<String, Info>()
-    val calls = mutableListOf<Triple<String, String, String>>()
+    val references = mutableListOf<Reference>()
     ZipFile(jar).use { zf ->
         zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { e ->
             val bytes = zf.getInputStream(e).readBytes()
-            own += info(bytes)
             val node = ClassNode(Opcodes.ASM9).also { ClassReader(bytes).accept(it, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES) }
+            own[node.name] = info(node)
             node.methods.forEach { m ->
-                m.instructions.forEach { insn -> if (insn is MethodInsnNode) calls += Triple(node.name, insn.owner, insn.name + insn.desc) }
+                m.instructions.forEach { insn ->
+                    when (insn) {
+                        is MethodInsnNode -> if (insn.name in namedMemberNames) references += Reference(node.name, insn.owner, insn.name, insn.desc, false)
+                        is FieldInsnNode -> if (insn.name in namedMemberNames) references += Reference(node.name, insn.owner, insn.name, insn.desc, true)
+                    }
+                }
             }
         }
     }
@@ -610,39 +627,33 @@ fun verifyInheritedMinecraftMethodsReobfed(jar: File) {
         zips.forEach { zf -> zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { located.putIfAbsent(it.name.removeSuffix(".class"), zf) } }
         val libInfo = HashMap<String, Info?>()
         fun lookup(name: String): Info? = own[name] ?: libInfo.getOrPut(name) {
-            located[name]?.let { zf -> info(zf.getInputStream(zf.getEntry("$name.class")).readBytes()).second }
+            val bytes = listOf(classesJava, classesKotlin).firstNotNullOfOrNull { dir -> dir.resolve("$name.class").takeIf { it.isFile }?.readBytes() }
+                ?: located[name]?.let { zf -> zf.getInputStream(zf.getEntry("$name.class")).readBytes() }
+                ?: ClassLoader.getPlatformClassLoader().getResourceAsStream("$name.class")?.use { it.readBytes() }
+            bytes?.let {
+                info(ClassNode(Opcodes.ASM9).also { node -> ClassReader(it).accept(node, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES) })
+            }
         }
         val unresolved = linkedSetOf<String>()
-        fun declaringClass(owner: String, key: String): String? {
-            val seen = HashSet<String>()
-            val interfaces = ArrayDeque<String>()
-            var c: String? = owner
-            while (c != null) {
-                if (!seen.add(c)) break
-                if (c.startsWith("java/") || c.startsWith("javax/") || c.startsWith("jdk/")) return null
-                val i = lookup(c) ?: run { unresolved += c!!; return null }
-                if (key in i.methods) return c
-                interfaces += i.interfaces
-                c = i.superName
-            }
-            while (interfaces.isNotEmpty()) {
-                val n = interfaces.removeFirst()
-                if (!seen.add(n) || n.startsWith("java/")) continue
-                val i = lookup(n) ?: run { unresolved += n; null } ?: continue
-                if (key in i.methods) return n
-                interfaces += i.interfaces
-            }
+        fun declaringClass(owner: String, key: String, field: Boolean, seen: MutableSet<String> = HashSet()): String? {
+            if (!seen.add(owner) || owner.startsWith("java/") || owner.startsWith("javax/") || owner.startsWith("jdk/") || owner.startsWith("[")) return null
+            val i = lookup(owner) ?: run { unresolved += owner; return null }
+            if (key in i.members) return owner
+            // JVM 字段先找接口再找父类；类方法先找父类再找接口。
+            if (!field) i.superName?.let { declaringClass(it, key, false, seen) }?.let { return it }
+            i.interfaces.forEach { declaringClass(it, key, field, seen)?.let { found -> return found } }
+            if (field) i.superName?.let { declaringClass(it, key, true, seen) }?.let { return it }
             return null
         }
-        val stale = calls.filter { (_, owner, key) -> owner in own && declaringClass(owner, key)?.let { minecraftNamed[it]?.contains(key) } == true }
-            .map { (cls, owner, key) -> "$cls → $owner.$key" }.distinct()
+        val stale = references.filter { ref -> declaringClass(ref.owner, ref.key, ref.field)?.let { minecraftNamed[it]?.contains(ref.mappingKey) } == true }
+            .map { ref -> "${ref.caller} → ${ref.owner}.${ref.key}" }.distinct()
         val problems = stale + unresolved.filterNot { it.startsWith("kotlin/") }.map { "继承链上解析不到 $it" }
         if (problems.isNotEmpty()) {
             val report = layout.buildDirectory.file("gtolib/logs/reobfGtolib-inherited-named.txt").get().asFile
             report.parentFile.mkdirs()
             report.writeText(problems.joinToString("\n"))
             throw GradleException(
-                "reobfGtolib: ${stale.size} 处经父类继承的 Minecraft 方法仍是 named 名、${problems.size - stale.size} 个父类解析不到（提供父类的 jar 没作为继承库传给 ART），完整清单 $report:\n" +
+                "reobfGtolib: ${stale.size} 处 Minecraft 字段/方法仍是 named 名、${problems.size - stale.size} 个引用类或父类解析不到，完整清单 $report:\n" +
                     problems.take(10).joinToString("\n") { "  - $it" }
             )
         }
@@ -683,7 +694,7 @@ val reobfGtolib = tasks.register<JavaExec>("reobfGtolib") {
         if ("f_135804_" !in rlm || "m_245413_" !in rlm || "assertValidNamespace" in rlm) {
             throw GradleException("reobfGtolib: ResourceLocationMixn 未正确 reobf 成 SRG")
         }
-        verifyInheritedMinecraftMethodsReobfed(srgJar)
+        verifyInheritedMinecraftMembersReobfed(srgJar)
         logger.lifecycle("GTOLib ART reobf OK → ${srgJar.name}")
     }
 }
