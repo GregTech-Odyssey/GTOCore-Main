@@ -73,6 +73,5 @@ final class LCRCombined {
                 .outputFluids(Acetone.getFluid(2000))
                 .outputFluids(Oxygen.getFluid(1000))
                 .duration(400).EUt(VA[HV]).save();
-
     }
 }

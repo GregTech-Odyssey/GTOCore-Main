@@ -3,7 +3,6 @@ package com.gtocore.common.data.translation;
 import com.gtocore.api.data.Algae;
 import com.gtocore.api.lang.GTOTips;
 import com.gtocore.api.lang.Tx;
-import com.gtocore.common.machine.multiblock.generator.MagneticFluidGeneratorMachine;
 import com.gtocore.config.GTORules;
 
 import com.gregtechceu.gtceu.api.tooltip.TipSlot;
