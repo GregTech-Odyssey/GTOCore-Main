@@ -89,7 +89,7 @@ public class SpaceElevatorModuleMachine extends CustomParallelMultiblockMachine 
         }
         recipe = ParallelLogic.accurateParallel(this, unit, recipe, getParallel());
         if (recipe == null) return null;
-        return RecipeModifier.overclocking(this, unit, recipe, false, 1, getDurationMultiplier(), 0.5);
+        return RecipeModifier.overclocking(this, unit, recipe, 1, getDurationMultiplier(), 0.5);
     }
 
     @Override

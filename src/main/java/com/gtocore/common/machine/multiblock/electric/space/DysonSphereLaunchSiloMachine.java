@@ -49,7 +49,7 @@ public final class DysonSphereLaunchSiloMachine extends ElectricMultiblockMachin
         }
         int integer = GTODimensions.getPlanetDistances(getDimension());
         if (integer > 0) recipe.duration = recipe.duration * integer / 4;
-        return RecipeModifier.overclocking(this, unit, recipe, false, 1, 1, 0.85);
+        return RecipeModifier.overclocking(this, unit, recipe, 1, 1, 0.85);
     }
 
     @Override

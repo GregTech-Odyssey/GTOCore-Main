@@ -179,12 +179,17 @@ public final class GTEMIPlugin implements EmiPlugin {
     private static Bounds modularWindowBounds(ModularUIGuiContainer screen) {
         var window = MachineWindow.find(screen.modularUI);
         if (window != null) {
-            var bounds = window.getPageContainer().toRectangleBox();
+            var bounds = window.getMainPanelBounds();
             return new Bounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
         }
         var holder = screen.modularUI.holder;
         if (!(holder instanceof MonitorEditorFactory.Target) && !(holder instanceof MonitorControlFactory.Target) && !(holder instanceof MonitorHudEditorFactory.Target)) return null;
         return new Bounds(screen.getGuiLeft(), screen.getGuiTop(), screen.getXSize(), screen.getYSize());
+    }
+
+    private static void addModularWindowExclusionAreas(ModularUIGuiContainer screen, Consumer<Bounds> exclusion) {
+        var window = MachineWindow.find(screen.modularUI);
+        if (window != null) window.forEachSidePanelBounds(bounds -> exclusion.accept(new Bounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight())));
     }
 
     // 用于在 EMI 中注册维度数据的变体
@@ -232,6 +237,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         });
         registry.addCategory(MultiblockInfoEmiRecipe.CATEGORY);
         registry.addScreenBoundsProvider(ModularUIGuiContainer.class, GTEMIPlugin::modularWindowBounds);
+        registry.addExclusionArea(ModularUIGuiContainer.class, GTEMIPlugin::addModularWindowExclusionAreas);
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTPatternEditorRecipeHandler());
         registry.addRecipeHandler(ModularUIContainer.MENUTYPE, new GTEmiRecipeHandler());
         registry.addRecipeHandler(Me2in1Menu.TYPE, ME2in1Helper.createEMI2in1());

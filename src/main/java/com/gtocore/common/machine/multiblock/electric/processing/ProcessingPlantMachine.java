@@ -158,7 +158,7 @@ public final class ProcessingPlantMachine extends StorageMultiblockMachine imple
         if (!mismatched && !isEmpty()) {
             recipe = GTORecipeModifiers.parallel(this, unit, recipe);
             if (recipe == null) return null;
-            return RecipeModifier.overclocking(this, unit, recipe, false, 0.9, 0.8, 0.5);
+            return RecipeModifier.overclocking(this, unit, recipe, 0.9, 0.8, 0.5);
         }
         if (isEmpty()) IdleReason.MACHINE_STORAGE_EMPTY.setReason(this);
         else IdleReason.PROCESSING_TIER_MISMATCH.setReason(this, machineStorage.storage.getStackInSlot(0).getItem() instanceof MetaMachineItem item ? GTValues.VN[item.getDefinition().getTier()] : "—", GTValues.VN[tier]);
