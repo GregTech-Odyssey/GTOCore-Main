@@ -58,7 +58,7 @@ final class ItemLang {
         addCNEN("tagprefix.catalyst", "%s催化剂", "%s Catalyst");
         addCNEN("tagprefix.artificial_gem", "人造%s", "Artificial %s");
         addCNEN("tagprefix.crystal_seed", "%s晶种", "%s Crystal Seed");
-        addCNEN("tagprefix.superconductor_base", "%s超导粗胚", "%s Superconductor Base");
+        addCNEN("tagprefix.superconductor_base", "%s超导粗坯", "%s Superconductor Base");
         addCNEN("tagprefix.coin", "%s币", "%s Coin");
         addCNEN("tagprefix.particle_source", "%s粒子源", "%s Particle Source");
         addCNEN("tagprefix.target_base", "%s靶基底", "%s Target Base");

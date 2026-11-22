@@ -102,7 +102,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        PyromelliticDianhydride = material("pyromellitic_dianhydride", "均苯二甲酸酐")
+        PyromelliticDianhydride = material("pyromellitic_dianhydride", "均苯四甲酸二酐")
                 .dust()
                 .components(Carbon, 10, Hydrogen, 2, Oxygen, 6)
                 .flags(DISABLE_DECOMPOSITION)
@@ -233,7 +233,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        Tetraacetyldinitrosohexaazaisowurtzitane = material("tetraacetyldinitrosohexaazaisowurtzitane", "四乙酰二硝基六氮杂异戊二烯")
+        Tetraacetyldinitrosohexaazaisowurtzitane = material("tetraacetyldinitrosohexaazaisowurtzitane", "四乙酰二亚硝基六氮杂异伍兹烷")
                 .dust()
                 .color(0x500449)
                 .components(Carbon, 14, Hydrogen, 18, Nitrogen, 8, Oxygen, 6)
@@ -256,7 +256,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        Dibenzyltetraacetylhexaazaisowurtzitane = material("dibenzyltetraacetylhexaazaisowurtzitane", "二苄基四乙酰六氮杂异纤锌烷")
+        Dibenzyltetraacetylhexaazaisowurtzitane = material("dibenzyltetraacetylhexaazaisowurtzitane", "二苄基四乙酰六氮杂异伍兹烷")
                 .dust()
                 .color(0x64704d)
                 .components(Carbon, 28, Hydrogen, 32, Nitrogen, 6, Oxygen, 4)
@@ -1894,7 +1894,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        Dimethylether = material("dimethylether", "二甲基乙醚")
+        Dimethylether = material("dimethylether", "二甲醚")
                 .fluid()
                 .color(0xbda90e)
                 .components(Carbon, 2, Hydrogen, 6, Oxygen, 1)
@@ -2253,7 +2253,7 @@ public final class MaterialB {
                 .iconSet(DULL)
                 .buildAndRegister();
 
-        TolueneDiisocyanate = material("toluene_diisocyanate", "甲苯二异氰酸脂")
+        TolueneDiisocyanate = material("toluene_diisocyanate", "甲苯二异氰酸酯")
                 .fluid()
                 .color(0xacf4bf)
                 .components(Carbon, 9, Hydrogen, 6, Nitrogen, 2, Oxygen, 2)
@@ -3946,7 +3946,7 @@ public final class MaterialB {
                 .flags(DISABLE_DECOMPOSITION)
                 .buildAndRegister();
 
-        AmmoniumBifluorideSolution = material("ammonium_bifluoride_solution", "氟氢化氨")
+        AmmoniumBifluorideSolution = material("ammonium_bifluoride_solution", "氟化氢铵溶液")
                 .fluid()
                 .color(0xCBC5B7).iconSet(LIMPID)
                 .buildAndRegister().setFormula("(H2O)NH4FHF");
@@ -4142,7 +4142,7 @@ public final class MaterialB {
                 .fluid()
                 .color(0x8d3c4f).iconSet(LIMPID)
                 .buildAndRegister().setFormula("SiO2");
-        AluminumNitride = material("aluminum_nitride", "氮氧化铝")
+        AluminumNitride = material("aluminum_nitride", "氮化铝")
                 .dust()
                 .components(Aluminium, 1, Nitrogen, 1)
                 .color(0x4f3c8d).iconSet(DULL)

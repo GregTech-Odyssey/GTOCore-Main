@@ -25,7 +25,7 @@ public class MaterialComposite {
         // 二氧化硅-碳复合材料 silica_carbon_composite 弯曲板，双层板 #141417 IV
         // 碳纤维-环氧树脂复合材料 carbon_fiber_epoxy_composite 杆，框架，双层板 #8d8c31 IV
         // 碳纤维-强化环氧树脂复合材料 carbon_fiber_reinforced_epoxy_composite 杆，框架，双层板 #225b27 IV
-        // 碳钎维-酚醛树脂复合材料 carbon_fiber_phenolic_resin_composite 杆，框架，双层板 #531e1e IV
+        // 碳纤维-酚醛树脂复合材料 carbon_fiber_phenolic_resin_composite 杆，框架，双层板 #531e1e IV
         // 碳纤维-聚苯硫醚复合材料 carbon_fiber_polyphenylene_sulfide_composite 杆，框架，双层板 #24221d IV
         // 氮氧化铝玻璃陶瓷 aluminum_oxynitride_glass_ceramic 同陶瓷 #dedede LUV
         // 碳化硅纤维强化镍基复合材料 silicon_carbide_fiber_reinforced_nickel_based_composite 弯曲板，双层板 #1d4a2f LUV
@@ -168,7 +168,7 @@ public class MaterialComposite {
                 .iconSet(BRIGHT)
                 .flags(GENERATE_PLATE, GENERATE_LONG_ROD, GENERATE_FRAME, GENERATE_CURVED_PLATE, COMPOSITE_MATERIAL)
                 .buildAndRegister();
-        CarbonFiberPhenolicResinComposite = material("carbon_fiber_phenolic_resin_composite", "碳钎维-酚醛树脂复合材料")
+        CarbonFiberPhenolicResinComposite = material("carbon_fiber_phenolic_resin_composite", "碳纤维-酚醛树脂复合材料")
                 .ingot().fluid()
                 .color(0x531e1e)
                 .secondaryColor(0x361414)
