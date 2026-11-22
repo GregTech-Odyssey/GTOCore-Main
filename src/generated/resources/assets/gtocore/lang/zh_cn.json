@@ -4662,7 +4662,7 @@
   "gtocore.lang.magnetic_fluid_generator.1.-1683981547": "玻璃等级限制了能量输出仓等级",
   "gtocore.lang.magnetic_fluid_generator.10.740464581": "基础并行 x 4",
   "gtocore.lang.magnetic_fluid_generator.11.200288514": "激光源仓的并行加成提升为 x 4",
-  "gtocore.lang.magnetic_fluid_generator.13.-1897758541": "超频输出每级 ×4，燃料消耗倍率从 %s 起每 %s 级 +1",
+  "gtocore.lang.magnetic_fluid_generator.13.-1275734508": "超频输出每级 ×4，不额外增加燃料并行",
   "gtocore.lang.magnetic_fluid_generator.14.-884560284": "超频级数越高，单位燃料换到的能量越少",
   "gtocore.lang.magnetic_fluid_generator.2.316143676": "实际产出由等离子热值决定",
   "gtocore.lang.magnetic_fluid_generator.3.741155261": "基础并行：64",

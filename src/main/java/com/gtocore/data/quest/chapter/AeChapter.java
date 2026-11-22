@@ -78,7 +78,7 @@ public final class AeChapter {
 
     public static final Quest ALIEN_TECHNOLOGY = CHAPTER.quest("alien_technology", q -> q
             .at(-13, 3.5)
-.nodeScale(1)
+            .nodeScale(1)
             .icon(AEBlocks.SUSPICIOUS_SKY_STONE)
             .title("外星科技")
             .subtitle("小小的压印模板铸造宏大的自动化网络")
