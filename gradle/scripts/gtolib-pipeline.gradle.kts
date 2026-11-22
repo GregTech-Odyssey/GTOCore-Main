@@ -681,7 +681,7 @@ val reobfGtolib = tasks.register<JavaExec>("reobfGtolib") {
         ensureResourceLocationMixnTsrg(mixinTsrg)
         srgJar.delete()
         // 必须带上继承库，否则 gtocore 里重写的 Minecraft 方法（如 getSerializedName → m_7912_）不会被改名
-        val libs = artInheritanceLibs(includeOwnClasses = true)
+        val libs = shortInheritanceLibs(artInheritanceLibs(includeOwnClasses = true))
         setArgs(
             listOf("--input", unprotectedJar.absolutePath, "--output", srgJar.absolutePath, "--names", namedToIntermediate.absolutePath, "--names", mixinTsrg.absolutePath) +
                 libs.flatMap { listOf("--lib", it.absolutePath) }
@@ -736,6 +736,23 @@ val prepareGtocoreNamedLibrary = tasks.register<Jar>("prepareGtocoreNamedLibrary
     from(classesKotlin) { exclude("com/gtolib/**") }
 }
 
+/**
+ * Windows 命令行有长度上限；把长路径依赖 jar 复制到 build/gtolib/srg-libs 的短名下。
+ * 目录与 build/ 下的短路径产物保持原样，避免每次构建复制大量内容。
+ */
+fun shortInheritanceLibs(files: List<File>): List<File> {
+    val libDir = gtolibOut.resolve("srg-libs")
+    return files.map { file ->
+        if (file.isDirectory || file.absolutePath.length <= 80) return@map file
+        libDir.mkdirs()
+        val target = libDir.resolve("lib_${Integer.toHexString(file.absolutePath.hashCode())}.jar")
+        if (!target.exists() || target.length() != file.length() || target.lastModified() < file.lastModified()) {
+            file.copyTo(target, overwrite = true)
+        }
+        target
+    }
+}
+
 val prepareGtocoreSrgLibrary = tasks.register<JavaExec>("prepareGtocoreSrgLibrary") {
     group = "gtolib"
     description = "主工程库转成 SRG，供发行 ProGuard 使用"
@@ -747,9 +764,10 @@ val prepareGtocoreSrgLibrary = tasks.register<JavaExec>("prepareGtocoreSrgLibrar
     doFirst {
         requireJar(gtocoreNamedLibraryJar, "prepareGtocoreSrgLibrary: 主工程 named 库", 1024)
         gtocoreSrgLibraryJar.delete()
+        val libs = shortInheritanceLibs(listOf(unprotectedJar) + artInheritanceLibs(includeOwnClasses = false))
         setArgs(
             listOf("--input", gtocoreNamedLibraryJar.absolutePath, "--output", gtocoreSrgLibraryJar.absolutePath, "--names", namedToIntermediate.absolutePath) +
-                (listOf(unprotectedJar) + artInheritanceLibs(includeOwnClasses = false)).flatMap { listOf("--lib", it.absolutePath) }
+                libs.flatMap { listOf("--lib", it.absolutePath) }
         )
     }
     doLast {
