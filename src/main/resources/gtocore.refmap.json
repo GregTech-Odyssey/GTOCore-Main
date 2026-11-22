@@ -625,6 +625,9 @@
       "net.minecraft.world.level.levelgen.DensityFunctions$Mapped": "net/minecraft/world/level/levelgen/DensityFunctions$Mapped",
       "net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder": "net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder",
       "net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler": "net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler"
+    },
+    "com/gtolib/mixin/lowdraglib/RemoteMachineContainerMixin": {
+      "stillValid": "Lcom/lowdragmc/lowdraglib/gui/modular/ModularUIContainer;m_6875_(Lnet/minecraft/world/entity/player/Player;)Z"
     }
   },
   "data": {
@@ -1254,6 +1257,9 @@
         "net.minecraft.world.level.levelgen.DensityFunctions$Mapped": "net/minecraft/world/level/levelgen/DensityFunctions$Mapped",
         "net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder": "net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder",
         "net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler": "net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler"
+      },
+      "com/gtolib/mixin/lowdraglib/RemoteMachineContainerMixin": {
+        "stillValid": "Lcom/lowdragmc/lowdraglib/gui/modular/ModularUIContainer;m_6875_(Lnet/minecraft/world/entity/player/Player;)Z"
       }
     }
   }

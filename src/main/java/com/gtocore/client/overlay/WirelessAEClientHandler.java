@@ -47,7 +47,7 @@ public class WirelessAEClientHandler {
         var center = player.blockPosition();
         var held = player.getMainHandItem();
         var emphasized = MEWirelessMachineConfigurator.isConfigurator(held) ? MEWirelessMachineConfigurator.getNetworkId(held) : WirelessClientCache.favorite();
-        GTOBlockEntityIndexes.CLIENT_WIRELESS_MACHINES.query(level, center, BlockRange.sphere(RADIUS), null, FOUND);
+        GTOBlockEntityIndexes.WIRELESS_MACHINES.query(level, center, BlockRange.sphere(RADIUS), null, FOUND);
         try {
             for (int i = 0; i < FOUND.size(); i++) {
                 var machineEntity = FOUND.get(i);

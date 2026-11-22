@@ -6,6 +6,7 @@ import com.gtolib.api.machine.trait.MEStorageCapacity;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.WorkableTieredMachine;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.common.blockentity.CableBlockEntity;
 
 import com.suried.gtoutils.spatial.BlockEntityIndex;
@@ -16,10 +17,12 @@ import vazkii.botania.common.block.flower.generating.EntropinnyumBlockEntity;
  */
 public final class GTOBlockEntityIndexes {
 
-    public static final BlockEntityIndex<MetaMachineBlockEntity> CLIENT_WIRELESS_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
-            be -> be.getLevel().isClientSide() && be.getMetaMachine() instanceof WirelessMachine);
-    public static final BlockEntityIndex<MetaMachineBlockEntity> CLIENT_CAPACITY_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
-            be -> be.getLevel().isClientSide() && be.getMetaMachine().getTraits(MEStorageCapacity.class).length != 0);
+    public static final BlockEntityIndex<MetaMachineBlockEntity> WIRELESS_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
+            be -> be.getMetaMachine() instanceof WirelessMachine);
+    public static final BlockEntityIndex<MetaMachineBlockEntity> CAPACITY_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
+            be -> be.getMetaMachine().getTraits(MEStorageCapacity.class).length != 0);
+    public static final BlockEntityIndex<MetaMachineBlockEntity> MULTIBLOCK_CONTROLLERS = BlockEntityIndex.create(MetaMachineBlockEntity.class,
+            be -> !be.getLevel().isClientSide() && be.getMetaMachine() instanceof IMultiController);
     public static final BlockEntityIndex<MetaMachineBlockEntity> TIERED_WORKABLE_MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
             be -> !be.getLevel().isClientSide() && be.getMetaMachine() instanceof WorkableTieredMachine);
     public static final BlockEntityIndex<MetaMachineBlockEntity> MACHINES = BlockEntityIndex.create(MetaMachineBlockEntity.class,
