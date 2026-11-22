@@ -4662,7 +4662,7 @@
   "gtocore.lang.magnetic_fluid_generator.1.-1683981547": "The glass tier limits the energy output hatch tier",
   "gtocore.lang.magnetic_fluid_generator.10.740464581": "Basic parallel x 4",
   "gtocore.lang.magnetic_fluid_generator.11.200288514": "The Laser Source Hatch parallel bonus is increased to x 4",
-  "gtocore.lang.magnetic_fluid_generator.13.-1897758541": "Output x4 per overclock level; fuel cost starts at %s and rises by 1 every %s levels",
+  "gtocore.lang.magnetic_fluid_generator.13.-1275734508": "Output x4 per overclock level without adding fuel parallel",
   "gtocore.lang.magnetic_fluid_generator.14.-884560284": "Higher overclock levels yield less energy per unit of fuel",
   "gtocore.lang.magnetic_fluid_generator.2.316143676": "Actual output is determined by plasma heat value",
   "gtocore.lang.magnetic_fluid_generator.3.741155261": "Basic parallel: 64",

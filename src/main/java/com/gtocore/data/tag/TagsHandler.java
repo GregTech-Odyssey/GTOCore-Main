@@ -78,7 +78,7 @@ public final class TagsHandler {
                 .flatMap(material -> TagPrefix.ORES.keySet().stream().map(tagPrefix -> ChemicalHelper.getItem(tagPrefix, material)).filter(item -> item != Items.AIR))
                 .sorted(Comparator.comparing(Item::toString))
                 .toArray(Item[]::new);
-        create(TagUtils.createTGItemTag("isa_processable"), isaProcessableItems);
+        create(TagUtils.createCItemTag("isa_processable"), isaProcessableItems);
     }
 
     public static void initFluid() {

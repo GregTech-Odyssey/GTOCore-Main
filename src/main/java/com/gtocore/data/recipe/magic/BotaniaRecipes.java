@@ -615,7 +615,7 @@ public final class BotaniaRecipes {
 
             InfusionManaPoolRecipe("life_essence", GTOItems.UNSTABLE_GAIA_SOUL.asItem(), new ItemStack(BotaniaItems.lifeEssence), 500000, ChemicalHelper.getItem(block, Gaia), null);
 
-            InfusionManaPoolRecipe("mana_powder_dust", TagUtils.createTGItemTag("dusts"), new ItemStack(BotaniaItems.manaPowder), 20, null, null);
+            InfusionManaPoolRecipe("mana_powder_dust", TagUtils.createCItemTag("dusts"), new ItemStack(BotaniaItems.manaPowder), 20, null, null);
             InfusionManaPoolRecipe("mana_powder_dye", Tags.Items.DYES, new ItemStack(BotaniaItems.manaPowder), 20, null, null);
         }
 

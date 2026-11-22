@@ -24,7 +24,7 @@ final class RarityForge {
 
     public static void init() {
         RARITY_FORGE_RECIPES.builder("gem_dust")
-                .inputItems(TagUtils.createTGItemTag("flawless_gems"))
+                .inputItems(TagUtils.createCItemTag("flawless_gems"))
                 .inputItems("apotheosis:gem_fused_slate", 1)
                 .outputItems("apotheosis:gem_dust", 2)
                 .EUt(32)
