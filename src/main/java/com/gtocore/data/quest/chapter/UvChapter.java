@@ -342,7 +342,7 @@ public final class UvChapter {
             .subtitle("布满了脑细胞")
             .desc(d -> d.line("更便宜的制作{湿件处理器}的原材料", GOLD))
             .task(Task.item(GTOItems.WETWARE_SOC))
-            .dependsOn(CEREBRUM)
+            .dependsOn(CEREBRUM, HIGHLY_ADVANCED_SOC)
             .hideDependencyLines());
 
     public static final Quest SUPERCOMPUTING_CENTER = CHAPTER.quest("supercomputing_center", q -> q

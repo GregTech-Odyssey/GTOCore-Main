@@ -3,7 +3,6 @@ package com.gtocore.data.quest.chapter;
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
-import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockA;
@@ -26,14 +25,8 @@ import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
 import com.gregtechceu.gtceu.api.GTValues;
-import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMachines;
 
-import appeng.api.stacks.AEFluidKey;
-import appeng.api.stacks.AEItemKey;
-
-import com.glodblock.github.extendedae.common.EPPItemAndBlock;
 import com.hepdd.gtmthings.data.CreativeMachines;
 
 import static com.gtolib.api.quest.QuestStyle.*;
@@ -46,26 +39,29 @@ public final class UevChapter {
             .icon(MultiBlockA.SPS_CRAFTING));
 
     public static final Quest OBSIDIAN_MATRIX = CHAPTER.quest("obsidian_matrix", q -> q
-            .at(-8, 1)
+            .at(-2, -2)
             .subtitle("六级数据载体")
-            .task(Task.item(GTOItems.OBSIDIAN_MATRIX)));
+            .task(Task.item(GTOItems.OBSIDIAN_MATRIX))
+            .dependsOn(UevChapter.ATOMIC_ARCHIVES));
 
     public static final Quest CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT = CHAPTER.quest("closed_timelike_curve_guidance_unit", q -> q
-            .at(-6, 1)
+            .at(0, -2)
             .subtitle("七级数据载体(最高级)")
-            .task(Task.item(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT)));
+            .task(Task.item(GTOItems.CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT))
+            .dependsOn(OBSIDIAN_MATRIX));
 
     public static final Quest ATOMIC_ARCHIVES = CHAPTER.quest("atomic_archives", q -> q
-            .at(-10, 1)
+            .at(-4, -2)
             .subtitle("五级数据载体")
-            .task(Task.item(GTOItems.ATOMIC_ARCHIVES)));
+            .task(Task.item(GTOItems.ATOMIC_ARCHIVES))
+            .dependsOn(UevChapter.Q_4BEE8DA7));
 
     public static final Quest QUANTUM_FORCE_TRANSFORMER = CHAPTER.quest("quantum_force_transformer", q -> q
-            .at(0, -0.5)
+            .at(-2, -0.5)
             .task(Task.item(MultiBlockA.QUANTUM_FORCE_TRANSFORMER)));
 
     public static final Quest EYE_OF_HARMONY = CHAPTER.quest("eye_of_harmony", q -> q
-            .at(2, -2)
+            .at(-4, 5.5)
             .subtitle("万物大一统")
             .desc(d -> d
                     .line("我们修改了鸿蒙之眼的机制，目前你无需提升鸿蒙之眼的等级即可制作任意等级的配方")
@@ -74,47 +70,48 @@ public final class UevChapter {
             .task(Task.item(MultiBlockD.EYE_OF_HARMONY)));
 
     public static final Quest UEV_FUSION_REACTOR = CHAPTER.quest("uev_fusion_reactor", q -> q
-            .at(-4, -2)
-            .task(Task.item(MultiBlockD.FUSION_REACTOR[GTValues.UEV])));
+            .at(-6, -2)
+            .task(Task.item(MultiBlockD.FUSION_REACTOR[GTValues.UEV]))
+            .dependsOn(UevChapter.Q_4BEE8DA7));
 
     public static final Quest SPS_CRAFTING = CHAPTER.quest("sps_crafting", q -> q
-            .at(-4, -0.5)
+            .at(-6, -0.5)
             .task(Task.item(MultiBlockA.SPS_CRAFTING)));
 
     public static final Quest BEDROCK_DRILLING_RIG = CHAPTER.quest("bedrock_drilling_rig", q -> q
-            .at(-4, 1)
+            .at(-2, 2.5)
             .task(Task.item(MultiBlockD.BEDROCK_DRILLING_RIG)));
 
     public static final Quest MASS_FABRICATOR = CHAPTER.quest("mass_fabricator", q -> q
-            .at(-2, -2)
+            .at(-6, 1)
             .task(Task.item(MultiBlockA.MASS_FABRICATOR)));
 
     public static final Quest SPACE_PROBE_SURFACE_RECEPTION = CHAPTER.quest("space_probe_surface_reception", q -> q
-            .at(-2, -0.5)
+            .at(2, 1)
             .task(Task.item(MultiBlockD.SPACE_PROBE_SURFACE_RECEPTION)));
 
     public static final Quest DYSON_SPHERE_LAUNCH_SILO = CHAPTER.quest("dyson_sphere_launch_silo", q -> q
-            .at(0, 1)
+            .at(-2, 4)
             .task(Task.item(GeneratorMultiblock.DYSON_SPHERE_LAUNCH_SILO)));
 
     public static final Quest MAGNETIC_CONFINEMENT_DIMENSIONALITY_SHOCK_DEVICE = CHAPTER.quest("magnetic_confinement_dimensionality_shock_device", q -> q
-            .at(-2, 1)
+            .at(-6, 5.5)
             .task(Task.item(MultiBlockA.MAGNETIC_CONFINEMENT_DIMENSIONALITY_SHOCK_DEVICE)));
 
     public static final Quest ATOMIC_ENERGY_EXCITATION_PLANT = CHAPTER.quest("atomic_energy_excitation_plant", q -> q
-            .at(-4, 2.5)
+            .at(0, 2.5)
             .task(Task.item(MultiBlockA.ATOMIC_ENERGY_EXCITATION_PLANT)));
 
     public static final Quest STAR_ULTIMATE_MATERIAL_FORGE_FACTORY = CHAPTER.quest("star_ultimate_material_forge_factory", q -> q
-            .at(-2, 2.5)
+            .at(-6, 4)
             .task(Task.item(MultiBlockE.STAR_ULTIMATE_MATERIAL_FORGE_FACTORY)));
 
     public static final Quest HYPERDIMENSIONAL_PLASMA_FUSION_CORE = CHAPTER.quest("hyperdimensional_plasma_fusion_core", q -> q
-            .at(-2, 4)
+            .at(-6, 2.5)
             .task(Task.item(MultiBlockD.HYPERDIMENSIONAL_PLASMA_FUSION_CORE)));
 
     public static final Quest DRAGON_EGG_COPIER = CHAPTER.quest("dragon_egg_copier", q -> q
-            .at(0, -2)
+            .at(0, 1)
             .task(Task.item(MultiBlockA.DRAGON_EGG_COPIER)));
 
     public static final Quest MAX_NEUTRON_COMPRESSOR = CHAPTER.quest("max_neutron_compressor", q -> q
@@ -124,7 +121,7 @@ public final class UevChapter {
             .reward(Reward.item(MultiBlockC.NEUTRON_COMPRESSOR)));
 
     public static final Quest ANNIHILATE_GENERATOR = CHAPTER.quest("annihilate_generator", q -> q
-            .at(2, 1)
+            .at(-2, 5.5)
             .task(Task.item(GeneratorMultiblock.ANNIHILATE_GENERATOR)));
 
     public static final Quest COMPREHENSIVE_TOMBARTHITE_PROCESSING_FACILITY = CHAPTER.quest("comprehensive_tombarthite_processing_facility", q -> q
@@ -202,26 +199,28 @@ public final class UevChapter {
             .mainNode());
 
     public static final Quest ADVANCED_INTEGRATED_ORE_PROCESSOR = CHAPTER.quest("advanced_integrated_ore_processor", q -> q
-            .at(-4, 5.5)
+            .at(-4, 1)
             .task(Task.item(MultiBlockA.ADVANCED_INTEGRATED_ORE_PROCESSOR)));
 
     public static final Quest DATA_CENTER = CHAPTER.quest("data_center", q -> q
-            .at(-4, 7)
+            .at(0, 4)
             .task(Task.item(ExResearchMachines.DATA_CENTER)));
 
     public static final Quest MICROCOSM = CHAPTER.quest("microcosm", q -> q
-            .at(-6, 2.5)
-            .subtitle("??级数据载体")
-            .desc(d -> d.line("你不该发现的"))
+            .at(2, -2)
+            .subtitle("八级数据载体（最高级）")
+            .desc(d -> d
+                    .line("宇宙向你打开了最后的大门"))
             .task(Task.item(GTOItems.MICROCOSM))
-            .optional().invisible());
+            .reward(Reward.item(GTOItems.GIGA_CHAD, 1))
+            .dependsOn(CLOSED_TIMELIKE_CURVE_GUIDANCE_UNIT));
 
     public static final Quest ROAD_OF_HEAVEN = CHAPTER.quest("road_of_heaven", q -> q
-            .at(-2, 5.5)
+            .at(-4, 2.5)
             .task(Task.item(MultiBlockB.ROAD_OF_HEAVEN)));
 
     public static final Quest ELEMENT_COPYING = CHAPTER.quest("element_copying", q -> q
-            .at(-2, 7)
+            .at(-6, 11.5)
             .task(Task.item(MultiBlockA.ELEMENT_COPYING)));
 
     public static final Quest SUPRACHRONAL_MAINFRAME_COMPLEX = CHAPTER.quest("suprachronal_mainframe_complex", q -> q
@@ -257,48 +256,23 @@ public final class UevChapter {
             .dependsOn(UevChapter.HAPPY_WATER_GOD_CORE)
             .mainNode());
 
-    public static final Quest Q_635BFF4E = CHAPTER.quest("q_635bff4e", q -> q
-            .at(2, -6)
-            .desc(d -> d.line("缺失配方的材料，直接送你了"))
-            .task(Task.checkmark())
-            .reward(
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEFluidKey.of(GTOMaterials.SpacetimeContinuum.getFluid())), 1),
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEFluidKey.of(GTOMaterials.DimensionAllyshiftedSuperFluid.getFluid())), 1),
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(GTOItems.AWAKENED_CORE)), 1),
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(ChemicalHelper.getItem(TagPrefix.ingot, GTOMaterials.ChaosInfinityAlloy))), 1),
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(GTOItems.CHAOTIC_CORE)), 1))
-            .dependsOn(SUPRACAUSAL_MAINFRAME));
-
     public static final Quest SWARM_CORE = CHAPTER.quest("swarm_core", q -> q
-            .at(0, 2.5)
+            .at(0, -0.5)
             .task(Task.item(MultiBlockF.SWARM_CORE)));
 
     public static final Quest ADVANCED_MASS_FABRICATOR = CHAPTER.quest("advanced_mass_fabricator", q -> q
-            .at(0, 4)
+            .at(-2, 1)
             .task(Task.item(MultiBlockA.ADVANCED_MASS_FABRICATOR)));
-
-    public static final Quest VIRTUAL_UNIVERSE_DATA_ACCESS_HATCH_EXCHANGE = CHAPTER.quest("virtual_universe_data_access_hatch_exchange", q -> q
-            .at(-6, -0.5)
-            .icon(ExResearchMachines.VIRTUAL_UNIVERSE_DATA_ACCESS_HATCH)
-            .title(" 虚拟宇宙数据访问仓 兑换处")
-            .desc(d -> d.line("六级和七级数据载体需要用到这个访问仓，它还暂时做不出来，送你了"))
-            .task(Task.item(GTOItems.OBSIDIAN_MATRIX))
-            .reward(
-                    Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(ExResearchMachines.VIRTUAL_UNIVERSE_DATA_ACCESS_HATCH)), 1)));
-
-    public static final Quest ANTIMATTER_CONTAINMENT_CASING_EXCHANGE = CHAPTER.quest("antimatter_containment_casing_exchange", q -> q
-            .at(-6, -2)
-            .icon(GTOBlocks.ANTIMATTER_CONTAINMENT_CASING)
-            .title("反物质隔离机械方块 兑换处")
-            .desc(d -> d.line("人造恒星需要用到它们"))
-            .task(Task.item(GeneratorMultiblock.ANNIHILATE_GENERATOR))
-            .reward(Reward.stack(() -> EPPItemAndBlock.INFINITY_CELL.getRecordCell(AEItemKey.of(GTOBlocks.ANTIMATTER_CONTAINMENT_CASING)), 1)));
 
     public static final Quest HAPPY_WATER_GOD_CORE = CHAPTER.quest("happy_water_god_core", q -> q
             .at(4, 0)
             .task(Task.item(GTOItems.HAPPY_WATER_GOD_CORE))
             .mainNode()
             .dependsOn(CREATE_ULTIMATE_BATTERY));
+
+    public static final Quest PLANET_CORE_DRILLING = CHAPTER.quest("planet_core_drilling", q -> q
+            .at(-4, -0.5)
+            .task(Task.item(MultiBlockC.PLANET_CORE_DRILLING)));
 
     static {
         CHAPTER.decorate(d -> d

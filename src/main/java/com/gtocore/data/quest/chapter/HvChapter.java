@@ -696,7 +696,8 @@ public final class HvChapter {
             .at(-4.75, -1.5)
             .icon(GTMultiMachines.CLEANROOM)
             .title("超净间{（简单）}", GREEN)
-            .desc(d -> d.line("简单模式机器不需要超净环境也能工作，因此我在这里直接送你一份用于过任务"))
+            .desc(d -> d
+                    .line("简单模式机器不需要超净环境也能工作，因此公司直接赠送你一份用于完成任务"))
             .task(Task.checkmark())
             .reward(Reward.item(GTMultiMachines.CLEANROOM), Reward.item(GTBlocks.FILTER_CASING, 8))
             .dependsOn(UtilChapter.Q_056EC4E6, WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)

@@ -17,6 +17,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -491,8 +492,10 @@ public final class MvChapter {
                     .line()
                     .line("{别忘了双仓升压机制，这次你需要给电力高炉安装两个MV能源仓来升压到HV}", GRAY.italic()))
             .task(Task.item(TagPrefix.ingot, GTMaterials.StainlessSteel))
-            .reward(Reward.item(TagPrefix.ingot, GTMaterials.StainlessSteel, 8))
-            .dependsOn(MV_ENERGY_INPUT_HATCH));
+            .rewardFor(QuestTierSet.EXPERT, Reward.item(TagPrefix.ingot, GTMaterials.StainlessSteel, 8))
+            .dependsOn(MV_ENERGY_INPUT_HATCH)
+            .rewardFor(QuestTierSet.EASY, Reward.item(TagPrefix.ingot, GTMaterials.StainlessSteel, 320))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(TagPrefix.ingot, GTMaterials.StainlessSteel, 64)));
 
     public static final Quest RUBY_LENS = CHAPTER.quest("ruby_lens", q -> q
             .at(0.5, -0.5)
@@ -583,16 +586,6 @@ public final class MvChapter {
             .dependsOn(MV_ASSEMBLER)
             .optional().hideUntilDepsVisible());
 
-    public static final Quest STAINLESS_STEEL_SUBSIDY = CHAPTER.quest("stainless_steel_subsidy", q -> q
-            .at(9, 4.5)
-            .icon(TagPrefix.ingot, GTMaterials.StainlessSteel)
-            .title("不锈钢补助")
-            .task(Task.checkmark())
-            .easySubsidy(Reward.item(TagPrefix.ingot, GTMaterials.StainlessSteel, 320L))
-            .normalSubsidy(Reward.item(TagPrefix.ingot, GTMaterials.StainlessSteel, 56))
-            .dependsOn(STAINLESS_STEEL_INGOT)
-            .optional().hideUntilDepsVisible());
-
     public static final Quest MV_FORCE_FIELD_GENERATOR = CHAPTER.quest("mv_force_field_generator", q -> q
             .at(-10, -3)
             .icon(GTItems.FIELD_GENERATOR_MV)
@@ -605,7 +598,8 @@ public final class MvChapter {
             .at(-1.5, 3)
             .icon(TagPrefix.plate, GTMaterials.Polyethylene)
             .title("塑料补助再续")
-            .desc(d -> d.line("后面还要用到大量的塑料，我再送你一点"))
+            .desc(d -> d
+                    .line("后面还要用到大量的塑料，公司再送你一点"))
             .task(Task.checkmark())
             .easySubsidy(Reward.item(TagPrefix.plate, GTMaterials.Polyethylene, 256L))
             .dependsOn(SILICON_WAFER)
@@ -703,9 +697,16 @@ public final class MvChapter {
                     .line()
                     .line("你已经敲开了高压时代的大门！"))
             .task(Task.item(GTItems.INTEGRATED_CIRCUIT_HV))
-            .reward(Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 2), Reward.item(QuestExternalRefs.FarmersDelightItems.HAMBURGER, 8))
+            .reward(Reward.item(QuestExternalRefs.FarmersDelightItems.HAMBURGER, 8))
             .dependsOn(ALUMINA_CERAMIC_FLAKE, GOOD_INTEGRATED_CIRCUIT, RAM_CHIP, TRANSISTOR)
-            .mainNode());
+            .mainNode()
+            .rewardFor(QuestTierSet.EXPERT, Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 2))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.INTEGRATED_CIRCUIT_LV, 32))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(GTItems.INTEGRATED_CIRCUIT_LV, 8))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.INTEGRATED_CIRCUIT_MV, 16))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(GTItems.INTEGRATED_CIRCUIT_MV, 4))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 16))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 4)));
 
     public static final Quest MV_CIRCUIT_ASSEMBLER = CHAPTER.quest("mv_circuit_assembler", q -> q
             .at(7.5, -0.5)
@@ -760,23 +761,6 @@ public final class MvChapter {
             .task(Task.item(GTMultiMachines.LARGE_BOILER_STEEL))
             .dependsOn(ADVANCED_INTEGRATED_CIRCUIT)
             .hideDependencyLines());
-
-    public static final Quest CHIP_SUBSIDY = CHAPTER.quest("chip_subsidy", q -> q
-            .at(9, -2.5)
-            .icon(GTItems.INTEGRATED_CIRCUIT_HV)
-            .title("芯片补助")
-            .desc(d -> d.line("从HV开始不再有额外补助。用自己的双手创造一切吧！"))
-            .task(Task.checkmark())
-            .easySubsidy(
-                    Reward.item(GTItems.INTEGRATED_CIRCUIT_LV, 32),
-                    Reward.item(GTItems.INTEGRATED_CIRCUIT_MV, 16),
-                    Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 16))
-            .normalSubsidy(
-                    Reward.item(GTItems.INTEGRATED_CIRCUIT_LV, 8),
-                    Reward.item(GTItems.INTEGRATED_CIRCUIT_MV, 4),
-                    Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 2))
-            .dependsOn(ADVANCED_INTEGRATED_CIRCUIT)
-            .optional().hideUntilDepsVisible());
 
     public static final Quest PROGRAMMABLE_HATCH_EASY = CHAPTER.quest("programmable_hatch_easy", q -> q
             .at(-6.5, 7.5).minWidth(250)

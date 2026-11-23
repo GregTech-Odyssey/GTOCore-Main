@@ -333,7 +333,7 @@ public final class LuvChapter {
     public static final Quest HIGH_PERFORMANCE_COMPUTATION_ARRAY = CHAPTER.quest("high_performance_computation_array", q -> q
             .at(15.5, 4.5)
             .icon(GTResearchMachines.HIGH_PERFORMANCE_COMPUTING_ARRAY)
-            .subtitle("内置八张RTX 4090")
+            .subtitle("内置八张RTX {4090} 5090", STRIKE)
             .desc(d -> d
                     .line("研究站需要{算力供应}，因此你需要一个能够产生算力的{计算机}", YELLOW, GOLD)
                     .line()

@@ -236,14 +236,14 @@ public final class UhvChapter {
     public static final Quest NM_WAFER = CHAPTER.quest("nm_wafer", q -> q
             .at(6.5, 12.5)
             .task(Task.item(GTOItems.NM_WAFER))
-            .dependsOn(RUTHERFORDIUM_AMPROSIUM_WAFER, ENGRAVING_LASER_PLANT)
-            .hideDependentLines());
+            .dependsOn(RUTHERFORDIUM_AMPROSIUM_WAFER, ENGRAVING_LASER_PLANT));
 
     public static final Quest UHV_ENERGY_INPUT_HATCH = CHAPTER.quest("uhv_energy_input_hatch", q -> q
             .at(-0.5, -1)
             .desc(d -> d.line("啊哈，升压也不是什么麻烦事！"))
             .task(Task.item(GTMachines.ENERGY_INPUT_HATCH[GTValues.UHV]))
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, ENERGETIC_NETHERITE_DUST, UvChapter.ORICHALCUM_INGOT, NM_WAFER));
+            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, ENERGETIC_NETHERITE_DUST, UvChapter.ORICHALCUM_INGOT, NM_WAFER)
+            .hideDependencyLines());
 
     public static final Quest UHV_FUSION_REACTOR = CHAPTER.quest("uhv_fusion_reactor", q -> q
             .at(3.5, -1)
@@ -489,17 +489,21 @@ public final class UhvChapter {
             .task(Task.item(MultiBlockH.MANTLE_CRUSHER))
             .dependsOn(NEURAL_MATRIX));
 
+    public static final QuestLink ORICHALCUM_INGOT_COPY_1_COPY_1 = CHAPTER.copy(UvChapter.ORICHALCUM_INGOT, -0.5, -3);
+
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(UvChapter.PLASMA_CONDENSER, 0.5, 6.5))
                 .link(QuestLink.of(AeChapter.ME_EXTEND_PATTERN_BUFFER_ULTRA, -3.5, -3))
-                .link(QuestLink.of(UvChapter.ORICHALCUM_INGOT, -0.5, -3))
                 .link(QuestLink.of(SpaceStationChapter.ORBITAL_SMELTING_FACILITY, -3.5, 6.5))
                 .link(QuestLink.of(UvChapter.NANO_FORGE, 10.5, 6.5))
                 .link(QuestLink.of(UvChapter.PCB_FACTORY, 10.5, 4.5).mainNode())
                 .link(QuestLink.of(UevChapter.WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, 10.5, -1).mainNode())
                 .link(QuestLink.of(UtilChapter.ME_WILDCARD_PATTERN_BUFFER_2, 1.5, -3))
                 .link(QuestLink.of(SpaceStationChapter.SPACE_DRONE_DOCK, -5.5, 6.5))
-                .line(SPACE_DRONE_MK3, COMPONENT_ASSEMBLY_LINE));
+                .line(SPACE_DRONE_MK3, COMPONENT_ASSEMBLY_LINE)
+                .line(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, UHV_ENERGY_INPUT_HATCH)
+                .line(ORICHALCUM_INGOT_COPY_1_COPY_1, UHV_ENERGY_INPUT_HATCH)
+                .line(ENERGETIC_NETHERITE_DUST, UHV_ENERGY_INPUT_HATCH));
     }
 }

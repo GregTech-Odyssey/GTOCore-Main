@@ -498,6 +498,9 @@ public final class SteamChapter {
 
     public static final Quest NEED_A_LOT_OF_STEEL = CHAPTER.quest("need_a_lot_of_steel", q -> q
             .at(13.5, 4.5)
+            .preset(QuestPreset.IMPORTANT)
+            .nodeFill(0xB4453F)
+            .nodeScale(2)
             .title("需要大量钢？")
             .subtitle("32层举高高炉")
             .desc(d -> d
