@@ -153,8 +153,8 @@ public class TechTreeSavedData extends FastSavedData {
         for (var manager : TechTreeManager.getManagers()) {
             for (var dependent : manager.values()) {
                 if (!dependent.prerequisites.contains(node)) continue;
-                var eureka = dependent.getRequirements().getEurekaItem();
-                if (eureka != null && context.hasScanned(eureka)) unlock(uuid, dependent);
+                var eureka = dependent.getRequirements().getEureka();
+                if (context.hasScanned(eureka)) unlock(uuid, dependent);
             }
         }
     }

@@ -4,11 +4,10 @@ import com.gtocore.api.research.techtree.TechNode;
 
 import com.gtolib.api.annotation.DataGeneratorScanned;
 import com.gtolib.api.annotation.language.RegisterLanguage;
-import com.gtolib.utils.AEChemicalHelper;
 
-import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.fluids.store.FluidStorageKey;
 import com.gregtechceu.gtceu.api.recipe.handler.ActionResult;
 
 import net.minecraft.network.chat.Component;
@@ -28,11 +27,9 @@ import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -57,28 +54,57 @@ public final class ResearchRequirements {
         }
     };
 
-    private static final Reference2ObjectOpenCustomHashMap<AEKey, Set<TechNode>> EUREKA_REQUIREMENTS = new Reference2ObjectOpenCustomHashMap<>(AE_KEY_STRATEGY);
+    private static final Reference2ObjectOpenCustomHashMap<AEKey, IdentityKeySet<TechNode>> KEY_EUREKA_REQUIREMENTS = new Reference2ObjectOpenCustomHashMap<>(AE_KEY_STRATEGY);
+    private static final Reference2ObjectOpenHashMap<Material, IdentityKeySet<TechNode>> MATERIAL_EUREKA_REQUIREMENTS = new Reference2ObjectOpenHashMap<>();
+    private static final Reference2ObjectOpenHashMap<Fluid, Material> EUREKA_FLUID_MATERIALS = new Reference2ObjectOpenHashMap<>();
 
     private long cwuNeeded;
     private ResearchPoints materialNeeded;
     @Nullable
-    private AEKey eurekaItem;
+    private Eureka eureka;
     private float eurekaProgress;
 
     private ResearchRequirements() {}
 
-    public static synchronized void registerEurekaRequirement(AEKey key, TechNode node) {
-        EUREKA_REQUIREMENTS.computeIfAbsent(key, ignored -> new IdentityKeySet<>()).add(node);
+    public static synchronized void registerEurekaRequirement(Eureka eureka, TechNode node) {
+        var material = eureka.material();
+        if (material != null) {
+            MATERIAL_EUREKA_REQUIREMENTS.computeIfAbsent(material, ResearchRequirements::indexEurekaMaterial).add(node);
+        } else {
+            KEY_EUREKA_REQUIREMENTS.computeIfAbsent(eureka.key(), ignored -> new IdentityKeySet<>()).add(node);
+        }
     }
 
-    public static Set<TechNode> getEurekaRequirements(AEKey key) {
-        var nodes = EUREKA_REQUIREMENTS.get(key);
-        return nodes == null ? Collections.emptySet() : nodes;
+    private static IdentityKeySet<TechNode> indexEurekaMaterial(Material material) {
+        // AE can create fluid keys before GTM can resolve their material from fluid tags.
+        var fluids = material.getProperty(PropertyKey.FLUID);
+        if (fluids != null) {
+            for (var storageKey : FluidStorageKey.allKeys()) {
+                var fluid = fluids.get(storageKey);
+                if (fluid != null) EUREKA_FLUID_MATERIALS.putIfAbsent(fluid, material);
+            }
+        }
+        return new IdentityKeySet<>();
     }
 
-    public static List<EurekaRequirementEntry> getEurekaRequirementEntries() {
-        List<EurekaRequirementEntry> entries = new ArrayList<>(EUREKA_REQUIREMENTS.size());
-        for (var it = EUREKA_REQUIREMENTS.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
+    @Nullable
+    public static Material getEurekaFluidMaterial(Fluid fluid) {
+        return EUREKA_FLUID_MATERIALS.get(fluid);
+    }
+
+    public static ReferenceSet<TechNode> getKeyEurekaRequirements(AEKey key) {
+        var nodes = KEY_EUREKA_REQUIREMENTS.get(key);
+        return nodes == null ? ReferenceSets.emptySet() : nodes;
+    }
+
+    public static ReferenceSet<TechNode> getMaterialEurekaRequirements(@Nullable Material material) {
+        var nodes = MATERIAL_EUREKA_REQUIREMENTS.get(material);
+        return nodes == null ? ReferenceSets.emptySet() : nodes;
+    }
+
+    public static List<EurekaRequirementEntry> getKeyEurekaRequirementEntries() {
+        List<EurekaRequirementEntry> entries = new ArrayList<>(KEY_EUREKA_REQUIREMENTS.size());
+        for (var it = KEY_EUREKA_REQUIREMENTS.reference2ObjectEntrySet().fastIterator(); it.hasNext();) {
             var entry = it.next();
             List<TechNode> nodes = entry.getValue().stream()
                     .sorted(Comparator.comparing((TechNode node) -> node.getManager().getId()).thenComparing(node -> node.name))
@@ -90,13 +116,16 @@ public final class ResearchRequirements {
         return entries;
     }
 
+    public boolean hasEnoughCWU(TechNode node, TeamResearchContext context) {
+        long required = context.hasScanned(eureka) ? (long) (cwuNeeded * (1 - eurekaProgress)) : cwuNeeded;
+        return context.techNodeAccCWU().getLong(node) >= required;
+    }
+
     public ActionResult test(TechNode node, TeamResearchContext teamResource, UUID team, boolean simulate) {
         if (this == NO_REQUIREMENTS) {
             return ActionResult.SUCCESS;
         }
-        var eurekaScanned = teamResource.scannedItems().contains(eurekaItem);
-        var actualCWUNeeded = eurekaScanned ? (long) (cwuNeeded * (1 - eurekaProgress)) : cwuNeeded;
-        if (teamResource.techNodeAccCWU().getOrDefault(node, 0L) < actualCWUNeeded) {
+        if (!hasEnoughCWU(node, teamResource)) {
             return FAILURE_NO_CWU;
         }
         for (var it = materialNeeded.reference2LongEntrySet().fastIterator(); it.hasNext();) {
@@ -114,7 +143,8 @@ public final class ResearchRequirements {
 
         private long cwuNeeded;
         private final ResearchPoints materialNeeded = new ResearchPoints();
-        private AEKey eurekaItem;
+        private AEKey eurekaKey;
+        private Material eurekaMaterial;
         private float eurekaProgress;
 
         public Builder setCWUNeeded(long cwuNeeded) {
@@ -127,38 +157,38 @@ public final class ResearchRequirements {
             return this;
         }
 
-        public Builder setEurekaItem(ItemLike eurekaItem, float eurekaProgress) {
+        public Builder setEureka(ItemLike eurekaItem, float eurekaProgress) {
             this.eurekaProgress = eurekaProgress;
-            this.eurekaItem = AEItemKey.of(eurekaItem);
+            this.eurekaKey = AEItemKey.of(eurekaItem);
             return this;
         }
 
-        public Builder setEurekaItem(TagPrefix form, Material mat, float eurekaProgress) {
+        public Builder setEureka(Material mat, float eurekaProgress) {
             this.eurekaProgress = eurekaProgress;
-            this.eurekaItem = AEChemicalHelper.getKey(form, mat);
+            this.eurekaMaterial = mat;
             return this;
         }
 
-        public Builder setEurekaItem(ItemStack eurekaItem, float eurekaProgress) {
+        public Builder setEureka(ItemStack eurekaItem, float eurekaProgress) {
             this.eurekaProgress = eurekaProgress;
-            this.eurekaItem = AEItemKey.of(eurekaItem);
+            this.eurekaKey = AEItemKey.of(eurekaItem);
             return this;
         }
 
-        public Builder setEurekaFluid(Fluid eurekaFluid, float eurekaProgress) {
+        public Builder setEureka(Fluid eurekaFluid, float eurekaProgress) {
             this.eurekaProgress = eurekaProgress;
-            this.eurekaItem = AEFluidKey.of(eurekaFluid);
+            this.eurekaKey = AEFluidKey.of(eurekaFluid);
             return this;
         }
 
         public ResearchRequirements build() {
-            if (this.eurekaItem.getPrimaryKey() == Blocks.BARRIER.asItem() && GTCEu.isDev()) {
-                throw new IllegalStateException("Eureka item is not present.");
-            }
             var r = new ResearchRequirements();
             r.cwuNeeded = this.cwuNeeded;
             r.materialNeeded = this.materialNeeded;
-            r.eurekaItem = this.eurekaItem;
+            if (this.eurekaKey != null && this.eurekaKey.getPrimaryKey() == Blocks.BARRIER.asItem()) {
+                throw new IllegalArgumentException("Eureka requires a registered item, fluid or material.");
+            }
+            if (this.eurekaKey != null || this.eurekaMaterial != null) r.eureka = new Eureka(this.eurekaKey, this.eurekaMaterial);
             r.eurekaProgress = this.eurekaProgress;
             return r;
         }
@@ -172,4 +202,11 @@ public final class ResearchRequirements {
     public static final ActionResult FAILURE_NO_MATERIAL = new ActionResult(false, Component.translatable(FAIL_NO_MATERIAL));
 
     public record EurekaRequirementEntry(AEKey key, List<TechNode> nodes) {}
+
+    public record Eureka(@Nullable AEKey key, @Nullable Material material) {
+
+        public Component getDisplayName() {
+            return material == null ? key.getDisplayName() : material.getLocalizedName();
+        }
+    }
 }

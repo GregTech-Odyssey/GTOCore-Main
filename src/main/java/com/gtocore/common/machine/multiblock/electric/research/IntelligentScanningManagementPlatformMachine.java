@@ -1,6 +1,6 @@
 package com.gtocore.common.machine.multiblock.electric.research;
 
-import com.gtocore.api.research.ResearchRequirements;
+import com.gtocore.api.research.TeamResearchSavedData;
 import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
@@ -12,7 +12,6 @@ import com.gtocore.data.IdleReason;
 
 import com.gtolib.api.machine.multiblock.ElectricMultiblockMachine;
 import com.gtolib.api.recipe.RecipeBuilder;
-import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
@@ -30,6 +29,7 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEKeyLongMap;
 import appeng.api.stacks.AEKeyTypes;
 import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
@@ -161,54 +161,56 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
         var output = crystal.toStack(1);
         var remaining = DataCrystalItem.getRemainingCapacity(input);
         var team = TeamUtil.getTeamUUID(getOwnerUUID());
+        var context = TeamResearchSavedData.getOrCreateContext(team);
         var keyCounter = new KeyCounter();
         var recipe = RecipeBuilder.ofRaw().inputItems(input);
         ReferenceOpenHashSet<Material> materials = new ReferenceOpenHashSet<>();
 
         DataCrystalItem.setTeamUUID(output, team);
         if (workMode == WorkMode.SCAN_SELECTED_ONLY) {
-            var keys = new ReferenceOpenHashSet<AEKey>(selectedAEKeys.size());
+            var keys = new AEKeyLongMap<AEKey>(selectedAEKeys.size());
             long totalBytes = 0;
+            boolean hasZeroByteTarget = false;
             for (ObjectIterator<AEKey> iterator = selectedAEKeys.iterator(); iterator.hasNext();) {
                 var k = iterator.next();
-                var mat = AEChemicalHelper.getMaterial(k);
-                var containsMaterial = false;
-                if (mat != null) {
-                    containsMaterial = !materials.add(mat);
-                }
-                if (containsMaterial) {
+                var mat = DataScanningManager.getScanningMaterial(k);
+                if (mat != null && !materials.add(mat) && !DataScanningManager.hasPendingKeyEureka(k, context)) {
                     iterator.remove();
                     continue;
                 }
-                var p = DataScanningManager.scanData(k, team, true);
-                if (p.countBytes() <= 0 && (ResearchRequirements.getEurekaRequirements(k).isEmpty() || hasScanned(k, team))) {
+                long bytes = DataScanningManager.scanData(k, team, true).countBytes();
+                if (bytes <= 0 && !DataScanningManager.hasPendingEureka(k, team)) {
                     iterator.remove();
                     continue;
                 }
-                keys.add(k);
-                totalBytes += p.countBytes();
+                keys.put(k, bytes);
+                totalBytes += bytes;
+                hasZeroByteTarget |= bytes == 0;
             }
-            if (totalBytes <= 0) return null;
-            var turns = remaining / totalBytes;
-            if (turns <= 0) {
+            if (keys.isEmpty()) return null;
+            var turns = totalBytes == 0 ? 1 : remaining / totalBytes;
+            if (turns <= 0 && !hasZeroByteTarget) {
                 IdleReason.DATA_CRYSTAL_CAPACITY.setReason(this, DataCrystalItem.formatBytes(totalBytes), DataCrystalItem.formatBytes(remaining));
                 return null;
             }
             var proxy = scanningProxyPartMachine;
             MEStorage me = proxy == null ? null : proxy.getMESStorage();
             IActionSource source = me == null ? null : proxy.getActionSource();
-            for (var k : keys) {
-                long actualAmount = turns;
+            for (var it = keys.reference2LongEntrySet().fastIterator(); it.hasNext();) {
+                var entry = it.next();
+                var k = entry.getKey();
+                long actualAmount = entry.getLongValue() == 0 ? 1 : turns;
+                if (actualAmount <= 0) continue;
                 if (k instanceof AEItemKey itemKey) {
                     if (me != null) {
-                        actualAmount = me.extract(k, turns, Actionable.SIMULATE, source);
+                        actualAmount = me.extract(k, actualAmount, Actionable.SIMULATE, source);
                     }
-                    recipe.inputItems(KeyIngredient.item(itemKey.item), actualAmount);
+                    if (actualAmount > 0) recipe.inputItems(KeyIngredient.item(itemKey.item), actualAmount);
                 } else if (k instanceof AEFluidKey fluidKey) {
                     if (me != null) {
-                        actualAmount = me.extract(k, turns * 1000, Actionable.SIMULATE, source) / 1000;
+                        actualAmount = me.extract(k, actualAmount * 1000, Actionable.SIMULATE, source) / 1000;
                     }
-                    recipe.inputFluids(fluidKey.getFluid(), 1000 * actualAmount);
+                    if (actualAmount > 0) recipe.inputFluids(fluidKey.getFluid(), 1000 * actualAmount);
                 }
                 if (actualAmount > 0) keyCounter.add(k, actualAmount);
             }
@@ -223,18 +225,14 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
             final var initialRemaining = remaining;
             List<AEKey> overflow = null;
             long minOverflow = Long.MAX_VALUE;
-            while (!scanQueue.isEmpty() && remaining > 0) {
+            while (!scanQueue.isEmpty()) {
                 var k = scanQueue.poll();
-                var mat = AEChemicalHelper.getMaterial(k);
-                var containsMaterial = false;
-                if (mat != null) {
-                    containsMaterial = !materials.add(mat);
-                }
-                if (containsMaterial) {
+                var mat = DataScanningManager.getScanningMaterial(k);
+                if (mat != null && materials.contains(mat) && !DataScanningManager.hasPendingKeyEureka(k, context)) {
                     continue;
                 }
                 long occupy = DataScanningManager.scanData(k, team, true).countBytes();
-                if (occupy <= 0 && (ResearchRequirements.getEurekaRequirements(k).isEmpty() || hasScanned(k, team))) {
+                if (occupy <= 0 && !DataScanningManager.hasPendingEureka(k, team)) {
                     continue;
                 }
                 if (remaining >= occupy) {
@@ -245,6 +243,7 @@ public class IntelligentScanningManagementPlatformMachine extends ElectricMultib
                     }
                     remaining -= occupy;
                     keyCounter.add(k, 1);
+                    if (mat != null) materials.add(mat);
                 } else {
                     if (overflow == null) overflow = new ArrayList<>();
                     overflow.add(k);

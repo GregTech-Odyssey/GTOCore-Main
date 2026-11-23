@@ -240,8 +240,8 @@ public final class TechTreeManager extends Registry<String, TechNode> implements
         public @NotNull TechNode build() {
             var t = manager.register(this);
 
-            if (requirements instanceof ResearchRequirements r && r.getEurekaItem() != null) {
-                ResearchRequirements.registerEurekaRequirement(r.getEurekaItem(), t);
+            if (requirements instanceof ResearchRequirements r && r.getEureka() != null) {
+                ResearchRequirements.registerEurekaRequirement(r.getEureka(), t);
             }
             return t;
         }

@@ -60,7 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import static com.gtolib.utils.AEChemicalHelper.getMaterial;
+import static com.gtocore.api.research.scanning.DataScanningManager.getScanningMaterial;
 
 @DataGeneratorScanned
 public class ScanningSelectionTab implements IFancyUIProvider {
@@ -258,7 +258,10 @@ public class ScanningSelectionTab implements IFancyUIProvider {
             private static final int GRID_HEIGHT = 6 * UISizes.SLOT_SIZE;
             private static final Comparator<ScanTarget> TARGET_ORDER = Comparator.comparing(ScanTarget::unscannable)
                     .thenComparing(ScanTarget::scanned)
-                    .thenComparing(target -> getMaterial(target.key()).getName())
+                    .thenComparing(target -> {
+                        var material = getScanningMaterial(target.key());
+                        return material == null ? null : material.getName();
+                    }, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(target -> target.key().getDisplayName().getString().toLowerCase(Locale.ROOT));
 
             private final ReferenceLinkedOpenHashSet<AEKey> selected = new ReferenceLinkedOpenHashSet<>();
@@ -394,7 +397,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
                     if (!target.unscannable()) {
                         lines.add(Component.translatable(selected ? DESELECT_TOOLTIP : SELECT_TOOLTIP).withStyle(ChatFormatting.GRAY));
                     }
-                    var material = getMaterial(target.key());
+                    var material = getScanningMaterial(target.key());
                     if (material != null) {
                         lines.add(Component.translatable(WORK_MODE_SCAN_MATERIAL, material.getLocalizedName()).withStyle(ChatFormatting.DARK_GRAY));
                     }
@@ -404,7 +407,7 @@ public class ScanningSelectionTab implements IFancyUIProvider {
                 @Override
                 @OnlyIn(Dist.CLIENT)
                 protected void drawSlotMark(GuiGraphics graphics, int x, int y, boolean darkSlot) {
-                    var material = getMaterial(target.key());
+                    var material = getScanningMaterial(target.key());
                     if (material != null) UIDraw.underline(graphics, x + 1, y + 1, SIZE - 2, material.getMaterialARGB());
                 }
 

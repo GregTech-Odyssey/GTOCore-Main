@@ -1,12 +1,12 @@
 package com.gtocore.api.research;
 
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.data.techtree.BaseNodes;
 
 import com.gtolib.GTOCore;
 import com.gtolib.api.data.GTODimensions;
-import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
@@ -279,7 +279,7 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
     }
 
     public boolean isEmpty() {
-        return researchPoints.isEmpty() && scannedItems.isEmpty() && techNodeAccCWU.isEmpty();
+        return researchPoints.isEmpty() && scannedItems.isEmpty() && scannedMaterials.isEmpty() && techNodeAccCWU.isEmpty();
     }
 
     public void addTechNodeAccCWU(TechNode selectedNode, long cwuBuffer) {
@@ -299,18 +299,25 @@ public record TeamResearchContext(ResearchPoints researchPoints, Set<AEKey> scan
         TeamResearchSavedData.INSTANCE.setDirty(true);
     }
 
-    public void addScannedItem(AEKey item) {
-        scannedItems.add(item);
+    public boolean addScannedItem(AEKey item) {
+        if (!scannedItems.add(item)) return false;
         TeamResearchSavedData.INSTANCE.setDirty(true);
+        return true;
     }
 
-    public void addScannedMaterial(Material material) {
-        scannedMaterials.add(material);
+    public boolean addScannedMaterial(Material material) {
+        if (!scannedMaterials.add(material)) return false;
         TeamResearchSavedData.INSTANCE.setDirty(true);
+        return true;
     }
 
     public boolean hasScanned(AEKey key) {
-        return scannedItems.contains(key) || scannedMaterials.contains(AEChemicalHelper.getMaterial(key));
+        return scannedItems.contains(key) || scannedMaterials.contains(DataScanningManager.getScanningMaterial(key));
+    }
+
+    public boolean hasScanned(@Nullable ResearchRequirements.Eureka eureka) {
+        if (eureka == null) return false;
+        return eureka.material() != null ? scannedMaterials.contains(eureka.material()) : scannedItems.contains(eureka.key());
     }
 
     public boolean addUnlockedDimension(ResourceKey<Level> dimensionId) {

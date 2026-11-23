@@ -1,7 +1,6 @@
 package com.gtocore.common.machine.electric;
 
 import com.gtocore.api.research.ExResearchManager;
-import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.recipe.ScanningRecipeExtion;
 import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.common.item.DataCrystalItem;
@@ -147,36 +146,21 @@ public class ScannerMachine extends SimpleTieredMachine implements ICustomRecipe
         private GTRecipeDefinition buildRecipe() {
             var input = dataCrystal.copyWithCount(1);
             var output = dataCrystal.copyWithCount(1);
-            boolean istem = !item.isEmpty();
-            if (istem) {
-                var c = DataScanningManager.scanData(item.getItem(), team, true);
-                if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEItemKey.of(item.getItem())).isEmpty()) {
-                    return null;
-                }
-                var bytesScanned = c.countBytes();
-                if (!fitsCrystal(input, bytesScanned)) return null;
-                DataCrystalItem.setTeamUUID(output, team);
-                return recipeBuilder.inputItems(input)
-                        .inputItems(item.copyWithCount(1))
-                        .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
-                        .addExtension(ScanningRecipeExtion.INSTANCE)
-                        .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEItemKey.of(item.getItem()), output, team))
-                        .build();
+            var key = item.isEmpty() ? AEFluidKey.of(fluidStack.getFluid()) : AEItemKey.of(item.getItem());
+            long bytesScanned = DataScanningManager.scanData(key, team, true).countBytes();
+            if (bytesScanned <= 0 && !DataScanningManager.isEurekaTarget(key)) return null;
+            if (!fitsCrystal(input, bytesScanned)) return null;
+            DataCrystalItem.setTeamUUID(output, team);
+            recipeBuilder.inputItems(input);
+            if (key instanceof AEFluidKey fluidKey) {
+                recipeBuilder.inputFluids(fluidKey.getFluid(), 1000);
             } else {
-                var c = DataScanningManager.scanData(fluidStack.getFluid(), team, true);
-                if (c.isEmpty() && ResearchRequirements.getEurekaRequirements(AEFluidKey.of(fluidStack.getFluid())).isEmpty()) {
-                    return null;
-                }
-                var bytesScanned = c.countBytes();
-                if (!fitsCrystal(input, bytesScanned)) return null;
-                DataCrystalItem.setTeamUUID(output, team);
-                return recipeBuilder.inputItems(input)
-                        .inputFluids(fluidStack.getFluid(), 1000)
-                        .duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
-                        .addExtension(ScanningRecipeExtion.INSTANCE)
-                        .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(AEFluidKey.of(fluidStack.getFluid()), output, team))
-                        .build();
+                recipeBuilder.inputItems(item.copyWithCount(1));
             }
+            return recipeBuilder.duration(GTORules.SCAN_DURATION.get()).EUt(eut(bytesScanned))
+                    .addExtension(ScanningRecipeExtion.INSTANCE)
+                    .addData(ScanningRecipeExtion.INSTANCE, ScanningRecipeExtion.create(key, output, team))
+                    .build();
         }
     }
 

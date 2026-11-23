@@ -1,6 +1,6 @@
 package com.gtocore.api.research;
 
-import com.gtolib.utils.AEChemicalHelper;
+import com.gtocore.api.research.scanning.DataScanningManager;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -128,7 +128,7 @@ public final class ResarchTagCommands {
     private static int addHandHeldItem(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var player = context.getSource().getPlayerOrException();
         var key = getHandHeldAEKey(player);
-        var mat = AEChemicalHelper.getMaterial(key);
+        var mat = DataScanningManager.getScanningMaterial(key);
 
         var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 
@@ -143,7 +143,7 @@ public final class ResarchTagCommands {
     private static int removeHandHeldItem(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var player = context.getSource().getPlayerOrException();
         var key = getHandHeldAEKey(player);
-        var mat = AEChemicalHelper.getMaterial(key);
+        var mat = DataScanningManager.getScanningMaterial(key);
 
         var teamContext = TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(player.getUUID()));
 

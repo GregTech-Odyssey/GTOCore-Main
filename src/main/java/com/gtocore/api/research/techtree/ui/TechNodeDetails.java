@@ -4,6 +4,7 @@ import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
 import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.TeamResearchSavedData;
+import com.gtocore.api.research.scanning.DataScanningManager;
 import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeManager;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
@@ -178,7 +179,7 @@ public final class TechNodeDetails {
             var section = UIElement.section().addChild(TextLine.constant(LayoutStyle.AUTO, REQUIREMENTS_LABEL_TEXT));
             if (requirements.getCwuNeeded() > 0) {
                 section.addChild(cwuBar(node, player));
-                if (requirements.getEurekaItem() != null) section.addChild(eurekaRow(requirements, player));
+                if (requirements.getEureka() != null) section.addChild(eurekaRow(requirements, player));
             }
             for (var tag : sortedTags(node)) section.addChild(new ResearchTagBar(node, tag, player));
             column.addChild(section);
@@ -271,38 +272,41 @@ public final class TechNodeDetails {
     /** CWU 进度：已累计量；扫描过尤里卡物品时，加成部分画在进度后面，悬停说明加成来源。 */
     private static ProgressBar cwuBar(TechNode node, Supplier<Player> player) {
         var requirements = node.getRequirements();
-        var eurekaItem = requirements.getEurekaItem();
+        var eureka = requirements.getEureka();
         int bonus = Math.round(requirements.getEurekaProgress() * 1000);
         var bar = ProgressBar.of(LayoutStyle.AUTO, Component.translatable(CWU_LABEL), TechTreeStyle.get().cwuBarFill, () -> {
             var context = context(player.get());
             if (context == null) return ProgressBar.Progress.EMPTY;
-            boolean eureka = eurekaItem != null && context.hasScanned(eurekaItem);
-            return new ProgressBar.Progress(context.techNodeAccCWU().getOrDefault(node, 0L), requirements.getCwuNeeded(), eureka ? bonus : 0);
+            return new ProgressBar.Progress(context.techNodeAccCWU().getLong(node), requirements.getCwuNeeded(), context.hasScanned(eureka) ? bonus : 0);
         });
-        if (eurekaItem != null) {
+        if (eureka != null) {
             String percent = FormattingUtil.formatNumber2Places(requirements.getEurekaProgress() * 100f);
             bar.bindDetail(() -> {
                 var context = context(player.get());
-                return context != null && context.hasScanned(eurekaItem) ? Component.translatable(CWU_EUREKA_DESC, percent) :
-                        Component.translatable(CWU_NO_EUREKA_DESC, eurekaItem.getDisplayName(), percent);
+                return context != null && context.hasScanned(eureka) ? Component.translatable(CWU_EUREKA_DESC, percent) :
+                        Component.translatable(CWU_NO_EUREKA_DESC, eureka.getDisplayName(), percent);
             });
         }
         return bar;
     }
 
     private static UIElement eurekaRow(ResearchRequirements requirements, Supplier<Player> player) {
-        var eurekaItem = requirements.getEurekaItem();
+        var eureka = requirements.getEureka();
+        var material = eureka.material();
+        var example = material == null ? eureka.key() : DataScanningManager.getEurekaMaterialExample(material);
         String percent = FormattingUtil.formatNumber2Places(requirements.getEurekaProgress() * 100f);
-        int textWidth = TEXT_WIDTH - UISizes.SLOT_SIZE - UISizes.SECTION_GAP;
+        int textWidth = example == null ? TEXT_WIDTH : TEXT_WIDTH - UISizes.SLOT_SIZE - UISizes.SECTION_GAP;
+        var hint = material == null ? Component.translatable(EUREKA_SCAN_HINT) : eureka.getDisplayName();
         var state = Label.of(textWidth, () -> {
             var context = context(player.get());
-            return Component.translatable(context != null && context.hasScanned(eurekaItem) ? EUREKA_TRIGGERED : EUREKA_SCAN_HINT);
+            return context != null && context.hasScanned(eureka) ? Component.translatable(EUREKA_TRIGGERED) : hint;
         });
         var bonus = Component.translatable(EUREKA_BONUS, percent);
         var text = UIElement.column(LayoutStyle.AUTO).layout(l -> l.heightAuto().flex(1))
                 .addChildren(state, Label.of(textWidth, () -> bonus));
-        return UIElement.row(LayoutStyle.AUTO).layout(l -> l.heightAuto().gapAll(UISizes.SECTION_GAP).alignCenter())
-                .addChildren(new StackGrid(Collections.singletonList(eurekaItem)), text);
+        var row = UIElement.row(LayoutStyle.AUTO).layout(l -> l.heightAuto().gapAll(UISizes.SECTION_GAP).alignCenter());
+        if (example != null) row.addChild(new StackGrid(Collections.singletonList(example)));
+        return row.addChild(text);
     }
 
     // ==================== 研究点数进度条 ====================

@@ -286,12 +286,12 @@ public final class TechNodeEditorPage {
     private static @Nullable String iconExpression(State state) {
         if (!state.iconFluid.isEmpty()) {
             ResourceLocation id = RegistriesUtils.getIdLocation(state.iconFluid.getFluid());
-            if (id != null) return "RegistriesUtils.getFluid(\"" + escape(id.toString()) + "\")";
+            return "RegistriesUtils.getFluid(\"" + escape(id.toString()) + "\")";
         }
         var stack = state.icon.getStackInSlot(0);
         if (stack.isEmpty()) return null;
         ResourceLocation id = RegistriesUtils.getIdLocation(stack.getItem());
-        return id == null ? null : "RegistriesUtils.getItem(\"" + escape(id.toString()) + "\")";
+        return "RegistriesUtils.getItem(\"" + escape(id.toString()) + "\")";
     }
 
     private static void appendPrerequisites(State state, StringBuilder code, boolean kotlin, String indent, String managerId) {
@@ -333,7 +333,7 @@ public final class TechNodeEditorPage {
         if (!eureka.isEmpty()) {
             ResourceLocation id = RegistriesUtils.getIdLocation(eureka.getItem());
             if (id != null) {
-                code.append(nested).append(indent).append(".setEurekaItem(RegistriesUtils.getItem(\"").append(escape(id.toString()))
+                code.append(nested).append(indent).append(".setEureka(RegistriesUtils.getItem(\"").append(escape(id.toString()))
                         .append("\"), ").append(state.eurekaPercent / 100f).append("F)\n");
             }
         }

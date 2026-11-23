@@ -2,10 +2,13 @@ package com.gtocore.data.techtree;
 
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.techtree.TechNode;
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.machines.MultiBlockC;
+import com.gtocore.common.data.machines.MultiBlockD;
+import com.gtocore.common.data.machines.MultiBlockF;
 
-import com.gtolib.utils.RegistriesUtils;
-
+import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Carbon;
@@ -30,7 +33,7 @@ public final class NanitesNodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MATERIAL, 1024)
                             .addMaterialNeeded(ASSEMBLY, 64)
-                            .setEurekaItem(RegistriesUtils.getItem("gtceu:activated_carbon_dust"), eurekaRate1)
+                            .setEureka(GTMaterialItems.MATERIAL_ITEMS.get(TagPrefix.dust, GTMaterials.ActivatedCarbon), eurekaRate1)
                             .build())
             .tier(2)
             .build();
@@ -44,34 +47,34 @@ public final class NanitesNodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(CATALYSIS, 960)
                             .addMaterialNeeded(BIOLOGY, 35)
-                            .setEurekaItem(NANITES, GTMaterials.Copper, eurekaRate1)
+                            .setEureka(GTOItems.MACHINING_CONTROL_MODULE_MK2, eurekaRate1)
                             .build())
             .tier(2)
             .build();
 
     public static final TechNode CircuitAssemblyLineTech = BaseNodes.NanitesTree.builder("circuit_assembly_line", "蜂群电路装配", "Circuit Assembly Line Technology")
             .description("让装着纳米蜂群的机器人装配元件，流水线化生产电路板", "Let robots equipped with nanite swarms assemble components, producing circuit boards in an assembly line")
-            .icon(RegistriesUtils.getItem("gtocore:circuit_assembly_line"))
+            .icon(MultiBlockD.CIRCUIT_ASSEMBLY_LINE)
             .prerequisites(NanitesTech)
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MECHANICS, 32)
                             .addMaterialNeeded(ASSEMBLY, 96)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:precision_circuit_assembly_robot_mk1"), eurekaRate2)
+                            .setEureka(GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK1, eurekaRate2)
                             .build())
             .tier(2)
             .build();
 
     public static final TechNode NanitesMassiveProduction = BaseNodes.NanitesTree.builder("nanites_massive_production", "纳米蜂群批量复制技术", "Nanites Massive Production Technology")
             .description("以惊人的速度像水龙头一样源源不断的喷出纳米蜂群！", "Spray out nanite swarms continuously like a faucet at an amazing speed!")
-            .icon(RegistriesUtils.getItem("gtocore:swarm_core"))
+            .icon(MultiBlockF.SWARM_CORE)
             .prerequisites(NanitesTech)
             .requirements(
                     new ResearchRequirements.Builder()
                             .setCWUNeeded(4096 * 20 * 7200L)
                             .addMaterialNeeded(MATERIAL, 3840)
-                            .setEurekaItem(RegistriesUtils.getItem("gtocore:nano_forge"), eurekaRate2)
+                            .setEureka(MultiBlockD.NANO_FORGE, eurekaRate2)
                             .build())
             .tier(5)
             .build();

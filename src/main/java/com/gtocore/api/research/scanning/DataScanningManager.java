@@ -4,7 +4,9 @@ import com.gtocore.api.data.material.GTOMaterialFlags;
 import com.gtocore.api.research.ResearchPoints;
 import com.gtocore.api.research.ResearchRequirements;
 import com.gtocore.api.research.ResearchTag;
+import com.gtocore.api.research.TeamResearchContext;
 import com.gtocore.api.research.TeamResearchSavedData;
+import com.gtocore.api.research.techtree.TechNode;
 import com.gtocore.api.research.techtree.TechTreeSavedData;
 import com.gtocore.client.Message;
 import com.gtocore.common.data.GTORecipeTypes;
@@ -33,7 +35,6 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.hooks.IUnique;
 
-import com.hepdd.gtmthings.utils.TeamUtil;
 import com.suried.gtoutils.schedule.ScopeKey;
 import it.unimi.dsi.fastutil.objects.*;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +49,7 @@ public class DataScanningManager {
 
     private static final Reference2ObjectOpenCustomHashMap<AEKey, ResearchPoints> dataScanningMap = new Reference2ObjectOpenCustomHashMap<>(ResearchRequirements.AE_KEY_STRATEGY);
     private static final Reference2ObjectOpenHashMap<Material, ResearchPoints> materialDataScanningMap = new Reference2ObjectOpenHashMap<>();
+    private static final Reference2ObjectOpenHashMap<Material, AEKey> eurekaMaterialExamples = new Reference2ObjectOpenHashMap<>();
     private static final IdentityKeyObjectMap<ResearchTag, ObjectOpenCustomHashSet<AEKey>> dataScanningSources = new IdentityKeyObjectMap<>();
     private static ObjectArrayList<DataScanningEntry> dataScanningEntries = new ObjectArrayList<>();
 
@@ -63,7 +65,7 @@ public class DataScanningManager {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(points, "points");
 
-        var material = AEChemicalHelper.getMaterial(key);
+        var material = getScanningMaterial(key);
         if (material != null) {
             registerDataScanning(material, points);
             return;
@@ -100,13 +102,24 @@ public class DataScanningManager {
         return sources == null ? Collections.emptySet() : sources;
     }
 
+    @Nullable
+    public static Material getScanningMaterial(AEKey key) {
+        var material = AEChemicalHelper.getMaterial(key);
+        return material == null && key instanceof AEFluidKey fluid ? ResearchRequirements.getEurekaFluidMaterial(fluid.getFluid()) : material;
+    }
+
+    @Nullable
+    public static AEKey getEurekaMaterialExample(Material material) {
+        return eurekaMaterialExamples.get(material);
+    }
+
     public static boolean isUnscannable(AEKey key, UUID team) {
         var teamUnscanned = Unscannable.of(team);
         if (teamUnscanned != null && teamUnscanned.contains(key)) {
             return true;
         }
         long occupy = DataScanningManager.scanData(key, team, true).countBytes();
-        if (occupy <= 0 && (ResearchRequirements.getEurekaRequirements(key).isEmpty() || hasScanned(key, team))) {
+        if (occupy <= 0 && !hasPendingEureka(key, team)) {
             if (teamUnscanned != null) teamUnscanned.add(key);
             return true;
         }
@@ -134,46 +147,43 @@ public class DataScanningManager {
 
     public static ResearchPoints scanData(AEKey key, UUID team, boolean simulate) {
         var teamContext = TeamResearchSavedData.getOrCreateContext(team);
-        var mat = AEChemicalHelper.getMaterial(key);
-        boolean isMaterial = mat != null;
-        boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
+        var mat = getScanningMaterial(key);
+        boolean hasScanned = teamContext.scannedItems().contains(key) || (mat != null && teamContext.scannedMaterials().contains(mat));
         var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
         if (!simulate) {
-            if (mat != null) {
-                teamContext.addScannedMaterial(mat);
-            }
-            teamContext.addScannedItem(key);
-            if (!hasScanned) {
-                for (var node : ResearchRequirements.getEurekaRequirements(key)) {
-                    Message.sendResearchToast(team, node, false);
-                }
-            }
+            completeScan(key, mat, teamContext, team);
         }
         return scanDataRaw(key, mat, penalty);
     }
 
     public static ResearchPoints scanData(AEKey key, UUID team, long times, boolean simulate) {
         var teamContext = TeamResearchSavedData.getOrCreateContext(team);
-        var mat = AEChemicalHelper.getMaterial(key);
-        boolean isMaterial = mat != null;
-        boolean hasScanned = (isMaterial && teamContext.scannedMaterials().contains(mat)) || teamContext.scannedItems().contains(key);
+        var mat = getScanningMaterial(key);
+        boolean hasScanned = teamContext.scannedItems().contains(key) || (mat != null && teamContext.scannedMaterials().contains(mat));
         var penalty = hasScanned ? getRepeatedScanPenalty() : 1f;
         var effectiveTimes = hasScanned ? times * penalty : 1f + (times - 1) * penalty;
         if (!simulate) {
-            if (mat != null) {
-                teamContext.addScannedMaterial(mat);
-            }
-            teamContext.addScannedItem(key);
-            for (var node : ResearchRequirements.getEurekaRequirements(key)) {
-                TechTreeSavedData.unlock(team, node);
-                if (!hasScanned) Message.sendResearchToast(team, node, false);
-            }
+            completeScan(key, mat, teamContext, team);
         }
         return scanDataRaw(key, mat, effectiveTimes);
     }
 
+    private static void completeScan(AEKey key, @Nullable Material material, TeamResearchContext context, UUID team) {
+        boolean newKey = context.addScannedItem(key);
+        boolean newMaterial = material != null && context.addScannedMaterial(material);
+        finishEurekas(ResearchRequirements.getKeyEurekaRequirements(key), team, newKey);
+        if (material != null) finishEurekas(ResearchRequirements.getMaterialEurekaRequirements(material), team, newMaterial);
+    }
+
+    private static void finishEurekas(ReferenceSet<TechNode> nodes, UUID team, boolean firstScan) {
+        for (var node : nodes) {
+            TechTreeSavedData.unlock(team, node);
+            if (firstScan) Message.sendResearchToast(team, node, false);
+        }
+    }
+
     public static ResearchPoints scanDataRaw(AEKey key, float penalty) {
-        return scanDataRaw(key, AEChemicalHelper.getMaterial(key), penalty);
+        return scanDataRaw(key, getScanningMaterial(key), penalty);
     }
 
     private static ResearchPoints scanDataRaw(AEKey key, Material material, float penalty) {
@@ -205,12 +215,30 @@ public class DataScanningManager {
     }
 
     public static boolean hasScanned(AEKey entry, UUID ownerId) {
-        return TeamResearchSavedData.getOrCreateContext(TeamUtil.getTeamUUID(ownerId)).hasScanned(entry);
+        var context = TeamResearchSavedData.getOrCreateContext(ownerId);
+        return context.scannedItems().contains(entry) ||
+                (ResearchRequirements.getKeyEurekaRequirements(entry).isEmpty() && context.scannedMaterials().contains(getScanningMaterial(entry)));
+    }
+
+    public static boolean hasPendingKeyEureka(AEKey key, TeamResearchContext context) {
+        return !ResearchRequirements.getKeyEurekaRequirements(key).isEmpty() && !context.scannedItems().contains(key);
+    }
+
+    public static boolean hasPendingEureka(AEKey key, UUID team) {
+        var context = TeamResearchSavedData.getOrCreateContext(team);
+        if (hasPendingKeyEureka(key, context)) return true;
+        var material = getScanningMaterial(key);
+        return !ResearchRequirements.getMaterialEurekaRequirements(material).isEmpty() && !context.scannedMaterials().contains(material);
+    }
+
+    public static boolean isEurekaTarget(AEKey key) {
+        return !ResearchRequirements.getKeyEurekaRequirements(key).isEmpty() ||
+                !ResearchRequirements.getMaterialEurekaRequirements(getScanningMaterial(key)).isEmpty();
     }
 
     public static boolean canScanUnscanned(AEKey key) {
-        if (!ResearchRequirements.getEurekaRequirements(key).isEmpty()) return true;
-        var material = AEChemicalHelper.getMaterial(key);
+        var material = getScanningMaterial(key);
+        if (!ResearchRequirements.getKeyEurekaRequirements(key).isEmpty() || !ResearchRequirements.getMaterialEurekaRequirements(material).isEmpty()) return true;
         var points = material == null ? dataScanningMap.get(key) : materialDataScanningMap.get(material);
         if (points == null) return false;
         long bytes = 0;
@@ -236,8 +264,9 @@ public class DataScanningManager {
         BuiltInRegistries.ITEM.forEach(key -> {
             var aeKey = AEItemKey.of(key);
             if (aeKey == null) return;
-            var material = AEChemicalHelper.getMaterial(aeKey);
+            var material = getScanningMaterial(aeKey);
             if (material != null) {
+                if (!ResearchRequirements.getMaterialEurekaRequirements(material).isEmpty()) eurekaMaterialExamples.putIfAbsent(material, aeKey);
                 var points = materialDataScanningMap.get(material);
                 if (points == null) {
                     points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(key));
@@ -254,15 +283,16 @@ public class DataScanningManager {
         BuiltInRegistries.FLUID.forEach(key -> {
             var aeKey = AEFluidKey.of(key);
             if (aeKey == null) return;
-            var material = AEChemicalHelper.getMaterial(aeKey);
+            var material = getScanningMaterial(aeKey);
             if (material != null) {
+                if (!ResearchRequirements.getMaterialEurekaRequirements(material).isEmpty()) eurekaMaterialExamples.putIfAbsent(material, aeKey);
                 var points = materialDataScanningMap.get(material);
                 if (points == null) {
-                    points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(key));
+                    points = mergeGeneratedMaterialPoints(generatedMaterialPoints, material, scanDataRaw(material));
                 }
                 dataScanningEntries.add(new DataScanningEntry(aeKey, points));
             } else if (!dataScanningMap.containsKey(aeKey)) {
-                var points = scanDataRaw(key);
+                var points = scanDataRaw(ChemicalHelper.getMaterial(key));
                 if (!points.isEmpty()) {
                     dataScanningMap.put(aeKey, points);
                     dataScanningEntries.add(new DataScanningEntry(aeKey, points));
@@ -345,8 +375,7 @@ public class DataScanningManager {
         return points;
     }
 
-    private static ResearchPoints scanDataRaw(Fluid key) {
-        var mat = ChemicalHelper.getMaterial(key);
+    private static ResearchPoints scanDataRaw(@Nullable Material mat) {
         boolean isMaterial = mat != null;
         var points = new ResearchPoints();
         if (isMaterial) {

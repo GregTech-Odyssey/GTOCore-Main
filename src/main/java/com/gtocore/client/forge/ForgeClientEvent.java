@@ -171,7 +171,7 @@ public final class ForgeClientEvent {
             if (tooltips != null) event.getToolTip().addAll(tooltips);
         }
         var key = AEItemKey.of(stack);
-        if (key != null && !TeamResearchSavedData.getOrCreateContext(player).hasScanned(key) && DataScanningManager.canScanUnscanned(key)) {
+        if (key != null && !DataScanningManager.hasScanned(key, player.getUUID()) && DataScanningManager.canScanUnscanned(key)) {
             event.getToolTip().add(Component.translatable("gtocore.research.scanning_selection_tab.unscanned").withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         if (HiddenItems.isItemDeprecated(item)) {

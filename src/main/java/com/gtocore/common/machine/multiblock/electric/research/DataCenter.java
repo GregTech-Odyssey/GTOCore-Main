@@ -383,7 +383,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         var ctx = TeamResearchSavedData.getOrCreateContext(getOwnerUUID());
         var capacity = node.getRequirements().getCwuNeeded();
         var storage = ctx.techNodeAccCWU().getLong(node);
-        if (ctx.hasScanned(node.getRequirements().getEurekaItem())) {
+        if (ctx.hasScanned(node.getRequirements().getEureka())) {
             storage = (long) (storage + capacity * node.getRequirements().getEurekaProgress());
         }
         IElementHelper helper = iTooltip.getElementHelper();
@@ -427,7 +427,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         var requirements = node.getRequirements();
         if (requirements == null) return ProgressBar.Progress.EMPTY;
         var context = TeamResearchSavedData.getOrCreateContext(requester);
-        var eureka = requirements.getEurekaItem();
+        var eureka = requirements.getEureka();
         int bonus = eureka != null && context.hasScanned(eureka) ? Math.round(requirements.getEurekaProgress() * 1000) : 0;
         return new ProgressBar.Progress(context.techNodeAccCWU().getLong(node), requirements.getCwuNeeded(), bonus);
     }

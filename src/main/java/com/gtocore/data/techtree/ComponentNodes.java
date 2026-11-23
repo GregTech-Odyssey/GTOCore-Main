@@ -29,14 +29,14 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineluv = BaseNodes.ComponentTree.builder("component_in_assembly_line", "装配线基础部件", "Basic components in assembly line")
             .description("在装配线中组装基础的组件", "Assemble basic components in the assembly line")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEurekaItem(GTItems.FIELD_GENERATOR_IV, 1.0f).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 20L).setEureka(GTItems.FIELD_GENERATOR_IV, 1.0f).build())
             .icon(GTItems.FIELD_GENERATOR_LuV)
             .tier(0)
             .build();
 
     public static final TechNode ComponentInAssemblyLinezpm = BaseNodes.ComponentTree.builder("component_in_assembly_line1", "装配线进阶部件I", "Advanced components in assembly line I")
             .description("在装配线中组装更加复杂的部件", "Assemble more complex components in the assembly line")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 240L).setEurekaItem(GTItems.FIELD_GENERATOR_LuV, 1.0f).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(32 * 20 * 240L).setEureka(GTItems.FIELD_GENERATOR_LuV, 1.0f).build())
             .icon(GTItems.FIELD_GENERATOR_ZPM)
             .prerequisites(ComponentInAssemblyLineluv)
             .tier(0)
@@ -44,7 +44,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineuv = BaseNodes.ComponentTree.builder("component_in_assembly_line2", "装配线进阶部件II", "Advanced components in assembly line II")
             .description("利用三钛合金制造成更加强悍的部件", "Use trititanium alloy to manufacture even more powerful components")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1200L).setEurekaItem(GTItems.FIELD_GENERATOR_ZPM, 0.8f).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1200L).setEureka(GTItems.FIELD_GENERATOR_ZPM, 0.8f).build())
             .icon(GTItems.FIELD_GENERATOR_UV)
             .prerequisites(ComponentInAssemblyLinezpm)
             .tier(1)
@@ -52,7 +52,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineuhv = BaseNodes.ComponentTree.builder("component_in_assembly_line3", "装配线进阶部件III", "Advanced components in assembly line III")
             .description("充能下界合金的磁化与山铜为其带来了更强的动力与耐久性", "The magnetization of charged nether alloy and the addition of copper bring it stronger power and durability")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1800L).setEurekaItem(GTItems.FIELD_GENERATOR_UV, eurekaRate2).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(64 * 20 * 1800L).setEureka(GTItems.FIELD_GENERATOR_UV, eurekaRate2).build())
             .icon(GTItems.FIELD_GENERATOR_UHV)
             .prerequisites(ComponentInAssemblyLineuv)
             .tier(2)
@@ -60,7 +60,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineuev = BaseNodes.ComponentTree.builder("component_in_assembly_line4", "装配线进阶部件IV", "Advanced components in assembly line IV")
             .description("搭载了下一代末影耐造材料与技术", "Equipped with next-generation enderly durable materials and technology")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(325 * 20 * 2400L).setEurekaItem(GTItems.FIELD_GENERATOR_UHV, eurekaRate2).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(325 * 20 * 2400L).setEureka(GTItems.FIELD_GENERATOR_UHV, eurekaRate2).build())
             .icon(GTItems.FIELD_GENERATOR_UEV)
             .prerequisites(ComponentInAssemblyLineuhv)
             .tier(3)
@@ -68,7 +68,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineuiv = BaseNodes.ComponentTree.builder("component_in_assembly_line5", "装配线进阶部件V", "Advanced components in assembly line V")
             .description("制造能抗住微型黑洞的新部件", "Manufacture new components that can withstand micro black holes")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(800 * 20 * 2400L).setEurekaItem(GTItems.FIELD_GENERATOR_UEV, eurekaRate2).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(800 * 20 * 2400L).setEureka(GTItems.FIELD_GENERATOR_UEV, eurekaRate2).build())
             .icon(GTItems.FIELD_GENERATOR_UIV)
             .prerequisites(ComponentInAssemblyLineuev)
             .tier(3)
@@ -76,7 +76,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineuxv = BaseNodes.ComponentTree.builder("component_in_assembly_line6", "装配线进阶部件VI", "Advanced components in assembly line VI")
             .description("制造撕裂宇宙的新部件", "Manufacture new components that can tear the universe apart")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(2000 * 20 * 3600L).setEurekaItem(GTItems.FIELD_GENERATOR_UIV, eurekaRate2).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(2000 * 20 * 3600L).setEureka(GTItems.FIELD_GENERATOR_UIV, eurekaRate2).build())
             .icon(GTItems.FIELD_GENERATOR_UXV)
             .prerequisites(ComponentInAssemblyLineuiv)
             .tier(4)
@@ -84,7 +84,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLineopv = BaseNodes.ComponentTree.builder("component_in_assembly_line7", "装配线进阶部件VII", "Advanced components in assembly line VII")
             .description("将混沌神龙力量注入到部件中", "Inject the power of the chaotic dragon into the components")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(16000 * 20 * 4000L).setEurekaItem(GTItems.FIELD_GENERATOR_UXV, eurekaRate2).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(16000 * 20 * 4000L).setEureka(GTItems.FIELD_GENERATOR_UXV, eurekaRate2).build())
             .icon(GTItems.FIELD_GENERATOR_OpV)
             .prerequisites(ComponentInAssemblyLineuxv)
             .tier(5)
@@ -92,7 +92,7 @@ public final class ComponentNodes {
 
     public static final TechNode ComponentInAssemblyLinemax = BaseNodes.ComponentTree.builder("component_in_assembly_line8", "装配线进阶部件VIII", "Advanced components in assembly line VIII")
             .description("通过扭曲时空来驱动的永恒之马达", "The eternal motor driven by twisting space-time")
-            .requirements(new ResearchRequirements.Builder().setCWUNeeded(32000 * 20 * 4800L).setEurekaItem(GTItems.FIELD_GENERATOR_OpV, eurekaRate2).build())
+            .requirements(new ResearchRequirements.Builder().setCWUNeeded(32000 * 20 * 4800L).setEureka(GTItems.FIELD_GENERATOR_OpV, eurekaRate2).build())
             .icon(GTOItems.MAX_FIELD_GENERATOR)
             .prerequisites(ComponentInAssemblyLineopv)
             .tier(6)
@@ -124,7 +124,7 @@ public final class ComponentNodes {
 
     private static TechNode componentCasing(int tier) {
         var req = new ResearchRequirements.Builder().setCWUNeeded(1800L * ((long) tier << tier))
-                .setEurekaItem(ComponentCasings[tier - 1], eurekaProgresses[tier] - 0.1f);
+                .setEureka(ComponentCasings[tier - 1], eurekaProgresses[tier] - 0.1f);
         if (tier >= ZPM) {
             req.addMaterialNeeded(ASSEMBLY, 64L << (tier - ZPM));
         }
@@ -161,7 +161,7 @@ public final class ComponentNodes {
 
     private static TechNode energyIONode(int tier) {
         var req = new ResearchRequirements.Builder().setCWUNeeded(320L * ((long) tier << tier))
-                .setEurekaItem(GTMachines.ENERGY_INPUT_HATCH[tier - 1], eurekaProgresses[tier]);
+                .setEureka(GTMachines.ENERGY_INPUT_HATCH[tier - 1], eurekaProgresses[tier]);
         if (tier >= UV) {
             req.addMaterialNeeded(ENERGY, 32L * (tier << (tier - UV)));
         }

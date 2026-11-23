@@ -12,7 +12,6 @@ import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.machine.electric.ScannerMachine;
 
 import com.gtolib.GTOCore;
-import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.material.Material;
 import com.gregtechceu.gtceu.api.recipe.ui.RecipeSlotLayouts;
@@ -181,21 +180,30 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
             pointsByKey.put(entry.key(), normalizedPoints.computeIfAbsent(entry.points(), DataScanningEmiRecipe::positivePoints));
         }
 
-        var eurekaEntries = ResearchRequirements.getEurekaRequirementEntries();
+        var eurekaEntries = ResearchRequirements.getKeyEurekaRequirementEntries();
         var groups = new O2OOpenCacheHashMap<ScanningResult, ObjectArrayList<AEKey>>(scanningEntries.size() + eurekaEntries.size());
         var eurekaKeys = new ObjectOpenCustomHashSet<AEKey>(eurekaEntries.size(), ResearchRequirements.AE_KEY_STRATEGY);
         for (var entry : eurekaEntries) {
-            eurekaKeys.add(entry.key());
+            var key = entry.key();
+            eurekaKeys.add(key);
+            var material = DataScanningManager.getScanningMaterial(key);
+            var points = pointsByKey.get(key);
             for (var node : entry.nodes()) {
-                addScanningInput(groups, entry.key(), pointsByKey.get(entry.key()), node);
+                addScanningInput(groups, key, material, points, node);
             }
         }
 
         for (var entry : scanningEntries) {
-            if (eurekaKeys.contains(entry.key())) {
-                continue;
+            var key = entry.key();
+            var material = DataScanningManager.getScanningMaterial(key);
+            var points = pointsByKey.get(key);
+            var materialNodes = ResearchRequirements.getMaterialEurekaRequirements(material);
+            if (materialNodes.isEmpty() && !eurekaKeys.contains(key)) {
+                addScanningInput(groups, key, material, points, null);
             }
-            addScanningInput(groups, entry.key(), pointsByKey.get(entry.key()), null);
+            for (var node : materialNodes) {
+                addScanningInput(groups, key, material, points, node);
+            }
         }
 
         groups.forEach((result, keys) -> {
@@ -234,14 +242,14 @@ public final class DataScanningEmiRecipe implements EmiRecipe, EmiPageLayout.Pag
         return points;
     }
 
-    private static void addScanningInput(O2OOpenCacheHashMap<ScanningResult, ObjectArrayList<AEKey>> groups, AEKey key,
+    private static void addScanningInput(O2OOpenCacheHashMap<ScanningResult, ObjectArrayList<AEKey>> groups, AEKey key, @Nullable Material material,
                                          @Nullable ResearchPoints points, @Nullable TechNode eurekaNode) {
         // Materials share scan history across their forms, but not across different materials.
-        var result = new ScanningResult(points == null || points.isEmpty() ? null : points, AEChemicalHelper.getMaterial(key), eurekaNode);
+        var result = new ScanningResult(points == null || points.isEmpty() ? null : points, material, eurekaNode);
         groups.computeIfAbsent(result, ignored -> new ObjectArrayList<>()).add(key);
     }
 
-    private record ScanningResult(@Nullable ResearchPoints points, Material material, @Nullable TechNode eurekaNode) {}
+    private record ScanningResult(@Nullable ResearchPoints points, @Nullable Material material, @Nullable TechNode eurekaNode) {}
 
     private static List<EmiStack> createResearchOutputs(@Nullable ResearchPoints points) {
         if (points == null) {
