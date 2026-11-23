@@ -56,6 +56,9 @@ final class MonitorLang {
 
         addCNEN("gtocore.monitor.channel.eu.storage", "电网存量", "Grid Storage");
         addCNEN("gtocore.monitor.channel.eu.net", "净功率", "Net Power");
+        addCNEN("gtocore.monitor.channel.eu.input", "电网流入", "Grid Input");
+        addCNEN("gtocore.monitor.channel.eu.output", "电网流出", "Grid Output");
+        addCNEN("gtocore.monitor.value.eu.rate_usage", "%s / %s EU/t", "%s / %s EU/t");
         addCNEN("gtocore.monitor.channel.eu.tier", "电网等级", "Grid Tier");
         addCNEN("gtocore.monitor.channel.eu.topology", "电网星图", "Grid Map");
         addCNEN("gtocore.monitor.channel.eu.throughput", "净吞吐量", "Net Throughput");
@@ -232,6 +235,8 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.tip.key.place_redstone", "Shift + 右键方块", "Shift + Right-Click a Block");
         addCNEN("gtocore.monitor.channel.eu.storage.desc", "无线电网的总存量与总容量", "Total stored energy and capacity of the wireless grid");
         addCNEN("gtocore.monitor.channel.eu.net.desc", "无线电网当前每 tick 的净输入；正值表示充电，负值表示放电", "Current net input of the wireless grid per tick; positive values mean charging, negative values mean draining");
+        addCNEN("gtocore.monitor.channel.eu.input.desc", "无线电网的实时流入功率与输入上限", "Live input rate and input limit of the wireless grid");
+        addCNEN("gtocore.monitor.channel.eu.output.desc", "无线电网的实时流出功率与输出上限", "Live output rate and output limit of the wireless grid");
         addCNEN("gtocore.monitor.channel.eu.tier.desc", "本维度与整个电网的能量等级", "Energy tier of this dimension and of the whole grid");
         addCNEN("gtocore.monitor.channel.eu.topology.desc", "电网覆盖的星球及其相互连接", "Planets covered by the grid and the links between them");
         addCNEN("gtocore.monitor.channel.eu.throughput.desc", "一段时间内电网净吞吐量的变化", "Net throughput of the grid over time");
@@ -480,6 +485,16 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.source.display_builtin", "显示器内置", "Built into the display");
         addCNEN("gtocore.monitor.source.via", "%s → %s", "%s → %s");
         addCNEN("gtocore.monitor.hud.hint.move", "左键拖动：移动", "Left-drag: move it");
+        addCNEN("gtocore.monitor.hud.hint.select_area", "左键拖选空白区域。Ctrl＋单击切换选择。", "Left-drag from empty space to select panels. Ctrl-click to toggle selection.");
+        addCNEN("gtocore.monitor.hud.hint.add_area", "右键拖选空白区域，按所选尺寸添加组件。", "Right-drag from empty space to size a new panel.");
+        addCNEN("gtocore.monitor.hud.hint.group", "Ctrl＋G：组合选中的组件或解除组合。", "Ctrl+G: group or ungroup the selected panels.");
+        addCNEN("gtocore.monitor.hud.hint.group_settings", "单击打开组合设置，再单击组内组件打开其设置。拖动组合的四角可整体缩放。",
+                "Click for group settings. Click a panel again for its settings. Drag any group corner to resize.");
+        addCNEN("gtocore.monitor.hud.hint.pan", "中键拖动或 WASD：平移画布", "Middle-drag or WASD: pan the canvas");
+        addCNEN("gtocore.monitor.hud.group.no_space", "屏幕空间不足，无法组合选中的组件。", "The selected panels do not fit on the screen.");
+        addCNEN("gtocore.monitor.hud.group.settings", "组合设置", "Group Settings");
+        addCNEN("gtocore.monitor.hud.group.join_background", "合并背景", "Join Backgrounds");
+        addCNEN("gtocore.monitor.hud.group.ungroup", "解除组合", "Ungroup");
         addCNEN("gtocore.monitor.hud.no_shares", "网络数据须经玩家组件上传控件接入", "Network data comes through a Player Component Upload Control");
         addCNEN("gtocore.monitor.hud.hint.anchor", "组件按所在的屏幕九宫区域定位，窗口尺寸变化时与所贴边角的距离保持不变", "Components anchor to the screen region they sit in and keep their distance from that edge or corner when the window is resized");
         addCNEN("gtocore.monitor.hud.panel.placeholder", "操控无人机时显示", "Shown while operating a drone");

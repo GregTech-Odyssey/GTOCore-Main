@@ -66,7 +66,7 @@ public final class XaeroMinimapHud implements HudPanelClient {
         BOUNDS.setPosition(entry.left(context.screenWidth), entry.top(context.screenHeight));
         BOUNDS.setWidth(entry.width());
         BOUNDS.setHeight(entry.height());
-        if (editing) MonitorHudEditorClient.previewBounds(entry.card().id(), BOUNDS);
+        if (editing) MonitorHudEditorClient.previewBounds(entry, BOUNDS);
         int side = Math.min(BOUNDS.getWidth(), BOUNDS.getHeight());
         context.x = BOUNDS.getX() + (BOUNDS.getWidth() - side) / 2;
         context.y = BOUNDS.getY();
