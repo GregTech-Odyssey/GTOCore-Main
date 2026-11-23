@@ -490,11 +490,14 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.hud.hint.group", "Ctrl＋G：组合选中的组件或解除组合。", "Ctrl+G: group or ungroup the selected panels.");
         addCNEN("gtocore.monitor.hud.hint.group_settings", "单击打开组合设置，再单击组内组件打开其设置。拖动组合的四角可整体缩放。",
                 "Click for group settings. Click a panel again for its settings. Drag any group corner to resize.");
+        addCNEN("gtocore.monitor.hud.hint.member_resize", "拖动选中组件的任一角可单独缩放。", "Drag any corner of the selected panel to resize it.");
         addCNEN("gtocore.monitor.hud.hint.pan", "中键拖动或 WASD：平移画布", "Middle-drag or WASD: pan the canvas");
         addCNEN("gtocore.monitor.hud.group.no_space", "屏幕空间不足，无法组合选中的组件。", "The selected panels do not fit on the screen.");
         addCNEN("gtocore.monitor.hud.group.settings", "组合设置", "Group Settings");
         addCNEN("gtocore.monitor.hud.group.join_background", "合并背景", "Join Backgrounds");
         addCNEN("gtocore.monitor.hud.group.ungroup", "解除组合", "Ungroup");
+        addCNEN("gtocore.monitor.hud.member.width", "宽度（格）", "Width (cells)");
+        addCNEN("gtocore.monitor.hud.member.height", "高度（格）", "Height (cells)");
         addCNEN("gtocore.monitor.hud.no_shares", "网络数据须经玩家组件上传控件接入", "Network data comes through a Player Component Upload Control");
         addCNEN("gtocore.monitor.hud.hint.anchor", "组件按所在的屏幕九宫区域定位，窗口尺寸变化时与所贴边角的距离保持不变", "Components anchor to the screen region they sit in and keep their distance from that edge or corner when the window is resized");
         addCNEN("gtocore.monitor.hud.panel.placeholder", "操控无人机时显示", "Shown while operating a drone");
