@@ -7,8 +7,6 @@ import com.gtocore.common.data.machines.MultiBlockC;
 import com.gtocore.common.data.machines.MultiBlockD;
 import com.gtocore.common.data.machines.MultiBlockF;
 
-import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
-import com.gregtechceu.gtceu.common.data.GTMaterialItems;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
 import static com.gregtechceu.gtceu.common.data.GTMaterials.Carbon;
@@ -33,7 +31,7 @@ public final class NanitesNodes {
                             .setCWUNeeded(64 * 20 * 1200L)
                             .addMaterialNeeded(MATERIAL, 1024)
                             .addMaterialNeeded(ASSEMBLY, 64)
-                            .setEureka(GTMaterialItems.MATERIAL_ITEMS.get(TagPrefix.dust, GTMaterials.ActivatedCarbon), eurekaRate1)
+                            .setEureka(GTMaterials.ActivatedCarbon, eurekaRate1)
                             .build())
             .tier(2)
             .build();
