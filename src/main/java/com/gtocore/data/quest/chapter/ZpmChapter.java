@@ -21,6 +21,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -42,8 +43,7 @@ public final class ZpmChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("zpm", c -> c
             .title("10. 零点压(ZPM)")
             .subtitle("Tier7-ZPM")
-            .icon(MultiBlockD.NANO_FORGE)
-            .hideQuestsUntilDepsVisible());
+            .icon(MultiBlockD.NANO_FORGE));
 
     public static final Quest MEAT_DUST = CHAPTER.quest("meat_dust", q -> q
             .at(-4, -2)
@@ -100,6 +100,8 @@ public final class ZpmChapter {
 
     public static final Quest WELCOME_TO_THE_ZERO_PRESSURE_PHASE = CHAPTER.quest("welcome_to_the_zero_pressure_phase", q -> q
             .at(-9, -4)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{零点压}阶段", RED)
             .subtitle("{你需要天马行空般的想象力}", RED)
             .desc(d -> d
@@ -113,13 +115,15 @@ public final class ZpmChapter {
             .task(Task.item(GTMachines.HULL[GTValues.ZPM]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(LuvChapter.NAQUADAH_ALLOY_INGOT));
+            .dependsOn(LuvChapter.NAQUADAH_ALLOY_INGOT)
+            .mainNode());
 
     public static final Quest ZPM_FUSION_REACTOR = CHAPTER.quest("zpm_fusion_reactor", q -> q
             .at(-2, -4)
             .subtitle("金粉甜甜圈")
             .task(Task.item(GTMultiMachines.FUSION_REACTOR[GTValues.ZPM]))
-            .dependsOn(ZPM_ENERGY_INPUT_HATCH, LuvChapter.CRYSTAL_PROCESSOR_MAINFRAME, WELCOME_TO_THE_ZERO_PRESSURE_PHASE));
+            .dependsOn(ZPM_ENERGY_INPUT_HATCH, LuvChapter.CRYSTAL_PROCESSOR_MAINFRAME)
+            .mainNode());
 
     public static final Quest TRITANIUM_INGOT = CHAPTER.quest("tritanium_ingot", q -> q
             .at(-2, -2)
@@ -135,7 +139,8 @@ public final class ZpmChapter {
     public static final Quest TRITANIUM_COIL_BLOCK = CHAPTER.quest("tritanium_coil_block", q -> q
             .at(0, -2)
             .task(Task.item(GTBlocks.COIL_TRITANIUM))
-            .dependsOn(TRITANIUM_INGOT));
+            .dependsOn(TRITANIUM_INGOT)
+            .mainNode());
 
     public static final Quest ENRICHED_NAQUADAH_TRINIUM_EUROPIUM_DURANIDE_INGOT = CHAPTER.quest("enriched_naquadah_trinium_europium_duranide_ingot", q -> q
             .at(2, -2)
@@ -168,7 +173,8 @@ public final class ZpmChapter {
             .at(-11, -2)
             .desc(d -> d.line("尽管你可能没有做过小型的，但我依然建议你直接做大型的"))
             .task(Task.item(MultiBlockD.LARGE_INCUBATOR))
-            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE));
+            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
+            .hideDependentLines());
 
     public static final Quest RADIATION_HATCH = CHAPTER.quest("radiation_hatch", q -> q
             .at(-11, -4)
@@ -224,7 +230,8 @@ public final class ZpmChapter {
             .icon(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_7_ROCKET.get())
             .desc(d -> d.line("只需要{T3}器官", AQUA))
             .task(Task.item(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_7_ROCKET.get()), Task.item(GTOMaterials.StellarEnergyRocketFuel.getBucket()))
-            .dependsOn(DATA_MODULE));
+            .dependsOn(DATA_MODULE)
+            .mainNode());
 
     public static final Quest MODULAR_CONFIGURATION_MAINTENANCE_HATCH = CHAPTER.quest("modular_configuration_maintenance_hatch", q -> q
             .at(-11, -6)
@@ -352,8 +359,7 @@ public final class ZpmChapter {
                     Task.checkmark(),
                     Task.item(GTMaterials.Bacteria.getBucket()).optional(),
                     Task.item(GTOMaterials.RapidlyReplicatingAnimalCells.getBucket()).optional())
-            .dependsOn(I_NEED_DNA_3, LARGE_INCUBATOR, Q_6742F9E1)
-            .hideDependencyLines());
+            .dependsOn(I_NEED_DNA_3, LARGE_INCUBATOR, Q_6742F9E1));
 
     public static final Quest PLURIPOTENCY_INDUCTION_GENE_THERAPY_FLUID_BUCKET = CHAPTER.quest("pluripotency_induction_gene_therapy_fluid_bucket", q -> q
             .at(-4, 4)
@@ -381,6 +387,7 @@ public final class ZpmChapter {
 
     public static final Quest STEM_CELLS = CHAPTER.quest("stem_cells", q -> q
             .at(-2, 6)
+            .title("干细胞")
             .subtitle("生命自此繁衍")
             .desc(d -> d
                     .line("终于！现在你可以走向{湿件}处理器了！", DARK_RED)
@@ -393,7 +400,8 @@ public final class ZpmChapter {
     public static final Quest NEURO_PROCESSING_UNIT = CHAPTER.quest("neuro_processing_unit", q -> q
             .at(0, 8)
             .task(Task.item(GTItems.NEURO_PROCESSOR))
-            .dependsOn(STEM_CELLS, WETWARE_PRINTED_CIRCUIT_BOARD));
+            .dependsOn(STEM_CELLS, WETWARE_PRINTED_CIRCUIT_BOARD)
+            .mainNode());
 
     public static final Quest WETWARE_PROCESSOR = CHAPTER.quest("wetware_processor", q -> q
             .at(-2, 8)
@@ -422,11 +430,12 @@ public final class ZpmChapter {
     public static final Quest SUPER_PARTICLE_COLLIDER = CHAPTER.quest("super_particle_collider", q -> q
             .at(4, 2)
             .task(Task.item(MultiBlockF.SUPER_PARTICLE_COLLIDER))
-            .dependsOn(NUCLEAR_WASTE_BROTHERS, LAFIUM_INGOT, DECAY_HASTENER)
-            .hideDependentLines());
+            .dependsOn(NUCLEAR_WASTE_BROTHERS, LAFIUM_INGOT, DECAY_HASTENER));
 
     public static final Quest WETWARE_PROCESSOR_MAINFRAME = CHAPTER.quest("wetware_processor_mainframe", q -> q
             .at(-9, 8)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{湿件处理器主机}", DARK_RED)
             .subtitle("千载独步，惟公一人")
             .desc(d -> d
@@ -434,7 +443,8 @@ public final class ZpmChapter {
                     .line()
                     .line("不过最难的路已经走完了"))
             .task(Task.item(GTItems.WETWARE_MAINFRAME_UHV))
-            .dependsOn(WETWARE_PROCESSOR_SUPERCOMPUTER, NETWORK_SWITCH, SUPER_PARTICLE_COLLIDER));
+            .dependsOn(WETWARE_PROCESSOR_SUPERCOMPUTER, NETWORK_SWITCH)
+            .mainNode());
 
     public static final Quest ADVANCED_ASSEMBLY_LINE = CHAPTER.quest("advanced_assembly_line", q -> q
             .at(-11, 8)
@@ -514,7 +524,7 @@ public final class ZpmChapter {
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(AeChapter.SUPER_MOLECULAR_ASSEMBLER, -9, -6))
-                .link(QuestLink.of(UvChapter.WELCOME_TO_THE_EXTREME_PRESSURE_STAGE, 6, -4))
+                .link(QuestLink.of(UvChapter.WELCOME_TO_THE_EXTREME_PRESSURE_STAGE, 6, -4).mainNode())
                 .link(QuestLink.of(BeyondTheStarsChapter.SPACE_ADVANCED_QUARKTECH_CHESTPLATE, 2, 8))
                 .link(QuestLink.of(LuvChapter.RESEARCH_STATION, -6.5, -4)));
     }

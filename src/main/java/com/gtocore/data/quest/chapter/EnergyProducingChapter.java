@@ -6,5 +6,6 @@ public final class EnergyProducingChapter {
 
     public static final QuestChapter CHAPTER = QuestChapter.of("energy_producing", c -> c
             .title("能源")
-            .subtitle("Energy Producing"));
+            .subtitle("Energy Producing")
+            .alwaysInvisible());
 }

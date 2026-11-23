@@ -20,6 +20,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -37,8 +38,7 @@ public final class UvChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("uv", c -> c
             .title("11. 极限压(UV)")
             .subtitle("Tier8-UV")
-            .icon(MultiBlockD.SPACE_ELEVATOR)
-            .hideQuestsUntilDepsVisible());
+            .icon(MultiBlockD.SPACE_ELEVATOR));
 
     public static final Quest TELLURATE_CERAMICS_FLAKE = CHAPTER.quest("tellurate_ceramics_flake", q -> q
             .at(11, 14.5)
@@ -106,10 +106,12 @@ public final class UvChapter {
                     .line()
                     .line("机器每次{拿出或放入}蜂群都会重新触发结构检测", YELLOW))
             .task(Task.item(MultiBlockD.NANO_FORGE))
-            .dependsOn(CARBON_NANITES));
+            .dependsOn(CARBON_NANITES)
+            .mainNode());
 
     public static final Quest NANITES_INTEGRATED_PROCESSING_CENTER = CHAPTER.quest("nanites_integrated_processing_center", q -> q
             .at(-5, 13)
+            .preset(QuestPreset.IMPORTANT)
             .desc(d -> d
                     .line("{纳米蜂群}{的问世和量产推动了}{格雷科技有限公司}{的}{第一次技术革命}{。老旧复杂的生产线被彻底改造，取而代之的是一体化的蜂群生产车间——无数的纳米蜂群从原子层面上对物质进行拆分和组合，}{一步完成整个生产过程}", GOLD.italic(), ITALIC, DARK_AQUA.italic(), ITALIC, YELLOW.italic(), ITALIC, YELLOW.italic())
                     .line()
@@ -183,6 +185,8 @@ public final class UvChapter {
 
     public static final Quest WELCOME_TO_THE_EXTREME_PRESSURE_STAGE = CHAPTER.quest("welcome_to_the_extreme_pressure_stage", q -> q
             .at(-5, 1.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{极限压}阶段", DARK_AQUA)
             .subtitle("{你需要天马行空般的想象力}", DARK_AQUA)
             .desc(d -> d
@@ -195,7 +199,8 @@ public final class UvChapter {
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
             .dependsOn(ZpmChapter.DARMSTADTIUM_INGOT)
-            .hideDependencyLines(false));
+            .hideDependencyLines(false)
+            .mainNode());
 
     public static final Quest UV_ENERGY_INPUT_HATCH = CHAPTER.quest("uv_energy_input_hatch", q -> q
             .at(-2, 1.5)
@@ -206,7 +211,8 @@ public final class UvChapter {
             .at(1, 1.5)
             .subtitle("芥末甜甜圈")
             .task(Task.item(GTMultiMachines.FUSION_REACTOR[GTValues.UV]))
-            .dependsOn(UV_ENERGY_INPUT_HATCH, ZpmChapter.WETWARE_PROCESSOR_MAINFRAME));
+            .dependsOn(UV_ENERGY_INPUT_HATCH, ZpmChapter.WETWARE_PROCESSOR_MAINFRAME)
+            .mainNode());
 
     public static final Quest AMPROSIUM_INGOT = CHAPTER.quest("amprosium_ingot", q -> q
             .at(5, 1.5)
@@ -302,6 +308,7 @@ public final class UvChapter {
 
     public static final Quest BUFFERING_HATCH = CHAPTER.quest("buffering_hatch", q -> q
             .at(11, 3.5)
+            .nodeScale(1.25)
             .icon(GTOMachines.OVERCLOCK_HATCH[GTValues.UV])
             .title("增益仓")
             .subtitle("{产能至上！}", DARK_AQUA)
@@ -335,7 +342,7 @@ public final class UvChapter {
             .subtitle("布满了脑细胞")
             .desc(d -> d.line("更便宜的制作{湿件处理器}的原材料", GOLD))
             .task(Task.item(GTOItems.WETWARE_SOC))
-            .dependsOn(HIGHLY_ADVANCED_SOC, CEREBRUM)
+            .dependsOn(CEREBRUM)
             .hideDependencyLines());
 
     public static final Quest SUPERCOMPUTING_CENTER = CHAPTER.quest("supercomputing_center", q -> q
@@ -381,7 +388,8 @@ public final class UvChapter {
                     .line()
                     .line("{电梯的配方中有两组碳纳米蜂群的需求，如果还用装配线做显然太贵了，因此我将纳米锻炉设为了前置。}", GRAY.italic()))
             .task(Task.item(MultiBlockD.SPACE_ELEVATOR))
-            .dependsOn(ZpmChapter.WETWARE_PROCESSOR_MAINFRAME, NANO_FORGE, NANOTUBE_SPOOL));
+            .dependsOn(ZpmChapter.WETWARE_PROCESSOR_MAINFRAME, NANO_FORGE, NANOTUBE_SPOOL)
+            .mainNode());
 
     public static final Quest ASSEMBLER_MODULE = CHAPTER.quest("assembler_module", q -> q
             .at(-3, 6.5)
@@ -431,7 +439,8 @@ public final class UvChapter {
             .subtitle("天仓五 - 新的生命")
             .desc(d -> d.line("你需要使用重力控制仓达到强重力环境"))
             .task(Task.item(GTOItems.TCETIESEAWEEDEXTRACT))
-            .dependsOn(ALIEN_ALGAE_SLAG_ORE, SPACE_DRONE_MK1, UNKNOWWATER_BUCKET, MITHRIL_INGOT, GRAVITY_HATCH));
+            .dependsOn(ALIEN_ALGAE_SLAG_ORE, SPACE_DRONE_MK1, UNKNOWWATER_BUCKET, MITHRIL_INGOT, GRAVITY_HATCH)
+            .mainNode());
 
     public static final Quest ABYSSALALLOY_INGOT = CHAPTER.quest("abyssalalloy_ingot", q -> q
             .at(-3, 3.5)
@@ -496,7 +505,8 @@ public final class UvChapter {
     public static final Quest BIOWARE_PROCESSING_CORE = CHAPTER.quest("bioware_processing_core", q -> q
             .at(5, 10.5)
             .task(Task.item(GTOItems.BIOWARE_PROCESSING_CORE))
-            .dependsOn(BIOWARE_PRINTED_CIRCUIT_BOARD, SMD_CAPACITOR_BIOWARE, BIOWARE_CHIP));
+            .dependsOn(BIOWARE_PRINTED_CIRCUIT_BOARD, SMD_CAPACITOR_BIOWARE, BIOWARE_CHIP)
+            .mainNode());
 
     public static final Quest MUTATED_LIVING_SOLDER_BUCKET = CHAPTER.quest("mutated_living_solder_bucket", q -> q
             .at(7, 12.5)
@@ -525,14 +535,20 @@ public final class UvChapter {
 
     public static final Quest BIOACTIVITY_PROCESSOR_CONTROLLER = CHAPTER.quest("bioactivity_processor_controller", q -> q
             .at(9, 6)
+            .preset(QuestPreset.END)
+            .nodeScale(2)
             .title("{生}{物}{活}{性}{处}{理}{器}{主}{机}", DARK_GREEN, GREEN, DARK_GREEN, GREEN, DARK_GREEN, GREEN, DARK_GREEN, GREEN, DARK_GREEN)
             .subtitle("你已掌握微生物的法则")
             .desc(d -> d.line("恭喜！生物线完成！看看你的培养缸，然后外出休息一下吧！"))
             .task(Task.item(GTOItems.BIOWARE_MAINFRAME))
-            .dependsOn(BIOACTIVITYPROCESSORSUPERCOMPUTER));
+            .dependsOn(BIOACTIVITYPROCESSORSUPERCOMPUTER)
+            .mainNode());
 
     public static final Quest SUPER_BLAST_SMELTER = CHAPTER.quest("super_blast_smelter", q -> q
             .at(9, 3.5)
+            .nodeFill(0xB4453F)
+            .preset(QuestPreset.IMPORTANT)
+            .nodeScale(1.6)
             .subtitle("超大杯")
             .desc(d -> d
                     .line("这台机器标志着你正式进入巨构时代，所有的{增益仓}都已经为你开放！", GOLD)
@@ -558,6 +574,7 @@ public final class UvChapter {
 
     public static final Quest CHEMICAL_COMPLEX = CHAPTER.quest("chemical_complex", q -> q
             .at(11, 7)
+            .nodeFill(0xB4453F)
             .task(Task.item(MultiBlockA.CHEMICAL_COMPLEX))
             .dependsOn(BIOACTIVITY_PROCESSOR_CONTROLLER));
 
@@ -571,9 +588,10 @@ public final class UvChapter {
                 .link(QuestLink.of(AeChapter.ME_CATALYST_PATTERN_BUFFER, 5, 5))
                 .link(QuestLink.of(AeChapter.ME_EXTEND_PATTERN_BUFFER, -5, -0.5))
                 .link(QuestLink.of(SpaceStationChapter.ORBITAL_FINE_MATERIALS_FACTORY, -6.5, 5))
-                .link(QuestLink.of(UhvChapter.WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, 11, 1.5))
+                .link(QuestLink.of(UhvChapter.WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, 11, 1.5).mainNode())
                 .link(QuestLink.of(BeyondTheStarsChapter.TRANSCEND_THE_FLESH_BIRTH_OF_A, -4, 4))
                 .link(QuestLink.of(SpaceStationChapter.SPACE_STATION_ENVIRONMENTAL_MAINTENANCE_MODULE, -7.5, 5))
-                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, -7, 3.5)));
+                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, -7, 3.5).mainNode())
+                .line(CEREBRUM, WETWARE_SOC));
     }
 }

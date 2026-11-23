@@ -171,6 +171,7 @@ public final class UtilChapter {
 
     public static final Quest INSCRIBER_EASY = CHAPTER.quest("inscriber_easy", q -> q
             .at(-5.5, 2)
+            .nodeScale(1)
             .title("压印器{（简单）}", GREEN)
             .desc(d -> d.line("使用压印器压印AE电路板"))
             .task(Task.item(AEBlocks.INSCRIBER))

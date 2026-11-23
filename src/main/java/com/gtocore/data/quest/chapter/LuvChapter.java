@@ -18,6 +18,8 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -39,14 +41,14 @@ public final class LuvChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("luv", c -> c
             .title("9. 剧差压(LuV)")
             .subtitle("Tier6-LuV")
-            .icon(GTMultiMachines.FUSION_REACTOR[GTValues.LuV])
-            .hideQuestsUntilDepsVisible());
+            .icon(GTMultiMachines.FUSION_REACTOR[GTValues.LuV]));
 
     public static final Quest NAQUADAH_INGOT = CHAPTER.quest("naquadah_ingot", q -> q
             .at(3.5, -3.5)
             .desc(d -> d.line("搅拌低纯硅岩乳液"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.Naquadah))
-            .dependsOn(IvChapter.QUAKE_ORE_VEIN));
+            .dependsOn(IvChapter.QUAKE_ORE_VEIN)
+            .mainNode());
 
     public static final Quest ENRICHED_NAQUADAH_INGOT = CHAPTER.quest("enriched_naquadah_ingot", q -> q
             .at(5, -1)
@@ -114,6 +116,8 @@ public final class LuvChapter {
 
     public static final Quest WELCOME_TO_THE_DRAMA_PRESSURE_STAGE = CHAPTER.quest("welcome_to_the_drama_pressure_stage", q -> q
             .at(1.5, -6.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{剧差压}阶段", LIGHT_PURPLE)
             .subtitle("{你需要天马行空般的想象力}", LIGHT_PURPLE)
             .desc(d -> d
@@ -125,7 +129,8 @@ public final class LuvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.LuV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(IvChapter.RHODIUM_PLATED_PALLADIUM_INGOT, IvChapter.POLYPHENYLENE_SULFIDE_FOIL));
+            .dependsOn(IvChapter.RHODIUM_PLATED_PALLADIUM_INGOT, IvChapter.POLYPHENYLENE_SULFIDE_FOIL)
+            .mainNode());
 
     public static final Quest POLYURETHANERESIN_BUCKET = CHAPTER.quest("polyurethaneresin_bucket", q -> q
             .at(25.5, -5.5)
@@ -168,7 +173,8 @@ public final class LuvChapter {
                     .line()
                     .line("数据库可以放很多{数据访问仓}，并通过{光学数据仓}给装配线提供数据！", GOLD, GOLD))
             .task(Task.item(GTResearchMachines.DATA_BANK))
-            .dependsOn(NORMAL_OPTICAL_PIPE, EvChapter.DATA_ORB, INDIUM_TIN_BARIUM_TITANIUM_CUPRATE_INGOT));
+            .dependsOn(NORMAL_OPTICAL_PIPE, EvChapter.DATA_ORB, INDIUM_TIN_BARIUM_TITANIUM_CUPRATE_INGOT)
+            .mainNode());
 
     public static final Quest OPTICAL_DATA_HATCH = CHAPTER.quest("optical_data_hatch", q -> q
             .at(11, 3.5)
@@ -200,7 +206,8 @@ public final class LuvChapter {
             .at(6, 0.5)
             .desc(d -> d.line("硫化凯金粉高温反应"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.Trinium))
-            .dependsOn(NEUTRON_ACTIVATOR, NAQUADAH_COIL_BLOCK, ENRICHED_NAQUADAH_INGOT));
+            .dependsOn(NEUTRON_ACTIVATOR, NAQUADAH_COIL_BLOCK, ENRICHED_NAQUADAH_INGOT)
+            .mainNode());
 
     public static final Quest NAQUADAH_ALLOY_INGOT = CHAPTER.quest("naquadah_alloy_ingot", q -> q
             .at(13.25, 0.5)
@@ -252,10 +259,12 @@ public final class LuvChapter {
                     .line()
                     .line("{不过这也意味着有些事情变难了……}", GRAY))
             .task(Task.item(GTMachines.ENERGY_INPUT_HATCH[GTValues.LuV]))
-            .dependsOn(IvChapter.ASSEMBLY_LINE, LUV_ASSEMBLER));
+            .dependsOn(IvChapter.ASSEMBLY_LINE, LUV_ASSEMBLER)
+            .mainNode());
 
     public static final Quest LUV_FUSION_REACTOR = CHAPTER.quest("luv_fusion_reactor", q -> q
             .at(11.5, -3.5)
+            .nodeScale(2)
             .subtitle("最初的甜甜圈")
             .desc(d -> d
                     .line("{聚变机械方块}对于现在来说实在是太贵了！最节省的方案是：1个{主机}，48个{聚变机械方块}，31个{聚变玻璃}，4个{超导线圈方块}，16个{输入仓}，16个{输出仓}，16个{能源仓}，{上下堆叠}可以节省大量机械方块！（在EMI多方块预览界面中点击P即可切换带有玻璃的形态）", GOLD, AQUA, AQUA, AQUA, AQUA, AQUA, AQUA, AQUA, GREEN)
@@ -265,7 +274,8 @@ public final class LuvChapter {
                     .line("{温馨小提示：你可以通过标记输出仓的过滤来保证只有一个仓会输出流体！}", GRAY.italic()))
             .task(Task.item(GTMultiMachines.FUSION_REACTOR[GTValues.LuV]))
             .dependsOn(UHPIC_CHIP, FUSION_CASING, LUV_ENERGY_INPUT_HATCH)
-            .hideDependencyLines(false));
+            .hideDependencyLines(false)
+            .mainNode());
 
     public static final Quest EUROPIUM_INGOT = CHAPTER.quest("europium_ingot", q -> q
             .at(14, -3.5)
@@ -286,7 +296,8 @@ public final class LuvChapter {
                     .line()
                     .line("想要完成这个任务，你必须先上到{ZPM}章节解锁{精英组装机 III}", ZPM, GOLD))
             .task(Task.item(GTBlocks.COIL_TRINIUM))
-            .dependsOn(ZpmChapter.ZPM_ASSEMBLER, ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE, EUROPIUM_INGOT));
+            .dependsOn(ZpmChapter.ZPM_ASSEMBLER, ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE, EUROPIUM_INGOT)
+            .mainNode());
 
     public static final Quest URANIUM_RHODIUM_DINAQUADIDE_INGOT = CHAPTER.quest("uranium_rhodium_dinaquadide_ingot", q -> q
             .at(15.5, 0.5)
@@ -350,7 +361,8 @@ public final class LuvChapter {
                     .line()
                     .line("{如果不成型看看支架的方向}", GRAY.italic()))
             .task(Task.item(GTResearchMachines.RESEARCH_STATION), Task.item(GTResearchMachines.OBJECT_HOLDER))
-            .dependsOn(HIGH_PERFORMANCE_COMPUTATION_ARRAY, DATA_BANK, URANIUM_RHODIUM_DINAQUADIDE_INGOT));
+            .dependsOn(HIGH_PERFORMANCE_COMPUTATION_ARRAY, DATA_BANK, URANIUM_RHODIUM_DINAQUADIDE_INGOT, ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
+            .mainNode());
 
     public static final Quest COMPUTATIONAL_DATA_HATCH = CHAPTER.quest("computational_data_hatch", q -> q
             .at(17, 3.5)
@@ -395,11 +407,14 @@ public final class LuvChapter {
 
     public static final Quest CRYSTAL_PROCESSOR_MAINFRAME = CHAPTER.quest("crystal_processor_mainframe", q -> q
             .at(20.5, 2.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{晶体处理器主机}", BLUE)
             .subtitle("第一个UV级电路")
             .desc(d -> d.line("晶体系列是你至今最便宜的电路之一"))
             .task(Task.item(GTItems.CRYSTAL_MAINFRAME_UV))
-            .dependsOn(CRYSTAL_PROCESSOR_SUPERCOMPUTER, RESEARCH_STATION));
+            .dependsOn(CRYSTAL_PROCESSOR_SUPERCOMPUTER, RESEARCH_STATION)
+            .mainNode());
 
     public static final Quest LARGE_CRYSTALLIZATION_CHAMBER = CHAPTER.quest("large_crystallization_chamber", q -> q
             .at(22, 1)
@@ -421,6 +436,7 @@ public final class LuvChapter {
 
     public static final Quest SUPERCRITICAL_MEGA_STEAM_TURBINE = CHAPTER.quest("supercritical_mega_steam_turbine", q -> q
             .at(19, 1)
+            .subtitle("人类科技的尽头是烧开水")
             .task(Task.item(GeneratorMultiblock.SUPERCRITICAL_MEGA_STEAM_TURBINE))
             .dependsOn(CRYSTAL_PROCESSOR_MAINFRAME)
             .optional());
@@ -447,7 +463,8 @@ public final class LuvChapter {
                     .line()
                     .line("你可以在解锁的三个星球上，用流体钻机钻取大量需求的{气态氟}和{气态氯}等流体，一劳永逸！", GOLD, GOLD))
             .task(Task.item(net.celsiusqc.ad_astra_rocketed.common.registry.ModItems.TIER_6_ROCKET.get()), Task.item(ModItems.CRYO_FUEL_BUCKET.get()))
-            .dependsOn(INDIUM_TIN_BARIUM_TITANIUM_CUPRATE_INGOT, CALORITE_INGOT));
+            .dependsOn(INDIUM_TIN_BARIUM_TITANIUM_CUPRATE_INGOT, CALORITE_INGOT)
+            .mainNode());
 
     public static final Quest HPCA_ADVANCED_COMPUTATION_COMPONENT = CHAPTER.quest("hpca_advanced_computation_component", q -> q
             .at(23.5, 2.5)
@@ -473,6 +490,9 @@ public final class LuvChapter {
 
     public static final Quest LUV_KUANGBIAO_ONE_GIANT_NUCLEAR_FUSION_REACTOR = CHAPTER.quest("luv_kuangbiao_one_giant_nuclear_fusion_reactor", q -> q
             .at(28, 4.5)
+            .shape(QuestShape.HEXAGON)
+            .nodeScale(2)
+            .nodeFill(0xB4453F)
             .desc(d -> d
                     .line("并行版本的超强聚变堆！")
                     .line()
@@ -535,6 +555,7 @@ public final class LuvChapter {
 
     public static final Quest MAGNETIC_RESONANCE_CIRCUIT_SERIES = CHAPTER.quest("magnetic_resonance_circuit_series", q -> q
             .at(29.75, -3.5)
+            .preset(QuestPreset.IMPORTANT)
             .title("磁共振电路系列")
             .subtitle("性价比之王！")
             .desc(d -> d
@@ -583,6 +604,8 @@ public final class LuvChapter {
                     .line("如采纳，我们将会把您一并加入co-author"))
             .task(Task.checkmark()));
 
+    public static final QuestLink ME_WILDCARD_PATTERN_BUFFER_COPY_1 = CHAPTER.copy(UtilChapter.ME_WILDCARD_PATTERN_BUFFER, 25.5, 0.5);
+
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(AeChapter.ME_PATTERN_BUFFER, 15, -5))
@@ -591,12 +614,12 @@ public final class LuvChapter {
                 .link(QuestLink.of(AeChapter.ME_EXPORT_BUFFER, 7.5, -8))
                 .link(QuestLink.of(AeChapter.SPRAY_CAN, 14, -6))
                 .link(QuestLink.of(Magic2Chapter.MANA_AMPLIFIER_HATCH, 2, 4))
-                .link(QuestLink.of(ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE, 13.25, -1.5))
+                .link(QuestLink.of(ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE, 13.25, -1.5).mainNode())
                 .link(QuestLink.of(IvChapter.QUAKE_ORE_VEIN, 1.5, -3.5))
                 .link(QuestLink.of(ZpmChapter.ASTATINE_DUST, 23.5, -3.5))
                 .link(QuestLink.of(Magic2Chapter.ELVEN_TRADE, 18.5, -5))
                 .link(QuestLink.of(IvChapter.FISSION_REACTOR, 7, -2.5))
                 .link(QuestLink.of(AeChapter.ME_MUFFLER_HATCH, 3.5, 5.5))
-                .link(QuestLink.of(UtilChapter.ME_WILDCARD_PATTERN_BUFFER, 25.5, 0.5)));
+                .line(HPCA_ADVANCED_COMPUTATION_COMPONENT, ME_WILDCARD_PATTERN_BUFFER_COPY_1));
     }
 }

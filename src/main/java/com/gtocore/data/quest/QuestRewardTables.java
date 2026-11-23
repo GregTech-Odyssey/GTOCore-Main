@@ -107,11 +107,11 @@ public final class QuestRewardTables {
     public static final RewardTable ULV_2 = RewardTable.of("ulv_2", t -> t
             .title("ULV摇奖")
             .icon(BotaniaItems.dice)
-            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16), 60)
-            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32), 34)
-            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64), 5)
-            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 640L), 0)
-            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 6400L), 0));
+            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16), 600)
+            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32), 340)
+            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64), 58)
+            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 640L), 1)
+            .entry(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 6400L), 1));
 
     public static final RewardTable ULV_3 = RewardTable.of("ulv_3", t -> t
             .title("ULV矿石补给包")

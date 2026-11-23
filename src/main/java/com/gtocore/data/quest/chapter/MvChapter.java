@@ -16,6 +16,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -40,7 +41,6 @@ public final class MvChapter {
             .title("5. 中压(MV)")
             .subtitle("Tier2-MV")
             .icon(MultiBlockD.PROCESSING_PLANT)
-            .hideQuestsUntilDepsVisible()
             .autofocus(MvChapter.WELCOME_TO_THE_MEDIUM_VOLTAGE_STAGE));
 
     public static final Quest POLYVINYL_CHLORIDE_BUCKET = CHAPTER.quest("polyvinyl_chloride_bucket", q -> q
@@ -58,6 +58,8 @@ public final class MvChapter {
 
     public static final Quest WELCOME_TO_THE_MEDIUM_VOLTAGE_STAGE = CHAPTER.quest("welcome_to_the_medium_voltage_stage", q -> q
             .at(-13, 3)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{中压}阶段", AQUA)
             .subtitle("{你需要天马行空般的想象力}", AQUA)
             .desc(d -> d
@@ -71,17 +73,19 @@ public final class MvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.MV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(LvChapter.ALUMINIUM_INGOT));
+            .dependsOn(LvChapter.ALUMINIUM_INGOT, LvChapter.YOUR_SECOND_CABLE)
+            .mainNode());
 
     public static final Quest ALUMINIUM_HYDROXIDE_DUST = CHAPTER.quest("aluminium_hydroxide_dust", q -> q
             .at(-3, -4.5)
+            .title("氢氧化铝粉")
             .desc(d -> d
                     .line("陶瓷材料，是用天然或合成化合物经过成形和高温烧结制成的一类无机非金属材料。具有高熔点、高硬度、高耐磨性、耐氧化等优点。")
                     .line()
                     .line("在现阶段，它能作为不错的{集成电路基板}为我们所用", YELLOW)
                     .line()
                     .line("为了烧制一炉最简单的{氧化铝陶瓷}，你需要制备一些{氢氧化铝粉}，不过仅仅一炉是不够你发展太远的，你应该尽早搭建起{陶瓷产线}", YELLOW, GOLD, YELLOW))
-            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminiumHydroxide, 70L))
+            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminiumHydroxide, 1))
             .dependsOn(WELCOME_TO_THE_MEDIUM_VOLTAGE_STAGE)
             .hideDependencyLines());
 
@@ -246,7 +250,8 @@ public final class MvChapter {
                     .line()
                     .line("它们能够{大幅节省你的零件造价}、{生产大量资源}或{提供极高的生产速度}！", YELLOW, YELLOW, YELLOW))
             .task(Task.item(GTMachines.ASSEMBLER[GTValues.MV]))
-            .dependsOn(MV_COMPONENTS));
+            .dependsOn(MV_COMPONENTS)
+            .mainNode());
 
     public static final Quest REACTION_FURNACE = CHAPTER.quest("reaction_furnace", q -> q
             .at(-1.5, -2.5)
@@ -258,12 +263,14 @@ public final class MvChapter {
 
     public static final Quest ALUMINA_CERAMIC_DUST = CHAPTER.quest("alumina_ceramic_dust", q -> q
             .at(-1.5, -4.5)
+            .title("氧化铝陶瓷粉")
             .subtitle("高温反应")
-            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminaCeramic, 10))
+            .task(Task.item(TagPrefix.dust, GTOMaterials.AluminaCeramic, 1))
             .dependsOn(REACTION_FURNACE, ALUMINIUM_HYDROXIDE_DUST));
 
     public static final Quest ELECTRONIC_GRADE_SILICON_DUST = CHAPTER.quest("electronic_grade_silicon_dust", q -> q
             .at(-3.5, 0)
+            .title("电子级硅粉")
             .desc(d -> d
                     .line("普通的{硅粉}纯度不足以制造单晶硅，你需要{电子级硅粉}", GOLD, GOLD)
                     .line()
@@ -402,7 +409,8 @@ public final class MvChapter {
                     .line()
                     .line("你会不断地……不断地……用到它……"))
             .task(Task.item(GTItems.SILICON_BOULE))
-            .dependsOn(ELECTRONIC_GRADE_SILICON_DUST, CRYSTALLIZATION_CHAMBER, SILICON_CRYSTAL_SEED));
+            .dependsOn(ELECTRONIC_GRADE_SILICON_DUST, CRYSTALLIZATION_CHAMBER, SILICON_CRYSTAL_SEED)
+            .mainNode());
 
     public static final Quest SILICON_WAFER = CHAPTER.quest("silicon_wafer", q -> q
             .at(-1.5, 1.5)
@@ -436,7 +444,8 @@ public final class MvChapter {
                     .line()
                     .line("至于更高级的芯片大多都需要通过{染料浸洗}以得到窄带宽的透镜", YELLOW))
             .task(Task.item(GTMachines.LASER_ENGRAVER[GTValues.MV]))
-            .dependsOn(SILICON_WAFER));
+            .dependsOn(SILICON_WAFER)
+            .mainNode());
 
     public static final Quest MV_AIR_SCRUBBER = CHAPTER.quest("mv_air_scrubber", q -> q
             .at(-9.5, 3)
@@ -670,19 +679,23 @@ public final class MvChapter {
 
     public static final Quest ALUMINA_CERAMIC_BRICK = CHAPTER.quest("alumina_ceramic_brick", q -> q
             .at(3, -4.5)
+            .title("氧化铝陶瓷砖")
             .subtitle("切块")
-            .task(Task.item(GTOTagPrefix.BRICK, GTOMaterials.AluminaCeramic, 9))
+            .task(Task.item(GTOTagPrefix.BRICK, GTOMaterials.AluminaCeramic, 1))
             .dependsOn(ALUMINA_CERAMIC_BLOCK));
 
     public static final Quest ALUMINA_CERAMIC_FLAKE = CHAPTER.quest("alumina_ceramic_flake", q -> q
             .at(5.25, -4.5)
+            .title("氧化铝陶瓷薄片")
             .subtitle("切片")
             .desc(d -> d.line("36片具有优秀电学性能的基板，对于{进阶集成电路}是必需的", GOLD))
-            .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.AluminaCeramic, 36))
+            .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.AluminaCeramic, 1))
             .dependsOn(ALUMINA_CERAMIC_BRICK));
 
     public static final Quest ADVANCED_INTEGRATED_CIRCUIT = CHAPTER.quest("advanced_integrated_circuit", q -> q
             .at(7.5, -2.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{进阶集成电路}", GOLD)
             .subtitle("Knock Knock")
             .desc(d -> d
@@ -691,7 +704,8 @@ public final class MvChapter {
                     .line("你已经敲开了高压时代的大门！"))
             .task(Task.item(GTItems.INTEGRATED_CIRCUIT_HV))
             .reward(Reward.item(GTItems.INTEGRATED_CIRCUIT_HV, 2), Reward.item(QuestExternalRefs.FarmersDelightItems.HAMBURGER, 8))
-            .dependsOn(ALUMINA_CERAMIC_FLAKE, GOOD_INTEGRATED_CIRCUIT, RAM_CHIP, TRANSISTOR));
+            .dependsOn(ALUMINA_CERAMIC_FLAKE, GOOD_INTEGRATED_CIRCUIT, RAM_CHIP, TRANSISTOR)
+            .mainNode());
 
     public static final Quest MV_CIRCUIT_ASSEMBLER = CHAPTER.quest("mv_circuit_assembler", q -> q
             .at(7.5, -0.5)
@@ -725,7 +739,8 @@ public final class MvChapter {
                     .line()
                     .line("处理器主机通常是一个阶段中最重要的目标之一，它将为你打开下一个阶段的大门"))
             .task(Task.item(GTItems.MICROPROCESSOR_LV), Task.item(GTItems.PROCESSOR_MV))
-            .dependsOn(CPU_CHIP, ANY_CAPACITORS, MV_CIRCUIT_ASSEMBLER, PLASTIC_PRINTED_CIRCUIT_BOARD));
+            .dependsOn(CPU_CHIP, ANY_CAPACITORS, MV_CIRCUIT_ASSEMBLER, PLASTIC_PRINTED_CIRCUIT_BOARD)
+            .mainNode());
 
     public static final Quest MV_BEDROCK_ORE_MINER = CHAPTER.quest("mv_bedrock_ore_miner", q -> q
             .at(-5.25, -3.25)
@@ -782,11 +797,15 @@ public final class MvChapter {
 
     static {
         CHAPTER.decorate(d -> d
-                .link(QuestLink.of(AeChapter.DRIVE, -3.5, 7.5))
-                .link(QuestLink.of(HvChapter.WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, 7.5, 7.5))
+                .link(QuestLink.of(AeChapter.DRIVE, -3.5, 7.5).mainNode())
+                .link(QuestLink.of(HvChapter.WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, 7.5, 7.5).mainNode())
                 .link(QuestLink.of(LvChapter.LIQUEFACTION_FURNACE, -8, 6))
                 .link(QuestLink.of(AeChapter.ME_SIMPLE_PATTERN_BUFFER_EASY, -6.5, 6))
                 .link(QuestLink.of(LvChapter.LARGE_STEAM_CIRCUIT_ASSEMBLER, -5, 7.5))
                 .link(QuestLink.of(AeChapter.WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES, -5, 6)));
+    }
+
+    static {
+        CHAPTER.decorate(d -> {});
     }
 }

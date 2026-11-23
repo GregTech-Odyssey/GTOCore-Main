@@ -8,6 +8,7 @@ import com.gtocore.data.quest.QuestTextures;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -26,7 +27,6 @@ public final class SpaceStationChapter {
             .title("穹宇居所")
             .subtitle("Aerospace Industry")
             .icon(GTOItems.PLANET_SCAN_SATELLITE)
-            .hideQuestsUntilDepsVisible()
             .flexible()
             .autofocus(SpaceStationChapter.SPACE_STATION_ENVIRONMENTAL_MAINTENANCE_MODULE)
             .background(QuestTextures.SPACE, 0x555555));
@@ -109,7 +109,8 @@ public final class SpaceStationChapter {
             .dependsOn(WE_NEED_A_HOUSE_IN_SPACE));
 
     public static final Quest INDUSTRIAL_SPACE_STATION = CHAPTER.quest("industrial_space_station", q -> q
-            .at(6.5, -6.5).iconScale(0.9)
+            .at(6.5, -6.5)
+            .preset(QuestPreset.IMPORTANT).iconScale(0.9)
             .title("工业空间站")
             .subtitle("太空超净间ProMax")
             .desc(d -> d
@@ -130,7 +131,8 @@ public final class SpaceStationChapter {
                     .line()
                     .line("而{衔接舱}可以与{模块舱}，以及{衔接舱}同类相连", GREEN, YELLOW, GREEN))
             .task(Task.item(SpaceMultiblock.LARGE_EXPANDABLE_SPACE_STATION_CORE_MODULE))
-            .dependsOn(WE_NEED_A_HOUSE_IN_SPACE, IvChapter.Q_0BFFC724));
+            .dependsOn(WE_NEED_A_HOUSE_IN_SPACE, IvChapter.Q_0BFFC724)
+            .mainNode());
 
     public static final Quest SPACE_STATION_DOCKING_MODULE = CHAPTER.quest("space_station_docking_module", q -> q
             .at(10.5, -5.5)

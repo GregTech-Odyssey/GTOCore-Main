@@ -22,6 +22,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -44,8 +45,7 @@ public final class IvChapter {
     public static final QuestChapter CHAPTER = QuestChapter.of("iv", c -> c
             .title("8. 强导压(IV)")
             .subtitle("Tier5-IV")
-            .icon(GTMultiMachines.ASSEMBLY_LINE)
-            .hideQuestsUntilDepsVisible());
+            .icon(GTMultiMachines.ASSEMBLY_LINE));
 
     public static final Quest HSSG_INGOT = CHAPTER.quest("hssg_ingot", q -> q
             .at(10, -1.5)
@@ -65,6 +65,7 @@ public final class IvChapter {
 
     public static final Quest IV_PARALLEL_HATCH = CHAPTER.quest("iv_parallel_hatch", q -> q
             .at(20, 0)
+            .preset(QuestPreset.IMPORTANT)
             .desc(d -> d
                     .line("为你的大机器提供并行！")
                     .line()
@@ -140,6 +141,8 @@ public final class IvChapter {
 
     public static final Quest WELCOME_TO_THE_HIGH_PRESSURE_STAGE = CHAPTER.quest("welcome_to_the_high_pressure_stage", q -> q
             .at(6, -5.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{强导压}阶段", BLUE)
             .subtitle("{你需要天马行空般的想象力}", BLUE)
             .desc(d -> d
@@ -153,7 +156,8 @@ public final class IvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.IV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(EvChapter.TUNGSTEN_STEEL_INGOT));
+            .dependsOn(EvChapter.TUNGSTEN_STEEL_INGOT)
+            .mainNode());
 
     public static final Quest QBIT_CPU_CHIP = CHAPTER.quest("qbit_cpu_chip", q -> q
             .at(13, -10.5)
@@ -288,7 +292,8 @@ public final class IvChapter {
                     .line()
                     .line("现在你的目标是努力向{IV能源仓}和{量子电路}进发", GOLD, GOLD))
             .task(Task.item(GTItems.ELECTRIC_MOTOR_IV))
-            .dependsOn(GRAPHENE_FOIL));
+            .dependsOn(GRAPHENE_FOIL)
+            .mainNode());
 
     public static final Quest IV_ASSEMBLER = CHAPTER.quest("iv_assembler", q -> q
             .at(10, -5.5)
@@ -304,7 +309,8 @@ public final class IvChapter {
     public static final Quest HSSG_COIL_BLOCK = CHAPTER.quest("hssg_coil_block", q -> q
             .at(10, -3.5)
             .task(Task.item(GTBlocks.COIL_HSSG))
-            .dependsOn(IV_ASSEMBLER, HSSG_INGOT));
+            .dependsOn(IV_ASSEMBLER, HSSG_INGOT)
+            .mainNode());
 
     public static final Quest QUANTUM_PROCESSOR = CHAPTER.quest("quantum_processor", q -> q
             .at(14, -8.5)
@@ -329,10 +335,13 @@ public final class IvChapter {
 
     public static final Quest QUANTUM_PROCESSOR_MAINFRAME = CHAPTER.quest("quantum_processor_mainframe", q -> q
             .at(18, -10.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{量子处理器主机}", GREEN)
             .subtitle("第一个ZPM电路")
             .task(Task.item(GTItems.QUANTUM_MAINFRAME_ZPM))
-            .dependsOn(QUANTUM_PROCESSOR_SUPERCOMPUTER));
+            .dependsOn(QUANTUM_PROCESSOR_SUPERCOMPUTER)
+            .mainNode());
 
     public static final Quest SAMARIUM_IRON_ARSENIC_OXIDE_INGOT = CHAPTER.quest("samarium_iron_arsenic_oxide_ingot", q -> q
             .at(12, -2.5)
@@ -361,6 +370,7 @@ public final class IvChapter {
 
     public static final Quest BLAZE_BLAST_FURNACE = CHAPTER.quest("blaze_blast_furnace", q -> q
             .at(14, -4.5)
+            .preset(QuestPreset.IMPORTANT)
             .desc(d -> d.line("更高效的电力高炉，具有最高64并行，同时对你的能源供应也提出了更高的要求"))
             .task(Task.item(MultiBlockD.BLAZE_BLAST_FURNACE))
             .dependsOn(IV_FIELD_GENERATOR));
@@ -415,7 +425,8 @@ public final class IvChapter {
                     .line()
                     .line("{流体无需有序}", GRAY.italic()))
             .task(Task.item(GTMultiMachines.ASSEMBLY_LINE))
-            .dependsOn(ASSEMBLY_LINE_CASING));
+            .dependsOn(ASSEMBLY_LINE_CASING)
+            .mainNode());
 
     public static final Quest IV_ENERGY_INPUT_HATCH = CHAPTER.quest("iv_energy_input_hatch", q -> q
             .at(16, -4.5)
@@ -547,14 +558,13 @@ public final class IvChapter {
             .at(10, -10.25)
             .desc(d -> d.line("来自GTO的新机器，用于{电镀}和{给转子镀膜}", YELLOW, YELLOW))
             .task(Task.item(MultiBlockH.ELECTROPLATING_BATH))
-            .dependsOn(IV_ELECTRIC_MOTOR)
-            .hideDependentLines());
+            .dependsOn(IV_ELECTRIC_MOTOR));
 
     public static final Quest FISSION_REACTOR = CHAPTER.quest("fission_reactor", q -> q
             .at(3, -3)
             .desc(d -> d.line("能够获取高压蒸汽和超临界蒸汽用于发电，不过更重要的是获取核废料"))
             .task(Task.item(MultiBlockD.FISSION_REACTOR))
-            .dependsOn(POLYVINYL_BUTYRAL_BUCKET, ELECTROPLATING_BATH));
+            .dependsOn(POLYVINYL_BUTYRAL_BUCKET));
 
     public static final Quest HEAT_EXCHANGER = CHAPTER.quest("heat_exchanger", q -> q
             .at(3, -1.5)
@@ -571,7 +581,7 @@ public final class IvChapter {
     public static final Quest ADVANCED_SMD_CAPACITOR = CHAPTER.quest("advanced_smd_capacitor", q -> q
             .at(6, -0.5)
             .task(Task.item(GTItems.ADVANCED_SMD_CAPACITOR))
-            .dependsOn(ADVANCED_SOLDERING_COMPONENTS, ELECTROPLATING_BATH));
+            .dependsOn(ADVANCED_SOLDERING_COMPONENTS));
 
     public static final Quest MOLECULAR_TRANSFORMER = CHAPTER.quest("molecular_transformer", q -> q
             .at(3, -7.5)
@@ -650,7 +660,7 @@ public final class IvChapter {
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(AeChapter.ME_CPU, 8.5, -5.5))
-                .link(QuestLink.of(LuvChapter.WELCOME_TO_THE_DRAMA_PRESSURE_STAGE, 10, -14))
+                .link(QuestLink.of(LuvChapter.WELCOME_TO_THE_DRAMA_PRESSURE_STAGE, 10, -14).mainNode())
                 .link(QuestLink.of(EvChapter.RAW_OSTRUM, 10, 0))
                 .link(QuestLink.of(BeyondTheStarsChapter.SPACE_QUARKTECH_CHESTPLATE, 14, 2))
                 .link(QuestLink.of(EvChapter.NETHER_STAR, 18, 2))

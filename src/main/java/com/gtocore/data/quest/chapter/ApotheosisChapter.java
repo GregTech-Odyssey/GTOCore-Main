@@ -30,7 +30,6 @@ public final class ApotheosisChapter {
             .title("神化")
             .subtitle("Apotheosis")
             .icon(Adventure.Items.MYTHIC_MATERIAL.get())
-            .hideQuestsUntilDepsVisible()
             .flexible());
 
     public static final Quest RARITY_FORGE = CHAPTER.quest("rarity_forge", q -> q

@@ -8,7 +8,6 @@ import com.gtocore.common.quest.hot.QuestHotProgress;
 import com.gtolib.GTOCore;
 import com.gtolib.api.quest.QuestBook;
 import com.gtolib.quest.QuestServer;
-import com.gtolib.quest.client.ClientQuestData;
 import com.gtolib.quest.client.book.QuestBookScreen;
 import com.gtolib.quest.client.book.QuestBookSession;
 import com.gtolib.quest.client.book.QuestIconRenderer;
@@ -432,7 +431,6 @@ public final class QuestHotReload {
         long clientStart = System.nanoTime();
         QuestIconRenderer.clearCaches();
         QuestBookSession.remapChapters(oldIds);
-        if (world) ClientQuestData.clear();
         QuestEditQueue.bookRebuilt();
         QuestBookScreen.onBookRebuilt();
         GTOCore.LOGGER.info("[任务热加载] 重建 {}ms（服务端线程），客户端收尾 {}ms", rebuildMs, (System.nanoTime() - clientStart) / 1_000_000);

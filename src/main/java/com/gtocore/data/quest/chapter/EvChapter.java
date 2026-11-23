@@ -19,6 +19,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -43,7 +44,6 @@ public final class EvChapter {
             .title("7. 超高压(EV)")
             .subtitle("Tier4-EV")
             .icon(GCYMMachines.BLAST_ALLOY_SMELTER)
-            .hideQuestsUntilDepsVisible()
             .autofocus(EvChapter.TUNGSTEN_DUST));
 
     public static final Quest URANIUM_ORE = CHAPTER.quest("uranium_ore", q -> q
@@ -91,6 +91,8 @@ public final class EvChapter {
 
     public static final Quest WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE = CHAPTER.quest("welcome_to_the_extreme_voltage_stage", q -> q
             .at(5, 8.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("欢迎来到{超高压}阶段", DARK_PURPLE)
             .subtitle("{你需要天马行空般的想象力}", DARK_PURPLE)
             .desc(d -> d
@@ -104,7 +106,8 @@ public final class EvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.EV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(HvChapter.TITANIUM_INGOT));
+            .dependsOn(HvChapter.TITANIUM_INGOT)
+            .mainNode());
 
     public static final Quest SOFT_AND_FLUFFY_PLATINUM_ORE = CHAPTER.quest("soft_and_fluffy_platinum_ore", q -> q
             .at(12, 2)
@@ -185,6 +188,7 @@ public final class EvChapter {
 
     public static final Quest TIER_2_ROCKET = CHAPTER.quest("tier_2_rocket", q -> q
             .at(5, 5.5)
+            .preset(QuestPreset.IMPORTANT)
             .icon(ModItems.TIER_2_ROCKET.get())
             .desc(d -> d
                     .line("没有什么能阻挡你再次飞向星辰")
@@ -217,7 +221,8 @@ public final class EvChapter {
                     .line()
                     .line("随即解锁的极其有用的三种合金都需要钨元素"))
             .task(Task.item(TagPrefix.dust, GTMaterials.Tungsten))
-            .dependsOn(RAW_SCHEELITE));
+            .dependsOn(RAW_SCHEELITE)
+            .mainNode());
 
     public static final Quest TUNGSTEN_STEEL_INGOT = CHAPTER.quest("tungsten_steel_ingot", q -> q
             .at(5, -2)
@@ -260,9 +265,11 @@ public final class EvChapter {
 
     public static final Quest QUANTUM_EYE = CHAPTER.quest("quantum_eye", q -> q
             .at(-2, -1)
+            .preset(QuestPreset.IMPORTANT)
             .desc(d -> d.line("由于其亚稳态性，{量子之眼}需要在{无重力环境}中用惰性气体{氡气}进行浸泡", GOLD, LIGHT_PURPLE, GOLD))
             .task(Task.item(GTItems.QUANTUM_EYE))
-            .dependsOn(RADON_BUCKET, SpaceStationChapter.WE_NEED_A_HOUSE_IN_SPACE));
+            .dependsOn(RADON_BUCKET, SpaceStationChapter.WE_NEED_A_HOUSE_IN_SPACE)
+            .mainNode());
 
     public static final Quest HV_FIELD_GENERATOR = CHAPTER.quest("hv_field_generator", q -> q
             .at(-1, -1)
@@ -311,13 +318,13 @@ public final class EvChapter {
             .at(9, -4.5)
             .desc(d -> d.line("T4级别的线圈方块，集合了你至今为止所有的矿处产线成果"))
             .task(Task.item(GTBlocks.COIL_RTMALLOY))
-            .dependsOn(RTM_ALLOY_INGOT)
-            .hideDependentLines());
+            .dependsOn(RTM_ALLOY_INGOT));
 
     public static final Quest URANIUM_TRIPLATINUM_INGOT = CHAPTER.quest("uranium_triplatinum_ingot", q -> q
             .at(5.5, -13)
             .task(Task.item(TagPrefix.ingot, GTMaterials.UraniumTriplatinum))
-            .dependsOn(RTM_ALLOY_COIL_BLOCK, URANIUM_DUST));
+            .dependsOn(RTM_ALLOY_COIL_BLOCK, URANIUM_DUST)
+            .hideDependencyLines());
 
     public static final Quest IRIDIUM_DUST = CHAPTER.quest("iridium_dust", q -> q
             .at(12.5, -2)
@@ -352,10 +359,12 @@ public final class EvChapter {
 
     public static final Quest TIER_3_ROCKET = CHAPTER.quest("tier_3_rocket", q -> q
             .at(5, -4)
+            .preset(QuestPreset.IMPORTANT)
             .icon(ModItems.TIER_3_ROCKET.get())
             .desc(d -> d.line("别忘了穿上{T2}器官", AQUA))
             .task(Task.item(ModItems.TIER_3_ROCKET.get()))
-            .dependsOn(TUNGSTEN_STEEL_INGOT, DENSE_HYDRAZINE_FUEL_MIXTURE_BUCKET, EV_SENSOR));
+            .dependsOn(TUNGSTEN_STEEL_INGOT, DENSE_HYDRAZINE_FUEL_MIXTURE_BUCKET, EV_SENSOR)
+            .mainNode());
 
     public static final Quest VISIT_VENUS = CHAPTER.quest("visit_venus", q -> q
             .at(5, -8)
@@ -397,6 +406,7 @@ public final class EvChapter {
 
     public static final Quest LET_ME_SEE_YOUR_RESULTS = CHAPTER.quest("let_me_see_your_results", q -> q
             .at(12, -1)
+            .preset(QuestPreset.IMPORTANT)
             .title("让我看看你的成果！")
             .desc(d -> d.line("EV阶段的第二个单质生产挑战，你终于完成了铂系处理产线！"))
             .task(
@@ -407,7 +417,8 @@ public final class EvChapter {
                     Task.item(TagPrefix.dust, GTMaterials.Iridium),
                     Task.item(TagPrefix.dust, GTMaterials.Osmium))
             .reward(Reward.item(Items.NETHER_STAR))
-            .dependsOn(SOFT_AND_FLUFFY_PLATINUM_ORE, PLATINUM_DUST, RHODIUM_DUST, OSMIUM_DUST, RUTHENIUM_DUST, PALLADIUM_DUST, IRIDIUM_DUST));
+            .dependsOn(SOFT_AND_FLUFFY_PLATINUM_ORE, PLATINUM_DUST, RHODIUM_DUST, OSMIUM_DUST, RUTHENIUM_DUST, PALLADIUM_DUST, IRIDIUM_DUST)
+            .mainNode());
 
     public static final Quest EV_FIELD_GENERATOR = CHAPTER.quest("ev_field_generator", q -> q
             .at(5, -14.25)
@@ -456,14 +467,17 @@ public final class EvChapter {
                     .line()
                     .line("给你的机器来一次更新换代！"))
             .task(Task.item(GTMachines.ENERGY_INPUT_HATCH[GTValues.EV]))
-            .dependsOn(MPIC_CHIP));
+            .dependsOn(MPIC_CHIP)
+            .mainNode());
 
     public static final Quest TIER_4_ROCKET = CHAPTER.quest("tier_4_rocket", q -> q
             .at(5, -16)
+            .preset(QuestPreset.IMPORTANT)
             .icon(ModItems.TIER_4_ROCKET.get())
             .desc(d -> d.line("四阶火箭的强大推进力解锁了一颗小行星带的矮行星——谷神星"))
             .task(Task.item(ModItems.TIER_4_ROCKET.get()))
-            .dependsOn(ROCKET_FUEL_CN3H7O3_BUCKET, EV_ENERGY_INPUT_HATCH, EV_FIELD_GENERATOR));
+            .dependsOn(ROCKET_FUEL_CN3H7O3_BUCKET, EV_ENERGY_INPUT_HATCH, EV_FIELD_GENERATOR)
+            .mainNode());
 
     public static final Quest VISIT_CERES = CHAPTER.quest("visit_ceres", q -> q
             .at(5, -18.5)
@@ -568,11 +582,14 @@ public final class EvChapter {
 
     public static final Quest NANOPROCESSOR_MAINFRAME = CHAPTER.quest("nanoprocessor_mainframe", q -> q
             .at(1, -12)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{纳米处理器主机}", AQUA)
             .subtitle("第一个LuV级电路")
             .desc(d -> d.line("觉得太贵？别担心，你最终会找到更便宜的路径"))
             .task(Task.item(GTItems.NANO_MAINFRAME_LuV))
-            .dependsOn(NANOPROCESSOR_SUPERCOMPUTER));
+            .dependsOn(NANOPROCESSOR_SUPERCOMPUTER)
+            .mainNode());
 
     public static final Quest LARGE_GAS_COLLECTOR = CHAPTER.quest("large_gas_collector", q -> q
             .at(3.25, -14.25)
@@ -634,8 +651,9 @@ public final class EvChapter {
                 .link(QuestLink.of(AeChapter.ME_EXPORT_BUS_AND_ME_EXPORT, 6, 7))
                 .link(QuestLink.of(AeChapter.ME_IMPORT_BUS_AND_ME_IMPORT, 4, 7))
                 .link(QuestLink.of(SpaceStationChapter.WE_NEED_A_HOUSE_IN_SPACE, -2, 2))
-                .link(QuestLink.of(IvChapter.WELCOME_TO_THE_HIGH_PRESSURE_STAGE, 7, -2))
+                .link(QuestLink.of(IvChapter.WELCOME_TO_THE_HIGH_PRESSURE_STAGE, 7, -2).mainNode())
                 .link(QuestLink.of(BeyondTheStarsChapter.SPACE_ADVANCED_NANOMUSCLE_CHESTPLATE, 7, 3.5))
-                .link(QuestLink.of(BeyondTheStarsChapter.MORTAL_FLESH_DECAYS_GENES_REFORGED, 3.5, -8)));
+                .link(QuestLink.of(BeyondTheStarsChapter.MORTAL_FLESH_DECAYS_GENES_REFORGED, 3.5, -8))
+                .line(URANIUM_DUST, URANIUM_TRIPLATINUM_INGOT));
     }
 }

@@ -12,14 +12,20 @@ import com.gtocore.data.quest.QuestExternalRefs;
 import com.gtocore.data.quest.QuestTextures;
 
 import com.gtolib.api.data.Dimension;
+import com.gtolib.api.item.tool.GTOToolType;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestShape;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
+import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
+import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.common.data.GTBlocks;
 import com.gregtechceu.gtceu.common.data.GTItems;
 import com.gregtechceu.gtceu.common.data.GTMachines;
@@ -43,28 +49,11 @@ public final class SteamChapter {
             .title("2. 蒸汽时代(Steam Age)")
             .subtitle("Tier0-Steam")
             .icon(GTMachines.STEAM_SOLID_BOILER.first())
-            .hideQuestsUntilDepsVisible()
-            .autofocus(SteamChapter.MISTY_MOVEMENT));
-
-    public static final Quest MISTY_MOVEMENT = CHAPTER.quest("misty_movement", q -> q
-            .at(-9, 4.5)
-            .icon(TagPrefix.ingot, GTMaterials.Bronze)
-            .title("扬雾运动")
-            .subtitle("隐入蒸汽")
-            .desc(d -> d
-                    .line("{GregTech Odessey}中，蒸汽时代的内容被优化与拓展", DARK_RED.underline())
-                    .line()
-                    .line("在蒸汽的驱动下，很多需要手动合成的配方可以被更先进的方式替代")
-                    .line()
-                    .line("开始你的青铜大跃进吧")
-                    .line()
-                    .line("{钢}是你这个阶段的首要目标，然后你就可以制作{ULV机器外壳}前往下一个电压了", GOLD, GOLD))
-            .task(Task.checkmark().title("前进，前进！"))
-            .reward(Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 32))
-            .dependsOn(MainStoneageChapter.KEEP_GOING));
+            .autofocus(SteamChapter.BRONZE_BRICK_CASING));
 
     public static final Quest FUSION_POWER = CHAPTER.quest("fusion_power", q -> q
             .at(-6.5, 4.5)
+            .nodeScale(1.25)
             .title("融合之力")
             .subtitle("Fusion UP!")
             .desc(d -> d
@@ -80,10 +69,10 @@ public final class SteamChapter {
                     .line()
                     .line("{如果你是专家模式，低压机器还有额外50%耗能惩罚}", GRAY.italic()))
             .task(Task.item(GTMachines.STEAM_ALLOY_SMELTER.first()))
-            .dependsOn(MISTY_MOVEMENT));
+            .dependsOn(SteamChapter.LP_STEAM_SOLID_BOILER));
 
     public static final Quest SUPER_CON_DUCTOR = CHAPTER.quest("super_con_ductor", q -> q
-            .at(-3.5, 4.5)
+            .at(-4, 4.5)
             .title("超！导！体！")
             .subtitle("Ver.0")
             .desc(d -> d
@@ -118,6 +107,7 @@ public final class SteamChapter {
 
     public static final Quest SQUEEZE_YEAH_SQUEEZE = CHAPTER.quest("squeeze_yeah_squeeze", q -> q
             .at(2, 4.5)
+            .nodeScale(1.25)
             .title("挤！呀！挤！")
             .subtitle("瘦身之旅")
             .desc(d -> d
@@ -130,7 +120,7 @@ public final class SteamChapter {
             .dependsOn(PIS_TON));
 
     public static final Quest BIG_HAMMER_80_SMALL_HAMMER_40 = CHAPTER.quest("big_hammer_80_small_hammer_40", q -> q
-            .at(2, 9)
+            .at(2, 6)
             .title("大锤80，小锤40！")
             .subtitle("这不是林永健的家")
             .desc(d -> d
@@ -145,7 +135,7 @@ public final class SteamChapter {
             .dependsOn(SQUEEZE_YEAH_SQUEEZE));
 
     public static final Quest CAN_STEAM_BE_USED_FOR_COOKING = CHAPTER.quest("can_steam_be_used_for_cooking", q -> q
-            .at(-9, 6.5)
+            .at(-10.5, 6.5)
             .title("蒸汽能做饭吗？")
             .subtitle("最大程度节省你的燃料")
             .desc(d -> d
@@ -155,11 +145,11 @@ public final class SteamChapter {
                     .line()
                     .line("由于巨型熔炉的存在，蒸汽熔炉系列是可选的"))
             .task(Task.item(GTMachines.STEAM_FURNACE.first()))
-            .dependsOn(MISTY_MOVEMENT)
-            .optional());
+            .optional()
+            .dependsOn(SteamChapter.BRONZE_BRICK_CASING));
 
     public static final Quest A_SLIGHTLY_LARGER_FURNACE = CHAPTER.quest("a_slightly_larger_furnace", q -> q
-            .at(-9, 8.25)
+            .at(-10.5, 8.5)
             .title("更大一点的炉")
             .subtitle("作用可不止大了一点")
             .desc(d -> d
@@ -188,7 +178,7 @@ public final class SteamChapter {
             .dependsOn(BREAK_THEM));
 
     public static final Quest THE_HAMMER_FALLS = CHAPTER.quest("the_hammer_falls", q -> q
-            .at(0, 9)
+            .at(2, 7.5)
             .title("大锤落下！")
             .subtitle("这一下可不止80")
             .desc(d -> d
@@ -203,7 +193,7 @@ public final class SteamChapter {
             .dependsOn(BIG_HAMMER_80_SMALL_HAMMER_40));
 
     public static final Quest A_MESSY_STEW = CHAPTER.quest("a_messy_stew", q -> q
-            .at(-6.5, 6.5)
+            .at(-6.5, 6)
             .title("一锅乱炖")
             .subtitle("但这口锅够大")
             .desc(d -> d
@@ -216,7 +206,7 @@ public final class SteamChapter {
             .dependsOn(FUSION_POWER));
 
     public static final Quest THIS_IS_NO_HYDRAULIC_PRESS = CHAPTER.quest("this_is_no_hydraulic_press", q -> q
-            .at(2.047619047619044, 2.488095238095248)
+            .at(2, 3)
             .title("这可不是液压机")
             .subtitle("我们需要更多的土高炉！")
             .desc(d -> d
@@ -227,7 +217,7 @@ public final class SteamChapter {
             .dependsOn(SQUEEZE_YEAH_SQUEEZE));
 
     public static final Quest PREPARE_GLASS_FIRST_STEP = CHAPTER.quest("prepare_glass_first_step", q -> q
-            .at(15, 10.5)
+            .at(8.5, 11)
             .title("制备玻璃......第一步！")
             .subtitle("保护你的研钵！！")
             .desc(d -> d
@@ -243,7 +233,7 @@ public final class SteamChapter {
             .hideDependencyLines());
 
     public static final Quest HUH_YOU_TOO = CHAPTER.quest("huh_you_too", q -> q
-            .at(6.75, 0)
+            .at(7.5, 2)
             .title("嗯？怎么你也？")
             .subtitle("噢！是魔法超导体！")
             .desc(d -> d
@@ -258,7 +248,7 @@ public final class SteamChapter {
             .hideDependencyLines());
 
     public static final Quest A_LITTLE_DEVICE_THAT_CAN_CREATE = CHAPTER.quest("a_little_device_that_can_create", q -> q
-            .at(15, -2)
+            .at(4.5, 11)
             .icon(GTOMachines.STEAM_VACUUM_PUMP.first())
             .title("能抽真空的小家伙")
             .subtitle("真不是吸尘器！")
@@ -273,11 +263,11 @@ public final class SteamChapter {
                     .line()
                     .line("低级的真空泵只需要{蒸汽}即可运行，而高级的真空泵则需要{电力}，太空环境则无条件提供{四级真空}，多方块机器由{真空仓}来提供{四级真空}", GOLD, GOLD, DARK_PURPLE, GOLD, DARK_PURPLE))
             .task(Task.item(GTOMachines.STEAM_VACUUM_PUMP.first()))
-            .dependsOn(MISTY_MOVEMENT)
-            .hideDependencyLines());
+            .hideDependencyLines()
+            .dependsOn(SteamChapter.BRONZE_BRICK_CASING));
 
     public static final Quest DISCOUNT_TIME_BOOM_BOOM_BOOM = CHAPTER.quest("discount_time_boom_boom_boom", q -> q
-            .at(0.5, 7.5)
+            .at(3.5, 6)
             .title("打折时刻！爆爆爆！")
             .subtitle("用你的新锻造锤做点东西吧")
             .task(Task.item(TagPrefix.plate, GTMaterials.WroughtIron, 8))
@@ -285,7 +275,7 @@ public final class SteamChapter {
             .dependsOn(BIG_HAMMER_80_SMALL_HAMMER_40));
 
     public static final Quest IT_SEEMS_LIKE_A_SOMEWHAT_TROUBLESOME = CHAPTER.quest("it_seems_like_a_somewhat_troublesome", q -> q
-            .at(4, 4.5)
+            .at(4.5, 4.5)
             .title("看上去有点麻烦的材料")
             .subtitle("麻烦吗，麻烦就对了！")
             .desc(d -> d
@@ -302,7 +292,8 @@ public final class SteamChapter {
             .dependsOn(SQUEEZE_YEAH_SQUEEZE));
 
     public static final Quest PRIMITIVE_BLAST_FURNACE = CHAPTER.quest("primitive_blast_furnace", q -> q
-            .at(6, 2.5)
+            .at(7, 4.5)
+            .nodeScale(1.25)
             .icon(GTMultiMachines.PRIMITIVE_BLAST_FURNACE)
             .subtitle("准备好了吗？")
             .desc(d -> d
@@ -321,7 +312,9 @@ public final class SteamChapter {
             .dependsOn(IT_SEEMS_LIKE_A_SOMEWHAT_TROUBLESOME));
 
     public static final Quest FIRST_STEEL_INGOT = CHAPTER.quest("first_steel_ingot", q -> q
-            .at(9, 2.5)
+            .at(10, 4.5)
+            .nodeScale(1.6)
+            .preset(QuestPreset.IMPORTANT)
             .title("第一块钢锭")
             .subtitle("真正的生产力大跃进")
             .desc(d -> d
@@ -329,11 +322,16 @@ public final class SteamChapter {
                     .line()
                     .line("{另一种方法是处理滑石/石墨矿}", GRAY.italic()))
             .task(Task.item(ModItems.STEEL_INGOT.get()))
-            .reward(Reward.item(ModItems.STEEL_INGOT.get(), 16), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .dependsOn(PRIMITIVE_BLAST_FURNACE));
+            .rewardFor(QuestTierSet.NORMAL_EXPERT, Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .dependsOn(PRIMITIVE_BLAST_FURNACE)
+            .mainNode()
+            .rewardFor(QuestTierSet.EXPERT, Reward.item(ModItems.STEEL_INGOT.get(), 16))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(ModItems.STEEL_INGOT.get(), 192))
+            .rewardFor(QuestTierSet.EASY, Reward.item(ModItems.STEEL_INGOT.get(), 640))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 128)));
 
     public static final Quest ANCIENT_REACTOR = CHAPTER.quest("ancient_reactor", q -> q
-            .at(9, 0)
+            .at(10, 2)
             .icon(MultiBlockG.ANCIENT_REACTOR_CORE)
             .title("远古反应堆")
             .subtitle("《回到过去》")
@@ -351,7 +349,8 @@ public final class SteamChapter {
             .dependsOn(HUH_YOU_TOO, FIRST_STEEL_INGOT));
 
     public static final Quest BACK_TO_THE_PAST = CHAPTER.quest("back_to_the_past", q -> q
-            .at(9, -2).iconScale(0.9)
+            .at(10, -0.5)
+            .preset(QuestPreset.IMPORTANT).iconScale(0.9)
             .title("回到过去？")
             .subtitle("似曾相识！")
             .desc(d -> d
@@ -370,11 +369,10 @@ public final class SteamChapter {
                     .line("以及有一些特殊的配方需要在远古世界中进行，比如{大马士革钢}的相关配方", GREEN))
             .task(Task.dimension(Dimension.ANCIENT_WORLD).title("远古世界"))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
-            .dependsOn(ANCIENT_REACTOR)
-            .hideDependentLines());
+            .dependsOn(ANCIENT_REACTOR));
 
     public static final Quest CAN_IT_BE_USED_FOR_BEAUTY = CHAPTER.quest("can_it_be_used_for_beauty", q -> q
-            .at(9, 8.5)
+            .at(-0.5, 11)
             .title("它能拿来美容吗")
             .subtitle("不行，一股臭鸡蛋味儿")
             .desc(d -> d
@@ -386,10 +384,11 @@ public final class SteamChapter {
                     .line()
                     .line("你需要准备多点，因为你需要{很多的}{橡胶}", DARK_RED, GOLD))
             .task(Task.item(TagPrefix.dust, GTMaterials.Sulfur))
-            .dependsOn(BACK_TO_THE_PAST));
+            .dependsOn(BACK_TO_THE_PAST)
+            .hideDependencyLines());
 
     public static final Quest MIXER_STEAM_POWERED = CHAPTER.quest("mixer_steam_powered", q -> q
-            .at(11.25, 3)
+            .at(12, 1.5)
             .title("搅拌机，蒸汽驱动版")
             .subtitle("它会帮我混合火药吗")
             .desc(d -> d
@@ -403,7 +402,7 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest ORE_SMASHER = CHAPTER.quest("ore_smasher", q -> q
-            .at(11.25, 4.5)
+            .at(12, 7.5)
             .title("原矿粉碎者")
             .subtitle("矿处，启动！")
             .desc(d -> d
@@ -418,7 +417,7 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest MORPHING = CHAPTER.quest("morphing", q -> q
-            .at(9, 5.15)
+            .at(10, 7)
             .title("形态变化！")
             .subtitle("三维变二维？")
             .desc(d -> d
@@ -430,7 +429,7 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest THE_TREASURED_PRODUCT_OF_THE_RUBBER = CHAPTER.quest("the_treasured_product_of_the_rubber", q -> q
-            .at(11.25, 8.5)
+            .at(1, 11)
             .title("橡胶树的宝贝产物")
             .subtitle("并不需要木龙头")
             .desc(d -> d
@@ -445,7 +444,7 @@ public final class SteamChapter {
             .hideDependencyLines());
 
     public static final Quest ENGINE = CHAPTER.quest("engine", q -> q
-            .at(0.5, 6)
+            .at(-1, 3)
             .subtitle("合成飞机")
             .desc(d -> d
                     .line("飞机核心部件，如果你还不会飞，可以用这个在{远古世界}探索", GOLD)
@@ -461,7 +460,7 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest THE_PREDECESSOR_OF_THE_MOLD = CHAPTER.quest("the_predecessor_of_the_mold", q -> q
-            .at(9, 7)
+            .at(10, 11)
             .title("模具的前身")
             .subtitle("但好事成三")
             .desc(d -> d
@@ -478,7 +477,7 @@ public final class SteamChapter {
             .dependsOn(MORPHING));
 
     public static final Quest YOU_CAN_STICK_WIRES = CHAPTER.quest("you_can_stick_wires", q -> q
-            .at(-3.5, 7.5)
+            .at(-6, 9)
             .title("你可以贴贴的导线")
             .subtitle("Another Ver. 0")
             .desc(d -> d
@@ -488,16 +487,17 @@ public final class SteamChapter {
                     .line()
                     .line("{eg.这个任务指引你做的超导线承载力上限是1A/ULV，则在接受2A/ULV或1A/LV的电情况下导线会烧毁}", DARK_GRAY)
                     .line()
-                    .line("{意味着你可以在导线上}{跳}{来}{跳}{去}", ITALIC, GREEN.italic(), GOLD, YELLOW, AQUA)
+                    .line("{意味着你可以在导线上}{跳}{来}{跳}{去}", ITALIC, RED.italic(), YELLOW.italic(), GREEN.italic(), AQUA.italic())
                     .line()
                     .line("当然如果你让超导线接收了过大的电流，它就会{起火}并且在一段时间后{烧毁}，如果电流远大于承载上限，则会{直接烧毁}", DARK_RED, DARK_RED, DARK_RED)
                     .line()
                     .line("{红色合金导线稍微有点特殊，它需要包一层橡胶成为线缆才能超导。其他的超导体制成导线直接就可以使用}", YELLOW))
             .task(Task.item(TagPrefix.wireGtSingle, GTMaterials.RedAlloy))
-            .dependsOn(SUPER_CON_DUCTOR));
+            .dependsOn(SUPER_CON_DUCTOR)
+            .hideDependencyLines());
 
     public static final Quest NEED_A_LOT_OF_STEEL = CHAPTER.quest("need_a_lot_of_steel", q -> q
-            .at(13, 2)
+            .at(13.5, 4.5)
             .title("需要大量钢？")
             .subtitle("32层举高高炉")
             .desc(d -> d
@@ -508,7 +508,7 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest COKE_OVEN_PRO_MAX_EDITION = CHAPTER.quest("coke_oven_pro_max_edition", q -> q
-            .at(11.25, 1.5)
+            .at(8.5, 3)
             .title("焦炉Pro Max版")
             .subtitle("大大大大大大！")
             .desc(d -> d
@@ -523,7 +523,7 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest LARGER_INSULATED_CUP = CHAPTER.quest("larger_insulated_cup", q -> q
-            .at(11.25, 0)
+            .at(12.5, 3)
             .title("更大的保温杯")
             .subtitle("装点热水？")
             .desc(d -> d
@@ -538,7 +538,7 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest MORE_POWERFUL_MACHINES = CHAPTER.quest("more_powerful_machines", q -> q
-            .at(7.5, 4)
+            .at(8.5, 6)
             .title("更猛的机器们")
             .subtitle("Work！Work！")
             .desc(d -> d
@@ -550,22 +550,23 @@ public final class SteamChapter {
             .dependsOn(FIRST_STEEL_INGOT));
 
     public static final Quest PLATE_CASTING_MOLD = CHAPTER.quest("plate_casting_mold", q -> q
-            .at(6.5, 7)
+            .at(-3, 9)
             .task(Task.item(GTItems.SHAPE_MOLD_PLATE))
+            .hideDependencyLines()
             .dependsOn(THE_PREDECESSOR_OF_THE_MOLD));
 
     public static final Quest BLOCK_CASTING_MOLD = CHAPTER.quest("block_casting_mold", q -> q
-            .at(13, 7)
+            .at(8.5, 9)
             .task(Task.item(GTItems.SHAPE_MOLD_BLOCK))
             .dependsOn(THE_PREDECESSOR_OF_THE_MOLD));
 
     public static final Quest BALL_CASTING_MOLD = CHAPTER.quest("ball_casting_mold", q -> q
-            .at(13, 5.5)
+            .at(8.5, 13)
             .task(Task.item(GTItems.SHAPE_MOLD_BALL))
             .dependsOn(THE_PREDECESSOR_OF_THE_MOLD));
 
     public static final Quest VAULTS = CHAPTER.quest("vaults", q -> q
-            .at(11.25, -1.5)
+            .at(12.5, 6)
             .icon(MultiBlockG.ITEM_VAULT)
             .title("保险库们")
             .subtitle("箱子装不下了")
@@ -583,10 +584,10 @@ public final class SteamChapter {
                     Task.item(MultiBlockG.GENERAL_VAULT).optional(),
                     Task.item(GTOMachines.VAULT_HATCH).optional())
             .reward(Reward.item(GTOBlocks.HERMETIC_CASING_ULV))
-            .dependsOn(MainStoneageChapter.SIMPLE_CRAFTING_TERMINAL, FIRST_STEEL_INGOT));
+            .dependsOn(StoneageChapter.SIMPLE_CRAFTING_TERMINAL, FIRST_STEEL_INGOT));
 
     public static final Quest OTHER_COMMON_MOLDS = CHAPTER.quest("other_common_molds", q -> q
-            .at(7.5, 8.5)
+            .at(12, 11)
             .title("其他常用模具")
             .subtitle("你可能会用到它们")
             .task(Task.item(GTItems.SHAPE_MOLD_NUGGET), Task.item(GTItems.SHAPE_MOLD_INGOT))
@@ -594,28 +595,18 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest LP_STEAM_MINER = CHAPTER.quest("lp_steam_miner", q -> q
-            .at(-11, 4.5)
+            .at(-10.5, 2.5)
             .subtitle("并不能解放双手")
             .desc(d -> d
                     .line("可以帮你自动挖矿，但是效率实在是太低了，还没你手挖的快")
                     .line()
                     .line("你可以选择不完成这个任务，毕竟它是可选的"))
             .task(Task.item(GTMachines.STEAM_MINER.first()), Task.item(GTMachines.STEAM_MINER.second()))
-            .dependsOn(MISTY_MOVEMENT)
-            .optional());
-
-    public static final Quest STEEL_SUBSIDY = CHAPTER.quest("steel_subsidy", q -> q
-            .at(7.5, 5.15)
-            .icon(ModItems.STEEL_INGOT.get())
-            .title("钢补助")
-            .task(Task.checkmark())
-            .easySubsidy(Reward.item(ModItems.STEEL_INGOT.get(), 640L), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .normalSubsidy(Reward.item(ModItems.STEEL_INGOT.get(), 192L))
-            .dependsOn(MORPHING)
-            .optional().hideUntilDepsVisible());
+            .optional()
+            .dependsOn(SteamChapter.BRONZE_BRICK_CASING));
 
     public static final Quest PREPARE_GLASS_EASY = CHAPTER.quest("prepare_glass_easy", q -> q
-            .at(17, 8.5)
+            .at(5.5, 11)
             .icon(Items.GLASS)
             .title("制备玻璃{（简单）}", GREEN)
             .desc(d -> d
@@ -627,7 +618,7 @@ public final class SteamChapter {
             .optional().hideUntilDepsVisible());
 
     public static final Quest PREPARING_GLASS_STEP_TWO = CHAPTER.quest("preparing_glass_step_two", q -> q
-            .at(15.000000000000007, 8.5)
+            .at(7, 11)
             .title("制备玻璃......第二步！")
             .subtitle("手动拼接？")
             .desc(d -> d
@@ -639,7 +630,7 @@ public final class SteamChapter {
             .requireAny());
 
     public static final Quest PREPARING_GLASS_STEP_THREE = CHAPTER.quest("preparing_glass_step_three", q -> q
-            .at(13, 8.5)
+            .at(5.5, 9)
             .title("制备玻璃......第三步！")
             .subtitle("熔炼成块！")
             .desc(d -> d
@@ -657,7 +648,7 @@ public final class SteamChapter {
             .dependsOn(PREPARING_GLASS_STEP_TWO, BLOCK_CASTING_MOLD));
 
     public static final Quest EXTRACTOR_NOT_A_JUICER = CHAPTER.quest("extractor_not_a_juicer", q -> q
-            .at(13, 10.5)
+            .at(3, 9)
             .title("提取机，不是榨汁机！")
             .subtitle("但其实也没什么区别不是吗")
             .desc(d -> d
@@ -668,7 +659,7 @@ public final class SteamChapter {
             .dependsOn(PREPARING_GLASS_STEP_THREE));
 
     public static final Quest UNRIPE_RUBBER = CHAPTER.quest("unripe_rubber", q -> q
-            .at(11.25, 10.5)
+            .at(-0.5, 9)
             .title("青涩的橡胶")
             .subtitle("提取的产物")
             .desc(d -> d
@@ -683,7 +674,8 @@ public final class SteamChapter {
             .dependsOn(EXTRACTOR_NOT_A_JUICER, THE_TREASURED_PRODUCT_OF_THE_RUBBER));
 
     public static final Quest RUBBER_FINALLY = CHAPTER.quest("rubber_finally", q -> q
-            .at(9, 10.5)
+            .at(-2, 11)
+            .preset(QuestPreset.IMPORTANT)
             .title("橡胶，终于")
             .subtitle("千辛万苦")
             .desc(d -> d
@@ -695,10 +687,11 @@ public final class SteamChapter {
             .task(Task.item(TagPrefix.ingot, GTMaterials.Rubber))
             .reward(Reward.item(TagPrefix.ingot, GTMaterials.Rubber, 32), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32))
             .dependsOn(UNRIPE_RUBBER, CAN_IT_BE_USED_FOR_BEAUTY)
-            .hideDependencyLines(false));
+            .hideDependencyLines(false)
+            .mainNode());
 
     public static final Quest BLOW_A_GLASS_BUBBLE = CHAPTER.quest("blow_a_glass_bubble", q -> q
-            .at(15, 5.5)
+            .at(5.5, 13)
             .title("吹个玻璃泡泡")
             .subtitle("让合金炉来！")
             .desc(d -> d
@@ -709,7 +702,7 @@ public final class SteamChapter {
             .dependsOn(PREPARING_GLASS_STEP_TWO, BALL_CASTING_MOLD));
 
     public static final Quest NOT_AN_ELECTRON_TUBE = CHAPTER.quest("not_an_electron_tube", q -> q
-            .at(15, 3.5)
+            .at(3, 13)
             .title("并非电子管")
             .subtitle("工作台要搓冒烟了！")
             .desc(d -> d
@@ -720,7 +713,7 @@ public final class SteamChapter {
             .dependsOn(BLOW_A_GLASS_BUBBLE));
 
     public static final Quest CENTRIFUGE = CHAPTER.quest("centrifuge", q -> q
-            .at(9, 13)
+            .at(-2, 13.5)
             .title("离心吗？")
             .subtitle("FFF机器")
             .desc(d -> d
@@ -734,11 +727,10 @@ public final class SteamChapter {
                     .line()
                     .line("{如果遇到执行不了的配方记得看看EMI，看看你的输入输出仓是不是比配方要求和产出的量小，或者是不是装少了仓室}", GRAY.italic()))
             .task(Task.item(MultiBlockA.STEAM_SEPARATOR))
-            .dependsOn(RUBBER_FINALLY)
-            .hideDependentLines());
+            .dependsOn(RUBBER_FINALLY));
 
     public static final Quest LARGE_POOL = CHAPTER.quest("large_pool", q -> q
-            .at(7.5, 12.5)
+            .at(-3, 13)
             .title("大泳池")
             .subtitle("并不会淹死人")
             .desc(d -> d
@@ -753,7 +745,7 @@ public final class SteamChapter {
             .dependsOn(RUBBER_FINALLY));
 
     public static final Quest DRUM_WASHING_MACHINE_MINERAL_SPECIFIC = CHAPTER.quest("drum_washing_machine_mineral_specific", q -> q
-            .at(10.5, 12.5)
+            .at(-1, 13)
             .title("滚筒洗衣机，矿物专用")
             .subtitle("然而并不能完全洗干净")
             .desc(d -> d
@@ -764,7 +756,7 @@ public final class SteamChapter {
             .dependsOn(RUBBER_FINALLY));
 
     public static final Quest SHEET_LIKE_RUBBER_IS_GOOD_RUBBER = CHAPTER.quest("sheet_like_rubber_is_good_rubber", q -> q
-            .at(6.5, 10.5)
+            .at(-4.5, 11)
             .title("片状的橡胶才是好橡胶")
             .subtitle("我需要多一台合金炉！")
             .desc(d -> d
@@ -777,7 +769,7 @@ public final class SteamChapter {
             .dependsOn(RUBBER_FINALLY, PLATE_CASTING_MOLD));
 
     public static final Quest ULV_SUPERCONDUCTOR = CHAPTER.quest("ulv_superconductor", q -> q
-            .at(-3.5, 10.5)
+            .at(-7.5, 11)
             .title("ULV超导")
             .subtitle("线靠衣装")
             .desc(d -> d
@@ -791,7 +783,7 @@ public final class SteamChapter {
             .dependsOn(SHEET_LIKE_RUBBER_IS_GOOD_RUBBER, YOU_CAN_STICK_WIRES));
 
     public static final Quest RUBBER_SUBSIDY = CHAPTER.quest("rubber_subsidy", q -> q
-            .at(5.5, 11.5)
+            .at(-4.5, 13)
             .icon(TagPrefix.plate, GTMaterials.Rubber)
             .title("橡胶补助")
             .task(Task.checkmark())
@@ -799,22 +791,8 @@ public final class SteamChapter {
             .dependsOn(SHEET_LIKE_RUBBER_IS_GOOD_RUBBER)
             .optional().hideUntilDepsVisible());
 
-    public static final Quest GT_PIPES = CHAPTER.quest("gt_pipes", q -> q
-            .at(-11, 6.5)
-            .icon(TagPrefix.pipeNormalFluid, GTMaterials.Bronze)
-            .title("GT管道")
-            .desc(d -> d
-                    .line("GTO中的GT管道经过了魔改：")
-                    .line()
-                    .line("- 优化tps，流体管道没有缓存，流体从输入直达输出")
-                    .line()
-                    .line("- 能够主动抽取机器/容器中的物品/流体，用扳手控制管道方向的同时也将激活管道的主动抽取功能"))
-            .task(Task.checkmark())
-            .reward(Reward.item(TagPrefix.pipeNormalFluid, GTMaterials.Bronze, 8))
-            .dependsOn(MISTY_MOVEMENT));
-
     public static final Quest WROUGHT_IRON_INGOT_SUBSIDY = CHAPTER.quest("wrought_iron_ingot_subsidy", q -> q
-            .at(-1, 14)
+            .at(-10.5, 13)
             .icon(TagPrefix.ingot, GTMaterials.WroughtIron)
             .title("锻铁锭补助")
             .subtitle("下一个阶段的重要材料")
@@ -824,7 +802,7 @@ public final class SteamChapter {
             .optional().hideUntilDepsVisible());
 
     public static final Quest ENERGISTICALLY_APPLIED_START_EASY = CHAPTER.quest("energistically_applied_start_easy", q -> q
-            .at(6.75, -2)
+            .at(12, -0.5)
             .icon(AEBlocks.ENERGY_ACCEPTOR)
             .title("应用能源起步{（简单）}", GREEN)
             .subtitle("没有频道的AE真好")
@@ -844,7 +822,7 @@ public final class SteamChapter {
             .optional().hideUntilDepsVisible());
 
     public static final Quest MULTIBLOCK_STEAM_MACHINE_HATCH_GUIDE = CHAPTER.quest("multiblock_steam_machine_hatch_guide", q -> q
-            .at(-11, 2.5)
+            .at(-9, 6)
             .icon(GTMachines.STEAM_IMPORT_BUS)
             .title("多方块蒸汽机器仓室指南")
             .desc(d -> d
@@ -863,47 +841,31 @@ public final class SteamChapter {
                     Task.item(GTMachines.STEAM_HATCH),
                     Task.item(GTOMachines.STEAM_VENT_HATCH))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 8))
-            .dependsOn(MISTY_MOVEMENT));
-
-    public static final Quest ITEM_PIPE = CHAPTER.quest("item_pipe", q -> q
-            .at(-7.5, 9.75)
-            .subtitle("另一种管道")
-            .desc(d -> d.line("你也可以使用来自pipez的管道来物流"))
-            .task(Task.item(QuestExternalRefs.PipezItems.ITEM_PIPE))
-            .reward(Reward.item(QuestExternalRefs.PipezItems.ITEM_PIPE, 12))
-            .dependsOn(MISTY_MOVEMENT)
-            .hideDependencyLines());
-
-    public static final Quest FLUID_PIPE = CHAPTER.quest("fluid_pipe", q -> q
-            .at(-10.5, 9.75)
-            .subtitle("另一种管道")
-            .desc(d -> d.line("你也可以使用来自pipez的管道来物流"))
-            .task(Task.item(QuestExternalRefs.PipezItems.FLUID_PIPE))
-            .reward(Reward.item(QuestExternalRefs.PipezItems.FLUID_PIPE, 12))
-            .dependsOn(MISTY_MOVEMENT)
-            .hideDependencyLines());
+            .dependsOn(SteamChapter.BRONZE_BRICK_CASING));
 
     public static final Quest STEAM_POWERED = CHAPTER.quest("steam_powered", q -> q
-            .at(-9, 11.25)
+            .at(-8, 3)
             .icon(GTMaterials.Steam.getBucket())
             .title("蒸汽驱动")
+            .subtitle("人类科技的{尽头}起点是烧开水", STRIKE)
             .desc(d -> d
-                    .line("在游戏中，默认情况下2mb蒸汽=1EU，你的蒸汽机器消耗蒸汽以及蒸汽发电都会遵循这个规则")
+                    .line("在游戏中，默认情况下{2mb蒸汽=1EU}，你的蒸汽机器消耗蒸汽以及蒸汽发电都会遵循这个规则", YELLOW)
                     .line()
                     .line("低压机器工作所有配方都需要2x耗时，不过每秒消耗的蒸汽会减少50%")
                     .line()
-                    .line("高压机器回归正常的耗时和耗能，因此低压和高压运行配方需要的蒸汽总量是不变的")
+                    .line("高压机器回归正常的耗时和耗能，因此{低压和高压运行配方需要的蒸汽总量是相同的}", YELLOW)
                     .line()
                     .line("多方块机器在tooltips中标注的额外耗时同时会让你运行配方需要的蒸汽总量也变多")
                     .line()
-                    .line("专家模式下低压机器还有额外50%的耗能惩罚"))
+                    .line("{专家模式下低压机器还有额外50%的耗能惩罚}", RED))
             .task(Task.checkmark())
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(MISTY_MOVEMENT)
-            .hideDependencyLines());
+            .dependsOn(SteamChapter.BRONZE_BRICK_CASING)
+            .hideDependencyLines()
+            .optional());
 
     public static final Quest EXTRACTION_PIPE = CHAPTER.quest("extraction_pipe", q -> q
-            .at(15, -0.5)
+            .at(2.5, 11)
             .title("抽取管道")
             .desc(d -> d
                     .line("为了让泵能够工作，你需要放入一个{抽取管道}，等待其多次抽取真空直到真空等级大于0", YELLOW)
@@ -915,7 +877,10 @@ public final class SteamChapter {
             .dependsOn(A_LITTLE_DEVICE_THAT_CAN_CREATE));
 
     public static final Quest RAW_CIRCUIT_BOARD = CHAPTER.quest("raw_circuit_board", q -> q
-            .at(15, 1.5)
+            .at(1, 13)
+            .shape(QuestShape.GEAR)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("原始电路板？")
             .subtitle("嘬嘬嘬")
             .desc(d -> d
@@ -926,20 +891,11 @@ public final class SteamChapter {
                     .line("{做出原始组装机后，你就可以直接在组装机里制造真空管了}", GRAY.italic()))
             .task(Task.item(GTItems.VACUUM_TUBE))
             .reward(Reward.item(GTItems.VACUUM_TUBE, 4))
-            .dependsOn(NOT_AN_ELECTRON_TUBE, EXTRACTION_PIPE));
-
-    public static final Quest VACUUM_TUBE_SUBSIDY = CHAPTER.quest("vacuum_tube_subsidy", q -> q
-            .at(17, 1.5)
-            .icon(GTItems.VACUUM_TUBE)
-            .title("真空管补助")
-            .task(Task.checkmark())
-            .easySubsidy(Reward.item(GTItems.VACUUM_TUBE, 64))
-            .normalSubsidy(Reward.item(GTItems.VACUUM_TUBE, 12))
-            .dependsOn(RAW_CIRCUIT_BOARD)
-            .optional().hideUntilDepsVisible());
+            .dependsOn(NOT_AN_ELECTRON_TUBE, EXTRACTION_PIPE)
+            .mainNode());
 
     public static final Quest ANY_PLUNGERS = CHAPTER.quest("any_plungers", q -> q
-            .at(5.5, 9.5)
+            .at(-6, 13)
             .desc(d -> d.line("清空容器或者机器中的流体，{不会返还}", RED))
             .task(Task.tag(CustomTags.PLUNGERS, 1).title("任意搋子"))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
@@ -947,7 +903,7 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest CAVE_DESTROYER = CHAPTER.quest("cave_destroyer", q -> q
-            .at(-8.5, 2)
+            .at(-8.5, 1.5)
             .icon(Items.CLAY_BALL)
             .title("洞穴毁灭者")
             .subtitle("只不过是轻轻动了动黏土而已")
@@ -959,20 +915,20 @@ public final class SteamChapter {
                     .line("那么黏土去哪找呢？去河流边上，或者直接点，繁茂洞穴，或者再直接点，{去买点}", link(ShopChapter.A_STACK_OF_CLAY)))
             .task(Task.item(Items.CLAY_BALL, 64), Task.tag(Tags.Items.SAND, 1).title("沙子").icon(Items.SAND))
             .reward(Reward.item(Items.CLAY, 64), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(MainStoneageChapter.A_FULL_ARSENAL)
+            .dependsOn(StoneageChapter.A_FULL_ARSENAL)
             .hideDependencyLines());
 
     public static final Quest BRICK_WOODEN_FORM = CHAPTER.quest("brick_wooden_form", q -> q
-            .at(-8.5, 0)
+            .at(-8.5, -0.5)
             .subtitle("可重复")
             .desc(d -> d.line("这东西在接下来的合成中是可以重复利用的，所以造一个就好了"))
             .task(Task.item(GTItems.WOODEN_FORM_BRICK))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(MainStoneageChapter.A_FULL_ARSENAL)
+            .dependsOn(StoneageChapter.A_FULL_ARSENAL)
             .optional());
 
     public static final Quest COMPRESSED_COKE_CLAY = CHAPTER.quest("compressed_coke_clay", q -> q
-            .at(-6.5, 0)
+            .at(-6.5, -0.5)
             .subtitle("然后我们需要把这堆东西挤进来")
             .desc(d -> d
                     .line("你需要116x{焦炉砖}以搭建一个最简可用焦炉", GOLD)
@@ -988,7 +944,7 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest COKE_OVEN_BRICK = CHAPTER.quest("coke_oven_brick", q -> q
-            .at(-6.5, 2)
+            .at(-6.5, 1.5)
             .subtitle("需要点火")
             .desc(d -> d.line("你有两个选择制作焦炉砖块，使用耗材较多，无需等待的手搓配方；或是耗材较少，但是需要等待的合金炉配方"))
             .task(Task.item(GTItems.COKE_OVEN_BRICK).consume(false))
@@ -998,7 +954,7 @@ public final class SteamChapter {
             .requireCount(2));
 
     public static final Quest COKE_OVEN = CHAPTER.quest("coke_oven", q -> q
-            .at(-3.5, 2)
+            .at(-4, 1.5)
             .icon(GTMultiMachines.COKE_OVEN)
             .title("焦炉")
             .subtitle("你的第一个多方块结构")
@@ -1009,7 +965,7 @@ public final class SteamChapter {
                     .line()
                     .line("焦炉产出的焦煤是正常煤炭燃烧时间的两倍，同时产出的杂酚油用来制作蒸汽时代的设备")
                     .line()
-                    .line("还在傻傻手搭多方块吗？我建议你用{终端}来辅助搭建", link(MainStoneageChapter.MULTIBLOCK_HELPER))
+                    .line("还在傻傻手搭多方块吗？我建议你用{终端}来辅助搭建", link(StoneageChapter.MULTIBLOCK_HELPER))
                     .line()
                     .line("{一定要多堆点焦炉，要炼钢一台可不够。}", DARK_GRAY.italic()))
             .task(Task.item(GTMultiMachines.COKE_OVEN), Task.item(GTBlocks.CASING_COKE_BRICKS, 25))
@@ -1017,7 +973,8 @@ public final class SteamChapter {
             .dependsOn(COKE_OVEN_BRICK));
 
     public static final Quest LOOKING_AT_A_PUMP_TO_QUENCH = CHAPTER.quest("looking_at_a_pump_to_quench", q -> q
-            .at(-1, 2)
+            .at(-1, 1.5)
+            .nodeScale(1.25)
             .icon(GTMultiMachines.PRIMITIVE_PUMP)
             .title("望泵止渴")
             .subtitle("所处皆为井")
@@ -1044,7 +1001,7 @@ public final class SteamChapter {
             .dependsOn(COKE_OVEN));
 
     public static final Quest SEMI_AUTOMATION = CHAPTER.quest("semi_automation", q -> q
-            .at(-1, -0.5)
+            .at(-1, 0)
             .icon(GTOItems.ULV_CONVEYOR_MODULE)
             .title("半自动化")
             .desc(d -> d
@@ -1058,7 +1015,8 @@ public final class SteamChapter {
             .dependsOn(LOOKING_AT_A_PUMP_TO_QUENCH));
 
     public static final Quest Q_7BCD4971 = CHAPTER.quest("q_7bcd4971", q -> q
-            .at(1, -0.5)
+            .at(1, 0)
+            .preset(QuestPreset.IMPORTANT)
             .icon(GTBlocks.HIGH_PRESSURE_HAZARD_SIGN_BLOCK)
             .subtitle("必要的决策")
             .desc(d -> d
@@ -1072,7 +1030,7 @@ public final class SteamChapter {
             .dependsOn(SEMI_AUTOMATION));
 
     public static final Quest ALTERNATIVE_PATH = CHAPTER.quest("alternative_path", q -> q
-            .at(1, -2)
+            .at(1, -1.5)
             .title("另辟蹊径")
             .subtitle("更高效也更危险的产蒸汽手段")
             .desc(d -> d
@@ -1095,7 +1053,7 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest SOLAR_BOILER = CHAPTER.quest("solar_boiler", q -> q
-            .at(1, 1)
+            .at(1, 1.5)
             .title("太阳能锅炉")
             .subtitle("不会钙化")
             .desc(d -> d
@@ -1111,14 +1069,14 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest HP_STEAM_SOLAR_BOILER = CHAPTER.quest("hp_steam_solar_boiler", q -> q
-            .at(2.5, 1)
+            .at(2.5, 1.5)
             .desc(d -> d.line("三倍蒸汽产能，如果有钢，几乎没有理由用普通版本！"))
             .task(Task.item(GTMachines.STEAM_SOLAR_BOILER.second()))
             .dependsOn(Q_7BCD4971)
             .optional());
 
     public static final Quest LP_STEAM_LIQUID_BOILER = CHAPTER.quest("lp_steam_liquid_boiler", q -> q
-            .at(2.5, -0.5)
+            .at(2.5, 0)
             .desc(d -> d
                     .line("{液体燃料锅炉}的产能是{固体燃料锅炉}的两倍，如果你的{杂酚油}多得没地方存，为何不将这些黏糊糊的{半流质}流体通通喂给{液体燃料锅炉}呢？", GOLD, YELLOW, GOLD, GOLD, GOLD)
                     .line()
@@ -1128,7 +1086,7 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest HP_STEAM_LIQUID_BOILER = CHAPTER.quest("hp_steam_liquid_boiler", q -> q
-            .at(4, -0.5)
+            .at(4, 0)
             .subtitle("更疯狂的杂酚油吞噬者")
             .desc(d -> d.line("两倍蒸汽产能，如果有钢，几乎没有理由用普通版本！"))
             .task(Task.item(GTMachines.STEAM_LIQUID_BOILER.second()))
@@ -1136,13 +1094,13 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest BRONZE_LARGE_BOILER = CHAPTER.quest("bronze_large_boiler", q -> q
-            .at(4, -2)
+            .at(4, -1.5)
             .desc(d -> d.line("它是ULV时代的产物，LV时代前最强大的蒸汽来源，如果你没有接受《清洁能源挑战》，那么不妨为你的{大型蒸汽机器们}制造一台，几乎找不到缺点", GOLD))
             .task(Task.item(GTMultiMachines.LARGE_BOILER_BRONZE))
             .dependsOn(Q_7BCD4971));
 
     public static final Quest STEAM_EXPANSION = CHAPTER.quest("steam_expansion", q -> q
-            .at(2.5, -2)
+            .at(2.5, -1.5)
             .title("蒸汽扩产")
             .desc(d -> d
                     .line("扩产{蒸汽}能够加速你的资源生产！", YELLOW)
@@ -1153,7 +1111,7 @@ public final class SteamChapter {
             .optional());
 
     public static final Quest COKE_OVEN_HATCH = CHAPTER.quest("coke_oven_hatch", q -> q
-            .at(-3.5, 0)
+            .at(-4, -0.5)
             .subtitle("我们需要自动化！")
             .desc(d -> d
                     .line("焦炉仓可以同时作为输入和输出，它{不会}自动抽取物品，但可以{自动从输出口输出}物品和流体", YELLOW, YELLOW)
@@ -1165,22 +1123,86 @@ public final class SteamChapter {
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 8))
             .dependsOn(COKE_OVEN));
 
+    public static final Quest BRONZE_BRICK_CASING = CHAPTER.quest("bronze_brick_casing", q -> q
+            .at(-10.5, 4.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
+            .title("扬雾运动")
+            .subtitle("隐入蒸汽")
+            .desc(d -> d
+                    .line("{GregTech Odessey}中，蒸汽时代的内容被优化与拓展", DARK_RED.underline())
+                    .line()
+                    .line("在蒸汽的驱动下，很多需要手动合成的配方可以被更先进的方式替代")
+                    .line()
+                    .line("开始你的青铜大跃进吧")
+                    .line()
+                    .line("{钢}是你这个阶段的首要目标，然后你就可以制作{ULV机器外壳}前往下一个电压了", GOLD, GOLD)
+                    .line()
+                    .line("{简单}和{普通}难度下重要节点会分别赠送不同数量的补助。", GREEN, GOLD)
+                    .line()
+                    .line("。。。别看了{专家}，给你个青铜锭，一边玩去吧。", RED))
+            .task(Task.item(GTBlocks.BRONZE_BRICKS_HULL))
+            .dependsOn(StoneageChapter.WESTERNIZATION_MOVEMENT_COPY_1, StoneageChapter.TOOL_UP)
+            .mainNode()
+            .reward(Reward.item(Items.COAL, 128))
+            .rewardFor(QuestTierSet.NORMAL_EXPERT, Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .rewardFor(QuestTierSet.EASY)
+            .rewardFor(QuestTierSet.EASY, Reward.item(ToolHelper.get(GTOToolType.VAJRA_HV, GTOMaterials.DarkSteel).getItem(), 1))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.PROSPECTOR_HV, 1))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 192))
+            .rewardFor(QuestTierSet.EASY, Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 320))
+            .rewardFor(QuestTierSet.EASY, Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 320))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 128))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 64))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(GTItems.PROSPECTOR_LV, 1))
+            .rewardFor(QuestTierSet.EXPERT, Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 1)));
+
+    public static final Quest LP_STEAM_SOLID_BOILER = CHAPTER.quest("lp_steam_solid_boiler", q -> q
+            .at(-8.5, 4.5)
+            .title("继续前进！")
+            .subtitle("你终于可以开始用蒸汽做点事了")
+            .desc(d -> d
+                    .line("到这了？如果你从开始一直玩到这的话可以去休息会。")
+                    .line()
+                    .line("你需要制作一个{低压蒸汽固体燃料锅炉}，你不得不从这台机器开始。", GOLD)
+                    .line()
+                    .line("{继续前进，路还很长呢。}", DARK_GREEN))
+            .task(Task.item(GTMachines.STEAM_SOLID_BOILER.first()))
+            .dependsOn(BRONZE_BRICK_CASING, STEAM_POWERED, SteamChapter.STEAM_PIPE));
+
+    public static final Quest STEAM_PIPE = CHAPTER.quest("steam_pipe", q -> q
+            .at(-9, 3)
+            .title("GT管道")
+            .desc(d -> d
+                    .line("GTO中的GT管道经过了魔改：")
+                    .line()
+                    .line("- 优化tps，流体管道没有缓存，流体从输入直达输出")
+                    .line()
+                    .line("- 能够主动抽取机器/容器中的物品/流体，用扳手控制管道方向的同时也将激活管道的主动抽取功能"))
+            .task(Task.checkmark(), Task.item(GTOBlocks.STEAM_PIPES[GTValues.ULV]))
+            .reward(Reward.item(GTOBlocks.STEAM_PIPES[GTValues.ULV], 8))
+            .dependsOn(BRONZE_BRICK_CASING)
+            .hideDependencyLines()
+            .optional());
+
+    public static final QuestLink WELCOME_TO_THE_ULTRA_LOW_PRESSURE_COPY_1 = CHAPTER.copy(UlvChapter.WELCOME_TO_THE_ULTRA_LOW_PRESSURE, -10.5, 11);
+
     static {
         CHAPTER.decorate(d -> d
-                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 3.285714285714292, 6, 1, 1))
-                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 5.285714285714292, 6, 1, 1))
-                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 5.285714285714292, 8, 1, 1))
-                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 3.285714285714292, 8, 1, 1))
-                .image(QuestImage.of(QuestTextures.MULTIBLOCK_ANCIENT_REACTOR_CORE_OVERLAY_TOP, 4.285714285714292, 7, 1, 1))
-                .image(QuestImage.of(QuestTextures.AGON_BLOCK_13_BLACK, 4.285714285714292, 7, 1, 1).after(BACK_TO_THE_PAST))
+                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 6.5, -1.5, 1, 1))
+                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 8.5, -1.5, 1, 1))
+                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 8.5, 0.5, 1, 1))
+                .image(QuestImage.of(QuestTextures.DIAMOND_BLOCK, 6.5, 0.5, 1, 1))
+                .image(QuestImage.of(QuestTextures.MULTIBLOCK_ANCIENT_REACTOR_CORE_OVERLAY_TOP, 7.5, -0.5, 1, 1))
+                .image(QuestImage.of(QuestTextures.AGON_BLOCK_13_BLACK, 7.5, -0.5, 1, 1).after(BACK_TO_THE_PAST))
                 .image(
-                        QuestImage.of(QuestTextures.NETHER_PORTAL, 4.285714285714292, 7, 1.5, 1.5).rotation(45).tint(0xA40CAD).order(1).hover("前往远古世界").clickCommand("/execute in gtocore:ancient_world run tp 0 128 0").after(BACK_TO_THE_PAST))
-                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 4.285714285714292, 6, 1, 1).order(2))
-                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 5.285714285714292, 7, 1, 1).order(2))
-                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 4.285714285714292, 8, 1, 1).order(2))
-                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 3.285714285714292, 7, 1, 1).order(2))
-                .link(QuestLink.of(LvChapter.LARGE_STEAM_SOLAR_BOILER, 4, 1))
-                .link(QuestLink.of(UlvChapter.WELCOME_TO_THE_ULTRA_LOW_PRESSURE, -3.5, 14))
-                .link(QuestLink.of(UlvChapter.BRAND_NEW_ENERGY_SYSTEM_HEAT, -1, -2)));
+                        QuestImage.of(QuestTextures.NETHER_PORTAL, 7.5, -0.5, 1.5, 1.5).rotation(45).tint(0xA40CAD).order(1).hover("前往远古世界").clickCommand("/execute in gtocore:ancient_world run tp 0 128 0").after(BACK_TO_THE_PAST))
+                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 7.5, -1.5, 1, 1).order(2))
+                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 8.5, -0.5, 1, 1).order(2))
+                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 7.5, 0.5, 1, 1).order(2))
+                .image(QuestImage.of(QuestTextures.CASINGS_STEAM_BRICKED_STEEL_TOP, 6.5, -0.5, 1, 1).order(2))
+                .link(QuestLink.of(LvChapter.LARGE_STEAM_SOLAR_BOILER, 4, 1.5))
+                .link(QuestLink.of(UlvChapter.WELCOME_TO_THE_ULTRA_LOW_PRESSURE, -10.5, 11).mainNode())
+                .link(QuestLink.of(UlvChapter.BRAND_NEW_ENERGY_SYSTEM_HEAT, -1, -1.5)));
     }
 }

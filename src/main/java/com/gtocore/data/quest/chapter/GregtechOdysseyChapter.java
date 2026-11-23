@@ -9,6 +9,7 @@ import com.gtolib.api.quest.AutoClaim;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
+import com.gtolib.api.quest.QuestPreset;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -28,7 +29,7 @@ import static com.gtolib.api.quest.QuestStyle.*;
 public final class GregtechOdysseyChapter {
 
     public static final QuestChapter CHAPTER = QuestChapter.of("gregtech_odyssey", c -> c
-            .title("0. 欢迎入职格雷科技有限公司™")
+            .title("欢迎入职格雷科技有限公司™")
             .subtitle("Hello World!")
             .iconStack(
                     () -> QuestStacks.unbreakable(QuestStacks.enchanted(QuestStacks.enchanted(ToolHelper.get(GTOToolType.VAJRA_IV, GTOMaterials.Enderium), Enchantments.BLOCK_FORTUNE, 8), Enchantments.MOB_LOOTING, 8))));
@@ -112,6 +113,8 @@ public final class GregtechOdysseyChapter {
 
     public static final Quest HELLO_WORLD = CHAPTER.quest("hello_world", q -> q
             .at(15, 0)
+            .preset(QuestPreset.IMPORTANT)
+            .nodeScale(1.4)
             .icon(Items.GRASS_BLOCK)
             .title("Hello World")
             .subtitle("To Greg, or not GTO...")
@@ -181,8 +184,5 @@ public final class GregtechOdysseyChapter {
             .task(Task.item(Items.PAPER).nbt("{RepairCost:0,display:{Name:'{\"text\":\"AEMVEV\"}'}}").matchNbt(true))
             .optional().invisible());
 
-    static {
-        CHAPTER.decorate(d -> d
-                .link(QuestLink.of(TipsChapter.DIFFICULTY_AND_MODES, 3, 0)));
-    }
+    public static final QuestLink DIFFICULTY_AND_MODES_COPY_1 = CHAPTER.copy(TipsChapter.DIFFICULTY_AND_MODES, 3, 0);
 }

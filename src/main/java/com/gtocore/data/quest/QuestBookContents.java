@@ -18,27 +18,8 @@ import com.gtocore.data.quest.chapter.LuvChapter;
 import com.gtocore.data.quest.chapter.LvChapter;
 import com.gtocore.data.quest.chapter.Magic1Chapter;
 import com.gtocore.data.quest.chapter.Magic2Chapter;
-import com.gtocore.data.quest.chapter.MainStoneageChapter;
 import com.gtocore.data.quest.chapter.MassiveManufacturingChapter;
 import com.gtocore.data.quest.chapter.MvChapter;
-import com.gtocore.data.quest.chapter.NeolithicChapter;
-import com.gtocore.data.quest.chapter.NewEvChapter;
-import com.gtocore.data.quest.chapter.NewGregtechOdysseyChapter;
-import com.gtocore.data.quest.chapter.NewHvChapter;
-import com.gtocore.data.quest.chapter.NewIvChapter;
-import com.gtocore.data.quest.chapter.NewLuvChapter;
-import com.gtocore.data.quest.chapter.NewLvChapter;
-import com.gtocore.data.quest.chapter.NewMaxChapter;
-import com.gtocore.data.quest.chapter.NewMvChapter;
-import com.gtocore.data.quest.chapter.NewOpvChapter;
-import com.gtocore.data.quest.chapter.NewSteamChapter;
-import com.gtocore.data.quest.chapter.NewUevChapter;
-import com.gtocore.data.quest.chapter.NewUhvChapter;
-import com.gtocore.data.quest.chapter.NewUivChapter;
-import com.gtocore.data.quest.chapter.NewUlvChapter;
-import com.gtocore.data.quest.chapter.NewUvChapter;
-import com.gtocore.data.quest.chapter.NewUxvChapter;
-import com.gtocore.data.quest.chapter.NewZpmChapter;
 import com.gtocore.data.quest.chapter.OpvChapter;
 import com.gtocore.data.quest.chapter.OreProcessingChapter;
 import com.gtocore.data.quest.chapter.OresChapter;
@@ -49,6 +30,7 @@ import com.gtocore.data.quest.chapter.ShopChapter;
 import com.gtocore.data.quest.chapter.SopDatabaseChapter;
 import com.gtocore.data.quest.chapter.SpaceStationChapter;
 import com.gtocore.data.quest.chapter.SteamChapter;
+import com.gtocore.data.quest.chapter.StoneageChapter;
 import com.gtocore.data.quest.chapter.TechnodeChapter;
 import com.gtocore.data.quest.chapter.TechtreeChapter;
 import com.gtocore.data.quest.chapter.TechtreeFtbqChapter;
@@ -76,15 +58,14 @@ public final class QuestBookContents {
             .showLockIcons(false));
 
     public static final QuestGroup ROOT = QuestGroup.root(g -> g
-            .chapters(TipsChapter.CHAPTER)
+            .chapters(GregtechOdysseyChapter.CHAPTER, TipsChapter.CHAPTER)
             .devChapters(SopDatabaseChapter.CHAPTER, UtilChapter.CHAPTER)
             .chapters(ShopChapter.CHAPTER));
 
     public static final QuestGroup MAIN = QuestGroup.of("main", g -> g
             .title("主线")
             .chapters(
-                    GregtechOdysseyChapter.CHAPTER,
-                    MainStoneageChapter.CHAPTER,
+                    StoneageChapter.CHAPTER,
                     SteamChapter.CHAPTER,
                     UlvChapter.CHAPTER,
                     LvChapter.CHAPTER,
@@ -101,32 +82,12 @@ public final class QuestBookContents {
                     UxvChapter.CHAPTER,
                     OpvChapter.CHAPTER));
 
-    public static final QuestGroup NEW_MAIN = QuestGroup.of("new_main", g -> g
-            .title("参考主线")
-            .devOnly()
-            .chapters(
-                    NewGregtechOdysseyChapter.CHAPTER,
-                    NeolithicChapter.CHAPTER,
-                    NewSteamChapter.CHAPTER,
-                    NewUlvChapter.CHAPTER,
-                    NewLvChapter.CHAPTER,
-                    NewMvChapter.CHAPTER,
-                    NewHvChapter.CHAPTER,
-                    NewEvChapter.CHAPTER,
-                    NewIvChapter.CHAPTER,
-                    NewLuvChapter.CHAPTER,
-                    NewZpmChapter.CHAPTER,
-                    NewUvChapter.CHAPTER,
-                    NewUhvChapter.CHAPTER,
-                    NewUevChapter.CHAPTER,
-                    NewUivChapter.CHAPTER,
-                    NewUxvChapter.CHAPTER,
-                    NewOpvChapter.CHAPTER,
-                    NewMaxChapter.CHAPTER));
-
     public static final QuestGroup TECH_TREE = QuestGroup.of("tech_tree", g -> g
             .title("科技树")
-            .chapters(TechtreeChapter.CHAPTER, TechtreeFtbqChapter.CHAPTER, TechnodeChapter.CHAPTER));
+            .chapters(
+                    TechtreeChapter.CHAPTER,
+                    TechtreeFtbqChapter.CHAPTER,
+                    TechnodeChapter.CHAPTER));
 
     public static final QuestGroup MULTIBLOCK = QuestGroup.of("multiblock", g -> g
             .title("多方块机器")
@@ -160,7 +121,10 @@ public final class QuestBookContents {
 
     public static final QuestGroup MILESTONE = QuestGroup.of("milestone", g -> g
             .title("里程碑")
-            .chapters(TitlesChapter.CHAPTER, ProgressChapter.CHAPTER, PeriodicTableChapter.CHAPTER));
+            .chapters(
+                    TitlesChapter.CHAPTER,
+                    ProgressChapter.CHAPTER,
+                    PeriodicTableChapter.CHAPTER));
 
     private QuestBookContents() {}
 
