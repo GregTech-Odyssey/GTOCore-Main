@@ -56,7 +56,7 @@ public final class ItemMap {
         SCRAP_MAP.put(Items.STICK, 1124);
         SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.gem, GTMaterials.GarnetYellow), 155);
         SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.gem, GTMaterials.GarnetRed), 155);
-        SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.gem, GTMaterials.GarnetSand), 155);
+        SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.dust, GTMaterials.GarnetSand), 155);
         SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.dust, GTMaterials.Steel), 155);
         SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.dust, GTMaterials.Copper), 374);
         SCRAP_MAP.put(ChemicalHelper.getItem(TagPrefix.dust, GTMaterials.Brass), 155);
