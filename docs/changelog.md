@@ -19,6 +19,7 @@
 
 **修复：**
 
+- 资源加载：修复资源 ID 首次并发计算哈希时可能返回错误值、导致资源查找失败的问题。
 - 任务书：恢复章节级 `.hideQuestsUntilDepsComplete()` 为章内任务的默认隐藏，科技树两章恢复逐任务显示；新增 `.hideChapterUntilDepsComplete()` 作为整章门槛，稀土章节改用该标记。
 - 任务书：任务节点物品图标的动态贴图兼容 Embeddium 的“仅绘制可见动画纹理”，图标随帧动画播放。
 - LDLib 物品槽：修复 Mouse Tweaks 滚轮搬运、Inventory Essentials 快捷搬运和 Shift 双击批量转移。批量转移按槽位实际所属的库存分组，只能取出的槽位以整组物品为单位滚轮搬出。
