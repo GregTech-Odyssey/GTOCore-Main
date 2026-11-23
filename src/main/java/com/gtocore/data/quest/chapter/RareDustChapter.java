@@ -6,6 +6,7 @@ import com.gtocore.data.quest.QuestTextures;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.task.Task;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
@@ -46,6 +47,10 @@ public final class RareDustChapter {
 
     public static final Quest BASTNASITE_DUST = CHAPTER.quest("bastnasite_dust", q -> q
             .at(-9, 1)
+            .desc(d -> d
+                    .line("三条线走一条就可以"))
+            .nodeScale(2)
+            .shape(QuestShape.HEXAGON)
             .task(Task.item(TagPrefix.dust, GTMaterials.Bastnasite).optional(), Task.checkmark().optional())
             .dependsOn(Q_75569B55));
 
@@ -68,6 +73,7 @@ public final class RareDustChapter {
 
     public static final Quest CONCENTRATED_CERIUM_CHLORIDE_SOLUTION_BUCKET = CHAPTER.quest("concentrated_cerium_chloride_solution_bucket", q -> q
             .at(-3.5, 3.5)
+            .shape(QuestShape.PENTAGON)
             .icon(GTOMaterials.ConcentratedCeriumChlorideSolution.getBucket())
             .task(Task.item(GTOMaterials.ConcentratedCeriumChlorideSolution.getBucket()).optional(), Task.checkmark().optional())
             .dependsOn(CERIUM_RICH_MIXTURE_DUST));
@@ -113,12 +119,18 @@ public final class RareDustChapter {
 
     public static final Quest SAMARIUM_REFINED_DUST = CHAPTER.quest("samarium_refined_dust", q -> q
             .at(0.5, -0.5)
-            .desc(d -> d.line("钕矿副产物"))
+            .nodeScale(2)
+            .shape(QuestShape.HEXAGON)
+            .desc(d -> d
+                    .line("钕矿副产物")
+                    .line()
+                    .line("三条线走一条就可以"))
             .task(Task.item(TagPrefix.dust, GTOMaterials.SamariumRefinedPowder).optional(), Task.checkmark().optional())
             .dependsOn(Q_75569B55));
 
     public static final Quest SAMARIUM_CHLORIDE_CONCENTRATE_SOLUTION_BUCKET = CHAPTER.quest("samarium_chloride_concentrate_solution_bucket", q -> q
             .at(0.5, 3.5)
+            .shape(QuestShape.PENTAGON)
             .icon(GTOMaterials.SamariumChlorideConcentrateSolution.getBucket())
             .task(Task.item(GTOMaterials.SamariumChlorideConcentrateSolution.getBucket()).optional(), Task.checkmark().optional())
             .dependsOn(SAMARIUM_REFINED_DUST));
@@ -165,6 +177,7 @@ public final class RareDustChapter {
 
     public static final Quest NEODYMIUM_RARE_EARTH_CONCENTRATE_DUST = CHAPTER.quest("neodymium_rare_earth_concentrate_dust", q -> q
             .at(2.5, -0.5)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.NeodymiumRareEarthConcentratePowder).optional(), Task.checkmark().optional())
             .dependsOn(FLUORO_CARBON_LANTHANIDE_CERIUM_RARE_EARTH_SUSPENSION_BUCKET));
 
@@ -175,22 +188,27 @@ public final class RareDustChapter {
 
     public static final Quest RARE_EARTH_DUST = CHAPTER.quest("rare_earth_dust", q -> q
             .at(3.75, 2.5)
+            .nodeScale(2)
+            .shape(QuestShape.GEAR)
             .task(Task.item(TagPrefix.dust, GTMaterials.RareEarth).optional(), Task.checkmark().optional())
             .dependsOn(SAMARIUM_RARE_EARTH_CONCENTRATE_DUST)
             .requireAnyStarted());
 
     public static final Quest NEODYMIUM_OXIDE_DUST = CHAPTER.quest("neodymium_oxide_dust", q -> q
             .at(3.5, 0)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.NeodymiumOxide).optional(), Task.checkmark().optional())
             .dependsOn(NEODYMIUM_RARE_EARTH_CONCENTRATE_DUST));
 
     public static final Quest LANTHANUM_CHLORIDE_DUST = CHAPTER.quest("lanthanum_chloride_dust", q -> q
             .at(3.5, -1)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.LanthanumChloride).optional(), Task.checkmark().optional())
             .dependsOn(NEODYMIUM_RARE_EARTH_CONCENTRATE_DUST));
 
     public static final Quest FLUORINATED_SAMARIUM_CONCENTRATE_DUST = CHAPTER.quest("fluorinated_samarium_concentrate_dust", q -> q
             .at(5, 1)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.FluorinatedSamariumConcentratePowder).optional(), Task.checkmark().optional())
             .dependsOn(SAMARIUM_RARE_EARTH_CONCENTRATE_DUST));
 
@@ -201,31 +219,42 @@ public final class RareDustChapter {
 
     public static final Quest SAMARIUM_TERBIUM_MIXTURE_DUST = CHAPTER.quest("samarium_terbium_mixture_dust", q -> q
             .at(6, 1)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.SamariumTerbiumMixturePowder).optional(), Task.checkmark().optional())
             .dependsOn(FLUORINATED_SAMARIUM_CONCENTRATE_DUST));
 
     public static final Quest NITRIDED_SAMARIUM_TERBIUM_MIXTURE_DUST = CHAPTER.quest("nitrided_samarium_terbium_mixture_dust", q -> q
             .at(7, 1)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.NitridedSamariumTerbiumMixturePowder).optional(), Task.checkmark().optional())
             .dependsOn(SAMARIUM_TERBIUM_MIXTURE_DUST));
 
     public static final Quest TERBIUM_NITRATE_DUST = CHAPTER.quest("terbium_nitrate_dust", q -> q
             .at(8, 1)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.TerbiumNitratePowder).optional(), Task.checkmark().optional())
             .dependsOn(NITRIDED_SAMARIUM_TERBIUM_MIXTURE_DUST));
 
     public static final Quest TERBIUM_DUST = CHAPTER.quest("terbium_dust", q -> q
             .at(9, 1)
+            .shape(QuestShape.RSQUARE)
             .task(Task.item(TagPrefix.dust, GTMaterials.Terbium).optional(), Task.checkmark().optional())
             .dependsOn(TERBIUM_NITRATE_DUST));
 
     public static final Quest SAMARIUM_PRECIPITATE_DUST = CHAPTER.quest("samarium_precipitate_dust", q -> q
             .at(8, -1)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.SamariumPrecipitatePowder).optional(), Task.checkmark().optional())
             .dependsOn(NITRIDED_SAMARIUM_TERBIUM_MIXTURE_DUST));
 
     public static final Quest MONAZITE_DUST = CHAPTER.quest("monazite_dust", q -> q
             .at(-9, -2)
+            .desc(d -> d
+                    .line("三条线走一条就可以")
+                    .line()
+                    .line("建议走这条，可以用另外两条线的原料增产"))
+            .nodeScale(2)
+            .shape(QuestShape.HEXAGON)
             .task(Task.item(TagPrefix.dust, GTMaterials.Monazite).optional(), Task.checkmark().optional())
             .dependsOn(Q_75569B55));
 
@@ -248,6 +277,7 @@ public final class RareDustChapter {
 
     public static final Quest THORIUM_PHOSPHATE_REFINED_DUST = CHAPTER.quest("thorium_phosphate_refined_dust", q -> q
             .at(-5.5, -4)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.ThoriumPhosphateRefinedPowder).optional(), Task.checkmark().optional())
             .dependsOn(ACIDIC_MONAZITE_DUST)
             .requireAny()
@@ -267,11 +297,13 @@ public final class RareDustChapter {
 
     public static final Quest URANIUM_FILTER_RESIDUE_DUST = CHAPTER.quest("uranium_filter_residue_dust", q -> q
             .at(-4.5, -3)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.UraniumFilterResiduePowder).optional(), Task.checkmark().optional())
             .dependsOn(ACIDIC_MONAZITE_DUST));
 
     public static final Quest URANIUM_235_DUST = CHAPTER.quest("uranium_235_dust", q -> q
             .at(-4.5, -4)
+            .shape(QuestShape.RSQUARE)
             .task(Task.item(TagPrefix.dust, GTMaterials.Uranium235).optional(), Task.checkmark().optional())
             .dependsOn(URANIUM_FILTER_RESIDUE_DUST)
             .requireAny());
@@ -284,6 +316,7 @@ public final class RareDustChapter {
 
     public static final Quest EUROPIUM_OXIDE_DUST = CHAPTER.quest("europium_oxide_dust", q -> q
             .at(-2, -4)
+            .shape(QuestShape.RSQUARE)
             .task(Task.item(TagPrefix.dust, GTOMaterials.EuropiumOxide).optional(), Task.checkmark().optional())
             .dependsOn(NITRIC_LEACHATE_FROM_MONAZITE_BUCKET_2));
 
@@ -305,35 +338,44 @@ public final class RareDustChapter {
 
     public static final Quest SAMARIUM_PRECIPITATE_DUST_2 = CHAPTER.quest("samarium_precipitate_dust_2", q -> q
             .at(8, -2)
+            .shape(QuestShape.DIAMOND)
             .task(Task.item(TagPrefix.dust, GTOMaterials.SamariumPrecipitatePowder).optional(), Task.checkmark().optional())
             .dependsOn(SATURATED_MONAZITE_RARE_EARTH_DUST_2));
 
     public static final Quest SAMARIUM_DUST = CHAPTER.quest("samarium_dust", q -> q
             .at(9, -1)
+            .shape(QuestShape.RSQUARE)
             .task(Task.item(TagPrefix.dust, GTMaterials.Samarium).optional(), Task.checkmark().optional())
             .dependsOn(SAMARIUM_PRECIPITATE_DUST_2, SAMARIUM_PRECIPITATE_DUST));
 
     public static final Quest GADOLINIUM_DUST = CHAPTER.quest("gadolinium_dust", q -> q
             .at(9, -2)
+            .shape(QuestShape.RSQUARE)
             .task(Task.item(TagPrefix.dust, GTMaterials.Gadolinium).optional(), Task.checkmark().optional())
             .dependsOn(SAMARIUM_PRECIPITATE_DUST_2, SAMARIUM_PRECIPITATE_DUST));
 
     public static final Quest RARE_EARTH_DUST_2 = CHAPTER.quest("rare_earth_dust_2", q -> q
             .at(3.75, -3.5)
+            .nodeScale(2)
+            .shape(QuestShape.GEAR)
             .task(Task.item(TagPrefix.dust, GTMaterials.RareEarth).optional(), Task.checkmark().optional())
             .dependsOn(SATURATED_MONAZITE_RARE_EARTH_DUST_2, SATURATED_MONAZITE_RARE_EARTH_DUST)
             .requireAnyStarted());
 
     public static final Quest CERIUM_OXIDE_DUST_2 = CHAPTER.quest("cerium_oxide_dust_2", q -> q
             .at(-1, -4)
+            .shape(QuestShape.RSQUARE)
             .task(Task.item(TagPrefix.dust, GTOMaterials.CeriumOxide).optional(), Task.checkmark().optional())
             .dependsOn(NITRIC_LEACHATE_FROM_MONAZITE_BUCKET_2));
 
     public static final Quest RARE_EARTH_DUST_3 = CHAPTER.quest("rare_earth_dust_3", q -> q
             .at(3, 5)
+            .nodeScale(2)
+            .shape(QuestShape.HEXAGON)
             .task(Task.item(TagPrefix.dust, GTMaterials.RareEarth).optional(), Task.checkmark().optional())
-            .dependsOn(Q_75569B55)
-            .requireAnyStarted());
+            .requireAnyStarted()
+            .dependsOn(RARE_EARTH_DUST_2, RARE_EARTH_DUST)
+            .hideDependencyLines());
 
     public static final Quest RARE_EARTH_HYDROXIDES_BUCKET = CHAPTER.quest("rare_earth_hydroxides_bucket", q -> q
             .at(4.5, 5)
@@ -355,6 +397,8 @@ public final class RareDustChapter {
 
     public static final Quest Q_06352042 = CHAPTER.quest("q_06352042", q -> q
             .at(9, 5)
+            .nodeScale(2)
+            .shape(QuestShape.GEAR)
             .desc(d -> d.line("钷粉不在这里"))
             .task(
                     Task.anyOf(1, ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.CeriumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.DysprosiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.ErbiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.EuropiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.GadoliniumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.HolmiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.LanthanumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.LutetiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.NeodymiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.PraseodymiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.SamariumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.ScandiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.TerbiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.ThuliumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.YtterbiumOxide), ChemicalHelper.getItem(TagPrefix.dust, GTOMaterials.YttriumOxide)).title("任意稀土氧化物粉").optional(), Task.checkmark().optional())
@@ -378,6 +422,7 @@ public final class RareDustChapter {
 
     public static final Quest RARE_EARTH_METAL_DUST = CHAPTER.quest("rare_earth_metal_dust", q -> q
             .at(-7.8, 5)
+            .shape(QuestShape.PENTAGON)
             .task(Task.item(TagPrefix.dust, GTOMaterials.RareEarthMetal).optional(), Task.checkmark().optional())
             .dependsOn(RARE_EARTH_METAL_ORE, RARE_EARTH_OXIDE_DUST));
 

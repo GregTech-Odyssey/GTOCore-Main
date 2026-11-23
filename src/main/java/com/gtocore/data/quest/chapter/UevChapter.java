@@ -220,7 +220,7 @@ public final class UevChapter {
             .task(Task.item(MultiBlockB.ROAD_OF_HEAVEN)));
 
     public static final Quest ELEMENT_COPYING = CHAPTER.quest("element_copying", q -> q
-            .at(-6, 11.5)
+            .at(0, 5.5)
             .task(Task.item(MultiBlockA.ELEMENT_COPYING)));
 
     public static final Quest SUPRACHRONAL_MAINFRAME_COMPLEX = CHAPTER.quest("suprachronal_mainframe_complex", q -> q

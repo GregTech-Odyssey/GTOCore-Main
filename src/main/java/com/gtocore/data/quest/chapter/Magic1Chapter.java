@@ -15,6 +15,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.QuestStyle;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
@@ -105,6 +106,8 @@ import vazkii.botania.common.block.BotaniaBlocks;
 import vazkii.botania.common.block.BotaniaFlowerBlocks;
 import vazkii.botania.common.item.BotaniaItems;
 
+import static com.gtolib.api.quest.QuestStyle.*;
+
 public final class Magic1Chapter {
 
     public static final QuestChapter CHAPTER = QuestChapter.of("magic1", c -> c
@@ -171,7 +174,8 @@ public final class Magic1Chapter {
             .dependsOn(LIVINGROCK));
 
     public static final Quest FERTILIZER = CHAPTER.quest("fertilizer", q -> q
-            .at(17.5, 10).iconScale(2)
+            .at(17.5, 10)
+            .nodeScale(3).iconScale(1.5)
             .desc(d -> d
                     .line("使用{植物魔法}{的产能花需要}{神秘花}{.}", QuestStyle.LIGHT_PURPLE, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE)
                     .line()
@@ -308,8 +312,8 @@ public final class Magic1Chapter {
             .title("黑色")
             .task(Task.item(BotaniaBlocks.blackFlower), Task.item(BotaniaBlocks.doubleFlowerBlack), Task.item(BotaniaBlocks.blackMushroom))
             .reward(Reward.item(BotaniaItems.blackPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hideUntilDepsVisible().hideDependencyLines()
+            .dependsOn(FERTILIZER));
 
     public static final Quest GREEN = CHAPTER.quest("green", q -> q
             .at(15.5, 8)
@@ -366,7 +370,7 @@ public final class Magic1Chapter {
             .dependsOn(MANA_RING));
 
     public static final Quest FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER = CHAPTER.quest("functional_flower_and_generating_flower", q -> q
-            .at(13.5, 9)
+            .at(10.5, 10)
             .title("功能花、产能花")
             .desc(d -> d
                     .line("通过使用{花药台}{,我们可以制造多种在冒险过程中能提供帮助的花朵,这些花朵分为两大类:}{功能花}和{产能花}.", QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.GREEN)
@@ -381,11 +385,12 @@ public final class Magic1Chapter {
             .hideUntilDepsVisible(false));
 
     public static final Quest USE_FIRE_TO_GENERATE_MANA = CHAPTER.quest("use_fire_to_generate_mana", q -> q
-            .at(10.5, 12)
+            .at(8.5, 13)
             .title("使用{火}产生魔力", QuestStyle.RED)
             .desc(d -> d.line("{火红莲}会吸收附近掉落的可燃物品/方块(逐个吸收),通过焚烧这些材料来生成{魔力}.", QuestStyle.RED, QuestStyle.AQUA))
             .task(Task.item(BotaniaFlowerBlocks.endoflame))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER));
+            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .hideUntilDepsVisible());
 
     public static final Quest MANASTAR = CHAPTER.quest("manastar", q -> q
             .at(5.5, 12)
@@ -422,7 +427,7 @@ public final class Magic1Chapter {
             .hideUntilDepsVisible(false).hideDependencyLines());
 
     public static final Quest KEKIMURUS = CHAPTER.quest("kekimurus", q -> q
-            .at(8.5, 13)
+            .at(0.5, 13)
             .task(Task.item(BotaniaFlowerBlocks.kekimurus))
             .reward(Reward.xp(50))
             .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
@@ -526,13 +531,13 @@ public final class Magic1Chapter {
             .optional().hideUntilDepsVisible().hideDependencyLines());
 
     public static final Quest HEISEI_DREAM = CHAPTER.quest("heisei_dream", q -> q
-            .at(8.5, 7)
+            .at(0.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.heiseiDream))
             .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
             .optional().hideUntilDepsVisible().hideDependencyLines());
 
     public static final Quest THIS_IS_A_HOPPER = CHAPTER.quest("this_is_a_hopper", q -> q
-            .at(10.5, 9)
+            .at(12.5, 8.5)
             .title("这是一个漏斗")
             .task(Task.item(BotaniaFlowerBlocks.hopperhock))
             .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
@@ -1582,17 +1587,11 @@ public final class Magic1Chapter {
             .dependsOn(MANA_PEARL));
 
     public static final Quest DAYBLOOM_MOTIF = CHAPTER.quest("daybloom_motif", q -> q
-            .at(13.5, 12)
+            .at(12.5, 11.5)
             .title("太阳花装饰")
             .desc(d -> d.line("如果你已经有光伏电站，打开UI放入一组太阳花，你就可以使用它来简易快速地获取魔力！"))
             .task(Task.item(BotaniaBlocks.motifDaybloom, 64))
             .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER));
-
-    public static final Quest FEYSYTHIA = CHAPTER.quest("feysythia", q -> q
-            .at(0.5, 13)
-            .task(Task.item(QuestExternalRefs.MythicBotanyItems.FEYSYTHIA))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
 
     public static final Quest RAINDELETIA = CHAPTER.quest("raindeletia", q -> q
             .at(0.5, 12)
@@ -1715,10 +1714,13 @@ public final class Magic1Chapter {
             .optional().hideUntilDepsVisible().hideDependencyLines());
 
     public static final Quest AQUAPANTHUS = CHAPTER.quest("aquapanthus", q -> q
-            .at(0.5, 7)
+            .at(8.5, 7)
+            .title("全自动给{水}", AQUA)
+            .desc(d -> d
+                    .line("自动向附近的炼药锅和花药台注水，只消耗魔力不消耗水"))
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.AQUAPANTHUS))
             .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .optional().hideUntilDepsVisible());
 
     public static final Quest EXOBLAZE = CHAPTER.quest("exoblaze", q -> q
             .at(0.5, 8)
@@ -1898,7 +1900,8 @@ public final class Magic1Chapter {
             .dependsOn(WILDEN_TRIBUTE));
 
     public static final Quest THE_END_GENESIS = CHAPTER.quest("the_end_genesis", q -> q
-            .at(30, -9).minWidth(250)
+            .at(30, -9)
+            .nodeScale(1.5).minWidth(250)
             .title("末地：创世")
             .desc(d -> d
                     .line("远古之眼（Old Eye）- 在沙漠神庙中找到。")
@@ -1924,6 +1927,7 @@ public final class Magic1Chapter {
 
     public static final Quest GO_TO_THE_END = CHAPTER.quest("go_to_the_end", q -> q
             .at(33, -9)
+            .nodeScale(1.5)
             .title("前往末地")
             .subtitle("找到十二颗不同的眼睛打开末地之门")
             .desc(d -> d.line("末地缺少氧气，你需要穿戴{航天套装}或者更高级的宇航套装才能在末地存活，否则将一直受到窒息伤害", QuestStyle.YELLOW.underline()))
@@ -1932,6 +1936,7 @@ public final class Magic1Chapter {
 
     public static final Quest ENDER_AIR_BOTTLE = CHAPTER.quest("ender_air_bottle", q -> q
             .at(36, -9)
+            .nodeScale(1.5)
             .desc(d -> d
                     .line("在末地用玻璃瓶右键获得。")
                     .line("右键丢到石头上，使得以落地点为中心的 9 x 9 x 5 范围内的石头变成末地石。")
@@ -1980,7 +1985,9 @@ public final class Magic1Chapter {
             .dependsOn(INFUSE_MAGIC_MATERIALS));
 
     public static final Quest FEL_PUMPKIN = CHAPTER.quest("fel_pumpkin", q -> q
-            .at(2, 5)
+            .at(5, 5.5)
+            .shape(QuestShape.HEXAGON)
+            .nodeScale(1.5)
             .desc(d -> d.line("恶魔南瓜头下面放两个铁栏杆可以召唤必掉烈焰粉的烈焰人"))
             .task(Task.item(BotaniaBlocks.felPumpkin), Task.item(Items.BLAZE_POWDER))
             .reward(Reward.item(Items.BLAZE_POWDER, 4)));
@@ -1995,6 +2002,9 @@ public final class Magic1Chapter {
 
     static {
         CHAPTER.decorate(d -> d
-                .image(QuestImage.of(QuestTextures.END_PORTAL_FRAME_TOP, 28, -10, 1, 1)));
+                .image(QuestImage.of(QuestTextures.END_PORTAL_FRAME_TOP, 28, -10, 1, 1))
+                .image(QuestImage.of(QuestTextures.BLAZE_BLOCK, 5, 5.5, 1.68, 1.68))
+                .line(NOVICE_SPELL_BOOK, APPRENTICE_SPELL_BOOK)
+                .line(APPRENTICE_SPELL_BOOK, ARCHMAGE_SPELL_BOOK));
     }
 }
