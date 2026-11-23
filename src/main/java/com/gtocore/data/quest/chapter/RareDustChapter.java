@@ -20,7 +20,7 @@ public final class RareDustChapter {
             .title("稀土")
             .subtitle("Rare Earth")
             .icon(TagPrefix.dust, GTMaterials.RareEarth)
-            .hideQuestsUntilDepsComplete());
+            .hideChapterUntilDepsComplete());
 
     public static final Quest Q_75569B55 = CHAPTER.quest("q_75569b55", q -> q
             .at(-9, -4.5)
