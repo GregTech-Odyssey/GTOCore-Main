@@ -100,6 +100,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     /** 难度页：有档位的游戏共用同一个标题，图标统一用齿轮。 */
     @RegisterLanguage(cn = "难度", en = "Difficulty")
     protected static final String PAGE_DIFFICULTY = "gtocore.machine.game.page.difficulty";
+    protected static final Component SECTION_DIFFICULTY = Component.translatable(PAGE_DIFFICULTY);
     /** 排行榜页：所有游戏共用同一个标题，图标统一用金银铜柱。 */
     @RegisterLanguage(cn = "排行榜", en = "Leaderboard")
     protected static final String PAGE_LEADERBOARD = "gtocore.machine.game.page.leaderboard";
@@ -115,11 +116,30 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     @RegisterLanguage(cn = "只有机器主人能改这个开关", en = "Only the machine owner can change this")
     protected static final String REASON_ONLY_OWNER = "gtocore.machine.game.reason.only_owner";
     @RegisterLanguage(cn = "这台机器不允许你游玩", en = "You are not allowed to play this machine")
-    protected static final String MSG_NO_PERMISSION = "gtocore.machine.game.msg.no_permission";
+    protected static final Component MSG_NO_PERMISSION = Component.translatable("gtocore.machine.game.msg.no_permission");
     @RegisterLanguage(cn = "里程碑", en = "Milestones")
     protected static final Component SECTION_MILESTONES = Component.translatable("gtocore.machine.game.section.milestones");
     @RegisterLanguage(cn = "暂无记录", en = "No records yet")
     protected static final Component TEXT_NO_RECORD = Component.translatable("gtocore.machine.game.text.no_record");
+
+    @RegisterLanguage(cn = "关卡", en = "Level")
+    protected static final Component LINE_LEVEL = Component.translatable("gtocore.machine.game.line.level");
+    @RegisterLanguage(cn = "步数", en = "Moves")
+    protected static final Component LINE_MOVES = Component.translatable("gtocore.machine.game.line.moves");
+    @RegisterLanguage(cn = "评价", en = "Rating")
+    protected static final Component LINE_STARS = Component.translatable("gtocore.machine.game.line.stars");
+    @RegisterLanguage(cn = "累计星星", en = "Total stars")
+    protected static final Component LINE_TOTAL_STARS = Component.translatable("gtocore.machine.game.line.total_stars");
+    @RegisterLanguage(cn = "完成！", en = "Solved!")
+    protected static final Component TEXT_SOLVED = Component.translatable("gtocore.machine.game.text.solved");
+    @RegisterLanguage(cn = "下一关", en = "Next level")
+    protected static final Component BUTTON_NEXT = Component.translatable("gtocore.machine.game.button.next");
+    @RegisterLanguage(cn = "未解锁", en = "Locked")
+    protected static final Component REASON_LEVEL_LOCKED = Component.translatable("gtocore.machine.game.reason.level_locked");
+    @RegisterLanguage(cn = "重新开始", en = "Restart")
+    protected static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.game.button.restart");
+    @RegisterLanguage(cn = "本局积分", en = "Current score")
+    protected static final Component LINE_CURRENT_SCORE = Component.translatable("gtocore.machine.game.line.score");
 
     @RegisterLanguage(cn = "%s天%s", en = "D%s %s")
     protected static final String TEXT_DAY_TIME = "gtocore.machine.game.text.day_time";
@@ -130,8 +150,12 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     protected static final String COLUMN_BEST_SCORE = "gtocore.machine.game.column.best_score";
     @RegisterLanguage(cn = "最大合成", en = "Best merged")
     protected static final String COLUMN_BEST_MERGED = "gtocore.machine.game.column.best_merged";
+    @RegisterLanguage(cn = "消除行数", en = "Lines")
+    protected static final String COLUMN_LINES = "gtocore.machine.game.column.lines";
     @RegisterLanguage(cn = "用时 (分:秒)", en = "Time (m:ss)")
     protected static final String COLUMN_DURATION = "gtocore.machine.game.column.duration";
+    @RegisterLanguage(cn = "星星", en = "Stars")
+    protected static final String COLUMN_STARS = "gtocore.machine.game.column.stars";
     @RegisterLanguage(cn = "达成：%s", en = "Achieved: %s")
     protected static final String TOOLTIP_ACHIEVED = "gtocore.machine.game.tooltip.achieved";
 
@@ -226,7 +250,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     public boolean shouldOpenUI(Player player, InteractionHand hand, BlockHitResult hit) {
         if (isRemote() || !(player instanceof ServerPlayer serverPlayer)) return true;
         if (GameAccess.canPlay(this, allowOthers, serverPlayer)) return true;
-        serverPlayer.displayClientMessage(Component.translatable(MSG_NO_PERMISSION), true);
+        serverPlayer.displayClientMessage(MSG_NO_PERMISSION, true);
         return false;
     }
 
@@ -241,7 +265,7 @@ public abstract class AbstractGameMachine<VIEW> extends MetaMachine implements I
     protected final boolean guard(@Nullable ServerPlayer player) {
         if (player == null) return true;
         if (GameAccess.canPlay(this, allowOthers, player)) return true;
-        player.displayClientMessage(Component.translatable(MSG_NO_PERMISSION), true);
+        player.displayClientMessage(MSG_NO_PERMISSION, true);
         return false;
     }
 

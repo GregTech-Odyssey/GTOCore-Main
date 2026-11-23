@@ -49,6 +49,11 @@ public enum SlotMachineLayout {
         return reelCount * visibleRows;
     }
 
+    /** 中奖线条数；中奖线类型不对外暴露，对外只需要数量。 */
+    public int paylineCount() {
+        return paylines.length;
+    }
+
     /** 盘面按行存储：第 {@code row} 行第 {@code reel} 列的格子下标；越界抛 IndexOutOfBounds。 */
     int symbolIndex(int reel, int row) {
         if (reel < 0 || reel >= reelCount) throw new IndexOutOfBoundsException(reel);

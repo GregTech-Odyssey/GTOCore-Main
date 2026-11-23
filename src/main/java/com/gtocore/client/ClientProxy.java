@@ -284,6 +284,8 @@ public final class ClientProxy extends CommonProxy {
         MonitorHudClient.registerPanel("info.rendered", InfoReadouts.RENDERED);
         if (Mods.XAERO_MINIMAP.isLoaded()) XaeroMinimapHud.install();
         if (Mods.XAERO_WORLDMAP.isLoaded()) XaeroMachineMap.install();
+        // The map draws in its own overlay, so the shared HUD background goes below the overlays.
+        event.registerBelowAll("monitor_hud_background", (gui, graphics, partialTick, width, height) -> MonitorHudClient.renderGroupBackgrounds(graphics, width, height));
         event.registerAboveAll("eio_travel_anchor_hud", TravelAnchorHud.INSTANCE);
         event.registerAboveAll("monitor_hud", (gui, graphics, partialTick, width, height) -> MonitorHudClient.render(graphics, width, height, partialTick));
     }

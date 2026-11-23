@@ -20,11 +20,11 @@ import java.util.Arrays;
  */
 public final class SudokuRules {
 
-    static final int SIZE = 9;
-    static final int BOX = 3;
+    public static final int SIZE = 9;
+    public static final int BOX = 3;
     static final int CELLS = SIZE * SIZE;
-    static final int VALUE_MIN = 1;
-    static final int VALUE_MAX = 9;
+    public static final int VALUE_MIN = 1;
+    public static final int VALUE_MAX = 9;
     /** 1~9 全在的低九位。 */
     static final int ALL_VALUES = (1 << VALUE_MAX) - 1;
     /** 杀手笼和的合法上限：1~9 全用一遍的和。 */

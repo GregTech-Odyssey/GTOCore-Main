@@ -26,6 +26,8 @@ public final class JustGet10Rules {
     /** 盘面边长（固定 5×5）。 */
     public static final int SIZE = 5;
     public static final int CELL_COUNT = SIZE * SIZE;
+    /** 可合并的最小同值连通组。 */
+    public static final int MIN_GROUP = 2;
     /** 兑现比例：超过兑现基线后每这么多分折 1 枚游戏币。 */
     public static final int POINTS_PER_COIN = 100;
 
@@ -111,7 +113,7 @@ public final class JustGet10Rules {
                 queue[tail++] = nextCell;
             }
         }
-        return group.size() < 2 ? null : group;
+        return group.size() < MIN_GROUP ? null : group;
     }
 
     /**

@@ -90,14 +90,6 @@ public final class SlideyMachine extends AbstractGameMachine<SlideyMachine.Board
 
     @RegisterLanguage(cn = "本局得分", en = "Score")
     private static final Component LINE_SCORE_TEXT = Component.translatable("gtocore.machine.slidey.line.score");
-    @RegisterLanguage(cn = "最高分", en = "Best score")
-    private static final Component LINE_HIGH_SCORE = Component.translatable("gtocore.machine.slidey.line.high_score");
-    @RegisterLanguage(cn = "消除行数", en = "Lines cleared")
-    private static final Component LINE_LINES = Component.translatable("gtocore.machine.slidey.line.lines");
-    @RegisterLanguage(cn = "最高消除行数", en = "Best lines")
-    private static final Component LINE_BEST_LINES = Component.translatable("gtocore.machine.slidey.line.best_lines");
-    @RegisterLanguage(cn = "连击", en = "Combo")
-    private static final Component LINE_COMBO = Component.translatable("gtocore.machine.slidey.line.combo");
     @RegisterLanguage(cn = "按住一块方块左右拖动，松手结算",
                       en = "Press a block and drag it sideways; release to finish the move")
     private static final Component LINE_CONTROLS = Component.translatable("gtocore.machine.slidey.line.controls");
@@ -106,11 +98,7 @@ public final class SlideyMachine extends AbstractGameMachine<SlideyMachine.Board
     private static final Component LINE_RULES = Component.translatable("gtocore.machine.slidey.line.rules");
 
     @RegisterLanguage(cn = "游戏结束", en = "Game over")
-    private static final String TEXT_GAME_OVER = "gtocore.machine.slidey.text.game_over";
-    @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.slidey.button.restart");
-    @RegisterLanguage(cn = "消除行数", en = "Lines")
-    private static final String COLUMN_LINES = "gtocore.machine.slidey.column.lines";
+    private static final Component TEXT_GAME_OVER = Component.translatable("gtocore.machine.slidey.text.game_over");
 
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
             MilestoneColumn.left(COLUMN_PLAYER, 42),
@@ -704,7 +692,7 @@ public final class SlideyMachine extends AbstractGameMachine<SlideyMachine.Board
         private void drawOverlay(GuiGraphics graphics, int status, int left, int top) {
             if (status != STATUS_GAME_OVER) return;
             graphics.fill(left, top, left + BOARD_WIDTH, top + BOARD_HEIGHT, COLOR_OVERLAY);
-            UIText.drawCentered(graphics, Component.translatable(TEXT_GAME_OVER).getString(),
+            UIText.drawCentered(graphics, TEXT_GAME_OVER.getString(),
                     left + BOARD_WIDTH / 2, top + BOARD_HEIGHT / 2 - 4, BOARD_WIDTH, COLOR_OVERLAY_TEXT);
         }
     }
