@@ -109,35 +109,19 @@ public final class KlotskiMachine extends AbstractGameMachine<KlotskiMachine.Boa
     /** 聚合页的“模式”列标题。 */
     public static final Component COLUMN_MODE = Component.empty().append(PAGE_CAMPAIGN).append(" · ").append(PAGE_CHALLENGE);
 
-    @RegisterLanguage(cn = "关卡", en = "Level")
-    private static final String LINE_LEVEL = "gtocore.machine.klotski.line.level";
-    @RegisterLanguage(cn = "步数", en = "Moves")
-    private static final String LINE_MOVES = "gtocore.machine.klotski.line.moves";
-    @RegisterLanguage(cn = "评价", en = "Rating")
-    private static final String LINE_STARS = "gtocore.machine.klotski.line.stars";
     @RegisterLanguage(cn = "第 %s 章 · 第 %s 关", en = "Chapter %s · Level %s")
     private static final String TEXT_CAMPAIGN_LEVEL = "gtocore.machine.klotski.text.campaign_level";
     @RegisterLanguage(cn = "挑战 %s", en = "Challenge %s")
     private static final String TEXT_CHALLENGE_LEVEL = "gtocore.machine.klotski.text.challenge_level";
-    @RegisterLanguage(cn = "累计星星", en = "Total stars")
-    private static final String LINE_TOTAL_STARS = "gtocore.machine.klotski.line.total_stars";
 
-    @RegisterLanguage(cn = "完成！", en = "Solved!")
-    private static final String TEXT_SOLVED = "gtocore.machine.klotski.text.solved";
     @RegisterLanguage(cn = "重开", en = "Restart")
-    private static final String BUTTON_RESTART = "gtocore.machine.klotski.button.restart";
-    @RegisterLanguage(cn = "下一关", en = "Next level")
-    private static final String BUTTON_NEXT = "gtocore.machine.klotski.button.next";
-    @RegisterLanguage(cn = "未解锁", en = "Locked")
-    private static final String REASON_LEVEL_LOCKED = "gtocore.machine.klotski.reason.locked";
+    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.klotski.button.restart");
     @RegisterLanguage(cn = "第 %s 章 · %s", en = "Chapter %s · %s")
     private static final String TEXT_CHAPTER_TITLE = "gtocore.machine.klotski.text.chapter_title";
     @RegisterLanguage(cn = "挑战 %s - %s", en = "Challenge %s - %s")
     private static final String TEXT_CHALLENGE_RANGE = "gtocore.machine.klotski.text.challenge_range";
     @RegisterLanguage(cn = "%s · 最少 %s 步", en = "%s · best %s moves")
     private static final String TEXT_LEVEL_TOOLTIP = "gtocore.machine.klotski.text.level_tooltip";
-    @RegisterLanguage(cn = "星星", en = "Stars")
-    private static final String COLUMN_STARS = "gtocore.machine.klotski.column.stars";
 
     /** 章节名（与解包数据里的 20 章一致）。 */
     @RegisterLanguage(cn = "森林 1", en = "Forest 1")
@@ -256,7 +240,7 @@ public final class KlotskiMachine extends AbstractGameMachine<KlotskiMachine.Boa
             var store = gameMilestones();
             int prevStars = clampedLevel == 0 ? 0 : store.klotskiLevelStars(clampedMode, playerId, clampedLevel - 1);
             if (!unlocked(clampedMode, clampedLevel, store.klotskiTotal(MODE_CAMPAIGN, playerId), prevStars)) {
-                player.displayClientMessage(Component.translatable(REASON_LEVEL_LOCKED), true);
+                player.displayClientMessage(REASON_LEVEL_LOCKED, true);
                 return;
             }
         }
@@ -401,21 +385,21 @@ public final class KlotskiMachine extends AbstractGameMachine<KlotskiMachine.Boa
     /** 状态面板：关卡、步数、评价、累计星数与操作按钮。 */
     private StatusPanel createStatusPanel() {
         var panel = panel();
-        panel.addLine(Component.translatable(LINE_LEVEL), this::levelName);
-        panel.addLine(Component.translatable(LINE_MOVES), () -> number(view().moves()));
-        panel.addLine(Component.translatable(LINE_STARS), () -> starsText(view().stars()));
+        panel.addLine(LINE_LEVEL, this::levelName);
+        panel.addLine(LINE_MOVES, () -> number(view().moves()));
+        panel.addLine(LINE_STARS, () -> starsText(view().stars()));
         var row = UIElement.row(Button.HEIGHT).layout(layout -> layout.gapAll(UISizes.GAP)
                 .justifyContent(AlignContent.CENTER));
         int width = (UISizes.CONTENT_WIDTH - 2 * UISizes.GAP) / 3;
-        var restart = Button.text(width, Component.translatable(BUTTON_RESTART));
+        var restart = Button.text(width, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartLevel(playerOf(restart)));
-        var next = Button.text(width, Component.translatable(BUTTON_NEXT));
+        var next = Button.text(width, BUTTON_NEXT);
         next.clientDisabled(() -> {
             var snapshot = view();
             if (!snapshot.won() || snapshot.level() + 1 >= KlotskiRules.LEVEL_COUNT) return true;
             return snapshot.mode() == MODE_CAMPAIGN && !KlotskiRules.chapterUnlocked(snapshot.campaignTotal(),
                     (snapshot.level() + 1) / KlotskiRules.CHAPTER_SIZE);
-        }, Component.translatable(REASON_LEVEL_LOCKED));
+        }, REASON_LEVEL_LOCKED);
         next.setOnServerClick(() -> nextLevel(playerOf(next)));
         row.addChildren(restart, next, createWithdrawButton(width));
         panel.addChild(row);
@@ -480,7 +464,7 @@ public final class KlotskiMachine extends AbstractGameMachine<KlotskiMachine.Boa
         /** 累计星数：左边名称、右边数字，中间空白把两边分开。 */
         private UIElement starsSummary() {
             var row = panel();
-            row.addLine(Component.translatable(LINE_TOTAL_STARS), () -> number(totalStars()));
+            row.addLine(LINE_TOTAL_STARS, () -> number(totalStars()));
             return row;
         }
 
@@ -570,7 +554,7 @@ public final class KlotskiMachine extends AbstractGameMachine<KlotskiMachine.Boa
                 button.setSelected(() -> view().mode() == pageMode && view().level() == levelIndex);
                 button.bindClientVariant(() -> levelStars(levelIndex) >= 3 ?
                         UITheme.ButtonVariant.CONFIRM : UITheme.ButtonVariant.DEFAULT);
-                button.clientDisabled(() -> !levelUnlocked(levelIndex), Component.translatable(REASON_LEVEL_LOCKED));
+                button.clientDisabled(() -> !levelUnlocked(levelIndex), REASON_LEVEL_LOCKED);
                 button.setOnServerClick(() -> selectLevel(pageMode, levelIndex, playerOf(button)));
                 return button;
             }
@@ -848,7 +832,7 @@ public final class KlotskiMachine extends AbstractGameMachine<KlotskiMachine.Boa
             drawBlocks(graphics, data, positions, mouseX, mouseY);
             if (view().won()) {
                 graphics.fill(left, top, left + BOARD_PIXELS, top + BOARD_PIXELS, COLOR_WIN_OVERLAY);
-                UIText.drawCentered(graphics, Component.translatable(TEXT_SOLVED).getString(),
+                UIText.drawCentered(graphics, TEXT_SOLVED.getString(),
                         left + BOARD_PIXELS / 2, top + BOARD_PIXELS / 2 - 4, BOARD_PIXELS, 0xFFFFFFFF);
             } else {
                 int hovered = dragIndex < 0 ? blockAt(mouseX, mouseY, data, positions) : -1;

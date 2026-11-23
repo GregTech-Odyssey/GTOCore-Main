@@ -4,9 +4,6 @@ import com.gtocore.common.machine.noenergy.game.AbstractGameMachine;
 import com.gtocore.common.machine.noenergy.game.GameBoardCatalog;
 import com.gtocore.common.machine.noenergy.game.milestone.GameMilestones;
 
-import com.gtolib.api.annotation.DataGeneratorScanned;
-import com.gtolib.api.annotation.language.RegisterLanguage;
-
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.gui.fancy.FancyMachineUIWidget;
 import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
@@ -47,13 +44,7 @@ import java.util.List;
  * 一局攒积分，盘面无相邻同数字时结账、按兑现基线折成游戏币，「重新开始」提前结账重开；余额、取出与快照通道来自
  * {@link AbstractGameMachine}。每个数字格是 {@link Cell}（定尺寸外壳 + {@link CellButton}），盘面随界面通道下发。
  */
-@DataGeneratorScanned
 public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.BoardSnapshot> {
-
-    @RegisterLanguage(cn = "本局积分", en = "Current score")
-    private static final Component LINE_SCORE = Component.translatable("gtocore.machine.game.line.score");
-    @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.game.button.restart");
 
     /** 里程碑表格的列（名次由表格自动加在最前）：玩家、最高分与最大合成，达成时间放在成绩格的悬停提示里。 */
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
@@ -74,7 +65,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
      * 额外分：一局里 {@link #SCORE_BONUS_MIN_VALUE}~{@link JustGet10Rules#VALUE_MAX} 的每个数字<b>首次</b>合出时
      * 各给一次，金额随数字递增；水位记在 {@link #maxValue} 上。
      */
-    private static final int SCORE_BONUS_MIN_VALUE = 10;
+    public static final int SCORE_BONUS_MIN_VALUE = 10;
     private static final int SCORE_BONUS_BASE = 1000;
     private static final int SCORE_BONUS_PER_VALUE = 500;
     /** 兑现门槛：一局积分超过它的部分才按比例折成游戏币，达不到一枚不给；公开给工具提示复用同一份数值。 */
@@ -361,7 +352,7 @@ public class JustGet10Machine extends AbstractGameMachine<JustGet10Machine.Board
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
-        status.addLine(LINE_SCORE, () -> number(score));
+        status.addLine(LINE_CURRENT_SCORE, () -> number(score));
         var restart = Button.text(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRoundOnServer(playerOf(restart)));
         status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));

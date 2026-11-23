@@ -93,7 +93,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
     private static final Component NOTICE_DISABLED_DETAIL = Component.translatable("gtocore.machine.slot_machine.notice.disabled.detail");
 
     @RegisterLanguage(cn = "无", en = "None")
-    private static final String VALUE_NONE = "gtocore.machine.slot_machine.value.none";
+    private static final Component VALUE_NONE = Component.translatable("gtocore.machine.slot_machine.value.none");
     @RegisterLanguage(cn = "%s (倍率 ×%s)", en = "%s (multiplier ×%s)")
     private static final String VALUE_REWARD = "gtocore.machine.slot_machine.value.reward";
     @RegisterLanguage(cn = "中奖附赠：%s", en = "Bonus on win: %s")
@@ -563,7 +563,7 @@ public class SlotMachine extends AbstractGameMachine<SlotMachine.Snapshot> {
 
     private Component lastRewardText() {
         var snapshot = view();
-        if (!snapshot.hasResult()) return Component.translatable(VALUE_NONE);
+        if (!snapshot.hasResult()) return VALUE_NONE;
         return Component.translatable(VALUE_REWARD, number(snapshot.lastReward()),
                 Component.literal(FormattingUtil.formatNumber2Places(snapshot.lastRewardMultiplier()))
                         .withStyle(ChatFormatting.GOLD));

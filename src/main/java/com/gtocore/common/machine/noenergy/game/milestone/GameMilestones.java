@@ -1,6 +1,7 @@
 package com.gtocore.common.machine.noenergy.game.milestone;
 
 import com.gtocore.common.machine.noenergy.game.klotski.KlotskiRules;
+import com.gtocore.common.machine.noenergy.game.sokoban.SokobanRules;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
@@ -48,12 +49,13 @@ public final class GameMilestones extends SavedData {
     public static final String NUMBER_PUZZLE = "number_puzzle";
     public static final String TETRIS = "tetris";
     public static final String SLIDEY = "slidey";
+    public static final String SOKOBAN = "sokoban";
 
     /** 载荷所在键：整份数据编码后的字节数组。 */
     private static final String NBT_DATA = "data";
     /** 载荷的格式版本，读档时交给 {@link JavaValueOps#create(int)}，codec 里用 {@code ops.dataVersion()} 取。 */
     private static final String NBT_VERSION = "data_version";
-    private static final int DATA_VERSION = 4;
+    private static final int DATA_VERSION = 5;
 
     /** 华容道尺寸档数。 */
     private static final int FIXED_SLOTS = 6;
@@ -61,6 +63,10 @@ public final class GameMilestones extends SavedData {
     /** 经典华容道每关 2 位星级，1000 关一张表。 */
     private static final int KLOTSKI_BITS = 2;
     public static final int KLOTSKI_WORDS = (KlotskiRules.LEVEL_COUNT * KLOTSKI_BITS + 63) / 64;
+
+    /** 推箱子每关 2 位星级，6395 关一张表。 */
+    private static final int SOKOBAN_BITS = 2;
+    public static final int SOKOBAN_WORDS = (SokobanRules.LEVEL_COUNT * SOKOBAN_BITS + 63) / 64;
 
     // ==================== 表项 ====================
 
@@ -78,6 +84,9 @@ public final class GameMilestones extends SavedData {
 
     /** 经典华容道：一位玩家在一个模式里的总星数。 */
     public record KlotskiStat(UUID player, int stars) {}
+
+    /** 推箱子：一位玩家的总星数。 */
+    public record SokobanStat(UUID player, int stars) {}
 
     /** 老虎机榜单：回报比降序 → 获得降序 → 次数降序。 */
     private static final Comparator<SlotStat> SLOT_ORDER = Comparator
@@ -140,6 +149,9 @@ public final class GameMilestones extends SavedData {
     /** 经典华容道：两种模式各一张 2 位/关的星级表。 */
     private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, long[]>> KLOTSKI_STARS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, DataSyncCodec.LONGS_CODEC);
 
+    /** 推箱子：一张 2 位/关的星级表。 */
+    private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, long[]>> SOKOBAN_STARS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, DataSyncCodec.LONGS_CODEC);
+
     /** 俄罗斯方块：最高分与达成时间，和合成十/2048 共用 {@link ScoreStat}。 */
     private static final DataSyncCodec<O2OOpenCacheHashMap<UUID, ScoreStat>> TETRIS_CODEC = CombinedCodec.map(size -> new O2OOpenCacheHashMap<>(), DataSyncCodec.UUID_CODEC, SCORE_CODEC);
 
@@ -157,19 +169,10 @@ public final class GameMilestones extends SavedData {
             KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
             GameMilestones::ofAllV2);
 
-    /** v3 载荷：v2 的全部表 + 俄罗斯方块最高分表；读旧档用。 */
-    private static final DataSyncCodec<GameMilestones> DATA_CODEC_V3 = CombinedCodec.composite(
-            SLOTS_CODEC, GameMilestones::slots,
-            JUST_GET_10_CODEC, GameMilestones::justGet10,
-            GAME_2048_CODEC, GameMilestones::game2048,
-            PUZZLES_CODEC, GameMilestones::puzzles,
-            NUMBER_PUZZLES_CODEC, GameMilestones::numberPuzzles,
-            KLOTSKI_STARS_CODEC, GameMilestones::klotskiCampaign,
-            KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
-            TETRIS_CODEC, GameMilestones::tetris,
-            GameMilestones::ofAllV3);
-
-    /** 当前载荷：v3 的全部表 + 土耳其方块成绩表，按声明顺序串成一个 carrier。 */
+    /**
+     * 当前载荷（v5）：v2 的全部表 + 俄罗斯方块、土耳其方块、推箱子三张成绩表，按声明顺序串成一个 carrier。
+     * v3、v4 是开发期未发布的格式，不单独保留，读档时 v2 之后一律按当前结构解码。
+     */
     private static final DataSyncCodec<GameMilestones> DATA_CODEC = CombinedCodec.composite(
             SLOTS_CODEC, GameMilestones::slots,
             JUST_GET_10_CODEC, GameMilestones::justGet10,
@@ -180,7 +183,8 @@ public final class GameMilestones extends SavedData {
             KLOTSKI_STARS_CODEC, GameMilestones::klotskiChallenge,
             TETRIS_CODEC, GameMilestones::tetris,
             SLIDEY_CODEC, GameMilestones::slidey,
-            GameMilestones::ofAll);
+            SOKOBAN_STARS_CODEC, GameMilestones::sokoban,
+            GameMilestones::ofAllV5);
 
     // ==================== 数据 ====================
 
@@ -193,6 +197,7 @@ public final class GameMilestones extends SavedData {
     private final O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, ScoreStat> tetris = new O2OOpenCacheHashMap<>();
     private final O2OOpenCacheHashMap<UUID, ScoreStat> slidey = new O2OOpenCacheHashMap<>();
+    private final O2OOpenCacheHashMap<UUID, long[]> sokoban = new O2OOpenCacheHashMap<>();
 
     /** 写一次加一：界面靠它判断里程碑文字要不要重建（不存盘）。 */
     private int modCount;
@@ -237,6 +242,10 @@ public final class GameMilestones extends SavedData {
         return slidey;
     }
 
+    private O2OOpenCacheHashMap<UUID, long[]> sokoban() {
+        return sokoban;
+    }
+
     /**
      * 解码构造：装回五张表，并把华容道的定长数组补齐到固定档数。
      *
@@ -279,46 +288,35 @@ public final class GameMilestones extends SavedData {
         return data;
     }
 
-    /** v3 解码：v2 的全部表之上再加俄罗斯方块最高分表。 */
-    private static GameMilestones ofAllV3(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
+    /** 当前格式（v5）解码：v2 的全部表之上再加俄罗斯方块、土耳其方块、推箱子三张成绩表。 */
+    private static GameMilestones ofAllV5(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
                                           @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
                                           @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
                                           @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
                                           @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
                                           @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
                                           @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge,
-                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> tetris) {
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> tetris,
+                                          @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> slidey,
+                                          @Nullable O2OOpenCacheHashMap<UUID, long[]> sokoban) {
         var data = ofAllV2(slots, justGet10, game2048, puzzles, numberPuzzles, klotskiCampaign, klotskiChallenge);
         if (tetris != null) data.tetris.putAll(tetris);
-        return data;
-    }
-
-    /** 当前格式（v4）解码：v3 的全部表之上再加土耳其方块成绩表。 */
-    private static GameMilestones ofAll(@Nullable O2OOpenCacheHashMap<UUID, SlotStat> slots,
-                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> justGet10,
-                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> game2048,
-                                        @Nullable O2OOpenCacheHashMap<UUID, PuzzleStat> puzzles,
-                                        @Nullable O2OOpenCacheHashMap<UUID, NumberPuzzleStat> numberPuzzles,
-                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiCampaign,
-                                        @Nullable O2OOpenCacheHashMap<UUID, long[]> klotskiChallenge,
-                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> tetris,
-                                        @Nullable O2OOpenCacheHashMap<UUID, ScoreStat> slidey) {
-        var data = ofAllV3(slots, justGet10, game2048, puzzles, numberPuzzles, klotskiCampaign, klotskiChallenge,
-                tetris);
         if (slidey != null) data.slidey.putAll(slidey);
+        if (sokoban != null) {
+            sokoban.forEach((player, bits) -> data.sokoban.put(player, normalizeTimes(bits, SOKOBAN_WORDS)));
+        }
         return data;
     }
 
     // ==================== 读档 / 取实例 ====================
 
-    /** 读档：更早的 v1 直接丢弃，v2/v3 按当时的表结构读。 */
+    /** 读档：v1 及更早直接丢弃；v2 与当前（v5）按各自结构读，未发布的 v3、v4 不再单独处理。 */
     public static GameMilestones fromNBT(CompoundTag tag) {
         int version = tag.getInt(NBT_VERSION);
         if (version < 2) return new GameMilestones();
         var ops = JavaValueOps.create(version);
         var payload = ops.fromBytes(tag.getByteArray(NBT_DATA));
-        if (version < 3) return DATA_CODEC_V2.decode(ops, payload);
-        if (version < 4) return DATA_CODEC_V3.decode(ops, payload);
+        if (version < 5) return DATA_CODEC_V2.decode(ops, payload);
         return DATA_CODEC.decode(ops, payload);
     }
 
@@ -481,6 +479,76 @@ public final class GameMilestones extends SavedData {
         return board;
     }
 
+    // ==================== 推箱子 ====================
+
+    /** 某关的星数（0~3）；空位图返回 0。 */
+    public static int sokobanStarAt(long @Nullable [] bits, int level) {
+        if (bits == null) return 0;
+        int index = Math.clamp(level, 0, SokobanRules.LEVEL_COUNT - 1);
+        int word = index >> 5;
+        if (word >= bits.length) return 0;
+        return (int) ((bits[word] >>> ((index & 31) * SOKOBAN_BITS)) & 3L);
+    }
+
+    private static void setSokobanStar(long[] bits, int level, int stars) {
+        int index = Math.clamp(level, 0, SokobanRules.LEVEL_COUNT - 1);
+        int shift = (index & 31) * SOKOBAN_BITS;
+        long mask = 3L << shift;
+        bits[index >> 5] = (bits[index >> 5] & ~mask) | ((long) stars << shift);
+    }
+
+    /** 推箱子星级表里的总星数。 */
+    public static int sokobanTotal(long @Nullable [] bits) {
+        if (bits == null) return 0;
+        int total = 0;
+        for (int word = 0; word < Math.min(SOKOBAN_WORDS, bits.length); word++) {
+            total += Long.bitCount(bits[word] & 0x5555555555555555L) + 2 * Long.bitCount(bits[word] & 0xAAAAAAAAAAAAAAAAL);
+        }
+        return total;
+    }
+
+    /** 玩家的星级表副本；没有记录返回空表。 */
+    public long[] sokobanStars(@Nullable UUID player) {
+        long[] bits = player == null ? null : sokoban.get(player);
+        return bits == null ? new long[SOKOBAN_WORDS] : bits.clone();
+    }
+
+    /** 玩家的总星数。 */
+    public int sokobanTotal(@Nullable UUID player) {
+        return sokobanTotal(player == null ? null : sokoban.get(player));
+    }
+
+    /** 玩家某关的星数。 */
+    public int sokobanLevelStars(@Nullable UUID player, int level) {
+        return sokobanStarAt(player == null ? null : sokoban.get(player), level);
+    }
+
+    /** 记录成绩：只升不降；返回本次因累计星数跨过 50 星整数倍而应发的游戏币。 */
+    public int recordSokoban(int level, int stars, @Nullable UUID player) {
+        if (player == null || stars <= 0) return 0;
+        int value = Math.clamp(stars, 1, 3);
+        long[] bits = sokoban.computeIfAbsent(player, k -> new long[SOKOBAN_WORDS]);
+        int before = sokobanTotal(bits);
+        if (value <= sokobanStarAt(bits, level)) return 0;
+        setSokobanStar(bits, level, value);
+        int crossed = sokobanTotal(bits) / SokobanRules.STARS_PER_REWARD -
+                before / SokobanRules.STARS_PER_REWARD;
+        touch();
+        return crossed * SokobanRules.REWARD_COINS;
+    }
+
+    /** 按总星数降序的推箱子榜单，跳过 0 星玩家。 */
+    public List<SokobanStat> sokobanBoard() {
+        var board = new ObjectArrayList<SokobanStat>(sokoban.size());
+        for (var entry : sokoban.entrySet()) {
+            int stars = sokobanTotal(entry.getValue());
+            if (stars > 0) board.add(new SokobanStat(entry.getKey(), stars));
+        }
+        board.sort(Comparator.comparingInt(SokobanStat::stars).reversed()
+                .thenComparing(stat -> stat.player().toString()));
+        return board;
+    }
+
     /** 当前数据版本：变了说明有记录更新，界面该重建文字。 */
     public int modCount() {
         return modCount;
@@ -537,6 +605,13 @@ public final class GameMilestones extends SavedData {
         if (player == null) return 0;
         var stat = tetris.get(player);
         return stat == null ? 0 : stat.bestScore();
+    }
+
+    /** 某位玩家单局最多消除的行数；没有记录时为 0。 */
+    public int tetrisBestLines(@Nullable UUID player) {
+        if (player == null) return 0;
+        var stat = tetris.get(player);
+        return stat == null ? 0 : stat.bestMerged();
     }
 
     public List<NumberPuzzleStat> numberPuzzleBoard() {

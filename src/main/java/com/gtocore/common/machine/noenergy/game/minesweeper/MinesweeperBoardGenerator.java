@@ -127,6 +127,9 @@ public final class MinesweeperBoardGenerator {
         return value;
     }
 
+    /** 首点安全半径：首点周围 (2r+1)×(2r+1) 不布雷。 */
+    public static final int FIRST_CLICK_RADIUS = 1;
+
     /**
      * 固定算法布雷：排除首点 3×3，再对剩余格做部分洗牌取前 mineCount 个。
      * 这是所有候选、读档重算和单种子兜底共用的唯一布雷路径。
@@ -143,7 +146,7 @@ public final class MinesweeperBoardGenerator {
         for (int cell = 0; cell < cellCount; cell++) {
             int col = cell % width;
             int row = cell / width;
-            if (Math.abs(col - safeCol) <= 1 && Math.abs(row - safeRow) <= 1) continue;
+            if (Math.abs(col - safeCol) <= FIRST_CLICK_RADIUS && Math.abs(row - safeRow) <= FIRST_CLICK_RADIUS) continue;
             positions[available++] = cell;
         }
         int count = Math.min(mineCount, available);

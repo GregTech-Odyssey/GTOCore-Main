@@ -62,18 +62,14 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
 
     @RegisterLanguage(cn = "尺寸", en = "Size")
     private static final Component SECTION_SIZE = Component.translatable("gtocore.machine.number_puzzle.section.size");
-    @RegisterLanguage(cn = "步数", en = "Moves")
-    private static final Component LINE_MOVES = Component.translatable("gtocore.machine.number_puzzle.line.moves");
     @RegisterLanguage(cn = "用时", en = "Time")
     private static final Component LINE_TIME = Component.translatable("gtocore.machine.number_puzzle.line.time");
     @RegisterLanguage(cn = "进行中", en = "Playing")
-    private static final String TEXT_PLAYING = "gtocore.machine.number_puzzle.text.playing";
+    private static final Component TEXT_PLAYING = Component.translatable("gtocore.machine.number_puzzle.text.playing");
     @RegisterLanguage(cn = "完成！用时 %s", en = "Solved! %s")
     private static final String TEXT_SOLVED = "gtocore.machine.number_puzzle.text.solved";
     @RegisterLanguage(cn = "完成奖励：%s 游戏币", en = "Clear reward: %s Game Coins")
     private static final String TEXT_SIZE_REWARD = "gtocore.machine.number_puzzle.text.size_reward";
-    @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.number_puzzle.button.restart");
 
     /** 单个尺寸的排行榜只有两列：玩家与最快用时。 */
     private static final MilestoneColumn[] LEADERBOARD_COLUMNS = {
@@ -285,7 +281,7 @@ public class NumberPuzzleMachine extends AbstractGameMachine<NumberPuzzleMachine
         status.addChild(new LiveDurationLine(LINE_TIME, this::displayElapsedTicks));
         status.addChild(TextLine.of(LayoutStyle.AUTO, () -> view().isSolved() ?
                 Component.translatable(TEXT_SOLVED, duration(view().elapsedTicks())) :
-                Component.translatable(TEXT_PLAYING)).styled());
+                TEXT_PLAYING).styled());
         var restart = Button.text(77, BUTTON_RESTART);
         restart.setOnServerClick(() -> restartRound(playerOf(restart)));
         status.addChild(UIElement.centeredRow(Button.HEIGHT).addChildren(restart, createWithdrawButton(77)));

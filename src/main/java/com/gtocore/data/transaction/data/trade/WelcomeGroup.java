@@ -110,6 +110,7 @@ public final class WelcomeGroup {
                 SUDOKU.asStack(),
                 TETRIS.asStack(),
                 SLIDEY.asStack(),
+                SOKOBAN.asStack(),
                 MINESWEEPER_CORE.asStack()
         };
 

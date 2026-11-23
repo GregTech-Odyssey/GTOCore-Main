@@ -115,10 +115,10 @@ public final class KlotskiRules {
         return levels[Math.clamp(index, 0, LEVEL_COUNT - 1)];
     }
 
-    /** 按步数评分：达到最少步数三星，多出不到五步二星，其余一星。 */
+    /** 按步数评星：不超过最少步数三星，不超过最少步数的 1.25 倍（向上取整）二星，其余一星。 */
     public static int starsFor(int moves, int minMoves) {
         if (moves <= minMoves) return 3;
-        return moves - minMoves < 5 ? 2 : 1;
+        return moves <= (minMoves * 5 + 3) / 4 ? 2 : 1;
     }
 
     /** 累计星数是否够解锁该章。 */

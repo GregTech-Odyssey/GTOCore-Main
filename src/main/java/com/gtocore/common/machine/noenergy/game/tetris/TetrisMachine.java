@@ -51,7 +51,7 @@ import java.util.List;
  * <p>
  * 重力由服务端 tick 驱动，键盘操作经 {@link RPC} 上行。新方块只在界面打开时生成；关闭界面后，
  * 已经在场上的方块仍会继续下落到底，落定后停在「等待」状态，等下一个玩家打开界面再生成下一块。
- * 最高分记进 {@link GameMilestones}，并汇总到机器的排行榜页与 {@code /gtocore leaderboard} 聚合榜。
+ * 最高分与单局最多消除行数记进 {@link GameMilestones}，并汇总到机器的排行榜页与 {@code /gtocore leaderboard} 聚合榜。
  */
 @DataGeneratorScanned
 public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.BoardSnapshot> {
@@ -102,8 +102,9 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
             0xFF4FD8FF, 0xFFFFD54F, 0xFFB388FF, 0xFF69F0AE, 0xFFFF5252, 0xFF448AFF, 0xFFFFAB40 };
 
     private static final MilestoneColumn[] MILESTONE_COLUMNS = {
-            MilestoneColumn.left(COLUMN_PLAYER, 70),
-            MilestoneColumn.right(COLUMN_BEST_SCORE, 56) };
+            MilestoneColumn.left(COLUMN_PLAYER, 42),
+            MilestoneColumn.right(COLUMN_BEST_SCORE, 52),
+            MilestoneColumn.right(COLUMN_LINES, 46) };
 
     @RegisterLanguage(cn = "本局得分", en = "Score")
     private static final Component LINE_SCORE = Component.translatable("gtocore.machine.tetris.line.score");
@@ -115,14 +116,11 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
     private static final Component LINE_CONTROLS_ACTION = Component.translatable("gtocore.machine.tetris.line.controls_action");
 
     @RegisterLanguage(cn = "游戏结束", en = "Game over")
-    private static final String TEXT_GAME_OVER = "gtocore.machine.tetris.text.game_over";
+    private static final Component TEXT_GAME_OVER = Component.translatable("gtocore.machine.tetris.text.game_over");
     @RegisterLanguage(cn = "等待新方块", en = "Waiting")
-    private static final String TEXT_WAITING = "gtocore.machine.tetris.text.waiting";
+    private static final Component TEXT_WAITING = Component.translatable("gtocore.machine.tetris.text.waiting");
     @RegisterLanguage(cn = "等待新方块，打开界面继续", en = "Waiting for the next piece — reopen the UI to continue")
-    private static final String TEXT_WAITING_DETAIL = "gtocore.machine.tetris.text.waiting_detail";
-    @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.tetris.button.restart");
-
+    private static final Component TEXT_WAITING_DETAIL = Component.translatable("gtocore.machine.tetris.text.waiting_detail");
     /** 盘面，行优先；0 空格，1~7 是已落定方块的类型 + 1。 */
     @SaveToDisk
     private int[] board = new int[TetrisRules.CELLS];
@@ -435,7 +433,7 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
 
     /**
      * 把本局分数折成余额；{@link #settled} 保证同一局只结一次账。
-     * 最高分只在单人局写入里程碑，分数为 0 时不记。
+     * 最高分与消除行数只在单人局写入里程碑，分数为 0 时不记。
      */
     @Override
     protected void cashOut() {
@@ -446,7 +444,7 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
         if (!sessionCounts()) return;
         var server = server();
         if (server == null) return;
-        GameMilestones.get(server).recordScore(GameMilestones.TETRIS, sessionStarter(), score, 0, gameTime());
+        GameMilestones.get(server).recordScore(GameMilestones.TETRIS, sessionStarter(), score, lines, gameTime());
     }
 
     // ==================== 服务端动作 ====================
@@ -529,7 +527,7 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
         return new StatusPanel().layout(LayoutStyle::alignCenter).addChild(new BoardView());
     }
 
-    /** 状态面板：余额、本局得分、最高分、消行、等级与操作提示。 */
+    /** 状态面板：余额、本局得分、重开/取出按钮与操作提示。 */
     private StatusPanel createStatusPanel() {
         var statusPanel = panel();
         statusPanel.addLine(LINE_BALANCE, () -> number(balance()));
@@ -706,8 +704,8 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
 
         private void drawOverlay(GuiGraphics graphics, int status, int left, int top) {
             String text = switch (status) {
-                case STATUS_GAME_OVER -> Component.translatable(TEXT_GAME_OVER).getString();
-                case STATUS_WAITING -> Component.translatable(TEXT_WAITING).getString();
+                case STATUS_GAME_OVER -> TEXT_GAME_OVER.getString();
+                case STATUS_WAITING -> TEXT_WAITING.getString();
                 default -> null;
             };
             if (text == null) return;
@@ -743,7 +741,8 @@ public final class TetrisMachine extends AbstractGameMachine<TetrisMachine.Board
         var rows = new ObjectArrayList<MilestoneCell[]>(board.size());
         for (var stat : board) {
             rows.add(new MilestoneCell[] { MilestoneCell.of(Component.literal(GameMilestones.nameOf(server, stat.player()))),
-                    MilestoneCell.achieved(number(stat.bestScore()), stat.bestScoreTime()) });
+                    MilestoneCell.achieved(number(stat.bestScore()), stat.bestScoreTime()),
+                    MilestoneCell.achieved(number(stat.bestMerged()), stat.bestMergedTime()) });
         }
         return rows;
     }

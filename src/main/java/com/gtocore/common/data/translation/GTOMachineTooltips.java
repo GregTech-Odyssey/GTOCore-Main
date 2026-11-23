@@ -6,13 +6,21 @@ import com.gtocore.common.machine.multiblock.generator.TurbineMachine;
 import com.gtocore.common.machine.multiblock.storage.MEStorageMachine;
 import com.gtocore.common.machine.noenergy.game.game2048.Game2048Machine;
 import com.gtocore.common.machine.noenergy.game.game2048.Game2048Rules;
+import com.gtocore.common.machine.noenergy.game.game24.Game24Rules;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Machine;
 import com.gtocore.common.machine.noenergy.game.justGet10.JustGet10Rules;
+import com.gtocore.common.machine.noenergy.game.klotski.KlotskiRules;
+import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperBoardGenerator;
+import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleRules;
 import com.gtocore.common.machine.noenergy.game.slidey.SlideyMachine;
+import com.gtocore.common.machine.noenergy.game.slidey.SlideyRules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
+import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineLayout;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotSymbol;
+import com.gtocore.common.machine.noenergy.game.sokoban.SokobanRules;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuRules;
+import com.gtocore.common.machine.noenergy.game.sudoku.SudokuVariant;
 import com.gtocore.common.machine.noenergy.game.tetris.TetrisMachine;
 import com.gtocore.common.machine.noenergy.game.tetris.TetrisRules;
 import com.gtocore.config.GTORules;
@@ -149,7 +157,9 @@ public final class GTOMachineTooltips {
         Component topName = GTCEu.isDataGen() ? Component.empty() : SlotSymbol.symbolName(SlotSymbol.SYMBOL7);
 
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("老虎机", "Slot Machine")));
-        t.heading(t.tr("三列卷轴，五条中奖线", "Three reels, five paylines"));
+        var classic = SlotMachineLayout.CLASSIC;
+        t.heading(t.tr("%s 列卷轴，%s 条中奖线", "%s reels, %s paylines",
+                classic.reelCount(), classic.paylineCount()));
 
         t.heading(t.tr("赔付表（单线倍率，×0 不赔）", "Pay table (per-line multipliers; ×0 pays nothing)"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
@@ -164,8 +174,9 @@ public final class GTOMachineTooltips {
                 wildName, wildName, topName, SlotSymbol.SYMBOL7.threeMatchMultiplier()));
 
         t.heading(t.tr("中奖规则", "Winning Rules"));
-        t.feature(t.tr("五条中奖线：上、中、下三条横线与两条对角线（竖向三格不赔）；只认从最左列开始的连续匹配，右起两格不赔",
-                "Five paylines: the top, middle and bottom rows plus both diagonals (a vertical column does not pay). Matches must start at the leftmost reel; the two right reels alone pay nothing"));
+        t.feature(t.tr("%s 条中奖线：上、中、下三条横线与两条对角线（竖向三格不赔）；只认从最左列开始的连续匹配，右起两格不赔",
+                "%s paylines: the top, middle and bottom rows plus both diagonals (a vertical column does not pay). Matches must start at the leftmost reel; the two right reels alone pay nothing",
+                classic.paylineCount()));
         t.feature(t.tr("一条线只按最长的连中结算（三连不叠加它自己的二连）；不同线的奖励相加",
                 "A line pays its longest run only (a triple does not also pay its pair); payouts from different paylines add up"));
         t.formula(t.tr("总奖励 = 下注 × 各线倍率之和，本金不返还", "Total payout = bet × sum of line multipliers; the bet is not returned"));
@@ -178,7 +189,9 @@ public final class GTOMachineTooltips {
         Component topName = GTCEu.isDataGen() ? Component.empty() : SlotSymbol.symbolName(SlotSymbol.SYMBOL7);
 
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("宽幅老虎机", "Wide Slot Machine")));
-        t.heading(t.tr("五列卷轴，九条中奖线", "Five reels, nine paylines"));
+        var wide = SlotMachineLayout.WIDE;
+        t.heading(t.tr("%s 列卷轴，%s 条中奖线", "%s reels, %s paylines",
+                wide.reelCount(), wide.paylineCount()));
 
         t.heading(t.tr("赔付表（单线倍率，×0 不赔）", "Pay table (per-line multipliers; ×0 pays nothing)"));
         for (SlotSymbol symbol : SlotSymbol.values()) {
@@ -191,17 +204,23 @@ public final class GTOMachineTooltips {
         }
         t.feature(t.tr("%s：百搭，可替代任意符号；五格全为%s时按%s五连赔 ×%s",
                 "%s: wild, substitutes for any symbol; five %s pay as a %s five-of-a-kind, ×%s",
-                wildName, wildName, topName, SlotMachineRules.WIDE.multiplier(SlotSymbol.SYMBOL7, 5)));
+                wildName, wildName, topName, SlotMachineRules.WIDE.multiplier(SlotSymbol.SYMBOL7, wide.reelCount())));
 
         t.heading(t.tr("中奖规则", "Winning Rules"));
-        t.feature(t.tr("九条中奖线：三条横线、V 形与倒 V 形各一条、四条中间列或两端错位的折线（竖向不计奖）；只认从最左列开始的三连及以上",
-                "Nine paylines: three rows, one V and one inverted V, and four lines that step on the middle reel or at the ends (vertical columns do not pay). Matches must start at the leftmost reel; three or more pay"));
+        t.feature(t.tr("%s 条中奖线：三条横线、V 形与倒 V 形各一条、四条中间列或两端错位的折线（竖向不计奖）；只认从最左列开始的三连及以上",
+                "%s paylines: three rows, one V and one inverted V, and four lines that step on the middle reel or at the ends (vertical columns do not pay). Matches must start at the leftmost reel; three or more pay",
+                wide.paylineCount()));
         t.feature(t.tr("一条线只按最长的连中结算（不叠加它较短的连中）；不同线的奖励相加",
                 "A line pays its longest run only (shorter runs on it are not added on top); payouts from different paylines add up"));
         t.formula(t.tr("总奖励 = 下注 × 各线倍率之和，本金不返还", "Total payout = bet × sum of line multipliers; the bet is not returned"));
 
         slotBonusTips(t);
     });
+
+    /** 变体倍率：把百分比转成 ×1、×1.5 这样的文本。 */
+    private static String percentText(int percent) {
+        return FormattingUtil.formatNumber2Places(percent / 100.0);
+    }
 
     /** 两台老虎机共用：中奖附赠不在界面里，保留这一条核心说明。 */
     private static void slotBonusTips(GTOTips t) {
@@ -215,14 +234,16 @@ public final class GTOMachineTooltips {
     // 合成十 - 只保留规则与计分公式；盘面、分数、重开等以机器界面为准
     public static final TipSpec JustGet10MachineTooltips = GTOTips.of("just_get_10", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("合成UHV", "Just Get UHV")));
-        t.feature(t.tr("点一格提起四向相连、数字相同的一整组（两格及以上），再点组内格合并成「该数字 + 1」",
-                "Click a cell to lift the whole four-way connected group of the same number (two or more), then click inside it to merge the group into that number plus 1"));
-        t.feature(t.tr("合并得分 = 新数字 × 组内格数；每个 10 及以上的数字首次合出时额外加分",
-                "A merge scores the merged number × group size; each number of 10 or more also pays a one-time bonus the first time it is made"));
+        t.feature(t.tr("点一格提起四向相连、数字相同的一整组（%s 格及以上），再点组内格合并成「该数字 + 1」",
+                "Click a cell to lift the whole four-way connected group of the same number (%s or more), then click inside it to merge the group into that number plus 1",
+                JustGet10Rules.MIN_GROUP));
+        t.feature(t.tr("合并得分 = 新数字 × 组内格数；每个 %s 及以上的数字首次合出时额外加分",
+                "A merge scores the merged number × group size; each number of %s or more also pays a one-time bonus the first time it is made",
+                FormattingUtil.formatNumbers(JustGet10Machine.SCORE_BONUS_MIN_VALUE)));
         t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币",
                 "Points above %s pay 1 Game Coin per %s points",
                 FormattingUtil.formatNumbers(JustGet10Machine.REDEMPTION_BASELINE),
-                JustGet10Rules.POINTS_PER_COIN));
+                FormattingUtil.formatNumbers(JustGet10Rules.POINTS_PER_COIN)));
     });
 
     // 2048 - 只保留规则与计分公式；盘面、分数、重开等以机器界面为准
@@ -230,8 +251,9 @@ public final class GTOMachineTooltips {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("电路2048", "Circuit 2048")));
         t.feature(t.tr("WASD 或方向键推格：相邻同值两两合并（每块每步只并一次），空位补一个新数字",
                 "WASD or the arrow keys push the board: equal neighbours merge (once per tile per move) and a new tile appears"));
-        t.feature(t.tr("合并得分就是新数字；首次合出 1024 及以上额外加分",
-                "A merge scores the tile it creates; making 1024 or more for the first time pays a bonus"));
+        t.feature(t.tr("合并得分就是新数字；首次合出 %s 及以上额外加分",
+                "A merge scores the tile it creates; making %s or more for the first time pays a bonus",
+                FormattingUtil.formatNumbers(Game2048Machine.SCORE_BONUS_MIN_VALUE)));
         t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币",
                 "Points above %s pay 1 Game Coin per %s points",
                 FormattingUtil.formatNumbers(Game2048Machine.REDEMPTION_BASELINE),
@@ -241,10 +263,11 @@ public final class GTOMachineTooltips {
     // 俄罗斯方块 - 只保留盘面规则与计分公式；按钮与操作提示以机器界面为准
     public static final TipSpec TetrisTooltips = GTOTips.of("tetris", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("俄罗斯方块", "Tetris")));
-        t.feature(t.tr("10×20 盘面：方向键左右移动、下软降，↑ 或 X 顺时针旋转、Z 逆时针旋转，空格直接落底",
-                "10×20 board: Left/Right move, Down soft-drops, Up or X rotates clockwise, Z counter-clockwise, Space hard-drops"));
-        t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币；最高分记入排行榜",
-                "Points above %s pay 1 Game Coin per %s points; the best score is recorded on the leaderboard",
+        t.feature(t.tr("%s×%s 盘面：方向键左右移动、下软降，↑ 或 X 顺时针旋转、Z 逆时针旋转，空格直接落底",
+                "%s×%s board: Left/Right move, Down soft-drops, Up or X rotates clockwise, Z counter-clockwise, Space hard-drops",
+                TetrisRules.COLS, TetrisRules.ROWS));
+        t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币；最高分与消除行数记入排行榜",
+                "Points above %s pay 1 Game Coin per %s points; the best score and lines are recorded on the leaderboard",
                 FormattingUtil.formatNumbers(TetrisMachine.REDEMPTION_BASELINE),
                 FormattingUtil.formatNumbers(TetrisRules.POINTS_PER_COIN)));
     });
@@ -252,8 +275,9 @@ public final class GTOMachineTooltips {
     // 土耳其方块 - 只保留玩法与计分规则；按钮与操作提示以机器界面为准
     public static final TipSpec SlideyTooltips = GTOTips.of("slidey", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("土耳其方块", "Turkish Blocks")));
-        t.feature(t.tr("9×10 盘面：按住任意一块横条（1~4 格）在本行内左右拖动，不能越过别的方块；颜色不影响消除",
-                "9×10 board: press any horizontal bar (1-4 cells) and drag it along its row; it cannot pass other blocks, and colors do not matter"));
+        t.feature(t.tr("%s×%s 盘面：按住任意一块横条（1~%s 格）在本行内左右拖动，不能越过别的方块；颜色不影响消除",
+                "%s×%s board: press any horizontal bar (1-%s cells) and drag it along its row; it cannot pass other blocks, and colors do not matter",
+                SlideyRules.COLS, SlideyRules.ROWS, SlideyRules.MAX_BLOCK_LENGTH));
         t.feature(t.tr("没有支撑的方块会掉落到下方；填满一整行即消除，上方方块继续下落",
                 "Unsupported blocks drop down; filling a whole row clears it and the blocks above fall again"));
         t.feature(t.tr("一局超过 %s 分的部分，每 %s 分折 1 枚游戏币；最高分与消除行数记入排行榜",
@@ -262,11 +286,25 @@ public final class GTOMachineTooltips {
                 FormattingUtil.formatNumbers(SlideyMachine.POINTS_PER_COIN)));
     });
 
+    // 推箱子 - 只保留玩法与奖励规则；按钮与操作提示以机器界面为准
+    public static final TipSpec SokobanTooltips = GTOTips.of("sokoban", t -> {
+        t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("推箱子", "Sokoban")));
+        t.feature(t.tr("方向键或 WASD 移动小人；正前方的箱子会被推走一格，推不动的方向不计步数",
+                "Arrow keys or WASD move the player; a box directly ahead is pushed one cell, and blocked moves are not counted"));
+        t.feature(t.tr("把所有箱子推到目标点即通关；箱子推进角落会卡死，可以随时重开本关",
+                "Push every box onto a goal to clear the level; a box stuck in a corner means restarting the level"));
+        t.formula(t.tr("累计每 %s 星发一次奖励：%s 游戏币；总星数记入排行榜",
+                "Every %s total stars grants %s Game Coins; total stars are recorded on the leaderboard",
+                FormattingUtil.formatNumbers(SokobanRules.STARS_PER_REWARD),
+                FormattingUtil.formatNumbers(SokobanRules.REWARD_COINS)));
+    });
+
     // 24点 - 只保留表达式规则；按钮、牌范围、奖励进度以机器界面为准
     public static final TipSpec Game24MachineTooltips = GTOTips.of("game_24", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("24点", "24 Game")));
-        t.feature(t.tr("用四张牌各一次，配合 +、-、×、÷ 与括号拼出 24；语法正确、结果正好 24 才通过，答错不扣钱",
-                "Use each of the four cards exactly once with +, -, ×, ÷ and brackets to make 24; the expression must be valid and equal 24, and a wrong answer costs nothing"));
+        t.feature(t.tr("用 %s 张牌各一次，配合 +、-、×、÷ 与括号拼出 %s；语法正确、结果正好 %s 才通过，答错不扣钱",
+                "Use each of the %s cards exactly once with +, -, ×, ÷ and brackets to make %s; the expression must be valid and equal %s, and a wrong answer costs nothing",
+                Game24Rules.NUMBER_COUNT, Game24Rules.TARGET, Game24Rules.TARGET));
         t.feature(t.tr("每题都有解", "Every puzzle is solvable"));
     });
 
@@ -275,45 +313,55 @@ public final class GTOMachineTooltips {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("数字华容道", "Number Puzzle")));
         t.feature(t.tr("点击空格上下左右相邻的数字块滑动，把 1..N²-1 按行排好、空格留在右下",
                 "Click a tile next to the gap to slide it; order 1..N²-1 by row with the gap at the bottom-right"));
-        t.feature(t.tr("完成一局按尺寸发放 1/4/8/15/25/40 游戏币，并记录该尺寸的最快完成时间",
-                "Each clear pays 1/4/8/15/25/40 Game Coins by size and records the best time for that size"));
+        var rewards = new StringBuilder();
+        for (var difficulty : NumberPuzzleRules.Difficulty.ALL) {
+            if (!rewards.isEmpty()) rewards.append('/');
+            rewards.append(FormattingUtil.formatNumbers(difficulty.reward()));
+        }
+        t.feature(t.tr("完成一局按尺寸发放 " + rewards + " 游戏币，并记录该尺寸的最快完成时间",
+                "Each clear pays " + rewards + " Game Coins by size and records the best time for that size"));
     });
 
     // 经典华容道 - 盘面与关卡规则以机器界面为准
     public static final TipSpec KlotskiTooltips = GTOTips.of("klotski", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("经典华容道", "Klotski")));
-        t.feature(t.tr("6×6 盘面：按住滑块沿它的长边拖动，把「车」滑到右侧出口",
-                "6×6 board: drag a block along its long edge and slide the Train to the exit on the right"));
-        t.feature(t.tr("分章节模式 1000 关，每 50 关一章；整章按累计星数解锁，章内完成前一关解锁下一关",
-                "Campaign has 1000 levels, 50 per chapter; a chapter unlocks by total stars, and levels inside unlock in order"));
-        t.feature(t.tr("挑战模式另有 1000 关，按顺序完成、完成前一关解锁下一关",
-                "Challenge offers another 1000 levels in order; clearing one unlocks the next"));
-        t.feature(t.tr("按最少步数评星：达到最少步数得 3 星，多出不到 5 步得 2 星，其余通关得 1 星",
-                "Stars: 3 at the minimum move count, 2 within 4 extra moves, otherwise 1 on completion"));
-        t.feature(t.tr("累计每 50 星发一次奖励：分章节模式 20 游戏币，挑战模式 10 游戏币",
-                "Every 50 total stars grants 20 Game Coins in Campaign or 10 in Challenge"));
-        t.feature(t.tr("两个排行榜分别按分章节与挑战的星星总数排序",
-                "Two leaderboards rank players by Campaign and Challenge total stars respectively"));
+        t.feature(t.tr("%s×%s 盘面：按住滑块沿它的长边拖动，把「车」滑到右侧出口",
+                "%s×%s board: drag a block along its long edge and slide the Train to the exit on the right",
+                KlotskiRules.BOARD_SIZE, KlotskiRules.BOARD_SIZE));
+        t.feature(t.tr("累计每 %s 星发一次奖励：分章节模式 %s 游戏币，挑战模式 %s 游戏币",
+                "Every %s total stars grants %s Game Coins in Campaign or %s in Challenge",
+                KlotskiRules.STARS_PER_REWARD, KlotskiRules.CAMPAIGN_REWARD, KlotskiRules.CHALLENGE_REWARD));
     });
 
     // 数独 - 只保留盘面规则与奖励概览
     public static final TipSpec SudokuTooltips = GTOTips.of("sudoku", t -> {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("数独", "Sudoku")));
-        t.feature(t.tr("标准 9×9 数独：每行、每列、每个 3×3 宫都填 1~9 各一次，提示数字不能修改",
-                "Classic 9×9 Sudoku: fill 1 to 9 once in every row, column and 3×3 box; clue digits are fixed"));
-        t.feature(t.tr("点格子选中，点 1~9 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
-                "Select a cell and press 1 to 9; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes"));
+        t.feature(t.tr("标准 %s×%s 数独：每行、每列、每个 %s×%s 宫都填 %s~%s 各一次，提示数字不能修改",
+                "Classic %s×%s Sudoku: every row, column and %s×%s box holds %s to %s exactly once; clue digits are fixed",
+                SudokuRules.SIZE, SudokuRules.SIZE, SudokuRules.BOX, SudokuRules.BOX, SudokuRules.VALUE_MIN,
+                SudokuRules.VALUE_MAX));
+        t.feature(t.tr("点格子选中，点 %s~%s 填写；再点同一个数字可清除。点「标记」后点数字只会增删该格的候选数",
+                "Select a cell and press %s to %s; press the same digit again to clear it. Turn on Mark to only toggle that cell's pencil notes",
+                SudokuRules.VALUE_MIN, SudokuRules.VALUE_MAX));
         t.feature(t.tr("在变体页选择一条附加规则：对角线、中心点、窗口、彩色、锯齿、连续或杀手",
                 "Choose one extra rule on the Variant tab: Diagonal X, Center Dots, Window, Color, Jigsaw, Consecutive or Killer"));
         var rewards = new StringBuilder();
         for (var difficulty : SudokuRules.Difficulty.ALL) {
-            if (rewards.length() > 0) rewards.append('/');
-            rewards.append(difficulty.reward());
+            if (!rewards.isEmpty()) rewards.append('/');
+            rewards.append(FormattingUtil.formatNumbers(difficulty.reward()));
         }
-        t.feature(t.tr("六档难度的基础奖励依次为 " + rewards + " 游戏币，最终奖励还会乘以变体倍率",
-                "The six difficulties award " + rewards + " Game Coins before the variant multiplier"));
-        t.feature(t.tr("变体倍率：标准 ×1，对角线/中心点 ×2，窗口 ×2.5，彩色 ×3，锯齿 ×4，连续 ×5，杀手 ×8",
-                "Variant multipliers: Standard ×1, Diagonal/Center Dots ×2, Window ×2.5, Color ×3, Jigsaw ×4, Consecutive ×5, Killer ×8"));
+        t.feature(t.tr("%s 档难度的基础奖励依次为 " + rewards + " 游戏币，最终奖励还会乘以变体倍率",
+                "The %s difficulties award " + rewards + " Game Coins before the variant multiplier",
+                SudokuRules.Difficulty.ALL.length));
+        t.feature(t.tr("变体倍率：标准 ×%s，对角线/中心点 ×%s，窗口 ×%s，彩色 ×%s，锯齿 ×%s，连续 ×%s，杀手 ×%s",
+                "Variant multipliers: Standard ×%s, Diagonal/Center Dots ×%s, Window ×%s, Color ×%s, Jigsaw ×%s, Consecutive ×%s, Killer ×%s",
+                percentText(SudokuVariant.STANDARD.rewardPercent()),
+                percentText(SudokuVariant.DIAGONAL_X.rewardPercent()),
+                percentText(SudokuVariant.WINDOW.rewardPercent()),
+                percentText(SudokuVariant.COLOR.rewardPercent()),
+                percentText(SudokuVariant.JIGSAW.rewardPercent()),
+                percentText(SudokuVariant.CONSECUTIVE.rewardPercent()),
+                percentText(SudokuVariant.KILLER.rewardPercent())));
         t.feature(t.tr("分别记录各难度和变体的最快完成时间", "Best completion times are recorded for each difficulty and variant"));
     });
 
@@ -322,8 +370,10 @@ public final class GTOMachineTooltips {
         t.attention(Tx.join(t.tr("妙妙工具: ", "Miraculous Tools: "), t.tr("扫雷", "Minesweeper")));
         t.feature(t.tr("右击方块翻开，潜行右击插旗；数字格周围旗数对上时一次掀开一圈",
                 "Right-click a block to open it, sneak-right-click to flag it; a numbered cell opens its neighbours once all its flags are placed"));
-        t.feature(t.tr("第一下翻开的格子连同周围 3×3 保证没有雷；翻开所有非雷格或插满所有雷即通关",
-                "The first opened cell and its 3×3 surroundings are always free of mines; open every safe cell or flag every mine to clear the board"));
+        int safeSide = 2 * MinesweeperBoardGenerator.FIRST_CLICK_RADIUS + 1;
+        t.feature(t.tr("第一下翻开的格子连同周围 %s×%s 保证没有雷；翻开所有非雷格或插满所有雷即通关",
+                "The first opened cell and its %s×%s surroundings are always free of mines; open every safe cell or flag every mine to clear the board",
+                safeSide, safeSide));
     });
 
     public static final TipSpec PatternContentAccessTerminalTooltips = GTOTips.of("pattern_content_access_terminal", t -> {

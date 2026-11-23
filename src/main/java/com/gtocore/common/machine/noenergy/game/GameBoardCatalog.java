@@ -11,6 +11,7 @@ import com.gtocore.common.machine.noenergy.game.minesweeper.MinesweeperRules;
 import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine;
 import com.gtocore.common.machine.noenergy.game.slidey.SlideyMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
+import com.gtocore.common.machine.noenergy.game.sokoban.SokobanMachine;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuMachine;
 import com.gtocore.common.machine.noenergy.game.tetris.TetrisMachine;
 
@@ -70,11 +71,13 @@ public final class GameBoardCatalog {
     private static final Component GAME_TETRIS = Component.translatable("gtocore.machine.game.catalog.game.tetris");
     @RegisterLanguage(cn = "土耳其方块", en = "Turkish Blocks")
     private static final Component GAME_SLIDEY = Component.translatable("gtocore.machine.game.catalog.game.slidey");
+    @RegisterLanguage(cn = "推箱子", en = "Sokoban")
+    private static final Component GAME_SOKOBAN = Component.translatable("gtocore.machine.game.catalog.game.sokoban");
 
     /** 游戏下拉栏：下标与 {@link #ALL} 的顺序一一对应。 */
     public static final Level GAMES = new Level(TITLE_GAME, new Component[] { GAME_SLOT, GAME_JUST_GET_10,
             GAME_2048, GAME_24, GAME_NUMBER_PUZZLE, GAME_MINESWEEPER_BASE, GAME_MINESWEEPER_CAMPAIGN, GAME_SUDOKU,
-            GAME_KLOTSKI, GAME_TETRIS, GAME_SLIDEY });
+            GAME_KLOTSKI, GAME_TETRIS, GAME_SLIDEY, GAME_SOKOBAN });
 
     // ==================== 目录 ====================
 
@@ -87,17 +90,18 @@ public final class GameBoardCatalog {
                     Game24Machine.leaderboardBoard()),
             new Group(GAME_NUMBER_PUZZLE, new Level(TITLE_SIZE, NumberPuzzleMachine.SIZE_NAMES), null,
                     NumberPuzzleMachine.leaderboardBoard()),
-            new Group(GAME_MINESWEEPER_BASE, new Level(Component.translatable(AbstractGameMachine.PAGE_DIFFICULTY), baseDifficultyNames()),
+            new Group(GAME_MINESWEEPER_BASE, new Level(AbstractGameMachine.SECTION_DIFFICULTY, baseDifficultyNames()),
                     null, MinesweeperCoreMachine.baseLeaderboardBoard()),
             new Group(GAME_MINESWEEPER_CAMPAIGN, new Level(TITLE_CHAPTER, MinesweeperCoreMachine.TIER_NAMES), null,
                     MinesweeperCoreMachine.campaignLeaderboardBoard()),
-            new Group(GAME_SUDOKU, new Level(Component.translatable(AbstractGameMachine.PAGE_DIFFICULTY), SudokuMachine.DIFFICULTY_NAMES),
+            new Group(GAME_SUDOKU, new Level(AbstractGameMachine.SECTION_DIFFICULTY, SudokuMachine.DIFFICULTY_NAMES),
                     new Level(SudokuMachine.PAGE_VARIANT, SudokuMachine.VARIANT_NAMES),
                     SudokuMachine.leaderboardBoard()),
             new Group(GAME_KLOTSKI, new Level(KlotskiMachine.COLUMN_MODE, klotskiModeNames()),
                     null, KlotskiMachine.leaderboardBoard()),
             new Group(GAME_TETRIS, null, null, TetrisMachine.leaderboardBoard()),
-            new Group(GAME_SLIDEY, null, null, SlideyMachine.leaderboardBoard()) };
+            new Group(GAME_SLIDEY, null, null, SlideyMachine.leaderboardBoard()),
+            new Group(GAME_SOKOBAN, null, null, SokobanMachine.leaderboardBoard()) };
 
     private GameBoardCatalog() {}
 

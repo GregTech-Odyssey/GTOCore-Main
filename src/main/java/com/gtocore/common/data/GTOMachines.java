@@ -32,6 +32,7 @@ import com.gtocore.common.machine.noenergy.game.numberPuzzle.NumberPuzzleMachine
 import com.gtocore.common.machine.noenergy.game.slidey.SlideyMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachine;
 import com.gtocore.common.machine.noenergy.game.slotMachine.SlotMachineRules;
+import com.gtocore.common.machine.noenergy.game.sokoban.SokobanMachine;
 import com.gtocore.common.machine.noenergy.game.sudoku.SudokuMachine;
 import com.gtocore.common.machine.noenergy.game.tetris.TetrisMachine;
 import com.gtocore.common.machine.noenergy.heat.*;
@@ -1320,6 +1321,16 @@ public final class GTOMachines {
             .nonYAxisRotation()
             .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
                     GTOCore.id("block/machine/game/sudoku")))
+            .shape(SLOT_MACHINE_SHAPE)
+            .blockProp(BlockBehaviour.Properties::noOcclusion)
+            .register();
+
+    public static final MachineDefinition SOKOBAN = machine("sokoban_machine", "推箱子游戏机", SokobanMachine::new)
+            .langValue("Sokoban Game Machine")
+            .tips(GTOMachineTooltips.SokobanTooltips)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/game/base"),
+                    GTOCore.id("block/machine/game/sokoban")))
             .shape(SLOT_MACHINE_SHAPE)
             .blockProp(BlockBehaviour.Properties::noOcclusion)
             .register();

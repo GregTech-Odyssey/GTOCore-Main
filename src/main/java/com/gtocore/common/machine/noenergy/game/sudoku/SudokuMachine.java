@@ -99,24 +99,18 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     public static final Component[] VARIANT_NAMES = { VARIANT_STANDARD, VARIANT_DIAGONAL_X, VARIANT_CENTER_DOTS,
             VARIANT_WINDOW, VARIANT_COLOR, VARIANT_JIGSAW, VARIANT_CONSECUTIVE, VARIANT_KILLER };
 
-    @RegisterLanguage(cn = "难度", en = "Difficulty")
-    private static final Component SECTION_DIFFICULTY = Component.translatable("gtocore.machine.sudoku.section.difficulty");
     @RegisterLanguage(cn = "变体", en = "Variant")
     public static final Component PAGE_VARIANT = Component.translatable("gtocore.machine.sudoku.page.variant");
     @RegisterLanguage(cn = "为这一局叠加一条附加规则", en = "Stack one extra rule on this round")
     private static final Component PAGE_VARIANT_TOOLTIP = Component.translatable("gtocore.machine.sudoku.page.variant.tooltip");
     @RegisterLanguage(cn = "变体", en = "Variant")
     private static final Component LINE_VARIANT = Component.translatable("gtocore.machine.sudoku.line.variant");
-    @RegisterLanguage(cn = "难度", en = "Difficulty")
-    private static final Component LINE_DIFFICULTY = Component.translatable("gtocore.machine.sudoku.line.difficulty");
     @RegisterLanguage(cn = "用时", en = "Time")
     private static final Component LINE_TIME = Component.translatable("gtocore.machine.sudoku.line.time");
     @RegisterLanguage(cn = "标记", en = "Mark")
     private static final Component BUTTON_MARK = Component.translatable("gtocore.machine.sudoku.button.mark");
     @RegisterLanguage(cn = "%s · 完成奖励 %s 游戏币", en = "%s · Clear reward %s Game Coins")
     private static final String TEXT_DIFFICULTY = "gtocore.machine.sudoku.text.difficulty";
-    @RegisterLanguage(cn = "重新开始", en = "Restart")
-    private static final Component BUTTON_RESTART = Component.translatable("gtocore.machine.sudoku.button.restart");
     @RegisterLanguage(cn = "这一局已经完成了", en = "This puzzle is already solved")
     private static final Component REASON_SOLVED = Component.translatable("gtocore.machine.sudoku.reason.solved");
 
@@ -639,7 +633,7 @@ public class SudokuMachine extends AbstractGameMachine<SudokuMachine.BoardSnapsh
     private StatusPanel createStatusPanel() {
         var status = panel();
         status.addLine(LINE_BALANCE, () -> number(balance()));
-        status.addLine(LINE_DIFFICULTY, () -> difficultyName(view().difficulty()));
+        status.addLine(SECTION_DIFFICULTY, () -> difficultyName(view().difficulty()));
         status.addLine(LINE_VARIANT, () -> variantName(view().variant()));
         status.addChild(new LiveDurationLine(LINE_TIME, this::displayElapsedTicks));
         var restart = Button.text(77, BUTTON_RESTART);
