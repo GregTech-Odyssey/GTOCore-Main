@@ -1287,6 +1287,12 @@ public final class GTOItems {
             .properties(p -> p.stacksTo(1))
             .onRegister(attach(new CoordinateCardBehavior()))
             .register();
+    public static final ItemEntry<ComponentItem> COVER_INSPECTOR = item("cover_inspector", "覆盖板检查器", ComponentItem::create)
+            .lang("Cover Inspector")
+            .properties(p -> p.stacksTo(1))
+            .model((ctx, prov) -> prov.generated(ctx, GTCEu.id("item/terminal")))
+            .onRegister(attach(new CoverInspectorBehavior()))
+            .register();
     // 微米级聚丙烯腈原丝
     // 预氧化微米级聚丙烯腈原丝
     // 纳米级聚丙烯腈原丝
