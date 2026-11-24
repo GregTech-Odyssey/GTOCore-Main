@@ -2836,6 +2836,7 @@
   "gtocore.cover_inspector.source_cover": "%s-side cover: %s",
   "gtocore.cover_inspector.target": "Bound target: %s (%s)",
   "gtocore.cover_inspector.target_side": "Target side: %s",
+  "gtocore.cover_inspector.unknown_target": "Unknown target block",
   "gtocore.crafting2.component.composite": "Composite operator",
   "gtocore.crafting2.component.multi_craft": "Batch crafting operator",
   "gtocore.crafting2.component.multi_path": "Multi-path operator",

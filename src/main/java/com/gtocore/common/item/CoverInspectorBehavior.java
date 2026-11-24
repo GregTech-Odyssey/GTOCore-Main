@@ -38,6 +38,8 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
     private static final String COVER = "gtocore.cover_inspector.cover";
     @RegisterLanguage(cn = "绑定目标：%s（%s）", en = "Bound target: %s (%s)")
     private static final String TARGET = "gtocore.cover_inspector.target";
+    @RegisterLanguage(cn = "未知目标方块", en = "Unknown target block")
+    private static final String UNKNOWN_TARGET = "gtocore.cover_inspector.unknown_target";
     @RegisterLanguage(cn = "目标面：%s", en = "Target side: %s")
     private static final String TARGET_SIDE = "gtocore.cover_inspector.target_side";
     @RegisterLanguage(cn = "绑定来源：%s（%s）", en = "Bound from: %s (%s)")
@@ -90,10 +92,9 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
                         targetName = Component.translatable(targetMachine.getDefinition().getDescriptionId());
                     } else if (targetLevel != null && LoadedChunks.isLoaded(targetLevel, target.pos())) {
                         targetName = targetLevel.getBlockState(target.pos()).getBlock().getName();
-                    } else if (tag != null && tag.contains(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID)) {
-                        targetName = Component.translatable(tag.getString(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID));
                     } else {
-                        targetName = Component.literal(target.pos().toShortString());
+                        var blockId = tag == null ? "" : tag.getString(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID);
+                        targetName = blockId.isEmpty() ? Component.translatable(UNKNOWN_TARGET) : Component.translatable(blockId);
                     }
                     var targetSide = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundSide() : ((AdvancedWirelessTransferCover) cover).getBoundSide();
                     player.sendSystemMessage(Component.translatable(TARGET, targetName, target.pos().toShortString())

@@ -2983,6 +2983,7 @@
   "gtocore.cover_inspector.source_cover": "%s 面覆蓋板：%s",
   "gtocore.cover_inspector.target": "綁定目標：%s（%s）",
   "gtocore.cover_inspector.target_side": "目標面：%s",
+  "gtocore.cover_inspector.unknown_target": "未知目標方塊",
   "gtocore.crafting2.component.composite": "複合算子",
   "gtocore.crafting2.component.multi_craft": "批量合成算子",
   "gtocore.crafting2.component.multi_path": "多路徑算子",

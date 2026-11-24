@@ -139,9 +139,10 @@ public class WirelessTransferCover extends CoverBehavior {
     }
 
     public @Nullable GlobalPos getBoundTarget() {
-        if (dimensionId == null || targetPos == null) return null;
-        var dimension = tryParse(dimensionId);
-        return dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId) ? null : GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos);
+        if (dimensionId == null || dimensionId.isEmpty() || targetPos == null) return null;
+        if (!ResourceLocation.isValidResourceLocation(dimensionId)) return null;
+        var dimension = new ResourceLocation(dimensionId);
+        return GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos);
     }
 
     public @Nullable Direction getBoundSide() {

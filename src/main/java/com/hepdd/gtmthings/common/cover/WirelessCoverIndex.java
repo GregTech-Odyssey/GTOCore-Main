@@ -21,19 +21,20 @@ public final class WirelessCoverIndex {
     private WirelessCoverIndex() {}
 
     public static void add(Level level, @Nullable String dimensionId, @Nullable BlockPos targetPos, BlockPos sourcePos, Direction side) {
-        if (level.isClientSide || dimensionId == null || targetPos == null) return;
-        var dimension = ResourceLocation.tryParse(dimensionId);
-        if (dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId)) return;
+        if (level.isClientSide || dimensionId == null || dimensionId.isEmpty() || targetPos == null) return;
+        if (!ResourceLocation.isValidResourceLocation(dimensionId)) return;
+        var dimension = new ResourceLocation(dimensionId);
         var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos.immutable());
         INDEXES.get(level).add(target, new Source(sourcePos.immutable(), side));
     }
 
     public static void remove(Level level, @Nullable String dimensionId, @Nullable BlockPos targetPos, BlockPos sourcePos, Direction side) {
-        if (level.isClientSide || dimensionId == null || targetPos == null) return;
-        var dimension = ResourceLocation.tryParse(dimensionId);
-        if (dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId)) return;
+        if (level.isClientSide) return;
         var index = INDEXES.getIfPresent(level);
         if (index == null) return;
+        if (dimensionId == null || dimensionId.isEmpty() || targetPos == null) return;
+        if (!ResourceLocation.isValidResourceLocation(dimensionId)) return;
+        var dimension = new ResourceLocation(dimensionId);
         var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos.immutable());
         index.remove(target, new Source(sourcePos, side));
     }
