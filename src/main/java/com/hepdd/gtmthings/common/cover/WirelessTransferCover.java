@@ -74,12 +74,20 @@ public class WirelessTransferCover extends CoverBehavior {
         super.onLoad();
         if (coverHolder.isRemote()) return;
         getTargetLevel();
+        WirelessCoverIndex.add(coverHolder.getLevel(), dimensionId, targetPos, coverHolder.getPos(), attachedSide);
         subscription = coverHolder.subscribeServerTick(subscription, this::update, 20);
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        WirelessCoverIndex.remove(coverHolder.getLevel(), dimensionId, targetPos, coverHolder.getPos(), attachedSide);
     }
 
     @Override
     public void onRemoved() {
         super.onRemoved();
+        WirelessCoverIndex.remove(coverHolder.getLevel(), dimensionId, targetPos, coverHolder.getPos(), attachedSide);
         if (subscription != null) {
             subscription.cancel();
         }
