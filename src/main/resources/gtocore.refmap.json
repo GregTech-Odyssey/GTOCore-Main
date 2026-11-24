@@ -628,6 +628,16 @@
     },
     "com/gtolib/mixin/lowdraglib/RemoteMachineContainerMixin": {
       "stillValid": "Lcom/lowdragmc/lowdraglib/gui/modular/ModularUIContainer;m_6875_(Lnet/minecraft/world/entity/player/Player;)Z"
+    },
+    "com/gtocore/mixin/mousetweaks/ModularUIGuiContainerMixin": {
+      "mouseScrolled": "Lcom/lowdragmc/lowdraglib/gui/modular/ModularUIGuiContainer;m_6050_(DDD)Z"
+    },
+    "com/gtolib/mixin/mc/client/LDLibContainerScreenAccessor": {
+      "lastClickTime": "f_97721_:J",
+      "lastClickButton": "f_97722_:I",
+      "lastQuickMoved": "f_97724_:Lnet/minecraft/world/item/ItemStack;",
+      "lastClickSlot": "f_97709_:Lnet/minecraft/world/inventory/Slot;",
+      "doubleclick": "f_97723_:Z"
     }
   },
   "data": {
@@ -1260,6 +1270,16 @@
       },
       "com/gtolib/mixin/lowdraglib/RemoteMachineContainerMixin": {
         "stillValid": "Lcom/lowdragmc/lowdraglib/gui/modular/ModularUIContainer;m_6875_(Lnet/minecraft/world/entity/player/Player;)Z"
+      },
+      "com/gtocore/mixin/mousetweaks/ModularUIGuiContainerMixin": {
+        "mouseScrolled": "Lcom/lowdragmc/lowdraglib/gui/modular/ModularUIGuiContainer;m_6050_(DDD)Z"
+      },
+      "com/gtolib/mixin/mc/client/LDLibContainerScreenAccessor": {
+        "lastClickTime": "f_97721_:J",
+        "lastClickButton": "f_97722_:I",
+        "lastQuickMoved": "f_97724_:Lnet/minecraft/world/item/ItemStack;",
+        "lastClickSlot": "f_97709_:Lnet/minecraft/world/inventory/Slot;",
+        "doubleclick": "f_97723_:Z"
       }
     }
   }
