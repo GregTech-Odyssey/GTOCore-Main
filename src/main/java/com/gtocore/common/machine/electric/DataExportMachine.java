@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import appeng.api.stacks.AEItemKey;
 
 import com.lowdragmc.lowdraglib.gui.modular.ModularUI;
+import org.jetbrains.annotations.Nullable;
 
 import static com.gregtechceu.gtceu.api.GTValues.*;
 
@@ -72,7 +73,7 @@ public class DataExportMachine extends WorkableTieredMachine implements ICustomR
     }
 
     @Override
-    public void exportSelectedRecipe(ItemStack dataStack, GTRecipeDefinition recipe) {
+    public void exportSelectedRecipe(ItemStack dataStack, GTRecipeDefinition recipe, @Nullable Player player, boolean batch) {
         in = dataStack.copy();
         ResearchManager.writeResearchToNBT(dataStack.getOrCreateTag(), recipe.id.toString(), recipe.recipeType);
         out = dataStack;

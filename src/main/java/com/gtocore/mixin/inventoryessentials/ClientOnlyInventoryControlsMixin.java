@@ -1,21 +1,34 @@
 package com.gtocore.mixin.inventoryessentials;
 
 import com.gtolib.api.ae2.me2in1.Me2in1Menu;
+import com.gtolib.client.gui.LDLibSlotInteractions;
 
 import net.blay09.mods.inventoryessentials.client.ClientOnlyInventoryControls;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
 
 import appeng.client.gui.Icon;
 import appeng.menu.slot.RestrictedInputSlot;
 
+import com.lowdragmc.lowdraglib.gui.modular.ModularUIGuiContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientOnlyInventoryControls.class)
 public class ClientOnlyInventoryControlsMixin {
+
+    @Inject(method = "isValidTargetSlot", at = @At("HEAD"), cancellable = true, remap = false)
+    private void gtocore$skipUnavailableWidgetSlots(Slot slot, CallbackInfoReturnable<Boolean> cir) {
+        if (Minecraft.getInstance().screen instanceof ModularUIGuiContainer screen &&
+                !LDLibSlotInteractions.isTransferSlot(screen.getMenu(), slot)) {
+            cir.setReturnValue(false);
+        }
+    }
 
     @Inject(method = "slotClick(Lnet/minecraft/world/inventory/AbstractContainerMenu;IILnet/minecraft/world/inventory/ClickType;)V",
             at = @At("HEAD"),
