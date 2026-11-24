@@ -14,6 +14,7 @@ import com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -135,6 +136,16 @@ public class WirelessTransferCover extends CoverBehavior {
         ResourceLocation resLoc = tryParse(this.dimensionId);
         ResourceKey<Level> resKey = ResourceKey.create(Registries.DIMENSION, resLoc);
         target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
+    }
+
+    public @Nullable GlobalPos getBoundTarget() {
+        if (dimensionId == null || targetPos == null) return null;
+        var dimension = tryParse(dimensionId);
+        return dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId) ? null : GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos);
+    }
+
+    public @Nullable Direction getBoundSide() {
+        return facing;
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {

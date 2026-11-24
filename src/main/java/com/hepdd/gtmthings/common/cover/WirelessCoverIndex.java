@@ -8,8 +8,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
+import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
+
 import com.suried.gtoutils.level.LevelStore;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,17 +20,21 @@ public final class WirelessCoverIndex {
 
     private WirelessCoverIndex() {}
 
-    public static void add(Level level, @Nullable String dimensionId, BlockPos targetPos, BlockPos sourcePos, Direction side) {
-        if (level.isClientSide || dimensionId == null) return;
-        var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(dimensionId)), targetPos);
+    public static void add(Level level, @Nullable String dimensionId, @Nullable BlockPos targetPos, BlockPos sourcePos, Direction side) {
+        if (level.isClientSide || dimensionId == null || targetPos == null) return;
+        var dimension = ResourceLocation.tryParse(dimensionId);
+        if (dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId)) return;
+        var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos.immutable());
         INDEXES.get(level).add(target, new Source(sourcePos.immutable(), side));
     }
 
-    public static void remove(Level level, @Nullable String dimensionId, BlockPos targetPos, BlockPos sourcePos, Direction side) {
-        if (level.isClientSide || dimensionId == null) return;
+    public static void remove(Level level, @Nullable String dimensionId, @Nullable BlockPos targetPos, BlockPos sourcePos, Direction side) {
+        if (level.isClientSide || dimensionId == null || targetPos == null) return;
+        var dimension = ResourceLocation.tryParse(dimensionId);
+        if (dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId)) return;
         var index = INDEXES.getIfPresent(level);
         if (index == null) return;
-        var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(dimensionId)), targetPos);
+        var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos.immutable());
         index.remove(target, new Source(sourcePos, side));
     }
 
@@ -42,10 +47,10 @@ public final class WirelessCoverIndex {
 
     static final class Targets {
 
-        private final Object2ObjectOpenHashMap<GlobalPos, ObjectArrayList<Source>> sources = new Object2ObjectOpenHashMap<>();
+        private final O2OOpenCacheHashMap<GlobalPos, ObjectArrayList<Source>> sources = new O2OOpenCacheHashMap<>();
 
         void add(GlobalPos target, Source source) {
-            var entries = sources.computeIfAbsent(target, ignored -> new ObjectArrayList<>());
+            var entries = sources.computeIfAbsent(target, ignored -> new ObjectArrayList<>(1));
             if (!entries.contains(source)) entries.add(source);
         }
 

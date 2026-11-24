@@ -24,6 +24,7 @@ import com.hepdd.gtmthings.common.cover.AdvancedWirelessTransferCover;
 import com.hepdd.gtmthings.common.cover.WirelessCoverIndex;
 import com.hepdd.gtmthings.common.cover.WirelessTransferCover;
 import com.hepdd.gtmthings.common.item.Behaviour.WirelessTransferCoverPlaceBehavior;
+import com.suried.gtoutils.level.LoadedChunks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -65,7 +66,11 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
         if (!context.isSecondaryUseActive()) return InteractionResult.PASS;
         var machine = MetaMachine.getMachine(context.getLevel(), context.getClickedPos());
         if (context.getPlayer() instanceof ServerPlayer player) {
-            if (machine != null) player.sendSystemMessage(Component.translatable(HEADER, Component.translatable(machine.getDefinition().getDescriptionId())));
+            boolean headerSent = false;
+            if (machine != null) {
+                player.sendSystemMessage(Component.translatable(HEADER, Component.translatable(machine.getDefinition().getDescriptionId())));
+                headerSent = true;
+            }
             boolean hasCover = false;
             if (machine != null) {
                 for (var side : Direction.values()) {
@@ -74,16 +79,26 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
                     hasCover = true;
                     player.sendSystemMessage(Component.translatable(COVER, Component.translatable("gtocore.direction." + side.getName()), cover.getPickItem().getHoverName()));
                     if (!(cover instanceof WirelessTransferCover || cover instanceof AdvancedWirelessTransferCover)) continue;
-                    var tag = cover.getPickItem().getTag();
-                    var target = WirelessTransferCoverPlaceBehavior.getStoredGlobalPos(tag);
+                    var target = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundTarget() : ((AdvancedWirelessTransferCover) cover).getBoundTarget();
                     if (target == null) continue;
-                    String blockId = tag.getString(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID);
                     var targetLevel = player.server.getLevel(target.dimension());
-                    var targetMachine = targetLevel == null ? null : MetaMachine.getMachine(targetLevel, target.pos());
-                    Component targetName = targetMachine == null ? Component.translatable(blockId) : Component.translatable(targetMachine.getDefinition().getDescriptionId());
+                    var targetBlockEntity = targetLevel == null ? null : LoadedChunks.blockEntity(targetLevel, target.pos());
+                    var targetMachine = MetaMachine.getMachine(targetBlockEntity);
+                    var tag = cover.getPickItem().getTag();
+                    Component targetName;
+                    if (targetMachine != null) {
+                        targetName = Component.translatable(targetMachine.getDefinition().getDescriptionId());
+                    } else if (targetLevel != null && LoadedChunks.isLoaded(targetLevel, target.pos())) {
+                        targetName = targetLevel.getBlockState(target.pos()).getBlock().getName();
+                    } else if (tag != null && tag.contains(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID)) {
+                        targetName = Component.translatable(tag.getString(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID));
+                    } else {
+                        targetName = Component.literal(target.pos().toShortString());
+                    }
+                    var targetSide = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundSide() : ((AdvancedWirelessTransferCover) cover).getBoundSide();
                     player.sendSystemMessage(Component.translatable(TARGET, targetName, target.pos().toShortString())
                             .append(" · ").append(Component.translatable(GTODimensions.getTranslationKey(target.dimension()))));
-                    player.sendSystemMessage(Component.translatable(TARGET_SIDE, Component.translatable("gtocore.direction." + tag.getString(WirelessTransferCoverPlaceBehavior.TAG_FACING))));
+                    if (targetSide != null) player.sendSystemMessage(Component.translatable(TARGET_SIDE, Component.translatable("gtocore.direction." + targetSide.getName())));
                 }
             }
             var clickedPos = GlobalPos.of(context.getLevel().dimension(), context.getClickedPos());
@@ -91,20 +106,22 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
                 var sources = WirelessCoverIndex.sources(sourceLevel, clickedPos);
                 if (sources == null) continue;
                 for (var source : sources) {
-                    var blockEntity = sourceLevel.getBlockEntity(source.pos());
+                    var blockEntity = LoadedChunks.blockEntity(sourceLevel, source.pos());
                     var sourceMachine = MetaMachine.getMachine(blockEntity);
+                    if (sourceMachine == null) continue;
                     CoverBehavior cover = sourceMachine.getCoverContainer().getCoverAtSide(source.side());
                     if (!(cover instanceof WirelessTransferCover || cover instanceof AdvancedWirelessTransferCover)) continue;
-                    if (!hasCover) {
+                    if (!headerSent) {
                         Component targetName = machine == null ? context.getLevel().getBlockState(context.getClickedPos()).getBlock().getName() : Component.translatable(machine.getDefinition().getDescriptionId());
                         player.sendSystemMessage(Component.translatable(HEADER, targetName));
+                        headerSent = true;
                     }
                     hasCover = true;
                     player.sendSystemMessage(Component.translatable(SOURCE, Component.translatable(sourceMachine.getDefinition().getDescriptionId()), source.pos().toShortString())
                             .append(" · ").append(Component.translatable(GTODimensions.getTranslationKey(sourceLevel.dimension()))));
                     player.sendSystemMessage(Component.translatable(SOURCE_COVER, Component.translatable("gtocore.direction." + source.side().getName()), cover.getPickItem().getHoverName()));
-                    var tag = cover.getPickItem().getTag();
-                    player.sendSystemMessage(Component.translatable(TARGET_SIDE, Component.translatable("gtocore.direction." + tag.getString(WirelessTransferCoverPlaceBehavior.TAG_FACING))));
+                    var targetSide = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundSide() : ((AdvancedWirelessTransferCover) cover).getBoundSide();
+                    if (targetSide != null) player.sendSystemMessage(Component.translatable(TARGET_SIDE, Component.translatable("gtocore.direction." + targetSide.getName())));
                 }
             }
             if (machine == null) return hasCover ? InteractionResult.SUCCESS : InteractionResult.PASS;

@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -192,6 +193,16 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         ResourceLocation resLoc = tryParse(this.dimensionId);
         ResourceKey<Level> resKey = ResourceKey.create(Registries.DIMENSION, resLoc);
         target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
+    }
+
+    public @Nullable GlobalPos getBoundTarget() {
+        if (dimensionId == null || targetPos == null) return null;
+        var dimension = tryParse(dimensionId);
+        return dimension == null || !ResourceLocation.isValidResourceLocation(dimensionId) ? null : GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos);
+    }
+
+    public @Nullable Direction getBoundSide() {
+        return targetSide;
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
