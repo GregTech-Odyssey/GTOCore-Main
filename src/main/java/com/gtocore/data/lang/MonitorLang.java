@@ -461,6 +461,9 @@ final class MonitorLang {
         addCNEN("gtocore.monitor.hud.visibility", "显示方式", "Visibility");
         addCNEN("gtocore.monitor.hud.visibility.always", "始终显示", "Always visible");
         addCNEN("gtocore.monitor.hud.visibility.interacting", "按住[%s]显示", "Hold [%s] to show");
+        addCNEN("gtocore.monitor.hud.color", "显示颜色", "Display Color");
+        addCNEN("gtocore.monitor.hud.color.hint", "用色轮调整色相和饱和度，用滑条调整亮度。", "Use the wheel for hue and saturation and the slider for brightness.");
+        addCNEN("gtocore.monitor.hud.color.reset", "恢复默认", "Reset Color");
         addCNEN("gtocore.monitor.hud.hint.layout", "按 %s 编辑 HUD 布局", "Press %s to edit the HUD layout");
         addCNEN("gtocore.monitor.value.source_lost", "来源已失效：%s", "Source lost: %s");
         addCNEN("gtocore.monitor.value.source_lost.control", "控件已拆除或已断开连接", "the control was removed or disconnected");

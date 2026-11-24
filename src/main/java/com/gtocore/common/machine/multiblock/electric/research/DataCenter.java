@@ -65,6 +65,7 @@ import com.gregtechceu.gtceu.uipro.styletemplate.UISizes;
 import com.gregtechceu.gtceu.uipro.styletemplate.UITheme;
 import com.gregtechceu.gtceu.uipro.window.MachineWindow;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gregtechceu.gtceu.utils.ResearchManager;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -94,8 +95,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.vfyjxf.taffy.style.FlexWrap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import it.unimi.dsi.fastutil.objects.ReferenceList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.BlockAccessor;
@@ -123,6 +122,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                         IWailaDisplayProvider,
                         IMachineSubWindows {
 
+    private static final DataAccessSlots[] NO_DATA_ACCESS_SLOTS = new DataAccessSlots[0];
+
     @SaveToDisk
     @SyncToClient
     TechNode selectedNode;
@@ -134,7 +135,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private long cwutCache = 0L;
     private final TierCasingTrait tierCasingTrait;
 
-    private final ReferenceList<NotifiableInventory<AEItemKey>> dataAccessHandlers = new ReferenceArrayList<>();
+    @Nullable
+    private DataAccessSlots[] dataAccessSlots;
 
     @SaveToDisk
     private final NotifiableInventory<AEItemKey> inpur;
@@ -149,10 +151,9 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     public int getTotalDataSlots() {
-        var handlers = getDataAccessHandlers();
         int totalSlots = 0;
-        for (var handler : handlers) {
-            totalSlots += handler.storage.size();
+        for (var hatch : getDataAccessSlots()) {
+            totalSlots += hatch.storage.size();
         }
         return totalSlots;
     }
@@ -237,23 +238,25 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         getRecipeLogic().resetRecipeLogic();
     }
 
-    private List<NotifiableInventory<AEItemKey>> getDataAccessHandlers() {
-        if (!isFormed()) {
-            return Collections.emptyList();
-        }
-        if (dataAccessHandlers.isEmpty()) {
-            Arrays.stream(getParts(DataAccessHatchMachine.class))
-                    .sorted(Comparator.comparingLong(hatch -> hatch.getPos().asLong()))
-                    .map(hatch -> ((IDataAccessHatchMachineAccessor) hatch).gtocore$getImportItems())
-                    .forEach(dataAccessHandlers::add);
-        }
-        return dataAccessHandlers;
+    private DataAccessSlots[] getDataAccessSlots() {
+        if (!isFormed()) return NO_DATA_ACCESS_SLOTS;
+        var slots = dataAccessSlots;
+        if (slots != null) return slots;
+        var hatches = getParts(DataAccessHatchMachine.class);
+        // 客户端的仓可能在控制器之后加载。
+        if (hatches.length == 0) return NO_DATA_ACCESS_SLOTS;
+        slots = Arrays.stream(hatches)
+                .sorted(Comparator.comparingLong(hatch -> hatch.getPos().asLong()))
+                .map(hatch -> new DataAccessSlots(((IDataAccessHatchMachineAccessor) hatch).gtocore$getImportItems().storage))
+                .toArray(DataAccessSlots[]::new);
+        dataAccessSlots = slots;
+        return slots;
     }
 
     @Override
     public void onUnload() {
         super.onUnload();
-        dataAccessHandlers.clear();
+        dataAccessSlots = null;
     }
 
     @Override
@@ -264,6 +267,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public void onStructureFormed() {
         super.onStructureFormed();
+        dataAccessSlots = null;
         tierCasingTrait.onStructureFormed();
     }
 
@@ -271,7 +275,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     public void onStructureInvalid() {
         super.onStructureInvalid();
         tierCasingTrait.onStructureInvalid();
-        dataAccessHandlers.clear();
+        dataAccessSlots = null;
     }
 
     @Override
@@ -363,6 +367,50 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     @Override
     public KeyInventory<AEItemKey> getDataOutputStorage() {
         return output.storage;
+    }
+
+    @Override
+    public boolean supportsBatchExport() {
+        return true;
+    }
+
+    @Override
+    public int getFreeInternalExportSlots() {
+        int freeSlots = 0;
+        for (var hatch : getDataAccessSlots()) {
+            freeSlots += hatch.countFreeSlots();
+        }
+        return freeSlots;
+    }
+
+    @Override
+    public void exportSelectedRecipe(ItemStack dataStack, GTRecipeDefinition recipe, @Nullable Player player, boolean batch) {
+        var input = getDataItemStorage();
+        var researchId = recipe.id.toString();
+        for (int slot = 0; slot < input.size(); slot++) {
+            var key = input.keyAt(slot);
+            if (key == null || key.getItem() != dataStack.getItem()) continue;
+
+            var exported = key.toStack(1);
+            ResearchManager.writeResearchToNBT(exported.getOrCreateTag(), researchId, recipe.recipeType);
+            var exportedKey = AEItemKey.of(exported);
+            if (exportedKey == null || !storeExportedData(exportedKey, exported, player)) continue;
+
+            input.extract(slot, key, 1, false);
+            if (batch) return;
+        }
+    }
+
+    private boolean storeExportedData(AEItemKey key, ItemStack stack, @Nullable Player player) {
+        for (var hatch : getDataAccessSlots()) {
+            if (hatch.insertIntoFreeSlot(key)) return true;
+        }
+        if (getDataOutputStorage().insert(key, 1, false) == 1) return true;
+        if (player == null) return false;
+        var inventory = player.getInventory();
+        int slot = stack.isDamaged() ? -1 : inventory.getSlotWithRemainingSpace(stack);
+        if (slot < 0) slot = inventory.getFreeSlot();
+        return slot >= 0 && inventory.add(slot, stack);
     }
 
     @Override
@@ -590,7 +638,7 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
             refreshed = true;
             refreshedAt = now;
             formed = machine.isFormed();
-            int newHatches = machine.getDataAccessHandlers().size();
+            int newHatches = machine.getDataAccessSlots().length;
             if (newHatches != hatches) hatchesText = Component.literal(FormattingUtil.formatNumbers(hatches = newHatches));
             int newSlots = machine.getTotalDataSlots();
             if (newSlots != slots) slotsText = Component.literal(FormattingUtil.formatNumbers(slots = newSlots));
@@ -850,6 +898,54 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
         return new ModularUI(176, 166, this, player).widget(window.setBackToMachine(this));
     }
 
+    private static final class DataAccessSlots {
+
+        private final KeyInventory<AEItemKey> storage;
+        private final BitSet freeSlots;
+        private int version;
+
+        private DataAccessSlots(KeyInventory<AEItemKey> storage) {
+            this.storage = storage;
+            this.freeSlots = new BitSet(storage.size());
+            this.version = storage.version() - 1;
+        }
+
+        private void refreshFreeSlots() {
+            int currentVersion = storage.version();
+            if (version == currentVersion) return;
+            freeSlots.clear();
+            for (int slot = 0; slot < storage.size(); slot++) {
+                if (storage.amountAt(slot) == 0) freeSlots.set(slot);
+            }
+            version = currentVersion;
+        }
+
+        private int countFreeSlots() {
+            refreshFreeSlots();
+            return freeSlots.cardinality();
+        }
+
+        private boolean insertIntoFreeSlot(AEItemKey key) {
+            refreshFreeSlots();
+            int first = freeSlots.nextSetBit(0);
+            if (first < 0) return false;
+            var filter = storage.getFilter();
+            if (filter != null && !filter.matches(key)) return false;
+
+            int insertedVersion = version + 1;
+            for (int slot = first; slot >= 0; slot = freeSlots.nextSetBit(slot + 1)) {
+                if (storage.insert(slot, key, 1, false) != 1) continue;
+                // 本次插入只改变一个槽。若通知回调又改了库存，由下次查询重建。
+                if (storage.version() == insertedVersion) {
+                    freeSlots.clear(slot);
+                    version = insertedVersion;
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
     private static final class CombinedDataAccessHatchHandler implements IItemHandlerModifiable {
 
         private final DataCenter machine;
@@ -907,8 +1003,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                 return null;
             }
             int cursor = slot;
-            for (var handler : machine.getDataAccessHandlers()) {
-                var storage = handler.storage;
+            for (var hatch : machine.getDataAccessSlots()) {
+                var storage = hatch.storage;
                 int slots = storage.size();
                 if (cursor < slots) {
                     return new SlotReference(adapters.computeIfAbsent(storage, MenuItemAdapter::new), cursor);
