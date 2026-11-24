@@ -350,7 +350,7 @@ public final class ZpmChapter {
             .dependsOn(Q_6742F9E1));
 
     public static final Quest SELF_GROWING = CHAPTER.quest("self_growing", q -> q
-            .at(-7.5, 2)
+            .at(-8, 2)
             .icon(GTMaterials.Bacteria.getBucket())
             .title("自行生长")
             .subtitle("给我增殖！")

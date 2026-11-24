@@ -97,9 +97,9 @@ public final class WirelessEnergyChapter {
             .desc(d -> d
                     .line("无线电网的能源储存需要载体")
                     .line()
-                    .line("{无线能源塔}和{无线能量单元}提供了相应功能，你只需要一座该结构", GOLD, GOLD)
+                    .line("{无线能源塔}和{无线能量单元}提供了相应功能，你可以拥有多座该结构", GOLD, GOLD)
                     .line()
-                    .line("摆放多座该结构只会以最后一座成型的为准"))
+                    .line("同一纬度多座{无线能源塔}的容量、存量和总吞吐相加", GOLD))
             .task(Task.checkmark().title("储能上限"))
             .dependsOn(WIRELESS_ENERGY_BINDING_TOOL)
             .hideDependencyLines(false));
@@ -323,7 +323,7 @@ public final class WirelessEnergyChapter {
             .desc(d -> d
                     .line("跨维度传无线电")
                     .line()
-                    .line("{将一个维度的电转接到另一个维度}，能够使用的{最高电压}取决于其上安装的{整体框架}", YELLOW, YELLOW, GOLD)
+                    .line("{选择一个维度与当前维度搭建电桥}，能够传输的{最高电压}取决于其上安装的{整体框架}", AQUA, AQUA, GOLD)
                     .line()
                     .line("{如果你需要一些哭泣的黑曜石，可以去看看黑曜石的tooltips}", GRAY.italic()))
             .task(Task.item(MultiBlockG.WIRELESS_DIMENSION_REPEATER))

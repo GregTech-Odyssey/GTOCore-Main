@@ -62,7 +62,7 @@ public final class GeneratorChapter {
 
     public static final Quest LARGE_SEMI_FLUID_GENERATOR = CHAPTER.quest("large_semi_fluid_generator", q -> q
             .at(-7, -6.5)
-            .nodeScale(1.5)
+            .nodeScale(1.25)
             .task(Task.item(GeneratorMultiblock.LARGE_SEMI_FLUID_GENERATOR))
             .dependsOn(HV_SEMI_FLUID));
 
@@ -282,7 +282,7 @@ public final class GeneratorChapter {
 
     public static final Quest STEAM_MEGA_TURBINE = CHAPTER.quest("steam_mega_turbine", q -> q
             .at(-7, -8)
-            .nodeScale(1.5)
+            .nodeScale(1.25)
             .task(Task.item(GeneratorMultiblock.STEAM_MEGA_TURBINE))
             .dependsOn(STEAM_LARGE_TURBINE));
 
@@ -402,6 +402,7 @@ public final class GeneratorChapter {
 
     public static final Quest FUEL_CELL_GENERATOR = CHAPTER.quest("fuel_cell_generator", q -> q
             .at(-5, -1)
+            .subtitle("这不是挂？")
             .nodeScale(2)
             .desc(d -> d.line("新时代发电机，榨干燃料中的所有能量"))
             .task(Task.item(GeneratorMultiblock.FUEL_CELL_GENERATOR))

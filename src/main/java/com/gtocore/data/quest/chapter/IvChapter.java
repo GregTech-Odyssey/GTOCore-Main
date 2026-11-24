@@ -460,7 +460,8 @@ public final class IvChapter {
             .title("硅岩矿脉")
             .desc(d -> d.line("你在木卫一上拿到的硅岩将会成为你接下来几个阶段最重要的材料之一"))
             .task(Task.item(TagPrefix.rawOre, GTMaterials.Naquadah), Task.item(TagPrefix.rawOre, GTMaterials.Plutonium239))
-            .dependsOn(VISIT_IO));
+            .dependsOn(VISIT_IO)
+            .mainNode());
 
     public static final Quest Q_79A84A1D = CHAPTER.quest("q_79a84a1d", q -> q
             .at(8.5, -7)
@@ -564,7 +565,8 @@ public final class IvChapter {
             .at(3, -3)
             .desc(d -> d.line("能够获取高压蒸汽和超临界蒸汽用于发电，不过更重要的是获取核废料"))
             .task(Task.item(MultiBlockD.FISSION_REACTOR))
-            .dependsOn(POLYVINYL_BUTYRAL_BUCKET));
+            .dependsOn(POLYVINYL_BUTYRAL_BUCKET, ELECTROPLATING_BATH)
+            .hideDependencyLines());
 
     public static final Quest HEAT_EXCHANGER = CHAPTER.quest("heat_exchanger", q -> q
             .at(3, -1.5)
@@ -665,6 +667,7 @@ public final class IvChapter {
                 .link(QuestLink.of(BeyondTheStarsChapter.SPACE_QUARKTECH_CHESTPLATE, 14, 2))
                 .link(QuestLink.of(EvChapter.NETHER_STAR, 18, 2))
                 .link(QuestLink.of(BeyondTheStarsChapter.CONFINEMENT_OF_SPACE_AND_TIME_ETERNAL, 16, -1.5))
-                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, 18, -14)));
+                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, 18, -14))
+                .line(POLYVINYL_BUTYRAL_BUCKET, FISSION_REACTOR));
     }
 }
