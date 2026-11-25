@@ -40,7 +40,7 @@ import static net.minecraft.resources.ResourceLocation.tryParse;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class WirelessTransferCover extends CoverBehavior {
+public class WirelessTransferCover extends CoverBehavior implements IWirelessTransferCover {
 
     public static final int TRANSFER_ITEM = 1;
     public static final int TRANSFER_FLUID = 2;
@@ -75,20 +75,20 @@ public class WirelessTransferCover extends CoverBehavior {
         super.onLoad();
         if (coverHolder.isRemote()) return;
         getTargetLevel();
-        WirelessCoverIndex.add(coverHolder.getLevel(), dimensionId, targetPos, coverHolder.getPos(), attachedSide);
+        WirelessCoverIndex.add(coverHolder.getLevel(), getBoundTarget(), coverHolder.getPos(), attachedSide);
         subscription = coverHolder.subscribeServerTick(subscription, this::update, 20);
     }
 
     @Override
     public void onUnload() {
         super.onUnload();
-        WirelessCoverIndex.remove(coverHolder.getLevel(), dimensionId, targetPos, coverHolder.getPos(), attachedSide);
+        WirelessCoverIndex.remove(coverHolder.getLevel(), getBoundTarget(), coverHolder.getPos(), attachedSide);
     }
 
     @Override
     public void onRemoved() {
         super.onRemoved();
-        WirelessCoverIndex.remove(coverHolder.getLevel(), dimensionId, targetPos, coverHolder.getPos(), attachedSide);
+        WirelessCoverIndex.remove(coverHolder.getLevel(), getBoundTarget(), coverHolder.getPos(), attachedSide);
         if (subscription != null) {
             subscription.cancel();
         }
@@ -138,13 +138,12 @@ public class WirelessTransferCover extends CoverBehavior {
         target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
     }
 
+    @Override
     public @Nullable GlobalPos getBoundTarget() {
-        if (dimensionId == null || dimensionId.isEmpty() || targetPos == null) return null;
-        if (!ResourceLocation.isValidResourceLocation(dimensionId)) return null;
-        var dimension = new ResourceLocation(dimensionId);
-        return GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos);
+        return IWirelessTransferCover.resolveBoundTarget(dimensionId, targetPos);
     }
 
+    @Override
     public @Nullable Direction getBoundSide() {
         return facing;
     }

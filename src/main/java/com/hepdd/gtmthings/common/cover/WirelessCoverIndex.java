@@ -3,9 +3,6 @@ package com.hepdd.gtmthings.common.cover;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 import com.gto.fastcollection.fastutil.O2OOpenCacheHashMap;
@@ -20,22 +17,15 @@ public final class WirelessCoverIndex {
 
     private WirelessCoverIndex() {}
 
-    public static void add(Level level, @Nullable String dimensionId, @Nullable BlockPos targetPos, BlockPos sourcePos, Direction side) {
-        if (level.isClientSide || dimensionId == null || dimensionId.isEmpty() || targetPos == null) return;
-        if (!ResourceLocation.isValidResourceLocation(dimensionId)) return;
-        var dimension = new ResourceLocation(dimensionId);
-        var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos.immutable());
+    public static void add(Level level, @Nullable GlobalPos target, BlockPos sourcePos, Direction side) {
+        if (level.isClientSide || target == null) return;
         INDEXES.get(level).add(target, new Source(sourcePos.immutable(), side));
     }
 
-    public static void remove(Level level, @Nullable String dimensionId, @Nullable BlockPos targetPos, BlockPos sourcePos, Direction side) {
-        if (level.isClientSide) return;
+    public static void remove(Level level, @Nullable GlobalPos target, BlockPos sourcePos, Direction side) {
+        if (level.isClientSide || target == null) return;
         var index = INDEXES.getIfPresent(level);
         if (index == null) return;
-        if (dimensionId == null || dimensionId.isEmpty() || targetPos == null) return;
-        if (!ResourceLocation.isValidResourceLocation(dimensionId)) return;
-        var dimension = new ResourceLocation(dimensionId);
-        var target = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimension), targetPos.immutable());
         index.remove(target, new Source(sourcePos, side));
     }
 

@@ -20,9 +20,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
-import com.hepdd.gtmthings.common.cover.AdvancedWirelessTransferCover;
+import com.hepdd.gtmthings.common.cover.IWirelessTransferCover;
 import com.hepdd.gtmthings.common.cover.WirelessCoverIndex;
-import com.hepdd.gtmthings.common.cover.WirelessTransferCover;
 import com.hepdd.gtmthings.common.item.Behaviour.WirelessTransferCoverPlaceBehavior;
 import com.suried.gtoutils.level.LoadedChunks;
 import org.jetbrains.annotations.Nullable;
@@ -80,23 +79,23 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
                     if (cover == null) continue;
                     hasCover = true;
                     player.sendSystemMessage(Component.translatable(COVER, Component.translatable("gtocore.direction." + side.getName()), cover.getPickItem().getHoverName()));
-                    if (!(cover instanceof WirelessTransferCover || cover instanceof AdvancedWirelessTransferCover)) continue;
-                    var target = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundTarget() : ((AdvancedWirelessTransferCover) cover).getBoundTarget();
+                    if (!(cover instanceof IWirelessTransferCover wirelessCover)) continue;
+                    var target = wirelessCover.getBoundTarget();
                     if (target == null) continue;
                     var targetLevel = player.server.getLevel(target.dimension());
                     var targetBlockEntity = targetLevel == null ? null : LoadedChunks.blockEntity(targetLevel, target.pos());
                     var targetMachine = MetaMachine.getMachine(targetBlockEntity);
-                    var tag = cover.getPickItem().getTag();
                     Component targetName;
                     if (targetMachine != null) {
                         targetName = Component.translatable(targetMachine.getDefinition().getDescriptionId());
                     } else if (targetLevel != null && LoadedChunks.isLoaded(targetLevel, target.pos())) {
                         targetName = targetLevel.getBlockState(target.pos()).getBlock().getName();
                     } else {
+                        var tag = cover.getPickItem().getTag();
                         var blockId = tag == null ? "" : tag.getString(WirelessTransferCoverPlaceBehavior.TAG_BLOCK_ID);
                         targetName = blockId.isEmpty() ? Component.translatable(UNKNOWN_TARGET) : Component.translatable(blockId);
                     }
-                    var targetSide = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundSide() : ((AdvancedWirelessTransferCover) cover).getBoundSide();
+                    var targetSide = wirelessCover.getBoundSide();
                     player.sendSystemMessage(Component.translatable(TARGET, targetName, target.pos().toShortString())
                             .append(" · ").append(Component.translatable(GTODimensions.getTranslationKey(target.dimension()))));
                     if (targetSide != null) player.sendSystemMessage(Component.translatable(TARGET_SIDE, Component.translatable("gtocore.direction." + targetSide.getName())));
@@ -111,7 +110,7 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
                     var sourceMachine = MetaMachine.getMachine(blockEntity);
                     if (sourceMachine == null) continue;
                     CoverBehavior cover = sourceMachine.getCoverContainer().getCoverAtSide(source.side());
-                    if (!(cover instanceof WirelessTransferCover || cover instanceof AdvancedWirelessTransferCover)) continue;
+                    if (!(cover instanceof IWirelessTransferCover wirelessCover)) continue;
                     if (!headerSent) {
                         Component targetName = machine == null ? context.getLevel().getBlockState(context.getClickedPos()).getBlock().getName() : Component.translatable(machine.getDefinition().getDescriptionId());
                         player.sendSystemMessage(Component.translatable(HEADER, targetName));
@@ -121,7 +120,7 @@ public final class CoverInspectorBehavior implements IInteractionItem, IAddInfor
                     player.sendSystemMessage(Component.translatable(SOURCE, Component.translatable(sourceMachine.getDefinition().getDescriptionId()), source.pos().toShortString())
                             .append(" · ").append(Component.translatable(GTODimensions.getTranslationKey(sourceLevel.dimension()))));
                     player.sendSystemMessage(Component.translatable(SOURCE_COVER, Component.translatable("gtocore.direction." + source.side().getName()), cover.getPickItem().getHoverName()));
-                    var targetSide = cover instanceof WirelessTransferCover wirelessCover ? wirelessCover.getBoundSide() : ((AdvancedWirelessTransferCover) cover).getBoundSide();
+                    var targetSide = wirelessCover.getBoundSide();
                     if (targetSide != null) player.sendSystemMessage(Component.translatable(TARGET_SIDE, Component.translatable("gtocore.direction." + targetSide.getName())));
                 }
             }
