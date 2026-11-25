@@ -20,6 +20,7 @@ import com.gregtechceu.gtceu.utils.FormattingUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -101,10 +102,9 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
                             @Override
                             public void tick() {
                                 super.tick();
-                                // TODO
-                                // var clientPlayer = ClientProxy.INSTANCE.getClientPlayer();
-                                // var yp = clientPlayer != null ? (int) clientPlayer.getY() : getPos().getY();
-                                // y = Mth.clamp(yp, getPos().getY(), getPos().getY() + 71);
+                                var clientPlayer = Minecraft.getInstance().player;
+                                var yp = clientPlayer != null ? (int) clientPlayer.getY() : getPos().getY();
+                                y = Mth.clamp(yp, getPos().getY(), getPos().getY() + 71);
                             }
                         };
                         Minecraft.getInstance().getSoundManager().play(sound0);

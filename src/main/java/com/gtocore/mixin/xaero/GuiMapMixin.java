@@ -16,16 +16,15 @@ import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xaero.map.gui.GuiMap;
+import xaero.map.gui.MapMouseButtonPress;
 import xaero.map.gui.MapTileSelection;
-import xaero.map.gui.dropdown.rightclick.RightClickOption;
-
-import java.util.ArrayList;
 
 @Mixin(value = GuiMap.class, remap = false)
 public abstract class GuiMapMixin {
 
+    @Shadow
+    private MapMouseButtonPress rightMouseButton;
     @Shadow
     private MapTileSelection mapTileSelection;
     @Shadow
@@ -36,9 +35,15 @@ public abstract class GuiMapMixin {
         XaeroMachineMap.renderOverlay((GuiMap) (Object) this, graphics, mouseX, mouseY, partialTick);
     }
 
-    @Inject(method = "getRightClickOptions", at = @At("RETURN"))
-    private void gtocore$addCapacityOption(CallbackInfoReturnable<ArrayList<RightClickOption>> cir) {
-        XaeroMachineMap.addCapacityOption((GuiMap) (Object) this, rightClickDim, mapTileSelection, cir.getReturnValue());
+    @Inject(method = "mapClicked", at = @At(value = "INVOKE", target = "Lxaero/map/gui/GuiMap;handleRightClick(Lxaero/map/gui/IRightClickableElement;II)V", ordinal = 1), cancellable = true)
+    private void gtocore$selectNodesInArea(int button, int mouseX, int mouseY, CallbackInfo ci) {
+        if (rightMouseButton.pressedAtX < 0 || rightMouseButton.pressedAtY < 0 ||
+                Math.abs(mouseX - rightMouseButton.pressedAtX) < 5 && Math.abs(mouseY - rightMouseButton.pressedAtY) < 5)
+            return;
+        if (XaeroMachineMap.selectArea((GuiMap) (Object) this, rightClickDim, mapTileSelection)) {
+            mapTileSelection = null;
+            ci.cancel();
+        }
     }
 
     @Inject(method = "onDimensionToggleButton", at = @At("HEAD"), cancellable = true)

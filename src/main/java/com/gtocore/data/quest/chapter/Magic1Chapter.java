@@ -311,8 +311,8 @@ public final class Magic1Chapter {
             .title("黑色")
             .task(Task.item(BotaniaBlocks.getBlock("black_mystical_flower")), Task.item(BotaniaBlocks.getBlock("black_double_flower")), Task.item(BotaniaBlocks.getBlock("black_mushroom")))
             .reward(Reward.item(BotaniaItems.getItem("black_petal"), 16))
-            .hideUntilDepsVisible().hideDependencyLines())
-            .dependsOn(FERTILIZER);
+            .dependsOn(FERTILIZER)
+            .hideUntilDepsVisible().hideDependencyLines());
 
     public static final Quest GREEN = CHAPTER.quest("green", q -> q
             .at(15.5, 8)

@@ -15,6 +15,7 @@ import com.gregtechceu.gtceu.common.data.GTMaterials;
 import com.gregtechceu.gtceu.common.data.GTTags;
 import com.gregtechceu.gtceu.data.recipe.CustomTags;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -135,12 +136,19 @@ public final class TagsHandler {
         }
     }
 
-    /** 把魔法模组的方块按 id 解析成方块，用于挖掘工具标签。 */
+    /** 把魔法模组的方块按 id 解析成方块，跳过未注册条目，避免写入 minecraft:air。 */
     private static Block[] mineableBlocks(String... ids) {
-        Block[] blocks = new Block[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            blocks[i] = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(new ResourceLocation(ids[i]));
+        Block[] temp = new Block[ids.length];
+        int count = 0;
+        for (String id : ids) {
+            Block block = BuiltInRegistries.BLOCK.get(new ResourceLocation(id));
+            if (block != Blocks.AIR) {
+                temp[count++] = block;
+            }
         }
-        return blocks;
+        if (count == temp.length) return temp;
+        Block[] result = new Block[count];
+        System.arraycopy(temp, 0, result, 0, count);
+        return result;
     }
 }

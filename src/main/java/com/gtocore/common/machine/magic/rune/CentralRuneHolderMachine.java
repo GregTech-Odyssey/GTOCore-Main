@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -37,6 +38,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 
 import com.mojang.datafixers.util.Either;
 import com.suried.gtoutils.schedule.Task;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaReceiver;
@@ -69,10 +71,17 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     private static final int INPUT_RADIUS = 2;
     private static final int NO_MANA_NOTIFY_INTERVAL = 100;
 
+    private static final ParticleOptions GOLD_BLOCK_PARTICLE = new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GOLD_BLOCK));
+    private static final ParticleOptions DIRT_PARTICLE = new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.DIRT));
+    private static final ParticleOptions MANA_WISP_PARTICLE = WispParticleData.wisp(0.2f, 0, 0, 1, 0.3f);
+
+    @Nullable
+    private static Reference2IntOpenHashMap<Item> runeColors;
+
     @SaveToDisk(defaultValue = "0")
     private long mana;
 
-    @SaveToDisk
+    @SaveToDisk(defaultValue = "")
     @SyncToClient
     private String recipeId = "";
 
@@ -90,7 +99,7 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     @SaveToDisk
     private CompoundTag specialData = new CompoundTag();
 
-    private final LazyOptional<ManaReceiver> manaReceiverCap = LazyOptional.of(() -> this);
+    private LazyOptional<ManaReceiver> manaReceiverCap = LazyOptional.of(() -> this);
 
     @Nullable
     private RuneRitualRecipe recipe;
@@ -103,12 +112,16 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     @Override
     public void onMachineRemoved() {
         cancelRitual();
+        manaReceiverCap.invalidate();
         super.onMachineRemoved();
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
+        if (!manaReceiverCap.isPresent()) {
+            manaReceiverCap = LazyOptional.of(() -> this);
+        }
         if (!isRemote()) {
             tickSubscription = subscribeServerTick(tickSubscription, this::serverTick);
         }
@@ -118,6 +131,7 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     public void onUnload() {
         super.onUnload();
         tickSubscription = Task.cancel(tickSubscription);
+        manaReceiverCap.invalidate();
     }
 
     @Override
@@ -128,8 +142,9 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         return super.getCapability(cap, side);
     }
 
+    /** 以同步字段判定运行态，避免客户端在 animateTick 触发前误判为未运行。 */
     public boolean isRunning() {
-        return recipe != null;
+        return !recipeId.isEmpty();
     }
 
     public int getProgress() {
@@ -151,7 +166,7 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         if (level == null) {
             return;
         }
-        if (!recipeId.isEmpty()) {
+        if (recipe == null && !recipeId.isEmpty()) {
             resolveRecipe();
         }
         if (recipe != null) {
@@ -185,9 +200,6 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         if (level == null || recipeId.isEmpty()) {
             return;
         }
-        if (recipe != null && recipeId.equals(recipe.getId().toString())) {
-            return;
-        }
         if (level.getRecipeManager().byKey(new ResourceLocation(recipeId)).orElse(null) instanceof RuneRitualRecipe found) {
             recipe = found;
         } else {
@@ -199,21 +211,25 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     @Override
     public InteractionResult onUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                    BlockHitResult hit) {
-        if (!level.isClientSide && !player.isShiftKeyDown()) {
+        if (!player.isShiftKeyDown()) {
             if (isRunning()) {
-                player.displayClientMessage(Component.translatable("message.mythicbotany.ritual_running"), true);
-                return InteractionResult.CONSUME;
+                if (!level.isClientSide) {
+                    player.displayClientMessage(Component.translatable("message.mythicbotany.ritual_running"), true);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
             if (hasRune()) {
-                RecipeMatch match = findRecipe();
-                if (match == null) {
-                    player.sendSystemMessage(Component.translatable("message.mythicbotany.ritual_wrong_shape").withStyle(ChatFormatting.GRAY));
-                } else if (!MythicBotanyPlayerData.hasMimirKnowledge(player)) {
-                    player.sendSystemMessage(Component.translatable("message.mythicbotany.mimir_unknown").withStyle(ChatFormatting.GRAY));
-                } else {
-                    startRitual(match.recipe(), match.transform(), player::sendSystemMessage);
+                if (!level.isClientSide) {
+                    RecipeMatch match = findRecipe();
+                    if (match == null) {
+                        player.sendSystemMessage(Component.translatable("message.mythicbotany.ritual_wrong_shape").withStyle(ChatFormatting.GRAY));
+                    } else if (!MythicBotanyPlayerData.hasMimirKnowledge(player)) {
+                        player.sendSystemMessage(Component.translatable("message.mythicbotany.mimir_unknown").withStyle(ChatFormatting.GRAY));
+                    } else {
+                        startRitual(match.recipe(), match.transform(), player::sendSystemMessage);
+                    }
                 }
-                return InteractionResult.CONSUME;
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
         }
         return super.onUse(state, level, pos, player, hand, hit);
@@ -245,7 +261,7 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         }
         for (RuneRitualRecipe.RunePosition rune : recipe.getRunes()) {
             BlockPos runePos = getPos().offset(rune.getX(transformIdx), 0, rune.getZ(transformIdx));
-            if (!(MetaMachine.getMachine(level, runePos) instanceof RuneHolderMachine holder)) {
+            if (!level.isLoaded(runePos) || !(MetaMachine.getMachine(level, runePos) instanceof RuneHolderMachine holder)) {
                 return false;
             }
             if (!rune.getRune().test(holder.getRune())) {
@@ -322,7 +338,7 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     private List<ItemEntity> collectInputEntities() {
         Vec3 center = new Vec3(getPos().getX() + 0.5, getPos().getY(), getPos().getZ() + 0.5);
         AABB area = new AABB(center, center).inflate(INPUT_RADIUS);
-        return getLevel().getEntities(EntityType.ITEM, area, entity -> true);
+        return getLevel().getEntities(EntityType.ITEM, area, entity -> entity.isAlive() && !entity.getItem().isEmpty());
     }
 
     private void finishRitual() {
@@ -338,10 +354,11 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         for (RuneRitualRecipe.RunePosition rune : finished.getRunes()) {
             BlockPos runePos = getPos().offset(rune.getX(transform), 0, rune.getZ(transform));
             if (MetaMachine.getMachine(level, runePos) instanceof RuneHolderMachine holder) {
-                ItemStack runeStack = holder.getRune();
+                ItemStack runeStack = holder.getRune().copy();
                 holder.setRune(ItemStack.EMPTY);
+                holder.setFloatTarget(null, 0);
                 if (!rune.isConsumed() && !runeStack.isEmpty()) {
-                    net.minecraft.world.level.block.Block.popResource(level, getPos().above(), runeStack);
+                    Block.popResource(level, getPos().above(), runeStack);
                 }
             }
         }
@@ -365,18 +382,25 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         level.addFreshEntity(entity);
     }
 
-    /** 取消仪式：清空漂浮动画，退回已投入的物品，并把特殊投入还原。 */
+    /** 取消仪式：先按需恢复配方引用，清空漂浮动画，退回已投入的物品，并还原特殊投入。 */
     public void cancelRitual() {
         Level level = getLevel();
-        if (recipe == null || level == null) {
+        if (level == null) {
             resetRitual();
             return;
         }
-        updatePatterns(0);
-        for (ItemStack stack : fromListTag(consumed)) {
-            net.minecraft.world.level.block.Block.popResource(level, getPos().above(), stack);
+        if (recipe == null && !recipeId.isEmpty()) {
+            resolveRecipe();
         }
-        if (recipe.getSpecialInput() != null) {
+        if (recipe != null) {
+            updatePatterns(0);
+        }
+        if (!consumed.isEmpty()) {
+            for (ItemStack stack : fromListTag(consumed)) {
+                Block.popResource(level, getPos().above(), stack);
+            }
+        }
+        if (recipe != null && recipe.getSpecialInput() != null) {
             recipe.getSpecialInput().cancel(level, getPos(), recipe, specialData);
         }
         resetRitual();
@@ -400,7 +424,7 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         }
         for (RuneRitualRecipe.RunePosition rune : recipe.getRunes()) {
             BlockPos runePos = getPos().offset(rune.getX(transform), 0, rune.getZ(transform));
-            if (MetaMachine.getMachine(level, runePos) instanceof RuneHolderMachine holder) {
+            if (level.isLoaded(runePos) && MetaMachine.getMachine(level, runePos) instanceof RuneHolderMachine holder) {
                 holder.setFloatTarget(progressValue <= 0 ? null : getPos(), progressValue);
             }
         }
@@ -444,7 +468,11 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
         if (level == null) {
             return;
         }
-        if (recipe == null && !recipeId.isEmpty()) {
+        if (recipeId.isEmpty()) {
+            recipe = null;
+            return;
+        }
+        if (recipe == null) {
             resolveRecipe();
         }
         if (recipe == null || progress <= 0) {
@@ -476,48 +504,44 @@ public class CentralRuneHolderMachine extends RuneHolderMachine implements ManaR
     }
 
     private static ParticleOptions particleFor(Item item) {
-        if (item == MythicBotanyItems.MB_FIMBULTYR_TABLET.get()) {
-            return new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GOLD_BLOCK));
-        } else if (item == BotaniaItems.RUNE_MANA.get()) {
-            return WispParticleData.wisp(0.2f, 0, 0, 1, 0.3f);
-        } else if (item == BotaniaItems.RUNE_FIRE.get()) {
-            return ParticleTypes.FLAME;
-        } else if (item == BotaniaItems.RUNE_AIR.get()) {
-            return ParticleTypes.CLOUD;
-        } else if (item == BotaniaItems.RUNE_EARTH.get()) {
-            return new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.DIRT));
-        } else if (item == BotaniaItems.RUNE_WATER.get()) {
-            return ParticleTypes.DOLPHIN;
-        }
-        int color = runeColor(item);
+        if (item == MythicBotanyItems.MB_FIMBULTYR_TABLET.get()) return GOLD_BLOCK_PARTICLE;
+        if (item == BotaniaItems.RUNE_MANA.get()) return MANA_WISP_PARTICLE;
+        if (item == BotaniaItems.RUNE_FIRE.get()) return ParticleTypes.FLAME;
+        if (item == BotaniaItems.RUNE_AIR.get()) return ParticleTypes.CLOUD;
+        if (item == BotaniaItems.RUNE_EARTH.get()) return DIRT_PARTICLE;
+        if (item == BotaniaItems.RUNE_WATER.get()) return ParticleTypes.DOLPHIN;
+        int color = getRuneColors().getInt(item);
         return SparkleParticleData.sparkle(2, ((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, (color & 0xFF) / 255f, 6);
     }
 
-    private static int runeColor(Item item) {
-        String id = String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item));
-        return switch (id) {
-            case "botania:rune_spring" -> 0xFF919F;
-            case "botania:rune_summer" -> 0x00DDED;
-            case "botania:rune_autumn" -> 0xE5C200;
-            case "botania:rune_winter" -> 0xE0DBD5;
-            case "botania:rune_lust" -> 0xF346D1;
-            case "botania:rune_gluttony" -> 0x6E6E6E;
-            case "botania:rune_greed" -> 0x009431;
-            case "botania:rune_sloth" -> 0xBB9661;
-            case "botania:rune_wrath" -> 0xFF2424;
-            case "botania:rune_envy" -> 0xC858E6;
-            case "botania:rune_pride" -> 0x2C3237;
-            case "mythicbotany:asgard_rune" -> 0xE1C500;
-            case "mythicbotany:vanaheim_rune" -> 0x5FC748;
-            case "mythicbotany:alfheim_rune" -> 0xFF76F7;
-            case "mythicbotany:midgard_rune" -> 0x19B13B;
-            case "mythicbotany:joetunheim_rune" -> 0xB16719;
-            case "mythicbotany:muspelheim_rune" -> 0xBF0000;
-            case "mythicbotany:niflheim_rune" -> 0x00B1BF;
-            case "mythicbotany:nidavellir_rune" -> 0x6F6F6F;
-            case "mythicbotany:helheim_rune" -> 0x780000;
-            default -> 0xFFFFFF;
-        };
+    private static Reference2IntOpenHashMap<Item> getRuneColors() {
+        if (runeColors != null) {
+            return runeColors;
+        }
+        Reference2IntOpenHashMap<Item> map = new Reference2IntOpenHashMap<>(24);
+        map.defaultReturnValue(0xFFFFFF);
+        map.put(BotaniaItems.RUNE_SPRING.get(), 0xFF919F);
+        map.put(BotaniaItems.RUNE_SUMMER.get(), 0x00DDED);
+        map.put(BotaniaItems.RUNE_AUTUMN.get(), 0xE5C200);
+        map.put(BotaniaItems.RUNE_WINTER.get(), 0xE0DBD5);
+        map.put(BotaniaItems.RUNE_LUST.get(), 0xF346D1);
+        map.put(BotaniaItems.RUNE_GLUTTONY.get(), 0x6E6E6E);
+        map.put(BotaniaItems.RUNE_GREED.get(), 0x009431);
+        map.put(BotaniaItems.RUNE_SLOTH.get(), 0xBB9661);
+        map.put(BotaniaItems.RUNE_WRATH.get(), 0xFF2424);
+        map.put(BotaniaItems.RUNE_ENVY.get(), 0xC858E6);
+        map.put(BotaniaItems.RUNE_PRIDE.get(), 0x2C3237);
+        map.put(MythicBotanyItems.MB_ASGARD_RUNE.get(), 0xE1C500);
+        map.put(MythicBotanyItems.MB_VANAHEIM_RUNE.get(), 0x5FC748);
+        map.put(MythicBotanyItems.MB_ALFHEIM_RUNE.get(), 0xFF76F7);
+        map.put(MythicBotanyItems.MB_MIDGARD_RUNE.get(), 0x19B13B);
+        map.put(MythicBotanyItems.MB_JOETUNHEIM_RUNE.get(), 0xB16719);
+        map.put(MythicBotanyItems.MB_MUSPELHEIM_RUNE.get(), 0xBF0000);
+        map.put(MythicBotanyItems.MB_NIFLHEIM_RUNE.get(), 0x00B1BF);
+        map.put(MythicBotanyItems.MB_NIDAVELLIR_RUNE.get(), 0x6F6F6F);
+        map.put(MythicBotanyItems.MB_HELHEIM_RUNE.get(), 0x780000);
+        runeColors = map;
+        return map;
     }
 
     // ==================== 魔力 ====================

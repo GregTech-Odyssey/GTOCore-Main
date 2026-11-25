@@ -469,6 +469,27 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
+      - name: Resolve Botania pointer
+        id: botania
+        run: |
+          set -euo pipefail
+          SHA=$(git ls-tree HEAD Botania | awk '$2 == "commit" { print $3 }')
+          if [ -z "$SHA" ]; then
+            echo "::error::无法从主仓 tree 读出 Botania gitlink"
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Botania gitlink = $SHA"
+
+      - name: Checkout Botania
+        uses: actions/checkout@v4
+        with:
+          repository: GregTech-Odyssey/Botania-gto
+          ref: ${{ steps.botania.outputs.sha }}
+          path: Botania
+          persist-credentials: false
+          fetch-depth: 1
+
       # 与旧 GTOCore 及已成功签名 run 一致：CI 用 Java 21（模组 --release 21）。
       # 本地开发可用 Java 25 跑 Gradle。密钥仅 secrets→env，不写进仓库/日志。
       - name: Setup Java 21
@@ -578,12 +599,15 @@ jobs:
           mf = zf.read('META-INF/MANIFEST.MF').decode('utf-8', 'replace')
           if 'GTO-Core-Obfuscated: 1' not in mf:
               sys.exit('::error::gtocore 自身类未经发行代码保护（缺 GTO-Core-Obfuscated）')
-          gc = [n for n in names if n.endswith('.class') and not n.startswith(('com/gtolib/', 'META-INF/'))]
+          gc = [n for n in names if n.endswith('.class') and not n.startswith(('com/gtolib/', 'vazkii/botania/', 'META-INF/'))]
           gc_renamed = [n for n in gc if re.search(r'[^ -~]', n)]
           gc_lvt = [n for n in gc if b'LocalVariableTable' in zf.read(n)]
           if not gc_renamed or gc_lvt:
               sys.exit(f'::error::gtocore 代码保护异常：改名 {len(gc_renamed)}，带 LVT {len(gc_lvt)}')
-          print(f'OK: gtocore {len(gc)} class，改名 {len(gc_renamed)}，无 LVT')
+          bot = [n for n in names if n.startswith('vazkii/botania/') and n.endswith('.class')]
+          if not bot:
+              sys.exit('::error::gtocore 缺少内联的 vazkii/botania 类')
+          print(f'OK: gtocore {len(gc)} class，改名 {len(gc_renamed)}，无 LVT；内联 botania {len(bot)} class')
           PY
 
       - name: List outputs

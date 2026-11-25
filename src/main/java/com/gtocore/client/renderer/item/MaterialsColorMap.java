@@ -27,7 +27,7 @@ public final class MaterialsColorMap {
 
     private static final IntSupplier shimmer = () -> {
         float time = ClientTickHandler.ticksInGame + ClientTickHandler.partialTicks;
-        return Mth.hsvToRgb((int) time % 200 / 200, 0.4F, 0.9F);
+        return Mth.hsvToRgb((time % 200F) / 200F, 0.4F, 0.9F);
     };
 
     static {

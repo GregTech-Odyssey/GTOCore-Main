@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.machine.feature.IInteractedMachine;
 import com.gregtechceu.gtceu.api.machine.feature.IMachineLife;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableStackInventory;
 import com.gregtechceu.gtceu.api.recipe.handler.IO;
+import com.gregtechceu.gtceu.api.transfer.key.StackInventory;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -22,7 +23,7 @@ import com.gto.datasynclib.annotations.SyncToClient;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 符文支托：只存放一个物品（符文或仪式材料），右键放入或取回，漏斗可以从上方输入、下方抽出。
+ * 符文支托：单格上限为 1，存放单个符文或仪式材料；右键放入或取回，支持管道/漏斗自动输入输出。
  *
  * <p>
  * 仪式进行时大师符文支托会设置漂浮目标，符文沿抛物线漂向中心。
@@ -37,21 +38,45 @@ public class RuneHolderMachine extends MetaMachine implements IInteractedMachine
     @SyncToClient
     private ItemStack syncedRune = ItemStack.EMPTY;
 
-    @SaveToDisk(defaultValue = "-1")
+    @SaveToDisk(defaultValue = "false")
     @SyncToClient
-    private long floatTarget = -1;
+    private boolean hasFloatTarget;
+
     @SaveToDisk(defaultValue = "0")
     @SyncToClient
-    private double floatProgress = 0;
+    private long floatTarget;
+
+    @SaveToDisk(defaultValue = "0")
+    @SyncToClient
+    private double floatProgress;
 
     public RuneHolderMachine(MetaMachineBlockEntity holder) {
         super(holder);
-        inventory = new NotifiableStackInventory(this, 1, IO.NONE, IO.BOTH);
+        var storage = new StackInventory(1) {
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return 1;
+            }
+        };
+        inventory = new NotifiableStackInventory(this, storage, IO.NONE, IO.BOTH);
         inventory.storage.setFilter(stack -> !stack.isEmpty());
         inventory.addChangedListener(() -> {
             syncedRune = inventory.storage.getStackInSlot(0).copy();
             requestSync();
         });
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!isRemote()) {
+            ItemStack current = inventory.storage.getStackInSlot(0);
+            if (!ItemStack.matches(syncedRune, current)) {
+                syncedRune = current.copy();
+                requestSync();
+            }
+        }
     }
 
     public ItemStack getRune() {
@@ -68,7 +93,7 @@ public class RuneHolderMachine extends MetaMachine implements IInteractedMachine
 
     @Nullable
     public BlockPos getFloatTarget() {
-        return floatTarget < 0 ? null : BlockPos.of(floatTarget);
+        return hasFloatTarget ? BlockPos.of(floatTarget) : null;
     }
 
     public double getFloatProgress() {
@@ -76,10 +101,12 @@ public class RuneHolderMachine extends MetaMachine implements IInteractedMachine
     }
 
     public void setFloatTarget(@Nullable BlockPos target, double progress) {
-        long position = target == null ? -1 : target.asLong();
-        if (floatTarget == position && Double.compare(floatProgress, progress) == 0) {
+        boolean hasTarget = target != null;
+        long position = hasTarget ? target.asLong() : 0L;
+        if (hasFloatTarget == hasTarget && floatTarget == position && Double.compare(floatProgress, progress) == 0) {
             return;
         }
+        hasFloatTarget = hasTarget;
         floatTarget = position;
         floatProgress = progress;
         requestSync();
@@ -92,12 +119,11 @@ public class RuneHolderMachine extends MetaMachine implements IInteractedMachine
         ItemStack stored = getRune();
         if (!stored.isEmpty()) {
             if (!level.isClientSide) {
+                ItemStack give = stored.copy();
                 if (held.isEmpty()) {
-                    player.setItemInHand(hand, stored.copy());
-                } else if (ItemStack.isSameItemSameTags(held, stored) && held.getCount() < held.getMaxStackSize()) {
-                    held.grow(1);
+                    player.setItemInHand(hand, give);
                 } else {
-                    player.getInventory().add(stored.copy());
+                    player.getInventory().placeItemBackInInventory(give);
                 }
                 setRune(ItemStack.EMPTY);
             }

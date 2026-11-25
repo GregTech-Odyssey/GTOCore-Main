@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaReceiver;
 
 public final class ManaRoutePath implements IRoutePath<ManaReceiver> {
@@ -46,10 +47,7 @@ public final class ManaRoutePath implements IRoutePath<ManaReceiver> {
     @Nullable
     public static ManaReceiver receiverOf(@Nullable BlockEntity blockEntity, Direction side) {
         if (blockEntity == null || blockEntity.getLevel() == null) return null;
-        // TODO
-        return null;
-        // return XplatAbstractions.INSTANCE.findManaReceiver(blockEntity.getLevel(), blockEntity.getBlockPos(),
-        // blockEntity.getBlockState(), blockEntity, side);
+        return blockEntity.getCapability(BotaniaForgeCapabilities.MANA_RECEIVER, side).orElse(null);
     }
 
     public @NotNull Direction getTargetFacing() {

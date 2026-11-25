@@ -80,7 +80,7 @@ public final class ManaMachine {
             LV, MV);
 
     public static final MachineDefinition MECHANIZED_ENDOFLAME = manaMachine("mechanized_endoflame", "机械化火红莲",
-            holder -> new MechanizedEndoflameMachine(holder, LV))
+            holder -> new MechanizedEndoflameMachine(holder, ULV))
             .tier(ULV)
             .nonYAxisRotation()
             .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/magic/frame"),

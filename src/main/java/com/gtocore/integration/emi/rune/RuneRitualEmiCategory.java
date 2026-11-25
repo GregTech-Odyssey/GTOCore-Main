@@ -4,12 +4,10 @@ import com.gtocore.common.data.machines.MythicBotanyMachines;
 
 import com.gtolib.utils.RLUtils;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.Level;
 
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.recipe.EmiRecipe;
@@ -17,11 +15,11 @@ import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.recipe.RuneRitualRecipe;
 import vazkii.botania.common.rune.RuneRitualRecipes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -45,13 +43,10 @@ public final class RuneRitualEmiCategory extends EmiRecipeCategory {
     }
 
     public static void register(EmiRegistry registry) {
-        // 分类先注册，配方要等客户端拿到配方表
         registry.addCategory(CATEGORY);
-        Level level = Minecraft.getInstance().level;
-        if (level == null) {
-            return;
-        }
-        for (RuneRitualRecipe recipe : level.getRecipeManager().getAllRecipesFor(RuneRitualRecipes.RUNE_RITUAL_TYPE.get())) {
+        registry.addWorkstation(CATEGORY, EmiStack.of(MythicBotanyMachines.CENTRAL_RUNE_HOLDER.asStack()));
+        registry.addWorkstation(CATEGORY, EmiStack.of(MythicBotanyMachines.RUNE_HOLDER.asStack()));
+        for (RuneRitualRecipe recipe : registry.getRecipeManager().getAllRecipesFor(RuneRitualRecipes.RUNE_RITUAL_TYPE.get())) {
             registry.addRecipe(new RuneRitualEmiRecipe(recipe));
         }
     }
@@ -59,11 +54,14 @@ public final class RuneRitualEmiCategory extends EmiRecipeCategory {
     private static final class RuneRitualEmiRecipe implements EmiRecipe {
 
         private final RuneRitualRecipe recipe;
-        private final List<EmiIngredient> inputs = new ArrayList<>();
-        private final List<EmiStack> outputs = new ArrayList<>();
+        private final ObjectArrayList<EmiIngredient> inputs;
+        private final ObjectArrayList<EmiStack> outputs;
 
         private RuneRitualEmiRecipe(RuneRitualRecipe recipe) {
             this.recipe = recipe;
+            var specialIn = recipe.getSpecialInput() == null ? null : recipe.getSpecialInput().getJeiInputItems();
+            int inSize = 1 + recipe.getRunes().size() + recipe.getInputs().size() + (specialIn == null ? 0 : specialIn.size());
+            this.inputs = new ObjectArrayList<>(inSize);
             this.inputs.add(EmiIngredient.of(recipe.getCenterRune()));
             for (RuneRitualRecipe.RunePosition rune : recipe.getRunes()) {
                 this.inputs.add(EmiIngredient.of(rune.getRune()));
@@ -71,11 +69,20 @@ public final class RuneRitualEmiCategory extends EmiRecipeCategory {
             for (Ingredient input : recipe.getInputs()) {
                 this.inputs.add(EmiIngredient.of(input));
             }
+            if (specialIn != null) {
+                for (Ingredient input : specialIn) {
+                    this.inputs.add(EmiIngredient.of(input));
+                }
+            }
+
+            var specialOut = recipe.getSpecialOutput() == null ? null : recipe.getSpecialOutput().getJeiOutputItems();
+            int outSize = recipe.getOutputs().size() + (specialOut == null ? 0 : specialOut.size());
+            this.outputs = new ObjectArrayList<>(outSize);
             for (ItemStack output : recipe.getOutputs()) {
                 this.outputs.add(EmiStack.of(output));
             }
-            if (recipe.getSpecialOutput() != null) {
-                for (ItemStack stack : recipe.getSpecialOutput().getJeiOutputItems()) {
+            if (specialOut != null) {
+                for (ItemStack stack : specialOut) {
                     this.outputs.add(EmiStack.of(stack));
                 }
             }
@@ -133,9 +140,8 @@ public final class RuneRitualEmiCategory extends EmiRecipeCategory {
                 }
             }
             y += 6;
-            List<EmiStack> resultStacks = new ArrayList<>(outputs);
-            for (EmiStack stack : resultStacks) {
-                widgets.addSlot(stack, right, y).recipeContext(this);
+            for (int i = 0; i < outputs.size(); i++) {
+                widgets.addSlot(outputs.get(i), right, y).recipeContext(this);
                 y += CELL;
             }
 

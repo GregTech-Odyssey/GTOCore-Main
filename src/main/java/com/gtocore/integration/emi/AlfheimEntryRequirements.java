@@ -25,6 +25,7 @@ import vazkii.botania.common.MythicBotanyItems;
 import vazkii.botania.common.alfheim.AlfheimAccess;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.IntSupplier;
@@ -69,7 +70,7 @@ public class AlfheimEntryRequirements implements EmiRecipe {
 
     @Nullable
     private List<FormattedCharSequence> text;
-    private Set<Item> obtained = Set.of();
+    private Set<Item> obtained = Collections.emptySet();
     @Nullable
     private Player obtainedPlayer;
     private int obtainedTick = Integer.MIN_VALUE;
@@ -91,7 +92,7 @@ public class AlfheimEntryRequirements implements EmiRecipe {
 
     @Override
     public List<EmiStack> getOutputs() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override

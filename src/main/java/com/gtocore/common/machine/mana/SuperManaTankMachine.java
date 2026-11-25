@@ -33,6 +33,7 @@ import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
 import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaEndpoint;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
@@ -141,13 +142,10 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
             // 邻居缓存：方块状态与方块实体都直接取缓存，不再按坐标查找
             var be = holder.getNeighborBlockEntity(facing);
             if (be == null) continue;
-            // TODO
-            // var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, getPos().relative(facing),
-            // holder.getNeighborBlockState(facing), be, facing.getOpposite());
-            // if (receiver != null) {
-            // outputMana(receiver);
-            // } else
-            if (be instanceof ISourceTile sourceTile) {
+            var receiver = be.getCapability(BotaniaForgeCapabilities.MANA_RECEIVER, facing.getOpposite()).orElse(null);
+            if (receiver != null) {
+                outputMana(receiver);
+            } else if (be instanceof ISourceTile sourceTile) {
                 outputSource(sourceTile);
             }
         }

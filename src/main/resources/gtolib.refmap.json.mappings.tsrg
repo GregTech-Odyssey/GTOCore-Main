@@ -9,6 +9,7 @@ com/gtolib/mixin/mc/client/DroneGameRendererMixin renderBlockOutline f_109071_
 com/gtolib/mixin/mc/client/LevelSummaryMixin settings f_78344_
 com/gtolib/mixin/mc/client/MinecraftMixin singleplayerServer f_91007_
 com/gtolib/mixin/mc/client/WorldSelectionListMixin screen f_101654_
+com/gtolib/mixin/mc/entity/DimensionContainerEditMixin player f_9743_
 com/gtolib/mixin/mc/entity/DronePlayerPacketMixin player f_9743_
 com/gtolib/mixin/mc/entity/EntityMixin tickCount f_19797_
 com/gtolib/mixin/mc/entity/PlayerMixin abilities f_36077_
@@ -38,6 +39,14 @@ com/gtolib/mixin/mc/util/CubicSpline$MultipointMixin values f_184321_
 com/gtolib/mixin/mc/util/CubicSpline$MultipointMixin derivatives f_184322_
 com/gtolib/mixin/mc/util/DependencySorterMixin contents f_283882_
 com/gtolib/mixin/mc/world/ChunkMapMixin visibleChunkMap f_140130_
+com/gtolib/mixin/mc/world/DimensionChunkSaveMixin level f_140133_
+com/gtolib/mixin/mc/world/DimensionChunkStructureMixin structureStarts f_187617_
+com/gtolib/mixin/mc/world/DimensionChunkStructureMixin structuresRefences f_187618_
+com/gtolib/mixin/mc/world/DimensionEntitySaveMixin level f_156538_
+com/gtolib/mixin/mc/world/DimensionPlayerChunkMixin level f_9244_
+com/gtolib/mixin/mc/world/DimensionSectionSaveMixin levelHeightAccessor f_156618_
+com/gtolib/mixin/mc/world/DimensionSectionSaveMixin dirty f_63775_
+com/gtolib/mixin/mc/world/DimensionSectionSaveMixin storage f_63774_
 com/gtolib/mixin/mc/world/gen/ImprovedNoiseMixin p f_75324_
 com/gtolib/mixin/mc/world/gen/ImprovedNoiseMixin xo f_75321_
 com/gtolib/mixin/mc/world/gen/ImprovedNoiseMixin yo f_75322_

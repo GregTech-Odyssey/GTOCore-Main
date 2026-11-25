@@ -744,7 +744,7 @@ public final class MagicRecipesA {
                     .save();
         }
 
-        // 魔法站点单方块：魔力流组装台（manaflow_assemble）用原魔法机器 + 魔力钢锭 + 魔力玻璃 + EV 力场发射器组装
+        // 魔法站点单方块：使用原魔法方块 + 青铜框架 + 淡蓝色花瓣 + 淡蓝色染色玻璃板在 ULV 组装
         {
             ASSEMBLER_RECIPES.builder("pure_daisy_station")
                     .inputItems(BotaniaBlocks.getBlock("pure_daisy").asItem())
@@ -894,7 +894,7 @@ public final class MagicRecipesA {
                     .inputItems(CustomTags.MV_CIRCUITS)
                     .inputItems(block, GTOMaterials.Runerock, 4)
                     .inputItems(TagPrefix.gear, GTOMaterials.Elementium, 4)
-                    .inputItems(Items.HONEY_BOTTLE, 4)
+                    .inputItems(BotaniaBlocks.getBlock("piston_relay"), 4)
                     .inputItems("botania:runic_altar")
                     .inputItems("botania:apothecary_livingrock")
                     .inputItems("botania:brewery")

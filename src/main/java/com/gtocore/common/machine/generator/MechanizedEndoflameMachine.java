@@ -33,8 +33,10 @@ import appeng.api.stacks.AEItemKey;
 
 import com.gto.datasynclib.annotations.SaveToDisk;
 
+import com.hollingsworth.arsnouveau.api.source.ISourceTile;
 import com.lowdragmc.lowdraglib.gui.widget.Widget;
 import com.suried.gtoutils.schedule.Task;
+import org.jetbrains.annotations.Nullable;
 import vazkii.botania.api.mana.ManaEndpoint;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -74,11 +76,22 @@ public final class MechanizedEndoflameMachine extends TieredMachine implements I
     private boolean enabled = true;
     private Task tickTask;
 
+    // 复用相邻魔源罐的端点包装，避免每 tick 新建对象
+    @Nullable
+    private ISourceTile cachedSourceTile;
+    @Nullable
+    private ManaEndpoint cachedSourceEndpoint;
+
     public MechanizedEndoflameMachine(MetaMachineBlockEntity holder, int tier) {
         super(holder, tier);
         manaContainer = new NotifiableManaContainer(this, IO.OUT, MANA_CAPACITY, MANA_CAPACITY);
         manaEndpoint = ManaUnification.of(manaContainer, 20);
         fuelInventory = NotifiableInventory.items(this, 1, IO.IN);
+        fuelInventory.storage.setFilter(key -> {
+            if (!(key instanceof AEItemKey itemKey)) return false;
+            ItemStack stack = itemKey.getReadOnlyStack();
+            return !stack.hasCraftingRemainingItem() && ForgeHooks.getBurnTime(stack, RecipeType.SMELTING) > 0;
+        });
     }
 
     @Override
@@ -106,6 +119,8 @@ public final class MechanizedEndoflameMachine extends TieredMachine implements I
             tickTask.cancel();
             tickTask = null;
         }
+        cachedSourceTile = null;
+        cachedSourceEndpoint = null;
     }
 
     private void tick() {
@@ -124,6 +139,8 @@ public final class MechanizedEndoflameMachine extends TieredMachine implements I
         AEItemKey key = fuelInventory.storage.keyAt(0);
         if (key == null) return;
         ItemStack stack = key.getReadOnlyStack();
+        // 与原版火红莲一致，不消耗带容器返还物的燃料（如熔岩桶），防止吞桶
+        if (stack.hasCraftingRemainingItem()) return;
         int burn = ForgeHooks.getBurnTime(stack, RecipeType.SMELTING);
         if (burn <= 0) return;
         if (fuelInventory.storage.extract(0, key, 1, false) != 1) return;
@@ -133,15 +150,25 @@ public final class MechanizedEndoflameMachine extends TieredMachine implements I
     private void outputMana() {
         long mana = manaContainer.getCurrentMana();
         if (mana <= 0) return;
-        var receiver = findManaReceiver(getFrontFacing(), null);
+        var front = getFrontFacing();
+        var receiver = findManaReceiver(front, front.getOpposite());
         if (receiver != null && !receiver.isFull()) {
             ManaEndpoint.transfer(manaEndpoint, receiver, mana);
             mana = manaContainer.getCurrentMana();
         }
         if (mana <= 0) return;
-        var jar = findSourceJar(getFrontFacing());
-        if (jar != null && jar.canAcceptSource()) {
-            ManaEndpoint.transfer(manaEndpoint, ManaUnification.of(jar), mana);
+        var jar = findSourceJar(front);
+        if (jar == null) {
+            cachedSourceTile = null;
+            cachedSourceEndpoint = null;
+            return;
+        }
+        if (jar.canAcceptSource()) {
+            if (jar != cachedSourceTile) {
+                cachedSourceTile = jar;
+                cachedSourceEndpoint = ManaUnification.of(jar);
+            }
+            ManaEndpoint.transfer(manaEndpoint, cachedSourceEndpoint, mana);
         }
     }
 
@@ -161,7 +188,7 @@ public final class MechanizedEndoflameMachine extends TieredMachine implements I
         status.addLine(LINE_STORED,
                 () -> Component.literal(FormattingUtil.formatNumbers(manaContainer.getCurrentMana()) + " / " + FormattingUtil.formatNumbers(MANA_CAPACITY)));
         status.addLine(LINE_BURN,
-                () -> Component.literal(burnTime + " /t"));
+                () -> Component.literal(burnTime + " t"));
         var manaBar = ProgressBar.of(LayoutStyle.AUTO, BAR_MANA, UITheme.FLOW_CYAN_LIGHT,
                 () -> new ProgressBar.Progress(manaContainer.getCurrentMana(), MANA_CAPACITY, 0));
         var fuelRow = UIElement.row(18).addChild(ItemSlot.of(fuelInventory.storage, 0));
