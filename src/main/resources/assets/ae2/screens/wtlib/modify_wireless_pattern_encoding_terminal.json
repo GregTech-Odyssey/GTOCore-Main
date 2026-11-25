@@ -3,25 +3,5 @@
   "includes": [
     "../terminals/modify_pattern_encoding_terminal.json",
     "universal_terminal_with_viewcells.json"
-  ],
-  "slots": {
-    "AE2WTLIB_SINGULARITY": {
-      "right": 0,
-      "top": 109
-    }
-  },
-  "widgets": {
-    "viewCells": {
-      "right": 1,
-      "top": 0
-    },
-    "singularityBackground": {
-      "right": 1,
-      "top": 103
-    },
-    "upgrades": {
-      "right": 1,
-      "top": 134
-    }
-  }
+  ]
 }
