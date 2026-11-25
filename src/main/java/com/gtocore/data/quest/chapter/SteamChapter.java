@@ -8,6 +8,7 @@ import com.gtocore.common.data.GTOMaterials;
 import com.gtocore.common.data.machines.MultiBlockA;
 import com.gtocore.common.data.machines.MultiBlockC;
 import com.gtocore.common.data.machines.MultiBlockG;
+import com.gtocore.common.data.machines.MultiBlockH;
 import com.gtocore.data.quest.QuestExternalRefs;
 import com.gtocore.data.quest.QuestTextures;
 
@@ -102,8 +103,7 @@ public final class SteamChapter {
                     .line()
                     .line("想要研磨矿石出产副产物需要至少{HV级}的{研磨机}，你可以在其他研磨机的tooltips中看到", YELLOW, GOLD))
             .task(Task.item(GTMachines.STEAM_MACERATOR.first()))
-            .dependsOn(PIS_TON)
-            .hideDependencyLines(false));
+            .dependsOn(PIS_TON));
 
     public static final Quest SQUEEZE_YEAH_SQUEEZE = CHAPTER.quest("squeeze_yeah_squeeze", q -> q
             .at(2, 4.5)
@@ -229,8 +229,7 @@ public final class SteamChapter {
                     .line()
                     .line("你的第一份{玻璃粉}肯定是工作台配方，而后面你就可以使用{搅拌机}来生产玻璃粉了", LIGHT_PURPLE, GOLD))
             .task(Task.item(TagPrefix.dust, GTMaterials.QuartzSand), Task.item(TagPrefix.dust, GTMaterials.Flint))
-            .dependsOn(BREAK_THEM)
-            .hideDependencyLines());
+            .hiddenDependsOn(BREAK_THEM));
 
     public static final Quest HUH_YOU_TOO = CHAPTER.quest("huh_you_too", q -> q
             .at(7.5, 2)
@@ -244,8 +243,7 @@ public final class SteamChapter {
                     .line("因此我强烈推荐你制作每个阶段的{魔法合金}作为超导体", GOLD))
             .task(Task.item(TagPrefix.ingot, GTOMaterials.PulsatingAlloy))
             .reward(Reward.item(TagPrefix.ingot, GTOMaterials.PulsatingAlloy, 16))
-            .dependsOn(FUSION_POWER)
-            .hideDependencyLines());
+            .hiddenDependsOn(FUSION_POWER));
 
     public static final Quest A_LITTLE_DEVICE_THAT_CAN_CREATE = CHAPTER.quest("a_little_device_that_can_create", q -> q
             .at(4.5, 11)
@@ -263,8 +261,7 @@ public final class SteamChapter {
                     .line()
                     .line("低级的真空泵只需要{蒸汽}即可运行，而高级的真空泵则需要{电力}，太空环境则无条件提供{四级真空}，多方块机器由{真空仓}来提供{四级真空}", GOLD, GOLD, DARK_PURPLE, GOLD, DARK_PURPLE))
             .task(Task.item(GTOMachines.STEAM_VACUUM_PUMP.first()))
-            .hideDependencyLines()
-            .dependsOn(SteamChapter.BRONZE_BRICK_CASING));
+            .hiddenDependsOn(SteamChapter.BRONZE_BRICK_CASING));
 
     public static final Quest DISCOUNT_TIME_BOOM_BOOM_BOOM = CHAPTER.quest("discount_time_boom_boom_boom", q -> q
             .at(3.5, 6)
@@ -369,7 +366,8 @@ public final class SteamChapter {
                     .line("以及有一些特殊的配方需要在远古世界中进行，比如{大马士革钢}的相关配方", GREEN))
             .task(Task.dimension(Dimension.ANCIENT_WORLD).title("远古世界"))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
-            .dependsOn(ANCIENT_REACTOR));
+            .dependsOn(ANCIENT_REACTOR)
+            .mainNode());
 
     public static final Quest CAN_IT_BE_USED_FOR_BEAUTY = CHAPTER.quest("can_it_be_used_for_beauty", q -> q
             .at(-0.5, 11)
@@ -384,8 +382,7 @@ public final class SteamChapter {
                     .line()
                     .line("你需要准备多点，因为你需要{很多的}{橡胶}", DARK_RED, GOLD))
             .task(Task.item(TagPrefix.dust, GTMaterials.Sulfur))
-            .dependsOn(BACK_TO_THE_PAST)
-            .hideDependencyLines());
+            .hiddenDependsOn(BACK_TO_THE_PAST));
 
     public static final Quest MIXER_STEAM_POWERED = CHAPTER.quest("mixer_steam_powered", q -> q
             .at(12, 1.5)
@@ -440,8 +437,7 @@ public final class SteamChapter {
                     .line("应该尽快种起来，{种多点肯定是没错的}", YELLOW)
                     .line()
                     .line("然后用连锁功能把橡胶原木批量砍下来就行了，粘性树脂会随机掉落"))
-            .task(Task.item(GTItems.STICKY_RESIN))
-            .hideDependencyLines());
+            .task(Task.item(GTItems.STICKY_RESIN)));
 
     public static final Quest ENGINE = CHAPTER.quest("engine", q -> q
             .at(-1, 3)
@@ -493,8 +489,7 @@ public final class SteamChapter {
                     .line()
                     .line("{红色合金导线稍微有点特殊，它需要包一层橡胶成为线缆才能超导。其他的超导体制成导线直接就可以使用}", YELLOW))
             .task(Task.item(TagPrefix.wireGtSingle, GTMaterials.RedAlloy))
-            .dependsOn(SUPER_CON_DUCTOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(SUPER_CON_DUCTOR));
 
     public static final Quest NEED_A_LOT_OF_STEEL = CHAPTER.quest("need_a_lot_of_steel", q -> q
             .at(13.5, 4.5)
@@ -555,8 +550,7 @@ public final class SteamChapter {
     public static final Quest PLATE_CASTING_MOLD = CHAPTER.quest("plate_casting_mold", q -> q
             .at(-3, 9)
             .task(Task.item(GTItems.SHAPE_MOLD_PLATE))
-            .hideDependencyLines()
-            .dependsOn(THE_PREDECESSOR_OF_THE_MOLD));
+            .hiddenDependsOn(THE_PREDECESSOR_OF_THE_MOLD));
 
     public static final Quest BLOCK_CASTING_MOLD = CHAPTER.quest("block_casting_mold", q -> q
             .at(8.5, 9)
@@ -616,9 +610,9 @@ public final class SteamChapter {
                     .line("简单保留了原版玻璃的合成配方，因此你无需通过石英砂制作玻璃。直接完成此任务可跳过制备玻璃第一步")
                     .line()
                     .line("玻璃粉可以通过锤子敲玻璃获得"))
-            .task(Task.item(Items.GLASS), Task.checkmark())
-            .dependsOn(UtilChapter.Q_056EC4E6)
-            .optional().hideUntilDepsVisible());
+            .task(Task.item(Items.GLASS), Task.difficulty(1))
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest PREPARING_GLASS_STEP_TWO = CHAPTER.quest("preparing_glass_step_two", q -> q
             .at(7, 11)
@@ -689,9 +683,8 @@ public final class SteamChapter {
                     .line("但距离LV还是有一定距离的，你还是需要先提升一下你当前阶段的生产力"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.Rubber))
             .reward(Reward.item(TagPrefix.ingot, GTMaterials.Rubber, 32), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 32))
-            .dependsOn(UNRIPE_RUBBER, CAN_IT_BE_USED_FOR_BEAUTY)
-            .hideDependencyLines(false)
-            .mainNode());
+            .mainNode()
+            .dependsOn(UNRIPE_RUBBER, CAN_IT_BE_USED_FOR_BEAUTY));
 
     public static final Quest BLOW_A_GLASS_BUBBLE = CHAPTER.quest("blow_a_glass_bubble", q -> q
             .at(5.5, 13)
@@ -790,9 +783,10 @@ public final class SteamChapter {
             .icon(TagPrefix.plate, GTMaterials.Rubber)
             .title("橡胶补助")
             .task(Task.checkmark())
-            .easySubsidy(Reward.item(TagPrefix.plate, GTMaterials.Rubber, 128L))
+            .rewardFor(QuestTierSet.EASY, Reward.item(TagPrefix.plate, GTMaterials.Rubber, 128L))
             .dependsOn(SHEET_LIKE_RUBBER_IS_GOOD_RUBBER)
-            .optional().hideUntilDepsVisible());
+            .optional().hideUntilDepsVisible()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest WROUGHT_IRON_INGOT_SUBSIDY = CHAPTER.quest("wrought_iron_ingot_subsidy", q -> q
             .at(-10.5, 13)
@@ -800,9 +794,10 @@ public final class SteamChapter {
             .title("锻铁锭补助")
             .subtitle("下一个阶段的重要材料")
             .task(Task.checkmark())
-            .easySubsidy(Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 192L), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .rewardFor(QuestTierSet.EASY, Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 192L), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
             .dependsOn(UlvChapter.WELCOME_TO_THE_ULTRA_LOW_PRESSURE)
-            .optional().hideUntilDepsVisible());
+            .optional().hideUntilDepsVisible()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest ENERGISTICALLY_APPLIED_START_EASY = CHAPTER.quest("energistically_applied_start_easy", q -> q
             .at(12, -0.5)
@@ -821,8 +816,9 @@ public final class SteamChapter {
                     .line("{如果你还不会AE，请尽快寻找教程快速入门。本包无需精通AE，但至少需要了解如何下单。}", GRAY.italic()))
             .task(Task.item(AEBlocks.ENERGY_ACCEPTOR).optional(), Task.checkmark())
             .reward(Reward.item(AEItems.NETWORK_TOOL).personal())
-            .dependsOn(BACK_TO_THE_PAST, UtilChapter.Q_056EC4E6)
-            .optional().hideUntilDepsVisible());
+            .dependsOn(BACK_TO_THE_PAST)
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest MULTIBLOCK_STEAM_MACHINE_HATCH_GUIDE = CHAPTER.quest("multiblock_steam_machine_hatch_guide", q -> q
             .at(-9, 6)
@@ -863,9 +859,9 @@ public final class SteamChapter {
                     .line("{专家模式下低压机器还有额外50%的耗能惩罚}", RED))
             .task(Task.checkmark())
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(SteamChapter.BRONZE_BRICK_CASING)
-            .hideDependencyLines()
-            .optional());
+            .hiddenDependsOn(SteamChapter.BRONZE_BRICK_CASING)
+            .optional()
+            .dependsOn(SteamChapter.LP_STEAM_SOLID_BOILER));
 
     public static final Quest EXTRACTION_PIPE = CHAPTER.quest("extraction_pipe", q -> q
             .at(2.5, 11)
@@ -918,8 +914,7 @@ public final class SteamChapter {
                     .line("那么黏土去哪找呢？去河流边上，或者直接点，繁茂洞穴，或者再直接点，{去买点}", link(ShopChapter.A_STACK_OF_CLAY)))
             .task(Task.item(Items.CLAY_BALL, 64), Task.tag(Tags.Items.SAND, 1).title("沙子").icon(Items.SAND))
             .reward(Reward.item(Items.CLAY, 64), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(StoneageChapter.A_FULL_ARSENAL)
-            .hideDependencyLines());
+            .hiddenDependsOn(StoneageChapter.A_FULL_ARSENAL));
 
     public static final Quest BRICK_WOODEN_FORM = CHAPTER.quest("brick_wooden_form", q -> q
             .at(-8.5, -0.5)
@@ -1143,7 +1138,7 @@ public final class SteamChapter {
                     .line()
                     .line("{简单}和{普通}难度下重要节点会分别赠送不同数量的补助。", GREEN, GOLD)
                     .line()
-                    .line("。。。别看了{专家}，给你个青铜锭，一边玩去吧。", RED))
+                    .line("。。。别看了{专家}，给你个你最爱吃的青铜锭。", RED))
             .task(Task.item(GTBlocks.BRONZE_BRICKS_HULL))
             .dependsOn(StoneageChapter.WESTERNIZATION_MOVEMENT_COPY_1, StoneageChapter.TOOL_UP)
             .mainNode()
@@ -1171,10 +1166,11 @@ public final class SteamChapter {
                     .line()
                     .line("{继续前进，路还很长呢。}", DARK_GREEN))
             .task(Task.item(GTMachines.STEAM_SOLID_BOILER.first()))
-            .dependsOn(BRONZE_BRICK_CASING, STEAM_POWERED, SteamChapter.STEAM_PIPE));
+            .dependsOn(BRONZE_BRICK_CASING));
 
     public static final Quest STEAM_PIPE = CHAPTER.quest("steam_pipe", q -> q
             .at(-9, 3)
+            .icon(GTOBlocks.STEAM_PIPES[GTValues.ULV])
             .title("GT管道")
             .desc(d -> d
                     .line("GTO中的GT管道经过了魔改：")
@@ -1182,13 +1178,39 @@ public final class SteamChapter {
                     .line("- 优化tps，流体管道没有缓存，流体从输入直达输出")
                     .line()
                     .line("- 能够主动抽取机器/容器中的物品/流体，用扳手控制管道方向的同时也将激活管道的主动抽取功能"))
-            .task(Task.checkmark(), Task.item(GTOBlocks.STEAM_PIPES[GTValues.ULV]))
+            .task(Task.checkmark())
             .reward(Reward.item(GTOBlocks.STEAM_PIPES[GTValues.ULV], 8))
-            .dependsOn(BRONZE_BRICK_CASING)
-            .hideDependencyLines()
-            .optional());
+            .hiddenDependsOn(BRONZE_BRICK_CASING)
+            .optional()
+            .dependsOn(LP_STEAM_SOLID_BOILER));
 
     public static final QuestLink WELCOME_TO_THE_ULTRA_LOW_PRESSURE_COPY_1 = CHAPTER.copy(UlvChapter.WELCOME_TO_THE_ULTRA_LOW_PRESSURE, -10.5, 11);
+
+    public static final Quest LARGE_COKE_OVEN = CHAPTER.quest("large_coke_oven", q -> q
+            .at(5.5, 3)
+            .title("焦炉建筑师")
+            .subtitle("我认可你了")
+            .desc(d -> d
+                    .line("化工苦弱，焦炉飞升"))
+            .nodeScale(1.25)
+            .task(Task.item(MultiBlockG.LARGE_COKE_OVEN, 64))
+            .hiddenDependsOn(COKE_OVEN_PRO_MAX_EDITION)
+            .invisible()
+            .reward(Reward.item(GTOItems.TAROT_ARCANUM[GTValues.MAX], 1)));
+
+    public static final Quest BRICK_KILN = CHAPTER.quest("brick_kiln", q -> q
+            .at(5.5, 6)
+            .subtitle("玩火自焚")
+            .desc(d -> d
+                    .line("一座可以快速烧结[item]和[item]的砖窑。", item(GTBlocks.CASING_COKE_BRICKS), item(GTBlocks.CASING_PRIMITIVE_BRICKS))
+                    .line()
+                    .line("{专家}们需要这个。", DARK_RED)
+                    .line()
+                    .line("{和现实一样，用完拆了还能回收}", DARK_GRAY.italic()))
+            .nodeScale(1.25)
+            .task(Task.item(MultiBlockH.BRICK_KILN))
+            .hiddenDependsOn(IT_SEEMS_LIKE_A_SOMEWHAT_TROUBLESOME, PREPARING_GLASS_STEP_THREE)
+            .onlyVisibleOn(QuestTierSet.EXPERT));
 
     static {
         CHAPTER.decorate(d -> d

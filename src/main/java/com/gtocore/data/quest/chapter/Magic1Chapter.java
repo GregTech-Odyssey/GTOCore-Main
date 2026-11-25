@@ -20,11 +20,13 @@ import com.gtolib.api.quest.QuestStyle;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.data.tag.TagPrefix;
 import com.gregtechceu.gtceu.common.data.GTMaterials;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Items;
 import net.xalcon.torchmaster.common.ModItems;
 
@@ -175,6 +177,7 @@ public final class Magic1Chapter {
 
     public static final Quest FERTILIZER = CHAPTER.quest("fertilizer", q -> q
             .at(17.5, 10)
+            .shape(QuestShape.NONE)
             .nodeScale(3).iconScale(1.5)
             .desc(d -> d
                     .line("使用{植物魔法}{的产能花需要}{神秘花}{.}", QuestStyle.LIGHT_PURPLE, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.WHITE)
@@ -186,32 +189,32 @@ public final class Magic1Chapter {
                     .line("当你获得了所有{神秘花}就可以使用{附魔装置}大量生产,你之后需要超超超多的{神秘花}.", QuestStyle.GREEN, QuestStyle.YELLOW, QuestStyle.GREEN))
             .task(Task.item(BotaniaItems.fertilizer))
             .reward(Reward.item(Items.BONE_MEAL, 32))
-            .dependsOn(WELCOME_TO_THE_MAGIC_LINE)
-            .hideUntilDepsVisible(false).hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_MAGIC_LINE)
+            .hideUntilDepsVisible(false));
 
     public static final Quest WHITE = CHAPTER.quest("white", q -> q
             .at(18.5, 7.5)
             .title("白色")
             .task(Task.item(BotaniaBlocks.whiteFlower), Task.item(BotaniaBlocks.doubleFlowerWhite), Task.item(BotaniaBlocks.whiteMushroom))
             .reward(Reward.item(BotaniaItems.whitePetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest ORANGE = CHAPTER.quest("orange", q -> q
             .at(16.5, 7.5)
             .title("橙色")
             .task(Task.item(BotaniaBlocks.orangeFlower), Task.item(BotaniaBlocks.doubleFlowerOrange), Task.item(BotaniaBlocks.orangeMushroom))
             .reward(Reward.item(BotaniaItems.orangePetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest MAGENTA = CHAPTER.quest("magenta", q -> q
             .at(19.5, 12)
             .title("品红色")
             .task(Task.item(BotaniaBlocks.magentaFlower), Task.item(BotaniaBlocks.doubleFlowerMagenta), Task.item(BotaniaBlocks.magentaMushroom))
             .reward(Reward.item(BotaniaItems.magentaPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest LIGHT_BLUE = CHAPTER.quest("light_blue", q -> q
             .at(15, 11)
@@ -221,40 +224,40 @@ public final class Magic1Chapter {
                     Task.item(BotaniaBlocks.doubleFlowerLightBlue),
                     Task.item(BotaniaBlocks.lightBlueMushroom))
             .reward(Reward.item(BotaniaItems.lightBluePetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest YELLOW = CHAPTER.quest("yellow", q -> q
             .at(17.5, 12.5)
             .title("黄色")
             .task(Task.item(BotaniaBlocks.yellowFlower), Task.item(BotaniaBlocks.doubleFlowerYellow), Task.item(BotaniaBlocks.yellowMushroom))
             .reward(Reward.item(BotaniaItems.yellowPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest LIME = CHAPTER.quest("lime", q -> q
             .at(16.5, 12.5)
             .title("黄绿色")
             .task(Task.item(BotaniaBlocks.limeFlower), Task.item(BotaniaBlocks.doubleFlowerLime), Task.item(BotaniaBlocks.limeMushroom))
             .reward(Reward.item(BotaniaItems.limePetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest PINK = CHAPTER.quest("pink", q -> q
             .at(17.5, 7.5)
             .title("粉色")
             .task(Task.item(BotaniaBlocks.pinkFlower), Task.item(BotaniaBlocks.doubleFlowerPink), Task.item(BotaniaBlocks.pinkMushroom))
             .reward(Reward.item(BotaniaItems.pinkPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest GRAY = CHAPTER.quest("gray", q -> q
             .at(15, 10)
             .title("灰色")
             .task(Task.item(BotaniaBlocks.grayFlower), Task.item(BotaniaBlocks.doubleFlowerGray), Task.item(BotaniaBlocks.grayMushroom))
             .reward(Reward.item(BotaniaItems.grayPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest LIGHT_GRAY = CHAPTER.quest("light_gray", q -> q
             .at(18.5, 12.5)
@@ -264,72 +267,72 @@ public final class Magic1Chapter {
                     Task.item(BotaniaBlocks.doubleFlowerLightGray),
                     Task.item(BotaniaBlocks.lightGrayMushroom))
             .reward(Reward.item(BotaniaItems.lightGrayPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest CYAN = CHAPTER.quest("cyan", q -> q
             .at(19.5, 8)
             .title("青色")
             .task(Task.item(BotaniaBlocks.cyanFlower), Task.item(BotaniaBlocks.doubleFlowerCyan), Task.item(BotaniaBlocks.cyanMushroom))
             .reward(Reward.item(BotaniaItems.cyanPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest PURPLE = CHAPTER.quest("purple", q -> q
             .at(15, 9)
             .title("紫色")
             .task(Task.item(BotaniaBlocks.purpleFlower), Task.item(BotaniaBlocks.doubleFlowerPurple), Task.item(BotaniaBlocks.purpleMushroom))
             .reward(Reward.item(BotaniaItems.purplePetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest BLUE = CHAPTER.quest("blue", q -> q
             .at(20, 9)
             .title("蓝色")
             .task(Task.item(BotaniaBlocks.blueFlower), Task.item(BotaniaBlocks.doubleFlowerBlue), Task.item(BotaniaBlocks.blueMushroom))
             .reward(Reward.item(BotaniaItems.bluePetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest BROWN = CHAPTER.quest("brown", q -> q
             .at(20, 10)
             .title("棕色")
             .task(Task.item(BotaniaBlocks.brownFlower), Task.item(BotaniaBlocks.doubleFlowerBrown), Task.item(BotaniaBlocks.brownMushroom))
             .reward(Reward.item(BotaniaItems.brownPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest RED = CHAPTER.quest("red", q -> q
             .at(15.5, 12)
             .title("红色")
             .task(Task.item(BotaniaBlocks.redFlower), Task.item(BotaniaBlocks.doubleFlowerRed), Task.item(BotaniaBlocks.redMushroom))
             .reward(Reward.item(BotaniaItems.redPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest BLACK = CHAPTER.quest("black", q -> q
             .at(20, 11)
             .title("黑色")
             .task(Task.item(BotaniaBlocks.blackFlower), Task.item(BotaniaBlocks.doubleFlowerBlack), Task.item(BotaniaBlocks.blackMushroom))
             .reward(Reward.item(BotaniaItems.blackPetal, 16))
-            .hideUntilDepsVisible().hideDependencyLines()
-            .dependsOn(FERTILIZER));
+            .hideUntilDepsVisible()
+            .hiddenDependsOn(FERTILIZER));
 
     public static final Quest GREEN = CHAPTER.quest("green", q -> q
             .at(15.5, 8)
             .title("绿色")
             .task(Task.item(BotaniaBlocks.greenFlower), Task.item(BotaniaBlocks.doubleFlowerGreen), Task.item(BotaniaBlocks.greenMushroom))
             .reward(Reward.item(BotaniaItems.greenPetal, 16))
-            .dependsOn(FERTILIZER)
-            .hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FERTILIZER)
+            .hideUntilDepsVisible());
 
     public static final Quest THAUMIUM_MANA_FLOWER = CHAPTER.quest("thaumium_mana_flower", q -> q
             .at(23.5, 4)
             .title("神秘的魔力莲花")
             .desc(d -> d.line("{黑莲花}仅存于宝箱中,可投入非空{魔力池}{为其注入大量浓缩魔力.}", QuestStyle.GREEN, QuestStyle.GREEN, QuestStyle.WHITE))
             .task(Task.anyOf(1, BotaniaItems.blackLotus, BotaniaItems.blackerLotus).title("{黑莲花}", QuestStyle.GREEN))
-            .dependsOn(MANA)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(MANA)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MANA_CONTAINER_REGULATION = CHAPTER.quest("mana_container_regulation", q -> q
             .at(21, 8)
@@ -371,6 +374,7 @@ public final class Magic1Chapter {
 
     public static final Quest FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER = CHAPTER.quest("functional_flower_and_generating_flower", q -> q
             .at(10.5, 10)
+            .nodeScale(1.5)
             .title("功能花、产能花")
             .desc(d -> d
                     .line("通过使用{花药台}{,我们可以制造多种在冒险过程中能提供帮助的花朵,这些花朵分为两大类:}{功能花}和{产能花}.", QuestStyle.GREEN, QuestStyle.WHITE, QuestStyle.GREEN, QuestStyle.GREEN)
@@ -399,142 +403,142 @@ public final class Magic1Chapter {
                     .line()
                     .line("{放置}{魔力指示花}在魔力池旁,观察花色变化:泛红光表示池子正在亏损,泛蓝光则表示有盈余!", QuestStyle.WHITE, QuestStyle.LIGHT_PURPLE))
             .task(Task.item(BotaniaFlowerBlocks.manastar))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest DANDELIFEON = CHAPTER.quest("dandelifeon", q -> q
             .at(7.5, 12)
             .task(Task.item(BotaniaFlowerBlocks.dandelifeon))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ENTROPINNYUM = CHAPTER.quest("entropinnyum", q -> q
             .at(8.5, 11)
             .task(Task.item(BotaniaFlowerBlocks.entropinnyum))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest GOURMARYLLIS = CHAPTER.quest("gourmaryllis", q -> q
             .at(8.5, 12)
             .task(Task.item(BotaniaFlowerBlocks.gourmaryllis))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest HYDROANGEAS = CHAPTER.quest("hydroangeas", q -> q
             .at(4.5, 12)
             .task(Task.item(BotaniaFlowerBlocks.hydroangeas))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .hideUntilDepsVisible(false).hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .hideUntilDepsVisible(false));
 
     public static final Quest KEKIMURUS = CHAPTER.quest("kekimurus", q -> q
             .at(0.5, 13)
             .task(Task.item(BotaniaFlowerBlocks.kekimurus))
             .reward(Reward.xp(50))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MUNCHDEW = CHAPTER.quest("munchdew", q -> q
             .at(7.5, 11)
             .task(Task.item(BotaniaFlowerBlocks.munchdew))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest NARSLIMMUS = CHAPTER.quest("narslimmus", q -> q
             .at(6.5, 12)
             .task(Task.item(BotaniaFlowerBlocks.narslimmus))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest RAFFLOWSIA = CHAPTER.quest("rafflowsia", q -> q
             .at(4.5, 11)
             .task(Task.item(BotaniaFlowerBlocks.rafflowsia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ROSA_ARCANA = CHAPTER.quest("rosa_arcana", q -> q
             .at(7.5, 13)
             .task(Task.item(BotaniaFlowerBlocks.rosaArcana))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest SHULK_ME_NOT = CHAPTER.quest("shulk_me_not", q -> q
             .at(5.5, 13)
             .task(Task.item(BotaniaFlowerBlocks.shulkMeNot))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest SPECTROLUS = CHAPTER.quest("spectrolus", q -> q
             .at(6.5, 11)
             .task(Task.item(BotaniaFlowerBlocks.spectrolus))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest THERMALILY = CHAPTER.quest("thermalily", q -> q
             .at(6.5, 13)
             .task(Task.item(BotaniaFlowerBlocks.thermalily))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest AGRICARNATION = CHAPTER.quest("agricarnation", q -> q
             .at(4.5, 8)
             .task(Task.item(BotaniaFlowerBlocks.agricarnation))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest BELLETHORN = CHAPTER.quest("bellethorn", q -> q
             .at(5.5, 11)
             .task(Task.item(BotaniaFlowerBlocks.bellethorn))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest BERGAMUTE = CHAPTER.quest("bergamute", q -> q
             .at(4.5, 9)
             .task(Task.item(BotaniaFlowerBlocks.bergamute))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest BUBBELL = CHAPTER.quest("bubbell", q -> q
             .at(5.5, 9)
             .task(Task.item(BotaniaFlowerBlocks.bubbell))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest CLAYCONIA = CHAPTER.quest("clayconia", q -> q
             .at(6.5, 9)
             .task(Task.item(BotaniaFlowerBlocks.clayconia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest DAFFOMILL = CHAPTER.quest("daffomill", q -> q
             .at(6.5, 8)
             .task(Task.item(BotaniaFlowerBlocks.daffomill))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
             .requireAnyStarted()
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .optional().hideUntilDepsVisible());
 
     public static final Quest DREADTHORN = CHAPTER.quest("dreadthorn", q -> q
             .at(5.5, 8)
             .task(Task.item(BotaniaFlowerBlocks.dreadthorn))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest EXOFLAME = CHAPTER.quest("exoflame", q -> q
             .at(7.5, 9)
             .task(Task.item(BotaniaFlowerBlocks.exoflame))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest FALLEN_KANADE = CHAPTER.quest("fallen_kanade", q -> q
             .at(8.5, 10)
             .task(Task.item(BotaniaFlowerBlocks.fallenKanade))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest HEISEI_DREAM = CHAPTER.quest("heisei_dream", q -> q
             .at(0.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.heiseiDream))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest THIS_IS_A_HOPPER = CHAPTER.quest("this_is_a_hopper", q -> q
             .at(12.5, 8.5)
@@ -546,92 +550,92 @@ public final class Magic1Chapter {
     public static final Quest HYACIDUS = CHAPTER.quest("hyacidus", q -> q
             .at(8.5, 8)
             .task(Task.item(BotaniaFlowerBlocks.hyacidus))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest JADED_AMARANTHUS = CHAPTER.quest("jaded_amaranthus", q -> q
             .at(7.5, 8)
             .task(Task.item(BotaniaFlowerBlocks.jadedAmaranthus))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest JIYUULIA = CHAPTER.quest("jiyuulia", q -> q
             .at(6.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.jiyuulia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest LOONIUM = CHAPTER.quest("loonium", q -> q
             .at(4.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.loonium))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MARIMORPHOSIS = CHAPTER.quest("marimorphosis", q -> q
             .at(5.5, 10)
             .task(Task.item(BotaniaFlowerBlocks.marimorphosis))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MEDUMONE = CHAPTER.quest("medumone", q -> q
             .at(8.5, 9)
             .task(Task.item(BotaniaFlowerBlocks.medumone))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ORECHID = CHAPTER.quest("orechid", q -> q
             .at(6.5, 10)
             .task(Task.item(BotaniaFlowerBlocks.orechid))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ORECHID_IGNEM = CHAPTER.quest("orechid_ignem", q -> q
             .at(7.5, 10)
             .task(Task.item(BotaniaFlowerBlocks.orechidIgnem))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest POLLIDISIAC = CHAPTER.quest("pollidisiac", q -> q
             .at(7.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.pollidisiac))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest RANNUNCARPUS = CHAPTER.quest("rannuncarpus", q -> q
             .at(3.5, 10)
             .task(Task.item(BotaniaFlowerBlocks.rannuncarpus))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest SOLEGNOLIA = CHAPTER.quest("solegnolia", q -> q
             .at(3.5, 9)
             .task(Task.item(BotaniaFlowerBlocks.solegnolia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest SPECTRANTHEMUM = CHAPTER.quest("spectranthemum", q -> q
             .at(3.5, 8)
             .task(Task.item(BotaniaFlowerBlocks.spectranthemum))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest TANGLEBERRIE = CHAPTER.quest("tangleberrie", q -> q
             .at(3.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.tangleberrie))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest TIGERSEYE = CHAPTER.quest("tigerseye", q -> q
             .at(4.5, 10)
             .task(Task.item(BotaniaFlowerBlocks.tigerseye))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest VINCULOTUS = CHAPTER.quest("vinculotus", q -> q
             .at(5.5, 7)
             .task(Task.item(BotaniaFlowerBlocks.vinculotus))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest NOVICE_SPELL_BOOK = CHAPTER.quest("novice_spell_book", q -> q
             .at(10.5, 2)
@@ -731,11 +735,11 @@ public final class Magic1Chapter {
                     .line()
                     .line("{注:工作台可自动提取周边容器内的材料.}", QuestStyle.WHITE))
             .task(Task.item(BlockRegistry.SCRIBES_BLOCK))
-            .dependsOn(INFUSE_MAGIC_MATERIALS)
-            .hideDependencyLines());
+            .hiddenDependsOn(INFUSE_MAGIC_MATERIALS));
 
     public static final Quest TIER_2_RUNES = CHAPTER.quest("tier_2_runes", q -> q
             .at(11, -6.5)
+            .nodeScale(1.5)
             .title("二级符文")
             .desc(d -> d
                     .line("制作二级符文需消耗5级经验值.")
@@ -857,6 +861,7 @@ public final class Magic1Chapter {
 
     public static final Quest TIER_1_RUNES = CHAPTER.quest("tier_1_runes", q -> q
             .at(11, -3.5)
+            .nodeScale(1.5)
             .title("一级符文")
             .desc(d -> d.line("制作一级符文需消耗3级经验值."))
             .task(Task.checkmark())
@@ -974,6 +979,7 @@ public final class Magic1Chapter {
 
     public static final Quest TIER_3_RUNES = CHAPTER.quest("tier_3_runes", q -> q
             .at(11, -9.5)
+            .nodeScale(1.5)
             .title("三级符文")
             .desc(d -> d
                     .line("制作三级符文需消耗10级经验值.")
@@ -1531,8 +1537,8 @@ public final class Magic1Chapter {
                     .line()
                     .line("将提升总体魔力值与魔力恢复速度,并允许你创建和使用二级符纹."))
             .task(Task.item(ItemsRegistry.APPRENTICE_SPELLBOOK))
-            .dependsOn(NOVICE_SPELL_BOOK, LIVINGSTEEL_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(LIVINGSTEEL_INGOT)
+            .dependsOn(NOVICE_SPELL_BOOK));
 
     public static final Quest FROZEN_PEARL = CHAPTER.quest("frozen_pearl", q -> q
             .at(36, 0)
@@ -1562,16 +1568,15 @@ public final class Magic1Chapter {
                     .line()
                     .line("这是需要通过{仪式火盆}完成的{魔法仪式}{.}", QuestStyle.GREEN, QuestStyle.GREEN, QuestStyle.WHITE))
             .task(Task.item(ItemsRegistry.ARCHMAGE_SPELLBOOK))
-            .dependsOn(APPRENTICE_SPELL_BOOK, RITUAL_WILDEN_SUMMON, MANA_PEARL)
-            .hideDependencyLines());
+            .hiddenDependsOn(RITUAL_WILDEN_SUMMON, MANA_PEARL)
+            .dependsOn(APPRENTICE_SPELL_BOOK));
 
     public static final Quest COLORFUL_MYSTICAL_FLOWER = CHAPTER.quest("colorful_mystical_flower", q -> q
             .at(17, -5)
             .nodeScale(1.5)
             .subtitle("有什么用呢")
             .task(Task.item(GTOItems.COLORFUL_MYSTICAL_FLOWER))
-            .dependsOn(APOTHECARY_DEFAULT)
-            .hideDependencyLines());
+            .hiddenDependsOn(APOTHECARY_DEFAULT));
 
     public static final Quest MANA_STRING = CHAPTER.quest("mana_string", q -> q
             .at(36, 6)
@@ -1596,122 +1601,122 @@ public final class Magic1Chapter {
     public static final Quest RAINDELETIA = CHAPTER.quest("raindeletia", q -> q
             .at(0.5, 12)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.RAINDELETIA))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest WITHER_ACONITE = CHAPTER.quest("wither_aconite", q -> q
             .at(0.5, 11)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.WITHER_ACONITE))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest REIKARLILY = CHAPTER.quest("reikarlily", q -> q
             .at(1.5, 11)
             .task(Task.item(ExtrabotanyFlowerBlocks.reikarlily))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest BELLFLOWER = CHAPTER.quest("bellflower", q -> q
             .at(1.5, 12)
             .task(Task.item(ExtrabotanyFlowerBlocks.bellflower))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest STONESIA = CHAPTER.quest("stonesia", q -> q
             .at(2.5, 13)
             .task(Task.item(ExtrabotanyFlowerBlocks.stonesia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest EDELWEISS = CHAPTER.quest("edelweiss", q -> q
             .at(1.5, 13)
             .task(Task.item(ExtrabotanyFlowerBlocks.edelweiss))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest SUNSHINE_LILY = CHAPTER.quest("sunshine_lily", q -> q
             .at(3.5, 12)
             .task(Task.item(ExtrabotanyFlowerBlocks.sunshineLily))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MOONLIGHT_LILY = CHAPTER.quest("moonlight_lily", q -> q
             .at(3.5, 13)
             .task(Task.item(ExtrabotanyFlowerBlocks.moonlightLily))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest TWINSTAR = CHAPTER.quest("twinstar", q -> q
             .at(3.5, 11)
             .task(Task.item(ExtrabotanyFlowerBlocks.twinstar))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest OMNIVIOLET = CHAPTER.quest("omniviolet", q -> q
             .at(2.5, 11)
             .task(Task.item(ExtrabotanyFlowerBlocks.omniviolet))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest TINKLE = CHAPTER.quest("tinkle", q -> q
             .at(4.5, 13)
             .task(Task.item(ExtrabotanyFlowerBlocks.tinkle))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest BLOOD_ENCHANTRESS = CHAPTER.quest("blood_enchantress", q -> q
             .at(2.5, 12)
             .task(Task.item(ExtrabotanyFlowerBlocks.bloodEnchantress))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest TRADE_ORCHID = CHAPTER.quest("trade_orchid", q -> q
             .at(2.5, 7)
             .task(Task.item(ExtrabotanyFlowerBlocks.tradeOrchid))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ANNOYINGFLOWER = CHAPTER.quest("annoyingflower", q -> q
             .at(2.5, 9)
             .task(Task.item(ExtrabotanyFlowerBlocks.annoyingflower))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest WOODIENIA = CHAPTER.quest("woodienia", q -> q
             .at(2.5, 8)
             .task(Task.item(ExtrabotanyFlowerBlocks.woodienia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest SERENITIAN = CHAPTER.quest("serenitian", q -> q
             .at(2.5, 10)
             .task(Task.item(ExtrabotanyFlowerBlocks.serenitian))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MIRROWTUNIA = CHAPTER.quest("mirrowtunia", q -> q
             .at(1.5, 7)
             .task(Task.item(ExtrabotanyFlowerBlocks.mirrowtunia))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest NECROFLEUR = CHAPTER.quest("necrofleur", q -> q
             .at(1.5, 8)
             .task(Task.item(ExtrabotanyFlowerBlocks.necrofleur))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest MANALINK = CHAPTER.quest("manalink", q -> q
             .at(1.5, 9)
             .task(Task.item(ExtrabotanyFlowerBlocks.manalink))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ENCHANTER = CHAPTER.quest("enchanter", q -> q
             .at(1.5, 10)
             .task(Task.item(ExtrabotanyFlowerBlocks.enchanter))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest AQUAPANTHUS = CHAPTER.quest("aquapanthus", q -> q
             .at(8.5, 7)
@@ -1725,20 +1730,20 @@ public final class Magic1Chapter {
     public static final Quest EXOBLAZE = CHAPTER.quest("exoblaze", q -> q
             .at(0.5, 8)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.EXOBLAZE))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest HELLEBORE = CHAPTER.quest("hellebore", q -> q
             .at(0.5, 9)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.HELLEBORE))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest PETRUNIA = CHAPTER.quest("petrunia", q -> q
             .at(0.5, 10)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.PETRUNIA))
-            .dependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
-            .optional().hideUntilDepsVisible().hideDependencyLines());
+            .hiddenDependsOn(FUNCTIONAL_FLOWER_AND_GENERATING_FLOWER)
+            .optional().hideUntilDepsVisible());
 
     public static final Quest ELVEN_SPREADER = CHAPTER.quest("elven_spreader", q -> q
             .at(20, -1)
@@ -1831,8 +1836,7 @@ public final class Magic1Chapter {
                     Task.item(ItemsRegistry.AIR_ESSENCE).optional(),
                     Task.item(ItemsRegistry.FIRE_ESSENCE).optional(),
                     Task.item(ItemsRegistry.WATER_ESSENCE).optional())
-            .dependsOn(ELEMENTAL_STEAMS, ENCHANTING_APPARATUS)
-            .hideDependencyLines());
+            .hiddenDependsOn(ELEMENTAL_STEAMS, ENCHANTING_APPARATUS));
 
     public static final Quest RUNIC_ALTAR = CHAPTER.quest("runic_altar", q -> q
             .at(39, -4)
@@ -1864,15 +1868,13 @@ public final class Magic1Chapter {
                     .line("可以在仪式中添加果实以修改陨石的中心位置。")
                     .image(QuestTextures.GUI_DIRECTION, 100, 100))
             .task(Task.item(QuestExternalRefs.RITUAL_CONJURE_METEORITES))
-            .dependsOn(WILDEN_TRIBUTE, VARIOUS_ESSENCES)
-            .hideDependencyLines());
+            .hiddenDependsOn(WILDEN_TRIBUTE, VARIOUS_ESSENCES));
 
     public static final Quest LARGE_PERFUSION_DEVICE = CHAPTER.quest("large_perfusion_device", q -> q
             .at(39, 6)
             .desc(d -> d.line("多方块 { 灌注室  附魔核心}", QuestStyle.DARK_PURPLE))
             .task(Task.item(ManaMultiBlock.LARGE_PERFUSION_DEVICE))
-            .dependsOn(WILDEN_TRIBUTE, VARIOUS_ESSENCES, ENCHANTING_APPARATUS)
-            .hideDependencyLines());
+            .hiddenDependsOn(WILDEN_TRIBUTE, VARIOUS_ESSENCES, ENCHANTING_APPARATUS));
 
     public static final Quest WARP_SCROLL = CHAPTER.quest("warp_scroll", q -> q
             .at(36, 8)
@@ -1955,14 +1957,12 @@ public final class Magic1Chapter {
     public static final Quest MANA_STEEL_WING = CHAPTER.quest("mana_steel_wing", q -> q
             .at(39, 11)
             .task(Task.item(GTOOrganItems.MANA_STEEL_WING))
-            .dependsOn(INFUSE_MAGIC_MATERIALS)
-            .hideDependencyLines());
+            .hiddenDependsOn(INFUSE_MAGIC_MATERIALS));
 
     public static final Quest PROSPECTOR_MANA_ULV = CHAPTER.quest("prospector_mana_ulv", q -> q
             .at(39, -9)
             .task(Task.item(GTOItems.PROSPECTOR_MANA_ULV))
-            .dependsOn(INFUSE_MAGIC_MATERIALS)
-            .hideDependencyLines());
+            .hiddenDependsOn(INFUSE_MAGIC_MATERIALS));
 
     public static final Quest LV_MANA_MACHINE_HULL = CHAPTER.quest("lv_mana_machine_hull", q -> q
             .at(24.5, 9)
@@ -2000,11 +2000,30 @@ public final class Magic1Chapter {
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
             .dependsOn(INFUSE_MAGIC_MATERIALS));
 
+    public static final Quest HOT_LAFIUM_INGOT = CHAPTER.quest("hot_lafium_ingot", q -> q
+            .at(29.75, 7)
+            .title(" ")
+            .subtitle("                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ")
+            .desc(d -> d
+                    .line()
+                    .page()
+                    .line()
+                    .page()
+                    .line()
+                    .page()
+                    .line()
+                    .page()
+                    .line("盲僧，你发现了华点"))
+            .nodeScale(0.5)
+            .shape(QuestShape.NONE)
+            .iconScale(0.01)
+            .icon(BuiltInRegistries.ITEM.get(RLUtils.fromNamespaceAndPath("deeperdarker", "echo_button")))
+            .task(Task.checkmark().title("你 耗时  已 长"))
+            .reward(Reward.item(Items.CARVED_PUMPKIN, 1)));
+
     static {
         CHAPTER.decorate(d -> d
                 .image(QuestImage.of(QuestTextures.END_PORTAL_FRAME_TOP, 28, -10, 1, 1))
-                .image(QuestImage.of(QuestTextures.BLAZE_BLOCK, 5, 5.5, 1.68, 1.68))
-                .line(NOVICE_SPELL_BOOK, APPRENTICE_SPELL_BOOK)
-                .line(APPRENTICE_SPELL_BOOK, ARCHMAGE_SPELL_BOOK));
+                .image(QuestImage.of(QuestTextures.BLAZE_BLOCK, 5, 5.5, 1.68, 1.68)));
     }
 }

@@ -86,20 +86,17 @@ public final class BeyondTheStarsChapter {
     public static final Quest STEEL_TANK = CHAPTER.quest("steel_tank", q -> q
             .at(-5.5, 0.5)
             .task(Task.item(ModItems.STEEL_TANK.get()))
-            .dependsOn(STARGAZING)
-            .hideDependencyLines());
+            .hiddenDependsOn(STARGAZING));
 
     public static final Quest ROCKET_NOSE_CONE = CHAPTER.quest("rocket_nose_cone", q -> q
             .at(-5.5, -1)
             .task(Task.item(ModItems.ROCKET_NOSE_CONE.get()))
-            .dependsOn(STARGAZING)
-            .hideDependencyLines());
+            .hiddenDependsOn(STARGAZING));
 
     public static final Quest ROCKET_FIN = CHAPTER.quest("rocket_fin", q -> q
             .at(-5.5, 3.5)
             .task(Task.item(ModItems.ROCKET_FIN.get()))
-            .dependsOn(STARGAZING)
-            .hideDependencyLines());
+            .hiddenDependsOn(STARGAZING));
 
     public static final Quest STEEL_ENGINE = CHAPTER.quest("steel_engine", q -> q
             .at(-5.5, 2)
@@ -109,8 +106,7 @@ public final class BeyondTheStarsChapter {
     public static final Quest LAUNCH_PAD = CHAPTER.quest("launch_pad", q -> q
             .at(-3.5, 3.5)
             .task(Task.item(ModItems.LAUNCH_PAD.get()))
-            .dependsOn(STARGAZING)
-            .hideDependencyLines());
+            .hiddenDependsOn(STARGAZING));
 
     public static final Quest A_SPARK_IGNITES = CHAPTER.quest("a_spark_ignites", q -> q
             .at(-1.25, 1)
@@ -131,7 +127,8 @@ public final class BeyondTheStarsChapter {
                     .line()
                     .line("{警告}{：此芯片为单一副本，是规划地外任务的核心。遗失或损坏将导致整个扫描任务失效。}", RED, YELLOW))
             .task(Task.item(GTOItems.PLANET_DATA_CHIP))
-            .dependsOn(HvChapter.HV_LAUNCHER_AND_HV_SENSOR, HvChapter.NOR_MEMORY_CHIP, HvChapter.SIMPLE_SOC, HvChapter.DATA_STICK)
+            .dependsOn(HvChapter.HV_LAUNCHER_AND_HV_SENSOR, HvChapter.NOR_MEMORY_CHIP, HvChapter.DATA_STICK)
+            .hiddenDependsOn(HvChapter.SIMPLE_SOC)
             .disableToast());
 
     public static final Quest PLANET_SCAN_SATELLITE = CHAPTER.quest("planet_scan_satellite", q -> q
@@ -293,7 +290,8 @@ public final class BeyondTheStarsChapter {
                     Task.item(GTOOrganItems.tierOrgan(OrganType.LEFT_LEG, OrganTier.STANDARD)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.RIGHT_LEG, OrganTier.STANDARD)))
             .reward(Reward.item(GTOOrganItems.ORGAN_MODIFIER))
-            .dependsOn(HvChapter.UNLOCK_MOON, HvChapter.MV_FIELD_GENERATOR)
+            .dependsOn(HvChapter.UNLOCK_MOON)
+            .hiddenDependsOn(HvChapter.MV_FIELD_GENERATOR)
             .requireAny());
 
     public static final Quest GREG_TO_THE_MOON = CHAPTER.quest("greg_to_the_moon", q -> q
@@ -350,8 +348,7 @@ public final class BeyondTheStarsChapter {
                     Task.item(GTOOrganItems.tierOrgan(OrganType.LEFT_LEG, OrganTier.REINFORCED)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.RIGHT_LEG, OrganTier.REINFORCED)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.LIVER, OrganTier.REINFORCED)))
-            .dependsOn(EvChapter.EV_EMITTER, EvChapter.EV_SENSOR, EvChapter.HV_FIELD_GENERATOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(EvChapter.EV_EMITTER, EvChapter.EV_SENSOR, EvChapter.HV_FIELD_GENERATOR));
 
     public static final Quest KEROSENE_BUCKET = CHAPTER.quest("kerosene_bucket", q -> q
             .at(-13, 1)
@@ -494,8 +491,7 @@ public final class BeyondTheStarsChapter {
                     Task.item(GTOOrganItems.tierOrgan(OrganType.RIGHT_ARM, OrganTier.TACTICAL)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.LEFT_LEG, OrganTier.TACTICAL)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.RIGHT_LEG, OrganTier.TACTICAL)))
-            .dependsOn(IvChapter.IV_FIELD_GENERATOR, IvChapter.ASSEMBLY_LINE)
-            .hideDependencyLines());
+            .hiddenDependsOn(IvChapter.IV_FIELD_GENERATOR, IvChapter.ASSEMBLY_LINE));
 
     public static final Quest TRANSCEND_THE_FLESH_BIRTH_OF_A = CHAPTER.quest("transcend_the_flesh_birth_of_a", q -> q
             .at(-3, 16)
@@ -512,8 +508,7 @@ public final class BeyondTheStarsChapter {
                     Task.item(GTOOrganItems.tierOrgan(OrganType.RIGHT_ARM, OrganTier.PROTOTYPE)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.LEFT_LEG, OrganTier.PROTOTYPE)),
                     Task.item(GTOOrganItems.tierOrgan(OrganType.RIGHT_LEG, OrganTier.PROTOTYPE)))
-            .dependsOn(UvChapter.UV_FORCE_FIELD_GENERATOR_LAUNCHER_AND)
-            .hideDependencyLines());
+            .hiddenDependsOn(UvChapter.UV_FORCE_FIELD_GENERATOR_LAUNCHER_AND));
 
     public static final Quest MONOMETHYLHYDRAZINE_BUCKET = CHAPTER.quest("monomethylhydrazine_bucket", q -> q
             .at(-11, 7)
@@ -826,8 +821,7 @@ public final class BeyondTheStarsChapter {
                     Task.item(ModItems.RAW_CALORITE.get()),
                     Task.item(TagPrefix.rawOre, GTMaterials.Cobalt),
                     Task.item(TagPrefix.rawOre, GTMaterials.Pyrochlore))
-            .dependsOn(CHASING_THE_SUN_AT_DAWN)
-            .hideDependentLines());
+            .dependsOn(CHASING_THE_SUN_AT_DAWN));
 
     public static final Quest FLUID_SPECIALTY_MERCURY = CHAPTER.quest("fluid_specialty_mercury", q -> q
             .at(20.5, 8)
@@ -994,7 +988,8 @@ public final class BeyondTheStarsChapter {
     public static final Quest DENSE_CALORITE_PLATE = CHAPTER.quest("dense_calorite_plate", q -> q
             .at(14, 13)
             .task(Task.item(TagPrefix.plateDense, GTOMaterials.Calorite))
-            .dependsOn(ORE_SPECIALTY_I_IO, ORE_SPECIALTY_MERCURY));
+            .dependsOn(ORE_SPECIALTY_I_IO)
+            .hiddenDependsOn(ORE_SPECIALTY_MERCURY));
 
     public static final Quest CALORITE_ENGINE = CHAPTER.quest("calorite_engine", q -> q
             .at(12.5, 12.5)
@@ -1207,8 +1202,8 @@ public final class BeyondTheStarsChapter {
             .at(-2, 4.5)
             .desc(d -> d.line("这套护甲并没有储存氧气的功能，你需要做{太空定制版}", link(BeyondTheStarsChapter.SPACE_NANOMUSCLE_CHESTPLATE)))
             .task(Task.item(GTItems.NANO_HELMET), Task.item(GTItems.NANO_CHESTPLATE), Task.item(GTItems.NANO_LEGGINGS), Task.item(GTItems.NANO_BOOTS))
-            .dependsOn(BASIC_SPACE_SUIT)
-            .optional().hideDependencyLines());
+            .optional()
+            .dependsOn(HvChapter.MV_FIELD_GENERATOR));
 
     public static final Quest SPACE_NANOMUSCLE_CHESTPLATE = CHAPTER.quest("space_nanomuscle_chestplate", q -> q
             .at(0, 4.5)
@@ -1227,7 +1222,7 @@ public final class BeyondTheStarsChapter {
             .at(2, 4.5)
             .desc(d -> d.line("更强大的胸甲，但一样会被憋死，所以你需要——{太空定制版}", link(BeyondTheStarsChapter.SPACE_ADVANCED_NANOMUSCLE_CHESTPLATE)))
             .task(Task.item(GTItems.NANO_CHESTPLATE_ADVANCED))
-            .dependsOn(SPACE_NANOMUSCLE_CHESTPLATE)
+            .dependsOn(EvChapter.EV_FIELD_GENERATOR)
             .optional());
 
     public static final Quest SPACE_ADVANCED_NANOMUSCLE_CHESTPLATE = CHAPTER.quest("space_advanced_nanomuscle_chestplate", q -> q
@@ -1247,7 +1242,7 @@ public final class BeyondTheStarsChapter {
                     Task.item(GTItems.QUANTUM_CHESTPLATE),
                     Task.item(GTItems.QUANTUM_LEGGINGS),
                     Task.item(GTItems.QUANTUM_BOOTS))
-            .dependsOn(SPACE_ADVANCED_NANOMUSCLE_CHESTPLATE, EvChapter.LET_ME_SEE_YOUR_RESULTS)
+            .dependsOn(LuvChapter.LUV_FIELD_GENERATOR)
             .optional());
 
     public static final Quest SPACE_QUARKTECH_CHESTPLATE = CHAPTER.quest("space_quarktech_chestplate", q -> q
@@ -1260,11 +1255,11 @@ public final class BeyondTheStarsChapter {
     public static final Quest ADVANCED_QUARKTECH_CHESTPLATE = CHAPTER.quest("advanced_quarktech_chestplate", q -> q
             .at(10, 4.5)
             .desc(d -> d
-                    .line("想不到有朝一日你会需要装配线来制作一件护甲呢")
+                    .line("夸克机器，小子！")
                     .line()
                     .line("以及{还是那句话——}", link(BeyondTheStarsChapter.SPACE_ADVANCED_QUARKTECH_CHESTPLATE)))
             .task(Task.item(GTItems.QUANTUM_CHESTPLATE_ADVANCED))
-            .dependsOn(SPACE_QUARKTECH_CHESTPLATE)
+            .dependsOn(UvChapter.UV_FORCE_FIELD_GENERATOR_LAUNCHER_AND)
             .optional());
 
     public static final Quest SPACE_ADVANCED_QUARKTECH_CHESTPLATE = CHAPTER.quest("space_advanced_quarktech_chestplate", q -> q
@@ -1299,6 +1294,9 @@ public final class BeyondTheStarsChapter {
                 .image(QuestImage.of(QuestTextures.TIER_T7, 5.5, 12, 1, 1))
                 .image(QuestImage.of(QuestTextures.TIER_T8, -2, 12, 1, 1))
                 .image(QuestImage.of(QuestTextures.TIER_T8, -7.5, 19, 1, 1))
-                .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_HV, -3, -5.5, 2, 2)));
+                .image(QuestImage.of(QuestTextures.CIRCUIT_SUPRACHRONAL_HV, -3, -5.5, 2, 2))
+                .line(SPACE_NANOMUSCLE_CHESTPLATE, ADVANCED_NANOMUSCLE_CHESTPLATE)
+                .line(SPACE_ADVANCED_NANOMUSCLE_CHESTPLATE, QUARKTECH_HELMET)
+                .line(SPACE_QUARKTECH_CHESTPLATE, ADVANCED_QUARKTECH_CHESTPLATE));
     }
 }

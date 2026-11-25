@@ -125,8 +125,7 @@ public final class BackpackChapter {
     public static final Quest STACK_UPGRADE_STARTER_TIER = CHAPTER.quest("stack_upgrade_starter_tier", q -> q
             .at(-3, -5.5)
             .task(Task.item(QuestExternalRefs.SophisticatedBackpacksItems.STACK_UPGRADE_STARTER_TIER))
-            .dependsOn(UPGRADE_BASE)
-            .hideDependencyLines());
+            .hiddenDependsOn(UPGRADE_BASE));
 
     public static final Quest STACK_UPGRADE_TIER_1 = CHAPTER.quest("stack_upgrade_tier_1", q -> q
             .at(-1, -5.5)
@@ -156,8 +155,7 @@ public final class BackpackChapter {
     public static final Quest COPPER_BACKPACK = CHAPTER.quest("copper_backpack", q -> q
             .at(-4, -7)
             .task(Task.item(QuestExternalRefs.SophisticatedBackpacksItems.COPPER_BACKPACK))
-            .dependsOn(UPGRADE_BASE)
-            .hideDependencyLines());
+            .hiddenDependsOn(UPGRADE_BASE));
 
     public static final Quest IRON_BACKPACK = CHAPTER.quest("iron_backpack", q -> q
             .at(-1, -7)

@@ -1,7 +1,6 @@
 package com.gtocore.data.quest.chapter;
 
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.common.data.machines.GTAEMachines;
 import com.gtocore.data.quest.QuestExternalRefs;
 
 import com.gtolib.api.quest.AutoClaim;
@@ -20,8 +19,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.armortrim.TrimMaterials;
 import net.minecraft.world.item.armortrim.TrimPatterns;
 import net.minecraft.world.item.enchantment.Enchantments;
-
-import appeng.core.definitions.AEBlocks;
 
 import com.hollingsworth.arsnouveau.setup.registry.ItemsRegistry;
 import dev.shadowsoffire.apotheosis.ench.Ench;
@@ -45,13 +42,13 @@ public final class UtilChapter {
             .desc(d -> d.line("完成此任务跳过木软锤"))
             .task(Task.tag(ItemTags.BEDS, 1).title("床"))
             .requireAnyStarted()
-            .invisible().invisibleUntilTasks(9999).disableToast());
+            .invisible().disableToast());
 
     public static final Quest INFINITY_WAND = CHAPTER.quest("infinity_wand", q -> q
             .at(2.5, 0)
             .task(Task.item(QuestExternalRefs.ConstructionWandItems.INFINITY_WAND).consume(false))
             .requireAnyStarted()
-            .repeatable(false).hideUntilDepsVisible().hideUntilDepsComplete().hideDetailsUntilStartable().hideDependencyLines().invisible().hideTextUntilComplete().hideDependentLines().hideLockIcon().disableToast().flexible());
+            .repeatable(false).hideUntilDepsVisible().hideUntilDepsComplete().invisible().disableToast().flexible());
 
     public static final Quest PRECISION_STEAM_MECHANISM = CHAPTER.quest("precision_steam_mechanism", q -> q
             .at(4.5, 0)
@@ -95,14 +92,6 @@ public final class UtilChapter {
                     Reward.stack(() -> QuestStacks.enchanted(QuestStacks.enchanted(QuestStacks.enchanted(QuestStacks.enchanted(new ItemStack(Items.BOW), Enchantments.INFINITY_ARROWS, 1), Enchantments.FLAMING_ARROWS, 1), Enchantments.PUNCH_ARROWS, 3), Enchantments.POWER_ARROWS, 2), 1).personal().name("员工清扫弓").autoClaim(AutoClaim.ENABLED),
                     Reward.item(Items.ARROW).personal().autoClaim(AutoClaim.ENABLED))
             .invisible());
-
-    public static final Quest PATCH_ASSIST = CHAPTER.quest("patch_assist", q -> q
-            .at(6.5, 0)
-            .title("贴片辅助")
-            .task(Task.stat(Stats.JUMP, 1))
-            .dependsOn(LvChapter.LV_POWER_AMPLIFIERS, ApotheosisChapter.RARITY_FORGE)
-            .requireAny()
-            .invisible().disableToast());
 
     public static final Quest Q_59430E02 = CHAPTER.quest("q_59430e02", q -> q
             .at(-1.5, 2)
@@ -149,17 +138,17 @@ public final class UtilChapter {
             .hideUntilDepsComplete().invisible());
 
     public static final Quest Q_18E057F3 = CHAPTER.quest("q_18e057f3", q -> q
-            .at(2.5, 4)
+            .at(0.5, 4)
             .task(Task.difficulty(2))
             .invisible());
 
     public static final Quest Q_1FB1EC5B = CHAPTER.quest("q_1fb1ec5b", q -> q
-            .at(4.5, 4)
+            .at(2.5, 4)
             .task(Task.difficulty(3))
             .invisible());
 
     public static final Quest Q_056EC4E6 = CHAPTER.quest("q_056ec4e6", q -> q
-            .at(0.5, 4)
+            .at(-1.5, 4)
             .task(Task.difficulty(1))
             .invisible());
 
@@ -169,37 +158,14 @@ public final class UtilChapter {
             .task(Task.difficulty(2).optional(), Task.difficulty(3).optional())
             .invisible());
 
-    public static final Quest INSCRIBER_EASY = CHAPTER.quest("inscriber_easy", q -> q
-            .at(-5.5, 2)
-            .nodeScale(1)
-            .title("压印器{（简单）}", GREEN)
-            .desc(d -> d.line("使用压印器压印AE电路板"))
-            .task(Task.item(AEBlocks.INSCRIBER))
-            .dependsOn(Q_056EC4E6)
-            .hideUntilDepsVisible());
-
-    public static final Quest ME_WILDCARD_PATTERN_BUFFER = CHAPTER.quest("me_wildcard_pattern_buffer", q -> q
-            .at(-5.5, 4)
-            .desc(d -> d.line("直接在EMI里搜索\"任何\"就能看到通配符，拖进样板即可。不要漏了虚拟物品！"))
-            .task(Task.item(GTAEMachines.ME_WILDCARD_PATTERN_BUFFER))
-            .dependsOn(AeChapter.ME_PATTERN_BUFFER, Q_056EC4E6, LuvChapter.HPCA_ADVANCED_COMPUTATION_COMPONENT)
-            .hideUntilDepsVisible().hideDependencyLines());
-
-    public static final Quest ME_WILDCARD_PATTERN_BUFFER_2 = CHAPTER.quest("me_wildcard_pattern_buffer_2", q -> q
-            .at(-5.5, 6)
-            .desc(d -> d.line("直接在EMI里搜索\"任何\"就能看到通配符，拖进样板即可。不要漏了虚拟物品！"))
-            .task(Task.item(GTAEMachines.ME_WILDCARD_PATTERN_BUFFER))
-            .dependsOn(AeChapter.ME_PATTERN_BUFFER, NORMAL_EXPERT, UhvChapter.QUICKSILVER_BUCKET, Magic2Chapter.ORICHALCOS_INGOT)
-            .hideUntilDepsVisible());
-
     public static final Quest EXPERT_MAINLINE_LOCK = CHAPTER.quest("expert_mainline_lock", q -> q
-            .at(6.5, 6)
+            .at(8.5, 4)
             .title("专家主线锁")
             .task(Task.difficulty(1).optional(), Task.difficulty(2).optional(), Task.item(Items.PAPER).optional())
             .invisible());
 
     public static final Quest EASY_NORMAL = CHAPTER.quest("easy_normal", q -> q
-            .at(4.5, 6)
+            .at(4.5, 4)
             .title("简单＋普通")
             .task(Task.difficulty(1).optional(), Task.difficulty(2).optional())
             .invisible());
@@ -210,7 +176,7 @@ public final class UtilChapter {
             .invisible().disableToast());
 
     public static final Quest RAW_DESH = CHAPTER.quest("raw_desh", q -> q
-            .at(8.5, 0)
+            .at(6.5, 0)
             .task(Task.item(ModItems.RAW_DESH.get(), 20))
             .invisible().disableToast());
 }

@@ -127,8 +127,7 @@ public final class ApotheosisChapter {
                     .line("通常情况下，你应该只强化至少{神话}稀有度的装备", GOLD))
             .task(Task.item(Adventure.Items.AUGMENTING_TABLE.get()))
             .reward(Reward.item(Items.NETHER_STAR), Reward.xpLevels(5))
-            .dependsOn(MYTHIC_MATERIAL)
-            .hideDependentLines());
+            .dependsOn(MYTHIC_MATERIAL));
 
     public static final Quest BOSS_SUMMONER = CHAPTER.quest("boss_summoner", q -> q
             .at(-2, 0)
@@ -172,8 +171,8 @@ public final class ApotheosisChapter {
                     .line("{欢迎来到神化}", GOLD.bold().italic()))
             .task(Task.item(Items.ENCHANTING_TABLE))
             .reward(Reward.xpLevels(5))
-            .dependsOn(SOME_TIPS)
-            .hideDependencyLines().flexible());
+            .hiddenDependsOn(SOME_TIPS)
+            .flexible());
 
     public static final Quest BOOKSHELF = CHAPTER.quest("bookshelf", q -> q
             .at(-17, 2)
@@ -562,8 +561,7 @@ public final class ApotheosisChapter {
             .title("特殊书架")
             .task(Task.anyOf(1, Ench.Items.FILTERING_SHELF.get(), Ench.Items.TREASURE_SHELF.get(), Ench.Items.ENDER_LIBRARY.get()).title("任意特殊书架"))
             .reward(Reward.xpLevels(5))
-            .dependsOn(BOOKSHELF)
-            .hideDependentLines());
+            .dependsOn(BOOKSHELF));
 
     public static final Quest SPAWN_EGG = CHAPTER.quest("spawn_egg", q -> q
             .at(-22, -6.5)
@@ -587,14 +585,8 @@ public final class ApotheosisChapter {
                     .line("可以产出{附魔精粹}和{刻印精粹}", GOLD, GOLD))
             .task(Task.item(ManaMultiBlock.THE_PRIMORDIAL_RECONSTRUCTOR))
             .reward(Reward.xpLevels(100))
-            .dependsOn(
-                    SPECIAL_BOOKSHELF,
-                    REFORGING_TABLE,
-                    SALVAGING_TABLE,
-                    GEM_CUTTING_TABLE,
-                    SMITHING_TABLE,
-                    AUGMENTING_TABLE,
-                    Magic2Chapter.GJALLAR_HORN_FULL));
+            .dependsOn(REFORGING_TABLE, SALVAGING_TABLE, GEM_CUTTING_TABLE, SMITHING_TABLE)
+            .hiddenDependsOn(SPECIAL_BOOKSHELF, AUGMENTING_TABLE, Magic2Chapter.GJALLAR_HORN_FULL));
 
     public static final Quest AMULET = CHAPTER.quest("amulet", q -> q
             .at(-20, -6.5)

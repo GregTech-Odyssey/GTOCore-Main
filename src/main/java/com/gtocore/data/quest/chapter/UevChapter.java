@@ -144,11 +144,13 @@ public final class UevChapter {
     public static final Quest Q_4BEE8DA7 = CHAPTER.quest("q_4bee8da7", q -> q
             .at(-6, -4)
             .desc(d -> d
-                    .line("恭喜你！当你到达这里的时候，目前完善的内容都已体验完毕！")
+                    .line("恭喜你！当你到达这里的时候，目前完善的独特内容都已体验完毕！")
                     .line()
-                    .line("当然，你可以继续游玩目前尚未完善的内容，直到做出右边的毕业物品为止。你可能会遭遇部分物品无法制作，需要创造获取的情况。")
+                    .line("后面有一部分内容来自其他整合包，也可以接着游玩直到做出毕业物品~")
                     .line()
-                    .line("{/gtocore givecell 可快捷获取所需物品的创造元件}", GRAY.italic()))
+                    .line("在之后的版本会添加更多独特内容来丰富后期体验，敬请期待！")
+                    .line()
+                    .line("{如果哪里卡住了，/gtocore givecell 可以获取手持物品的无限元件，不过应该用不上}", DARK_GRAY.italic()))
             .task(Task.checkmark())
             .dependsOn(WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, UhvChapter.OPTICAL_PROCESSOR_CONTROLLER)
             .mainNode());

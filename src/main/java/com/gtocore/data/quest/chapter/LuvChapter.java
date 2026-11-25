@@ -5,6 +5,7 @@ import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMachines;
 import com.gtocore.common.data.GTOMaterials;
+import com.gtocore.common.data.machines.ExResearchMachines;
 import com.gtocore.common.data.machines.GeneratorMultiblock;
 import com.gtocore.common.data.machines.MultiBlockA;
 import com.gtocore.common.data.machines.MultiBlockB;
@@ -54,8 +55,8 @@ public final class LuvChapter {
             .at(5, -1)
             .desc(d -> d.line("电磁选矿洁净硅岩粉"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.NaquadahEnriched))
-            .dependsOn(IvChapter.QUAKE_ORE_VEIN)
-            .repeatable(false).hideDependencyLines());
+            .hiddenDependsOn(IvChapter.QUAKE_ORE_VEIN)
+            .repeatable(false));
 
     public static final Quest NAQUADAH_COIL_BLOCK = CHAPTER.quest("naquadah_coil_block", q -> q
             .at(3.5, 0.5)
@@ -94,8 +95,7 @@ public final class LuvChapter {
     public static final Quest SILICA_CERAMIC_FLAKE = CHAPTER.quest("silica_ceramic_flake", q -> q
             .at(20.5, -5)
             .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.SilicaCeramic))
-            .dependsOn(ENRICHED_NAQUADAH_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(ENRICHED_NAQUADAH_INGOT));
 
     public static final Quest TINY_POLONIUM_DUST = CHAPTER.quest("tiny_polonium_dust", q -> q
             .at(6, -2)
@@ -136,8 +136,7 @@ public final class LuvChapter {
             .at(25.5, -5.5)
             .icon(GTOMaterials.PolyurethaneResin.getBucket())
             .task(Task.item(GTOMaterials.PolyurethaneResin.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_DRAMA_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_DRAMA_PRESSURE_STAGE));
 
     public static final Quest SILICON_NITRIDE_CERAMIC_FLAKE = CHAPTER.quest("silicon_nitride_ceramic_flake", q -> q
             .at(27.5, -5.5)
@@ -146,10 +145,12 @@ public final class LuvChapter {
 
     public static final Quest DRAWING_TOWER = CHAPTER.quest("drawing_tower", q -> q
             .at(5.25, 4.5)
-            .desc(d -> d.line("我强烈推荐你一上来就建造最高层的拉丝塔，它能极大加速拉丝速度"))
+            .desc(d -> d
+                    .line("我强烈推荐你一上来就建造{最高层}的拉丝塔，它能极大加速拉丝速度", YELLOW)
+                    .line()
+                    .line("以及至少用上[item]，否则你会看到你见过{最长}的配方时间。", item(GTBlocks.COIL_NAQUADAH), DARK_RED))
             .task(Task.item(MultiBlockG.DRAWING_TOWER))
-            .dependsOn(WELCOME_TO_THE_DRAMA_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_DRAMA_PRESSURE_STAGE));
 
     public static final Quest SIMPLE_FIBER_OPTIC_ROUGH = CHAPTER.quest("simple_fiber_optic_rough", q -> q
             .at(7.5, 4.5)
@@ -171,7 +172,9 @@ public final class LuvChapter {
             .desc(d -> d
                     .line("装配线上直接放一个数据访问仓显然不能满足这么多配方的需要，因此我们提供了{数据库}...", GOLD)
                     .line()
-                    .line("数据库可以放很多{数据访问仓}，并通过{光学数据仓}给装配线提供数据！", GOLD, GOLD))
+                    .line("数据库可以放很多{数据访问仓}，并通过{光学数据仓}给装配线提供数据！", GOLD, GOLD)
+                    .line()
+                    .line("{你有预感这家伙很快就要下岗了}", DARK_GRAY.italic()))
             .task(Task.item(GTResearchMachines.DATA_BANK))
             .dependsOn(NORMAL_OPTICAL_PIPE, EvChapter.DATA_ORB, INDIUM_TIN_BARIUM_TITANIUM_CUPRATE_INGOT)
             .mainNode());
@@ -184,8 +187,7 @@ public final class LuvChapter {
                     .line()
                     .line("后续还有其无线版本"))
             .task(Task.item(GTResearchMachines.DATA_HATCH_TRANSMITTER), Task.item(GTResearchMachines.DATA_HATCH_RECEIVER))
-            .dependsOn(NORMAL_OPTICAL_PIPE, DATA_BANK)
-            .hideDependentLines());
+            .dependsOn(NORMAL_OPTICAL_PIPE, DATA_BANK));
 
     public static final Quest FALL_KING_INGOT = CHAPTER.quest("fall_king_ingot", q -> q
             .at(8, -2)
@@ -212,12 +214,14 @@ public final class LuvChapter {
     public static final Quest NAQUADAH_ALLOY_INGOT = CHAPTER.quest("naquadah_alloy_ingot", q -> q
             .at(13.25, 0.5)
             .task(Task.item(TagPrefix.ingot, GTMaterials.NaquadahAlloy))
-            .dependsOn(TRINIUM_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(TRINIUM_INGOT));
 
     public static final Quest SUPERCONDUCTING_COIL = CHAPTER.quest("superconducting_coil", q -> q
             .at(9.5, 0.5)
-            .desc(d -> d.line("很贵，在你有更高的电压等级后有更加节省凯金的配方"))
+            .desc(d -> d
+                    .line("很贵，在你有更高的电压等级后有更加节省凯金的配方")
+                    .line()
+                    .line("{要记得换呀}", DARK_GRAY.italic()))
             .task(Task.item(GTBlocks.SUPERCONDUCTING_COIL))
             .dependsOn(TRINIUM_INGOT, INDIUM_TIN_BARIUM_TITANIUM_CUPRATE_INGOT));
 
@@ -273,9 +277,8 @@ public final class LuvChapter {
                     .line()
                     .line("{温馨小提示：你可以通过标记输出仓的过滤来保证只有一个仓会输出流体！}", GRAY.italic()))
             .task(Task.item(GTMultiMachines.FUSION_REACTOR[GTValues.LuV]))
-            .dependsOn(UHPIC_CHIP, FUSION_CASING, LUV_ENERGY_INPUT_HATCH)
-            .hideDependencyLines(false)
-            .mainNode());
+            .mainNode()
+            .dependsOn(FUSION_CASING, UHPIC_CHIP, LUV_ENERGY_INPUT_HATCH));
 
     public static final Quest EUROPIUM_INGOT = CHAPTER.quest("europium_ingot", q -> q
             .at(14, -3.5)
@@ -353,16 +356,16 @@ public final class LuvChapter {
             .desc(d -> d
                     .line("仅仅使用{扫描仪}已经不足以完成{更高级物品}的研究", GOLD, YELLOW)
                     .line()
-                    .line("因此你需要一个{多方块研究站}！", GOLD)
+                    .line("因此你需要一个[item]！它还带有[item]和[item]的功能！", item(ExResearchMachines.DATA_CENTER), item(GTResearchMachines.DATA_BANK), item(GTOMachines.DATA_EXPORT_MACHINE))
                     .line()
-                    .line("把待研究物品放入{物品支架}即可开始研究", GOLD)
+                    .line("在GUI中选择你要研发的{科技节点}即可开始研究", AQUA)
                     .line()
-                    .line("你需要注意研究所需{电压}和{算力}！", YELLOW, YELLOW)
+                    .line("你需要注意研究所需{算力}！", YELLOW)
                     .line()
-                    .line("{如果不成型看看支架的方向}", GRAY.italic()))
-            .task(Task.item(GTResearchMachines.RESEARCH_STATION), Task.item(GTResearchMachines.OBJECT_HOLDER))
+                    .line("{不消耗白糖}", DARK_GRAY.italic()))
             .dependsOn(HIGH_PERFORMANCE_COMPUTATION_ARRAY, DATA_BANK, URANIUM_RHODIUM_DINAQUADIDE_INGOT, ZpmChapter.WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
-            .mainNode());
+            .mainNode()
+            .task(Task.item(ExResearchMachines.DATA_CENTER)));
 
     public static final Quest COMPUTATIONAL_DATA_HATCH = CHAPTER.quest("computational_data_hatch", q -> q
             .at(17, 3.5)
@@ -372,8 +375,8 @@ public final class LuvChapter {
                     .line()
                     .line("后续还有其无线版本"))
             .task(Task.item(GTResearchMachines.COMPUTATION_HATCH_TRANSMITTER), Task.item(GTResearchMachines.COMPUTATION_HATCH_RECEIVER))
-            .dependsOn(OPTICAL_DATA_HATCH, HIGH_PERFORMANCE_COMPUTATION_ARRAY, RESEARCH_STATION)
-            .hideDependentLines());
+            .dependsOn(HIGH_PERFORMANCE_COMPUTATION_ARRAY, RESEARCH_STATION)
+            .hiddenDependsOn(OPTICAL_DATA_HATCH));
 
     public static final Quest CRYSTAL_CPU = CHAPTER.quest("crystal_cpu", q -> q
             .at(18.5, -3.5)
@@ -431,8 +434,7 @@ public final class LuvChapter {
             .at(2.5, -5)
             .subtitle("全频域覆盖")
             .task(Task.item(GTOItems.IV_DRONE))
-            .dependsOn(NAQUADAH_INGOT)
-            .hideDependentLines());
+            .dependsOn(NAQUADAH_INGOT));
 
     public static final Quest SUPERCRITICAL_MEGA_STEAM_TURBINE = CHAPTER.quest("supercritical_mega_steam_turbine", q -> q
             .at(19, 1)
@@ -604,7 +606,16 @@ public final class LuvChapter {
                     .line("如采纳，我们将会把您一并加入co-author"))
             .task(Task.checkmark()));
 
-    public static final QuestLink ME_WILDCARD_PATTERN_BUFFER_COPY_1 = CHAPTER.copy(UtilChapter.ME_WILDCARD_PATTERN_BUFFER, 25.5, 0.5);
+    public static final QuestLink ME_WILDCARD_PATTERN_BUFFER_COPY_1_COPY_1 = CHAPTER.copy(AeChapter.ME_WILDCARD_PATTERN_BUFFER_COPY_1, 25.5, 0.5);
+
+    public static final Quest DATA_CENTER_AGGREGATION_TERMINAL = CHAPTER.quest("data_center_aggregation_terminal", q -> q
+            .at(14.5, 3.5)
+            .desc(d -> d
+                    .line("我想你应该还不急着部署一大堆数据中心同时推科技")
+                    .line()
+                    .line("。。。万一你想呢"))
+            .task(Task.item(GTOItems.DATA_CENTER_AGGREGATION_TERMINAL))
+            .dependsOn(RESEARCH_STATION));
 
     static {
         CHAPTER.decorate(d -> d
@@ -619,7 +630,6 @@ public final class LuvChapter {
                 .link(QuestLink.of(ZpmChapter.ASTATINE_DUST, 23.5, -3.5))
                 .link(QuestLink.of(Magic2Chapter.ELVEN_TRADE, 18.5, -5))
                 .link(QuestLink.of(IvChapter.FISSION_REACTOR, 7, -2.5))
-                .link(QuestLink.of(AeChapter.ME_MUFFLER_HATCH, 3.5, 5.5))
-                .line(HPCA_ADVANCED_COMPUTATION_COMPONENT, ME_WILDCARD_PATTERN_BUFFER_COPY_1));
+                .link(QuestLink.of(AeChapter.ME_MUFFLER_HATCH, 3.5, 5.5)));
     }
 }

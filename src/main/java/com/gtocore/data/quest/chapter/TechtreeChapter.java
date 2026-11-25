@@ -88,7 +88,7 @@ public final class TechtreeChapter {
                     .line("扫描任何能识别为 GT 材料的物品或流体会得到32点；同一材料的不同形态共用扫描记录与重复扫描惩罚。")
                     .line("这是大量组件、加工与材料科技节点的基础消耗。"))
             .task(Task.checkmark().title("材料研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_70763186 = CHAPTER.quest("q_70763186", q -> q
             .at(3.5, 0)
@@ -99,7 +99,7 @@ public final class TechtreeChapter {
                     .line("扫描1M、4M、16M、64M、256M与无限存储组件会分别得到10、15、30、40、50与120点；数据棒、数据球和数据模块也会提供少量点数。")
                     .line("数据形态测试厂可通过压缩测试持续生产此类研究点数。"))
             .task(Task.checkmark().title("数据存储研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_554100B9 = CHAPTER.quest("q_554100b9", q -> q
             .at(2, 1.5)
@@ -110,7 +110,7 @@ public final class TechtreeChapter {
                     .line("主要由计算数据支架产生：每5秒读取所在计算机或超算中心的最大算力与当前使用算力，产出 √(最大算力 + 当前使用算力) 点。")
                     .line("研究点数写入支架内的数据晶片，之后仍需送入基元扫描站。"))
             .task(Task.checkmark().title("计算研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_3EB8A458 = CHAPTER.quest("q_3eb8a458", q -> q
             .at(2.5, 0.5)
@@ -121,7 +121,7 @@ public final class TechtreeChapter {
                     .line("扫描热管、炽热外壳、电力高炉、真空冷冻机等热力学设备可获得少量点数。")
                     .line("热力学分析平台在高温与低温体系达到平衡条件后分析30秒，结束时按温差/250 K生成研究点数。"))
             .task(Task.checkmark().title("热力学研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_46370C47 = CHAPTER.quest("q_46370c47", q -> q
             .at(4.5, 0)
@@ -132,7 +132,7 @@ public final class TechtreeChapter {
                     .line("扫描能源水晶、兰波顿电池、能量模块与更高阶电池可以直接获得点数。")
                     .line("能源数据支架安装在发电设备上；完成满足功率门槛的配方时，按输出功率等级的平方关系生成能源研究点数。"))
             .task(Task.checkmark().title("能源研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_635018E8 = CHAPTER.quest("q_635018e8", q -> q
             .at(2, 2.5)
@@ -143,7 +143,7 @@ public final class TechtreeChapter {
                     .line("扫描能由组装机、装配线、电路组装机或太空组装模块产出的物品，通常会额外得到4点组装研究点数。")
                     .line("数据棒、数据球、数据模块和后期数据介质也会提供组装研究点数。"))
             .task(Task.checkmark().title("组装研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_4E12983A = CHAPTER.quest("q_4e12983a", q -> q
             .at(5.5, 0.5)
@@ -154,7 +154,7 @@ public final class TechtreeChapter {
                     .line("扫描带有魔法材料标记的物品或流体会得到8点精灵研究点数，同时仍会得到该材料对应的材料研究点数。")
                     .line("这是魔法线与科技树衔接时使用的研究点数标签。"))
             .task(Task.checkmark().title("精灵研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_02963400 = CHAPTER.quest("q_02963400", q -> q
             .at(6, 2.5)
@@ -165,7 +165,7 @@ public final class TechtreeChapter {
                     .line("扫描带有催化剂生成标记的材料会得到3点催化研究点数。")
                     .line("催化数据支架安装在化工厂等设备上；含催化剂的配方完成后，依据总效率、并行数和原始配方等级生成点数。"))
             .task(Task.checkmark().title("催化研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_2C77D899 = CHAPTER.quest("q_2c77d899", q -> q
             .at(4.5, 4)
@@ -176,7 +176,7 @@ public final class TechtreeChapter {
                     .line("扫描各级火箭、太空电梯与电力模块可直接取得点数；能独立在太空工作的多方块主机也会提供3点。")
                     .line("首次解锁一颗星球时，还会按2^星球等级直接加入团队总量；太空电梯工程信息模块可继续生产。"))
             .task(Task.checkmark().title("星际工程研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_1CD85CAE = CHAPTER.quest("q_1cd85cae", q -> q
             .at(3.5, 4)
@@ -187,7 +187,7 @@ public final class TechtreeChapter {
                     .line("扫描一个多方块主机物品会得到1点机械研究点数；扫描指南针也会得到1点。")
                     .line("机械标签主要用于机器、装配设备与巨构类科技节点。"))
             .task(Task.checkmark().title("机械研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_497561B8 = CHAPTER.quest("q_497561b8", q -> q
             .at(7, 4.5)
@@ -208,7 +208,7 @@ public final class TechtreeChapter {
                     .line("扫描干细胞、生物细胞、菌种粉和心肌细胞簇可获得生物研究点数。")
                     .line("生物研究太空舱运行专用配方时还能大量生成此类点数，并写入其数据晶片。"))
             .task(Task.checkmark().title("生物研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_67E6EF7B = CHAPTER.quest("q_67e6ef7b", q -> q
             .at(6, 1.5)
@@ -219,7 +219,7 @@ public final class TechtreeChapter {
                     .line("扫描激光二极管、非线性光学透镜、光学晶圆与光学电路板等器件可获得少量点数。")
                     .line("光束引导计算测试配方满足指定波长、强度和偏振条件后，也会生成光学研究点数。"))
             .task(Task.checkmark().title("光学研究点数"))
-            .dependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(TechtreeChapter.COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest Q_4B48A95D = CHAPTER.quest("q_4b48a95d", q -> q
             .at(9, 2.5)
@@ -257,13 +257,13 @@ public final class TechtreeChapter {
             .at(1, -2.5)
             .icon(GTItems.FIELD_GENERATOR_LuV)
             .desc(d -> d
-                    .line("科技节点的解锁条件由三部分组成：前置节点、对应研究点数标签的研究点数和 CWU 算力。")
+                    .line("科技节点的解锁条件由三部分组成：前置节点、研究点数和 CWU 算力。")
+                    .line()
                     .line("节点解锁后会把它关联的配方数据或机器效果加入团队可用内容；同一节点不会在队伍中重复解锁。")
-                    .line("在 EMI 中查看科技节点，可以看到前置节点、研究点数、算力、尤里卡和该节点提供的奖励。")
                     .line()
                     .line("前期的研究节点解锁起来相对简单，直接在扫描仪内可通过扫描特定物品获取100%的尤里卡来解锁。")
                     .line()
-                    .line("在解锁研究站之后，尤里卡就不足以完成100%的进度，需要你投入算力（CWU）来完成剩下的部分。")
+                    .line("{在解锁研究站之后，尤里卡就不足以完成100%的进度，需要你投入算力（CWU）来完成剩下的部分。}", AQUA)
                     .line()
                     .line("部分研究还需要研究点数，你需要使用基元扫描站将晶片中的研究点数转化为团队共有的点数。")
                     .line()
@@ -297,7 +297,7 @@ public final class TechtreeChapter {
                     .line()
                     .line("在界面选择配方奖励，再放入对应等级的介质并确认导出；导出过程固定消耗7680 EU/t并需要一段时间。")
                     .line()
-                    .line("数据中心集成了配方导出和数据访问页面。"))
+                    .line("数据中心集成了配方导出机的功能。"))
             .task(Task.item(GTOMachines.DATA_EXPORT_MACHINE))
             .dependsOn(Q_094AF354));
 
@@ -308,8 +308,7 @@ public final class TechtreeChapter {
                     .line("科技树管理界面可使用 /gtocore techtree ui 打开。玩家可以切换科技树、预览节点并查看解锁状态。")
                     .line("管理员命令 /gtocore techtree unlock <玩家> <科技树ID> <节点ID> 会强制解锁节点及其依赖；/gtocore techtree reset <玩家> <科技树ID> 只重置指定科技树。")
                     .line("/gtocore researchtag add/remove 可调整队伍研究点数；/gtocore scan add_hand、remove_hand、get_self 用于维护或查看扫描记录。"))
-            .task(Task.item(Items.COMMAND_BLOCK))
-            .hideDependencyLines());
+            .task(Task.item(Items.COMMAND_BLOCK)));
 
     public static final Quest INTELLIGENT_SCANNING_MANAGEMENT_PLATFORM = CHAPTER.quest("intelligent_scanning_management_platform", q -> q
             .at(-4.5, -0.5)
@@ -353,8 +352,7 @@ public final class TechtreeChapter {
                     Task.item(ExResearchMachines.STORAGE_DATA_HOLDER),
                     Task.item(ExResearchMachines.BIOLOGY_DATA_HOLDER),
                     Task.item(ExResearchMachines.OPTICAL_DATA_HOLDER))
-            .dependsOn(Q_0A227168)
-            .hideDependentLines());
+            .dependsOn(Q_0A227168));
 
     public static final Quest Q_4D2E1954 = CHAPTER.quest("q_4d2e1954", q -> q
             .at(7, 1.5)
@@ -373,7 +371,7 @@ public final class TechtreeChapter {
                     .line("当某个标签的来源加入游戏后，扫描或对应研究设备会把它写入晶片；节点详情会明确列出实际需要的标签。")
                     .line("{简单来说就是没做完}", RED))
             .task(Task.checkmark().title("高阶研究标签"))
-            .dependsOn(COMPUTATIONAL_DATA_HOLDER_2));
+            .hiddenDependsOn(COMPUTATIONAL_DATA_HOLDER_2));
 
     public static final Quest DATA_BASE = CHAPTER.quest("data_base", q -> q
             .at(-4.5, -4.5)

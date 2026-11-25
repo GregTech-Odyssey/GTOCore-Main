@@ -23,6 +23,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -80,16 +81,14 @@ public final class IvChapter {
                     .line()
                     .line("处理阵列可以安装{激光仓}来进行更多次数的{超频}，但处理阵列每次超频获得的{耗时减免}{较少}。你可以用{高能耗}作为代价来获得比大型机器更快的{处理速度}", GOLD, YELLOW, YELLOW, AQUA, RED, YELLOW))
             .task(Task.item(MultiBlockG.PROCESSING_ARRAY[GTValues.IV]))
-            .dependsOn(IV_LAUNCHER_AND_IV_SENSOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(IV_LAUNCHER_AND_IV_SENSOR));
 
     public static final Quest POLYVINYL_BUTYRAL_BUCKET = CHAPTER.quest("polyvinyl_butyral_bucket", q -> q
             .at(1.5, -3)
             .icon(GTMaterials.PolyvinylButyral.getBucket())
             .desc(d -> d.line("夹层玻璃所需"))
             .task(Task.item(GTMaterials.PolyvinylButyral.getBucket()).optional(), Task.checkmark())
-            .dependsOn(HvChapter.POLYMERIZATION_REACTION)
-            .hideDependencyLines());
+            .hiddenDependsOn(HvChapter.POLYMERIZATION_REACTION));
 
     public static final Quest ADVANCED_SOLDERING_COMPONENTS = CHAPTER.quest("advanced_soldering_components", q -> q
             .at(8, -1.5)
@@ -127,7 +126,7 @@ public final class IvChapter {
                     .line()
                     .line("装配线在合成物品时，必须要先经过{研究}", YELLOW)
                     .line()
-                    .line("你需要先在{数据导出机}中将配方数据导出到闪存，然后把闪存放入{数据访问仓}中，才能让装配线解锁配方", GOLD, GOLD)
+                    .line("你需要先在[item]中将配方数据导出到闪存，然后把闪存放入[item]中，才能让装配线解锁配方", item(GTOMachines.DATA_EXPORT_MACHINE), item(GTResearchMachines.DATA_ACCESS_HATCH))
                     .line()
                     .line("在此之后，你还会遇到更加强大的数据载体和研究仪器"))
             .task(Task.item(GTMachines.SCANNER[GTValues.IV]), Task.item(GTItems.TOOL_DATA_STICK))
@@ -167,8 +166,7 @@ public final class IvChapter {
                     .line()
                     .line("我更推荐你使用带有{铟}的配方", GOLD))
             .task(Task.item(GTItems.QUBIT_CENTRAL_PROCESSING_UNIT))
-            .dependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE));
 
     public static final Quest Q_02C29988 = CHAPTER.quest("q_02c29988", q -> q
             .at(6, -7.5)
@@ -218,15 +216,13 @@ public final class IvChapter {
     public static final Quest TUNGSTEN_TETRABORIDE_CERAMICS_FLAKE = CHAPTER.quest("tungsten_tetraboride_ceramics_flake", q -> q
             .at(16, -12)
             .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.TungstenTetraborideCeramics))
-            .dependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE));
 
     public static final Quest EPOXY_BUCKET = CHAPTER.quest("epoxy_bucket", q -> q
             .at(12, -12)
             .icon(GTMaterials.Epoxy.getBucket())
             .task(Task.item(GTMaterials.Epoxy.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE));
 
     public static final Quest FIBER_REINFORCED_CIRCUIT_BOARD = CHAPTER.quest("fiber_reinforced_circuit_board", q -> q
             .at(14, -12)
@@ -242,8 +238,7 @@ public final class IvChapter {
             .at(8, -14)
             .desc(d -> d.line("PPS特种工程塑料，你需要它来制作线缆"))
             .task(Task.item(TagPrefix.foil, GTMaterials.PolyphenyleneSulfide))
-            .dependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE));
 
     public static final Quest RED_MUD_BUCKET = CHAPTER.quest("red_mud_bucket", q -> q
             .at(7, -7.5)
@@ -256,8 +251,8 @@ public final class IvChapter {
                     .line()
                     .line("{不知道你有没有发现赤泥甚至可以在HV不上天的情况下产出钛。二周目的时候你可以试一试...}", GRAY.italic()))
             .task(Task.item(GTOMaterials.RedMud.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE)
-            .optional().hideDependencyLines().hideDependentLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_PRESSURE_STAGE)
+            .optional());
 
     public static final Quest YTTRIUM_OXIDE_DUST = CHAPTER.quest("yttrium_oxide_dust", q -> q
             .at(7.5, -8.5)
@@ -266,7 +261,8 @@ public final class IvChapter {
                     .line()
                     .line("不过它们的处理方法都一模一样，为什么不一起做完呢"))
             .task(Task.item(TagPrefix.dust, GTOMaterials.YttriumOxide))
-            .dependsOn(RARE_EARTH_DUST, RED_MUD_BUCKET)
+            .dependsOn(RARE_EARTH_DUST)
+            .hiddenDependsOn(RED_MUD_BUCKET)
             .requireAny());
 
     public static final Quest YTTRIUM_BARIUM_CUPRATE_INGOT = CHAPTER.quest("yttrium_barium_cuprate_ingot", q -> q
@@ -379,8 +375,7 @@ public final class IvChapter {
             .at(3, -6)
             .subtitle("流体钻机的好帮手")
             .task(Task.item(MultiBlockG.DRILLING_CONTROL_CENTER))
-            .dependsOn(IV_FIELD_GENERATOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(IV_FIELD_GENERATOR));
 
     public static final Quest ROCKET_MEGA_TURBINE = CHAPTER.quest("rocket_mega_turbine", q -> q
             .at(20, -10.5)
@@ -522,8 +517,7 @@ public final class IvChapter {
                     .line()
                     .line("{如果你需要一些哭泣的黑曜石，可以去看看黑曜石的tooltips}", GRAY.italic()))
             .task(Task.item(MultiBlockG.WIRELESS_DIMENSION_REPEATER))
-            .dependsOn(IV_ASSEMBLER)
-            .hideDependencyLines());
+            .hiddenDependsOn(IV_ASSEMBLER));
 
     public static final Quest DATA_ACCESS_HATCH = CHAPTER.quest("data_access_hatch", q -> q
             .at(22, -4.5)
@@ -552,8 +546,9 @@ public final class IvChapter {
             .title("装配线{（简单）}", GREEN)
             .subtitle("简单模式下，装配线无需有序输入！")
             .task(Task.checkmark())
-            .dependsOn(UtilChapter.Q_056EC4E6, ASSEMBLY_LINE)
-            .optional().hideUntilDepsVisible());
+            .dependsOn(ASSEMBLY_LINE)
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest ELECTROPLATING_BATH = CHAPTER.quest("electroplating_bath", q -> q
             .at(10, -10.25)
@@ -565,8 +560,8 @@ public final class IvChapter {
             .at(3, -3)
             .desc(d -> d.line("能够获取高压蒸汽和超临界蒸汽用于发电，不过更重要的是获取核废料"))
             .task(Task.item(MultiBlockD.FISSION_REACTOR))
-            .dependsOn(POLYVINYL_BUTYRAL_BUCKET, ELECTROPLATING_BATH)
-            .hideDependencyLines());
+            .hiddenDependsOn(ELECTROPLATING_BATH)
+            .dependsOn(POLYVINYL_BUTYRAL_BUCKET));
 
     public static final Quest HEAT_EXCHANGER = CHAPTER.quest("heat_exchanger", q -> q
             .at(3, -1.5)
@@ -590,8 +585,7 @@ public final class IvChapter {
             .subtitle("分子料理")
             .desc(d -> d.line("YummYummmm……你想来一点吗？"))
             .task(Task.item(MultiBlockC.MOLECULAR_TRANSFORMER))
-            .dependsOn(ELECTROPLATING_BATH)
-            .hideDependencyLines());
+            .hiddenDependsOn(ELECTROPLATING_BATH));
 
     public static final Quest ASSEMBLY_LINE_EXPERT = CHAPTER.quest("assembly_line_expert", q -> q
             .at(19, -7.5)
@@ -599,8 +593,9 @@ public final class IvChapter {
             .title("装配线{（专家）}", LIGHT_PURPLE)
             .subtitle("专家模式下，装配线流体也需要有序输入！")
             .task(Task.checkmark())
-            .dependsOn(ASSEMBLY_LINE, UtilChapter.Q_1FB1EC5B)
-            .optional().hideUntilDepsVisible());
+            .dependsOn(ASSEMBLY_LINE)
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EXPERT));
 
     public static final Quest OSTRUM_VAJRA = CHAPTER.quest("ostrum_vajra", q -> q
             .at(12, 2)
@@ -667,7 +662,6 @@ public final class IvChapter {
                 .link(QuestLink.of(BeyondTheStarsChapter.SPACE_QUARKTECH_CHESTPLATE, 14, 2))
                 .link(QuestLink.of(EvChapter.NETHER_STAR, 18, 2))
                 .link(QuestLink.of(BeyondTheStarsChapter.CONFINEMENT_OF_SPACE_AND_TIME_ETERNAL, 16, -1.5))
-                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, 18, -14))
-                .line(POLYVINYL_BUTYRAL_BUCKET, FISSION_REACTOR));
+                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, 18, -14)));
     }
 }

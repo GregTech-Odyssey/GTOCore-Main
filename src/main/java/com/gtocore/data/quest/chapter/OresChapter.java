@@ -170,8 +170,7 @@ public final class OresChapter {
                     Task.item(TagPrefix.rawOre, GTMaterials.Lapis),
                     Task.item(TagPrefix.rawOre, GTMaterials.Sodalite),
                     Task.item(TagPrefix.rawOre, GTMaterials.Lazurite),
-                    Task.item(TagPrefix.rawOre, GTMaterials.Calcite))
-            .hideDependencyLines(false));
+                    Task.item(TagPrefix.rawOre, GTMaterials.Calcite)));
 
     public static final Quest MANGANESE_VEIN = CHAPTER.quest("manganese_vein", q -> q
             .at(-11, -3.5)

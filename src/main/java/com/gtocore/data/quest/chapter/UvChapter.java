@@ -49,7 +49,7 @@ public final class UvChapter {
                     .line()
                     .line("如果你已经搭设了PCB工厂，这个陶瓷就不是必需品了"))
             .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.TellurateCeramics))
-            .optional().invisible().hideDependentLines());
+            .optional().invisible());
 
     public static final Quest PH_NEUTRALIZATION_PURIFICATION_UNIT = CHAPTER.quest("ph_neutralization_purification_unit", q -> q
             .at(0, 9.5)
@@ -59,8 +59,7 @@ public final class UvChapter {
     public static final Quest EXTREME_TEMPERATURE_FLUCTUATION_PURIFICATION_UNIT = CHAPTER.quest("extreme_temperature_fluctuation_purification_unit", q -> q
             .at(2, 9.5)
             .task(Task.item(MultiBlockB.EXTREME_TEMPERATURE_FLUCTUATION_PURIFICATION_UNIT))
-            .dependsOn(PH_NEUTRALIZATION_PURIFICATION_UNIT)
-            .hideDependencyLines());
+            .hiddenDependsOn(PH_NEUTRALIZATION_PURIFICATION_UNIT));
 
     public static final Quest PH_NEUTRAL_WATER_BUCKET = CHAPTER.quest("ph_neutral_water_bucket", q -> q
             .at(1, 8.5)
@@ -91,8 +90,7 @@ public final class UvChapter {
                     .line()
                     .line("{前面几个必须用装配线，后面就可以换成纳米锻炉了}", ITALIC))
             .task(Task.item(GTOTagPrefix.NANITES, GTMaterials.Carbon))
-            .dependsOn(ZpmChapter.STEM_CELLS)
-            .hideDependencyLines());
+            .hiddenDependsOn(ZpmChapter.STEM_CELLS));
 
     public static final Quest NANO_FORGE = CHAPTER.quest("nano_forge", q -> q
             .at(-5, 10.5)
@@ -180,7 +178,8 @@ public final class UvChapter {
             .at(3, 10.5)
             .desc(d -> d.line("如果你还没有PCB工厂，手持{亚碲酸盐陶瓷薄片}也可以解锁这个任务", GOLD))
             .task(Task.item(GTOItems.BIOWARE_PRINTED_CIRCUIT_BOARD))
-            .dependsOn(PCB_FACTORY, TELLURATE_CERAMICS_FLAKE)
+            .dependsOn(PCB_FACTORY)
+            .hiddenDependsOn(TELLURATE_CERAMICS_FLAKE)
             .requireAny());
 
     public static final Quest WELCOME_TO_THE_EXTREME_PRESSURE_STAGE = CHAPTER.quest("welcome_to_the_extreme_pressure_stage", q -> q
@@ -198,9 +197,8 @@ public final class UvChapter {
             .task(Task.item(GTMachines.HULL[GTValues.UV]))
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
-            .dependsOn(ZpmChapter.DARMSTADTIUM_INGOT)
-            .hideDependencyLines(false)
-            .mainNode());
+            .mainNode()
+            .dependsOn(ZpmChapter.DARMSTADTIUM_INGOT));
 
     public static final Quest UV_ENERGY_INPUT_HATCH = CHAPTER.quest("uv_energy_input_hatch", q -> q
             .at(-2, 1.5)
@@ -251,8 +249,7 @@ public final class UvChapter {
             .icon(GTOMaterials.Polyimide.getBucket())
             .desc(d -> d.line("聚酰亚胺是一种特种工程材料，广泛应用在航空、航天、微电子、纳米、液晶、分离膜、激光等领域"))
             .task(Task.checkmark().title("聚酰亚胺"), Task.item(GTOMaterials.Polyimide.getBucket()).optional())
-            .dependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE));
 
     public static final Quest CIRCUIT_ASSEMBLY_LINE = CHAPTER.quest("circuit_assembly_line", q -> q
             .at(11, 10.5)
@@ -264,23 +261,20 @@ public final class UvChapter {
                     .line()
                     .line("往{主机}中塞入同配方的机器人可以提供并行（不可以替代配方中的机器人）", YELLOW))
             .task(Task.item(MultiBlockD.CIRCUIT_ASSEMBLY_LINE), Task.item(GTOItems.PRECISION_CIRCUIT_ASSEMBLY_ROBOT_MK1))
-            .dependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE));
 
     public static final Quest POLYETHERETHERKETONE_BUCKET = CHAPTER.quest("polyetheretherketone_bucket", q -> q
             .at(11, -0.5)
             .icon(GTOMaterials.Polyetheretherketone.getBucket())
             .desc(d -> d.line("特种工程塑料"))
             .task(Task.item(GTOMaterials.Polyetheretherketone.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE));
 
     public static final Quest MITHRIL_INGOT = CHAPTER.quest("mithril_ingot", q -> q
             .at(0, 0)
             .desc(d -> d.line("{等离子体}需要冷凝成{液体}之后才能固化成锭，目前推荐使用{热交换机}冷凝", GOLD, YELLOW, GOLD))
             .task(Task.item(TagPrefix.ingot, GTOMaterials.Mithril))
-            .dependsOn(UV_FUSION_REACTOR)
-            .hideDependentLines());
+            .dependsOn(UV_FUSION_REACTOR));
 
     public static final Quest INTEGRAL_FRAMEWORK_UV = CHAPTER.quest("integral_framework_uv", q -> q
             .at(-7, 1.5)
@@ -334,16 +328,15 @@ public final class UvChapter {
                     Task.item(GTOMachines.THREAD_HATCH[GTValues.UV]).optional(),
                     Task.item(GTOMachines.OVERCLOCK_HATCH[GTValues.UV]).optional(),
                     Task.checkmark())
-            .dependsOn(UV_FORCE_FIELD_GENERATOR_LAUNCHER_AND)
-            .hideDependencyLines());
+            .hiddenDependsOn(UV_FORCE_FIELD_GENERATOR_LAUNCHER_AND));
 
     public static final Quest WETWARE_SOC = CHAPTER.quest("wetware_soc", q -> q
             .at(1, 12.5)
             .subtitle("布满了脑细胞")
             .desc(d -> d.line("更便宜的制作{湿件处理器}的原材料", GOLD))
             .task(Task.item(GTOItems.WETWARE_SOC))
-            .dependsOn(CEREBRUM, HIGHLY_ADVANCED_SOC)
-            .hideDependencyLines());
+            .hiddenDependsOn(HIGHLY_ADVANCED_SOC)
+            .dependsOn(CEREBRUM));
 
     public static final Quest SUPERCOMPUTING_CENTER = CHAPTER.quest("supercomputing_center", q -> q
             .at(3, 12.5)
@@ -367,8 +360,7 @@ public final class UvChapter {
             .at(-7, 8)
             .icon(GTOMaterials.Cycloparaphenylene.getBucket())
             .task(Task.item(GTOMaterials.Cycloparaphenylene.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_PRESSURE_STAGE));
 
     public static final Quest NANOTUBE_SPOOL = CHAPTER.quest("nanotube_spool", q -> q
             .at(-7, 6.5)
@@ -439,7 +431,8 @@ public final class UvChapter {
             .subtitle("天仓五 - 新的生命")
             .desc(d -> d.line("你需要使用重力控制仓达到强重力环境"))
             .task(Task.item(GTOItems.TCETIESEAWEEDEXTRACT))
-            .dependsOn(ALIEN_ALGAE_SLAG_ORE, SPACE_DRONE_MK1, UNKNOWWATER_BUCKET, MITHRIL_INGOT, GRAVITY_HATCH)
+            .dependsOn(ALIEN_ALGAE_SLAG_ORE, SPACE_DRONE_MK1, UNKNOWWATER_BUCKET, GRAVITY_HATCH)
+            .hiddenDependsOn(MITHRIL_INGOT)
             .mainNode());
 
     public static final Quest ABYSSALALLOY_INGOT = CHAPTER.quest("abyssalalloy_ingot", q -> q
@@ -462,8 +455,7 @@ public final class UvChapter {
                     .line()
                     .line("你可能要考虑设计处理循环产线"))
             .task(Task.item(GTOMaterials.BiohmediumSterilized.getBucket()).optional(), Task.checkmark())
-            .dependsOn(ZpmChapter.BIOCHEMICAL_REACTION, TCETIESEAWEEDEXTRACT)
-            .hideDependentLines());
+            .dependsOn(ZpmChapter.BIOCHEMICAL_REACTION, TCETIESEAWEEDEXTRACT));
 
     public static final Quest SMD_CAPACITOR_BIOWARE = CHAPTER.quest("smd_capacitor_bioware", q -> q
             .at(5, 12.5)
@@ -474,7 +466,8 @@ public final class UvChapter {
                     Task.item(GTOItems.SMD_RESISTOR_BIOWARE),
                     Task.item(GTOItems.SMD_TRANSISTOR_BIOWARE),
                     Task.item(GTOItems.SMD_INDUCTOR_BIOWARE))
-            .dependsOn(POLYIMIDE_BUCKET, BIOHMEDIUMSTERILIZED_BUCKET));
+            .dependsOn(POLYIMIDE_BUCKET)
+            .hiddenDependsOn(BIOHMEDIUMSTERILIZED_BUCKET));
 
     public static final Quest SPACE_ELEVATOR_POWER_MODULE_1 = CHAPTER.quest("space_elevator_power_module_1", q -> q
             .at(-5, 4.5)
@@ -490,7 +483,8 @@ public final class UvChapter {
             .icon(GTOItems.BIOLOGICAL_CELLS)
             .desc(d -> d.line("生化反应培养出后可使用培养缸繁殖"))
             .task(Task.item(GTOItems.BIOLOGICAL_CELLS))
-            .dependsOn(BIOHMEDIUMSTERILIZED_BUCKET, TCETIESEAWEEDEXTRACT));
+            .dependsOn(TCETIESEAWEEDEXTRACT)
+            .hiddenDependsOn(BIOHMEDIUMSTERILIZED_BUCKET));
 
     public static final Quest BIOWARE_BOULE = CHAPTER.quest("bioware_boule", q -> q
             .at(5, 6.5)
@@ -512,8 +506,7 @@ public final class UvChapter {
             .at(7, 12.5)
             .icon(GTOMaterials.MutatedLivingSolder.getBucket())
             .task(Task.item(GTOMaterials.MutatedLivingSolder.getBucket()).optional(), Task.checkmark())
-            .dependsOn(BIOLOGICAL_CELLS)
-            .hideDependencyLines());
+            .hiddenDependsOn(BIOLOGICAL_CELLS));
 
     public static final Quest BIO_ACTIVITY_PROCESSOR = CHAPTER.quest("bio_activity_processor", q -> q
             .at(7, 10.5)
@@ -591,7 +584,6 @@ public final class UvChapter {
                 .link(QuestLink.of(UhvChapter.WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, 11, 1.5).mainNode())
                 .link(QuestLink.of(BeyondTheStarsChapter.TRANSCEND_THE_FLESH_BIRTH_OF_A, -4, 4))
                 .link(QuestLink.of(SpaceStationChapter.SPACE_STATION_ENVIRONMENTAL_MAINTENANCE_MODULE, -7.5, 5))
-                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, -7, 3.5).mainNode())
-                .line(CEREBRUM, WETWARE_SOC));
+                .link(QuestLink.of(SpaceStationChapter.INDUSTRIAL_SPACE_STATION, -7, 3.5).mainNode()));
     }
 }
