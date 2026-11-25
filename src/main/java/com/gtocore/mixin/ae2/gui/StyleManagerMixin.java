@@ -13,6 +13,14 @@ public class StyleManagerMixin {
     private static String loadStyleDocHooks(String path) {
         if (path.contains("wireless_pattern_encoding_terminal.json")) {
             return "/screens/wtlib/modify_wireless_pattern_encoding_terminal.json";
+        } else if (path.contains("wireless_crafting_terminal.json")) {
+            return "/screens/wtlib/modify_wireless_crafting_terminal.json";
+        } else if (path.contains("wireless_pattern_access_terminal.json")) {
+            return "/screens/wtlib/modify_wireless_pattern_access_terminal.json";
+        } else if (path.contains("wtlib/magnet.json")) {
+            return "/screens/wtlib/modify_magnet.json";
+        } else if (path.contains("wtlib/trash.json")) {
+            return "/screens/wtlib/modify_trash.json";
         } else if (path.contains("pattern_encoding_terminal.json")) {
             return "/screens/terminals/modify_pattern_encoding_terminal.json";
         } else if (path.contains("ex_pattern_provider.json")) {
