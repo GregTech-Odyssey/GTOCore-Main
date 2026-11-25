@@ -366,7 +366,6 @@ dependencies {
     modImplementation("curse.maven:pipez-443900:6945379")
     modImplementation("curse.maven:jumbo-furnace-390880:4685578")
     modImplementation("curse.maven:easy-villagers-400514:6831415")
-    modImplementation("curse.maven:ae2-import-export-card-982512:5551629")
     modImplementation("curse.maven:ae2-toogleable-view-cell-1141472:8054118")
     modImplementation("curse.maven:ae2-network-analyser-961856:5107131")
     modImplementation("curse.maven:explorers-compass-491794:7892927")
