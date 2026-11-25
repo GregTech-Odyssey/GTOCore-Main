@@ -88,7 +88,7 @@ public final class PatternEncoderStatsScreen<C extends AEBaseMenu, P extends AEB
     }
 
     private void addBackButton() {
-        TabButton button = new TabButton(Icon.ARROW_LEFT, getParent().getTitle(), btn -> returnToParent());
+        TabButton button = new TabButton(Icon.BACK, getParent().getTitle(), btn -> returnToParent());
         widgets.add("back", button);
     }
 }

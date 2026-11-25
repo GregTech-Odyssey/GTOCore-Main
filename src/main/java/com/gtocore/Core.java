@@ -2,6 +2,7 @@ package com.gtocore;
 
 import com.gtocore.client.ClientProxy;
 import com.gtocore.common.CommonProxy;
+import com.gtocore.integration.ae.SolarStormHandler;
 
 import com.gtolib.GTOCore;
 
@@ -25,6 +26,7 @@ public final class Core {
     public Core(FMLJavaModLoadingContext context) {
         // Former gtolib @Mod constructor — must run before core proxies.
         GTOCore.bootstrap();
+        SolarStormHandler.init();
         String buildId = context.getContainer().getModInfo().getOwningFile().getFile().getSecureJar().moduleDataProvider().getManifest().getMainAttributes().getValue("GTO-Build-Id");
         String shownBuildId = buildId == null ? "dev" : buildId;
         Configurator.setLevel("GTO Build", Level.INFO);

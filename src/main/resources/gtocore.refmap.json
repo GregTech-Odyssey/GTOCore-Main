@@ -638,6 +638,12 @@
       "lastQuickMoved": "f_97724_:Lnet/minecraft/world/item/ItemStack;",
       "lastClickSlot": "f_97709_:Lnet/minecraft/world/inventory/Slot;",
       "doubleclick": "f_97723_:Z"
+    },
+    "com/gtocore/mixin/ae2/wtlib/CycleTerminalButtonMixin": {
+      "renderWidget": "Lde/mari_023/ae2wtlib/wut/CycleTerminalButton;m_87963_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+    },
+    "com/gtocore/mixin/ae2/wtlib/ItemButtonMixin": {
+      "renderWidget": "Lde/mari_023/ae2wtlib/terminal/ItemButton;m_87963_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
     }
   },
   "data": {
@@ -1280,6 +1286,12 @@
         "lastQuickMoved": "f_97724_:Lnet/minecraft/world/item/ItemStack;",
         "lastClickSlot": "f_97709_:Lnet/minecraft/world/inventory/Slot;",
         "doubleclick": "f_97723_:Z"
+      },
+      "com/gtocore/mixin/ae2/wtlib/CycleTerminalButtonMixin": {
+        "renderWidget": "Lde/mari_023/ae2wtlib/wut/CycleTerminalButton;m_87963_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
+      },
+      "com/gtocore/mixin/ae2/wtlib/ItemButtonMixin": {
+        "renderWidget": "Lde/mari_023/ae2wtlib/terminal/ItemButton;m_87963_(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"
       }
     }
   }

@@ -313,7 +313,6 @@ dependencies {
     modImplementation("curse.maven:duplicationless-1380105:8646420")
 
     // Applied Energistics 2
-    modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
     modImplementation("com.glodblock.github.extendedae:extendedae-forge-1.20.1:$extendedae_version")
     modImplementation("curse.maven:merequester-688367:5689932")
     modImplementation("curse.maven:ae2-toggleable-view-cell-1141472:8054118")
@@ -367,7 +366,6 @@ dependencies {
     modImplementation("curse.maven:pipez-443900:6945379")
     modImplementation("curse.maven:jumbo-furnace-390880:4685578")
     modImplementation("curse.maven:easy-villagers-400514:6831415")
-    modImplementation("curse.maven:ae2-import-export-card-982512:5551629")
     modImplementation("curse.maven:ae2-toogleable-view-cell-1141472:8054118")
     modImplementation("curse.maven:ae2-network-analyser-961856:5107131")
     modImplementation("curse.maven:explorers-compass-491794:7892927")

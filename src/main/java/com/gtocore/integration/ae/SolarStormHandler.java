@@ -12,6 +12,9 @@ import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.me.GridConnection;
 
+import com.gto.ae.hooks.IWirelessSignalBlocker;
+import com.gto.ae.hooks.WirelessSignalHooks;
+
 import com.suried.gtoutils.level.LevelStore;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -33,11 +36,24 @@ public final class SolarStormHandler {
         void gto$retireStormConnection();
     }
 
-    /** Wireless menu hosts must follow a grid replaced by splitting or merging the network. */
-    public interface TerminalHost {
+    public static void init() {
+        WirelessSignalHooks.setBlocker(new IWirelessSignalBlocker() {
 
-        @Nullable
-        IGrid gto$refreshStormGrid();
+            @Override
+            public long revision(Level level) {
+                return SolarStormHandler.revision(level);
+            }
+
+            @Override
+            public boolean isBlocked(Level level, @Nullable IGridNode target) {
+                return SolarStormHandler.isBlocked(level, target);
+            }
+
+            @Override
+            public boolean isGridBlocked(Level level, @Nullable IGrid grid) {
+                return SolarStormHandler.isGridBlocked(level, grid);
+            }
+        });
     }
 
     // Each endpoint is indexed on its own Level. The solar Level also owns the unique edge set.
