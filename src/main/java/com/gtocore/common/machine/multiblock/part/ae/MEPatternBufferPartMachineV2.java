@@ -519,12 +519,13 @@ public class MEPatternBufferPartMachineV2 extends MEPatternPartMachine<MEPattern
         if (recipe == null) stack.getOrCreateTag().remove("recipe");
         else stack.getOrCreateTag().putString("recipe", recipe.id.toString());
         getInternalInventory()[slot].setRecipe(recipe);
-        // 改样板物品的 NBT 不会触发物品栏回调，要自己标记存盘
+        // 改样板物品的 NBT 不会触发物品栏回调，要标记同步和存盘
+        getPatternInventory().onContentsChanged(slot);
         onChanged();
     }
 
     @Override
-    protected boolean supportsSlotConfig() {
+    public boolean supportsSlotConfig() {
         return true;
     }
 

@@ -835,7 +835,10 @@ public final class AeChapter {
     public static final Quest ME_MUFFLER_HATCH = CHAPTER.quest("me_muffler_hatch", q -> q
             .at(1.5, 19.5)
             .nodeScale(1)
-            .desc(d -> d.line("解除消声仓前必须空三格的限制，且将灰烬自动收集进ME网络"))
+            .desc(d -> d
+                    .line("解除消声仓前必须空三格的限制，且将灰烬自动收集进ME网络")
+                    .line()
+                    .line("开启ME仓容量限制时，可手持存储组件右键消声仓，扩充灰烬缓冲容量。"))
             .task(Task.item(GTAEMachines.MUFFLER_HATCH_ME))
             .dependsOn(LuvChapter.LUV_FIELD_GENERATOR)
             .hiddenDependsOn(LuvChapter.IV_DRONE));
@@ -932,6 +935,7 @@ public final class AeChapter {
     public static final Quest ME_INPUT_BUFFER_PART_MACHINE = CHAPTER.quest("me_input_buffer_part_machine", q -> q
             .at(9.5, 19.5)
             .nodeScale(1)
+            .desc(d -> d.line("开启ME仓容量限制时，可在右侧面板装入一枚存储组件，扩充输入缓冲容量。"))
             .task(Task.item(GTAEMachines.ME_INPUT_BUFFER_PART_MACHINE)));
 
     public static final Quest ME_REQUESTABLE_INPUT_BUS_MACHINE = CHAPTER.quest("me_requestable_input_bus_machine", q -> q
@@ -1115,7 +1119,17 @@ public final class AeChapter {
             .icon(GTAEMachines.ITEM_IMPORT_BUS_ME)
             .title("ME输入总线和ME输入仓")
             .subtitle("好用，爱用，多用")
-            .desc(d -> d.line("不存在总成版本"))
+            .desc(d -> d
+                    .line("不存在总成版本")
+                    .line()
+                    .line("{装入存储组件}", GOLD)
+                    .line("开启ME仓容量限制时，在右侧面板装入一枚存储组件。也可手持组件右键仓室，换下的组件会退回。")
+                    .line("普通难度每种物品可缓冲1000个，每种流体可缓冲1000桶。专家难度的基础容量为0，使用前请先装入组件。")
+                    .line("简单难度默认关闭容量限制。")
+                    .line("1k组件为每种物品增加1024个容量，为每种流体增加1024桶容量。无限存储组件解除容量上限。")
+                    .line()
+                    .line("在面板的选项中设定放置默认组件。放置空仓时，有库存就会自动装入一枚。")
+                    .line("要批量更换，可从面板打开Xaero地图，在ME仓容量组件图层选中多个仓室。"))
             .task(Task.item(GTAEMachines.ITEM_IMPORT_BUS_ME), Task.item(GTAEMachines.FLUID_IMPORT_HATCH_ME))
             .dependsOn(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE)
             .hiddenDependsOn(SPEED_CARD));
@@ -1127,7 +1141,9 @@ public final class AeChapter {
             .desc(d -> d
                     .line("将多方块机器的产物直接输出到ME网络！")
                     .line()
-                    .line("该类仓可以让机器使用异步输出，让配方输出完全不占用TPS"))
+                    .line("该类仓可以让机器使用异步输出，让配方输出完全不占用TPS")
+                    .line()
+                    .line("输出缓冲也支持扩容。装入方法见{存储组件说明}。", link(ME_IMPORT_BUS_AND_ME_IMPORT)))
             .task(Task.item(GTAEMachines.FLUID_EXPORT_HATCH_ME), Task.item(GTAEMachines.ITEM_EXPORT_BUS_ME))
             .dependsOn(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE)
             .hiddenDependsOn(SPEED_CARD));
@@ -1135,7 +1151,10 @@ public final class AeChapter {
     public static final Quest ME_EXPORT_BUFFER = CHAPTER.quest("me_export_buffer", q -> q
             .at(-5, 7.5)
             .nodeScale(1)
-            .desc(d -> d.line("和普通输出总成类似，能够同时输出物品和流体"))
+            .desc(d -> d
+                    .line("和普通输出总成类似，能够同时输出物品和流体")
+                    .line()
+                    .line("装入方法见{存储组件说明}。", link(ME_IMPORT_BUS_AND_ME_IMPORT)))
             .task(Task.item(CustomMachines.ME_EXPORT_BUFFER))
             .dependsOn(ME_EXPORT_BUS_AND_ME_EXPORT, LuvChapter.LUV_ASSEMBLER, ME_IMPORT_BUS_AND_ME_IMPORT));
 
@@ -1682,6 +1701,8 @@ public final class AeChapter {
             .subtitle("更好的下单")
             .desc(d -> d
                     .line("支持{样板之间的完全隔离}，妈妈再也不用担心我化反串配方了！", YELLOW.bold())
+                    .line()
+                    .line("扩容时，每个样板槽内的每种资源都单独计算容量。装入方法见{存储组件说明}。", link(ME_IMPORT_BUS_AND_ME_IMPORT))
                     .line()
                     .line("有特殊的优化，配方处理性能比普通的仓更好：")
                     .line()
