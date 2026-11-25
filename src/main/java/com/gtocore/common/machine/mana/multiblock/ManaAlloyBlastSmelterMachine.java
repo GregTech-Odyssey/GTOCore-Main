@@ -26,7 +26,7 @@ import com.gto.datasynclib.annotations.SaveToDisk;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.common.item.BotaniaItems;
+import vazkii.botania.common.BotaniaItems;
 
 import java.util.List;
 
@@ -43,14 +43,14 @@ public final class ManaAlloyBlastSmelterMachine extends CoilCustomParallelMultib
     }
 
     private static final Int2ObjectOpenHashMap<Item> RUNES = Util.make(new Int2ObjectOpenHashMap<>(), map -> {
-        map.put(1, BotaniaItems.runeWater);
-        map.put(2, BotaniaItems.runeFire);
-        map.put(3, BotaniaItems.runeAir);
-        map.put(4, BotaniaItems.runeEarth);
-        map.put(5, BotaniaItems.runeSpring);
-        map.put(6, BotaniaItems.runeSummer);
-        map.put(7, BotaniaItems.runeAutumn);
-        map.put(8, BotaniaItems.runeWinter);
+        map.put(1, BotaniaItems.getItem("rune_water"));
+        map.put(2, BotaniaItems.getItem("rune_fire"));
+        map.put(3, BotaniaItems.getItem("rune_air"));
+        map.put(4, BotaniaItems.getItem("rune_earth"));
+        map.put(5, BotaniaItems.getItem("rune_spring"));
+        map.put(6, BotaniaItems.getItem("rune_summer"));
+        map.put(7, BotaniaItems.getItem("rune_autumn"));
+        map.put(8, BotaniaItems.getItem("rune_winter"));
     });
 
     @SaveToDisk(defaultValue = "0")

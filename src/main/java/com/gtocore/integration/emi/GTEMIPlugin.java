@@ -16,7 +16,6 @@ import com.gtocore.integration.emi.electrochemistry.IonEmiStackSerializer;
 import com.gtocore.integration.emi.farmersrespite.FarmersRespiteEmi;
 import com.gtocore.integration.emi.jer.JerEmi;
 import com.gtocore.integration.emi.multipage.MultiblockInfoEmiRecipe;
-import com.gtocore.integration.emi.mythicbotany.MythicBotanyEmi;
 import com.gtocore.integration.emi.oreprocessing.OreProcessingEmiCategory;
 import com.gtocore.integration.emi.primordial_reconstructor.PrimordialReconstructorDisassemblyEmiCategory;
 import com.gtocore.integration.emi.research.DataScanningEmiRecipe;
@@ -25,6 +24,7 @@ import com.gtocore.integration.emi.research.ResearchTagEmiStackSerializer;
 import com.gtocore.integration.emi.research.TechNodeEmiStack;
 import com.gtocore.integration.emi.research.TechNodeEmiStackSerializer;
 import com.gtocore.integration.emi.research.TechTreeEmiRecipe;
+import com.gtocore.integration.emi.rune.RuneRitualEmiCategory;
 import com.gtocore.integration.emi.space.SatelliteEmiCategory;
 import com.gtocore.integration.ftbquests.emi.QuestEmiPlugin;
 
@@ -101,13 +101,9 @@ import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.registry.EmiPluginContainer;
 import dev.emi.emi.screen.EmiScreenManager;
-import io.github.lounode.extrabotany.api.ExtraBotanyAPI;
-import io.github.lounode.extrabotany.client.integration.emi.EmiExtrabotanyPlugin;
 import io.github.prismwork.emitrades.EMITradesPlugin;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.api.BotaniaAPI;
-import vazkii.botania.client.integration.emi.BotaniaEmiPlugin;
 import vectorwing.farmersdelight.FarmersDelight;
 
 import java.util.function.Consumer;
@@ -152,8 +148,6 @@ public final class GTEMIPlugin implements EmiPlugin {
         if (Mods.SOPHISTICATEDSTORAGE.isLoaded()) {
             list.accept(new EmiPluginContainer(new net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin(), "sophisticatedstorage"));
         }
-        list.accept(new EmiPluginContainer(new BotaniaEmiPlugin(), BotaniaAPI.MODID));
-        list.accept(new EmiPluginContainer(new EmiExtrabotanyPlugin(), ExtraBotanyAPI.MODID));
         list.accept(new EmiPluginContainer(new EMIPlugin(), LDLib.MOD_ID));
         list.accept(new EmiPluginContainer(new GTEMIPlugin(), GTCEu.MOD_ID));
         list.accept(new EmiPluginContainer(new MeteoritesEmiPlugin(), ArsMeteorites.MOD_ID));
@@ -162,7 +156,6 @@ public final class GTEMIPlugin implements EmiPlugin {
         list.accept(new EmiPluginContainer(new vectorwing.farmersdelight.integration.emi.EMIPlugin(), FarmersDelight.MODID));
         list.accept(new EmiPluginContainer(new ApotheosisEmi(), "apotheosis"));
         list.accept(new EmiPluginContainer(new ArsNouveauEmi(), "ars_nouveau"));
-        list.accept(new EmiPluginContainer(new MythicBotanyEmi(), "mythicbotany"));
         list.accept(new EmiPluginContainer(new FarmersRespiteEmi(), "farmersrespite"));
         list.accept(new EmiPluginContainer(new JerEmi(), "jeresources"));
         if (Mods.FTBQUESTS.isLoaded() && Mods.FTB_XMOD_COMPAT.isLoaded()) {
@@ -256,6 +249,7 @@ public final class GTEMIPlugin implements EmiPlugin {
         registry.addRecipeHandler(WETMenu.TYPE, new EmiEncodePatternHandler<>(WETMenu.class));
         registry.addRecipeHandler(PatternEncodingTermMenu.TYPE, new EmiEncodePatternHandler<>(PatternEncodingTermMenu.class));
         registry.addCategory(GTProgrammedCircuitCategory.CATEGORY);
+        RuneRitualEmiCategory.register(registry);
 
         OreProcessingEmiCategory.registerDisplays(registry);
         GTOreVeinEmiCategory.registerDisplays(registry, PagedVeinEmiRecipe::new);

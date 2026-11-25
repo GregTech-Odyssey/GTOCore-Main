@@ -25,7 +25,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import org.jetbrains.annotations.NotNull;
-import vazkii.botania.client.core.proxy.ClientProxy;
 
 import java.util.List;
 
@@ -103,7 +102,7 @@ public final class DimensionallyTranscendentPlasmaForgeMachine extends CoilCross
                             @Override
                             public void tick() {
                                 super.tick();
-                                var clientPlayer = ClientProxy.INSTANCE.getClientPlayer();
+                                var clientPlayer = Minecraft.getInstance().player;
                                 var yp = clientPlayer != null ? (int) clientPlayer.getY() : getPos().getY();
                                 y = Mth.clamp(yp, getPos().getY(), getPos().getY() + 71);
                             }

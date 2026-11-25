@@ -1,0 +1,15 @@
+{
+  "name": "botania.entry.odinRing",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:odin_ring",
+  "entry_color": "aa00aa",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.odinRing0"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:odin_ring": 0
+  }
+}

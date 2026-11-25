@@ -10,6 +10,7 @@ import com.gtocore.common.data.GTORecipeTypes;
 import com.gtocore.common.data.translation.GTOMachineTooltips;
 import com.gtocore.common.machine.generator.MagicEnergyMachine;
 import com.gtocore.common.machine.generator.ManaGeneratorMachine;
+import com.gtocore.common.machine.generator.MechanizedEndoflameMachine;
 import com.gtocore.common.machine.mana.*;
 import com.gtocore.common.machine.mana.part.*;
 import com.gtocore.config.GTORules;
@@ -18,6 +19,7 @@ import com.gtolib.GTOCore;
 import com.gtolib.api.GTOValues;
 import com.gtolib.api.machine.SimpleNoEnergyMachine;
 import com.gtolib.api.machine.mana.ManaAmplifierPartMachine;
+import com.gtolib.utils.RLUtils;
 
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.GTValues;
@@ -76,6 +78,18 @@ public final class ManaMachine {
                     .tips(Tips.energy(StatKind.ENERGY_CAPACITY, V[tier] << 8, tier))
                     .register(),
             LV, MV);
+
+    public static final MachineDefinition MECHANIZED_ENDOFLAME = manaMachine("mechanized_endoflame", "机械化火红莲",
+            holder -> new MechanizedEndoflameMachine(holder, ULV))
+            .tier(ULV)
+            .nonYAxisRotation()
+            .renderer(() -> new CompositeMachineRenderer(GTOCore.id("block/machine/magic/frame"),
+                    RLUtils.bot("block/floating_endoflame")))
+            .blockProp(p -> p.noOcclusion().isViewBlocking((state, level, pos) -> false))
+            .tips(Tips.stat(MechanizedEndoflameMachine.TIP))
+            .tips(Tips.stat(MechanizedEndoflameMachine.TIP_FUEL))
+            .tips(Tips.stat(MechanizedEndoflameMachine.TIP_OUTPUT))
+            .register();
 
     public static final MachineDefinition[] MANA_GENERATOR = registerTieredManaMachines(
             "mana_generator", tier -> "%s%s".formatted(MANACN[tier], "魔力发生器"),
@@ -268,7 +282,7 @@ public final class ManaMachine {
     // 魔力池：最高 MANAt 1000（生命精华），需要 MANA >= 1024
     public static final MachineDefinition MANA_POOL_STATION = manaStation("mana_pool", "魔力池", ZPM, GTORecipeTypes.MANA_POOL_RECIPES);
     // 花药台：MANAt 32
-    public static final MachineDefinition PETAL_APOTHECARY_STATION = manaStation("petal_apothecary", "花药台", LV, GTORecipeTypes.PETAL_APOTHECARY_RECIPES);
+    public static final MachineDefinition PETAL_APOTHECARY_STATION = manaStation("petal_apothecary", "花药台", ULV, GTORecipeTypes.PETAL_APOTHECARY_RECIPES);
     // 符文祭坛：最高 MANAt 40000（嬗变催化剂），需要 MANA >= 40000
     public static final MachineDefinition RUNIC_ALTAR_STATION = manaStation("runic_altar", "符文祭坛", HV, GTORecipeTypes.RUNIC_ALTAR_RECIPES);
     // 凝聚板：暂无配方，先按 EV 注册

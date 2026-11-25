@@ -1952,7 +1952,7 @@ fun stampMappingBuildId(file: File) {
 fun gtocoreReleaseJar(): File = layout.buildDirectory.dir("libs").get().asFile.resolve("$modId-forge-1.20.1-${project.version}.jar").takeIf { it.isFile }
     ?: throw GradleException("找不到 reobf 后的 gtocore 发行 jar: build/libs/$modId-forge-1.20.1-${project.version}.jar")
 
-fun isGtocoreProgramEntry(name: String) = name.endsWith(".class") && !name.startsWith("com/gtolib/") && !name.startsWith("META-INF/")
+fun isGtocoreProgramEntry(name: String) = name.endsWith(".class") && !name.startsWith("com/gtolib/") && !name.startsWith("vazkii/botania/") && !name.startsWith("META-INF/")
 
 fun readJarManifest(jar: File) = java.util.jar.Manifest((readJarEntry(jar, "META-INF/MANIFEST.MF") ?: ByteArray(0)).inputStream())
 
@@ -1988,7 +1988,7 @@ fun memberKeptName(key: String, obf: String): Boolean {
     return rest.startsWith("(") || fieldDescriptor.matches(rest)
 }
 
-fun writeGtocoreKeepRules(program: Map<String, ClassNode>, target: File): Set<String> {
+fun writeGtocoreKeepRules(program: Map<String, ClassNode>, embeddedLibraryJar: File, target: File): Set<String> {
     requireJar(proguardReleaseJar, "gtocore 代码保护: GTOLib 发行轨 ProGuard 产物（-PgtolibRebuild=true 重建）", 1024)
     val keepClasses = sortedSetOf<String>()
     fun keepWithAncestors(name: String) {
@@ -2003,20 +2003,27 @@ fun writeGtocoreKeepRules(program: Map<String, ClassNode>, target: File): Set<St
             return internalName
         }
     }
-    ZipFile(proguardReleaseJar).use { zf ->
-        zf.entries().asSequence().filter { it.name.endsWith(".class") }.forEach { e ->
-            val bytes = zf.getInputStream(e).readBytes()
-            ClassReader(bytes).accept(ClassRemapper(ClassWriter(0), collector), 0)
-            gtocoreClassToken.findAll(latin1(bytes)).forEach { m ->
-                val path = m.value.replace('.', '/')
-                val exact = classTokenCandidates(m.value).firstOrNull { it in program }
-                if (exact != null) {
-                    keepWithAncestors(exact)
-                } else if (!path.endsWith('/')) {
-                    program.keys.filter { it.startsWith(path) && it.indexOf('/', path.length) < 0 }.forEach(::keepWithAncestors)
+    fun scanExternalJar(jarFile: File, filter: (String) -> Boolean = { true }) {
+        ZipFile(jarFile).use { zf ->
+            zf.entries().asSequence().filter { it.name.endsWith(".class") && filter(it.name) }.forEach { e ->
+                val bytes = zf.getInputStream(e).readBytes()
+                ClassReader(bytes).accept(ClassRemapper(ClassWriter(0), collector), 0)
+                gtocoreClassToken.findAll(latin1(bytes)).forEach { m ->
+                    val path = m.value.replace('.', '/')
+                    val exact = classTokenCandidates(m.value).firstOrNull { it in program }
+                    if (exact != null) {
+                        keepWithAncestors(exact)
+                    } else if (!path.endsWith('/')) {
+                        program.keys.filter { it.startsWith(path) && it.indexOf('/', path.length) < 0 }.forEach(::keepWithAncestors)
+                    }
                 }
             }
         }
+    }
+    scanExternalJar(proguardReleaseJar)
+    // 内联的 vazkii/botania/** 不参与 gtocore 混淆，但会直接调用部分 com.gtocore 类（如 LangHandler / RewardBagItem 等），须同步保名
+    if (embeddedLibraryJar.isFile) {
+        scanExternalJar(embeddedLibraryJar) { it.startsWith("vazkii/botania/") }
     }
     val fromGtolib = keepClasses.size
     program.values.filter { it.name.startsWith("com/gtocore/mixin/") }.forEach { n ->
@@ -2302,7 +2309,7 @@ val obfuscateGtocoreRelease = tasks.register<JavaExec>("obfuscateGtocoreRelease"
         program = readClassNodes(programJar)
         if (program.isEmpty()) throw GradleException("gtocore 代码保护: ${jar.name} 里没有 gtocore 类")
         verifyNoSubscribeEvent(program)
-        keptClasses = writeGtocoreKeepRules(program, generatedKeep)
+        keptClasses = writeGtocoreKeepRules(program, embeddedLibraryJar, generatedKeep)
         libs = proguardLibraryJars(true) + embeddedLibraryJar
         val extra = writeProguardExtraFile(name, libs, gtocoreMappingFile, gtocoreObfDir)
         setArgs(listOf(gtocoreObfRules, generatedKeep, extra).map { "@${it.absolutePath}" } + listOf("-injars", programJar.absolutePath, "-outjars", obfJar.absolutePath))

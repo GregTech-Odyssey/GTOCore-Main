@@ -10,7 +10,6 @@ import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.common.blockentity.CableBlockEntity;
 
 import com.suried.gtoutils.spatial.BlockEntityIndex;
-import vazkii.botania.common.block.flower.generating.EntropinnyumBlockEntity;
 
 /**
  * GTOCore 全部按范围查找方块实体所用的索引，由 GTOUtils 在区块增删方块实体时自动维护；模组构造时调用 {@link #init()} 完成创建。
@@ -29,8 +28,6 @@ public final class GTOBlockEntityIndexes {
             be -> !be.getLevel().isClientSide());
     public static final BlockEntityIndex<CableBlockEntity> CABLES = BlockEntityIndex.create(CableBlockEntity.class,
             cable -> !cable.getLevel().isClientSide());
-    public static final BlockEntityIndex<EntropinnyumBlockEntity> ENTROPINNYUMS = BlockEntityIndex.create(EntropinnyumBlockEntity.class,
-            flower -> !flower.getLevel().isClientSide());
 
     private GTOBlockEntityIndexes() {}
 

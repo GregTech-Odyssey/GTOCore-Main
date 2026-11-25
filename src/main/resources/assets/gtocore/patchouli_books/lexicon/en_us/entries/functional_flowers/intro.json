@@ -1,0 +1,30 @@
+{
+  "name": "botania.entry.fIntro",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:cosmetic_questgiver_mark",
+  "priority": true,
+  "sortnum": -10,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.fIntro0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.fIntro1"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.fIntro2"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.fIntro3"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.fIntro4",
+      "recipe": "botania:redstone_root"
+    }
+  ]
+}

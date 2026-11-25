@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.manaTablet",
+  "category": "gtocore:mana",
+  "icon": "botania:mana_tablet",
+  "priority": true,
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.manaTablet0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.manaTablet1"
+    }
+  ]
+}

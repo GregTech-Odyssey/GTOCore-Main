@@ -35,7 +35,6 @@ import com.gtocore.integration.ae.PatternContentAccessTerminalMenu;
 import com.gtocore.integration.ae.hooks.IPushResultsHandler;
 import com.gtocore.integration.ae.wtlib.WFTMenu;
 import com.gtocore.integration.ae.wtlib.WRTMenu;
-import com.gtocore.integration.botania.BotaniaFlowerTicking;
 import com.gtocore.integration.construction_wand.ConstructionWandRegistrar;
 import com.gtocore.integration.emi.GTEMIPlugin;
 import com.gtocore.integration.ftbquests.GTOQuestTypes;
@@ -102,6 +101,7 @@ import de.mari_023.ae2wtlib.terminal.IUniversalWirelessTerminalItem;
 import de.mari_023.ae2wtlib.wut.WTDefinition;
 import earth.terrarium.adastra.api.events.AdAstraEvents;
 import org.embeddedt.modernfix.spark.SparkLaunchProfiler;
+import vazkii.botania.common.BotaniaRegistration;
 
 import static com.gtolib.api.registries.GTORegistration.GTO;
 import static de.mari_023.ae2wtlib.wut.WUTHandler.terminalNames;
@@ -113,6 +113,7 @@ public class CommonProxy {
         init();
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         GTO.registerEventListeners(eventBus);
+        BotaniaRegistration.register(eventBus);
         GTOFluids.FLUID_TYPE.register(eventBus);
         GTOFluids.FLUID.register(eventBus);
         GTOEffects.init(eventBus);
@@ -196,7 +197,6 @@ public class CommonProxy {
         TravelRegistry.addTravelEntry(PatternTravelTarget.SERIALIZED_NAME, PatternTravelTarget::loadClientTarget, () -> TravelAnchorRenderers::getRenderer);
 
         AreaShape.register();
-        BotaniaFlowerTicking.init();
 
         if (GTCEu.isClientSide()) {
             TipSpec tips = TipSpec.builder().lines(l -> l.plain(Component.translatable(GTOTagPrefix.PIPE_TOOLTIP))).build();

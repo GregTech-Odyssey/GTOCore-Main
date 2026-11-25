@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.elvenLore",
+  "category": "gtocore:alfhomancy",
+  "icon": "minecraft:writable_book",
+  "entry_color": "aa00",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.elvenLore0"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "botania.entry.infiniteFruit",
+  "category": "gtocore:alfhomancy",
+  "icon": "botania:infinite_fruit",
+  "entry_color": "aa00aa",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.infiniteFruit0"
+    }
+  ],
+  "extra_recipe_mappings": {
+    "botania:infinite_fruit": 0
+  }
+}

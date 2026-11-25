@@ -42,7 +42,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import dev.shadowsoffire.apotheosis.Apotheosis;
-import vazkii.botania.common.block.BotaniaBlocks;
+import vazkii.botania.common.BotaniaBlocks;
 
 import java.util.Map;
 
@@ -283,7 +283,7 @@ public final class ManaMultiBlock {
                             .where('G', blocks(Blocks.AIR))
                             .where('H', GTOPredicates.frame(GTOMaterials.Gaiasteel))
                             .where('I', blocks(RegistriesUtils.getBlock("botania:livingrock_bricks_wall")))
-                            .where('J', blocks(BotaniaBlocks.enchantedSoil))
+                            .where('J', blocks(BotaniaBlocks.ENCHANTED_SOIL.get()))
                             .wherePart('K', blocks(GTOBlocks.MANASTEEL_CASING.get())
                                     .or(abilities(GTOPartAbility.INPUT_MANA).setMaxGlobalLimited(16, 1))
                                     .or(abilities(PARALLEL_HATCH).setMaxGlobalLimited(1))
@@ -601,10 +601,10 @@ public final class ManaMultiBlock {
                             .where('B', blocks(RegistriesUtils.getBlock("botania:livingrock_wall")))
                             .where('C', blocks(RegistriesUtils.getBlock("ars_nouveau:purple_archwood_log")))
                             .where('D', ManaFlowAssembler.manaPool(
-                                    BotaniaBlocks.manaPool,
-                                    BotaniaBlocks.dilutedPool,
-                                    BotaniaBlocks.fabulousPool,
-                                    BotaniaBlocks.creativePool))
+                                    BotaniaBlocks.getBlock("mana_pool"),
+                                    BotaniaBlocks.getBlock("diluted_pool"),
+                                    BotaniaBlocks.getBlock("fabulous_pool"),
+                                    BotaniaBlocks.getBlock("creative_pool")))
                             .where('E', ManaFlowAssembler.MANA_PYLON.get())
                             .wherePart('F', blocks(GTOBlocks.MANASTEEL_CASING.get())
                                     .or(abilities(IMPORT_FLUIDS_1X).setMaxGlobalLimited(1)))

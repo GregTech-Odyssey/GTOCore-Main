@@ -33,12 +33,10 @@ import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
 import com.suried.gtoutils.schedule.Task;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import vazkii.botania.api.mana.ManaCollector;
+import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaEndpoint;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
-import vazkii.botania.api.mana.spark.SparkAttachable;
-import vazkii.botania.xplat.XplatAbstractions;
 
 import java.util.Optional;
 
@@ -144,8 +142,7 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
             // 邻居缓存：方块状态与方块实体都直接取缓存，不再按坐标查找
             var be = holder.getNeighborBlockEntity(facing);
             if (be == null) continue;
-            var receiver = XplatAbstractions.INSTANCE.findManaReceiver(level, getPos().relative(facing),
-                    holder.getNeighborBlockState(facing), be, facing.getOpposite());
+            var receiver = be.getCapability(BotaniaForgeCapabilities.MANA_RECEIVER, facing.getOpposite()).orElse(null);
             if (receiver != null) {
                 outputMana(receiver);
             } else if (be instanceof ISourceTile sourceTile) {
@@ -162,13 +159,6 @@ public final class SuperManaTankMachine extends MetaMachine implements IManaMach
     private void outputSource(ISourceTile sourceTile) {
         if (sourceTile == this || !sourceTile.canAcceptSource()) return;
         ManaEndpoint.transfer(manaEndpoint, ManaUnification.of(sourceTile), manaContainer.getCurrentMana());
-    }
-
-    private static int getMaxMana(ManaReceiver receiver) {
-        if (receiver instanceof ManaCollector collector) return collector.getMaxMana();
-        if (receiver instanceof ManaPool pool) return pool.getMaxMana();
-        if (receiver instanceof SparkAttachable attachable) return attachable.getAvailableSpaceForMana();
-        return receiver.isFull() ? 0 : UNKNOWN_RECEIVER_CAPACITY;
     }
 
     //////////////////////////////////////

@@ -2,7 +2,6 @@ package com.gtocore.common.block;
 
 import com.gtocore.common.data.GTOBlocks;
 import com.gtocore.common.data.GTOItems;
-import com.gtocore.integration.botania.IEntropinnyum;
 
 import com.gtolib.utils.explosion.LargeExplosion;
 
@@ -46,9 +45,7 @@ public enum ChargeBomb {
     public static boolean tryDetonate(Level level, BlockPos pos, Item item) {
         for (ChargeBomb bomb : VALUES) {
             if (item != bomb.activator() || level.getBlockState(pos).getBlock() != bomb.block()) continue;
-            if (!IEntropinnyum.absorbBomb(level, pos, bomb.absorbedMana)) {
-                LargeExplosion.sphere(level, pos, bomb.radius).breakBedrock(true).start();
-            }
+            LargeExplosion.sphere(level, pos, bomb.radius).breakBedrock(true).start();
             return true;
         }
         return false;

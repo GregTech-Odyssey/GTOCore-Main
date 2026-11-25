@@ -1,0 +1,12 @@
+{
+  "name": "botania.entry.vinculotus",
+  "category": "gtocore:functional_flowers",
+  "icon": "botania:vinculotus",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.vinculotus0"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

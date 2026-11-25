@@ -1,0 +1,16 @@
+{
+  "name": "botania.entry.grassSeeds",
+  "category": "gtocore:tools",
+  "icon": "botania:grass_seeds",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.grassSeeds0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.grassSeeds4"
+    }
+  ],
+  "extra_recipe_mappings": {}
+}

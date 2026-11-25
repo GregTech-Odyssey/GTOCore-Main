@@ -1,0 +1,20 @@
+{
+  "name": "botania.entry.diviningRod",
+  "category": "gtocore:tools",
+  "icon": "botania:divining_rod",
+  "pages": [
+    {
+      "type": "text",
+      "text": "botania.page.diviningRod0"
+    },
+    {
+      "type": "text",
+      "text": "botania.page.diviningRod2"
+    },
+    {
+      "type": "crafting",
+      "text": "botania.page.diviningRod1",
+      "recipe": "botania:divining_rod"
+    }
+  ]
+}
