@@ -28,7 +28,7 @@ public final class DigestionTankMachine extends CoilMultiblockMachine implements
     @Getter
     @SyncToClient
     private Fluid cachedFluid;
-    private final FluidPoolHazard poolHazard = new FluidPoolHazard(0);
+    private final FluidPoolHazard poolHazard = new FluidPoolHazard(this, 0);
 
     public DigestionTankMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true);
@@ -38,12 +38,6 @@ public final class DigestionTankMachine extends CoilMultiblockMachine implements
     public void beforeWorking(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         cachedFluid = IFluidRendererMachine.getFluid(recipe);
         super.beforeWorking(unit, recipe);
-    }
-
-    @Override
-    public void onWorking() {
-        poolHazard.tickWorking(getLevel(), getOffsetTimer(), getPos(), fluidBlockOffsets);
-        super.onWorking();
     }
 
     @Override

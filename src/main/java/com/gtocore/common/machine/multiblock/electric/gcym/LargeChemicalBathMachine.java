@@ -28,7 +28,7 @@ public final class LargeChemicalBathMachine extends GCYMMultiblockMachine implem
     @SyncToClient
     private Fluid cachedFluid;
     // 流体渲染偏移仅记录顶层液面，池底还有 1 格空腔，伤害区向下扩展 1 格
-    private final FluidPoolHazard poolHazard = new FluidPoolHazard(1);
+    private final FluidPoolHazard poolHazard = new FluidPoolHazard(this, 1);
 
     public LargeChemicalBathMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -38,12 +38,6 @@ public final class LargeChemicalBathMachine extends GCYMMultiblockMachine implem
     public void beforeWorking(@NotNull RecipeHandlerUnit unit, @NotNull GTRecipe recipe) {
         cachedFluid = IFluidRendererMachine.getFluid(recipe);
         super.beforeWorking(unit, recipe);
-    }
-
-    @Override
-    public void onWorking() {
-        poolHazard.tickWorking(getLevel(), getOffsetTimer(), getPos(), fluidBlockOffsets);
-        super.onWorking();
     }
 
     @Override
