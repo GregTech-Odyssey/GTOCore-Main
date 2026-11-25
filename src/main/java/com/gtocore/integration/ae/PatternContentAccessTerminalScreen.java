@@ -63,7 +63,7 @@ public class PatternContentAccessTerminalScreen extends AEBaseScreen<PatternCont
     public PatternContentAccessTerminalScreen(PatternContentAccessTerminalMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
         this.imageWidth = GUI_WIDTH;
-        this.scrollbar = widgets.addScrollBar("scrollbar");
+        this.scrollbar = widgets.addScrollBar("scrollbar", Scrollbar.BIG);
 
         TerminalStyle terminalStyle = AEConfig.instance().getTerminalStyle();
         this.addToLeftToolbar(
