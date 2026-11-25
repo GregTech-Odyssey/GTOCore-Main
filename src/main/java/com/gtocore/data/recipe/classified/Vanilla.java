@@ -30,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.Tags;
 
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
@@ -115,6 +116,11 @@ final class Vanilla {
                 "DED",
                 'A', CustomTags.CRAFTING_SAWS, 'B', Items.CRAFTING_TABLE, 'C', CustomTags.CRAFTING_SCREWDRIVERS,
                 'D', new MaterialEntry(TagPrefix.screw, GTMaterials.WroughtIron), 'E', Items.CHEST);
+        VanillaRecipeHelper.addShapedRecipe(GTOCore.id("cover_inspector"), GTOItems.COVER_INSPECTOR.asItem(),
+                "ABA",
+                "CDC",
+                "CEC",
+                'A', new MaterialEntry(TagPrefix.screw, GTMaterials.WroughtIron), 'B', Tags.Items.GLASS_PANES, 'C', new MaterialEntry(TagPrefix.plate, GTMaterials.WroughtIron), 'D', GTItems.SENSOR_LV.asItem(), 'E', new MaterialEntry(TagPrefix.wireGtSingle, GTMaterials.RedAlloy));
 
         VanillaRecipeHelper.addShapedRecipe(GTOCore.id("me_2in1_terminal"), GTOAEParts.ME_2IN1_TERMINAL.get().stack(1),
                 "   ",

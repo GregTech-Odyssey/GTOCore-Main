@@ -22,6 +22,7 @@ import com.gregtechceu.gtceu.uiwidgets.cover.CoverUIs;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -56,7 +57,7 @@ import static net.minecraft.resources.ResourceLocation.tryParse;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class AdvancedWirelessTransferCover extends CoverBehavior implements IUICover {
+public class AdvancedWirelessTransferCover extends CoverBehavior implements IUICover, IWirelessTransferCover {
 
     public static final int TRANSFER_ITEM = 1;
     public static final int TRANSFER_FLUID = 2;
@@ -152,12 +153,20 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
             facing = null;
         }
         getTargetLevel();
+        WirelessCoverIndex.add(coverHolder.getLevel(), getBoundTarget(), coverHolder.getPos(), attachedSide);
         subscription = coverHolder.subscribeServerTick(subscription, this::update, 20);
+    }
+
+    @Override
+    public void onUnload() {
+        super.onUnload();
+        WirelessCoverIndex.remove(coverHolder.getLevel(), getBoundTarget(), coverHolder.getPos(), attachedSide);
     }
 
     @Override
     public void onRemoved() {
         super.onRemoved();
+        WirelessCoverIndex.remove(coverHolder.getLevel(), getBoundTarget(), coverHolder.getPos(), attachedSide);
         if (subscription != null) {
             subscription.cancel();
         }
@@ -184,6 +193,16 @@ public class AdvancedWirelessTransferCover extends CoverBehavior implements IUIC
         ResourceLocation resLoc = tryParse(this.dimensionId);
         ResourceKey<Level> resKey = ResourceKey.create(Registries.DIMENSION, resLoc);
         target.bind(Objects.requireNonNull(coverHolder.getLevel().getServer()).getLevel(resKey), targetPos);
+    }
+
+    @Override
+    public @Nullable GlobalPos getBoundTarget() {
+        return IWirelessTransferCover.resolveBoundTarget(dimensionId, targetPos);
+    }
+
+    @Override
+    public @Nullable Direction getBoundSide() {
+        return targetSide;
     }
 
     protected @Nullable IKeyHandler<AEItemKey> getOwnItemTransfer() {
