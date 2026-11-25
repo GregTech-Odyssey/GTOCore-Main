@@ -18,6 +18,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.me.crafting.CraftingCPUScreen;
 import appeng.client.gui.style.ScreenStyle;
+import appeng.client.gui.widgets.AE2Button;
 import appeng.menu.me.crafting.CraftingCPUMenu;
 import appeng.menu.me.crafting.CraftingStatusEntry;
 
@@ -55,12 +56,11 @@ public abstract class CraftingCPUScreenMixin<T extends CraftingCPUMenu> extends 
 
     @Inject(method = "<init>", at = @At("TAIL"), remap = false)
     private void gto$onInit(CraftingCPUMenu menu, Inventory playerInventory, Component title, ScreenStyle style, CallbackInfo ci) {
-        gto$pauseButton = Button.builder(Component.translatable("gtocore.ae.appeng.craft.pause_job"), b -> {
+        gto$pauseButton = new AE2Button(Component.translatable("gtocore.ae.appeng.craft.pause_job"), b -> {
             if (menu instanceof IPushResultsHandler handler) {
                 handler.gto$setPaused(!handler.gto$isPaused());
             }
-        })
-                .build();
+        });
     }
 
     @Inject(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/Button;active:Z", opcode = Opcodes.PUTFIELD, shift = At.Shift.AFTER))

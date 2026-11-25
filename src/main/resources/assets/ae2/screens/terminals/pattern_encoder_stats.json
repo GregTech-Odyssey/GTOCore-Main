@@ -18,8 +18,10 @@
   },
   "widgets": {
     "back": {
-      "right": 22,
-      "top": 0
+      "left": 176,
+      "top": -5,
+      "width": 20,
+      "height": 20
     }
   }
 }
