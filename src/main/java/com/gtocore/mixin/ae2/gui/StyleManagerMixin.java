@@ -32,4 +32,14 @@ public class StyleManagerMixin {
         }
         return path;
     }
+
+    @ModifyVariable(method = "loadMergedJsonTree", at = @At("HEAD"), argsOnly = true, remap = false)
+    private static String loadMergedJsonTreeHooks(String path) {
+        if (path.endsWith("/wtlib/universal_terminal_no_viewcells.json")) {
+            return "/screens/wtlib/modify_universal_terminal_no_viewcells.json";
+        } else if (path.endsWith("/wtlib/universal_terminal_with_viewcells.json")) {
+            return "/screens/wtlib/modify_universal_terminal_with_viewcells.json";
+        }
+        return path;
+    }
 }

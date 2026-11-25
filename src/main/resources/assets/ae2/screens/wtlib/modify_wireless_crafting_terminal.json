@@ -6,13 +6,13 @@
   ],
   "slots": {
     "CRAFTING_GRID": {
-      "left": 96,
-      "bottom": 160,
+      "left": 85,
+      "bottom": 168,
       "grid": "BREAK_AFTER_3COLS"
     },
     "CRAFTING_RESULT": {
-      "left": 165,
-      "bottom": 142
+      "left": 163,
+      "bottom": 150
     },
     "AE2WTLIB_HELMET": {
       "left": 8,
@@ -31,7 +31,7 @@
       "bottom": 115
     },
     "AE2WTLIB_OFFHAND": {
-      "left": 73,
+      "left": 85,
       "bottom": 115
     }
   },
@@ -63,15 +63,15 @@
   },
   "widgets": {
     "clearCraftingGrid": {
-      "left": 151,
-      "bottom": 161
+      "left": 141,
+      "bottom": 168
     },
     "clearToPlayerInv": {
-      "left": 161,
-      "bottom": 161
+      "left": 151,
+      "bottom": 168
     },
     "player": {
-      "left": 48,
+      "left": 51,
       "bottom": 105
     }
   }
