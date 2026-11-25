@@ -4,11 +4,13 @@ import com.gtocore.common.data.GTOCodecs;
 import com.gtocore.config.GTORules;
 import com.gtocore.integration.jade.AEKeyTooltip;
 
+import com.gtolib.api.gui.PatternHatchListTab;
 import com.gtolib.api.machine.trait.MEStorageCapacity;
 import com.gtolib.utils.LegacyIO;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IWailaDisplayProvider;
+import com.gregtechceu.gtceu.api.gui.fancy.TabsWidget;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
@@ -62,15 +64,24 @@ public class MECraftPatternPartMachineV2 extends MEPatternPartMachine<MECraftPat
     }
 
     @Override
+    public void attachSideTabs(TabsWidget sideTabs) {
+        super.attachSideTabs(sideTabs);
+        sideTabs.attachSubTab(new PatternHatchListTab(this));
+    }
+
+    @Override
     public InternalSlot[] createInternalSlotArray() {
         return new InternalSlot[getMaxPatternCount()];
     }
 
     @Override
     public boolean patternFilter(ItemStack stack) {
+        return isCraftingPatternItem(stack) && checkDuplicatedPattern(this, stack);
+    }
+
+    public static boolean isCraftingPatternItem(ItemStack stack) {
         return stack.getItem() instanceof EncodedPatternItem &&
-                !(stack.getItem() instanceof ProcessingPatternItem) &&
-                checkDuplicatedPattern(this, stack);
+                !(stack.getItem() instanceof ProcessingPatternItem);
     }
 
     @Override

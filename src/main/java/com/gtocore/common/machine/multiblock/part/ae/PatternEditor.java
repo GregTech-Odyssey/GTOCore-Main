@@ -10,6 +10,7 @@ import com.gtolib.utils.AEChemicalHelper;
 
 import com.gregtechceu.gtceu.api.data.chemical.ChemicalHelper;
 import com.gregtechceu.gtceu.api.data.chemical.material.properties.PropertyKey;
+import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.uipro.Horizontal;
 import com.gregtechceu.gtceu.uipro.LayoutStyle;
 import com.gregtechceu.gtceu.uipro.Level;
@@ -176,7 +177,7 @@ public final class PatternEditor extends UIElement {
     /** 只查当前打开的页面；后打开的弹出面板优先，关闭后不会保留填充目标。 */
     @Nullable
     public static PatternEditor find(ModularUI ui) {
-        if (!(ui.holder instanceof MEPatternPartMachine<?> machine) || !machine.supportsPatternEditor()) return null;
+        if (!(ui.holder instanceof MEPatternPartMachine<?>) && !(ui.holder instanceof IMultiController)) return null;
         return find(ui.mainGroup);
     }
 

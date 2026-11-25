@@ -118,6 +118,7 @@ public final class ForgeClientEvent {
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onTooltipEvent);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onClientTick);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::onRenderWorldLast);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, MEStorageCapacityOverlay::onUseKey);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::autoConfirmExperimentalWarning);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::replacePlanetsScreen);
         MinecraftForge.EVENT_BUS.addListener(ForgeClientEvent::replaceTitleScreen);

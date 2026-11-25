@@ -598,7 +598,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     // ==================== PatternContainer ====================
 
     @Override
-    public InternalInventory getTerminalPatternInventory() {
+    public PatternInventory getTerminalPatternInventory() {
         return internalPatternInventory;
     }
 
@@ -732,13 +732,14 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
      * 覆写时先调用 super 保留父类的面板。
      */
     protected void registerPopups(MachineWindow window) {
-        if (supportsSlotConfig()) window.registerPopup(SLOT_CONFIG_POPUP, this::slotConfigPopup);
+        if (supportsSlotConfig()) window.registerPopup(SLOT_CONFIG_POPUP, index -> createSlotConfigPopup(index, null));
     }
 
     @Nullable
-    private Popup slotConfigPopup(int index) {
-        if (index < 0 || index >= maxPatternCount) return null;
+    public final Popup createSlotConfigPopup(int index, @Nullable BooleanSupplier disabled) {
+        if (!supportsSlotConfig() || index < 0 || index >= maxPatternCount) return null;
         return Popup.of(() -> Component.translatable(SLOT_CONFIG_TITLE, index + 1), column -> {
+            if (disabled != null) column.getState().setDisabled(disabled, null);
             if (supportsPatternEditor()) PatternEditor.buildSection(this, index, column);
             buildSlotConfig(column, index);
         });
@@ -768,7 +769,7 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
     }
 
     /** 是否支持中键打开单槽配置弹出面板；支持时样板槽提示里会附上操作说明。 */
-    protected boolean supportsSlotConfig() {
+    public boolean supportsSlotConfig() {
         return false;
     }
 
@@ -885,6 +886,8 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
         private final MEPatternPartMachine<?> machine;
         @Nullable
         private BitSet occupiedSlots;
+        @Getter
+        private long revision;
 
         private PatternInventory(MEPatternPartMachine<?> machine) {
             this.machine = machine;
@@ -897,6 +900,15 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
 
         /** Returns the next populated slot, or -1 if none remain. */
         public int nextOccupiedSlot(int fromIndex) {
+            return occupiedSlots().nextSetBit(fromIndex);
+        }
+
+        /** Returns the next empty slot, or the inventory size if none remain. */
+        public int nextEmptySlot(int fromIndex) {
+            return Math.min(size(), occupiedSlots().nextClearBit(fromIndex));
+        }
+
+        private BitSet occupiedSlots() {
             var occupied = occupiedSlots;
             if (occupied == null) {
                 occupied = new BitSet(size());
@@ -905,14 +917,16 @@ public abstract class MEPatternPartMachine<T extends MEPatternPartMachine.Abstra
                 }
                 occupiedSlots = occupied;
             }
-            return occupied.nextSetBit(fromIndex);
+            return occupied;
         }
 
         private void updateOccupiedSlot(int slot) {
+            revision++;
             if (occupiedSlots != null) occupiedSlots.set(slot, !getStackInSlot(slot).isEmpty());
         }
 
         private void invalidateOccupiedSlots() {
+            revision++;
             occupiedSlots = null;
         }
 

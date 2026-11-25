@@ -43,7 +43,7 @@ public final class GTOGuiTextures {
     public static final ResourceTexture LARGE_XP_ORB = XP_ORBS.getSubTexture(0, 0.5, 0.25, 0.25);
 
     /// 机器小组件（窗口左侧配置标签）图标，画法标准见 {@link WidgetIconAtlas}；通用的在 GTM WidgetIcons
-    private static final WidgetIconAtlas WIDGET_ICONS = new WidgetIconAtlas(GTOCore.id("textures/gui/widget_icons.png"), 12);
+    private static final WidgetIconAtlas WIDGET_ICONS = new WidgetIconAtlas(GTOCore.id("textures/gui/widget_icons.png"), 13);
     /// 在传送网络中显示
     public static final IGuiTexture TRAVEL_OFF = WIDGET_ICONS.icon(1, 0);
     public static final IGuiTexture TRAVEL_ON = WIDGET_ICONS.icon(1, 1);
@@ -70,6 +70,7 @@ public final class GTOGuiTextures {
     public static final IGuiTexture FAVORITE_ON = WIDGET_ICONS.icon(10, 1);
     /// 排行榜：金银铜三色柱
     public static final IGuiTexture LEADERBOARD = WIDGET_ICONS.icon(11);
+    public static final IGuiTexture PATTERN = WIDGET_ICONS.icon(12);
 
     private static ResourceTexture getTexture(String string) {
         return new ResourceTexture(GTOCore.id("textures/gui/" + string + ".png"));

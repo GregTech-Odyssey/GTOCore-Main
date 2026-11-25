@@ -203,7 +203,7 @@ public class MEInputBufferPartMachineV2 extends MEPatternPartMachine<MEInputBuff
     }
 
     @Override
-    protected boolean supportsSlotConfig() {
+    public boolean supportsSlotConfig() {
         return true;
     }
 

@@ -265,7 +265,7 @@ public class MEPullCraftPatternPartMachineV2 extends MECraftPatternPartMachineV2
     }
 
     @Override
-    protected boolean supportsSlotConfig() {
+    public boolean supportsSlotConfig() {
         return true;
     }
 
