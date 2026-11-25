@@ -3,6 +3,7 @@ package com.gtocore.common.machine.multiblock.electric.gcym;
 import com.gtocore.common.machine.multiblock.FluidRenderUtils;
 
 import com.gtolib.api.machine.feature.multiblock.IFluidRendererMachine;
+import com.gtolib.api.machine.multiblock.FluidPoolHazard;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -26,6 +27,8 @@ public final class LargeChemicalBathMachine extends GCYMMultiblockMachine implem
     @Getter
     @SyncToClient
     private Fluid cachedFluid;
+    // 流体渲染偏移仅记录顶层液面，池底还有 1 格空腔，伤害区向下扩展 1 格
+    private final FluidPoolHazard poolHazard = new FluidPoolHazard(this, 1);
 
     public LargeChemicalBathMachine(MetaMachineBlockEntity holder) {
         super(holder);
@@ -41,11 +44,13 @@ public final class LargeChemicalBathMachine extends GCYMMultiblockMachine implem
     public void onStructureFormed() {
         super.onStructureFormed();
         FluidRenderUtils.loadFluidBlockOffsets(this);
+        poolHazard.update(getPos(), fluidBlockOffsets);
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
         FluidRenderUtils.clearFluidBlockOffsets(this);
+        poolHazard.clear();
     }
 }

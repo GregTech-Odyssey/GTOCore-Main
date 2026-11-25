@@ -4,6 +4,7 @@ import com.gtocore.common.machine.multiblock.FluidRenderUtils;
 
 import com.gtolib.api.machine.feature.multiblock.IFluidRendererMachine;
 import com.gtolib.api.machine.multiblock.CoilMultiblockMachine;
+import com.gtolib.api.machine.multiblock.FluidPoolHazard;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
@@ -27,6 +28,7 @@ public final class DigestionTankMachine extends CoilMultiblockMachine implements
     @Getter
     @SyncToClient
     private Fluid cachedFluid;
+    private final FluidPoolHazard poolHazard = new FluidPoolHazard(this, 0);
 
     public DigestionTankMachine(MetaMachineBlockEntity holder) {
         super(holder, false, true);
@@ -42,11 +44,13 @@ public final class DigestionTankMachine extends CoilMultiblockMachine implements
     public void onStructureFormed() {
         super.onStructureFormed();
         FluidRenderUtils.loadFluidBlockOffsets(this);
+        poolHazard.update(getPos(), fluidBlockOffsets);
     }
 
     @Override
     public void onStructureInvalid() {
         super.onStructureInvalid();
         FluidRenderUtils.clearFluidBlockOffsets(this);
+        poolHazard.clear();
     }
 }
