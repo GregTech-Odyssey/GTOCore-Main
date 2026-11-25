@@ -1,7 +1,6 @@
 package com.gtocore.mixin.ae2.wtlib;
 
 import com.gtocore.integration.ae.SolarStormHandler;
-import com.gtocore.integration.ae.wtlib.TerminalHotkeys;
 
 import appeng.api.implementations.menuobjects.ItemMenuHost;
 import appeng.api.networking.IGrid;
@@ -9,7 +8,6 @@ import appeng.api.networking.IGridNode;
 import appeng.api.networking.security.IActionHost;
 
 import de.mari_023.ae2wtlib.terminal.WTMenuHost;
-import de.mari_023.ae2wtlib.wut.WUTHandler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -20,10 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = WTMenuHost.class, remap = false)
 public abstract class WTMenuHostMixin {
-
-    public String getCloseHotkey() {
-        return TerminalHotkeys.of(WUTHandler.getCurrentTerminal(((ItemMenuHost) (Object) this).getItemStack()));
-    }
 
     @Shadow
     private IActionHost quantumBridge;

@@ -313,7 +313,6 @@ dependencies {
     modImplementation("curse.maven:duplicationless-1380105:8646420")
 
     // Applied Energistics 2
-    modImplementation("curse.maven:applied-energistics-2-wireless-terminals-459929:7251206")
     modImplementation("com.glodblock.github.extendedae:extendedae-forge-1.20.1:$extendedae_version")
     modImplementation("curse.maven:merequester-688367:5689932")
     modImplementation("curse.maven:ae2-toggleable-view-cell-1141472:8054118")

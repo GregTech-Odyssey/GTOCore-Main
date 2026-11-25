@@ -2,6 +2,6 @@
   "$schema": "../schema.json",
   "includes": [
     "../terminals/modify_pattern_encoding_terminal.json",
-    "modify_universal_terminal_with_viewcells.json"
+    "universal_terminal_with_viewcells.json"
   ]
 }
