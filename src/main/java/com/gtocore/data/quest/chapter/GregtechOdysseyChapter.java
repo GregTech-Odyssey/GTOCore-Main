@@ -10,6 +10,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -143,7 +144,8 @@ public final class GregtechOdysseyChapter {
                     Reward.item(Items.STONE_SHOVEL),
                     Reward.command("/function firework:stonelaunch").elevated().silent().autoClaim(AutoClaim.INVISIBLE),
                     Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
-            .dependsOn(WIKI, UtilChapter.EXPERT_MAINLINE_LOCK));
+            .dependsOn(WIKI, UtilChapter.EXPERT_MAINLINE_LOCK)
+            .mainNode());
 
     public static final Quest Q_5C4137F6 = CHAPTER.quest("q_5c4137f6", q -> q
             .at(18, 0).minWidth(350)
@@ -173,8 +175,8 @@ public final class GregtechOdysseyChapter {
                     .line("{如果访问不了WIKI也可前往}{内置指南}{查看标橙部分}", GRAY.italic(), link(TipsChapter.EASY_NORMAL_EXPERT_MODE_FEATURE_GUIDE), GRAY.italic()))
             .task(Task.checkmark())
             .reward(Reward.item(Items.ANVIL), Reward.xpLevels(5), Reward.item(Items.PAPER))
-            .dependsOn(UtilChapter.Q_1FB1EC5B)
-            .optional().hideUntilDepsVisible());
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EXPERT));
 
     public static final Quest OPEN_SESAME_EXPERT = CHAPTER.quest("open_sesame_expert", q -> q
             .at(15, 4)
@@ -185,4 +187,15 @@ public final class GregtechOdysseyChapter {
             .optional().invisible());
 
     public static final QuestLink DIFFICULTY_AND_MODES_COPY_1 = CHAPTER.copy(TipsChapter.DIFFICULTY_AND_MODES, 3, 0);
+
+    public static final Quest STONE = CHAPTER.quest("stone", q -> q
+            .at(0, -2)
+            .title("新任务系统说明")
+            .desc(d -> d
+                    .line("新任务系统还在完善中，但已达到可用水准。")
+                    .line()
+                    .line("{拥有指令权限的玩家可以通过中键任务直接完成}，以高效迁移到新任务系统游玩。", YELLOW)
+                    .line()
+                    .line("如果你发现了可以改进的地方，欢迎在{Github任务反馈}提交。", url("https://github.com/GregTech-Odyssey/GregTech-Odyssey/issues/89")))
+            .task(Task.checkmark()));
 }

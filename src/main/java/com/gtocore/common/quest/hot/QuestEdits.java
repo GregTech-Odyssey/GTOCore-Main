@@ -64,6 +64,9 @@ public final class QuestEdits {
     public static final String ICON = "icon";
     public static final String LINK_MAIN = "linkMain";
     public static final String REWARD_TIER = "rewardTier";
+    public static final String VISIBLE_TIER = "visibleTier";
+    public static final String DEP_RULE = "depRule";
+    public static final String DEP_HIDDEN = "depHidden";
     public static final String IMAGE_GEOM = "imageGeom";
     public static final String IMAGE_ADD = "imageAdd";
     public static final String IMAGE_DELETE = "imageDelete";
@@ -152,7 +155,11 @@ public final class QuestEdits {
         }
 
         public static Op dependency(String target, String prerequisite, boolean present) {
-            return new Op(0, DEP, target, null, prerequisite, null, 0, 0, 0, 0, present, null, false);
+            return dependency(target, prerequisite, present, false);
+        }
+
+        public static Op dependency(String target, String prerequisite, boolean present, boolean hidden) {
+            return new Op(0, DEP, target, null, prerequisite, null, 0, 0, hidden ? 1 : 0, 0, present, null, false);
         }
 
         public static Op create(String chapter, String id, double x, double y, String itemArgs, List<String> imports) {
@@ -263,6 +270,18 @@ public final class QuestEdits {
             return new Op(0, REWARD_TIER, target, restoreTier, group, expression, 0, 0, index, argIndex, on, null, false);
         }
 
+        public static Op visibleTier(String target, String tiers, boolean present) {
+            return new Op(0, VISIBLE_TIER, target, null, tiers, null, 0, 0, 0, 0, present, null, false);
+        }
+
+        public static Op dependencyRule(String target, String rule, long count) {
+            return new Op(0, DEP_RULE, target, null, rule, null, 0, 0, 0, count, false, null, false);
+        }
+
+        public static Op dependencyHidden(String target, String prerequisite, boolean hidden) {
+            return new Op(0, DEP_HIDDEN, target, null, prerequisite, null, 0, 0, 0, 0, hidden, null, false);
+        }
+
         public static Op delete(String target) {
             return new Op(0, DELETE, target, null, null, null, 0, 0, 0, 0, false, null, false);
         }
@@ -307,6 +326,9 @@ public final class QuestEdits {
                 case NODE_SCALE -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case NODE_FILL -> type + "|" + target + "|" + value;
                 case REWARD_TIER -> type + "|" + target + "|" + index;
+                case VISIBLE_TIER -> type + "|" + target + "|" + arg;
+                case DEP_RULE -> type + "|" + target;
+                case DEP_HIDDEN -> type + "|" + target + "|" + arg;
                 case AMOUNT, TASK_ITEM, TABLE_WEIGHT, TABLE_AMOUNT -> type + "|" + target + "|" + index;
                 case TABLE_ENTRY_ADD, TABLE_ENTRY_REMOVE -> type + "|" + target + "|" + Double.doubleToLongBits(x);
                 case TASK_OPT -> type + "|" + target + "|" + arg + "|" + index;
@@ -341,6 +363,9 @@ public final class QuestEdits {
             case ICON -> icon(src, op, edit);
             case LINK_MAIN -> linkMain(src, op, edit);
             case REWARD_TIER -> rewardTier(src, op, edit);
+            case VISIBLE_TIER -> visibleTier(src, op, edit);
+            case DEP_RULE -> dependencyRule(src, op, edit);
+            case DEP_HIDDEN -> dependencyHidden(src, op, edit);
             case DELETE -> delete(src, op, edit);
             case TEXT -> text(src, op, edit);
             case TASK_ADD -> taskAdd(src, op, edit);
@@ -443,7 +468,7 @@ public final class QuestEdits {
             }
         }
         for (var entry : rewardEntries(decl)) {
-            boolean scaled = entry.argIndex < 0;
+            boolean scaled = false;
             if (entry.count != null) {
                 out.add(new AmountSite(entry.count, -1, QuestSource.number(entry.count).longValue(), entry.subject, false, entry.liveIndex, scaled));
             } else if (entry.root != null && QuestDecl.name(entry.root).equals("item") && entry.root.getArguments().size() == 1) {
@@ -457,7 +482,7 @@ public final class QuestEdits {
                        @Nullable ExpressionTree count, ExpressionTree subject) {
 
         ExpressionTree expression() {
-            return argIndex < 0 ? call : call.getArguments().get(argIndex);
+            return call.getArguments().get(argIndex);
         }
     }
 
@@ -468,10 +493,6 @@ public final class QuestEdits {
             var name = QuestDecl.name(call);
             var args = call.getArguments();
             switch (name) {
-                case "scaledReward" -> {
-                    if (args.size() >= 2 && QuestSource.number(last(call)) != null) out.add(new RewardEntry(call, -1, name, null, liveIndex, call, last(call), args.get(0)));
-                    liveIndex += 3;
-                }
                 case "rewardFor" -> {
                     if (args.isEmpty()) continue;
                     String tier = tierId(args.get(0));
@@ -482,7 +503,7 @@ public final class QuestEdits {
                         out.add(new RewardEntry(call, i, name, tier, liveIndex++, root, count, rootArgs == null || rootArgs.isEmpty() ? args.get(i) : rootArgs.get(0)));
                     }
                 }
-                case "reward", "easySubsidy", "normalSubsidy", "expertSubsidy" -> {
+                case "reward" -> {
                     for (int i = 0; i < args.size(); i++) {
                         var root = factoryCall(args.get(i), "Reward");
                         var rootArgs = root == null ? null : root.getArguments();
@@ -538,7 +559,7 @@ public final class QuestEdits {
         var target = src.find(op.arg);
         if (target == null) return "找不到依赖目标 " + op.arg;
         if (target instanceof LinkDecl link && link.field == null) return "章节装饰里的复制节点没有字段，不能当依赖";
-        for (var call : decl.calls("dependsOn")) {
+        for (var call : decl.dependencyCalls()) {
             var args = call.getArguments();
             for (int i = 0; i < args.size(); i++) {
                 if (src.resolve(decl.file, args.get(i)) != target) continue;
@@ -548,15 +569,75 @@ public final class QuestEdits {
         }
         if (!op.on) return null;
         var ref = src.refText(decl.file, target, decl.file.start(decl.var));
-        var existing = decl.calls("dependsOn");
+        insertDependency(edit, decl, op.index == 1 ? "hiddenDependsOn" : "dependsOn", ref);
+        return null;
+    }
+
+    private static void insertDependency(Edit edit, QuestDecl decl, String method, String ref) {
+        var existing = decl.calls(method);
         if (existing.isEmpty()) {
-            edit.insert(decl.file, decl.chainEnd(), "\n" + decl.callIndent() + ".dependsOn(" + ref + ")");
-        } else {
-            var call = existing.get(existing.size() - 1);
-            var args = call.getArguments();
-            if (args.isEmpty()) edit.insert(decl.file, decl.file.end(call) - 1, ref);
-            else edit.insert(decl.file, decl.file.end(args.get(args.size() - 1)), ", " + ref);
+            edit.insert(decl.file, decl.chainEnd(), "\n" + decl.callIndent() + "." + method + "(" + ref + ")");
+            return;
         }
+        var call = existing.get(existing.size() - 1);
+        var args = call.getArguments();
+        if (args.isEmpty()) edit.insert(decl.file, decl.file.end(call) - 1, ref);
+        else edit.insert(decl.file, decl.file.end(args.get(args.size() - 1)), ", " + ref);
+    }
+
+    @Nullable
+    private static String dependencyHidden(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var target = src.find(op.arg);
+        if (target == null) return "找不到依赖目标 " + op.arg;
+        for (var call : decl.dependencyCalls()) {
+            var args = call.getArguments();
+            for (int i = 0; i < args.size(); i++) {
+                if (src.resolve(decl.file, args.get(i)) != target) continue;
+                if (QuestSource.ChainDecl.hiddenDependency(call) == op.on) return null;
+                var ref = decl.file.text(args.get(i));
+                edit.removeArgument(decl, call, i);
+                insertDependency(edit, decl, op.on ? "hiddenDependsOn" : "dependsOn", ref);
+                return null;
+            }
+        }
+        return decl.where() + "：依赖位置已变化，请重新打开";
+    }
+
+    @Nullable
+    private static String visibleTier(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        var file = decl.file;
+        var calls = decl.calls("onlyVisibleOn");
+        if (!op.on) {
+            for (var call : calls) edit.removeCall(decl, call);
+            return null;
+        }
+        edit.imports(file, List.of("com.gtolib.api.quest.QuestTierSet"));
+        var text = "onlyVisibleOn(QuestTierSet." + op.arg() + ")";
+        if (calls.isEmpty()) {
+            edit.insert(file, decl.chainEnd(), "\n" + decl.callIndent() + "." + text);
+        } else {
+            edit.replaceRange(file, decl.nameStart(calls.get(0)), file.end(calls.get(0)), text);
+            for (int i = 1; i < calls.size(); i++) edit.removeCall(decl, calls.get(i));
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String dependencyRule(QuestSource src, Op op, Edit edit) {
+        if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
+        for (var name : List.of("requireAny", "requireAllStarted", "requireAnyStarted", "requireCount")) {
+            for (var call : decl.calls(name)) edit.removeCall(decl, call);
+        }
+        var call = switch (op.arg()) {
+            case "ONE_COMPLETED" -> "requireAny()";
+            case "ALL_STARTED" -> "requireAllStarted()";
+            case "ANY_STARTED" -> "requireAnyStarted()";
+            case "COUNT" -> "requireCount(" + op.value + ")";
+            default -> null;
+        };
+        if (call != null) edit.insert(decl.file, decl.chainEnd(), "\n" + decl.callIndent() + "." + call);
         return null;
     }
 
@@ -688,7 +769,6 @@ public final class QuestEdits {
             var entries = rewardEntries(decl);
             if (op.index < 0 || op.index >= entries.size()) return decl.where() + "：奖励位置已变化，请重新打开";
             var entry = entries.get(op.index);
-            if (entry.argIndex < 0) return decl.where() + "：scaledReward 不支持单独设置难度";
             if (op.arg().equals(effectiveTier(entry))) return null;
             var expr = file.text(entry.expression());
             edit.imports(file, List.of("com.gtolib.api.quest.QuestTierSet"));
@@ -708,7 +788,7 @@ public final class QuestEdits {
         var entries = rewardEntries(decl);
         RewardEntry found = null;
         for (var entry : entries) {
-            if (entry.argIndex < 0 || !file.text(entry.expression()).equals(expr)) continue;
+            if (!file.text(entry.expression()).equals(expr)) continue;
             found = entry;
             break;
         }
@@ -736,13 +816,7 @@ public final class QuestEdits {
     }
 
     static String effectiveTier(RewardEntry entry) {
-        if (entry.tier != null) return entry.tier;
-        return switch (entry.group) {
-            case "easySubsidy" -> "EASY";
-            case "normalSubsidy" -> "NORMAL";
-            case "expertSubsidy" -> "EXPERT";
-            default -> "ALL";
-        };
+        return entry.tier != null ? entry.tier : "ALL";
     }
 
     record TaskArg(MethodInvocationTree call, int argIndex, ExpressionTree arg) {}
@@ -832,8 +906,7 @@ public final class QuestEdits {
         var entries = rewardEntries(decl);
         if (op.index < 0 || op.index >= entries.size()) return decl.where() + "：第 " + (op.index + 1) + " 个奖励不存在";
         var entry = entries.get(op.index);
-        if (entry.argIndex < 0) edit.removeCall(decl, entry.call);
-        else edit.removeArgument(decl, entry.call, entry.argIndex);
+        edit.removeArgument(decl, entry.call, entry.argIndex);
         return null;
     }
 
@@ -841,7 +914,7 @@ public final class QuestEdits {
     private static String rewardArgAdd(QuestSource src, Op op, Edit edit) {
         if (!(src.find(op.target) instanceof QuestDecl decl)) return missing(op);
         var entries = rewardEntries(decl);
-        if (op.index < 0 || op.index >= entries.size() || entries.get(op.index).argIndex < 0) return decl.where() + "：第 " + (op.index + 1) + " 个奖励不存在";
+        if (op.index < 0 || op.index >= entries.size()) return decl.where() + "：第 " + (op.index + 1) + " 个奖励不存在";
         var args = entries.get(op.index).call.getArguments();
         int at = (int) op.value;
         if (at >= args.size()) edit.insert(decl.file, decl.file.end(args.get(args.size() - 1)), ", " + op.text);

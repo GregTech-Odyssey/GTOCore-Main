@@ -1,5 +1,6 @@
 package com.gtocore.data.quest.chapter;
 
+import com.gtocore.common.data.GTOItems;
 import com.gtocore.common.data.GTOMaterials;
 
 import com.gtolib.api.quest.Quest;
@@ -596,4 +597,9 @@ public final class PeriodicTableChapter {
             .title("锕系")
             .task(Task.item(TagPrefix.dust, GTMaterials.Actinium))
             .disableToast());
+
+    public static final Quest GIGA_CHAD = CHAPTER.quest("giga_chad", q -> q
+            .at(2.5, 12)
+            .iconScale(0.9)
+            .task(Task.item(GTOItems.GIGA_CHAD)));
 }

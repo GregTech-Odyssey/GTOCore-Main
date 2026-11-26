@@ -433,7 +433,7 @@ public final class QuestSource {
                 else if (x != quest.x() || y != quest.y()) errors.add(decl.where() + "：源码坐标 (" + x + ", " + y + ") 与任务书 (" + quest.x() + ", " + quest.y() + ") 不一致");
                 var textProblem = decl.textProblem();
                 if (textProblem != null) errors.add(decl.where() + "：" + textProblem);
-                for (var deps : decl.calls("dependsOn")) {
+                for (var deps : decl.dependencyCalls()) {
                     for (var arg : deps.getArguments()) {
                         var target = resolve(file, arg);
                         if (target == null) errors.add(decl.where() + "：依赖 " + file.text(arg) + " 不是任务、复制节点或章节字段");
@@ -845,6 +845,19 @@ public final class QuestSource {
                 if (name(chain.get(i)).equals(name)) out.add(chain.get(i));
             }
             return out;
+        }
+
+        ObjectArrayList<MethodInvocationTree> dependencyCalls() {
+            var out = new ObjectArrayList<MethodInvocationTree>(2);
+            for (int i = 0; i < chain.size(); i++) {
+                var name = name(chain.get(i));
+                if (name.equals("dependsOn") || name.equals("hiddenDependsOn")) out.add(chain.get(i));
+            }
+            return out;
+        }
+
+        static boolean hiddenDependency(MethodInvocationTree call) {
+            return name(call).equals("hiddenDependsOn");
         }
 
         static String name(MethodInvocationTree call) {

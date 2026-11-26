@@ -229,8 +229,7 @@ public final class GeneratorChapter {
     public static final Quest ZPM_NAQUADAH_REACTOR = CHAPTER.quest("zpm_naquadah_reactor", q -> q
             .at(-10, -0.5)
             .task(Task.item(GTOMachines.NAQUADAH_REACTOR_GENERATOR[GTValues.ZPM]))
-            .dependsOn(LUV_NAQUADAH_REACTOR)
-            .hideDependentLines());
+            .dependsOn(LUV_NAQUADAH_REACTOR));
 
     public static final Quest LARGE_NAQUADAH_REACTOR = CHAPTER.quest("large_naquadah_reactor", q -> q
             .at(-2.25, -5.25)
@@ -238,7 +237,7 @@ public final class GeneratorChapter {
             .desc(d -> d
                     .line("普通模式下，至少发电为1A {UIV}，最多为1A {MAX}", YELLOW, RED))
             .task(Task.item(GeneratorMultiblock.LARGE_NAQUADAH_REACTOR))
-            .dependsOn(ZPM_NAQUADAH_REACTOR));
+            .hiddenDependsOn(ZPM_NAQUADAH_REACTOR));
 
     public static final Quest HYPER_REACTOR = CHAPTER.quest("hyper_reactor", q -> q
             .at(-2.25, -3)

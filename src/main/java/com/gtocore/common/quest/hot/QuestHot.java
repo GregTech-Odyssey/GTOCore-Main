@@ -64,10 +64,7 @@ public final class QuestHot {
     public static final List<Flag> FLAGS = List.of(
             new Flag("optional", QuestScreenLang.EDIT_FLAG_OPTIONAL),
             new Flag("repeatable", QuestScreenLang.EDIT_FLAG_REPEATABLE),
-            new Flag("milestone", QuestScreenLang.EDIT_FLAG_MILESTONE),
             new Flag("invisible", QuestScreenLang.EDIT_FLAG_INVISIBLE),
-            new Flag("hideDependencyLines", QuestScreenLang.EDIT_FLAG_HIDE_DEPENDENCY_LINES),
-            new Flag("hideDependentLines", QuestScreenLang.EDIT_FLAG_HIDE_DEPENDENT_LINES),
             new Flag("hideUntilDepsVisible", QuestScreenLang.EDIT_FLAG_HIDE_UNTIL_DEPS_VISIBLE),
             new Flag("hideUntilDepsComplete", QuestScreenLang.EDIT_FLAG_HIDE_UNTIL_DEPS_COMPLETE),
             new Flag("disableToast", QuestScreenLang.EDIT_FLAG_DISABLE_TOAST));
@@ -89,7 +86,7 @@ public final class QuestHot {
 
     public record Placement(QuestDependency target, double x, double y) {}
 
-    public record Dependency(String label, @Nullable QuestDependency target, @Nullable String identity, boolean pending) {}
+    public record Dependency(String label, @Nullable QuestDependency target, @Nullable String identity, boolean hidden, boolean pending) {}
 
     public record Amount(String label, long value, boolean task, int liveIndex, boolean scaled) {}
 
@@ -606,7 +603,7 @@ public final class QuestHot {
         var out = new ObjectArrayList<Dependency>();
         if (decl == null) return out;
         var id = "q:" + quest.key();
-        for (var call : decl.calls("dependsOn")) {
+        for (var call : decl.dependencyCalls()) {
             for (var arg : call.getArguments()) {
                 var target = src.resolve(decl.file, arg);
                 var targetId = target == null ? null : src.identityOf(target);
@@ -614,7 +611,7 @@ public final class QuestHot {
                     var op = pending(QuestEdits.DEP, id, targetId);
                     if (op != null && !op.on()) continue;
                 }
-                out.add(new Dependency(decl.file.text(arg), target == null ? null : objectOf(src, target), targetId, false));
+                out.add(new Dependency(decl.file.text(arg), target == null ? null : objectOf(src, target), targetId, QuestSource.ChainDecl.hiddenDependency(call), false));
             }
         }
         for (var op : QuestEditQueue.pending()) {
@@ -623,7 +620,7 @@ public final class QuestHot {
             for (var dep : out) present |= op.arg().equals(dep.identity());
             if (present) continue;
             var target = src.find(op.arg());
-            out.add(new Dependency(op.arg(), target == null ? null : objectOf(src, target), op.arg(), true));
+            out.add(new Dependency(op.arg(), target == null ? null : objectOf(src, target), op.arg(), false, true));
         }
         return out;
     }
@@ -687,6 +684,13 @@ public final class QuestHot {
         var prereqId = identity(prerequisiteQuest);
         var id = "q:" + dependent.key();
         boolean present = check.present();
+        boolean hidden = false;
+        for (var row : dependencies(dependent)) {
+            var target = row.target() instanceof QuestLink link ? link.target() : row.target() instanceof Quest value ? value : null;
+            if (target != prerequisiteQuest) continue;
+            hidden = row.hidden();
+            break;
+        }
         var label = (present ? "移除依赖：" : "添加依赖：") + name(prerequisiteQuest) + " → " + name(dependent);
         var before = QuestLive.dependencies(dependent);
         var after = new ObjectArrayList<QuestDependency>(before.size() + 1);
@@ -695,7 +699,7 @@ public final class QuestHot {
             if (!present || target != prerequisiteQuest) after.add(dep);
         }
         if (!present) after.add(prerequisiteQuest);
-        return QuestEditQueue.submit(label, List.of(Op.dependency(id, prereqId, !present)), List.of(Op.dependency(id, prereqId, present)),
+        return QuestEditQueue.submit(label, List.of(Op.dependency(id, prereqId, !present, hidden)), List.of(Op.dependency(id, prereqId, present, hidden)),
                 () -> setLiveDependencies(dependent, after), () -> setLiveDependencies(dependent, before));
     }
 
@@ -901,7 +905,7 @@ public final class QuestHot {
         }
         imports.add("com.gtolib.api.quest.Quest");
         var deps = new ObjectArrayList<QuestEdits.DuplicateDepCall>();
-        for (var call : decl.calls("dependsOn")) {
+        for (var call : decl.dependencyCalls()) {
             var args = call.getArguments();
             if (args.isEmpty()) continue;
             var depArgs = new ObjectArrayList<QuestEdits.DuplicateDepArg>(args.size());
@@ -1225,7 +1229,6 @@ public final class QuestHot {
         var entries = QuestEdits.rewardEntries(decl);
         if (index < 0 || index >= entries.size()) return Result.fail("奖励位置已变化，请重新打开");
         var entry = entries.get(index);
-        if (entry.argIndex() < 0) return Result.fail("scaledReward 不能单独设置难度");
         var next = tiers.name();
         if (next.equals(QuestEdits.effectiveTier(entry))) return Result.ok("");
         var expr = decl.file.text(entry.expression());
@@ -1235,6 +1238,82 @@ public final class QuestHot {
                 List.of(Op.rewardTier(id, index, entry.group(), expr, entry.argIndex(), false, entry.tier())),
                 () -> edited(QuestLive.setRewardTier(quest, entry.liveIndex(), tiers), true),
                 () -> edited(QuestLive.setRewardTier(quest, entry.liveIndex(), oldTiers), true));
+    }
+
+    public static Result setVisibleTier(Quest quest, QuestTierSet tiers) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var decl = source().declOf(quest);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        var id = "q:" + quest.key();
+        var old = quest.visibleTiers();
+        var oldTiers = old == null ? QuestTierSet.ALL : old;
+        boolean present = tiers != QuestTierSet.ALL;
+        return QuestEditQueue.submit("设置可见难度：" + name(quest),
+                List.of(Op.visibleTier(id, tiers.name(), present)),
+                List.of(Op.visibleTier(id, oldTiers.name(), oldTiers != QuestTierSet.ALL)),
+                () -> edited(QuestLive.setVisibleTier(quest, tiers), true),
+                () -> edited(QuestLive.setVisibleTier(quest, oldTiers), true));
+    }
+
+    public static Result setDependencyRule(Quest quest, String rule, long count) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var decl = source().declOf(quest);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        var id = "q:" + quest.key();
+        var oldRule = ruleKey(quest);
+        int oldCount = quest.minRequiredDependencies();
+        var next = ruleOf(rule);
+        int nextCount = rule.equals("COUNT") ? (int) count : 0;
+        return QuestEditQueue.submit("设置任务开始要求：" + name(quest),
+                List.of(Op.dependencyRule(id, rule, nextCount)),
+                List.of(Op.dependencyRule(id, oldRule, oldCount)),
+                () -> edited(QuestLive.setDependencyRule(quest, next, nextCount), true),
+                () -> edited(QuestLive.setDependencyRule(quest, ruleOf(oldRule), oldCount), true));
+    }
+
+    public static Result setDependencyHidden(Quest quest, QuestDependency prerequisite, boolean hidden) {
+        var blocked = guard();
+        if (blocked != null) return blocked;
+        var decl = source().declOf(quest);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        if (!(prerequisite instanceof Quest) && !(prerequisite instanceof QuestLink)) return Result.fail("章节依赖不支持隐藏连线");
+        var targetId = identity(prerequisite);
+        if (targetId == null) return Result.fail("找不到依赖目标的源码");
+        boolean old = false;
+        for (var row : dependencies(quest)) {
+            if (row.target() != prerequisite) continue;
+            old = row.hidden();
+            break;
+        }
+        if (old == hidden) return Result.ok("");
+        boolean previous = old;
+        var id = "q:" + quest.key();
+        return QuestEditQueue.submit((hidden ? "隐藏依赖连线：" : "显示依赖连线：") + name(quest),
+                List.of(Op.dependencyHidden(id, targetId, hidden)),
+                List.of(Op.dependencyHidden(id, targetId, previous)),
+                () -> edited(QuestLive.setDependencyHidden(quest, prerequisite, hidden), false),
+                () -> edited(QuestLive.setDependencyHidden(quest, prerequisite, previous), false));
+    }
+
+    public static String ruleKey(Quest quest) {
+        if (quest.minRequiredDependencies() > 0) return "COUNT";
+        var rule = quest.dependencyRule();
+        if (rule == com.gtolib.api.quest.DependencyRule.ONE_COMPLETED) return "ONE_COMPLETED";
+        if (rule == com.gtolib.api.quest.DependencyRule.ALL_STARTED) return "ALL_STARTED";
+        if (rule == com.gtolib.api.quest.DependencyRule.ONE_STARTED) return "ONE_STARTED";
+        return "ALL_COMPLETED";
+    }
+
+    private static com.gtolib.api.quest.DependencyRule ruleOf(String key) {
+        return switch (key) {
+            case "COUNT" -> com.gtolib.api.quest.DependencyRule.ALL_COMPLETED;
+            case "ONE_COMPLETED" -> com.gtolib.api.quest.DependencyRule.ONE_COMPLETED;
+            case "ALL_STARTED" -> com.gtolib.api.quest.DependencyRule.ALL_STARTED;
+            case "ONE_STARTED" -> com.gtolib.api.quest.DependencyRule.ONE_STARTED;
+            default -> com.gtolib.api.quest.DependencyRule.ALL_COMPLETED;
+        };
     }
 
     public static Result delete(List<? extends QuestDependency> objects) {
@@ -1270,7 +1349,7 @@ public final class QuestHot {
         }
         for (var file : src.files) {
             for (var quest : file.quests) {
-                for (var call : quest.calls("dependsOn")) {
+                for (var call : quest.dependencyCalls()) {
                     for (var arg : call.getArguments()) {
                         var target = src.resolve(file, arg);
                         if (!deleting.contains(target)) continue;
@@ -1492,8 +1571,7 @@ public final class QuestHot {
         var live = quest.rewards();
         for (int i = 0; i < entries.size(); i++) {
             var entry = entries.get(i);
-            boolean scaled = entry.argIndex() < 0;
-            int at = entry.liveIndex() + (scaled ? 2 : 0);
+            int at = entry.liveIndex();
             var reward = at < live.size() ? live.get(at) : null;
             int amountIndex = -1;
             for (int k = 0; k < amounts.size(); k++) {
@@ -1503,7 +1581,7 @@ public final class QuestHot {
                     reward instanceof CommandReward command ? Component.empty().append(reward.title()).append("：" + command.command()) :
                             reward instanceof TableReward table ? Component.empty().append(QuestKinds.tableKind(table).label().get()).append("：").append(reward.title()) :
                                     reward != null ? reward.title() : Component.literal(clip(decl.file.text(entry.expression())));
-            out.add(new RewardRow(i, amountIndex, reward, name, amountIndex < 0 ? 0 : amounts.get(amountIndex).value(), scaled, entry.group(), QuestEdits.effectiveTier(entry)));
+            out.add(new RewardRow(i, amountIndex, reward, name, amountIndex < 0 ? 0 : amounts.get(amountIndex).value(), false, entry.group(), QuestEdits.effectiveTier(entry)));
         }
         return out;
     }
@@ -1584,7 +1662,7 @@ public final class QuestHot {
         var entry = entries.get(index);
         var call = entry.call();
         var id = "q:" + quest.key();
-        var inverse = entry.argIndex() < 0 || call.getArguments().size() == 1 ? Op.rewardAdd(id, decl.file.content.substring(decl.nameStart(call), decl.file.end(call)), List.of()) :
+        var inverse = call.getArguments().size() == 1 ? Op.rewardAdd(id, decl.file.content.substring(decl.nameStart(call), decl.file.end(call)), List.of()) :
                 Op.rewardArgAdd(id, index - entry.argIndex(), entry.argIndex(), decl.file.text(entry.expression()));
         return QuestEditQueue.submit("移除奖励：" + name(quest), List.of(Op.rewardRemove(id, index)), List.of(inverse));
     }
@@ -1781,6 +1859,20 @@ public final class QuestHot {
         var decl = source().find("l:" + line.chapter().id() + ":" + index);
         if (!(decl instanceof DecoLineDecl deco)) return Result.fail("找不到装饰线源码");
         return open(deco.file.path + ":" + deco.file.line(deco.charStart));
+    }
+
+    public static Result openDependencyInEditor(Quest dependent, int index) {
+        var decl = source().declOf(dependent);
+        if (decl == null) return Result.fail("找不到任务的源码声明");
+        int seen = 0;
+        for (var call : decl.dependencyCalls()) {
+            var args = call.getArguments();
+            for (int i = 0; i < args.size(); i++) {
+                if (seen++ != index) continue;
+                return open(decl.file.path + ":" + decl.file.line(decl.file.start(args.get(i))));
+            }
+        }
+        return Result.fail("找不到依赖源码");
     }
 
     private static Result open(String location) {

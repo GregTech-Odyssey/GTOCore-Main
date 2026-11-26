@@ -113,15 +113,13 @@ public final class ChemicalChapter {
                     .line()
                     .line("{当然，你也可以将其制作成高十六燃油}", GOLD))
             .task(Task.item(GTMaterials.FishOil.getBucket()).optional(), Task.checkmark())
-            .dependsOn(ANOTHER_WAY_TO_OBTAIN_CHEMICAL_MATERIALS)
-            .hideDependencyLines());
+            .hiddenDependsOn(ANOTHER_WAY_TO_OBTAIN_CHEMICAL_MATERIALS));
 
     public static final Quest BIO_DIESEL_BUCKET = CHAPTER.quest("bio_diesel_bucket", q -> q
             .at(-6.5, -5.5)
             .icon(GTMaterials.BioDiesel.getBucket())
             .task(Task.item(GTMaterials.BioDiesel.getBucket()).optional(), Task.checkmark())
-            .dependsOn(BIO_DIESEL_MANUFACTURING_ROUTE)
-            .hideDependencyLines());
+            .hiddenDependsOn(BIO_DIESEL_MANUFACTURING_ROUTE));
 
     public static final Quest ENCOURAGE_PEOPLE_TO_STUDY_CHEMICAL_MATERIALS = CHAPTER.quest("encourage_people_to_study_chemical_materials", q -> q
             .at(-8, -11)
@@ -133,7 +131,7 @@ public final class ChemicalChapter {
             .task(Task.checkmark().title("化工部分")));
 
     public static final Quest PETROLEUM_PROCESSING = CHAPTER.quest("petroleum_processing", q -> q
-            .at(-14, -4.5)
+            .at(-14, -3.5)
             .icon(GTMaterials.RawOil.getBucket())
             .title("石化处理")
             .subtitle("HV阶段——你逃不开的")
@@ -146,7 +144,7 @@ public final class ChemicalChapter {
                     Task.checkmark()));
 
     public static final Quest WHERE_IS_MY_SULFUR_DUST = CHAPTER.quest("where_is_my_sulfur_dust", q -> q
-            .at(-14, -5.5)
+            .at(-14, -5)
             .icon(MultiBlockB.DESULFURIZER)
             .title("我的硫粉呢？")
             .desc(d -> d.line("如果你需要从石化获得{硫粉}将需要{脱硫机}", GOLD, GOLD))
@@ -177,8 +175,7 @@ public final class ChemicalChapter {
                     Task.item(GTMaterials.Diesel.getBucket()),
                     Task.item(GTMaterials.Tetranitromethane.getBucket()),
                     Task.item(GTMaterials.CetaneBoostedDiesel.getBucket()))
-            .dependsOn(ANOTHER_WAY_TO_OBTAIN_CHEMICAL_MATERIALS, STEAM_CRACKING_AND_DISTILLATION_QUITE_COMMON)
-            .hideDependencyLines());
+            .hiddenDependsOn(ANOTHER_WAY_TO_OBTAIN_CHEMICAL_MATERIALS, STEAM_CRACKING_AND_DISTILLATION_QUITE_COMMON));
 
     public static final Quest THE_ULTIMATE_OF_FUEL_CULT = CHAPTER.quest("the_ultimate_of_fuel_cult", q -> q
             .at(-2, -4)
@@ -202,8 +199,7 @@ public final class ChemicalChapter {
                     .line()
                     .line("一桶苯产出352000EU（高十六是其四倍）"))
             .task(Task.item(GTMaterials.Benzene.getBucket()).optional(), Task.checkmark())
-            .dependsOn(ANOTHER_WAY_TO_OBTAIN_CHEMICAL_MATERIALS)
-            .hideDependencyLines());
+            .hiddenDependsOn(ANOTHER_WAY_TO_OBTAIN_CHEMICAL_MATERIALS));
 
     public static final Quest ROCKET_FUEL_LINE = CHAPTER.quest("rocket_fuel_line", q -> q
             .at(-10.5, -2.5)
@@ -336,8 +332,7 @@ public final class ChemicalChapter {
             .title("胶水的另一种获取")
             .desc(d -> d.line("多用于胶水合成及其上位材料合成"))
             .task(Task.item(GTMaterials.PolyvinylAcetate.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest TELL_ME_LAMINATED_GLASS_MUST_NEED = CHAPTER.quest("tell_me_laminated_glass_must_need", q -> q
             .at(-6.5, 2.5)
@@ -345,8 +340,7 @@ public final class ChemicalChapter {
             .title("你告诉我夹层玻璃必须要这个？")
             .desc(d -> d.line("多用于夹层玻璃合成....."))
             .task(Task.item(GTMaterials.PolyvinylButyral.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest POLYTETRAFLUOROETHYLENE_BUCKET = CHAPTER.quest("polytetrafluoroethylene_bucket", q -> q
             .at(-5, 1)
@@ -385,24 +379,21 @@ public final class ChemicalChapter {
             .icon(GTMaterials.Epoxy.getBucket())
             .desc(d -> d.line("多用于电路基板合成"))
             .task(Task.item(GTMaterials.Epoxy.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest PAA_BUCKET = CHAPTER.quest("paa_bucket", q -> q
             .at(-6.5, 4)
             .icon(GTOMaterials.Paa.getBucket())
             .desc(d -> d.line("多用于生物、光学电路合成"))
             .task(Task.item(GTOMaterials.Paa.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest POLYURETHANE_BUCKET = CHAPTER.quest("polyurethane_bucket", q -> q
             .at(-5, 4)
             .icon(GTOMaterials.Polyurethane.getBucket())
             .desc(d -> d.line("寰宇处理器核心合成材料之一"))
             .task(Task.item(GTOMaterials.Polyurethane.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest NECESSARY_TOOLS_FOR_NANOSCALE_EXTRACTION = CHAPTER.quest("necessary_tools_for_nanoscale_extraction", q -> q
             .at(-8, 5.5)
@@ -410,8 +401,7 @@ public final class ChemicalChapter {
             .title("纳米萃取的必要工具")
             .desc(d -> d.line("纳米萃取稀土路线的必要材料"))
             .task(Task.item(GTOMaterials.P507.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest ESSENTIAL_MATERIALS_FOR_CABLE_SYNTHESIS = CHAPTER.quest("essential_materials_for_cable_synthesis", q -> q
             .at(-8, 7)
@@ -419,8 +409,7 @@ public final class ChemicalChapter {
             .title("线缆合成必须品")
             .desc(d -> d.line("这两是线缆合成常客，也是部件装配线常客"))
             .task(Task.item(GTMaterials.PolyphenyleneSulfide.getBucket()), Task.item(TagPrefix.dust, GTMaterials.RawStyreneButadieneRubber))
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest THE_LAST_PLASTIC_SHELL_YOU_CAN = CHAPTER.quest("the_last_plastic_shell_you_can", q -> q
             .at(-0.5, 1)
@@ -440,8 +429,7 @@ public final class ChemicalChapter {
             .at(-3.5, 4)
             .desc(d -> d.line("多用于光刻膜或者线"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.Polycaprolactam))
-            .dependsOn(WHY_CAN_T_MY_PLASTIC_BE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WHY_CAN_T_MY_PLASTIC_BE));
 
     public static final Quest LARGE_CHEMICAL_REACTOR = CHAPTER.quest("large_chemical_reactor", q -> q
             .at(-10.5, 2.5)
@@ -464,25 +452,26 @@ public final class ChemicalChapter {
             .at(-10.5, 5.5)
             .desc(d -> d.line("做到这里，恭喜你进入OpV时代，先出去走走，看看树木，花草"))
             .task(Task.item(MultiBlockA.QUANTUM_FORCE_TRANSFORMER))
-            .dependsOn(NANITES_INTEGRATED_PROCESSING_CENTER)
-            .hideDependentLines());
+            .dependsOn(NANITES_INTEGRATED_PROCESSING_CENTER));
 
     public static final Quest FULLERENE_POLYMER_MATRIX_PULP_DUST = CHAPTER.quest("fullerene_polymer_matrix_pulp_dust", q -> q
             .at(1, 1)
             .icon(GTOMaterials.FullerenePolymerMatrixPulp.getBucket())
             .desc(d -> d.line("{OPV机器外壳}的塑料部件原料", GOLD))
             .task(Task.item(TagPrefix.dust, GTOMaterials.FullerenePolymerMatrixPulp), Task.item(GTOMaterials.FullerenePolymerMatrixPulp.getBucket()))
-            .dependsOn(QUANTUM_FORCE_TRANSFORMER, THE_LAST_PLASTIC_SHELL_YOU_CAN));
+            .dependsOn(THE_LAST_PLASTIC_SHELL_YOU_CAN)
+            .hiddenDependsOn(QUANTUM_FORCE_TRANSFORMER));
 
     public static final Quest RADOX_BUCKET = CHAPTER.quest("radox_bucket", q -> q
             .at(2.5, 1)
             .icon(GTOMaterials.Radox.getBucket())
             .desc(d -> d.line("{MAX机器外壳}的塑料部件原料", GOLD))
             .task(Task.item(GTOMaterials.Radox.getBucket()).optional(), Task.checkmark())
-            .dependsOn(QUANTUM_FORCE_TRANSFORMER, FULLERENE_POLYMER_MATRIX_PULP_DUST));
+            .dependsOn(FULLERENE_POLYMER_MATRIX_PULP_DUST)
+            .hiddenDependsOn(QUANTUM_FORCE_TRANSFORMER));
 
     public static final Quest PETROCHEMICAL_PLANT = CHAPTER.quest("petrochemical_plant", q -> q
-            .at(-14, -3.5)
+            .at(-14, -2)
             .desc(d -> d.line("后续的集成处理工厂，需求多方块多，准备好材料再来"))
             .task(Task.item(MultiBlockA.PETROCHEMICAL_PLANT))
             .dependsOn(PETROLEUM_PROCESSING));

@@ -5,6 +5,7 @@ import com.gtocore.data.quest.QuestExternalRefs;
 
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
+import com.gtolib.api.quest.QuestShape;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -21,6 +22,8 @@ public final class FoodChapter {
 
     public static final Quest CRAFTSMANSHIP = CHAPTER.quest("craftsmanship", q -> q
             .at(0, 0)
+            .shape(QuestShape.OCTAGON)
+            .nodeScale(1.5)
             .title("匠心手作")
             .desc(d -> d
                     .line("本整合包添加农夫乐事与农夫暇事，生活调味料与生活调味料：胡萝卜版mod，吃的越好长的越壮")
@@ -609,11 +612,11 @@ public final class FoodChapter {
 
     public static final Quest ELECTRIC_COOKING = CHAPTER.quest("electric_cooking", q -> q
             .at(1.5, 0)
+            .nodeScale(1.5)
             .subtitle("格雷牌电饭煲")
             .task(Task.item(MultiBlockG.ELECTRIC_COOKING))
             .reward(Reward.item(QuestExternalRefs.SophisticatedBackpacksItems.ADVANCED_FEEDING_UPGRADE))
-            .dependsOn(HvChapter.WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(HvChapter.WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest GLOW_BERRIES = CHAPTER.quest("glow_berries", q -> q
             .at(-8, 1.5)
@@ -624,7 +627,8 @@ public final class FoodChapter {
             .task(Task.item(Items.NETHER_WART), Task.item(Items.CHORUS_FRUIT)));
 
     public static final Quest WICKER_BASKET = CHAPTER.quest("wicker_basket", q -> q
-            .at(0.75, -4)
+            .at(0.75, -2.5)
+            .nodeScale(3)
             .task(
                     Task.item(QuestExternalRefs.SOLCLASSIC_WICKER_BASKET),
                     Task.item(QuestExternalRefs.SOLCLASSIC_BASKET),

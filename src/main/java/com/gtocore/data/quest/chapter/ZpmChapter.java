@@ -155,8 +155,7 @@ public final class ZpmChapter {
                     .line()
                     .line("在上面可以安装{算力数据仓}来实现算力分发，别忘了给提供算力的计算机安装{桥接组件}！", GOLD, GOLD))
             .task(Task.item(GTResearchMachines.NETWORK_SWITCH))
-            .dependsOn(ENRICHED_NAQUADAH_TRINIUM_EUROPIUM_DURANIDE_INGOT, LuvChapter.HPCA_ADVANCED_COMPUTATION_COMPONENT)
-            .hideDependentLines());
+            .dependsOn(ENRICHED_NAQUADAH_TRINIUM_EUROPIUM_DURANIDE_INGOT, LuvChapter.HPCA_ADVANCED_COMPUTATION_COMPONENT));
 
     public static final Quest DARMSTADTIUM_INGOT = CHAPTER.quest("darmstadtium_ingot", q -> q
             .at(2, -4)
@@ -173,8 +172,7 @@ public final class ZpmChapter {
             .at(-11, -2)
             .desc(d -> d.line("尽管你可能没有做过小型的，但我依然建议你直接做大型的"))
             .task(Task.item(MultiBlockD.LARGE_INCUBATOR))
-            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
-            .hideDependentLines());
+            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE));
 
     public static final Quest RADIATION_HATCH = CHAPTER.quest("radiation_hatch", q -> q
             .at(-11, -4)
@@ -189,8 +187,7 @@ public final class ZpmChapter {
     public static final Quest HYDROXYAPATITE_CERAMIC_FLAKE = CHAPTER.quest("hydroxyapatite_ceramic_flake", q -> q
             .at(0, 2)
             .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.HydroxyapatiteCeramic))
-            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE));
 
     public static final Quest LAFIUM_INGOT = CHAPTER.quest("lafium_ingot", q -> q
             .at(2, 0)
@@ -223,7 +220,8 @@ public final class ZpmChapter {
     public static final Quest FUEL_REFINING_COMPLEX = CHAPTER.quest("fuel_refining_complex", q -> q
             .at(2, 2)
             .task(Task.item(MultiBlockB.FUEL_REFINING_COMPLEX))
-            .dependsOn(DATA_MODULE, NETWORK_SWITCH));
+            .dependsOn(DATA_MODULE)
+            .hiddenDependsOn(NETWORK_SWITCH));
 
     public static final Quest TIER_7_ROCKET = CHAPTER.quest("tier_7_rocket", q -> q
             .at(2, 6)
@@ -249,8 +247,7 @@ public final class ZpmChapter {
             .at(-7, 6)
             .icon(GTMaterials.Mutagen.getBucket())
             .task(Task.item(GTMaterials.Mutagen.getBucket()).optional(), Task.checkmark())
-            .dependsOn(STERILIZING_FILTER_CASING)
-            .hideDependencyLines());
+            .hiddenDependsOn(STERILIZING_FILTER_CASING));
 
     public static final Quest Q_3AD590B7 = CHAPTER.quest("q_3ad590b7", q -> q
             .at(4, -2)
@@ -286,8 +283,7 @@ public final class ZpmChapter {
             .at(4, 6)
             .icon(ModItems.GLACIO_GLOBE.get())
             .task(Task.dimension(Dimension.GLACIO).title("{访问霜原星}", LIGHT_PURPLE).icon(ModItems.GLACIO_GLOBE.get()))
-            .dependsOn(TIER_7_ROCKET)
-            .hideDependentLines());
+            .dependsOn(TIER_7_ROCKET));
 
     public static final Quest GLACIO_SPIRIT = CHAPTER.quest("glacio_spirit", q -> q
             .at(-5, 6)
@@ -296,14 +292,13 @@ public final class ZpmChapter {
                     .line()
                     .line("需要{倍增}产线，主要作为{增殖}各种细胞的原材料", YELLOW, GREEN))
             .task(Task.item(GTOItems.GLACIO_SPIRIT))
-            .dependsOn(VISIT_GLACIO));
+            .hiddenDependsOn(VISIT_GLACIO));
 
     public static final Quest ZPM_FORCE_FIELD_GENERATOR_LAUNCHER_AND = CHAPTER.quest("zpm_force_field_generator_launcher_and", q -> q
             .at(-4.5, -6)
             .title("{ZPM}力场发生器，发射器和传感器", ZPM)
             .task(Task.item(GTItems.EMITTER_ZPM), Task.item(GTItems.SENSOR_ZPM), Task.item(GTItems.FIELD_GENERATOR_ZPM))
-            .dependsOn(LuvChapter.RESEARCH_STATION)
-            .hideDependentLines());
+            .dependsOn(LuvChapter.RESEARCH_STATION));
 
     public static final Quest BIOCHEMICAL_REACTION = CHAPTER.quest("biochemical_reaction", q -> q
             .at(-9, 0)
@@ -312,7 +307,8 @@ public final class ZpmChapter {
                     .line()
                     .line("从有机物直接变出生命来，很神奇吧！"))
             .task(Task.item(MultiBlockC.BIOCHEMICAL_REACTION))
-            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE, ZPM_FORCE_FIELD_GENERATOR_LAUNCHER_AND));
+            .dependsOn(WELCOME_TO_THE_ZERO_PRESSURE_PHASE)
+            .hiddenDependsOn(ZPM_FORCE_FIELD_GENERATOR_LAUNCHER_AND));
 
     public static final Quest BIOCHEMICAL_EXTRACTION = CHAPTER.quest("biochemical_extraction", q -> q
             .at(-9, 4)
@@ -359,7 +355,8 @@ public final class ZpmChapter {
                     Task.checkmark(),
                     Task.item(GTMaterials.Bacteria.getBucket()).optional(),
                     Task.item(GTOMaterials.RapidlyReplicatingAnimalCells.getBucket()).optional())
-            .dependsOn(I_NEED_DNA_3, LARGE_INCUBATOR, Q_6742F9E1));
+            .dependsOn(I_NEED_DNA_3, Q_6742F9E1)
+            .hiddenDependsOn(LARGE_INCUBATOR));
 
     public static final Quest PLURIPOTENCY_INDUCTION_GENE_THERAPY_FLUID_BUCKET = CHAPTER.quest("pluripotency_induction_gene_therapy_fluid_bucket", q -> q
             .at(-4, 4)
@@ -381,7 +378,9 @@ public final class ZpmChapter {
             .desc(d -> d
                     .line("是第一批干细胞的制作原料，也是细胞增殖的原料")
                     .line()
-                    .line("有更高效的循环产线制作它"))
+                    .line("有更高效的循环产线制作它")
+                    .line()
+                    .line("{也要记得换呀}", DARK_GRAY.italic()))
             .task(Task.item(GTMaterials.SterileGrowthMedium.getBucket()).optional(), Task.checkmark())
             .dependsOn(I_NEED_DNA_1));
 
@@ -394,8 +393,7 @@ public final class ZpmChapter {
                     .line()
                     .line("做够一定数量之后你就该使用增殖配方来生产细胞了"))
             .task(Task.item(GTItems.STEM_CELLS, 32))
-            .dependsOn(PLURIPOTENCY_INDUCTION_GENE_THERAPY_FLUID_BUCKET, STERILIZED_GROWTH_MEDIUM_BUCKET)
-            .hideDependencyLines(false));
+            .dependsOn(PLURIPOTENCY_INDUCTION_GENE_THERAPY_FLUID_BUCKET, STERILIZED_GROWTH_MEDIUM_BUCKET));
 
     public static final Quest NEURO_PROCESSING_UNIT = CHAPTER.quest("neuro_processing_unit", q -> q
             .at(0, 8)
@@ -424,13 +422,13 @@ public final class ZpmChapter {
     public static final Quest DECAY_HASTENER = CHAPTER.quest("decay_hastener", q -> q
             .at(2, -6)
             .task(Task.item(MultiBlockA.DECAY_HASTENER))
-            .dependsOn(LuvChapter.NAQUADRIA_INGOT, DARMSTADTIUM_INGOT, LuvChapter.HPCA_ADVANCED_COMPUTATION_COMPONENT)
-            .hideDependentLines());
+            .dependsOn(LuvChapter.NAQUADRIA_INGOT, DARMSTADTIUM_INGOT, LuvChapter.HPCA_ADVANCED_COMPUTATION_COMPONENT));
 
     public static final Quest SUPER_PARTICLE_COLLIDER = CHAPTER.quest("super_particle_collider", q -> q
             .at(4, 2)
             .task(Task.item(MultiBlockF.SUPER_PARTICLE_COLLIDER))
-            .dependsOn(NUCLEAR_WASTE_BROTHERS, LAFIUM_INGOT, DECAY_HASTENER));
+            .dependsOn(NUCLEAR_WASTE_BROTHERS, LAFIUM_INGOT)
+            .hiddenDependsOn(DECAY_HASTENER));
 
     public static final Quest WETWARE_PROCESSOR_MAINFRAME = CHAPTER.quest("wetware_processor_mainframe", q -> q
             .at(-9, 8)
@@ -443,7 +441,8 @@ public final class ZpmChapter {
                     .line()
                     .line("不过最难的路已经走完了"))
             .task(Task.item(GTItems.WETWARE_MAINFRAME_UHV))
-            .dependsOn(WETWARE_PROCESSOR_SUPERCOMPUTER, NETWORK_SWITCH)
+            .dependsOn(WETWARE_PROCESSOR_SUPERCOMPUTER)
+            .hiddenDependsOn(NETWORK_SWITCH)
             .mainNode());
 
     public static final Quest ADVANCED_ASSEMBLY_LINE = CHAPTER.quest("advanced_assembly_line", q -> q

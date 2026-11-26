@@ -15,6 +15,7 @@ import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestShape;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
 
@@ -81,8 +82,7 @@ public final class Magic2Chapter {
             .at(0.9375, 7.5)
             .desc(d -> d.line("装备时,{光环之戒}会持续缓慢生成魔力,并将魔力注入背包内的储魔物品中.", GREEN))
             .task(Task.item(BotaniaItems.auraRing))
-            .dependsOn(VARIOUS_RUNES)
-            .hideDependencyLines(false));
+            .dependsOn(VARIOUS_RUNES));
 
     public static final Quest AURA_RING_GREATER = CHAPTER.quest("aura_ring_greater", q -> q
             .at(0.9375, 8.75)
@@ -106,117 +106,134 @@ public final class Magic2Chapter {
 
     public static final Quest LENS_SPEED = CHAPTER.quest("lens_speed", q -> q
             .at(-1, 9.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("以降低初始容量和加速魔力损耗为代价,大幅提升{魔力脉冲}{的移动速度.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensSpeed))
             .dependsOn(AMPLIFY_MANA_SPREADER));
 
     public static final Quest LENS_POWER = CHAPTER.quest("lens_power", q -> q
-            .at(1.75, 9.75)
+            .at(0.5, 10.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{的魔力承载量翻倍,但会降低传输速度并增加长距离传输时的魔力损耗.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensPower))
             .dependsOn(AMPLIFY_MANA_SPREADER));
 
     public static final Quest LENS_TIME = CHAPTER.quest("lens_time", q -> q
-            .at(0.75, 9.75)
+            .at(0.5, 9.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("显著延长{魔力脉冲}{开始损耗前的持续时间,但同时会降低脉冲移动速度.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensTime))
             .dependsOn(AMPLIFY_MANA_SPREADER));
 
     public static final Quest LENS_EFFICIENCY = CHAPTER.quest("lens_efficiency", q -> q
-            .at(-2.25, 9.5)
+            .at(-1, 10.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("缩短{魔力脉冲}{开始损耗魔力的启动时间,但同时会减缓损耗速率.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensEfficiency))
             .dependsOn(AMPLIFY_MANA_SPREADER));
 
     public static final Quest LENS_BOUNCE = CHAPTER.quest("lens_bounce", q -> q
             .at(-0.25, 11)
+            .nodeScale(0.5)
             .desc(d -> d.line("允许{魔力脉冲}{在接触方块表面时产生反弹效果.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensBounce))
             .dependsOn(AMPLIFY_MANA_SPREADER));
 
     public static final Quest LENS_GRAVITY = CHAPTER.quest("lens_gravity", q -> q
-            .at(0.25, 12.75)
+            .at(0, 12)
+            .nodeScale(0.5)
             .desc(d -> d.line("使重力影响{魔力脉冲}{运动轨迹形成抛物线,同时略微延长脉冲开始损耗前的持续时间.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensGravity))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_MINE = CHAPTER.quest("lens_mine", q -> q
-            .at(-0.75, 11.75)
+            .at(0, 11.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("允许{魔力脉冲}{消耗自身魔力击穿障碍方块.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensMine))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_DAMAGE = CHAPTER.quest("lens_damage", q -> q
-            .at(-1.75, 11.25)
+            .at(-1, 11.25)
+            .nodeScale(0.5)
             .desc(d -> d.line("允许{魔力脉冲}{消耗自身魔力对击中的生物造成伤害.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensDamage))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_PHANTOM = CHAPTER.quest("lens_phantom", q -> q
-            .at(-3, 11)
+            .at(-1.5, 11)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{具备穿透方块的能力,但会缩短脉冲存活时间.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensPhantom))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_MAGNET = CHAPTER.quest("lens_magnet", q -> q
-            .at(0.25, 11.75)
+            .at(-0.5, 11.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{自动追踪附近可接收魔力的方块,同时略微降低脉冲移动速度.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensMagnet))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_EXPLOSIVE = CHAPTER.quest("lens_explosive", q -> q
-            .at(1.25, 11.25)
+            .at(0.5, 11.25)
+            .nodeScale(0.5)
             .desc(d -> d.line("为{魔力脉冲}{注入熵能——简而言之,当击中无法接收魔力的物体时会引发爆炸.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensExplosive))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_INFLUENCE = CHAPTER.quest("lens_influence", q -> q
-            .at(2.25, 10.75)
+            .at(1, 11)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{影响范围内的掉落物、经验球和下坠方块,使其运动轨迹与脉冲保持完全同步.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensInfluence))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_WEIGHT = CHAPTER.quest("lens_weight", q -> q
-            .at(-1.75, 12.25)
+            .at(-1, 11.75)
+            .nodeScale(0.5)
             .desc(d -> d.line("当该透镜的{魔力脉冲}{击中方块时,会使该方块像沙砾般下坠.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensWeight))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_MESSENGER = CHAPTER.quest("lens_messenger", q -> q
-            .at(1.25, 12.25)
+            .at(0.5, 11.75)
+            .nodeScale(0.5)
             .desc(d -> d.line("大幅减少{魔力脉冲}{携带的魔力总量,同时极大提升脉冲速度和射程.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensMessenger))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_LIGHT = CHAPTER.quest("lens_light", q -> q
-            .at(-2.75, 12)
+            .at(-1.5, 11.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{在命中方块时生成装饰性火焰.此火焰仅提供光照效果,可被其他}{魔力脉冲}{扑灭.}", GREEN, WHITE, GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensLight))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_PISTON = CHAPTER.quest("lens_piston", q -> q
-            .at(2.25, 11.75)
+            .at(1, 11.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("允许{魔力脉冲}{如同活塞般推动方块.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensPiston))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest LENS_FIRE = CHAPTER.quest("lens_fire", q -> q
-            .at(-0.75, 12.75)
+            .at(-0.5, 12)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{能够点燃方块,但对生物无效.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensFire))
-            .dependsOn(AMPLIFY_MANA_SPREADER)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER)
+            .optional());
 
     public static final Quest CRAFT_RUNEROCK = CHAPTER.quest("craft_runerock", q -> q
             .at(-0.3125, 3.75)
@@ -338,49 +355,55 @@ public final class Magic2Chapter {
             .optional());
 
     public static final Quest LENS_PAINT = CHAPTER.quest("lens_paint", q -> q
-            .at(1.25, 13.25)
+            .at(0.5, 12.25)
+            .nodeScale(0.5)
             .desc(d -> d
                     .line("需先进行染色处理.")
                     .line()
                     .line("允许{魔力脉冲}{为击中的可染色方块(包括连接的方块)及绵羊进行染色.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensPaint))
-            .dependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
+            .optional());
 
     public static final Quest LENS_FIREWORK = CHAPTER.quest("lens_firework", q -> q
-            .at(-0.75, 13.75)
+            .at(0, 12.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("使{魔力脉冲}{在击中方块时发射节日烟花.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensFirework))
-            .dependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
+            .optional());
 
     public static final Quest LENS_FLARE = CHAPTER.quest("lens_flare", q -> q
-            .at(-1.75, 13.25)
+            .at(-1, 12.25)
+            .nodeScale(0.5)
             .desc(d -> d.line("该组件可将{魔力发射器}{的脉冲模式转换为仅发射连续粒子流,而非短促脉冲.不消耗魔力.非常适合装饰用途.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensFlare))
-            .dependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
+            .optional());
 
     public static final Quest LENS_TRIPWIRE = CHAPTER.quest("lens_tripwire", q -> q
-            .at(-2.75, 13)
+            .at(-1.5, 12)
+            .nodeScale(0.5)
             .desc(d -> d.line("在魔力扩散器上使用此组件时,仅当{魔力脉冲}{能命中生物或玩家时才会发射.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensTripwire))
-            .dependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
+            .optional());
 
     public static final Quest LENS_REDIRECT = CHAPTER.quest("lens_redirect", q -> q
-            .at(0.25, 13.75)
+            .at(-0.5, 12.5)
+            .nodeScale(0.5)
             .desc(d -> d.line("该棱镜会重定向任何与其碰撞的{魔力发射器}{或实体,使其朝向发射脉冲的方块或实体.}", GREEN, WHITE))
             .task(Task.item(BotaniaItems.lensRedirect))
-            .dependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
+            .optional());
 
     public static final Quest LENS_WARP = CHAPTER.quest("lens_warp", q -> q
-            .at(2.25, 12.75)
+            .at(1, 12)
+            .nodeScale(0.5)
             .desc(d -> d.line("请查阅{辞典} {植物魔法}了解此棱镜的用法.", GREEN, LIGHT_PURPLE))
             .task(Task.item(BotaniaItems.lensWarp))
-            .dependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(AMPLIFY_MANA_SPREADER, ELVEN_TRADE)
+            .optional());
 
     public static final Quest MYTHIC_BOTANY = CHAPTER.quest("mythic_botany", q -> q
             .at(7.5, 5.625)
@@ -433,8 +456,7 @@ public final class Magic2Chapter {
     public static final Quest WHITE_WAX_INGOT = CHAPTER.quest("white_wax_ingot", q -> q
             .at(11.25, 0)
             .task(Task.item(TagPrefix.ingot, GTOMaterials.WhiteWax))
-            .dependsOn(Magic1Chapter.LIVINGROCK)
-            .hideDependencyLines());
+            .hiddenDependsOn(Magic1Chapter.LIVINGROCK));
 
     public static final Quest TIME_TWISTER = CHAPTER.quest("time_twister", q -> q
             .at(-2.8125, 2.5)
@@ -444,8 +466,7 @@ public final class Magic2Chapter {
                     .line()
                     .line("时间扭曲者可以快速地加速机器的加工进程，但你需要保证电网足够，你也不希望看到机器全面跳电罢工吧！"))
             .task(Task.item(GTOItems.TIME_TWISTER))
-            .dependsOn(GAIASTEEL_INGOT, EvChapter.HV_FIELD_GENERATOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(GAIASTEEL_INGOT, EvChapter.HV_FIELD_GENERATOR));
 
     public static final Quest BASE_MANA_DISTRIBUTOR = CHAPTER.quest("base_mana_distributor", q -> q
             .at(0.9375, 3.75)
@@ -609,42 +630,55 @@ public final class Magic2Chapter {
             .mainNode());
 
     public static final Quest DICE_OF_FATE = CHAPTER.quest("dice_of_fate", q -> q
-            .at(15.625, 9.375).iconScale(2)
+            .at(15.625, 9.375)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .title("{命运骰子}", GREEN)
             .desc(d -> d.line("使用盖亚锭召唤强化版{盖亚守护者}可获取更多{盖亚魂}，同时还有概率掉落{命运骰子}", GREEN, GREEN, GREEN))
             .task(Task.item(BotaniaItems.dice))
-            .dependsOn(GUARDIAN_OF_GAIA_2_0)
-            .hideDependentLines());
+            .dependsOn(GUARDIAN_OF_GAIA_2_0));
 
     public static final Quest THOR_RING = CHAPTER.quest("thor_ring", q -> q
-            .at(26.7143, 4.1726).iconScale(2)
+            .at(26.7143, 4.1726)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(BotaniaItems.thorRing))
-            .dependsOn(DICE_OF_FATE));
+            .hiddenDependsOn(DICE_OF_FATE));
 
     public static final Quest ODIN_RING = CHAPTER.quest("odin_ring", q -> q
-            .at(26.25, 5.625).iconScale(2)
+            .at(26.25, 5.625)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(BotaniaItems.odinRing))
-            .dependsOn(DICE_OF_FATE));
+            .hiddenDependsOn(DICE_OF_FATE));
 
     public static final Quest LOKI_RING = CHAPTER.quest("loki_ring", q -> q
-            .at(27.7857, 3.0655).iconScale(2)
+            .at(27.7857, 3.0655)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(BotaniaItems.lokiRing))
-            .dependsOn(DICE_OF_FATE));
+            .hiddenDependsOn(DICE_OF_FATE));
 
     public static final Quest INFINITE_FRUIT = CHAPTER.quest("infinite_fruit", q -> q
-            .at(29.375, 8.75).iconScale(2)
+            .at(29.375, 8.75)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(BotaniaItems.infiniteFruit))
-            .dependsOn(DICE_OF_FATE));
+            .hiddenDependsOn(DICE_OF_FATE));
 
     public static final Quest KING_KEY = CHAPTER.quest("king_key", q -> q
-            .at(27.8125, 8.3631).iconScale(2)
+            .at(27.8125, 8.3631)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(BotaniaItems.kingKey))
-            .dependsOn(DICE_OF_FATE));
+            .hiddenDependsOn(DICE_OF_FATE));
 
     public static final Quest FLUGEL_EYE = CHAPTER.quest("flugel_eye", q -> q
-            .at(26.7054, 7.2917).iconScale(2)
+            .at(26.7054, 7.2917)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(BotaniaItems.flugelEye))
-            .dependsOn(DICE_OF_FATE));
+            .hiddenDependsOn(DICE_OF_FATE));
 
     public static final Quest GAIA_EQUIPMENT_AND_ACCESSORIES = CHAPTER.quest("gaia_equipment_and_accessories", q -> q
             .at(14.375, 0)
@@ -720,8 +754,7 @@ public final class Magic2Chapter {
     public static final Quest AERIALITE_INGOT = CHAPTER.quest("aerialite_ingot", q -> q
             .at(-0.3125, 0)
             .task(Task.item(ExtraBotanyItems.aerialite))
-            .dependsOn(Magic1Chapter.ENDER_AIR_BOTTLE, ELVEN_TRADE)
-            .hideDependencyLines());
+            .hiddenDependsOn(Magic1Chapter.ENDER_AIR_BOTTLE, ELVEN_TRADE));
 
     public static final Quest CELESTIAL_CONDENSER = CHAPTER.quest("celestial_condenser", q -> q
             .at(2.1875, 0)
@@ -741,14 +774,14 @@ public final class Magic2Chapter {
     public static final Quest GJALLAR_HORN_FULL = CHAPTER.quest("gjallar_horn_full", q -> q
             .at(5.625, 3.75)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.GJALLAR_HORN_FULL))
-            .dependsOn(YGGDRASIL_BRANCH)
-            .hideDependentLines());
+            .dependsOn(YGGDRASIL_BRANCH));
 
     public static final Quest ANIMIUM_BUCKET = CHAPTER.quest("animium_bucket", q -> q
             .at(6.875, 12.5)
             .icon(GTOMaterials.Animium.getBucket())
             .task(Task.item(GTOMaterials.Animium.getBucket()).optional(), Task.checkmark())
-            .dependsOn(SPIRIT_FRAGMENT, GJALLAR_HORN_FULL));
+            .dependsOn(SPIRIT_FRAGMENT)
+            .hiddenDependsOn(GJALLAR_HORN_FULL));
 
     public static final Quest FLOWING_CIPHERS_BUCKET = CHAPTER.quest("flowing_ciphers_bucket", q -> q
             .at(8.75, 12.5)
@@ -760,7 +793,8 @@ public final class Magic2Chapter {
             .at(18.125, 11.25).iconScale(2)
             .desc(d -> d.line("饮下泉水后击杀盖亚2.0获取"))
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.FIMBULTYR_TABLET))
-            .dependsOn(GUARDIAN_OF_GAIA_2_0, GJALLAR_HORN_FULL));
+            .dependsOn(GUARDIAN_OF_GAIA_2_0)
+            .hiddenDependsOn(GJALLAR_HORN_FULL));
 
     public static final Quest FAIRY_WING = CHAPTER.quest("fairy_wing", q -> q
             .at(8.75, 0)
@@ -768,7 +802,9 @@ public final class Magic2Chapter {
             .dependsOn(HERBS_INGOT));
 
     public static final Quest HERO_MEDAL = CHAPTER.quest("hero_medal", q -> q
-            .at(20, 2.8125).iconScale(2)
+            .at(20, 2.8125)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(4)
             .subtitle("荣光的印记 无畏的象征")
             .task(Task.item(ExtraBotanyItems.heroMedal))
             .dependsOn(GUARDIAN_OF_GAIA_3_0));
@@ -837,14 +873,12 @@ public final class Magic2Chapter {
     public static final Quest PROSPECTOR_MANA_LV = CHAPTER.quest("prospector_mana_lv", q -> q
             .at(-2.1875, 0)
             .task(Task.item(GTOItems.PROSPECTOR_MANA_LV))
-            .dependsOn(CRAFT_TERRASTEEL_THAUMIUM, LvChapter.LV_SENSOR, LvChapter.LV_EMITTER)
-            .hideDependencyLines());
+            .hiddenDependsOn(CRAFT_TERRASTEEL_THAUMIUM, LvChapter.LV_SENSOR, LvChapter.LV_EMITTER));
 
     public static final Quest PROSPECTOR_MANA_HV = CHAPTER.quest("prospector_mana_hv", q -> q
             .at(-3.75, 0)
             .task(Task.item(GTOItems.PROSPECTOR_MANA_HV))
-            .dependsOn(ALFSTEEL, HvChapter.HV_LAUNCHER_AND_HV_SENSOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(ALFSTEEL, HvChapter.HV_LAUNCHER_AND_HV_SENSOR));
 
     public static final Quest REWARD_BAG = CHAPTER.quest("reward_bag", q -> q
             .at(18.125, 1.875)
@@ -852,14 +886,16 @@ public final class Magic2Chapter {
             .desc(d -> d.line("多余的命运骰子可以换成奖励袋"))
             .task(
                     Task.anyOf(1, ExtraBotanyItems.nineAndThreeQuartersRewardBag, ExtraBotanyItems.vierRewardBag, ExtraBotanyItems.dreiRewardBag, ExtraBotanyItems.zweiRewardBag, ExtraBotanyItems.einsRewardBag).title("任意奖励袋"))
-            .dependsOn(GUARDIAN_OF_GAIA_3_0, DICE_OF_FATE)
-            .requireAny()
-            .hideDependentLines());
+            .dependsOn(GUARDIAN_OF_GAIA_3_0)
+            .hiddenDependsOn(DICE_OF_FATE)
+            .requireAny());
 
     public static final Quest VOID_ARCHIVES = CHAPTER.quest("void_archives", q -> q
-            .at(29.375, 2.5).iconScale(2)
+            .at(29.375, 2.5)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(ExtraBotanyItems.voidArchives))
-            .dependsOn(REWARD_BAG));
+            .hiddenDependsOn(REWARD_BAG));
 
     public static final Quest ME_MANA_INTERFACE = CHAPTER.quest("me_mana_interface", q -> q
             .at(23.75, 7.5)
@@ -867,28 +903,32 @@ public final class Magic2Chapter {
             .dependsOn(LUV_MANA_MACHINE_HULL));
 
     public static final Quest EXCALIBUR = CHAPTER.quest("excalibur", q -> q
-            .at(31.0536, 3.1399).iconScale(2)
+            .at(31.0536, 3.1399)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(ExtraBotanyItems.excalibur))
-            .dependsOn(HERO_MEDAL)
-            .hideDependencyLines());
+            .hiddenDependsOn(HERO_MEDAL));
 
     public static final Quest RHEIN_HAMMER = CHAPTER.quest("rhein_hammer", q -> q
-            .at(32.0536, 4.1399).iconScale(2)
+            .at(32.0536, 4.1399)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(ExtraBotanyItems.rheinHammer))
-            .dependsOn(ORICHALCOS_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(ORICHALCOS_INGOT));
 
     public static final Quest ACHILLES_SHIELD = CHAPTER.quest("achilles_shield", q -> q
-            .at(32.125, 7.1399).iconScale(2)
+            .at(32.125, 7.1399)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(ExtraBotanyItems.achillesShield))
-            .dependsOn(ORICHALCOS_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(ORICHALCOS_INGOT));
 
     public static final Quest FAILNAUGHT = CHAPTER.quest("failnaught", q -> q
-            .at(31.1161, 8.3854).iconScale(2)
+            .at(31.1161, 8.3854)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(ExtraBotanyItems.failnaught))
-            .dependsOn(ORICHALCOS_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(ORICHALCOS_INGOT));
 
     public static final Quest RUNE_RITUALS = CHAPTER.quest("rune_rituals", q -> q
             .at(20, 11.25)
@@ -896,13 +936,14 @@ public final class Magic2Chapter {
             .desc(d -> d.line("将若干符文支托围绕1个大师符文支托摆成特定形状，然后在符文支托和大师符文支托上放上对应的物品，将合成物品丢进符文仪式的范围内即可"))
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.CENTRAL_RUNE_HOLDER), Task.item(QuestExternalRefs.MythicBotanyItems.RUNE_HOLDER))
             .dependsOn(FIMBULTYR_TABLET)
-            .hideDependentLines()
             .mainNode());
 
     public static final Quest MJOELLNIR = CHAPTER.quest("mjoellnir", q -> q
-            .at(32.5, 5.625).iconScale(2)
+            .at(32.5, 5.625)
+            .shape(QuestShape.NONE)
+            .nodeScale(1).iconScale(3)
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.MJOELLNIR))
-            .dependsOn(RUNE_RITUALS));
+            .hiddenDependsOn(RUNE_RITUALS));
 
     public static final Quest RUNE_SUBSIDY = CHAPTER.quest("rune_subsidy", q -> q
             .at(-2.8125, 8.125)
@@ -910,7 +951,7 @@ public final class Magic2Chapter {
             .title("符文补助")
             .desc(d -> d.line("符文制作太繁琐了？这里免费送你一些"))
             .task(Task.checkmark())
-            .easySubsidy(
+            .rewardFor(QuestTierSet.EASY,
                     Reward.item(BotaniaItems.runeWater, 2),
                     Reward.item(BotaniaItems.runeFire, 2),
                     Reward.item(BotaniaItems.runeEarth, 2),
@@ -931,7 +972,7 @@ public final class Magic2Chapter {
             .optional().hideUntilDepsVisible());
 
     public static final Quest Q_43F6C913 = CHAPTER.quest("q_43f6c913", q -> q
-            .at(8.125, 6.25)
+            .at(17.13, -2.75)
             .task(Task.checkmark())
             .optional().invisible().disableToast());
 
@@ -940,17 +981,17 @@ public final class Magic2Chapter {
             .subtitle("先祖知识凝聚而成的结晶")
             .desc(d -> d.line("注意配方消耗的魔力，必须使用{导师}以上等级的魔力输入仓才可以提供足够的魔力", LIGHT_PURPLE))
             .task(Task.item(GTOItems.PHILOSOPHERS_STONE))
-            .dependsOn(HERO_MEDAL)
-            .hideDependentLines());
+            .dependsOn(HERO_MEDAL));
 
     public static final Quest KVASIR_MEAD = CHAPTER.quest("kvasir_mead", q -> q
             .at(23.75, 11.25)
-            .nodeScale(1).iconScale(2)
+            .shape(QuestShape.NONE)
+            .nodeScale(1.5).iconScale(2)
             .subtitle("精灵诗人的不传之秘")
             .desc(d -> d.line("喝下它，身体似乎会发生奇妙的变化..."))
             .task(Task.item(QuestExternalRefs.MythicBotanyItems.KVASIR_MEAD))
-            .dependsOn(RUNE_RITUALS, PHILOSOPHERS_STONE)
-            .hideDependentLines());
+            .hiddenDependsOn(PHILOSOPHERS_STONE)
+            .dependsOn(RUNE_RITUALS));
 
     public static final Quest VISIT_ALFHEIM = CHAPTER.quest("visit_alfheim", q -> q
             .at(29.375, 5.625)
@@ -962,20 +1003,8 @@ public final class Magic2Chapter {
                     .line()
                     .line("{满足以上条件，踏入放置在}{主维度}的{精灵门}，你可以进入到精灵维度。在精灵维度中，你可以挖掘魔法线的专属矿石", ITALIC, AQUA.italic(), GOLD))
             .task(Task.dimension(Dimension.ALFHEIM).title("{访问亚尔夫海姆}", LIGHT_PURPLE).icon(NaturesCompass.naturesCompass))
-            .dependsOn(
-                    LOKI_RING,
-                    ODIN_RING,
-                    KING_KEY,
-                    INFINITE_FRUIT,
-                    VOID_ARCHIVES,
-                    FAILNAUGHT,
-                    EXCALIBUR,
-                    RHEIN_HAMMER,
-                    MJOELLNIR,
-                    ACHILLES_SHIELD,
-                    THOR_RING,
-                    FLUGEL_EYE,
-                    KVASIR_MEAD)
+            .dependsOn(LOKI_RING, ODIN_RING, KING_KEY, INFINITE_FRUIT, VOID_ARCHIVES, FAILNAUGHT, EXCALIBUR, RHEIN_HAMMER, MJOELLNIR, ACHILLES_SHIELD, THOR_RING, FLUGEL_EYE)
+            .hiddenDependsOn(KVASIR_MEAD)
             .mainNode());
 
     public static final Quest RESONANCE_FLOWER = CHAPTER.quest("resonance_flower", q -> q
@@ -983,7 +1012,8 @@ public final class Magic2Chapter {
             .subtitle("诞生于虚空之中的共鸣之花")
             .desc(d -> d.line("利用元素共鸣，处理{亚尔夫海姆}的珍贵矿物", AQUA))
             .task(Task.item(ManaMultiBlock.RESONANCE_FLOWER))
-            .dependsOn(ORICHALCOS_INGOT, PHILOSOPHERS_STONE));
+            .dependsOn(ORICHALCOS_INGOT)
+            .hiddenDependsOn(PHILOSOPHERS_STONE));
 
     public static final Quest COSMIC_CELESTIAL_SPIRE_OF_CONVERGENCE = CHAPTER.quest("cosmic_celestial_spire_of_convergence", q -> q
             .at(23.75, 0)
@@ -1003,15 +1033,14 @@ public final class Magic2Chapter {
             .dependsOn(PHILOSOPHERS_STONE));
 
     public static final Quest PULSE_MACHINE_MAINTENANCE_PEDESTAL = CHAPTER.quest("pulse_machine_maintenance_pedestal", q -> q
-            .at(-3, 10)
+            .at(-3, 9.5)
             .subtitle("魔法的维护和清灰")
             .desc(d -> d
                     .line("如果你的前期发展了魔法，不妨考虑一下用它来自动化维护和清灰")
                     .line()
                     .line("HV阶段你可以解锁科技线提供的自动维护和掏灰机器，也就用不上它了"))
             .task(Task.item(ManaMultiBlock.PULSE_MACHINE_MAINTENANCE_PEDESTAL))
-            .dependsOn(CRAFT_TERRASTEEL_THAUMIUM)
-            .hideDependencyLines());
+            .hiddenDependsOn(CRAFT_TERRASTEEL_THAUMIUM));
 
     static {
         CHAPTER.decorate(d -> d

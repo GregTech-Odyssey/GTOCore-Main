@@ -15,6 +15,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -252,8 +253,7 @@ public final class UlvChapter {
                     .line()
                     .line("它的功能包括{精确输入}与{保持输入}，前者可以精确输入的{位置}，后者是{避免输入量过大}挤占其他流体的槽位", AQUA, BLUE, LIGHT_PURPLE, YELLOW))
             .task(Task.item(GTOItems.ULV_FLUID_REGULATOR))
-            .dependsOn(MAKE_LIQUIDS_FLOW)
-            .hideDependencyLines(false).hideDependentLines());
+            .dependsOn(MAKE_LIQUIDS_FLOW));
 
     public static final Quest PRIMITIVE_MEANS_PRIMITIVE_RECIPE = CHAPTER.quest("primitive_means_primitive_recipe", q -> q
             .at(12.5, -5)
@@ -268,7 +268,7 @@ public final class UlvChapter {
                     .line("在{HV}能做{裂化机}之后可以获得100%的原料效率", HV, AQUA))
             .task(Task.item(MultiBlockC.STEAM_CRACKER))
             .reward(Reward.item(QuestExternalRefs.BiomesWeveGoneItems.GREEN_APPLE_PIE))
-            .dependsOn(BURETTE));
+            .hiddenDependsOn(BURETTE));
 
     public static final Quest CANNOT_BE_USED_FOR_PUMPING_WATER = CHAPTER.quest("cannot_be_used_for_pumping_water", q -> q
             .at(-0.75, -2.5)
@@ -340,8 +340,7 @@ public final class UlvChapter {
                     .line()
                     .line("{但既然任何一种*杆都能合成搋子，为什么要用红宝石的呢？}", DARK_GRAY.italic()))
             .task(Task.item(TagPrefix.rod, GTMaterials.Ruby))
-            .dependsOn(ULV_LATHE)
-            .hideDependentLines());
+            .dependsOn(ULV_LATHE));
 
     public static final Quest THEN_THAT_IS_YOUR_FIRST_CIRCUIT = CHAPTER.quest("then_that_is_your_first_circuit", q -> q
             .at(2, 0)
@@ -389,8 +388,7 @@ public final class UlvChapter {
                     .line("当然目前你需要它来制作{锡线缆}", GOLD))
             .task(Task.item(GTOMachines.ULV_PACKER[GTValues.ULV]))
             .reward(Reward.item(QuestExternalRefs.FarmersRespiteItems.COFFEE_CAKE_SLICE, 2))
-            .dependsOn(IT_CAN_HELP_ME_MOVE_THINGS, PLACE_IN_POSITION, THE_THREE_MUSKETEERS_PART_2_RESISTOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(IT_CAN_HELP_ME_MOVE_THINGS, PLACE_IN_POSITION, THE_THREE_MUSKETEERS_PART_2_RESISTOR));
 
     public static final Quest LOW_VOLTAGE_WIRES = CHAPTER.quest("low_voltage_wires", q -> q
             .at(5, -5)
@@ -427,28 +425,30 @@ public final class UlvChapter {
             .icon(GTOItems.ULV_ELECTRIC_MOTOR)
             .title("ULV部件补助")
             .task(Task.checkmark())
-            .easySubsidy(
+            .rewardFor(QuestTierSet.EASY,
                     Reward.item(GTOItems.ULV_ELECTRIC_MOTOR, 16),
                     Reward.item(GTOItems.ULV_CONVEYOR_MODULE, 4),
                     Reward.item(GTOItems.ULV_ELECTRIC_PISTON, 4),
                     Reward.item(GTOItems.ULV_ROBOT_ARM, 4),
                     Reward.item(GTOItems.ULV_ELECTRIC_PUMP, 2))
-            .normalSubsidy(
+            .rewardFor(QuestTierSet.NORMAL,
                     Reward.item(GTOItems.ULV_ELECTRIC_MOTOR, 8),
                     Reward.item(GTOItems.ULV_CONVEYOR_MODULE, 2),
                     Reward.item(GTOItems.ULV_ELECTRIC_PISTON, 2),
                     Reward.item(GTOItems.ULV_ROBOT_ARM, 2),
                     Reward.item(GTOItems.ULV_ELECTRIC_PUMP, 2))
             .dependsOn(PRIMITIVE_ASSEMBLY)
-            .optional().hideUntilDepsVisible());
+            .optional().hideUntilDepsVisible()
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final Quest BUILD_A_CEILING_FOR_YOUR_PRODUCTION = CHAPTER.quest("build_a_ceiling_for_your_production", q -> q
             .at(0, -6.5)
             .title("给你的产线搭个天花板{（专家）}", LIGHT_PURPLE)
             .subtitle("机器淋雨会爆炸！")
             .task(Task.checkmark())
-            .dependsOn(UtilChapter.Q_1FB1EC5B, WELCOME_TO_THE_ULTRA_LOW_PRESSURE)
-            .optional().hideUntilDepsVisible());
+            .dependsOn(WELCOME_TO_THE_ULTRA_LOW_PRESSURE)
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EXPERT));
 
     public static final Quest OXYGEN_BUCKET = CHAPTER.quest("oxygen_bucket", q -> q
             .at(0, 2.85)
@@ -595,7 +595,8 @@ public final class UlvChapter {
                     .line()
                     .line("什么，你现在还没有搭建{蒸汽分离机}？", GOLD))
             .task(Task.item(ModItems.HYDROGEN_BUCKET.get()).optional(), Task.checkmark())
-            .dependsOn(BAKE_THEN_TRANSFORM));
+            .dependsOn(BAKE_THEN_TRANSFORM)
+            .hiddenDependsOn(SteamChapter.CENTRIFUGE));
 
     public static final Quest INFINITE_INTAKE_HATCH = CHAPTER.quest("infinite_intake_hatch", q -> q
             .at(-3.5, 2.85)
@@ -635,10 +636,11 @@ public final class UlvChapter {
             .icon(GTItems.ELECTRONIC_CIRCUIT_LV)
             .title("芯片补助")
             .task(Task.checkmark())
-            .easySubsidy(Reward.item(GTItems.ELECTRONIC_CIRCUIT_LV, 16), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .normalSubsidy(Reward.item(GTItems.ELECTRONIC_CIRCUIT_LV, 6))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.ELECTRONIC_CIRCUIT_LV, 16), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(GTItems.ELECTRONIC_CIRCUIT_LV, 6))
             .dependsOn(BASIC_ELECTRONIC_CIRCUIT)
-            .optional().hideUntilDepsVisible());
+            .optional().hideUntilDepsVisible()
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final Quest BRAND_NEW_ENERGY_SYSTEM_HEAT = CHAPTER.quest("brand_new_energy_system_heat", q -> q
             .at(8.5, 0)
@@ -765,7 +767,8 @@ public final class UlvChapter {
                     .line()
                     .line("在{Jade 提示框HUD}上{没有温度属性}的机器，需要额外贴一个{导热接口}来赋予其温度属性，且导热接口需要贴在加热的那一面", AQUA, RED, GOLD))
             .task(Task.item(GTOItems.HEAT_INTERFACE), Task.item(GTMaterials.Polyethylene.getBucket()))
-            .dependsOn(RUBY_ROD, C2H4_PRONOUNCED_ETHYLENE));
+            .dependsOn(C2H4_PRONOUNCED_ETHYLENE)
+            .hiddenDependsOn(RUBY_ROD, WHERE_DOES_AIR_COME_FROM));
 
     public static final Quest PLASTIC_SHEETS = CHAPTER.quest("plastic_sheets", q -> q
             .at(14.5, -7)
@@ -782,10 +785,11 @@ public final class UlvChapter {
             .icon(TagPrefix.plate, GTMaterials.Polyethylene)
             .title("塑料补助")
             .task(Task.checkmark())
-            .easySubsidy(Reward.item(TagPrefix.plate, GTMaterials.Polyethylene, 128L), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .normalSubsidy(Reward.item(TagPrefix.plate, GTMaterials.Polyethylene, 24))
+            .rewardFor(QuestTierSet.EASY, Reward.item(TagPrefix.plate, GTMaterials.Polyethylene, 128L), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(TagPrefix.plate, GTMaterials.Polyethylene, 24))
             .dependsOn(PLASTIC_SHEETS)
-            .optional().hideUntilDepsVisible());
+            .optional().hideUntilDepsVisible()
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final QuestLink CENTRIFUGE_COPY_1 = CHAPTER.copy(SteamChapter.CENTRIFUGE, 0, 1.5);
 

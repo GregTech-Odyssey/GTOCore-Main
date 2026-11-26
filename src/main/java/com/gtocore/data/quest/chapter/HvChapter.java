@@ -18,6 +18,7 @@ import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestLink;
 import com.gtolib.api.quest.QuestPreset;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -49,10 +50,10 @@ public final class HvChapter {
 
     public static final Quest RECYCLER = CHAPTER.quest("recycler", q -> q
             .at(-2.25, -6.75)
+            .nodeScale(1.5)
             .desc(d -> d.line("废料盒右键可以抽奖，也可以放入本机器自动抽奖"))
             .task(Task.item(MultiBlockA.RECYCLER))
-            .dependsOn(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE));
 
     public static final Quest HARDER_AE2_TWEAKS_EXPERT = CHAPTER.quest("harder_ae2_tweaks_expert", q -> q
             .at(-8.5, 5.5)
@@ -60,8 +61,8 @@ public final class HvChapter {
             .subtitle("前面的区域，EV再探索吧")
             .desc(d -> d.line("专家模式下，如果魔法没有发展到精灵钢，那么必须要等到EV才可以开始自动化"))
             .task(Task.checkmark())
-            .dependsOn(UtilChapter.Q_1FB1EC5B)
-            .optional().hideUntilDepsVisible());
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EXPERT));
 
     public static final Quest WELCOME_TO_THE_HIGH_VOLTAGE_STAGE = CHAPTER.quest("welcome_to_the_high_voltage_stage", q -> q
             .at(-6, 1)
@@ -79,7 +80,8 @@ public final class HvChapter {
             .reward(
                     Reward.command("/playsound minecraft:ui.toast.challenge_complete master @s ~ ~ ~ 1").elevated().silent().autoClaim(AutoClaim.INVISIBLE))
             .dependsOn(MvChapter.STAINLESS_STEEL_INGOT, MvChapter.POLYVINYL_CHLORIDE_PLATE)
-            .mainNode());
+            .mainNode()
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.ELECTRIC_MOTOR_HV, 32)));
 
     public static final Quest HV_CHEMICAL_BATH = CHAPTER.quest("hv_chemical_bath", q -> q
             .at(-4, 1)
@@ -148,8 +150,7 @@ public final class HvChapter {
             .at(-8, -1)
             .title("HV超导")
             .task(Task.item(TagPrefix.ingot, GTOMaterials.VibrantAlloy))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest INFINITE_WATER_COVER = CHAPTER.quest("infinite_water_cover", q -> q
             .at(-6, -1)
@@ -164,8 +165,7 @@ public final class HvChapter {
     public static final Quest HV_CUTTER = CHAPTER.quest("hv_cutter", q -> q
             .at(-4, -0.5)
             .task(Task.item(GTMachines.CUTTER[GTValues.HV]))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MvChapter.ADVANCED_INTEGRATED_CIRCUIT)
-            .hideDependentLines());
+            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MvChapter.ADVANCED_INTEGRATED_CIRCUIT));
 
     public static final Quest HV_LAUNCHER_AND_HV_SENSOR = CHAPTER.quest("hv_launcher_and_hv_sensor", q -> q
             .at(3, 1)
@@ -216,21 +216,21 @@ public final class HvChapter {
                     .line()
                     .line("{火箭燃料}也是很好的发电燃料，你可以选择{火箭引擎}作为你的主力发电设施，这需要你搭建稳定供应的{火箭燃料产线}", GOLD, GOLD, YELLOW))
             .task(Task.item(GTMaterials.RocketFuel.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest MULTI_SMELTER = CHAPTER.quest("multi_smelter", q -> q
             .at(-6, -5.25)
+            .nodeScale(1.5)
             .desc(d -> d
                     .line("能够执行电炉配方，根据{线圈}和{能源仓}的等级拥有更高的并行和超频", GOLD, GOLD)
                     .line()
                     .line("你决定在必要的时候用这个替换掉你的{蒸汽熔炉}", GOLD))
             .task(Task.item(GTMultiMachines.MULTI_SMELTER))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest STEAM_LARGE_TURBINE = CHAPTER.quest("steam_large_turbine", q -> q
             .at(-3.75, -9.75)
+            .nodeScale(1.5)
             .desc(d -> d
                     .line("HV蒸汽轮机倒下了，但另一位老大哥站起来了")
                     .line()
@@ -238,15 +238,15 @@ public final class HvChapter {
                     .line()
                     .line("放入其中的涡轮转子材料影响发电效率和功率"))
             .task(Task.item(GTMultiMachines.LARGE_STEAM_TURBINE))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
+            .optional());
 
     public static final Quest EVAPORATION_PLANT = CHAPTER.quest("evaporation_plant", q -> q
             .at(-3.75, -6.75)
+            .nodeScale(1.5)
             .desc(d -> d.line("蒸发塔用来获取盐水和粗卤水以制取{氯、溴和碘}", GOLD))
             .task(Task.item(MultiBlockA.EVAPORATION_PLANT))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest PROSPECTOR_HV = CHAPTER.quest("prospector_hv", q -> q
             .at(3.5, -1)
@@ -264,7 +264,8 @@ public final class HvChapter {
             .preset(QuestPreset.IMPORTANT)
             .desc(d -> d.line("制造出{HV组装机}，你可以开始大批量生产{贴片元件}！", GOLD, GOLD))
             .task(Task.item(GTMachines.ASSEMBLER[GTValues.HV]))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MvChapter.ADVANCED_INTEGRATED_CIRCUIT));
+            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MvChapter.ADVANCED_INTEGRATED_CIRCUIT)
+            .mainNode());
 
     public static final Quest PINK_GLASS_LENS = CHAPTER.quest("pink_glass_lens", q -> q
             .at(-0.5, 2.5)
@@ -274,7 +275,8 @@ public final class HvChapter {
     public static final Quest LPIC_CHIP = CHAPTER.quest("lpic_chip", q -> q
             .at(-3.5, 4)
             .task(Task.item(GTItems.LOW_POWER_INTEGRATED_CIRCUIT))
-            .dependsOn(ORANGE_GLASS_LENS, HV_CUTTER));
+            .dependsOn(ORANGE_GLASS_LENS)
+            .hiddenDependsOn(HV_CUTTER));
 
     public static final Quest HV_ENERGY_INPUT_HATCH = CHAPTER.quest("hv_energy_input_hatch", q -> q
             .at(-3.5, 5.5)
@@ -284,16 +286,15 @@ public final class HvChapter {
                     .line()
                     .line("{不要思考这句话的深意，只是增加游戏沉浸感}", GRAY))
             .task(Task.item(GTMachines.ENERGY_INPUT_HATCH[GTValues.HV]))
-            .dependsOn(LPIC_CHIP)
-            .hideDependentLines());
+            .dependsOn(LPIC_CHIP));
 
     public static final Quest Q_47E810FD = CHAPTER.quest("q_47e810fd", q -> q
-            .at(-7.5, 3.5)
+            .at(-7.65, 3.5)
             .task(Task.checkmark().title("更便宜的贴片元件！"))
             .dependsOn(HV_ASSEMBLER));
 
     public static final Quest SMD_RESISTOR = CHAPTER.quest("smd_resistor", q -> q
-            .at(-6.75, 2.75)
+            .at(-7, 2.75)
             .task(Task.item(GTItems.SMD_RESISTOR))
             .dependsOn(Q_47E810FD));
 
@@ -308,7 +309,7 @@ public final class HvChapter {
             .dependsOn(Q_47E810FD));
 
     public static final Quest SMD_INDUCTOR = CHAPTER.quest("smd_inductor", q -> q
-            .at(-6.75, 4.25)
+            .at(-7, 4.25)
             .task(Task.item(GTItems.SMD_INDUCTOR))
             .dependsOn(Q_47E810FD));
 
@@ -344,8 +345,7 @@ public final class HvChapter {
     public static final Quest SIMPLE_SOC = CHAPTER.quest("simple_soc", q -> q
             .at(-5, 4)
             .task(Task.item(GTItems.SIMPLE_SYSTEM_ON_CHIP))
-            .dependsOn(CYAN_GLASS_LENS)
-            .hideDependentLines());
+            .dependsOn(CYAN_GLASS_LENS));
 
     public static final Quest MICROPROCESSOR_ASSEMBLY = CHAPTER.quest("microprocessor_assembly", q -> q
             .at(-0.5, -3)
@@ -367,12 +367,15 @@ public final class HvChapter {
 
     public static final Quest HV_CIRCUIT_ASSEMBLER = CHAPTER.quest("hv_circuit_assembler", q -> q
             .at(4.75, -1.5)
+            .nodeScale(1.25)
             .desc(d -> d.line("HV最贵的单方块机器"))
             .task(Task.item(GTMachines.CIRCUIT_ASSEMBLER[GTValues.HV]))
             .dependsOn(MICROPROCESSOR_SUPERCOMPUTER, HV_LAUNCHER_AND_HV_SENSOR));
 
     public static final Quest MICROPROCESSOR_MAINFRAME = CHAPTER.quest("microprocessor_mainframe", q -> q
             .at(7.25, -1.5)
+            .nodeScale(2)
+            .preset(QuestPreset.END)
             .title("{微型处理器主机}", YELLOW)
             .subtitle("第一个IV级电路")
             .desc(d -> d
@@ -382,20 +385,22 @@ public final class HvChapter {
                     .line()
                     .line("{你应该已经发现了，从微型处理器开始，每个序列均存在四种电路，最高级的电路一般都只是你开启下一阶段大门的}{钥匙}", GRAY.italic(), YELLOW.italic()))
             .task(Task.item(GTItems.MAINFRAME_IV))
-            .dependsOn(HV_CIRCUIT_ASSEMBLER));
+            .dependsOn(HV_CIRCUIT_ASSEMBLER)
+            .mainNode());
 
     public static final Quest FISHING_GROUND = CHAPTER.quest("fishing_ground", q -> q
             .at(-5.25, -6.75)
+            .nodeScale(1.5)
             .desc(d -> d
                     .line("可以养鱼，也可以调节编程电路自动钓鱼")
                     .line()
                     .line("要这么多{鱼}有什么用？看看{鱼油}", GOLD, GOLD))
             .task(Task.item(MultiBlockA.FISHING_GROUND))
-            .dependsOn(HV_LAUNCHER_AND_HV_SENSOR, MICROPROCESSOR_SUPERCOMPUTER)
-            .hideDependencyLines());
+            .hiddenDependsOn(HV_LAUNCHER_AND_HV_SENSOR, MICROPROCESSOR_SUPERCOMPUTER));
 
     public static final Quest HV_DRONE = CHAPTER.quest("hv_drone", q -> q
             .at(1.25, -1.5)
+            .nodeScale(1.25)
             .subtitle("解放维护与掏灰")
             .desc(d -> d
                     .line("拥有{EV级电路}后你可以开始使用{无人机}自动化清理{消声仓}的{灰烬}和维护{维护仓}", YELLOW, GOLD, YELLOW, YELLOW, YELLOW)
@@ -410,6 +415,7 @@ public final class HvChapter {
 
     public static final Quest DRONE_CONTROL_CENTER = CHAPTER.quest("drone_control_center", q -> q
             .at(-4.5, -5.25)
+            .nodeScale(1.5)
             .icon(MultiBlockG.DRONE_CONTROL_CENTER)
             .desc(d -> d
                     .line("根据无人机范围，{在消声仓将满的时候自动掏出消声仓的灰烬}（灰烬通过该机器的输出总线输出），同时{自动修复维护仓的维护问题}", YELLOW, YELLOW)
@@ -422,11 +428,11 @@ public final class HvChapter {
                     .line()
                     .line("{别再问为什么无人机不工作啦，也许是你的机器还没有到需要它们工作的时候呢}", GRAY.italic()))
             .task(Task.item(MultiBlockG.DRONE_CONTROL_CENTER), Task.item(GTOMachines.DRONE_HATCH[GTValues.HV]))
-            .dependsOn(HV_DRONE)
-            .hideDependencyLines());
+            .hiddenDependsOn(HV_DRONE));
 
     public static final Quest VACUUM_FREEZER = CHAPTER.quest("vacuum_freezer", q -> q
             .at(9, -3)
+            .nodeScale(1.6)
             .subtitle("真正的冰箱")
             .desc(d -> d.line("简单的冷却浸洗已经不再能承受其他热锭的高温，你需要一个真正的冷冻机"))
             .task(Task.item(GTMultiMachines.VACUUM_FREEZER))
@@ -435,7 +441,8 @@ public final class HvChapter {
     public static final Quest NICHROME_INGOT = CHAPTER.quest("nichrome_ingot", q -> q
             .at(10.5, -4.5)
             .task(Task.item(TagPrefix.ingot, GTMaterials.Nichrome))
-            .dependsOn(VACUUM_FREEZER, HV_ENERGY_INPUT_HATCH));
+            .dependsOn(VACUUM_FREEZER)
+            .hiddenDependsOn(HV_ENERGY_INPUT_HATCH));
 
     public static final Quest NICHROME_COIL_BLOCK = CHAPTER.quest("nichrome_coil_block", q -> q
             .at(12.5, -4.5)
@@ -451,8 +458,7 @@ public final class HvChapter {
             .at(-8, 1)
             .desc(d -> d.line("{自动维护仓}为你免去了维护的痛苦", GOLD))
             .task(Task.item(GTMachines.AUTO_MAINTENANCE_HATCH))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MICROPROCESSOR_SUPERCOMPUTER)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE, MICROPROCESSOR_SUPERCOMPUTER));
 
     public static final Quest Q_50ACA7F4 = CHAPTER.quest("q_50aca7f4", q -> q
             .at(3, -6)
@@ -463,6 +469,7 @@ public final class HvChapter {
 
     public static final Quest PRIMARY_DISTILLATION = CHAPTER.quest("primary_distillation", q -> q
             .at(0.75, -6)
+            .nodeScale(1.25)
             .title("初级蒸馏")
             .desc(d -> d.line("电力蒸馏塔"))
             .task(Task.item(GTMultiMachines.DISTILLATION_TOWER))
@@ -470,6 +477,7 @@ public final class HvChapter {
 
     public static final Quest DESULFURIZATION = CHAPTER.quest("desulfurization", q -> q
             .at(1.5, -7.5)
+            .nodeScale(1.25)
             .title("脱硫")
             .desc(d -> d.line("专业脱硫机器，比单方块化学反应釜高效得多！"))
             .task(Task.item(MultiBlockB.DESULFURIZER))
@@ -477,6 +485,7 @@ public final class HvChapter {
 
     public static final Quest CRACKING = CHAPTER.quest("cracking", q -> q
             .at(3, -8.25)
+            .nodeScale(1.25)
             .title("裂化")
             .desc(d -> d
                     .line("不同于蒸汽裂化，你现在可以将任意的初级油品{加氢/蒸汽裂化}为任何你想要的裂化油，以获得你需要的石油化工材料", YELLOW)
@@ -487,6 +496,7 @@ public final class HvChapter {
 
     public static final Quest SECONDARY_DISTILLATION = CHAPTER.quest("secondary_distillation", q -> q
             .at(4.5, -7.5)
+            .nodeScale(1.25)
             .title("二次蒸馏")
             .desc(d -> d.line("和{原始蒸馏塔}一样，你也需要造第二台{蒸馏塔}来二次蒸馏裂化油", GOLD, GOLD))
             .task(Task.item(GTMultiMachines.DISTILLATION_TOWER))
@@ -494,6 +504,7 @@ public final class HvChapter {
 
     public static final Quest POLYMERIZATION_REACTION = CHAPTER.quest("polymerization_reaction", q -> q
             .at(5.25, -6)
+            .nodeScale(1.25)
             .title("聚合反应")
             .desc(d -> d
                     .line("更好的聚合物制造，{聚四氟乙烯}只能在{聚合反应器}制造", GOLD, GOLD)
@@ -548,8 +559,7 @@ public final class HvChapter {
     public static final Quest MV_FIELD_GENERATOR = CHAPTER.quest("mv_field_generator", q -> q
             .at(9, -1)
             .task(Task.item(GTItems.FIELD_GENERATOR_MV))
-            .dependsOn(VACUUM_FREEZER)
-            .hideDependentLines());
+            .dependsOn(VACUUM_FREEZER));
 
     public static final Quest VOID_TRANSPORTER = CHAPTER.quest("void_transporter", q -> q
             .at(-1.5, -0.25)
@@ -560,11 +570,12 @@ public final class HvChapter {
                     .line()
                     .line("黑曜石对应虚空世界，哭泣黑曜石对应超平坦世界"))
             .task(Task.item(MultiBlockG.VOID_TRANSPORTER))
-            .dependsOn(ENDER_EYE, MV_FIELD_GENERATOR));
+            .dependsOn(ENDER_EYE)
+            .hiddenDependsOn(MV_FIELD_GENERATOR));
 
     public static final Quest PROGRAMMABLE_CHAMBER_ROOM = CHAPTER.quest("programmable_chamber_room", q -> q
             .at(4.5, -4.5)
-            .nodeScale(1.25).minWidth(250)
+            .nodeScale(1).minWidth(250)
             .icon(GTAEMachines.VIRTUAL_ITEM_SUPPLY_MACHINE)
             .title("{可编程仓室}", YELLOW)
             .subtitle("可编程仓室")
@@ -584,7 +595,8 @@ public final class HvChapter {
                     .line("1. 任何物品都可以是虚拟的（电路、透镜、模具等）")
                     .line("2. 请注意对应设备的{虚拟物品槽}的数量，样板写入过多虚拟物品是无法工作的", YELLOW))
             .task(Task.item(GTAEMachines.VIRTUAL_ITEM_SUPPLY_MACHINE), Task.item(GTOMachines.PROGRAMMABLEC_HATCH[GTValues.MV]).optional())
-            .dependsOn(MICROPROCESSOR_SUPERCOMPUTER, MV_FIELD_GENERATOR));
+            .dependsOn(MICROPROCESSOR_SUPERCOMPUTER)
+            .hiddenDependsOn(MV_FIELD_GENERATOR));
 
     public static final Quest VISIT_FLAT = CHAPTER.quest("visit_flat", q -> q
             .at(-2.5, -1)
@@ -631,7 +643,7 @@ public final class HvChapter {
             .at(-5, 5.5)
             .desc(d -> d.line("另一种ULV电路"))
             .task(Task.item(GTItems.NAND_CHIP_ULV))
-            .dependsOn(SIMPLE_SOC));
+            .hiddenDependsOn(SIMPLE_SOC));
 
     public static final Quest PHOSPHORUS_WAFER = CHAPTER.quest("phosphorus_wafer", q -> q
             .at(-6, -3)
@@ -640,8 +652,8 @@ public final class HvChapter {
                     .line()
                     .line("同时，高等级的晶圆在切出低等级芯片的时候产率会高出不少"))
             .task(Task.item(GTItems.PHOSPHORUS_WAFER))
-            .dependsOn(CLEANROOM, HV_CUTTER)
-            .hideDependentLines());
+            .dependsOn(CLEANROOM)
+            .hiddenDependsOn(HV_CUTTER));
 
     public static final Quest NOR_MEMORY_CHIP = CHAPTER.quest("nor_memory_chip", q -> q
             .at(1, 2.5)
@@ -650,12 +662,14 @@ public final class HvChapter {
                     .line()
                     .line("高级的{芯片}通常只能由更高级的{晶圆}蚀刻出，并且低级的{芯片}也能获得巨量的产能加成，{拉制}现阶段最高级的{单晶硅}通常是不二选择", YELLOW, YELLOW, YELLOW, AQUA, YELLOW))
             .task(Task.item(GTItems.NOR_MEMORY_CHIP))
-            .dependsOn(PINK_GLASS_LENS, HV_CUTTER, PHOSPHORUS_WAFER));
+            .dependsOn(PINK_GLASS_LENS)
+            .hiddenDependsOn(HV_CUTTER, PHOSPHORUS_WAFER));
 
     public static final Quest NAND_MEMORY_CHIP = CHAPTER.quest("nand_memory_chip", q -> q
             .at(-2, 4)
             .task(Task.item(GTItems.NAND_MEMORY_CHIP))
-            .dependsOn(HV_CUTTER, GRAY_GLASS_LENS, PHOSPHORUS_WAFER));
+            .dependsOn(GRAY_GLASS_LENS)
+            .hiddenDependsOn(HV_CUTTER, PHOSPHORUS_WAFER));
 
     public static final Quest DATA_STICK = CHAPTER.quest("data_stick", q -> q
             .at(1, 4)
@@ -673,24 +687,26 @@ public final class HvChapter {
                     .line()
                     .line("{警告}{：此芯片为单一副本，是规划地外任务的核心。遗失或损坏将导致整个扫描任务失效。}", RED, YELLOW))
             .task(Task.item(GTOItems.PLANET_DATA_CHIP))
-            .dependsOn(HV_LAUNCHER_AND_HV_SENSOR, NOR_MEMORY_CHIP, SIMPLE_SOC, DATA_STICK));
+            .dependsOn(HV_LAUNCHER_AND_HV_SENSOR, NOR_MEMORY_CHIP, DATA_STICK)
+            .hiddenDependsOn(SIMPLE_SOC));
 
     public static final Quest GAS_LARGE_TURBINE = CHAPTER.quest("gas_large_turbine", q -> q
             .at(-3, -5.25)
+            .nodeScale(1.5)
             .task(Task.item(GTMultiMachines.LARGE_GAS_TURBINE))
-            .dependsOn(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(EvChapter.WELCOME_TO_THE_EXTREME_VOLTAGE_STAGE)
+            .optional());
 
     public static final Quest Q_132AD659 = CHAPTER.quest("q_132ad659", q -> q
             .at(-6.5, -8.25)
+            .nodeScale(1.5)
             .icon(QuestExternalRefs.FunctionalStorageItems.MAX_STORAGE_UPGRADE)
             .desc(d -> d
                     .line("看看右面这两个多方块，它们能够提升你的产能！")
                     .line()
                     .line("如果你早就做出来了那就更好啦"))
             .task(Task.checkmark().title("提升产能?"))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE));
 
     public static final Quest CLEANROOM_EASY = CHAPTER.quest("cleanroom_easy", q -> q
             .at(-4.75, -1.5)
@@ -700,16 +716,16 @@ public final class HvChapter {
                     .line("简单模式机器不需要超净环境也能工作，因此公司直接赠送你一份用于完成任务"))
             .task(Task.checkmark())
             .reward(Reward.item(GTMultiMachines.CLEANROOM), Reward.item(GTBlocks.FILTER_CASING, 8))
-            .dependsOn(UtilChapter.Q_056EC4E6, WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .optional().hideUntilDepsVisible());
+            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest IMPLOSION_COMPRESSOR = CHAPTER.quest("implosion_compressor", q -> q
             .at(3, 5.5)
             .subtitle("唯一一台你想要爆一爆的机器")
             .desc(d -> d.line("你需要它来制造{一阶火箭}和{火箭装配机}的材料", GOLD, GOLD))
             .task(Task.item(GTMultiMachines.IMPLOSION_COMPRESSOR))
-            .dependsOn(MvChapter.ADVANCED_INTEGRATED_CIRCUIT)
-            .hideDependencyLines());
+            .hiddenDependsOn(MvChapter.ADVANCED_INTEGRATED_CIRCUIT));
 
     public static final Quest EXQUISITE_GLASS_GEM = CHAPTER.quest("exquisite_glass_gem", q -> q
             .at(5, 4)
@@ -725,16 +741,6 @@ public final class HvChapter {
                     Task.item(ModItems.STEEL_ENGINE.get(), 4),
                     Task.item(ModItems.ROCKET_FIN.get(), 4))
             .dependsOn(EXQUISITE_GLASS_GEM, BeyondTheStarsChapter.HEAVY_DUTY_PLATE_1));
-
-    public static final Quest HV_COMPONENT_SUBSIDY = CHAPTER.quest("hv_component_subsidy", q -> q
-            .at(-8, -3)
-            .icon(GTItems.ELECTRIC_MOTOR_HV)
-            .title("HV部件补助")
-            .desc(d -> d.line("从HV开始，简单不再有额外补助。用自己的双手创造一切吧！"))
-            .task(Task.checkmark())
-            .easySubsidy(Reward.item(GTItems.ELECTRIC_MOTOR_HV, 32))
-            .dependsOn(WELCOME_TO_THE_HIGH_VOLTAGE_STAGE)
-            .optional().hideUntilDepsVisible());
 
     public static final Quest ROCKET_ASSEMBLER = CHAPTER.quest("rocket_assembler", q -> q
             .at(7, 5.5)
@@ -871,7 +877,8 @@ public final class HvChapter {
                     .line()
                     .line("每提升一级超频，蒸汽消耗量提升{4x}，速度提升{2x}", DARK_GREEN, DARK_GREEN))
             .task(Task.item(GTOMachines.LARGE_STEAM_HATCH))
-            .dependsOn(LvChapter.PRECISION_STEAM_MECHANISM, TITANIUM_INGOT));
+            .dependsOn(TITANIUM_INGOT)
+            .hiddenDependsOn(LvChapter.PRECISION_STEAM_MECHANISM));
 
     public static final Quest Q_1A1DFCA1 = CHAPTER.quest("q_1a1dfca1", q -> q
             .at(13.5, 1)
@@ -887,6 +894,18 @@ public final class HvChapter {
             .at(16.75, -4.75)
             .task(Task.item(GTMultiMachines.BEDROCK_ORE_MINER[GTValues.HV]))
             .dependsOn(TITANIUM_INGOT));
+
+    public static final Quest ME_DISK_STORAGE = CHAPTER.quest("me_disk_storage", q -> q
+            .at(0, -4.5)
+            .subtitle("大家伙")
+            .desc(d -> d
+                    .line("往输入总线里放存储组件来增加容量")
+                    .line()
+                    .line("本身不耗电，但[item]功耗和[item]一致，都是96AE/t", item(GTAEMachines.ME_STORAGE_ACCESS_HATCH), item(GTAEMachines.ME_DISK_BOX))
+                    .line()
+                    .line("{容量不止翻倍！}", DARK_GRAY.italic()))
+            .task(Task.item(MultiBlockG.ME_DISK_STORAGE), Task.item(GTAEMachines.ME_STORAGE_ACCESS_HATCH))
+            .dependsOn(MvChapter.ME_DISK_BOX, MICROPROCESSOR_SUPERCOMPUTER));
 
     static {
         CHAPTER.decorate(d -> d
@@ -904,5 +923,9 @@ public final class HvChapter {
                 .link(QuestLink.of(BeyondTheStarsChapter.HEAVY_DUTY_PLATE_1, 5, 5.5))
                 .link(QuestLink.of(BeyondTheStarsChapter.FLESH_IS_WEAK_MACHINERY_ASCENDS, 10.5, 2))
                 .link(QuestLink.of(BeyondTheStarsChapter.BASIC_SPACE_SUIT, 10.5, 0.5)));
+    }
+
+    static {
+        CHAPTER.decorate(d -> {});
     }
 }

@@ -49,6 +49,7 @@ import com.direwolf20.buildinggadgets2.setup.Registration;
 import com.hepdd.gtmthings.data.CustomItems;
 import de.maxhenkel.easyvillagers.items.ModItems;
 import dev.shadowsoffire.apotheosis.Apoth;
+import io.github.lounode.extrabotany.common.item.ExtraBotanyItems;
 
 import static com.gtolib.api.quest.QuestStyle.*;
 
@@ -62,9 +63,9 @@ public final class TipsChapter {
 
     public static final Quest Q_79646E8E = CHAPTER.quest("q_79646e8e", q -> q
             .at(0, -1)
-            .nodeScale(3)
+            .nodeScale(1)
             .icon(Items.WRITABLE_BOOK)
-            .subtitle("我以为你从来都不会来看我呢...")
+            .subtitle("我以为你永远都不会来看我呢...")
             .desc(d -> d
                     .line("常回来看看，这里收集了大部分关于游戏机制的技巧与提示！")
                     .line()
@@ -76,7 +77,7 @@ public final class TipsChapter {
 
     public static final Quest CHUNK_LOADING = CHAPTER.quest("chunk_loading", q -> q
             .at(-3.75, -2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(Items.CLOCK)
             .title("区块加载")
             .subtitle("裂变反应堆的一生之敌")
@@ -97,12 +98,11 @@ public final class TipsChapter {
                     .line("{注意：不要认领离你太远的区块，这样做是无效的}", LIGHT_PURPLE))
             .task(Task.checkmark())
             .reward(Reward.item(Items.CLOCK))
-            .dependsOn(Q_79646E8E)
-            .hideDependencyLines(false));
+            .dependsOn(Q_79646E8E));
 
     public static final Quest Q_567EBE02 = CHAPTER.quest("q_567ebe02", q -> q
             .at(-1.5, -4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(earth.terrarium.adastra.common.registry.ModItems.GRAVITY_NORMALIZER.get())
             .subtitle("集大成者")
             .desc(d -> d
@@ -125,7 +125,7 @@ public final class TipsChapter {
 
     public static final Quest FTB_UTIMINE = CHAPTER.quest("ftb_utimine", q -> q
             .at(3.75, -2.25)
-            .nodeScale(1.5).minWidth(240)
+            .nodeScale(1).minWidth(240)
             .icon(Items.CHAIN)
             .title("FTB Utimine")
             .subtitle("我是打铁匠，这就是锁连")
@@ -143,7 +143,7 @@ public final class TipsChapter {
 
     public static final Quest WHAT_ARE_THESE_KEYS = CHAPTER.quest("what_are_these_keys", q -> q
             .at(3.75, 0.75)
-            .nodeScale(1.5).iconScale(2)
+            .nodeScale(1).iconScale(2)
             .icon(earth.terrarium.adastra.common.registry.ModItems.GLACIAN_BUTTON.get())
             .title("这都是啥按键啊？")
             .subtitle("（真）寸步难行 ")
@@ -162,7 +162,7 @@ public final class TipsChapter {
 
     public static final Quest GT_TOOL_USER_MANUAL = CHAPTER.quest("gt_tool_user_manual", q -> q
             .at(-3.75, 0.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(ToolHelper.get(GTToolType.WRENCH, GTMaterials.Iron).getItem())
             .title("GT 工具使用手册")
             .subtitle("使用说明书")
@@ -201,7 +201,7 @@ public final class TipsChapter {
 
     public static final Quest DETECTION_DELAY = CHAPTER.quest("detection_delay", q -> q
             .at(-3.75, -0.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(TagPrefix.pipeHugeFluid, GTOMaterials.SpaceTime)
             .title("检测延迟")
             .desc(d -> d.line("许多周期性检测事件的检测周期得到了不同程度的延长，如管道与线缆的连接检测、多方块机器自动成型检测。这属于正常现象，这使得在超大量多方块的存档中依然保持良好的TPS"))
@@ -211,7 +211,7 @@ public final class TipsChapter {
 
     public static final Quest DIFFICULTY_AND_MODES = CHAPTER.quest("difficulty_and_modes", q -> q
             .at(3.75, -0.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(Items.COMPASS)
             .title("难度与模式")
             .subtitle("在一切的一切开始之前......")
@@ -241,13 +241,13 @@ public final class TipsChapter {
                     .line()
                     .line("{强烈建议在更改难度后，重启MC，然后再创建新的世界！}", YELLOW)
                     .line()
-                    .line("{这个任务完成不了？点左上角小箭头查看前置！}", GRAY.italic()))
+                    .line("{这个任务完成不了？点右上角小箭头查看前置！}", DARK_GRAY.italic()))
             .task(Task.checkmark())
             .dependsOn(Q_79646E8E, GregtechOdysseyChapter.Q_19EFE14C));
 
     public static final Quest SELF_DISCIPLINE_MODE = CHAPTER.quest("self_discipline_mode", q -> q
             .at(3.75, 2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(AEItems.ITEM_CELL_CREATIVE)
             .title("自我约束模式")
             .desc(d -> d
@@ -264,7 +264,7 @@ public final class TipsChapter {
 
     public static final Quest ORES_AND_VEINS = CHAPTER.quest("ores_and_veins", q -> q
             .at(3, -3.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTMaterialBlocks.SURFACE_ROCK_BLOCKS.get(GTMaterials.Gold))
             .title("矿石与矿脉")
             .subtitle("告诉我他们在哪？")
@@ -273,7 +273,7 @@ public final class TipsChapter {
                     .line()
                     .line("并且，{GregTech}添加了对{Xaero's WorldMap}的矿脉查看支持，打开{世界地图}点击右下角的{显示GT矿脉}和{显示基岩流体矿脉}按钮即可查看你已经发现的矿脉", AQUA, AQUA, YELLOW, YELLOW, YELLOW)
                     .line()
-                    .line("当然，我更推荐你使用{探矿仪}来寻找矿石。去{商店}页面换一个吧", GOLD, AQUA)
+                    .line("当然，我更推荐你使用{探矿仪}来寻找矿石。去换一个吧", GOLD)
                     .line()
                     .line("前往{矿石图鉴}章节查看你需要的矿石资源", link(OresChapter.GOOD_AT_USING_EMI_TO_CHECK)))
             .task(Task.checkmark().title("我爱挖矿！"))
@@ -282,7 +282,7 @@ public final class TipsChapter {
 
     public static final Quest EASY_NORMAL_EXPERT_MODE_FEATURE_GUIDE = CHAPTER.quest("easy_normal_expert_mode_feature_guide", q -> q
             .at(-3, -3.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .iconStack(() -> QuestExternalRefs.astroduxBook())
             .title("简单、普通、专家模式特性指南")
             .subtitle("{难度不影响游戏流程或内容，只影响挑战性！}", RED)
@@ -332,7 +332,7 @@ public final class TipsChapter {
 
     public static final Quest BUILDING_TIPS = CHAPTER.quest("building_tips", q -> q
             .at(-3.75, 2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(QuestExternalRefs.ConstructionWandItems.IRON_WAND)
             .title("建造提示")
             .subtitle("Effortless Building")
@@ -353,7 +353,7 @@ public final class TipsChapter {
 
     public static final Quest Q_113BFE54 = CHAPTER.quest("q_113bfe54", q -> q
             .at(1.5, -4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .iconStack(() -> QuestExternalRefs.healingWine())
             .desc(d -> d
                     .line("如果你将游戏托管在一台服务器上，那么你可能需要关注{OPAC(Open Parties  and Claims)}{玩家离线强制加载规则}", AQUA, GOLD)
@@ -367,7 +367,7 @@ public final class TipsChapter {
 
     public static final Quest WE_NEED_TO_COMMUNICATE = CHAPTER.quest("we_need_to_communicate", q -> q
             .at(0, -5.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOItems.INTEGRATED_CONTROL_CORE_MAX)
             .title("我们需要交流！")
             .subtitle("群U永远是你最坚实的后盾")
@@ -385,7 +385,7 @@ public final class TipsChapter {
 
     public static final Quest TANGIBLE_SMALL_BOARD = CHAPTER.quest("tangible_small_board", q -> q
             .at(2.25, 2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOItems.WIRELESS_CHARGER_COVER)
             .title("有形的小板")
             .subtitle("新鲜事简单报")
@@ -424,7 +424,7 @@ public final class TipsChapter {
 
     public static final Quest EMI_MULTIBLOCK_SPECIAL = CHAPTER.quest("emi_multiblock_special", q -> q
             .at(-2, -6)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(earth.terrarium.adastra.common.registry.ModItems.ETRIONIC_BLAST_FURNACE.get())
             .title("EMI多方块专题")
             .desc(d -> d
@@ -449,7 +449,7 @@ public final class TipsChapter {
 
     public static final Quest CHARACTERISTICS_OF_WIRES = CHAPTER.quest("characteristics_of_wires", q -> q
             .at(7, -7.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(TagPrefix.wireGtSingle, GTOMaterials.ConductiveAlloy)
             .title("导线的特性")
             .subtitle("我的导线在漏电?")
@@ -466,13 +466,12 @@ public final class TipsChapter {
                     Task.item(TagPrefix.wireGtSingle, GTMaterials.Copper).optional(),
                     Task.item(TagPrefix.cableGtSingle, GTMaterials.Copper).optional(),
                     Task.item(TagPrefix.wireGtSingle, GTOMaterials.EnergeticAlloy).optional())
-            .dependsOn(Q_79646E8E, SteamChapter.YOU_CAN_STICK_WIRES)
-            .requireAny()
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E, SteamChapter.YOU_CAN_STICK_WIRES)
+            .requireAny());
 
     public static final Quest MEANS_OF_ACCELERATION = CHAPTER.quest("means_of_acceleration", q -> q
             .at(7, -0.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTMachines.WORLD_ACCELERATOR[GTValues.UV])
             .title("提速的手段")
             .subtitle("机器太慢，人生太短")
@@ -483,12 +482,11 @@ public final class TipsChapter {
                     .line()
                     .line("当你感觉机器{太慢}的时候，不妨看看这里", RED))
             .task(Task.checkmark())
-            .dependsOn(Q_79646E8E)
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E));
 
     public static final Quest OVERCLOCKING = CHAPTER.quest("overclocking", q -> q
             .at(9, -2)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTOMachines.WIRELESS_INPUT_HATCH_64[GTValues.EV])
             .title("超频！")
             .subtitle("耗能=功率x耗时 功率=电压x电流")
@@ -546,7 +544,7 @@ public final class TipsChapter {
 
     public static final Quest BOOST_MECHANISM = CHAPTER.quest("boost_mechanism", q -> q
             .at(7, -2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTMachines.ENERGY_INPUT_HATCH[GTValues.LV])
             .title("升压机制")
             .subtitle("我在LV怎么做MV的配方？")
@@ -557,12 +555,11 @@ public final class TipsChapter {
                     .line()
                     .line("{升压并没有改变能源仓提供的功率，只是提升了电压，降低了电流。升压机制一定能实现的原因是最低电流的能源仓也至少可以给机器提供2A电流，因此双仓升压之后一定能提供至少1A的电流。}", GRAY.italic()))
             .task(Task.checkmark(), Task.item(GTMachines.ENERGY_INPUT_HATCH[GTValues.LV]).optional())
-            .dependsOn(Q_79646E8E, LvChapter.ENERGY_HATCH)
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E, LvChapter.ENERGY_HATCH));
 
     public static final Quest OVERCLOCKING_OVERLOAD = CHAPTER.quest("overclocking_overload", q -> q
             .at(11, -2)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(MultiBlockD.ADVANCED_ASSEMBLY_LINE)
             .title("超损超频！？")
             .subtitle("能使用激光仓的代价")
@@ -586,7 +583,7 @@ public final class TipsChapter {
 
     public static final Quest SUPER_OVERCLOCKING = CHAPTER.quest("super_overclocking", q -> q
             .at(13, -2)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTOMachines.OVERCLOCK_HATCH[GTValues.UV])
             .title("超级超频！！！")
             .subtitle("可以更改超频效果了")
@@ -604,7 +601,7 @@ public final class TipsChapter {
 
     public static final Quest PATCH_SERIES = CHAPTER.quest("patch_series", q -> q
             .at(11, 1)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTOItems.LUV_POWER_AMPLIFIERS)
             .title("贴片系列")
             .subtitle("增幅器能拆，模块不能")
@@ -635,12 +632,12 @@ public final class TipsChapter {
                     Task.item(GTOItems.LUV_POWER_AMPLIFIERS).optional(),
                     Task.item(GTOItems.SPEED_UPGRADE_MODULE).optional(),
                     Task.item(GTOItems.ENERGY_UPGRADE_MODULE).optional())
-            .dependsOn(MEANS_OF_ACCELERATION, UtilChapter.PATCH_ASSIST)
+            .dependsOn(MEANS_OF_ACCELERATION, LvChapter.LV_POWER_AMPLIFIERS)
             .hideUntilDepsComplete());
 
     public static final Quest CONFIGURABLE_MAINTENANCE_HATCH = CHAPTER.quest("configurable_maintenance_hatch", q -> q
             .at(9, 1)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTMachines.CONFIGURABLE_MAINTENANCE_HATCH)
             .title("负荷调节维护仓")
             .subtitle("聊胜于无")
@@ -651,7 +648,7 @@ public final class TipsChapter {
 
     public static final Quest PARALLEL_CONTROL_HATCH = CHAPTER.quest("parallel_control_hatch", q -> q
             .at(11, -0.5)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GCYMMachines.PARALLEL[GTValues.IV])
             .title("并行控制仓")
             .subtitle("大批量加工中等效于无损超频")
@@ -667,7 +664,7 @@ public final class TipsChapter {
 
     public static final Quest ACCELERATION_HATCH = CHAPTER.quest("acceleration_hatch", q -> q
             .at(9, -0.5)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTOMachines.ACCELERATE_HATCH[GTValues.LV])
             .title("加速仓")
             .subtitle("无条件加速")
@@ -681,7 +678,7 @@ public final class TipsChapter {
 
     public static final Quest THREADING_HATCH = CHAPTER.quest("threading_hatch", q -> q
             .at(13, 1)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTOMachines.THREAD_HATCH[GTValues.UV])
             .title("线程仓")
             .subtitle("跨配方并行")
@@ -695,7 +692,7 @@ public final class TipsChapter {
 
     public static final Quest HEATING_COILS_GLASS = CHAPTER.quest("heating_coils_glass", q -> q
             .at(13, -0.5)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(GTBlocks.COIL_CUPRONICKEL)
             .title("线圈/玻璃")
             .subtitle("这也算吗")
@@ -711,16 +708,9 @@ public final class TipsChapter {
             .dependsOn(MEANS_OF_ACCELERATION, LvChapter.ELECTRIC_ARC_FURNACE_THE_BEGINNING_OF)
             .hideUntilDepsComplete());
 
-    public static final Quest OMISSION_ALERT = CHAPTER.quest("omission_alert", q -> q
-            .at(5, -6.5)
-            .nodeScale(1.5)
-            .title("遗漏提示？")
-            .desc(d -> d.line("希望贡献更多提示？在qq群/discord/github上留下你的脚印！"))
-            .task(Task.checkmark()));
-
     public static final Quest FUNCTIONAL_BLOCK_VOLTAGE = CHAPTER.quest("functional_block_voltage", q -> q
             .at(7, 1.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTBlocks.CASING_TEMPERED_GLASS)
             .title("功能性方块的电压")
             .subtitle("玻璃,线圈的等级怎么对应上电压啊?")
@@ -729,12 +719,11 @@ public final class TipsChapter {
                     .line()
                     .line("有一些方块如{线圈}和{玻璃}没有标注，{等级1对应LV电压}。你也可以在{无线电网}和{里程碑}两章查看对应的电压", GOLD, GOLD, YELLOW, AQUA, AQUA))
             .task(Task.checkmark(), Task.item(GTBlocks.COIL_CUPRONICKEL).optional(), Task.item(GTBlocks.CASING_TEMPERED_GLASS).optional())
-            .dependsOn(Q_79646E8E, LvChapter.COIL_BLOCK)
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E, LvChapter.COIL_BLOCK));
 
     public static final Quest MAXIMUM_POWER_AND_MAXIMUM_RECIPE_TIER = CHAPTER.quest("maximum_power_and_maximum_recipe_tier", q -> q
             .at(7, -4)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTMultiMachines.ELECTRIC_BLAST_FURNACE)
             .title("最大功率和最大配方等级")
             .subtitle("我的多方块机器UI上为什么有两个电压？")
@@ -745,12 +734,11 @@ public final class TipsChapter {
                     .line()
                     .line("{最大配方等级（或者说机器配方等级）和最大功率是两码事，不要搞混了！}", YELLOW))
             .task(Task.checkmark())
-            .dependsOn(Q_79646E8E, LvChapter.ELECTRIC_ARC_FURNACE_THE_BEGINNING_OF)
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E, LvChapter.ELECTRIC_ARC_FURNACE_THE_BEGINNING_OF));
 
     public static final Quest SPACE_ELEVATOR_POWER_MODULE = CHAPTER.quest("space_elevator_power_module", q -> q
             .at(15, -0.5)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .title("太空电梯动力模块")
             .subtitle("这也算吗？？？")
             .desc(d -> d.line("太空电梯通过升级{动力模块}可以获得更高的并行", GOLD))
@@ -760,7 +748,7 @@ public final class TipsChapter {
 
     public static final Quest ALL_TURNED_INTO_WIRELESS_ENERGY_HATCHES = CHAPTER.quest("all_turned_into_wireless_energy_hatches", q -> q
             .at(7, 4.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOMachines.WIRELESS_INPUT_HATCH_256[GTValues.IV])
             .title("都变成无线能源仓了")
             .subtitle("哪里有无线激光仓啊?")
@@ -769,12 +757,11 @@ public final class TipsChapter {
                     Task.checkmark(),
                     Task.item(GTOMachines.WIRELESS_INPUT_HATCH_256[GTValues.IV]).optional(),
                     Task.item(GTOMachines.WIRELESS_OUTPUT_HATCH_256[GTValues.IV]).optional())
-            .dependsOn(Q_79646E8E, IvChapter.IV_256A_LASER_TARGET_HATCH)
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E, IvChapter.IV_256A_LASER_TARGET_HATCH));
 
     public static final Quest THE_NETHER_THE_END_AND_OTHER = CHAPTER.quest("the_nether_the_end_and_other", q -> q
             .at(-2.25, 2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(QuestTextures.NETHER_PORTAL)
             .title("下界，末地，和其他维度")
             .subtitle("原版MC的方法去不了")
@@ -792,7 +779,7 @@ public final class TipsChapter {
 
     public static final Quest FLIGHT_MODE = CHAPTER.quest("flight_mode", q -> q
             .at(-0.75, 2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOOrganItems.FAIRY_WING)
             .title("飞行模式")
             .subtitle("如何获取飞行?")
@@ -818,7 +805,7 @@ public final class TipsChapter {
 
     public static final Quest CAN_T_FIT = CHAPTER.quest("can_t_fit", q -> q
             .at(7, 3)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTMultiMachines.ASSEMBLY_LINE)
             .title("塞不下...")
             .subtitle("能以其他的姿势摆放多方块吗?")
@@ -831,12 +818,11 @@ public final class TipsChapter {
                     .line()
                     .line("还可以{镜像成型}，只需要使用{高级终端}打开镜像模式搭建即可", YELLOW, GOLD))
             .task(Task.checkmark())
-            .dependsOn(Q_79646E8E, LvChapter.ELECTRIC_ARC_FURNACE_THE_BEGINNING_OF)
-            .hideDependencyLines());
+            .hiddenDependsOn(Q_79646E8E, LvChapter.ELECTRIC_ARC_FURNACE_THE_BEGINNING_OF));
 
     public static final Quest EATING_AND_GETTING_SICK = CHAPTER.quest("eating_and_getting_sick", q -> q
             .at(0.75, 2.25)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(SOLCarrotItems.FOOD_BOOK.get())
             .title("进食与生病")
             .desc(d -> d
@@ -854,7 +840,7 @@ public final class TipsChapter {
 
     public static final Quest ALL_BUTTONS = CHAPTER.quest("all_buttons", q -> q
             .at(9, -4)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTMultiMachines.ELECTRIC_BLAST_FURNACE)
             .title("全是按钮")
             .subtitle("我的多方块机器UI左下角怎么这么多按钮？")
@@ -875,7 +861,7 @@ public final class TipsChapter {
 
     public static final Quest THE_MYSTERIES_OF_RESEARCH = CHAPTER.quest("the_mysteries_of_research", q -> q
             .at(7, 6.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTResearchMachines.RESEARCH_STATION)
             .title("研究的奥秘")
             .subtitle("我爱学习！")
@@ -900,12 +886,11 @@ public final class TipsChapter {
                     Task.item(GTResearchMachines.DATA_HATCH_RECEIVER).optional(),
                     Task.item(GTResearchMachines.DATA_HATCH_TRANSMITTER).optional(),
                     Task.item(GTBlocks.OPTICAL_PIPES[0]).optional())
-            .dependsOn(IvChapter.ASSEMBLY_LINE_RECIPE_DATA, Q_79646E8E)
-            .hideDependencyLines());
+            .hiddenDependsOn(IvChapter.ASSEMBLY_LINE_RECIPE_DATA, Q_79646E8E));
 
     public static final Quest MAGIC_S_LOSSLESS_OVERCLOCKING = CHAPTER.quest("magic_s_lossless_overclocking", q -> q
             .at(11, -3.5)
-            .nodeScale(1.25)
+            .nodeScale(1)
             .icon(ManaMachine.MANA_AMPLIFIER_HATCH)
             .title("魔法的无损超频")
             .subtitle("以魔力为代价")
@@ -921,7 +906,7 @@ public final class TipsChapter {
 
     public static final Quest SINGLE_BLOCK_CONFIG = CHAPTER.quest("single_block_config", q -> q
             .at(7, -5.75)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOMachines.ULV_WIREMILL[GTValues.ULV])
             .title("单方块配置")
             .subtitle("格雷大学习")
@@ -938,12 +923,11 @@ public final class TipsChapter {
                     .line()
                     .line("左下角{第二个按钮}决定{输入是否能从输出面进入}。", GREEN, YELLOW))
             .task(Task.checkmark())
-            .dependsOn(UlvChapter.PRIMITIVE_ASSEMBLY, Q_79646E8E)
-            .hideDependencyLines());
+            .hiddenDependsOn(UlvChapter.PRIMITIVE_ASSEMBLY, Q_79646E8E));
 
     public static final Quest Q_7B11F10A = CHAPTER.quest("q_7b11f10a", q -> q
             .at(0, -8)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("在编写任务书描述时，尤其是长段文字，应使用颜色高亮关键内容，并尽量以不同颜色区分不同的重要内容。")
                     .line()
@@ -985,16 +969,15 @@ public final class TipsChapter {
 
     public static final Quest IRON_FARM = CHAPTER.quest("iron_farm", q -> q
             .at(-2.25, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d.line("除了铁傀儡农场，Easy Villagers还有很多好东西来帮助你度过前期，如刷取村民和自动交易等"))
             .task(Task.item(ModItems.IRON_FARM.get()))
             .reward(Reward.item(ModItems.FARMER.get()), Reward.item(ModItems.TRADER.get()))
-            .dependsOn(SteamChapter.PREPARING_GLASS_STEP_THREE)
-            .hideDependencyLines());
+            .hiddenDependsOn(SteamChapter.PREPARING_GLASS_STEP_THREE));
 
     public static final Quest BELT = CHAPTER.quest("belt", q -> q
             .at(-0.75, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("各种各样的工具塞满了你的物品栏？你可以将它们都放在皮带里")
                     .line()
@@ -1007,7 +990,7 @@ public final class TipsChapter {
 
     public static final Quest LV_ITEM_MAGNET = CHAPTER.quest("lv_item_magnet", q -> q
             .at(3.75, 6)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTItems.ITEM_MAGNET_LV)
             .desc(d -> d.line("吸附掉落物"))
             .task(Task.item(GTItems.ITEM_MAGNET_LV), Task.item(QuestExternalRefs.SophisticatedBackpacksItems.MAGNET_UPGRADE))
@@ -1015,13 +998,13 @@ public final class TipsChapter {
 
     public static final Quest Q_067AC6B5 = CHAPTER.quest("q_067ac6b5", q -> q
             .at(-5.25, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d.line("这里有一些任务没提及的小工具"))
             .task(Task.checkmark().title("有用的工具")));
 
     public static final Quest TRAVEL_STAFF = CHAPTER.quest("travel_staff", q -> q
             .at(0.75, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOItems.TRAVEL_STAFF)
             .desc(d -> d
                     .line("从Ender IO移植而来的旅行手杖")
@@ -1032,14 +1015,14 @@ public final class TipsChapter {
 
     public static final Quest TEMPLATE_MANAGER = CHAPTER.quest("template_manager", q -> q
             .at(3.75, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(Registration.TemplateManager_ITEM.get())
             .desc(d -> d.line("模板管理器经过魔改可以放入AE的{空白样板}，将复制小帮手复制的方块直接存为{样板}", GOLD, GOLD))
             .task(Task.item(Registration.TemplateManager_ITEM.get()), Task.item(Registration.CopyPaste_Gadget.get())));
 
     public static final Quest Q_2F1EBC6B = CHAPTER.quest("q_2f1ebc6b", q -> q
             .at(-3.75, 6)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("GTO中的EMI经过了大幅的性能优化和体验优化")
                     .line()
@@ -1052,7 +1035,7 @@ public final class TipsChapter {
 
     public static final Quest Q_466185D2 = CHAPTER.quest("q_466185d2", q -> q
             .at(2.25, 6)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("应用能源（AE2）章节左上角有许多小工具，别忘了去看看！")
                     .line()
@@ -1061,7 +1044,7 @@ public final class TipsChapter {
 
     public static final Quest LV_TRADING_STATION = CHAPTER.quest("lv_trading_station", q -> q
             .at(-3.75, 8)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .icon(GTOMachines.TRADING_STATION[GTValues.LV])
             .desc(d -> d
                     .line("从掌上银行获取格雷会员卡")
@@ -1071,7 +1054,7 @@ public final class TipsChapter {
 
     public static final Quest EXPLORERSCOMPASS = CHAPTER.quest("explorerscompass", q -> q
             .at(-3.75, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d
                     .line("前期探险的好帮手")
                     .line()
@@ -1080,15 +1063,29 @@ public final class TipsChapter {
 
     public static final Quest GADGET_CUT_PASTE = CHAPTER.quest("gadget_cut_paste", q -> q
             .at(2.25, 4.5)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .desc(d -> d.line("快速搬家，拆走各种不可掉落方块的利器"))
             .task(Task.item(Registration.CutPaste_Gadget.get())));
 
     public static final Quest VILLAGE_TRADING_STATION = CHAPTER.quest("village_trading_station", q -> q
             .at(-2.25, 8)
-            .nodeScale(1.5)
+            .nodeScale(1)
             .task(Task.item(GTOMachines.VILLAGE_TRADING_STATION))
             .dependsOn(HvChapter.POLYTETRAFLUOROETHYLENE_INGOT));
+
+    public static final Quest ANCIENT_DEBRIS = CHAPTER.quest("ancient_debris", q -> q
+            .at(2, -6)
+            .title("{提示之王}", YELLOW)
+            .subtitle("{你}{居}{然}{看}{完}{了}{所}{有}{的}{提}{示}{！}{！}{！}{！}{！}{！}{！}{！}", RED, GOLD, YELLOW, GREEN, AQUA, BLUE, LIGHT_PURPLE, BLUE, AQUA, GREEN, YELLOW, GOLD, RED, GOLD, YELLOW, GREEN, AQUA, BLUE, LIGHT_PURPLE)
+            .desc(d -> d
+                    .line("{你值得这枚奖章}", DARK_GREEN))
+            .nodeScale(1)
+            .task(Task.checkmark())
+            .hiddenDependsOn(EATING_AND_GETTING_SICK, TANGIBLE_SMALL_BOARD, WHAT_ARE_THESE_KEYS, DIFFICULTY_AND_MODES, SELF_DISCIPLINE_MODE, FTB_UTIMINE, EMI_MULTIBLOCK_SPECIAL, Q_567EBE02, ORES_AND_VEINS, WE_NEED_TO_COMMUNICATE, EASY_NORMAL_EXPERT_MODE_FEATURE_GUIDE, CHUNK_LOADING, DETECTION_DELAY, GT_TOOL_USER_MANUAL, BUILDING_TIPS, THE_NETHER_THE_END_AND_OTHER, FLIGHT_MODE, ALL_BUTTONS, MAXIMUM_POWER_AND_MAXIMUM_RECIPE_TIER, SINGLE_BLOCK_CONFIG, CHARACTERISTICS_OF_WIRES, BOOST_MECHANISM, OVERCLOCKING, OVERCLOCKING_OVERLOAD, SUPER_OVERCLOCKING, MAGIC_S_LOSSLESS_OVERCLOCKING, FUNCTIONAL_BLOCK_VOLTAGE, MEANS_OF_ACCELERATION, CONFIGURABLE_MAINTENANCE_HATCH, PATCH_SERIES, ACCELERATION_HATCH, THREADING_HATCH, PARALLEL_CONTROL_HATCH, HEATING_COILS_GLASS, SPACE_ELEVATOR_POWER_MODULE, CAN_T_FIT, ALL_TURNED_INTO_WIRELESS_ENERGY_HATCHES, THE_MYSTERIES_OF_RESEARCH, Q_113BFE54)
+            .optional()
+            .disableToast()
+            .reward(Reward.item(ExtraBotanyItems.heroMedal, 1))
+            .hideUntilDepsComplete());
 
     static {
         CHAPTER.decorate(d -> d

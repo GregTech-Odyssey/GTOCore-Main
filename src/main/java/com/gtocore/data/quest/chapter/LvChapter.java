@@ -95,16 +95,14 @@ public final class LvChapter {
                     .line()
                     .line("如果你需要来点{镓粉}制作{二极管}，也可以通过抽奖般的可怜概率获得一些", GOLD, GOLD))
             .task(Task.item(GTMachines.ELECTROLYZER[GTValues.LV]))
-            .dependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE));
 
     public static final Quest LV_SUPERCONDUCTOR = CHAPTER.quest("lv_superconductor", q -> q
             .at(-14, -3)
             .title("LV超导")
             .desc(d -> d.line("这个是LV阶段的超导材料"))
             .task(Task.item(TagPrefix.ingot, GTOMaterials.ConductiveAlloy))
-            .dependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE));
 
     public static final Quest LV_ARC_FURNACE = CHAPTER.quest("lv_arc_furnace", q -> q
             .at(-15.5, -2)
@@ -122,8 +120,7 @@ public final class LvChapter {
             .desc(d -> d.line("温度过高会自动关机"))
             .task(Task.item(GTOMachines.ELECTRIC_HEATER))
             .dependsOn(ANNEALED_COPPER_INGOT)
-            .requireAny()
-            .hideDependentLines());
+            .requireAny());
 
     public static final Quest YOU_WILL_HATE_THEM = CHAPTER.quest("you_will_hate_them", q -> q
             .at(-13, 0)
@@ -209,8 +206,7 @@ public final class LvChapter {
             .icon(GTMaterials.Formaldehyde.getBucket())
             .desc(d -> d.line("使用甲醇和氧气合成"))
             .task(Task.item(GTMaterials.Formaldehyde.getBucket()).optional(), Task.checkmark())
-            .dependsOn(BLACK_BOX_REACTOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(BLACK_BOX_REACTOR));
 
     public static final Quest SULFURIC_ACID_BUCKET = CHAPTER.quest("sulfuric_acid_bucket", q -> q
             .at(5, -6)
@@ -220,8 +216,7 @@ public final class LvChapter {
                     .line()
                     .line("你在脱硫中获得的硫化氢也可以制成硫酸"))
             .task(Task.item(GTMaterials.SulfuricAcid.getBucket()).optional(), Task.checkmark())
-            .dependsOn(BLACK_BOX_REACTOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(BLACK_BOX_REACTOR));
 
     public static final Quest STEEL_PISTON_HOUSING = CHAPTER.quest("steel_piston_housing", q -> q
             .at(-8.5, 1)
@@ -278,8 +273,7 @@ public final class LvChapter {
                     .line()
                     .line("与原版GT不同的是，{提取机}的大部分职能被{液化炉}取代了，导致提取机其实没什么用", GOLD, GOLD))
             .task(Task.item(GTMachines.EXTRACTOR[GTValues.LV]))
-            .dependsOn(LV_ELECTRIC_PISTON, LV_ELECTRIC_PUMP)
-            .hideDependencyLines());
+            .hiddenDependsOn(LV_ELECTRIC_PISTON, LV_ELECTRIC_PUMP));
 
     public static final Quest LIQUID_TIN = CHAPTER.quest("liquid_tin", q -> q
             .at(1.5, 6)
@@ -303,7 +297,8 @@ public final class LvChapter {
                     .line()
                     .line("{需要的温度更高，你需要一台电力加热器}", YELLOW))
             .task(Task.item(GTMaterials.TinAlloy.getBucket()).optional(), Task.checkmark())
-            .dependsOn(LIQUID_TIN, ELECTRIC_HEATER, MIX_AND_MIX));
+            .dependsOn(LIQUID_TIN, MIX_AND_MIX)
+            .hiddenDependsOn(ELECTRIC_HEATER));
 
     public static final Quest LV_ROBOT_ARM = CHAPTER.quest("lv_robot_arm", q -> q
             .at(-5.5, 1.5)
@@ -340,7 +335,7 @@ public final class LvChapter {
             .rewardFor(QuestTierSet.EASY, Reward.item(GTItems.CONVEYOR_MODULE_LV, 8))
             .rewardFor(QuestTierSet.NORMAL, Reward.item(GTItems.CONVEYOR_MODULE_LV, 4))
             .rewardFor(QuestTierSet.EASY_NORMAL, Reward.item(GTItems.ELECTRIC_PISTON_LV, 4))
-            .rewardFor(QuestTierSet.EXPERT, Reward.item(GTItems.ELECTRIC_MOTOR_LV, 4)));
+            .rewardFor(QuestTierSet.EXPERT));
 
     public static final Quest RUBBER_BATH_MACHINE = CHAPTER.quest("rubber_bath_machine", q -> q
             .at(-5.5, -1.5)
@@ -407,14 +402,12 @@ public final class LvChapter {
     public static final Quest LV_FLUID_REGULATOR = CHAPTER.quest("lv_fluid_regulator", q -> q
             .at(-6, -2.5)
             .task(Task.item(GTItems.FLUID_REGULATOR_LV))
-            .dependsOn(LV_ELECTRIC_PUMP)
-            .hideDependentLines());
+            .dependsOn(LV_ELECTRIC_PUMP));
 
     public static final Quest STEEL_EMITTER_BASE = CHAPTER.quest("steel_emitter_base", q -> q
             .at(-15.5, 1.5)
             .task(Task.item(GTOTagPrefix.EMITTER_BASES, GTMaterials.Steel))
-            .dependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE));
 
     public static final Quest LV_EMITTER = CHAPTER.quest("lv_emitter", q -> q
             .at(-15.5, 3)
@@ -451,8 +444,7 @@ public final class LvChapter {
                     .line()
                     .line("你需要用它来制作{云母绝缘薄片}，以及{翻倍产出}优质电子电路中需要的{箔}", GOLD, YELLOW, GOLD))
             .task(Task.item(GTOMachines.CLUSTER[GTValues.LV]))
-            .dependsOn(LV_ELECTRIC_MOTOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(LV_ELECTRIC_MOTOR));
 
     public static final Quest LV_BENDER = CHAPTER.quest("lv_bender", q -> q
             .at(-6, 3)
@@ -463,8 +455,7 @@ public final class LvChapter {
     public static final Quest STEEL_SENSOR_CASING = CHAPTER.quest("steel_sensor_casing", q -> q
             .at(-12.5, 4.5)
             .task(Task.item(GTOTagPrefix.SENSOR_CASING, GTMaterials.Steel))
-            .dependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE));
 
     public static final Quest LV_SENSOR = CHAPTER.quest("lv_sensor", q -> q
             .at(-14, 4.5)
@@ -474,8 +465,7 @@ public final class LvChapter {
     public static final Quest LV_UNPACKER = CHAPTER.quest("lv_unpacker", q -> q
             .at(-4, -6.5)
             .task(Task.item(GTOMachines.UNPACKER[GTValues.LV]))
-            .dependsOn(LV_ROBOT_ARM, LV_CONVEYOR_MODULE)
-            .hideDependencyLines());
+            .hiddenDependsOn(LV_ROBOT_ARM, LV_CONVEYOR_MODULE));
 
     public static final Quest SMALL_GALLIUM_ARSENIDE_DUST = CHAPTER.quest("small_gallium_arsenide_dust", q -> q
             .at(-4, -5)
@@ -525,8 +515,7 @@ public final class LvChapter {
     public static final Quest STEEL_FIELD_GENERATOR_CASING = CHAPTER.quest("steel_field_generator_casing", q -> q
             .at(6, 5)
             .task(Task.item(GTOTagPrefix.FIELD_GENERATOR_CASING, GTMaterials.Steel))
-            .dependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_LOW_VOLTAGE_STAGE));
 
     public static final Quest LV_MINER = CHAPTER.quest("lv_miner", q -> q
             .at(-12.5, 3)
@@ -568,8 +557,7 @@ public final class LvChapter {
             .subtitle("无限燃料")
             .desc(d -> d.line("能够生产{熔岩}，代价是电和圆石", GOLD))
             .task(Task.item(MultiBlockA.LAVA_FURNACE))
-            .dependsOn(ENERGY_HATCH, SteamChapter.A_SLIGHTLY_LARGER_FURNACE)
-            .hideDependencyLines());
+            .hiddenDependsOn(ENERGY_HATCH, SteamChapter.A_SLIGHTLY_LARGER_FURNACE));
 
     public static final Quest TREE_GROWTH_SIMULATOR = CHAPTER.quest("tree_growth_simulator", q -> q
             .at(-10, -5)
@@ -584,8 +572,7 @@ public final class LvChapter {
             .reward(
                     Reward.item(ToolHelper.get(GTToolType.AXE, GTOMaterials.Elementium).getItem()),
                     Reward.stack(() -> QuestStacks.charged(ToolHelper.get(GTToolType.CHAINSAW_LV, GTMaterials.Iron), 100000L, 100000L), 1))
-            .dependsOn(LV_VOLTAGE_COIL, LV_CONVEYOR_MODULE, LV_ROBOT_ARM)
-            .hideDependencyLines());
+            .hiddenDependsOn(LV_VOLTAGE_COIL, LV_CONVEYOR_MODULE, LV_ROBOT_ARM));
 
     public static final Quest LV_ENERGY_INPUT_HATCH_16A = CHAPTER.quest("lv_energy_input_hatch_16a", q -> q
             .at(1.5, -1.5)
@@ -615,13 +602,14 @@ public final class LvChapter {
                     .line()
                     .line("{使用无线电网模式无需放置动力仓}", YELLOW))
             .task(Task.item(GeneratorMultiblock.GENERATOR_ARRAY))
-            .dependsOn(LV_ENERGY_OUTPUT_HATCH)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(LV_ENERGY_OUTPUT_HATCH)
+            .optional());
 
     public static final Quest STEAM_PUMP = CHAPTER.quest("steam_pump", q -> q
             .at(-2.5, 1.5)
             .task(Task.item(GTOItems.STEAM_PUMP))
-            .dependsOn(LV_FLUID_REGULATOR, ASSEMBLE_EVERYTHING)
+            .dependsOn(ASSEMBLE_EVERYTHING)
+            .hiddenDependsOn(LV_FLUID_REGULATOR)
             .optional());
 
     public static final Quest THERMAL_POWER_PUMP = CHAPTER.quest("thermal_power_pump", q -> q
@@ -631,8 +619,7 @@ public final class LvChapter {
                     .line()
                     .line("输入{蒸汽}，它会回报你{等量}的水！", GOLD, AQUA))
             .task(Task.item(MultiBlockC.THERMAL_POWER_PUMP))
-            .dependsOn(ASSEMBLE_EVERYTHING)
-            .hideDependencyLines());
+            .hiddenDependsOn(ASSEMBLE_EVERYTHING));
 
     public static final Quest LV_POWER_AMPLIFIERS = CHAPTER.quest("lv_power_amplifiers", q -> q
             .at(-1.5, -2.5)
@@ -650,7 +637,7 @@ public final class LvChapter {
             .at(4, 3.5)
             .desc(d -> d.line("你目前需要拿它制作{高压氮气}", GOLD))
             .task(Task.item(MultiBlockG.GAS_COMPRESSOR))
-            .dependsOn(LV_FLUID_REGULATOR));
+            .hiddenDependsOn(LV_FLUID_REGULATOR));
 
     public static final Quest LV_FORMING_PRESS = CHAPTER.quest("lv_forming_press", q -> q
             .at(-7, 3)
@@ -699,9 +686,7 @@ public final class LvChapter {
                     .line()
                     .line("加装附属模块后支持{并行}", YELLOW))
             .task(Task.item(MultiBlockB.LIQUEFACTION_FURNACE))
-            .dependsOn(ENERGY_HATCH, COIL_BLOCK)
-            .hideDependencyLines()
-            .hideDependentLines());
+            .hiddenDependsOn(ENERGY_HATCH, COIL_BLOCK));
 
     public static final Quest ELECTRIC_ARC_FURNACE_THE_BEGINNING_OF = CHAPTER.quest("electric_arc_furnace_the_beginning_of", q -> q
             .at(3, 0)
@@ -762,8 +747,7 @@ public final class LvChapter {
             .task(Task.item(GTOItems.PRECISION_STEAM_MECHANISM))
             .reward(Reward.item(GTOItems.PRECISION_STEAM_MECHANISM))
             .dependsOn(DARK_STEEL_INGOT, UtilChapter.PRECISION_STEAM_MECHANISM)
-            .requireAny()
-            .hideDependentLines());
+            .requireAny());
 
     public static final Quest LARGE_STEAM_CIRCUIT_ASSEMBLER = CHAPTER.quest("large_steam_circuit_assembler", q -> q
             .at(-5.5, -6)
@@ -779,7 +763,8 @@ public final class LvChapter {
                     .line()
                     .line("{无法通过超净间获取超净环境！必须使用超净维护仓！}", RED))
             .task(Task.item(MultiBlockA.LARGE_STEAM_CIRCUIT_ASSEMBLER))
-            .dependsOn(PRECISION_STEAM_MECHANISM, AeChapter.WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES));
+            .dependsOn(AeChapter.WORK_BLOCK_FOR_ORIGINAL_SYNTHESIS_RECIPES)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest MANGANESE_PHOSPHIDE_INGOT = CHAPTER.quest("manganese_phosphide_ingot", q -> q
             .at(4.5, 2)
@@ -828,7 +813,8 @@ public final class LvChapter {
                     .line()
                     .line("尤其要注意你的产物是由离心机还是{热力离心机}生产而成，两字之差距离远矣", link(LvChapter.NOT_ONLY_CENTRIFUGAL_BUT_ALSO_A)))
             .task(Task.item(MultiBlockA.LARGE_STEAM_CENTRIFUGE))
-            .dependsOn(SteamChapter.CENTRIFUGE, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.CENTRIFUGE)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest NOT_ONLY_CENTRIFUGAL_BUT_ALSO_A = CHAPTER.quest("not_only_centrifugal_but_also_a", q -> q
             .at(-8, -7)
@@ -839,7 +825,8 @@ public final class LvChapter {
                     .line()
                     .line("尤其要注意你的产物是由{离心机}还是热力离心机生产而成，两字之差距离远矣", link(SHAKE_IT_HARD)))
             .task(Task.item(MultiBlockA.LARGE_STEAM_THERMAL_CENTRIFUGE))
-            .dependsOn(PRECISION_STEAM_MECHANISM, SteamChapter.CENTRIFUGE));
+            .dependsOn(SteamChapter.CENTRIFUGE)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest LARGER_DRUM_WASHING_MACHINE = CHAPTER.quest("larger_drum_washing_machine", q -> q
             .at(-7.5, -6)
@@ -854,7 +841,8 @@ public final class LvChapter {
                     .line()
                     .line("{32并行}已经很够了，注意{输出大小}，太小的话是没办法执行某些配方的", DARK_RED, LIGHT_PURPLE))
             .task(Task.item(MultiBlockA.LARGE_STEAM_ORE_WASHER))
-            .dependsOn(SteamChapter.DRUM_WASHING_MACHINE_MINERAL_SPECIFIC, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.DRUM_WASHING_MACHINE_MINERAL_SPECIFIC)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest LARGE_POOL_HIGH_CAPACITY = CHAPTER.quest("large_pool_high_capacity", q -> q
             .at(-6, -5)
@@ -867,7 +855,8 @@ public final class LvChapter {
                     .line()
                     .line("跟所有的大型蒸汽多方块一样，都是有着{32并行}", DARK_RED))
             .task(Task.item(MultiBlockA.LARGE_STEAM_BATH))
-            .dependsOn(SteamChapter.LARGE_POOL, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.LARGE_POOL)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest THROW_ALL_THE_STUFF_IN_AND = CHAPTER.quest("throw_all_the_stuff_in_and", q -> q
             .at(-7, -7)
@@ -882,7 +871,8 @@ public final class LvChapter {
                     .line()
                     .line("即便有1.2倍处理耗时惩罚，但在当前阶段它就是{绝对}无敌的存在", YELLOW))
             .task(Task.item(MultiBlockA.LARGE_STEAM_FURNACE))
-            .dependsOn(SteamChapter.A_SLIGHTLY_LARGER_FURNACE, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.A_SLIGHTLY_LARGER_FURNACE)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest A_LARGER_CAULDRON_AND_A_BIGGER = CHAPTER.quest("a_larger_cauldron_and_a_bigger", q -> q
             .at(-7, -5)
@@ -895,7 +885,8 @@ public final class LvChapter {
                     .line()
                     .line("注意它不能执行{液体}参与搅拌的配方", GOLD))
             .task(Task.item(MultiBlockA.LARGE_STEAM_MIXER))
-            .dependsOn(SteamChapter.MIXER_STEAM_POWERED, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.MIXER_STEAM_POWERED)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest SMASH_THEM = CHAPTER.quest("smash_them", q -> q
             .at(-9, -5)
@@ -908,7 +899,8 @@ public final class LvChapter {
                     .line()
                     .line("在你使用蒸汽输入仓的情况下需要提供{1000mb/t}的蒸汽来维持满并行处理", DARK_RED))
             .task(Task.item(MultiBlockC.LARGE_STEAM_CRUSHER))
-            .dependsOn(SteamChapter.ORE_SMASHER, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.ORE_SMASHER)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest STEAM_POWER = CHAPTER.quest("steam_power", q -> q
             .at(-6.5, -6)
@@ -921,7 +913,8 @@ public final class LvChapter {
                     .line()
                     .line("{记得准备一个足够大的输出总线}", DARK_GRAY))
             .task(Task.item(MultiBlockA.LARGE_STEAM_MACERATOR))
-            .dependsOn(SteamChapter.LARGER_AUTO_MORTAR, PRECISION_STEAM_MECHANISM));
+            .dependsOn(SteamChapter.LARGER_AUTO_MORTAR)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM));
 
     public static final Quest LARGE_STEAM_SOLAR_BOILER = CHAPTER.quest("large_steam_solar_boiler", q -> q
             .at(-9.5, -6)
@@ -932,7 +925,8 @@ public final class LvChapter {
                     .line()
                     .line("这台多方块机器的造价比{大型青铜锅炉}更高，但它的运转是免费的，或许这很值得", GOLD))
             .task(Task.item(MultiBlockH.LARGE_STEAM_SOLAR_BOILER))
-            .dependsOn(PRECISION_STEAM_MECHANISM, SteamChapter.Q_7BCD4971)
+            .dependsOn(SteamChapter.Q_7BCD4971)
+            .hiddenDependsOn(PRECISION_STEAM_MECHANISM)
             .optional());
 
     public static final Quest Q_1X_MANGANESE_PHOSPHIDE_WIRE = CHAPTER.quest("q_1x_manganese_phosphide_wire", q -> q
@@ -1049,8 +1043,7 @@ public final class LvChapter {
                     .line()
                     .line("当然我更推荐你为每个配方准备一个化学反应釜，然后用管道将它们串在一起，形成一条自动化生产电路基板的产线！"))
             .task(Task.checkmark())
-            .dependsOn(BLACK_BOX_REACTOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(BLACK_BOX_REACTOR));
 
     public static final Quest PHENOL_BUCKET = CHAPTER.quest("phenol_bucket", q -> q
             .at(2, -4.5)
@@ -1134,9 +1127,9 @@ public final class LvChapter {
                     .line("虚空传送器的具体使用方法请参考位于HV章节的{虚空传送器}任务", link(HvChapter.VOID_TRANSPORTER)))
             .task(Task.checkmark())
             .rewardFor(QuestTierSet.EASY, Reward.item(MultiBlockG.VOID_TRANSPORTER))
-            .dependsOn(UtilChapter.Q_056EC4E6, LV_ENERGY_INPUT_HATCH_16A, DARK_STEEL_INGOT)
-            .optional().hideUntilDepsVisible()
-            .hideDependencyLines());
+            .hiddenDependsOn(LV_ENERGY_INPUT_HATCH_16A, DARK_STEEL_INGOT)
+            .optional()
+            .onlyVisibleOn(QuestTierSet.EASY));
 
     public static final Quest LV_CANNER = CHAPTER.quest("lv_canner", q -> q
             .at(-11, -2)
@@ -1192,8 +1185,7 @@ public final class LvChapter {
             .desc(d -> d.line("铜线缆的作用也仅仅只是合成罢了，为什么不去看看这个阶段的{超导体}呢？", link(LV_SUPERCONDUCTOR)))
             .task(Task.item(TagPrefix.cableGtSingle, GTMaterials.Copper))
             .reward(Reward.item(TagPrefix.cableGtSingle, GTMaterials.Copper, 16))
-            .dependsOn(RUBBER_BATH_MACHINE)
-            .hideDependencyLines());
+            .hiddenDependsOn(RUBBER_BATH_MACHINE));
 
     public static final Quest WIRELESS_ITEM_TRANSFER_COVER = CHAPTER.quest("wireless_item_transfer_cover", q -> q
             .at(-15.5, 4.5)
@@ -1207,7 +1199,8 @@ public final class LvChapter {
                     .line()
                     .line("{进入高压时代，你还能制作对应的高级版本}", GRAY))
             .task(Task.item(CustomItems.WIRELESS_ITEM_TRANSFER_COVER), Task.item(CustomItems.WIRELESS_FLUID_TRANSFER_COVER))
-            .dependsOn(LV_EMITTER, LV_SENSOR, LV_FLUID_REGULATOR, LV_CUTTER));
+            .dependsOn(LV_EMITTER, LV_SENSOR, LV_CUTTER)
+            .hiddenDependsOn(LV_FLUID_REGULATOR));
 
     public static final Quest LARGE_STEAM_FORGE_HAMMER = CHAPTER.quest("large_steam_forge_hammer", q -> q
             .at(-6, -7)

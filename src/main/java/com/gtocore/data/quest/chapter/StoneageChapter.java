@@ -71,9 +71,8 @@ public final class StoneageChapter {
                     .line("你需要做出第一个{燧石斧}才能砍树，并且不用工作台做的{燧石斧}只有16点耐久", GOLD, GOLD))
             .task(Task.checkmark())
             .reward(Reward.item(Items.BREAD).personal(), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 4))
-            .dependsOn(PROSPECTOR)
-            .requireAllStarted()
-            .hideDependencyLines());
+            .hiddenDependsOn(PROSPECTOR)
+            .requireAllStarted());
 
     public static final Quest MORE_WOODEN_STICKS = CHAPTER.quest("more_wooden_sticks", q -> q
             .at(-4, -1.5)
@@ -121,7 +120,8 @@ public final class StoneageChapter {
             .reward(
                     Reward.choice(QuestRewardTables.PLANKS).excludeFromClaimAll().title("任意木板*64"),
                     Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
-            .dependsOn(FLINT_AXE));
+            .dependsOn(FLINT_AXE)
+            .mainNode());
 
     public static final Quest DALLYING_WITH_PLANTS = CHAPTER.quest("dallying_with_plants", q -> q
             .at(4.5, -1.5)
@@ -166,8 +166,8 @@ public final class StoneageChapter {
             .desc(d -> d.line("这可能是你发现的第一个彩蛋任务"))
             .task(Task.tag(ItemTags.LOGS, 256L).title("任意原木"))
             .reward(Reward.item(Items.IRON_AXE).personal(), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .dependsOn(WANT_TO_GET_RICH_CHOP_TREES)
-            .optional().hideDependencyLines()
+            .hiddenDependsOn(WANT_TO_GET_RICH_CHOP_TREES)
+            .optional()
             .invisible());
 
     public static final Quest WORKBENCH = CHAPTER.quest("workbench", q -> q
@@ -228,9 +228,7 @@ public final class StoneageChapter {
                     .line()
                     .line("你能连锁的{上限}取决于你的{工具等级}，等级越高能连锁的方块也就越多，如果能{通电}则能连锁更多的方块，详见提示章节", GREEN, YELLOW, YELLOW)
                     .line()
-                    .line("你现在可以看看{矿石生成}章节内主世界矿物的分布了", link(OresChapter.GOOD_AT_USING_EMI_TO_CHECK))
-                    .line()
-                    .line("{别忘了领取前面任务给你发的魔力钢探矿仪}", GRAY.italic()))
+                    .line("你现在可以看看{矿石生成}章节内主世界矿物的分布了", link(OresChapter.GOOD_AT_USING_EMI_TO_CHECK)))
             .reward(
                     Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
             .task(Task.item(ToolHelper.get(GTToolType.PICKAXE, GTMaterials.Flint).getItem()))
@@ -340,8 +338,8 @@ public final class StoneageChapter {
                     Reward.item(AEItems.METEORITE_COMPASS),
                     Reward.item(ExplorersCompass.explorersCompass),
                     Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .dependsOn(WANT_TO_GET_RICH_CHOP_TREES)
-            .optional().hideDependencyLines()
+            .hiddenDependsOn(WANT_TO_GET_RICH_CHOP_TREES)
+            .optional()
             .invisible());
 
     public static final Quest ANY_BUTCHERY_KNIVES = CHAPTER.quest("any_butchery_knives", q -> q
@@ -351,8 +349,8 @@ public final class StoneageChapter {
             .desc(d -> d.line("也许你需要准备一个小牧场来产出食物"))
             .task(Task.tag(CustomTags.BUTCHERY_KNIVES, 1).title("屠刀"))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(MOVING_MOUNTAINS)
-            .optional().hideDependencyLines());
+            .hiddenDependsOn(MOVING_MOUNTAINS)
+            .optional());
 
     public static final Quest AS_FOR_ANIMALS_MAY_THEY_ALL = CHAPTER.quest("as_for_animals_may_they_all", q -> q
             .at(2.5, -1.5)
@@ -401,8 +399,7 @@ public final class StoneageChapter {
             .desc(d -> d.line("你可以使用{农夫乐事}模组的{砧板}获得它，在这里你不能徒手分解花朵！", YELLOW, GOLD))
             .task(Task.item(QuestExternalRefs.FarmersDelightItems.CUTTING_BOARD), Task.tag(QuestExternalRefs.TAG_C_DYES, 1).title("任意染料"))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 1))
-            .dependsOn(FLINT_KNIFE)
-            .hideDependencyLines());
+            .hiddenDependsOn(FLINT_KNIFE));
 
     public static final Quest A_FULL_ARSENAL = CHAPTER.quest("a_full_arsenal", q -> q
             .at(3, 6.5)
@@ -461,7 +458,8 @@ public final class StoneageChapter {
                     .line("你在下一个阶段会{大量}需要它的", DARK_PURPLE))
             .task(Task.item(TagPrefix.ingot, GTMaterials.WroughtIron))
             .reward(Reward.item(TagPrefix.ingot, GTMaterials.WroughtIron, 32), Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 16))
-            .dependsOn(Q_996));
+            .dependsOn(Q_996)
+            .mainNode());
 
     public static final Quest SANXINGDUI_PEOPLE = CHAPTER.quest("sanxingdui_people", q -> q
             .at(3, 2.5)
@@ -489,8 +487,7 @@ public final class StoneageChapter {
                     .line("{提示：你可以直接把物品从EMI中拖到终端的搜索栏上来快速搜索}", GRAY.italic()))
             .task(Task.item(GTOAEParts.SIMPLE_CRAFTING_TERMINAL.get()))
             .reward(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 8), Reward.item(GTMachines.STEEL_CRATE))
-            .dependsOn(ANCIENT_STEELMAKING)
-            .hideDependencyLines(false));
+            .dependsOn(ANCIENT_STEELMAKING));
 
     public static final Quest MULTIBLOCK_HELPER = CHAPTER.quest("multiblock_helper", q -> q
             .at(-2, 8.5)
@@ -578,13 +575,14 @@ public final class StoneageChapter {
             .task(Task.item(TagPrefix.ingot, GTMaterials.Bronze, 12))
             .dependsOn(SANXINGDUI_PEOPLE)
             .rewardFor(QuestTierSet.ALL, Reward.item(TagPrefix.ingot, GTMaterials.Bronze, 32))
-            .rewardFor(QuestTierSet.EXPERT));
+            .rewardFor(QuestTierSet.EXPERT)
+            .mainNode());
 
     public static final Quest CRAFTING_STATION_COPY_1 = CHAPTER.quest("crafting_station_copy_1", q -> q
             .at(-1.5, 2.5)
             .subtitle("台自己工作！")
             .desc(d -> d
-                    .line("这台机器能自动链接附近的容器，并调用其中的物品进行{链式合成}，但是仅限于合成配方。", YELLOW)
+                    .line("这台机器能自动扫描附近的容器，并调用其中的物品和流体进行{链式合成}，但是仅限于合成配方。", YELLOW)
                     .line()
                     .line("在第一个页面使用EMI查看物品的合成配方，点右侧的+号上屏。上屏过的配方会进入历史配方中，也可以手动收藏它。")
                     .line()

@@ -47,8 +47,7 @@ public final class UhvChapter {
                     .line()
                     .line("{使用陨星之板能获得很多下界合金块，你也可以选择坠个大的然后慢慢挖}", GRAY.italic()))
             .task(Task.item(Items.NETHERITE_INGOT))
-            .dependsOn(LuvChapter.NEUTRON_ACTIVATOR)
-            .hideDependencyLines());
+            .hiddenDependsOn(LuvChapter.NEUTRON_ACTIVATOR));
 
     public static final Quest ENERGETIC_NETHERITE_DUST = CHAPTER.quest("energetic_netherite_dust", q -> q
             .at(-0.5, 1)
@@ -74,8 +73,7 @@ public final class UhvChapter {
             .at(2, 1)
             .icon(GTMaterials.Bromine.getBucket())
             .task(Task.item(GTMaterials.Bromine.getBucket()).optional(), Task.checkmark())
-            .dependsOn(UvChapter.RESOURCE_COLLECTION_MODULE)
-            .hideDependencyLines());
+            .hiddenDependsOn(UvChapter.RESOURCE_COLLECTION_MODULE));
 
     public static final Quest FULLERENE_DUST = CHAPTER.quest("fullerene_dust", q -> q
             .at(2, 2.5)
@@ -104,8 +102,7 @@ public final class UhvChapter {
     public static final Quest SPACE_DRONE_MK2 = CHAPTER.quest("space_drone_mk2", q -> q
             .at(0.5, 10.5)
             .task(Task.item(GTOItems.SPACE_DRONE_MK2))
-            .dependsOn(UvChapter.ORICHALCUM_INGOT)
-            .hideDependencyLines());
+            .hiddenDependsOn(UvChapter.ORICHALCUM_INGOT));
 
     public static final Quest INGOT_FIELD_SHAPE = CHAPTER.quest("ingot_field_shape", q -> q
             .at(2.5, 6.5)
@@ -141,8 +138,7 @@ public final class UhvChapter {
     public static final Quest PERIODICALLY_POLED_LITHIUM_NIOBATE_BOULE = CHAPTER.quest("periodically_poled_lithium_niobate_boule", q -> q
             .at(5, 1)
             .task(Task.item(GTOItems.PERIODICALLY_POLED_LITHIUM_NIOBATE_BOULE))
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE));
 
     public static final Quest LASER = CHAPTER.quest("laser", q -> q
             .at(5, 2.5)
@@ -158,8 +154,7 @@ public final class UhvChapter {
     public static final Quest HIGH_ENERGY_LASER_PURIFICATION_UNIT = CHAPTER.quest("high_energy_laser_purification_unit", q -> q
             .at(4.5, 8.5)
             .task(Task.item(MultiBlockB.HIGH_ENERGY_LASER_PURIFICATION_UNIT))
-            .dependsOn(LASER)
-            .hideDependencyLines());
+            .hiddenDependsOn(LASER));
 
     public static final Quest ELECTRIC_EQUILIBRIUM_WATER_BUCKET = CHAPTER.quest("electric_equilibrium_water_bucket", q -> q
             .at(6.5, 8.5)
@@ -172,30 +167,27 @@ public final class UhvChapter {
     public static final Quest THULIUM_HEXABORIDE_CERAMICS_FLAKE = CHAPTER.quest("thulium_hexaboride_ceramics_flake", q -> q
             .at(6.5, 1)
             .task(Task.item(GTOTagPrefix.FLAKES, GTOMaterials.ThuliumHexaborideCeramics))
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE));
 
     public static final Quest HEXANITROHEXAAXAISOWURTZITANE_DUST = CHAPTER.quest("hexanitrohexaaxaisowurtzitane_dust", q -> q
             .at(4.5, 10.5)
             .subtitle("谁设计的？！")
             .desc(d -> d.line("超级恶心"))
             .task(Task.item(TagPrefix.dust, GTOMaterials.Hexanitrohexaaxaisowurtzitane))
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE));
 
     public static final Quest ENDER_CRYSTAL = CHAPTER.quest("ender_crystal", q -> q
             .at(2.5, 8.5)
-            .desc(d -> d.line("第一颗需要结晶而成"))
+            .desc(d -> d
+                    .line("第一颗需要结晶而成"))
             .task(Task.item(GTOItems.ENDER_CRYSTAL))
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE));
 
     public static final Quest LIQUIDCRYSTALKEVLAR_BUCKET = CHAPTER.quest("liquidcrystalkevlar_bucket", q -> q
             .at(8.5, 1)
             .icon(GTOMaterials.LiquidCrystalKevlar.getBucket())
             .task(Task.item(GTOMaterials.LiquidCrystalKevlar.getBucket()).optional(), Task.checkmark())
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE));
 
     public static final Quest KEVLAR_PLATE = CHAPTER.quest("kevlar_plate", q -> q
             .at(8.5, 2.5)
@@ -242,8 +234,8 @@ public final class UhvChapter {
             .at(-0.5, -1)
             .desc(d -> d.line("啊哈，升压也不是什么麻烦事！"))
             .task(Task.item(GTMachines.ENERGY_INPUT_HATCH[GTValues.UHV]))
-            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, ENERGETIC_NETHERITE_DUST, UvChapter.ORICHALCUM_INGOT, NM_WAFER)
-            .hideDependencyLines());
+            .hiddenDependsOn(NM_WAFER)
+            .dependsOn(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, UvChapter.ORICHALCUM_INGOT, ENERGETIC_NETHERITE_DUST));
 
     public static final Quest UHV_FUSION_REACTOR = CHAPTER.quest("uhv_fusion_reactor", q -> q
             .at(3.5, -1)
@@ -320,21 +312,18 @@ public final class UhvChapter {
             .at(10.5, 2.5)
             .icon(MultiBlockI.LARGE_ALGAE_FARM)
             .task(Task.item(MultiBlockI.LARGE_ALGAE_FARM), Task.item(GTAEMachines.ALGAE_ACCESS_HATCH))
-            .dependsOn(SMD_CAPACITOR_OPTICAL)
-            .hideDependencyLines());
+            .hiddenDependsOn(SMD_CAPACITOR_OPTICAL));
 
     public static final Quest BOSE_EINSTEIN_COOLING_CONTAINER = CHAPTER.quest("bose_einstein_cooling_container", q -> q
             .at(4.5, 6.5)
             .task(Task.item(GTOItems.BOSE_EINSTEIN_COOLING_CONTAINER))
-            .dependsOn(UvChapter.NANO_FORGE)
-            .hideDependencyLines());
+            .hiddenDependsOn(UvChapter.NANO_FORGE));
 
     public static final Quest FRANCIUM_DUST = CHAPTER.quest("francium_dust", q -> q
             .at(10.5, 10.5)
             .desc(d -> d.line("享受你的产线吧x10086"))
             .task(Task.item(TagPrefix.dust, GTMaterials.Francium))
-            .dependsOn(FULLERENE_DUST)
-            .hideDependencyLines());
+            .hiddenDependsOn(FULLERENE_DUST));
 
     public static final Quest OPTICAL_WAFER = CHAPTER.quest("optical_wafer", q -> q
             .at(8.5, 8.5)
@@ -461,8 +450,8 @@ public final class UhvChapter {
             .at(-5.5, 8.5)
             .desc(d -> d.line("终于，部件装配它回来了！"))
             .task(Task.item(MultiBlockA.COMPONENT_ASSEMBLY_LINE))
-            .dependsOn(SPACE_DRONE_MK3, ENDERITE_INGOT, OPTICAL_PROCESSING_CORE)
-            .hideDependencyLines());
+            .hiddenDependsOn(ENDERITE_INGOT, OPTICAL_PROCESSING_CORE)
+            .dependsOn(SPACE_DRONE_MK3));
 
     public static final Quest SMART_SIFTERING_HUB = CHAPTER.quest("smart_siftering_hub", q -> q
             .at(-5.5, 10.5)
@@ -491,6 +480,8 @@ public final class UhvChapter {
 
     public static final QuestLink ORICHALCUM_INGOT_COPY_1_COPY_1 = CHAPTER.copy(UvChapter.ORICHALCUM_INGOT, -0.5, -3);
 
+    public static final QuestLink ME_WILDCARD_PATTERN_BUFFER_2_COPY_1_COPY_1_COPY_1 = CHAPTER.copy(AeChapter.ME_WILDCARD_PATTERN_BUFFER_2_COPY_1, 1.5, -3);
+
     static {
         CHAPTER.decorate(d -> d
                 .link(QuestLink.of(UvChapter.PLASMA_CONDENSER, 0.5, 6.5))
@@ -499,11 +490,6 @@ public final class UhvChapter {
                 .link(QuestLink.of(UvChapter.NANO_FORGE, 10.5, 6.5))
                 .link(QuestLink.of(UvChapter.PCB_FACTORY, 10.5, 4.5).mainNode())
                 .link(QuestLink.of(UevChapter.WELCOME_TO_THE_EXTREME_OVERPRESSURE_STAGE, 10.5, -1).mainNode())
-                .link(QuestLink.of(UtilChapter.ME_WILDCARD_PATTERN_BUFFER_2, 1.5, -3))
-                .link(QuestLink.of(SpaceStationChapter.SPACE_DRONE_DOCK, -5.5, 6.5))
-                .line(SPACE_DRONE_MK3, COMPONENT_ASSEMBLY_LINE)
-                .line(WELCOME_TO_THE_EXTREME_HIGH_VOLTAGE, UHV_ENERGY_INPUT_HATCH)
-                .line(ORICHALCUM_INGOT_COPY_1_COPY_1, UHV_ENERGY_INPUT_HATCH)
-                .line(ENERGETIC_NETHERITE_DUST, UHV_ENERGY_INPUT_HATCH));
+                .link(QuestLink.of(SpaceStationChapter.SPACE_DRONE_DOCK, -5.5, 6.5)));
     }
 }

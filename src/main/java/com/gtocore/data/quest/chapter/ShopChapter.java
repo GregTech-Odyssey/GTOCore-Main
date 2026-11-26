@@ -11,6 +11,7 @@ import com.gtocore.integration.Mods;
 import com.gtolib.api.quest.Quest;
 import com.gtolib.api.quest.QuestChapter;
 import com.gtolib.api.quest.QuestImage;
+import com.gtolib.api.quest.QuestTierSet;
 import com.gtolib.api.quest.reward.QuestStacks;
 import com.gtolib.api.quest.reward.Reward;
 import com.gtolib.api.quest.task.Task;
@@ -262,8 +263,8 @@ public final class ShopChapter {
                     Reward.item(AEParts.GLASS_CABLE.item(AEColor.TRANSPARENT), 64),
                     Reward.item(AEItems.ITEM_CELL_16K),
                     Reward.item(AEItems.FLUID_CELL_16K))
-            .dependsOn(UtilChapter.EASY_NORMAL)
-            .repeatable(false).hideUntilDepsVisible());
+            .repeatable(false)
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final Quest TITANIUM_INGOT_EASY_NORMAL = CHAPTER.quest("titanium_ingot_easy_normal", q -> q
             .at(-9.5, 9.5)
@@ -275,8 +276,7 @@ public final class ShopChapter {
                     .line("能让你提前做出少量的HV整体框架"))
             .task(Task.item(TagPrefix.ingot, GTMaterials.Nichrome, 32), Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
             .reward(Reward.item(TagPrefix.ingot, GTMaterials.Titanium, 3))
-            .dependsOn(UtilChapter.EASY_NORMAL)
-            .hideUntilDepsVisible());
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final Quest HV_FORCE_FIELD_GENERATOR_EASY_NORMAL = CHAPTER.quest("hv_force_field_generator_easy_normal", q -> q
             .at(-7.5, 9.5)
@@ -288,8 +288,7 @@ public final class ShopChapter {
                     .line("能让你提前做出金刚杵和普通难度下的HV输入输出总成"))
             .task(Task.item(GTItems.FIELD_GENERATOR_MV, 8), Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
             .reward(Reward.item(GTItems.FIELD_GENERATOR_HV))
-            .dependsOn(UtilChapter.EASY_NORMAL)
-            .hideUntilDepsVisible());
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final Quest SUPER_CHEST_I = CHAPTER.quest("super_chest_i", q -> q
             .at(-11.5, 7.5)
@@ -321,20 +320,22 @@ public final class ShopChapter {
             .icon(GTOTagPrefix.COIN, GTMaterials.Copper)
             .title("铜币补助")
             .task(Task.checkmark())
-            .easySubsidy(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .normalSubsidy(Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .rewardFor(QuestTierSet.EASY, Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
+            .rewardFor(QuestTierSet.NORMAL, Reward.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
             .dependsOn(WELCOME_TO_THE_GREGTECH_MEMBER_EXCLUSIVE)
             .optional()
             .repeatable(false)
-            .hideUntilDepsVisible());
+            .hideUntilDepsVisible()
+            .onlyVisibleOn(QuestTierSet.EASY_NORMAL));
 
     public static final Quest ADMISSION_TICKET_EXPERT = CHAPTER.quest("admission_ticket_expert", q -> q
             .at(3, 0)
             .icon(GTOTagPrefix.COIN, GTMaterials.Copper)
             .title("准入门票{（专家）}", LIGHT_PURPLE)
             .task(Task.item(GTOTagPrefix.COIN, GTMaterials.Copper, 64))
-            .dependsOn(WELCOME_TO_THE_GREGTECH_MEMBER_EXCLUSIVE, UtilChapter.Q_1FB1EC5B)
-            .optional().repeatable(false).hideUntilDepsVisible().hideDependentLines());
+            .dependsOn(WELCOME_TO_THE_GREGTECH_MEMBER_EXCLUSIVE)
+            .optional().repeatable(false)
+            .onlyVisibleOn(QuestTierSet.EXPERT));
 
     public static final Quest BUILDER_S_MASTER_SET = CHAPTER.quest("builder_s_master_set", q -> q
             .at(10.5, 3.5)
@@ -356,7 +357,8 @@ public final class ShopChapter {
             .desc(d -> d.line("不想手动点也可以制作混凝土的无限AE元件"))
             .task(Task.checkmark().title("再来十组！"))
             .reward(Reward.choice(QuestRewardTables.CONCRETE).excludeFromClaimAll())
-            .dependsOn(UtilChapter.INFINITY_WAND, BUILDER_S_MASTER_SET)
+            .dependsOn(BUILDER_S_MASTER_SET)
+            .hiddenDependsOn(UtilChapter.INFINITY_WAND)
             .requireAny());
 
     public static final Quest FACTORY_BLOCK = CHAPTER.quest("factory_block", q -> q
@@ -367,7 +369,8 @@ public final class ShopChapter {
             .desc(d -> d.line("不想手动点也可以制作建筑方块的无限AE元件"))
             .task(Task.modLoaded(Mods.FACTORY_BLOCKS), Task.checkmark().title("再来一组"))
             .reward(Reward.item(QuestExternalRefs.FactoryBlocksItems.FACTORY, 640L))
-            .dependsOn(BUILDER_S_MASTER_SET, UtilChapter.INFINITY_WAND)
+            .dependsOn(BUILDER_S_MASTER_SET)
+            .hiddenDependsOn(UtilChapter.INFINITY_WAND)
             .requireAny()
             .hideUntilDepsVisible());
 

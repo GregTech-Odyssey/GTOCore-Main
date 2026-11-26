@@ -42,8 +42,7 @@ public final class RareDustChapter {
                     .line("副产步骤不是必须的，{稀土}会产出所有产物，副产步骤仅供想回收副产的人参考。", GOLD))
             .task(Task.checkmark())
             .dependsOn(IvChapter.Q_02C29988)
-            .hideUntilDepsComplete()
-            .hideDependentLines());
+            .hideUntilDepsComplete());
 
     public static final Quest BASTNASITE_DUST = CHAPTER.quest("bastnasite_dust", q -> q
             .at(-9, 1)
@@ -52,7 +51,7 @@ public final class RareDustChapter {
             .nodeScale(2)
             .shape(QuestShape.HEXAGON)
             .task(Task.item(TagPrefix.dust, GTMaterials.Bastnasite).optional(), Task.checkmark().optional())
-            .dependsOn(Q_75569B55));
+            .hiddenDependsOn(Q_75569B55));
 
     public static final Quest FLUORO_CARBON_LANTHANIDE_CERIUM_SOLUTION_BUCKET = CHAPTER.quest("fluoro_carbon_lanthanide_cerium_solution_bucket", q -> q
             .at(-7.5, 1)
@@ -86,7 +85,8 @@ public final class RareDustChapter {
                     .line()
                     .line("多了钷粉的产出"))
             .task(Task.item(GTOMaterials.P507.getBucket()).optional(), Task.checkmark().optional())
-            .dependsOn(UhvChapter.RARE_EARTH_CENTRIFUGAL, Q_75569B55));
+            .dependsOn(UhvChapter.RARE_EARTH_CENTRIFUGAL)
+            .hiddenDependsOn(Q_75569B55));
 
     public static final Quest Q_45B6AB36 = CHAPTER.quest("q_45b6ab36", q -> q
             .at(-3, 5)
@@ -126,7 +126,7 @@ public final class RareDustChapter {
                     .line()
                     .line("三条线走一条就可以"))
             .task(Task.item(TagPrefix.dust, GTOMaterials.SamariumRefinedPowder).optional(), Task.checkmark().optional())
-            .dependsOn(Q_75569B55));
+            .hiddenDependsOn(Q_75569B55));
 
     public static final Quest SAMARIUM_CHLORIDE_CONCENTRATE_SOLUTION_BUCKET = CHAPTER.quest("samarium_chloride_concentrate_solution_bucket", q -> q
             .at(0.5, 3.5)
@@ -256,7 +256,7 @@ public final class RareDustChapter {
             .nodeScale(2)
             .shape(QuestShape.HEXAGON)
             .task(Task.item(TagPrefix.dust, GTMaterials.Monazite).optional(), Task.checkmark().optional())
-            .dependsOn(Q_75569B55));
+            .hiddenDependsOn(Q_75569B55));
 
     public static final Quest MONAZITE_RARE_EARTH_TURBID_LIQUID_BUCKET = CHAPTER.quest("monazite_rare_earth_turbid_liquid_bucket", q -> q
             .at(-7.5, -2)
@@ -374,8 +374,7 @@ public final class RareDustChapter {
             .shape(QuestShape.HEXAGON)
             .task(Task.item(TagPrefix.dust, GTMaterials.RareEarth).optional(), Task.checkmark().optional())
             .requireAnyStarted()
-            .dependsOn(RARE_EARTH_DUST_2, RARE_EARTH_DUST)
-            .hideDependencyLines());
+            .hiddenDependsOn(RARE_EARTH_DUST_2, RARE_EARTH_DUST));
 
     public static final Quest RARE_EARTH_HYDROXIDES_BUCKET = CHAPTER.quest("rare_earth_hydroxides_bucket", q -> q
             .at(4.5, 5)
@@ -411,14 +410,13 @@ public final class RareDustChapter {
                     .line()
                     .line("多了钷粉的产出"))
             .task(Task.item(TagPrefix.dust, GTOMaterials.RareEarthOxide).optional(), Task.checkmark().optional())
-            .dependsOn(RARE_EARTH_CHLORIDES_BUCKET)
-            .hideDependencyLines());
+            .hiddenDependsOn(RARE_EARTH_CHLORIDES_BUCKET));
 
     public static final Quest RARE_EARTH_METAL_ORE = CHAPTER.quest("rare_earth_metal_ore", q -> q
             .at(-9.3, 5.5)
             .desc(d -> d.line("从太空无人机4开始获取"))
             .task(Task.item(TagPrefix.ore, GTOMaterials.RareEarthMetal).optional(), Task.checkmark().optional())
-            .dependsOn(Q_75569B55));
+            .hiddenDependsOn(Q_75569B55));
 
     public static final Quest RARE_EARTH_METAL_DUST = CHAPTER.quest("rare_earth_metal_dust", q -> q
             .at(-7.8, 5)
