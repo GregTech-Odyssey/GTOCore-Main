@@ -6143,6 +6143,7 @@
   "gtocore.machine.data_center.data_access.open_tech_tree": "打开科技树，选择要研究的节点",
   "gtocore.machine.data_center.data_access.prerequisites_not_researched": "前置科技未研究",
   "gtocore.machine.data_center.data_access.progress": "研究进度",
+  "gtocore.machine.data_center.data_access.recheck_research": "重新判定",
   "gtocore.machine.data_center.data_access.refresh": "刷新页面以查看最新数据访问仓信息。",
   "gtocore.machine.data_center.data_access.research_idle": "数据中心未在运行，研究暂停",
   "gtocore.machine.data_center.data_access.research_progress": "[%s]研究进度：",

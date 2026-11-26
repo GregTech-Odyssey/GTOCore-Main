@@ -203,20 +203,29 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     }
 
     /**
-     * 科技树节点详情里的"启动研究"按钮（两端都会调用）：点一下让本机研究该节点，正在研究时变红，再点取消。
-     * 是否正在研究由服务端判定、经按钮所在区块的同步值下发；点击只在服务端执行，研究发起人是点按钮的玩家。
+     * 科技树节点详情的研究按钮。研究中可取消，算力已达标时可直接重新判定。
      */
     private void attachResearchButton(UIElement section, TechNode node) {
         var researching = section.addSyncValue(SyncValue.ofBool(() -> selectedNode == node));
-        var button = Button.of(LayoutStyle.AUTO).bindClientText(() -> Component.translatable(researching.getValue() ? LANG_DATA_ACCESS_RESEARCHING : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+        var recheck = section.addSyncValue(SyncValue.ofBool(() -> {
+            var gui = section.getGui();
+            return gui != null && gui.entityPlayer != null && canRecheckResearch(gui.entityPlayer, node);
+        }));
+        var button = Button.of(LayoutStyle.AUTO).bindClientText(() -> {
+            if (researching.getValue()) return Component.translatable(LANG_DATA_ACCESS_RESEARCHING).getString();
+            return Component.translatable(recheck.getValue() ? LANG_DATA_ACCESS_RECHECK_RESEARCH : LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString();
+        })
                 .bindClientVariant(() -> researching.getValue() ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
                 .setOnServerClick(() -> {
                     var gui = section.getGui();
                     if (gui == null || gui.entityPlayer == null) return;
                     if (node == selectedNode) cancelResearch(gui.entityPlayer);
-                    else startResearch(gui.entityPlayer, node);
+                    else if (!tryRecheckResearch(gui.entityPlayer, node)) startResearch(gui.entityPlayer, node);
                 })
-                .bindTooltip(() -> Component.translatable(selectedNode == node ? LANG_DATA_ACCESS_CANCEL_RESEARCH : LANG_DATA_ACCESS_LAUNCH_RESEARCH));
+                .bindTooltip(() -> {
+                    if (researching.getValue()) return Component.translatable(LANG_DATA_ACCESS_CANCEL_RESEARCH);
+                    return Component.translatable(recheck.getValue() ? LANG_DATA_ACCESS_RECHECK_RESEARCH : LANG_DATA_ACCESS_LAUNCH_RESEARCH);
+                });
         button.disabled(() -> {
             var gui = section.getGui();
             return gui != null && gui.entityPlayer != null && TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(gui.entityPlayer), node);
@@ -227,6 +236,17 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
                     !TechTreeSavedData.isPrerequisitesUnlocked(TechTreeSavedData.getTeamUUID(gui.entityPlayer), node);
         }, LANG_PREREQUISITES_NOT_RESEARCHED);
         section.addChild(button);
+    }
+
+    static boolean canRecheckResearch(Player player, TechNode node) {
+        return TechTreeSavedData.hasNodeMetCWURequirements(player.getUUID(), node);
+    }
+
+    /** 已有足够算力时只尝试解锁，即使其他条件尚未满足也不启动研究。 */
+    static boolean tryRecheckResearch(Player player, TechNode node) {
+        if (!canRecheckResearch(player, node)) return false;
+        TechTreeSavedData.unlock(player, node);
+        return true;
     }
 
     void startResearch(Player player, TechNode node) {
@@ -1039,6 +1059,8 @@ public class DataCenter extends DataBankMachine implements ICustomRecipeLogicHol
     private static final String LANG_OPEN_WINDOW = "gtocore.machine.data_center.window.open";
     @RegisterLanguage(cn = "启动研究", en = "Launch Research")
     static final String LANG_DATA_ACCESS_LAUNCH_RESEARCH = "gtocore.machine.data_center.data_access.launch_research";
+    @RegisterLanguage(cn = "重新判定", en = "Recheck")
+    static final String LANG_DATA_ACCESS_RECHECK_RESEARCH = "gtocore.machine.data_center.data_access.recheck_research";
     @RegisterLanguage(cn = "正在研究中", en = "Research in Progress")
     static final String LANG_DATA_ACCESS_RESEARCHING = "gtocore.machine.data_center.data_access.researching";
     @RegisterLanguage(cn = "前置科技未研究", en = "Prerequisites not researched")

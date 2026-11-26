@@ -6143,6 +6143,7 @@
   "gtocore.machine.data_center.data_access.open_tech_tree": "Open the Tech Tree to choose a node to research",
   "gtocore.machine.data_center.data_access.prerequisites_not_researched": "Prerequisites not researched",
   "gtocore.machine.data_center.data_access.progress": "Progress",
+  "gtocore.machine.data_center.data_access.recheck_research": "Recheck",
   "gtocore.machine.data_center.data_access.refresh": "Refresh the page to view the latest Data Access Hatch information.",
   "gtocore.machine.data_center.data_access.research_idle": "The Data Center is not running; research is paused",
   "gtocore.machine.data_center.data_access.research_progress": "[%s] Research Progress:",

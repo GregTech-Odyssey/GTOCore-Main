@@ -408,7 +408,7 @@ public final class DataCenterAggregationUI {
                 for (var entry : current) {
                     if (entry.machine != null && entry.node == node) entry.machine.cancelResearch(player);
                 }
-            } else {
+            } else if (!DataCenter.tryRecheckResearch(player, node)) {
                 var best = bestIdle();
                 if (best != null) best.startResearch(player, node);
             }
@@ -417,14 +417,20 @@ public final class DataCenterAggregationUI {
 
         private void attachResearchSection(UIElement section, TechNode node) {
             var count = section.addSyncValue(SyncValue.ofInt(() -> researchingCount(node), 0));
-            var button = Button.of(LayoutStyle.AUTO).bindClientText(() -> count.getValue() > 0 ? Component.translatable(RESEARCHING_ON, count.getValue()).getString() :
-                    Component.translatable(DataCenter.LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString())
+            var recheck = section.addSyncValue(SyncValue.ofBool(() -> DataCenter.canRecheckResearch(player, node)));
+            var button = Button.of(LayoutStyle.AUTO).bindClientText(() -> {
+                if (count.getValue() > 0) return Component.translatable(RESEARCHING_ON, count.getValue()).getString();
+                return Component.translatable(recheck.getValue() ? DataCenter.LANG_DATA_ACCESS_RECHECK_RESEARCH : DataCenter.LANG_DATA_ACCESS_LAUNCH_RESEARCH).getString();
+            })
                     .bindClientVariant(() -> count.getValue() > 0 ? UITheme.ButtonVariant.DANGER : UITheme.ButtonVariant.CONFIRM)
                     .setOnServerClick(() -> toggleResearch(node))
-                    .bindTooltip(() -> Component.translatable(researchingCount(node) > 0 ? TIP_CANCEL : TIP_LAUNCH));
+                    .bindTooltip(() -> {
+                        if (count.getValue() > 0) return Component.translatable(TIP_CANCEL);
+                        return Component.translatable(recheck.getValue() ? DataCenter.LANG_DATA_ACCESS_RECHECK_RESEARCH : TIP_LAUNCH);
+                    });
             button.disabled(() -> TechTreeSavedData.isUnlocked(TechTreeSavedData.getTeamUUID(player), node), TechNodeDetails.ALREADY_UNLOCKED_TIP);
             var gate = UIElement.column(LayoutStyle.AUTO).addChild(button);
-            gate.disabled(() -> researchingCount(node) == 0 && bestIdle() == null, NO_IDLE);
+            gate.disabled(() -> researchingCount(node) == 0 && !DataCenter.canRecheckResearch(player, node) && bestIdle() == null, NO_IDLE);
             section.disabled(() -> researchingCount(node) == 0 && !TechTreeSavedData.isPrerequisitesUnlocked(TechTreeSavedData.getTeamUUID(player), node),
                     DataCenter.LANG_PREREQUISITES_NOT_RESEARCHED);
             section.addChild(gate);
