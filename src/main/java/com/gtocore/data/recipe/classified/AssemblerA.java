@@ -165,6 +165,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.DISPLAY_PANEL.asStack(4))
                 .EUt(VA[LV])
                 .duration(100)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("monitor_me_panel")
@@ -174,6 +175,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.ME_PANEL.asStack())
                 .EUt(VA[LV])
                 .duration(100)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("monitor_machine_panel")
@@ -184,6 +186,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.MACHINE_PANEL.asStack())
                 .EUt(VA[LV])
                 .duration(100)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("monitor_redstone_panel")
@@ -193,6 +196,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.REDSTONE_PANEL.asStack())
                 .EUt(VA[LV])
                 .duration(100)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("monitor_share_panel")
@@ -202,6 +206,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.SHARE_PANEL.asStack())
                 .EUt(VA[LV])
                 .duration(100)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("monitor_download_panel")
@@ -212,6 +217,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.DOWNLOAD_PANEL.asStack())
                 .EUt(VA[LV])
                 .duration(100)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("monitor_cable")
@@ -220,6 +226,7 @@ final class AssemblerA {
                 .outputItems(MonitorRegistries.CABLE_ITEM.asStack(8))
                 .EUt(VA[LV])
                 .duration(60)
+                .circuitMeta(6)
                 .save();
 
         var dyes = DyeColor.values();
@@ -238,6 +245,7 @@ final class AssemblerA {
                 .category(GTRecipeCategories.CHEM_DYES)
                 .EUt(2)
                 .duration(400)
+                .circuitMeta(6)
                 .save();
 
         ASSEMBLER_RECIPES.builder("wood_frame_fix")
